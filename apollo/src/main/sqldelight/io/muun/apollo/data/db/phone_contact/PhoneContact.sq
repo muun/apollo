@@ -1,0 +1,55 @@
+CREATE TABLE phone_contacts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    internal_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    phone_number_hash TEXT,
+    first_seen INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL,
+    last_updated INTEGER NOT NULL,
+
+    UNIQUE (internal_id, phone_number)
+);
+
+
+selectAll:
+SELECT *
+FROM phone_contacts;
+
+
+selectFirstSeenAt:
+SELECT *
+FROM phone_contacts
+WHERE first_seen = ?;
+
+
+selectLastSeenNotAt:
+SELECT *
+FROM phone_contacts
+WHERE last_seen != ?;
+
+
+deleteLastSeenNotAt:
+DELETE
+FROM phone_contacts
+WHERE last_seen != ?;
+
+
+insertOrIgnore:
+INSERT OR IGNORE INTO phone_contacts
+(internal_id, name, phone_number, first_seen, last_seen, last_updated)
+VALUES (?, ?, ?, ?, ?, ?);
+
+
+updateLastSeen:
+UPDATE phone_contacts
+SET last_seen = ?
+WHERE internal_id = ? AND phone_number = ?;
+
+
+updatePhoneHash:
+UPDATE phone_contacts
+SET phone_number_hash = ?
+WHERE id = ?;
+
+

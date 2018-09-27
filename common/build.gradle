@@ -1,0 +1,48 @@
+apply plugin: 'idea'
+apply plugin: 'java-library'
+
+targetCompatibility = '1.7'
+sourceCompatibility = '1.7'
+
+idea.module.excludeDirs = [file('build')]
+
+jar {
+    // Bitcoinj native libraries
+    exclude 'lib/x86_64/darwin/libscrypt.dylib'
+    exclude 'lib/x86_64/freebsd/libscrypt.so'
+    exclude 'lib/x86_64/linux/libscrypt.so'
+}
+
+dependencies {
+    api 'javax.validation:validation-api:1.1.0.Final'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.2'
+    implementation 'org.hibernate:hibernate-validator:5.4.2.Final'
+
+    // networking
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+
+    // rx
+    implementation 'io.reactivex:rxjava:1.3.8'
+
+    // bitcoin
+    api 'com.github.acrespo:bitcoinj:segwit-SNAPSHOT'
+
+    // cryptography
+    implementation 'com.madgag.spongycastle:core:1.56.0.0'
+    implementation 'com.madgag.spongycastle:prov:1.56.0.0'
+    implementation 'com.lambdaworks:scrypt:1.4.0'
+
+    // money
+    implementation 'org.javamoney:moneta-bp:1.1'
+
+    // phone utils
+    implementation 'com.googlecode.libphonenumber:libphonenumber:5.5'
+
+    // Testing dependencies
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.9.1'
+
+    // to silence bitcoinj's slf4j
+    testImplementation 'org.slf4j:slf4j-nop:1.7.14'
+    testImplementation 'org.mockito:mockito-core:2.17.0'
+}

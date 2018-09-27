@@ -1,0 +1,22 @@
+CREATE TABLE public_profiles (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    profile_picture_url TEXT
+);
+
+updateProfile:
+UPDATE public_profiles
+SET first_name = ?, last_name = ?, profile_picture_url = ?
+WHERE hid = ?;
+
+selectAll:
+SELECT *
+FROM public_profiles
+ORDER BY first_name || ' ' || last_name ASC;
+
+selectByHid:
+SELECT *
+FROM public_profiles
+WHERE hid = ?;

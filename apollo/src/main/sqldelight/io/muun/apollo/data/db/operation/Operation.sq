@@ -1,0 +1,60 @@
+import java.lang.Boolean;
+
+CREATE TABLE operations (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    direction TEXT AS io.muun.common.model.OperationDirection NOT NULL,
+    is_external INTEGER AS Boolean NOT NULL,
+    sender_hid INTEGER REFERENCES public_profiles(hid),
+    sender_is_external INTEGER AS Boolean NOT NULL,
+    receiver_hid INTEGER REFERENCES public_profiles(hid),
+    receiver_is_external INTEGER AS Boolean NOT NULL,
+    receiver_address TEXT,
+    receiver_address_derivation_path TEXT,
+    amount_in_satoshis INTEGER NOT NULL,
+    amount_in_input_currency TEXT AS javax.money.MonetaryAmount NOT NULL,
+    amount_in_primary_currency TEXT AS javax.money.MonetaryAmount NOT NULL,
+    fee_in_satoshis INTEGER NOT NULL,
+    fee_in_input_currency TEXT AS javax.money.MonetaryAmount NOT NULL,
+    fee_in_primary_currency TEXT AS javax.money.MonetaryAmount NOT NULL,
+    confirmations INTEGER NOT NULL,
+    hash TEXT,
+    description TEXT,
+    status TEXT AS io.muun.common.model.OperationStatus NOT NULL,
+    creation_date TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
+    exchange_rate_window_hid INTEGER NOT NULL
+);
+
+updateStatus:
+UPDATE operations
+SET confirmations = ?, hash = ?, status = ?
+WHERE hid = ?;
+
+selectAll:
+SELECT operations.*, sender_profile.*, receiver_profile.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
+LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
+ORDER BY creation_date DESC;
+
+selectById:
+SELECT operations.*, sender_profiles.*, receiver_profiles.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
+LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+WHERE operations.id = ?;
+
+selectByHid:
+SELECT operations.*, sender_profiles.*, receiver_profiles.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
+LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+WHERE operations.hid = ?;
+
+selectLatest:
+SELECT operations.*, sender_profiles.*, receiver_profiles.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
+LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+ORDER BY operations.id DESC
+LIMIT 1;

@@ -1,0 +1,27 @@
+CREATE TABLE contacts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE REFERENCES public_profiles(hid),
+    public_key TEXT NOT NULL,
+    public_key_path TEXT NOT NULL,
+    last_derivation_index INTEGER NOT NULL,
+    max_address_version INTEGER NOT NULL,
+    cosigning_public_key TEXT,
+    cosigning_public_key_path TEXT
+);
+
+updateLastDerivationIndex:
+UPDATE contacts
+SET last_derivation_index = max(last_derivation_index, ?)
+WHERE hid = ?;
+
+selectAll:
+SELECT *
+FROM contacts
+INNER JOIN public_profiles ON contacts.hid = public_profiles.hid
+ORDER BY lower(first_name || ' ' || last_name) ASC;
+
+selectByHid:
+SELECT *
+FROM contacts
+INNER JOIN public_profiles ON contacts.hid = public_profiles.hid
+WHERE contacts.hid = ?;

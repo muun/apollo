@@ -1,0 +1,61 @@
+migration_2_drop_operations_table:
+DROP TABLE operations;
+
+migration_2_drop_contacts_table:
+DROP TABLE contacts;
+
+migration_3_add_external_address_column_to_operations_table:
+ALTER TABLE operations
+ADD external_receiver_address TEXT DEFAULT NULL;
+
+migration_4_move_operations_to_a_temporary_table:
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+migration_4_drop_temporary_table:
+DROP TABLE tmp_operations;
+
+migration_5_drop_tasks_table:
+DROP TABLE tasks;
+
+migration_6_drop_contacts_table:
+DROP TABLE contacts;
+
+migration_6_drop_operations_table:
+DROP TABLE operations;
+
+migration_8_move_contacts_to_a_temporary_table:
+ALTER TABLE contacts
+RENAME TO tmp_contacts;
+
+migration_8_drop_temporary_table:
+DROP TABLE tmp_contacts;
+
+migration_9_add_last_derivation_index_column_to_contacts_table:
+ALTER TABLE contacts
+ADD last_derivation_index INTEGER DEFAULT 0;
+
+migration_10_move_operations_to_a_temporary_table:
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+migration_10_drop_temporary_table:
+DROP TABLE tmp_operations;
+
+migration_11_drop_contacts_table:
+DROP TABLE contacts;
+
+migration_11_drop_operations_table:
+DROP TABLE operations;
+
+migration_12_drop_phone_contacts:
+DROP TABLE phone_contacts;
+
+migration_13_add_contact_address_version:
+ALTER TABLE contacts ADD max_address_version INTEGER NOT NULL DEFAULT 1;
+
+migration_13_add_contact_cosigning_pubkey:
+ALTER TABLE contacts ADD cosigning_public_key TEXT;
+
+migration_13_add_contact_cosigning_pubkey_path:
+ALTER TABLE contacts ADD cosigning_public_key_path TEXT;

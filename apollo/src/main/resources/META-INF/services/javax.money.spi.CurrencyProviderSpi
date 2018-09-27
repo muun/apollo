@@ -1,0 +1,3 @@
+io.muun.common.utils.BitcoinCurrencyProvider
+org.javamoney.moneta.internal.JDKCurrencyProvider
+org.javamoney.moneta.internal.ConfigurableCurrencyUnitProvider
