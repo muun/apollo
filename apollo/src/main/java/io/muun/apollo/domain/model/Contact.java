@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.model;
 
-import io.muun.apollo.domain.model.base.HoustonModel;
+import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.utils.Preconditions;
@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 
-public class Contact extends HoustonModel {
+public class Contact extends HoustonIdModel {
 
     @NotNull
     public final PublicProfile publicProfile;

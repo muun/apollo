@@ -1,6 +1,6 @@
 package io.muun.apollo.data.db.contact;
 
-import io.muun.apollo.data.db.base.HoustonDao;
+import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.Contact;
 
 import rx.Observable;
@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class ContactDao extends HoustonDao<Contact> {
+public class ContactDao extends HoustonIdDao<Contact> {
 
     /**
      * Constructor.

@@ -1,7 +1,13 @@
 package io.muun.apollo.data.os.execution;
 
+import io.muun.apollo.data.logging.Logger;
+
+import android.support.annotation.NonNull;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -17,10 +23,13 @@ import javax.validation.constraints.NotNull;
 @Singleton
 public class JobExecutor implements Executor {
 
-    private static final int INITIAL_POOL_SIZE = 3;
+    // The maximum amount of threads in the pool under normal circumstances
+    private static final int CORE_POOL_SIZE = 5; // Should we calc (number of cores * 2)?
 
-    private static final int MAX_POOL_SIZE = 5;
+    // The HARD maximum of threads, to which threadPool can grow ONLY WHEN workQueue is FULL
+    private static final int MAX_POOL_SIZE = 10;
 
+    // When over CORE_POOL_SIZE, this is the time to wait before terminating idle threads.
     private static final int KEEP_ALIVE_SECONDS = 10;
 
     private final ThreadPoolExecutor threadPoolExecutor;
@@ -30,14 +39,44 @@ public class JobExecutor implements Executor {
      */
     @Inject
     public JobExecutor() {
-
+        // See https://stackoverflow.com/a/33752839/901465 or ThreadPoolExecutor javadoc for why
+        // a capacity-bound collection is needed for pool resizing to work.
         threadPoolExecutor = new ThreadPoolExecutor(
-                INITIAL_POOL_SIZE,
+                CORE_POOL_SIZE,
                 MAX_POOL_SIZE,
                 KEEP_ALIVE_SECONDS,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(),
-                new JobThreadFactory()
+                new LinkedBlockingQueue<>(CORE_POOL_SIZE), // avoid infinite task scheduling
+                new JobThreadFactory(),
+                getRejectedExecutionHandler()
+        );
+    }
+
+    /**
+     * Simple discard rejected task policy, logging it so we can be notified about it.
+     */
+    @NonNull
+    private RejectedExecutionHandler getRejectedExecutionHandler() {
+        // TODO log more information about the rejected task? About the tasks in the workQueue?
+        return (runnable, executor) -> Logger.error(
+                new RejectedExecutionException(
+                        String.format("Task  %s rejected from %s. %s",
+                                runnable,
+                                executor,
+                                getExtraLogginData(executor)
+                        )
+                )
+        );
+    }
+
+    private String getExtraLogginData(ThreadPoolExecutor executor) {
+        return String.format(
+                "\nTaskCount:%s\nCompletedCount:%s\nActiveCount:%s\nPoolSize:%s\nWorkQueueSize:%s",
+                executor.getTaskCount(),
+                executor.getCompletedTaskCount(),
+                executor.getActiveCount(),
+                executor.getPoolSize(),
+                executor.getQueue().size()
         );
     }
 

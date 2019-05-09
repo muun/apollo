@@ -29,6 +29,36 @@ public enum OperationStatus {
     BROADCASTED,
 
     /**
+     * For a submarine swap Operation, the on-chain transaction was broadcasted and we're waiting
+     * for off-chain payment to succeed.
+     */
+    SWAP_PENDING,
+
+    /**
+     * For a submarine swap Operation, the off-chain payment was started, but hasn't completed or
+     * failed yet.
+     */
+    SWAP_ROUTING,
+
+    /**
+     * For a submarine swap Operation, the off-chain payment was successful, but the swap server has
+     * not yet claimed the on-chain funds.
+     */
+    SWAP_PAYED,
+
+    /**
+     * For a submarine swap Operation, the off-chain payment was unsuccessful, and the on-chain
+     * funds are time locked.
+     */
+    SWAP_FAILED,
+
+    /**
+     * For a submarine swap Operation, the off-chain payment has expired, and the on-chain funds
+     * are the property of the sender again.
+     */
+    SWAP_EXPIRED,
+
+    /**
      * Operation with its transaction present in a block (0 < confirmations < SETTLEMENT_NUMBER),
      * but not with enough transactions to be settled.
      */

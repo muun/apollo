@@ -2,6 +2,7 @@ package io.muun.apollo.data.db;
 
 import io.muun.apollo.data.logging.Logger;
 
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.SortedMap;
@@ -198,6 +199,85 @@ public class DbMigrationManager {
             + "    UNIQUE (internal_id, phone_number)\n"
             + ")";
 
+    private static final String MIGRATION_14_CREATE_OPERATIONS_TABLE = ""
+            + "CREATE TABLE operations (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    hid INTEGER NOT NULL UNIQUE,\n"
+            + "    direction TEXT NOT NULL,\n"
+            + "    is_external INTEGER NOT NULL,\n"
+            + "    sender_hid INTEGER REFERENCES public_profiles(hid),\n"
+            + "    sender_is_external INTEGER NOT NULL,\n"
+            + "    receiver_hid INTEGER REFERENCES public_profiles(hid),\n"
+            + "    receiver_is_external INTEGER NOT NULL,\n"
+            + "    receiver_address TEXT,\n"
+            + "    receiver_address_derivation_path TEXT,\n"
+            + "    amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    amount_in_input_currency TEXT NOT NULL,\n"
+            + "    amount_in_primary_currency TEXT NOT NULL,\n"
+            + "    fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    fee_in_input_currency TEXT NOT NULL,\n"
+            + "    fee_in_primary_currency TEXT NOT NULL,\n"
+            + "    confirmations INTEGER NOT NULL,\n"
+            + "    hash TEXT,\n"
+            + "    description TEXT,\n"
+            + "    status TEXT NOT NULL,\n"
+            + "    creation_date TEXT NOT NULL,\n"
+            + "    exchange_rate_window_hid INTEGER NOT NULL\n"
+            + ")";
+
+    private static final String MIGRATION_14_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_OPERATIONS = ""
+            + "INSERT INTO operations SELECT * FROM tmp_operations";
+
+    private static final String MIGRATION_15_CREATE_SATELLITE_PAIRINGS_TABLE = ""
+            + "CREATE TABLE satellite_pairings (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    satellite_session_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    apollo_session_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    status TEXT NOT NULL,\n"
+            + "    browser TEXT,\n"
+            + "    os_version TEXT,\n"
+            + "    ip TEXT,\n"
+            + "    creation_date TEXT NOT NULL,\n"
+            + "    last_active TEXT\n"
+            + ")";
+
+    private static final String MIGRATION_16_CREATE_HARDWARE_WALLETS = ""
+            + "CREATE TABLE hardware_wallets (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    hid INTEGER NOT NULL UNIQUE,\n"
+            + "    model TEXT NOT NULL,\n"
+            + "    label TEXT NOT NULL,\n"
+            + "    base_public_key TEXT NOT NULL,\n"
+            + "    base_public_key_path TEXT NOT NULL,\n"
+            + "    created_at TEXT NOT NULL,\n"
+            + "    last_paired_at TEXT NOT NULL,\n"
+            + "    is_paired INTEGER NOT NULL\n"
+            + ")";
+
+    public static final String MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE = ""
+            + "CREATE TABLE submarine_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    invoice TEXT NOT NULL,\n"
+            + "    receiver_alias TEXT,\n"
+            + "    receiver_network_addresses TEXT NOT NULL,\n"
+            + "    receiver_public_key TEXT NOT NULL,\n"
+            + "    funding_output_address TEXT NOT NULL,\n"
+            + "    funding_output_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    funding_confirmations_needed INTEGER NOT NULL,\n"
+            + "    funding_user_lock_time INTEGER NOT NULL,\n"
+            + "    funding_user_refund_address TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_path TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_version INTEGER NOT NULL,\n"
+            + "    funding_server_payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    funding_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    sweep_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    lightning_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    expires_at TEXT NOT NULL,\n"
+            + "    payed_at TEXT,\n"
+            + "    preimage_in_hex TEXT\n"
+            + ")";
+
     /**
      * Constructor. Here go all the database migrations.
      *
@@ -282,6 +362,37 @@ public class DbMigrationManager {
                 MigrationsModel.MIGRATION_13_ADD_CONTACT_COSIGNING_PUBKEY,
                 MigrationsModel.MIGRATION_13_ADD_CONTACT_COSIGNING_PUBKEY_PATH
         );
+
+        // We forgot to add a migration changing the is_incoming column to direction, so we change
+        // it now. The thing is, some users might have already created the table with the direction
+        // column (if they cleared data, or uninstalled/installed the app).
+        add(14,
+                MigrationsModel.MIGRATION_14_MOVE_OPERATIONS_TO_A_TEMPORARY_TABLE,
+                MIGRATION_14_CREATE_OPERATIONS_TABLE,
+                // The following copy will fail for users that don't have the new column yet (ie.
+                // users that actually need the migration), but that's ok, since their operations
+                // table is empty: we've just logged the user out.
+                MIGRATION_14_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_OPERATIONS,
+                MigrationsModel.MIGRATION_14_DROP_TEMPORARY_TABLE
+        );
+
+        add(15, MIGRATION_15_CREATE_SATELLITE_PAIRINGS_TABLE);
+
+        add(16, MIGRATION_16_CREATE_HARDWARE_WALLETS);
+
+        add(17, MigrationsModel.MIGRATION_17_ADD_HARDWARE_WALLET_TO_OP);
+
+        add(18, MigrationsModel.MIGRATION_18_ADD_ENCRYPTION_KEY_TO_PAIRINGS);
+
+        add(19,
+                MigrationsModel.MIGRATION_19_ADD_BRAND_TO_HARDWARE_WALLET,
+                MigrationsModel.MIGRATION_20_COPY_BRAND_FROM_HARDWARE_WALLET_MODEL
+        );
+        add(20, MigrationsModel.MIGRATION_21_ADD_IS_IN_USE_TO_PAIRINGS);
+
+        add(21, MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE);
+
+        add(22, MigrationsModel.MIGRATION_22_ADD_SUBMARINE_SWAP_TO_OPERATION);
     }
 
     /**
@@ -317,7 +428,11 @@ public class DbMigrationManager {
 
             try {
                 for (String statement : statements) {
-                    database.execSQL(statement);
+                    try {
+                        database.execSQL(statement);
+                    } catch (SQLException e) {
+                        Logger.error(e, "Error while running migration: " + statement);
+                    }
                 }
 
                 database.setTransactionSuccessful();

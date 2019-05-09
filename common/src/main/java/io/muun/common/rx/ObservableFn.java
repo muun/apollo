@@ -121,6 +121,7 @@ public final class ObservableFn {
 
                                 if (cause.isPresent()) {
                                     return resumeFunction.call(errorClass.cast(cause.get()));
+
                                 } else {
                                     return Observable.error(error);
                                 }
@@ -153,6 +154,27 @@ public final class ObservableFn {
     }
 
     /**
+     * If the error emitted by the single is of type HttpException and has a specific code, it gets
+     * replaced by the error returned when calling replacer with the original error.
+     */
+    public static <T> Transformer<T, T> replaceHttpException(
+            final ErrorCode code,
+            final Func1<HttpException, Throwable> replacer) {
+
+        return onHttpExceptionResumeNext(
+                code,
+                new Func1<HttpException, Observable<T>>() {
+
+                    @Override
+                    public Observable<T> call(HttpException error) {
+                        return Observable.error(replacer.call(error));
+                    }
+
+                }
+        );
+    }
+
+    /**
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static <T> Transformer<T, T> onHttpExceptionResumeNext(
@@ -160,25 +182,33 @@ public final class ObservableFn {
             final Func1<HttpException, Observable<T>> resumeFunction) {
 
         return new Transformer<T, T>() {
-
             @Override
             public Observable<T> call(Observable<T> observable) {
 
-                return observable.compose(onTypedErrorResumeNext(
-                        HttpException.class,
-                        new Func1<HttpException, Observable<T>>() {
+                return observable.onErrorResumeNext(
+
+                        new Func1<Throwable, Observable<? extends T>>() {
 
                             @Override
-                            public Observable<T> call(HttpException error) {
+                            public Observable<? extends T> call(Throwable error) {
 
-                                if (error.getErrorCode().equals(code)) {
-                                    return resumeFunction.call(error);
+                                final Optional<HttpException> cause = getTypedCause(
+                                        error,
+                                        HttpException.class
+                                );
+
+                                if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                                    return resumeFunction.call(cause.get());
+
+                                } else {
+                                    return Observable.error(error);
                                 }
 
-                                return Observable.error(error);
                             }
                         }
-                ));
+
+                );
+
             }
         };
     }
@@ -187,7 +217,7 @@ public final class ObservableFn {
             Throwable error,
             Class<T> errorClass) {
 
-        for (Throwable cause = error;  cause != null; cause = cause.getCause()) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
             if (errorClass.isInstance(cause)) {
                 return Optional.of(errorClass.cast(cause));
             }

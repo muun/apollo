@@ -6,8 +6,15 @@ package io.muun.apollo.domain.errors;
  */
 public abstract class UserFacingError extends RuntimeException {
 
+    public UserFacingError() {
+    }
+
     public UserFacingError(String message) {
         super(message);
+    }
+
+    public UserFacingError(Throwable cause) {
+        super(cause);
     }
 
     public UserFacingError(String message, Throwable cause) {

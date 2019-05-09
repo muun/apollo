@@ -1,13 +1,18 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
+import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.HardwareWallet;
+import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.UserProfile;
-import io.muun.common.api.BitcoinAmount;
+import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
+import io.muun.common.api.HardwareWalletJson;
 import io.muun.common.api.OperationJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
@@ -15,13 +20,10 @@ import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SignupJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.Encodings;
-
-import org.threeten.bp.ZonedDateTime;
 
 import java.util.UUID;
 
@@ -32,16 +34,7 @@ import javax.validation.constraints.NotNull;
 public class ApiObjectsMapper {
 
     @Inject
-    public ApiObjectsMapper() {
-    }
-
-    /**
-     * Create an API zoned date time.
-     */
-    @NotNull
-    public MuunZonedDateTime mapDateTime(@NotNull ZonedDateTime dateTime) {
-
-        return new ApolloZonedDateTime(dateTime);
+    ApiObjectsMapper() {
     }
 
     /**
@@ -59,8 +52,7 @@ public class ApiObjectsMapper {
      * Create an API public profile.
      */
     @NotNull
-    public PublicProfileJson mapPublicProfile(
-            @NotNull io.muun.apollo.domain.model.PublicProfile publicProfile) {
+    private PublicProfileJson mapPublicProfile(@NotNull PublicProfile publicProfile) {
 
         return new PublicProfileJson(
                 publicProfile.hid,
@@ -86,10 +78,9 @@ public class ApiObjectsMapper {
      * Create an API bitcoin amount.
      */
     @NotNull
-    public BitcoinAmount mapBitcoinAmount(
-            @NotNull io.muun.apollo.domain.model.BitcoinAmount bitcoinAmount) {
+    private BitcoinAmountJson mapBitcoinAmount(@NotNull BitcoinAmount bitcoinAmount) {
 
-        return new BitcoinAmount(
+        return new BitcoinAmountJson(
                 bitcoinAmount.inSatoshis,
                 bitcoinAmount.inInputCurrency,
                 bitcoinAmount.inPrimaryCurrency
@@ -100,7 +91,11 @@ public class ApiObjectsMapper {
      * Create an API operation.
      */
     @NotNull
-    public OperationJson mapOperation(@NotNull io.muun.apollo.domain.model.Operation operation) {
+    public OperationJson mapOperation(@NotNull Operation operation) {
+
+        final Long outputAmountInSatoshis = operation.swap != null
+                ? operation.swap.fundingOutput.outputAmountInSatoshis
+                : operation.amount.inSatoshis;
 
         return new OperationJson(
                 UUID.randomUUID().toString(),
@@ -113,26 +108,29 @@ public class ApiObjectsMapper {
                 operation.receiverIsExternal,
                 operation.receiverAddress,
                 operation.receiverAddressDerivationPath,
+                operation.hardwareWalletHid,
                 mapBitcoinAmount(operation.amount),
                 mapBitcoinAmount(operation.fee),
+                outputAmountInSatoshis,
                 operation.exchangeRateWindowHid,
                 operation.description,
                 operation.status,
-                mapDateTime(operation.creationDate)
+                ApolloZonedDateTime.of(operation.creationDate),
+                operation.swap != null ? operation.swap.houstonUuid : null
         );
     }
 
     /**
      * Create an API Signup.
      */
-    public SignupJson createSignup(CurrencyUnit primaryCurrency,
-                                   PublicKey basePublicKey,
-                                   ChallengeSetup passwordChallengeSetup) {
+    public SignupJson mapSignup(CurrencyUnit primaryCurrency,
+                                PublicKey basePublicKey,
+                                ChallengeSetup passwordChallengeSetup) {
 
         return new SignupJson(
                 primaryCurrency,
-                createPublicKey(basePublicKey),
-                createChallengeSetup(passwordChallengeSetup)
+                mapPublicKey(basePublicKey),
+                mapChallengeSetup(passwordChallengeSetup)
         );
     }
 
@@ -140,7 +138,7 @@ public class ApiObjectsMapper {
      * Create an API external addresses record.
      */
     @NotNull
-    public ExternalAddressesRecord createExternalAddressesRecord(int maxUsedIndex) {
+    public ExternalAddressesRecord mapExternalAddressesRecord(int maxUsedIndex) {
 
         return new ExternalAddressesRecord(maxUsedIndex);
     }
@@ -149,7 +147,7 @@ public class ApiObjectsMapper {
      * Create an API public key.
      */
     @NotNull
-    public PublicKeyJson createPublicKey(PublicKey publicKey) {
+    public PublicKeyJson mapPublicKey(PublicKey publicKey) {
 
         return new PublicKeyJson(
                 publicKey.serializeBase58(),
@@ -160,7 +158,7 @@ public class ApiObjectsMapper {
     /**
      * Create a ChallengeSetup.
      */
-    public ChallengeSetupJson createChallengeSetup(ChallengeSetup setup) {
+    public ChallengeSetupJson mapChallengeSetup(ChallengeSetup setup) {
         return new ChallengeSetupJson(
                 setup.type,
                 Encodings.bytesToHex(setup.publicKey.toBytes()),
@@ -173,7 +171,7 @@ public class ApiObjectsMapper {
     /**
      * Create a ChallengeSetup.
      */
-    public ChallengeSignatureJson createChallengeSignature(ChallengeSignature challengeSignature) {
+    public ChallengeSignatureJson mapChallengeSignature(ChallengeSignature challengeSignature) {
         return new ChallengeSignatureJson(
                 challengeSignature.type,
                 Encodings.bytesToHex(challengeSignature.bytes)
@@ -183,14 +181,30 @@ public class ApiObjectsMapper {
     /**
      * Create a ChallengeUpdate.
      */
-    public ChallengeUpdateJson createChallengeUpdate(String uuid, ChallengeSetup challengeSetup) {
-        return new ChallengeUpdateJson(uuid, createChallengeSetup(challengeSetup));
+    public ChallengeUpdateJson mapChallengeUpdate(String uuid, ChallengeSetup challengeSetup) {
+        return new ChallengeUpdateJson(uuid, mapChallengeSetup(challengeSetup));
     }
 
     /**
      * Create a Feedback.
      */
-    public FeedbackJson createFeedback(String content) {
+    public FeedbackJson mapFeedback(String content) {
         return new FeedbackJson(content);
+    }
+
+    /**
+     * Create a HardwareWallet.
+     */
+    public HardwareWalletJson mapHardwareWallet(HardwareWallet wallet) {
+        return new HardwareWalletJson(
+                wallet.hid,
+                wallet.brand,
+                wallet.model,
+                wallet.label,
+                mapPublicKey(wallet.basePublicKey),
+                ApolloZonedDateTime.of(wallet.createdAt),
+                ApolloZonedDateTime.of(wallet.lastPairedAt),
+                wallet.isPaired
+        );
     }
 }

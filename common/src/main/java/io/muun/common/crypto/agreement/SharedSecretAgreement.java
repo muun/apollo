@@ -7,25 +7,29 @@ import io.muun.common.utils.RandomGenerator;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.spongycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi;
+import org.spongycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 
-import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.validation.constraints.NotNull;
 
 public class SharedSecretAgreement {
     private static final String CURVE_NAME = "secp256k1";
-    private static final String AGREEMENT_ALGORITHM = "ECDH";
     private static final String ENCRYPTION_ALGORITHM = "AES";
 
     static {
@@ -42,18 +46,17 @@ public class SharedSecretAgreement {
      * @return a `SecretKey` shared between the remote source and this receiver.
      */
     private static SecretKey generateSecret(PublicKey remotePublicKey, PrivateKey privateKey) {
-        final KeyAgreement keyAgreement;
 
         try {
-            keyAgreement = KeyAgreement.getInstance(
-                    AGREEMENT_ALGORITHM,
-                    BouncyCastleProvider.PROVIDER_NAME
-            );
+            // Using SpongyCastle's class directly, without java.security/javax.crypto security
+            // providers system, to avoid issues with proguard discarding them.
+            // Plus, this is our own private class that extends SC's one to use protected methods.
+            final DiffieHellman dh = new DiffieHellman();
 
-            keyAgreement.init(privateKey, RandomGenerator.getSecureRandom());
-            keyAgreement.doPhase(remotePublicKey, true);
+            dh.init(privateKey, RandomGenerator.getSecureRandom());
+            dh.doPhase(remotePublicKey, true);
 
-            return keyAgreement.generateSecret(ENCRYPTION_ALGORITHM);
+            return dh.generateSecret(ENCRYPTION_ALGORITHM);
 
         } catch (GeneralSecurityException e) {
             throw new CryptographyException(e);
@@ -71,11 +74,10 @@ public class SharedSecretAgreement {
         final KeyPairGenerator kpg;
 
         try {
+            // Using SpongyCastle's class directly, without java.security/javax.crypto security
+            // providers system, to avoid issues with proguard discarding them.
+            kpg = new KeyPairGeneratorSpi.ECDH();
 
-            kpg = KeyPairGenerator.getInstance(
-                    AGREEMENT_ALGORITHM,
-                    BouncyCastleProvider.PROVIDER_NAME
-            );
             kpg.initialize(new ECGenParameterSpec(CURVE_NAME), RandomGenerator.getSecureRandom());
 
         } catch (GeneralSecurityException e) {
@@ -159,6 +161,32 @@ public class SharedSecretAgreement {
                 aesDecryptKey.length,
                 ENCRYPTION_ALGORITHM
         );
+    }
+
+    /**
+     * AHA! If you arrive here, this you may very well think that this is another one of our dirty
+     * ugly hacks... and you wouldn't be wrong! In this case, we want to directly access one of
+     * SpongyCastle's precious classes, but although it is visible and can be instantiated, none
+     * of its methods are public. So, we extend it and implement "wrapper" methods to the methods
+     * we need.
+     */
+    private static class DiffieHellman extends KeyAgreementSpi.DH {
+
+        private DiffieHellman() {
+            super();
+        }
+
+        private void init(Key key, SecureRandom secureRandom) throws InvalidKeyException {
+            super.engineInit(key, secureRandom);
+        }
+
+        private void doPhase(Key key, boolean lastPhase) throws InvalidKeyException {
+            super.engineDoPhase(key, lastPhase);
+        }
+
+        private SecretKey generateSecret(String algorithm) throws NoSuchAlgorithmException {
+            return super.engineGenerateSecret(algorithm);
+        }
     }
 
 }

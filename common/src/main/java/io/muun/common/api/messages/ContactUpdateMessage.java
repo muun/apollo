@@ -10,20 +10,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContactUpdateMessage extends AbstractMessage {
 
-    public static final String TYPE = "contact/update";
-
-    public static final SessionStatus PERMISSION = SessionStatus.LOGGED_IN;
+    public static final MessageSpec SPEC = new MessageSpec(
+            "contact/update",
+            SessionStatus.LOGGED_IN,
+            MessageOrigin.HOUSTON
+    );
 
     public Contact contact;
-
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    @Override public SessionStatus getPermission() {
-        return PERMISSION;
-    }
 
     /**
      * Json constructor.
@@ -36,5 +29,10 @@ public class ContactUpdateMessage extends AbstractMessage {
      */
     public ContactUpdateMessage(Contact contact) {
         this.contact = contact;
+    }
+
+    @Override
+    public MessageSpec getSpec() {
+        return SPEC;
     }
 }

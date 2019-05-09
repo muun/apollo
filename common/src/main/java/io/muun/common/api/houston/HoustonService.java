@@ -1,6 +1,10 @@
 package io.muun.common.api.houston;
 
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import io.muun.common.api.ChallengeJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
@@ -10,6 +14,9 @@ import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
+import io.muun.common.api.HardwareWalletJson;
+import io.muun.common.api.HardwareWalletStateJson;
+import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
@@ -27,13 +34,16 @@ import io.muun.common.api.SessionJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.SignupJson;
 import io.muun.common.api.SignupOkJson;
+import io.muun.common.api.SubmarineSwapJson;
+import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
-import io.muun.common.api.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationRequestJson;
 import io.muun.common.model.VerificationType;
-
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
@@ -43,10 +53,6 @@ import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import rx.Observable;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 
 public interface HoustonService {
@@ -63,11 +69,14 @@ public interface HoustonService {
     @POST("sessions/current/login/compat")
     Observable<KeySet> loginCompatWithoutChallenge();
 
+    @POST("sessions/logout")
+    Observable<Void> notifyLogout();
+
     @POST("sign-up")
     Observable<SignupOkJson> signup(@Body SignupJson signupObject);
 
-    @PUT("session/current/gcm-token")
-    Observable<Void> updateGcmToken(@Body String gcmToken);
+    @PUT("sessions/current/gcm-token")
+    Observable<Void> updateFcmToken(@Body String gcmToken);
 
     @GET("sessions/notifications")
     Observable<List<NotificationJson>> fetchNotificationsAfter(
@@ -75,6 +84,18 @@ public interface HoustonService {
 
     @PUT("sessions/notifications/confirm")
     Observable<Void> confirmNotificationsDeliveryUntil(@Query("until") Long notificationId);
+
+    @POST("sessions/notifications/receiving_sessions/{satelliteSessionUuid}")
+    Observable<String> createReceivingSession(
+            @Path("satelliteSessionUuid") String satelliteSessionUuid
+    );
+
+    @POST("sessions/notifications/sending_sessions/{sessionUuid}/notifications")
+    Observable<String> sendSatelliteNotification(@Path("sessionUuid") String sessionUuid,
+                                                 @Body NotificationRequestJson notification);
+
+    @DELETE("sessions/notifications/receiving_sessions/{sessionUuid}")
+    Observable<Void> expireReceivingSession(@Path("sessionUuid") String sessionUuid);
 
     @GET("user/challenge")
     Observable<ChallengeJson> requestChallenge(@Query("type") String challengeType);
@@ -122,7 +143,7 @@ public interface HoustonService {
     @POST("user/feedback")
     Observable<Void> submitFeedback(@Body FeedbackJson feedback);
 
-    @POST("/user/phone/create")
+    @POST("user/phone/create")
     Observable<PhoneNumberJson> createPhone(@Body PhoneNumberJson phoneNumberJson);
 
     @POST("user/phone/resend-code")
@@ -160,15 +181,39 @@ public interface HoustonService {
     Observable<OperationCreatedJson> newOperation(@Body OperationJson operation);
 
     @PUT("operations/{operationId}/raw-transaction")
-    Observable<RawTransaction> pushTransaction(@Body RawTransaction rawTransaction,
-                                               @Path("operationId") Long operationId);
+    Observable<TransactionPushedJson> pushTransaction(@Body RawTransaction rawTransaction,
+                                                      @Path("operationId") Long operationId);
 
     @GET("operations/next-transaction-size")
     Observable<NextTransactionSizeJson> fetchNextTransactionSize();
+
+    @POST("operations/withdrawal")
+    Observable<OperationCreatedJson> newWithdrawalOperation(
+            @Body HardwareWalletWithdrawalJson withdrawal
+    );
+
+    @POST("operations/sswap/prepare")
+    Observable<SubmarineSwapJson> prepareSubmarineSwap(@Body String invoice);
+
+    // ---------------------------------------------------------------------------------------------
+    // Hardware wallets:
+    @POST("devices")
+    Observable<HardwareWalletJson> createOrUpdateHardwareWallet(@Body HardwareWalletJson wallet);
+
+    @DELETE("devices/{hardwareWalletId}")
+    Observable<HardwareWalletJson> unpairHardwareWallet(@Path("hardwareWalletId") Long hwId);
+
+    @GET("devices")
+    Observable<List<HardwareWalletJson>> fetchHardwareWallets();
+
+    @GET("devices/draft")
+    Observable<HardwareWalletStateJson> fetchHardwareWalletState(
+            @Query("id") long hardwareWalletId);
 
     // ---------------------------------------------------------------------------------------------
     // Other endpoints:
 
     @POST("integrity/check")
     Observable<IntegrityStatus> checkIntegrity(@Body IntegrityCheck request);
+
 }

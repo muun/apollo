@@ -1,15 +1,15 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class InvalidPictureError extends UserFacingError {
 
-    private static final String MESSAGE = "The image could not be read";
-
     public InvalidPictureError() {
-        super(MESSAGE);
+        super(UserFacingErrorMessages.INSTANCE.invalidPicture());
     }
 
     public InvalidPictureError(Throwable cause) {
-        super(MESSAGE, cause);
+        super(UserFacingErrorMessages.INSTANCE.invalidPicture(), cause);
     }
 }

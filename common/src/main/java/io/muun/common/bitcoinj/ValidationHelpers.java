@@ -4,6 +4,7 @@ import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
+import io.muun.common.utils.Bech32SegwitAddress;
 import io.muun.common.utils.Encodings;
 
 import org.bitcoinj.core.Address;
@@ -22,7 +23,11 @@ import javax.annotation.Nullable;
 public class ValidationHelpers {
 
     private static final Pattern derivationPathPattern = Pattern.compile("m(?:/\\d+['hHpP]?)*");
-    private static final Pattern emailPattern = Pattern.compile(".+@.+\\..+");
+
+    // NOTE: emails are complicated beasts (https://stackoverflow.com/a/201378/469300).
+    // We run a very simple validation, aimed at preventing common user mistakes. This expression
+    // does NOT attempt to filter invalid emails in general.
+    private static final Pattern emailPattern = Pattern.compile("[^@ ]+@[^@ ]+[.][^@ ]+");
 
     /**
      * Check if an e-mail address is valid.
@@ -36,10 +41,33 @@ public class ValidationHelpers {
      */
     public static boolean isValidAddress(NetworkParameters params, String address) {
 
+        return isValidBase58Address(params, address) || isValidBech32Address(params, address);
+    }
+
+    /**
+     * Check if a Bitcoin base58-encoded address is a valid.
+     */
+    public static boolean isValidBase58Address(NetworkParameters params, String address) {
+
         try {
             Address.fromBase58(params, address);
             return true;
+
         } catch (AddressFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a Bitcoin bech32-encoded address is a valid.
+     */
+    public static boolean isValidBech32Address(NetworkParameters params, String address) {
+
+        try {
+            Bech32SegwitAddress.decode(params, address);
+            return true;
+
+        } catch (io.muun.common.exception.AddressFormatException e) {
             return false;
         }
     }

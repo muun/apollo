@@ -1,0 +1,100 @@
+package io.muun.apollo.data.async.gcm;
+
+import io.muun.apollo.data.db.DaoManager;
+import io.muun.apollo.data.logging.Logger;
+import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.net.ModelObjectsMapper;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
+import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.domain.action.NotificationActions;
+import io.muun.apollo.domain.action.UpdateFcmTokenAction;
+import io.muun.apollo.domain.model.NotificationReport;
+import io.muun.apollo.external.DataComponentProvider;
+import io.muun.common.api.beam.notification.NotificationReportJson;
+
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+
+import javax.inject.Inject;
+
+public class GcmMessageListenerService extends FirebaseMessagingService {
+
+    @Inject
+    DaoManager daoManager; // not used directly by us, but needed in case we start the Application
+
+    @Inject
+    HoustonClient houstonClient;
+
+    @Inject
+    UpdateFcmTokenAction updateFcmTokenAction;
+
+    @Inject
+    ExecutionTransformerFactory executionTransformerFactory;
+
+    @Inject
+    ModelObjectsMapper mapper;
+
+    @Inject
+    NotificationActions notificationActions;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        final DataComponentProvider provider = (DataComponentProvider) getApplication();
+        provider.getDataComponent().inject(this);
+
+        Logger.info("Starting GcmMessageListenerService");
+    }
+
+    @Override
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+
+        Logger.info("Received a new GCM token");
+
+        updateFcmTokenAction.run(token);
+    }
+
+    /**
+     * Called when message is received.
+     *
+     * @param remoteMessage wrapper for From and Data
+     */
+    @Override
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        final String message = remoteMessage.getData().get("message");
+
+        if (message == null) {
+            return;
+        }
+
+        try {
+            processMessage(message);
+
+        } catch (Throwable error) {
+            Logger.error(error, "While processing FCM message");
+        }
+    }
+
+    private void processMessage(String message) {
+        final NotificationReport report;
+
+        try {
+            report = mapper.mapNotificationReport(
+                    SerializationUtils.deserializeJson(NotificationReportJson.class, message)
+            );
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid NotificationReportJson: " + message, e);
+        }
+
+        notificationActions.onNotificationReport(report);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Logger.info("Destroying GcmMessageListenerService");
+    }
+}

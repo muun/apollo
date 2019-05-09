@@ -1,9 +1,10 @@
 package io.muun.apollo.data.net.base.interceptor;
 
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.data.net.base.BaseInterceptor;
 import io.muun.apollo.data.preferences.ClientVersionRepository;
+import io.muun.apollo.external.Globals;
+import io.muun.common.api.ClientTypeJson;
 import io.muun.common.net.HeaderUtils;
 
 import okhttp3.Request;
@@ -23,7 +24,8 @@ public class VersionHeaderInterceptor extends BaseInterceptor {
     @Override
     protected Request processRequest(Request originalRequest) {
         return originalRequest.newBuilder()
-                .addHeader(HeaderUtils.CLIENT_VERSION, "" + BuildConfig.VERSION_CODE)
+                .addHeader(HeaderUtils.CLIENT_VERSION, "" + Globals.INSTANCE.getVersionCode())
+                .addHeader(HeaderUtils.CLIENT_TYPE, ClientTypeJson.APOLLO.toString())
                 .addHeader(HeaderUtils.CLIENT_SDK_VERSION,
                         "" + android.os.Build.VERSION.SDK_INT)
                 .build();

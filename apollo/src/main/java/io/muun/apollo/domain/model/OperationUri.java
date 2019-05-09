@@ -1,29 +1,29 @@
 package io.muun.apollo.domain.model;
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.domain.utils.UriBuilder;
 import io.muun.apollo.domain.utils.UriParser;
+import io.muun.apollo.external.Globals;
 import io.muun.common.Optional;
-import io.muun.common.bitcoinj.NetworkParametersHelper;
+import io.muun.common.bitcoinj.BitcoinUri;
 import io.muun.common.bitcoinj.ValidationHelpers;
+import io.muun.common.utils.LnInvoice;
 
 import android.net.Uri;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.uri.BitcoinURI;
+import android.support.annotation.VisibleForTesting;
 import org.bitcoinj.uri.BitcoinURIParseException;
 
 public class OperationUri {
-
-    private static final NetworkParameters netParams = NetworkParametersHelper
-            .getNetworkParametersFromName(BuildConfig.NETWORK_NAME);
 
     private static final String BIP72_PAYREQ_PARAM = "r";
 
     public static final String MUUN_SCHEME = "muun";
     public static final String BITCOIN_SCHEME = "bitcoin";
+    public static final String LN_SCHEME = "lightning";
 
     public static final String MUUN_HOST_CONTACT = "contacts";
     public static final String MUUN_HOST_EXTERNAL = "external";
+    public static final String MUUN_HOST_DEPOSIT = "deposit";
+    public static final String MUUN_HOST_WITHDRAW = "withdraw";
 
     public static final String MUUN_AMOUNT = "amount";
     public static final String MUUN_CURRENCY = "currency";
@@ -49,6 +49,18 @@ public class OperationUri {
         }
 
         try {
+            return fromLnInvoice(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a Lighning Network raw invoice.
+        }
+
+        try {
+            return fromLnUri(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a Lighning Network URI.
+        }
+
+        try {
             return fromMuunUri(text);
         } catch (IllegalArgumentException ex) {
             // Not a Muun URI.
@@ -60,10 +72,11 @@ public class OperationUri {
 
     /**
      * Create an OperationUri from a plain Bitcoin address. The address must belong to the network
-     * in use, as specified by BuildConfig.
+     * in use, as specified by Globals.INSTANCE.
      */
+    @VisibleForTesting
     public static OperationUri fromAddress(String address) {
-        if (!ValidationHelpers.isValidAddress(netParams, address)) {
+        if (!ValidationHelpers.isValidAddress(Globals.INSTANCE.getNetwork(), address)) {
             throw new IllegalArgumentException(address);
         }
 
@@ -73,9 +86,10 @@ public class OperationUri {
     /**
      * Create an OperationUri from a "bitcoin:" URI.
      */
+    @VisibleForTesting
     public static OperationUri fromBitcoinUri(String bitcoinUri) {
         try {
-            new BitcoinURI(netParams, bitcoinUri);
+            new BitcoinUri(Globals.INSTANCE.getNetwork(), bitcoinUri);
 
         } catch (BitcoinURIParseException e) {
             throw new IllegalArgumentException(bitcoinUri);
@@ -85,8 +99,35 @@ public class OperationUri {
     }
 
     /**
+     * Create an OperationUri from a "lightning:" URI.
+     */
+    @VisibleForTesting
+    public static OperationUri fromLnUri(String lnUri) {
+        if (!lnUri.toLowerCase().startsWith(LN_SCHEME + ":")) {
+            throw new IllegalArgumentException(lnUri);
+        }
+
+        return fromLnInvoice(lnUri.substring(LN_SCHEME.length() + 1));
+    }
+
+    /**
+     * Create an OperationUri from a raw LN invoice.
+     */
+    @VisibleForTesting
+    public static OperationUri fromLnInvoice(String lnInvoice) {
+        try {
+            LnInvoice.decode(Globals.INSTANCE.getNetwork(), lnInvoice);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(lnInvoice, ex);
+        }
+
+        return new OperationUri(LN_SCHEME + ":" + lnInvoice);
+    }
+
+    /**
      * Create an OperationUri from a "muun:" URI.
      */
+    @VisibleForTesting
     public static OperationUri fromMuunUri(String muunUri) {
         if (!muunUri.startsWith(MUUN_SCHEME + ":")) {
             throw new IllegalArgumentException(muunUri);
@@ -99,43 +140,35 @@ public class OperationUri {
      * Create an OperationUri from a Houston user ID.
      */
     public static OperationUri fromContactHid(long contactHid) {
+        return fromMuunEntityId(MUUN_HOST_CONTACT, contactHid);
+    }
+
+    /**
+     * Create an OperationUri from a HardwareWallet ID, to make a deposit.
+     */
+    public static OperationUri depositFromHardwareWalletHid(long hardwareWalletHid) {
+        return fromMuunEntityId(MUUN_HOST_DEPOSIT, hardwareWalletHid);
+    }
+
+    /**
+     * Create an OperationUri from a HardwareWallet ID, to make a deposit.
+     */
+    public static OperationUri withdrawFromHardwareWalletHid(long hardwareWalletHid) {
+        return fromMuunEntityId(MUUN_HOST_WITHDRAW, hardwareWalletHid);
+    }
+
+    private static OperationUri fromMuunEntityId(String host, long id) {
         final String content = new UriBuilder()
                 .setScheme(MUUN_SCHEME)
-                .setHost(MUUN_HOST_CONTACT)
-                .setPath("" + contactHid)
+                .setHost(host)
+                .setPath("" + id)
                 .build();
 
         return new OperationUri(content);
     }
 
-    /**
-     * Create a Muun OperationUri from an PaymentRequest.
-     */
-    public static OperationUri fromPaymentRequest(PaymentRequest draft) {
-        final UriBuilder builder = new UriBuilder()
-                .setScheme(MUUN_SCHEME)
-                .addParam(MUUN_AMOUNT, draft.amount.getNumber().toString())
-                .addParam(MUUN_CURRENCY, draft.amount.getCurrency().getCurrencyCode())
-                .addParam(MUUN_DESCRIPTION, draft.description);
-
-        if (draft.contact != null) {
-            builder
-                    .setHost(MUUN_HOST_CONTACT)
-                    .setPath(draft.contact.hid.toString());
-
-        } else if (draft.address != null) {
-            builder
-                    .setHost(MUUN_HOST_EXTERNAL)
-                    .setPath(draft.address);
-        }
-
-        return new OperationUri(builder.build());
-    }
-
-
     private final String original;
     private final UriParser parser;
-
 
     private OperationUri(String original) {
         this.original = original;
@@ -163,7 +196,7 @@ public class OperationUri {
     }
 
     public boolean isAsync() {
-        return getAsyncUrl().isPresent();
+        return getAsyncUrl().isPresent() || isLn();
     }
 
     public Optional<String> getAsyncUrl() {
@@ -185,12 +218,25 @@ public class OperationUri {
         return getScheme().equals(BITCOIN_SCHEME);
     }
 
+    public boolean isDeposit() {
+        return getHost().equals(MUUN_HOST_DEPOSIT);
+    }
+
+    public boolean isWithdrawal() {
+        return getHost().equals(MUUN_HOST_WITHDRAW);
+    }
+
+    public boolean isLn() {
+        return getScheme().equals(LN_SCHEME);
+    }
+
     /**
      * Get the address contained in this URI, or empty if not included.
      */
     public Optional<String> getEmbeddedAddress() {
         if (isExternal() && !getHost().isEmpty()) {
             return Optional.of(getHost());
+
         } else {
             return Optional.empty();
         }

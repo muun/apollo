@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.errors;
 
-
+@Deprecated
 public class FacebookUnavailableError extends RuntimeException {
 
     public FacebookUnavailableError() {

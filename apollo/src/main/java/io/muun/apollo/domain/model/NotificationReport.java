@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model;
 
 
-import io.muun.common.api.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationJson;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,9 +9,9 @@ import java.util.List;
 
 public class NotificationReport {
 
-    private long previousId;
-    private long maximumId;
-    private List<NotificationJson> preview;
+    private final long previousId;
+    private final long maximumId;
+    private final List<NotificationJson> preview;
 
     /**
      * Construct an empty NotificationReport.

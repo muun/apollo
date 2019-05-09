@@ -2,10 +2,11 @@ package io.muun.apollo.data.db.operation;
 
 import io.muun.apollo.data.db.base.BaseEntity;
 import io.muun.apollo.data.db.public_profile.PublicProfileEntity;
-import io.muun.apollo.data.db.public_profile.PublicProfileModel;
+import io.muun.apollo.data.db.submarine_swap.SubmarineSwapEntity;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PublicProfile;
+import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
 
@@ -37,8 +38,10 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
     );
 
     @AutoValue
-    public abstract static class CompleteOperation implements
-            OperationModel.SelectAllModel<OperationEntity, PublicProfileEntity> {
+    public abstract static class CompleteOperation implements OperationModel.SelectAllModel<
+            OperationEntity,
+            PublicProfileEntity,
+            SubmarineSwapEntity> {
     }
 
     /**
@@ -60,6 +63,7 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 .receiver_is_external(operation.receiverIsExternal)
                 .receiver_address(operation.receiverAddress)
                 .receiver_address_derivation_path(operation.receiverAddressDerivationPath)
+                .hardware_wallet_hid(operation.hardwareWalletHid)
                 .amount_in_satoshis(operation.amount.inSatoshis)
                 .amount_in_input_currency(operation.amount.inInputCurrency)
                 .amount_in_primary_currency(operation.amount.inPrimaryCurrency)
@@ -72,6 +76,9 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 .status(operation.status)
                 .creation_date(operation.creationDate)
                 .exchange_rate_window_hid(operation.exchangeRateWindowHid)
+                .submarine_swap_houston_uuid(
+                        operation.swap == null ? null : operation.swap.houstonUuid
+                )
                 .asContentValues();
     }
 
@@ -82,7 +89,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
 
         final CompleteOperation entity = FACTORY.selectAllMapper(
                 AutoValue_OperationEntity_CompleteOperation::new,
-                PublicProfileEntity.FACTORY
+                PublicProfileEntity.FACTORY,
+                SubmarineSwapEntity.FACTORY
         ).map(cursor);
 
         return new Operation(
@@ -96,6 +104,7 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().receiver_is_external(),
                 entity.operations().receiver_address(),
                 entity.operations().receiver_address_derivation_path(),
+                entity.operations().hardware_wallet_hid(),
                 new BitcoinAmount(
                         entity.operations().amount_in_satoshis(),
                         entity.operations().amount_in_input_currency(),
@@ -111,19 +120,18 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().description(),
                 entity.operations().status(),
                 entity.operations().creation_date(),
-                entity.operations().exchange_rate_window_hid()
+                entity.operations().exchange_rate_window_hid(),
+                getSwap(entity.swap())
         );
     }
 
     @Nullable
-    private static PublicProfile getPublicProfile(PublicProfileModel profile) {
+    private static PublicProfile getPublicProfile(PublicProfileEntity profile) {
+        return profile == null ? null : PublicProfileEntity.getPublicProfile(profile);
+    }
 
-        return profile == null ? null : new PublicProfile(
-                profile.id(),
-                profile.hid(),
-                profile.first_name(),
-                profile.last_name(),
-                profile.profile_picture_url()
-        );
+    @Nullable
+    private static SubmarineSwap getSwap(SubmarineSwapEntity swap) {
+        return swap == null ? null : SubmarineSwapEntity.getSubmarineSwap(swap);
     }
 }

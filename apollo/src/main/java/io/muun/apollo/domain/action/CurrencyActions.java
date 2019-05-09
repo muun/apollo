@@ -4,6 +4,9 @@ import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 
+import android.support.annotation.VisibleForTesting;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -25,7 +28,8 @@ public class CurrencyActions {
         this.telephonyInfoProvider = telephonyInfoProvider;
     }
 
-    private Optional<CurrencyUnit> getCurrencyForLocale(Locale locale) {
+    @VisibleForTesting
+    Optional<CurrencyUnit> getCurrencyForLocale(Locale locale) {
 
         final CurrencyUnit currency;
         try {
@@ -41,7 +45,9 @@ public class CurrencyActions {
         return Optional.of(currency);
     }
 
-    private Set<CurrencyUnit> getCurrenciesForCountryCode(String countryCode) {
+    @VisibleForTesting
+    @NotEmpty
+    Set<CurrencyUnit> getCurrenciesForCountryCode(String countryCode) {
 
         final Set<CurrencyUnit> currencies = new HashSet<>();
 

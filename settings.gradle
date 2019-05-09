@@ -1,2 +1,1 @@
-include ':apollo'
-include ':common'
+include ':apollo', ':common'

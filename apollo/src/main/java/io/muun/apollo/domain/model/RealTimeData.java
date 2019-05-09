@@ -5,10 +5,10 @@ import javax.validation.constraints.NotNull;
 public class RealTimeData {
 
     @NotNull
-    public FeeWindow feeWindow;
+    public final FeeWindow feeWindow;
 
     @NotNull
-    public ExchangeRateWindow exchangeRateWindow;
+    public final ExchangeRateWindow exchangeRateWindow;
 
     public RealTimeData(FeeWindow feeWindow, ExchangeRateWindow exchangeRateWindow) {
         this.feeWindow = feeWindow;

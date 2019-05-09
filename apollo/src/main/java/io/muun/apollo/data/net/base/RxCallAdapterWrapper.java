@@ -6,9 +6,10 @@ import io.muun.apollo.domain.errors.AmountTooSmallError;
 import io.muun.apollo.domain.errors.CountryNotSupportedError;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
 import io.muun.apollo.domain.errors.EmailAreadyUsedError;
+import io.muun.apollo.domain.errors.ExpiredSatelliteSession;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
 import io.muun.apollo.domain.errors.ExpiredVerificationCodeError;
-import io.muun.apollo.domain.errors.FacebookUnavailableError;
+import io.muun.apollo.domain.errors.HardwareWalletAlreadyOwnedError;
 import io.muun.apollo.domain.errors.IncorrectPasswordError;
 import io.muun.apollo.domain.errors.InsufficientFundsError;
 import io.muun.apollo.domain.errors.InvalidAddressError;
@@ -49,7 +50,6 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
     private static final Observable.Transformer HTTP_EXCEPTION_TRANSFORMER;
     private static final Observable.Transformer IO_EXCEPTION_TRANSFORMER;
     private static final Observable.Transformer SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER;
-    private static final Observable.Transformer TIMEOUT_EXCEPTION_TRANSFORMER;
 
     static {
 
@@ -73,11 +73,6 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
         IO_EXCEPTION_TRANSFORMER = ObservableFn.replaceTypedError(
                 IOException.class,
-                NetworkException::new
-        );
-
-        TIMEOUT_EXCEPTION_TRANSFORMER = ObservableFn.replaceTypedError(
-                TimeoutException.class,
                 NetworkException::new
         );
 
@@ -115,9 +110,6 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                         case EMAIL_ALREADY_USED:
                             return new EmailAreadyUsedError();
 
-                        case FACEBOOK_UNAVAILABLE:
-                            return new FacebookUnavailableError();
-
                         case INSUFFICIENT_CLIENT_FUNDS:
                             return new InsufficientFundsError();
 
@@ -132,6 +124,12 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
                         case AMOUNT_SMALLER_THAN_DUST:
                             return new AmountTooSmallError();
+
+                        case HARDWARE_WALLET_ALREADY_OWNED:
+                            return new HardwareWalletAlreadyOwnedError();
+
+                        case EXPIRED_SATELLITE_SESSION:
+                            return new ExpiredSatelliteSession();
 
                         default:
                             return error;
@@ -210,6 +208,12 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         // idempotency key. Since we know that the interceptor will be run in the same thread, we
         // can ask for the key annotated for the thread in which the interceptor is being run.
 
+        final ExponentialBackoffRetry networkExceptionRetryPolicy =
+                new ExponentialBackoffRetry(1, 7, NetworkException.class);
+
+        final ExponentialBackoffRetry serverExceptionRetryPolicy =
+                new ExponentialBackoffRetry(2, 3, ServerFailureException.class);
+
         final Observable<?> result = getRequestObservable(call)
                 .doOnSubscribe(() -> idempotencyKeyForThreadHack.put(
                         Thread.currentThread().getId(),
@@ -218,10 +222,16 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 .compose(HTTP_EXCEPTION_TRANSFORMER)
                 .compose(SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER)
                 .compose(IO_EXCEPTION_TRANSFORMER)
-                .retryWhen(new ExponentialBackoffRetry(1, 7, NetworkException.class))
-                .retryWhen(new ExponentialBackoffRetry(2, 3, ServerFailureException.class))
+                .retryWhen(networkExceptionRetryPolicy)
+                .retryWhen(serverExceptionRetryPolicy)
                 .timeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .compose(TIMEOUT_EXCEPTION_TRANSFORMER);
+                // Avoid TimeoutException from "eating" information about an underlying error
+                .compose(ObservableFn.replaceTypedError(
+                        TimeoutException.class,
+                        timeoutException -> networkExceptionRetryPolicy.getLastError()
+                                .ifEmptyGet(serverExceptionRetryPolicy::getLastError)
+                                .orElse(new NetworkException(timeoutException))
+                ));
 
         return getResponseObservable(result);
     }

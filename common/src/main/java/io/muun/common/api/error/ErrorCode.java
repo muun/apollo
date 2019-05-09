@@ -1,6 +1,7 @@
 package io.muun.common.api.error;
 
 import io.muun.common.net.HttpStatus;
+import io.muun.common.utils.Deprecated;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -54,6 +55,12 @@ public enum ErrorCode {
     INVALID_IDEMPOTENCY_KEY(
             4003, StatusCode.CLIENT_FAILURE, "X-Idempotency-Key header is the same but body changed"
     ),
+    INVALID_CLIENT_TYPE(
+            4004, StatusCode.CLIENT_FAILURE, "X-Client-Type header should hold a valid client type"
+    ),
+    PREVIOUS_IN_FLIGHT_CACHE_EXPIRED(
+            4005, StatusCode.SERVER_FAILURE, "The previous retry with the same idempotency key hung"
+    ),
 
     // validation errors
     JSON_CONSTRAINT_VIOLATION(
@@ -91,6 +98,9 @@ public enum ErrorCode {
     ),
     INVALID_OPERATION(
             2012, StatusCode.CLIENT_FAILURE, "Invalid operation"
+    ),
+    WITHDRAWAL_FAILED(
+            2068, StatusCode.CLIENT_FAILURE, "Withdrawal failed due to a transaction error"
     ),
     @Deprecated
     INVALID_SESSION(
@@ -182,6 +192,15 @@ public enum ErrorCode {
     P2P_NOT_ENABLED(
       2055, StatusCode.CLIENT_FAILURE, "Peer to Peer payments not enabled"
     ),
+    FIRST_NAME_EMPTY(
+            2056, StatusCode.CLIENT_FAILURE, "First Name cannot be empty"
+    ),
+    LAST_NAME_EMPTY(
+            2057, StatusCode.CLIENT_FAILURE, "Last Name cannot be empty"
+    ),
+    INVALID_AMOUNT(
+            2058, StatusCode.CLIENT_FAILURE, "Amount is invalid"
+    ),
 
     // error responses
     @Deprecated
@@ -234,12 +253,15 @@ public enum ErrorCode {
     COUNTRY_NOT_SUPPORTED(
             2039, StatusCode.CLIENT_FAILURE, "Muun isn't yet available for this country"
     ),
+    EXPIRED_SATELLITE_SESSION(
+            2073, StatusCode.CLIENT_FAILURE, "Satellite session has expired"
+    ),
 
     // unexpected errors
     CLIENT_DISCONNECTED(
             1005, StatusCode.CLIENT_FAILURE, "Client disconnected during stream processing"
     ),
-    @Deprecated // at version Apollo version beta-15 (CLIENT_VERSION 19)
+    @Deprecated(atApolloVersion = 19)
     FACEBOOK_UNAVAILABLE(
             2003, StatusCode.CLIENT_FAILURE, "Facebook unavailable"
     ),
@@ -256,6 +278,14 @@ public enum ErrorCode {
     ),
     EMAIL_NOT_REGISTERED(
             5003, StatusCode.CLIENT_FAILURE, "Email not registered"
+    ),
+
+    // hardware wallet erorrs
+    HARDWARE_WALLET_NOT_FOUND(
+            6000, StatusCode.CLIENT_FAILURE, "Device not found"
+    ),
+    HARDWARE_WALLET_ALREADY_OWNED(
+            6001, StatusCode.CLIENT_FAILURE, "Device already owned by another User"
     ),
 
     // beam errors
@@ -279,6 +309,15 @@ public enum ErrorCode {
     ILLEGAL_PAIRING_STATE(
             9001, StatusCode.CLIENT_FAILURE, "Illegal pairing state: the session is uninitialized"
     ),
+    INVALID_CHANNEL_ID(
+            9002, StatusCode.CLIENT_FAILURE, "Invalid chanel uuid"
+    ),
+    INVALID_SESSION_ID(
+            9003, StatusCode.CLIENT_FAILURE, "Invalid session uuid"
+    ),
+    INVALID_NOTIFICATION_ID(
+            9004, StatusCode.CLIENT_FAILURE, "Invalid notification uuid"
+    ),
 
     // hubble errors
     STALE_MEMPOOL(
@@ -287,6 +326,78 @@ public enum ErrorCode {
     // hubble errors
     INVALID_BLOCK_HASH(
             8001, StatusCode.SERVER_FAILURE, "Invalid block hash"
+    ),
+
+    // electrum server errors
+    ELECTRUM_SERVER_UNRESPONSIVE(
+            8002, StatusCode.SERVER_FAILURE, "Electrum server returned empty response"
+    ),
+    ELECTRUM_SERVER_CONNECTION_ERROR(
+            8003, StatusCode.SERVER_FAILURE, "Electrum server connection error"
+    ),
+
+    // swapper errors
+    INVALID_INVOICE(
+            8100, StatusCode.CLIENT_FAILURE, "Couldn't parse the lightning invoice"
+    ),
+    INVOICE_EXPIRES_TOO_SOON(
+            8101,
+            StatusCode.CLIENT_FAILURE,
+            "Invoice provided is already expired or will expire too soon"
+    ),
+    INVOICE_ALREADY_USED(
+            8102, StatusCode.CLIENT_FAILURE, "Invoice already used in another swap"
+    ),
+    LIGHTNING_NODE_ERROR(
+            8103, StatusCode.SERVER_FAILURE, "There was a problem with the lighting node"
+    ),
+    SWAP_NOT_FOUND(
+            8104, StatusCode.CLIENT_FAILURE, "There wasn't any swap with that matches your query"
+    ),
+    NO_PAYMENT_ROUTE(
+            8105,
+            StatusCode.CLIENT_FAILURE,
+            "There isn't any route to target destination with enough capacity"
+    ),
+    FUNDING_TRANSACTION_NOT_FOUND(
+            8106, StatusCode.CLIENT_FAILURE, "The funding transaction wasn't found in the chain"
+    ),
+    INVALID_FUNDING_TRANSACTION(
+            8107, StatusCode.CLIENT_FAILURE, "The funding transaction is invalid"
+    ),
+
+    // exchangehub errors
+    MISSING_INVOICE_AMOUNT(
+            8150, StatusCode.CLIENT_FAILURE, "No amount was provided to fulfill the invoice"
+    ),
+    EXPIRED_INVOICE(
+            8151, StatusCode.CLIENT_FAILURE, "Invoice provided is already expired"
+    ),
+    MISMATCHED_AMOUNTS(
+            8152, StatusCode.CLIENT_FAILURE, "Invoice and manually provided amounts don't match"
+    ),
+    CLIENT_NODES_NOT_FOUND(
+            8153, StatusCode.CLIENT_FAILURE, "There isn't track of any client lightning node"
+    ),
+    PAYMENT_REQUEST_NOT_FOUND(
+            8154, StatusCode.CLIENT_FAILURE, "Payment request with provided uuid wasn't found"
+    ),
+    PAYMENT_REQUEST_ALREADY_PAID(
+            8155, StatusCode.CLIENT_FAILURE, "Payment request already paid"
+    ),
+    ROUTE_NOT_FOUND(
+            8156, StatusCode.CLIENT_FAILURE, "Payment route with provided uuid wasn't found"
+    ),
+    REPORT_MISSING_DATA(
+            8157, StatusCode.CLIENT_FAILURE, "Provided report is missing data"
+    ),
+    REPORT_ILLEGAL_STATE_TRANSITION(
+            8158, StatusCode.CLIENT_FAILURE, "Report implies an invalid route state transition"
+    ),
+
+    // rebalancer errors
+    PLAN_NOT_FOUND(
+            8200, StatusCode.CLIENT_FAILURE, "There's no plan with that UUID"
     ),
 
     // server errors
@@ -300,7 +411,7 @@ public enum ErrorCode {
             100000, StatusCode.SERVER_FAILURE, "Unknown error"
     );
 
-    private static Map<Integer, ErrorCode> errorCodeMap = new HashMap<Integer, ErrorCode>();
+    private static Map<Integer, ErrorCode> errorCodeMap = new HashMap<>();
 
     static {
         for (ErrorCode errorCode : values()) {

@@ -1,15 +1,16 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class RecoveryCodeVerificationError extends UserFacingError {
 
-    private static final String MESSAGE = "Wrong code. Try again.";
 
     public RecoveryCodeVerificationError() {
-        super(MESSAGE);
+        super(UserFacingErrorMessages.INSTANCE.recoveryCodeVerification());
     }
 
     public RecoveryCodeVerificationError(Throwable cause) {
-        super(MESSAGE, cause);
+        super(UserFacingErrorMessages.INSTANCE.recoveryCodeVerification(), cause);
     }
 }

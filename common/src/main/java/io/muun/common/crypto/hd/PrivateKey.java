@@ -1,6 +1,10 @@
 package io.muun.common.crypto.hd;
 
+import io.muun.common.bitcoinj.MainNetParamsY;
+import io.muun.common.bitcoinj.MainNetParamsZ;
 import io.muun.common.bitcoinj.NetworkParametersHelper;
+import io.muun.common.bitcoinj.TestNetParamsU;
+import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
@@ -14,6 +18,8 @@ import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDDerivationException;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.Wallet;
 
 import java.nio.ByteBuffer;
@@ -300,4 +306,35 @@ public class PrivateKey extends BaseKey {
         return Encodings.bigIntegerToBytes(deterministicKey.getPrivKey(), 32);
     }
 
+    public boolean isXpriv() {
+        return networkParameters.equals(MainNetParams.get());
+    }
+
+    public boolean isYpriv() {
+        return networkParameters.equals(MainNetParamsY.get());
+    }
+
+    public boolean isZpriv() {
+        return networkParameters.equals(MainNetParamsZ.get());
+    }
+
+    public boolean isTpriv() {
+        return networkParameters.equals(TestNet3Params.get());
+    }
+
+    public boolean isUpriv() {
+        return networkParameters.equals(TestNetParamsU.get());
+    }
+
+    public boolean isVpriv() {
+        return networkParameters.equals(TestNetParamsV.get());
+    }
+
+    public boolean isFromMainnet() {
+        return isXpriv() || isYpriv() || isZpriv();
+    }
+
+    public boolean isFromTestnet() {
+        return isTpriv() || isUpriv() || isVpriv();
+    }
 }

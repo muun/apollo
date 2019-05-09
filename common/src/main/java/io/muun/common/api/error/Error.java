@@ -20,15 +20,18 @@ public class Error {
 
     public String developerMessage;
 
+    public String clientSession;
+
     public Error() {
     }
 
-    public Error(HttpException exception) {
+    public Error(HttpException exception, String sessionUuid) {
         this.requestId = exception.getRequestId();
         this.status = exception.getErrorCode().getStatus();
         this.errorCode = exception.getErrorCode();
         this.message = exception.getMessage();
         this.developerMessage = exception.getDeveloperMessage();
+        this.clientSession = sessionUuid;
     }
 
     public Error(ErrorCode errorCode) {

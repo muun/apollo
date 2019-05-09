@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class PhoneNumberAlreadyUsedError extends UserFacingError {
 
     public PhoneNumberAlreadyUsedError() {
-        super("Your phone number is already associated with a Muun user");
+        super(UserFacingErrorMessages.INSTANCE.phoneNumberAlreadyUsed());
     }
 }

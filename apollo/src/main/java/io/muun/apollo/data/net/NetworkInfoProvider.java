@@ -38,15 +38,23 @@ public class NetworkInfoProvider {
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         subject = BehaviorSubject.create(getCurrentNetworkInfo());
-
-        registerReceiver();
     }
 
     public Observable<Optional<NetworkInfo>> watchNetworkInfo() {
         return subject.asObservable();
     }
 
-    private void registerReceiver() {
+    /**
+     * Register a system BroadcastReceiver for connectivity info. Start emitting through
+     * `watchNetworkInfo`.
+     */
+    public void startReceiving() {
+        if (isReceiving()) {
+            // Here, we force a restart. This gives callers a fresh BroadcastReceiver, in case the
+            // active one died. This seems to happen on some devices.
+            stopReceiving();
+        }
+
         receiver = new ConnectivityChangeReceiver();
 
         final IntentFilter filter = new IntentFilter();
@@ -54,6 +62,23 @@ public class NetworkInfoProvider {
 
         Logger.debug("NETWORK INFO: adding receiver");
         context.registerReceiver(receiver, filter);
+    }
+
+    /**
+     * Unregister the system BroadcastReceiver. Stop emmiting through `watchNetworkInfo`. Note that
+     * the Observable *does not complete* after this call.
+     */
+    public void stopReceiving() {
+        if (! isReceiving()) {
+            return;
+        }
+
+        context.unregisterReceiver(receiver);
+        receiver = null;
+    }
+
+    public boolean isReceiving() {
+        return receiver != null;
     }
 
     private Optional<NetworkInfo> getCurrentNetworkInfo() {

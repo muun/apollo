@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class InvalidVerificationCodeError extends UserFacingError {
 
     public InvalidVerificationCodeError() {
-        super("That is not the verification code we sent. Try entering it again");
+        super(UserFacingErrorMessages.INSTANCE.invalidVerificationCode());
     }
 }

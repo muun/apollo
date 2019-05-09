@@ -3,6 +3,7 @@ package io.muun.common.api;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,7 +29,6 @@ public class OperationJson {
     @NotNull
     public Boolean isExternal;
 
-    @NotNull
     @Nullable
     public PublicProfileJson senderProfile;
 
@@ -48,11 +48,18 @@ public class OperationJson {
     @Nullable
     public String receiverAddressDerivationPath;
 
-    @NotNull
-    public BitcoinAmount amount;
+    @Nullable
+    public Long hardwareWalletHid;
 
     @NotNull
-    public BitcoinAmount fee;
+    public BitcoinAmountJson amount;
+
+    @NotNull
+    public BitcoinAmountJson fee;
+
+    @Since(apolloVersion = 35)
+    @Nullable // For retro-compat, for new clients should be NOTNULL
+    public Long outputAmountInSatoshis;
 
     @Null
     @Nullable
@@ -75,6 +82,12 @@ public class OperationJson {
     @NotNull
     public MuunZonedDateTime creationDate;
 
+    @Nullable
+    public String swapUuid;
+
+    @Nullable
+    public SubmarineSwapJson swap;
+
     /**
      * Json constructor.
      */
@@ -93,12 +106,15 @@ public class OperationJson {
                          Boolean receiverIsExternal,
                          @Nullable String receiverAddress,
                          @Nullable String receiverAddressDerivationPath,
-                         BitcoinAmount amount,
-                         BitcoinAmount fee,
+                         @Nullable Long hardwareWalletHid,
+                         BitcoinAmountJson amount,
+                         BitcoinAmountJson fee,
+                         Long outputAmountInSatoshis,
                          Long exchangeRatesWindowId,
                          @Nullable String description,
                          OperationStatus status,
-                         MuunZonedDateTime creationDate) {
+                         MuunZonedDateTime creationDate,
+                         @Nullable String swapUuid) {
 
         this.requestId = requestId;
         this.direction = direction;
@@ -109,12 +125,15 @@ public class OperationJson {
         this.receiverIsExternal = receiverIsExternal;
         this.receiverAddress = receiverAddress;
         this.receiverAddressDerivationPath = receiverAddressDerivationPath;
+        this.hardwareWalletHid = hardwareWalletHid;
         this.amount = amount;
         this.fee = fee;
+        this.outputAmountInSatoshis = outputAmountInSatoshis;
         this.exchangeRatesWindowId = exchangeRatesWindowId;
         this.description = description;
         this.status = status;
         this.creationDate = creationDate;
+        this.swapUuid = swapUuid;
     }
 
     /**
@@ -130,14 +149,17 @@ public class OperationJson {
                          Boolean receiverIsExternal,
                          @Nullable String receiverAddress,
                          @Nullable String receiverAddressDerivationPath,
-                         BitcoinAmount amount,
-                         BitcoinAmount fee,
+                         @Nullable Long hardwareWalletHid,
+                         BitcoinAmountJson amount,
+                         BitcoinAmountJson fee,
+                         Long outputAmountInSatoshis,
                          Long confirmations,
                          Long exchangeRatesWindowId,
                          @Nullable String description,
                          OperationStatus status,
                          Transaction transaction,
-                         MuunZonedDateTime creationDate) {
+                         MuunZonedDateTime creationDate,
+                         SubmarineSwapJson swap) {
 
         this.id = id;
         this.requestId = requestId;
@@ -149,13 +171,17 @@ public class OperationJson {
         this.receiverIsExternal = receiverIsExternal;
         this.receiverAddress = receiverAddress;
         this.receiverAddressDerivationPath = receiverAddressDerivationPath;
+        this.hardwareWalletHid = hardwareWalletHid;
         this.amount = amount;
         this.fee = fee;
+        this.outputAmountInSatoshis = outputAmountInSatoshis;
         this.confirmations = confirmations;
         this.exchangeRatesWindowId = exchangeRatesWindowId;
         this.description = description;
         this.status = status;
         this.transaction = transaction;
         this.creationDate = creationDate;
+        this.swapUuid = swap != null ? swap.swapUuid : null;
+        this.swap = swap;
     }
 }

@@ -1,8 +1,10 @@
 package io.muun.apollo.domain.errors;
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class IncorrectPasswordError extends UserFacingError {
 
     public IncorrectPasswordError() {
-        super("Incorrect password. Please try again.");
+        super(UserFacingErrorMessages.INSTANCE.incorrectPassword());
     }
 }

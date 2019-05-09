@@ -3,6 +3,7 @@ package io.muun.apollo.data.os.secure_storage;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.common.utils.RandomGenerator;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -10,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
+@SuppressLint("ApplySharedPref") // allow disk writes to block execution (important here)
 public class SecureStoragePreferences {
     private static final int AES_IV_SIZE = 16;
     private static final String AES_IV_KEY_PREFIX = "aes_iv_";
@@ -25,7 +27,7 @@ public class SecureStoragePreferences {
 
     private void initSecureStorage() {
         if (!sharedPreferences.contains(MODE)) {
-            sharedPreferences.edit().putString(MODE, getMode().name()).apply();
+            sharedPreferences.edit().putString(MODE, getMode().name()).commit();
         }
     }
 
@@ -53,7 +55,7 @@ public class SecureStoragePreferences {
     public void saveBytes(byte[] bytes, String key) {
         initSecureStorage();
 
-        sharedPreferences.edit().putString(key, SerializationUtils.serializeBytes(bytes)).apply();
+        sharedPreferences.edit().putString(key, SerializationUtils.serializeBytes(bytes)).commit();
     }
 
     /**
@@ -74,7 +76,7 @@ public class SecureStoragePreferences {
      * Wipes all data from this module.
      */
     public void wipe() {
-        sharedPreferences.edit().clear().apply();
+        sharedPreferences.edit().clear().commit();
     }
 
     /**
@@ -105,6 +107,6 @@ public class SecureStoragePreferences {
         sharedPreferences
                 .edit()
                 .remove(key)
-                .apply();
+                .commit();
     }
 }

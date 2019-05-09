@@ -11,9 +11,9 @@ import javax.inject.Inject;
 
 public class FeeWindowRepository extends BaseRepository {
 
-    public static final String KEY_HOUSTON_ID = "houston_id";
-    public static final String KEY_FETCH_DATE = "fetch_date";
-    public static final String KEY_FEE_IN_SATOSHIS_PER_BYTE = "fee_in_satoshis_per_byte";
+    private static final String KEY_HOUSTON_ID = "houston_id";
+    private static final String KEY_FETCH_DATE = "fetch_date";
+    private static final String KEY_FEE_IN_SATOSHIS_PER_BYTE = "fee_in_satoshis_per_byte";
 
     private final Preference<Long> houstonIdPreference;
     private final Preference<String> fetchDatePreference;

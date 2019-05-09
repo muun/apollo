@@ -122,21 +122,26 @@ public final class CompletableFn {
             @Override
             public Completable call(Completable completable) {
 
-                return completable.compose(onTypedErrorResumeNext(
-                        HttpException.class,
-                        new Func1<HttpException, Completable>() {
+                return completable.onErrorResumeNext(
+
+                        new Func1<Throwable, Completable>() {
 
                             @Override
-                            public Completable call(HttpException error) {
+                            public Completable call(Throwable error) {
 
-                                if (error.getErrorCode().equals(code)) {
-                                    return resumeFunction.call(error);
+                                final Optional<HttpException> cause = getTypedCause(
+                                        error,
+                                        HttpException.class
+                                );
+
+                                if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                                    return resumeFunction.call(cause.get());
+
+                                } else {
+                                    return Completable.error(error);
                                 }
-
-                                return Completable.error(error);
                             }
-                        }
-                ));
+                        });
             }
         };
     }
@@ -145,7 +150,7 @@ public final class CompletableFn {
             Throwable error,
             Class<T> errorClass) {
 
-        for (Throwable cause = error;  cause != null; cause = cause.getCause()) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
             if (errorClass.isInstance(cause)) {
                 return Optional.of(errorClass.cast(cause));
             }

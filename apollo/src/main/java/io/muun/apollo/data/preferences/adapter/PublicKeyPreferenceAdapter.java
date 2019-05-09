@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 public class PublicKeyPreferenceAdapter implements Preference.Adapter<PublicKey> {
 
-    public static PublicKeyPreferenceAdapter INSTANCE = new PublicKeyPreferenceAdapter();
+    public static final PublicKeyPreferenceAdapter INSTANCE = new PublicKeyPreferenceAdapter();
 
     @Override
     @Nullable

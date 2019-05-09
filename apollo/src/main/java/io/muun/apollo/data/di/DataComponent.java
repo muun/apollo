@@ -1,22 +1,22 @@
 package io.muun.apollo.data.di;
 
-import io.muun.apollo.data.async.PeriodicTaskService;
-import io.muun.apollo.data.async.TaskDispatcher;
-import io.muun.apollo.data.async.TaskScheduler;
+import io.muun.apollo.data.async.gcm.GcmMessageListenerService;
+import io.muun.apollo.data.async.tasks.PeriodicTaskService;
+import io.muun.apollo.data.async.tasks.TaskDispatcher;
+import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.phone_contact.PhoneContactDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
-import io.muun.apollo.data.gcm.GcmMessageListenerService;
-import io.muun.apollo.data.gcm.GcmTokenListenerService;
+import io.muun.apollo.data.db.satellite_pairing.SatellitePairingDao;
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.net.NetworkInfoProvider;
 import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.ForegroundActivityTracker;
-import io.muun.apollo.data.os.GcmTokenProvider;
 import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.secure_storage.KeyStoreProvider;
@@ -30,19 +30,18 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.action.di.ActionComponent;
+import io.muun.apollo.external.HoustonConfig;
 
 import android.content.Context;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Component;
 import org.bitcoinj.core.NetworkParameters;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
 @Component(modules = DataModule.class)
 public interface DataComponent extends ActionComponent {
-
-    void inject(GcmTokenListenerService service);
 
     void inject(GcmMessageListenerService service);
 
@@ -72,8 +71,6 @@ public interface DataComponent extends ActionComponent {
 
     DaoManager daoManager();
 
-    GcmTokenProvider gcmTokenProvider();
-
     NetworkParameters networkParameters();
 
     TaskDispatcher taskDispatcher();
@@ -100,9 +97,6 @@ public interface DataComponent extends ActionComponent {
 
     KeyStoreProvider keyStoreProvider();
 
-    @Named("houstonUrl")
-    String houstonUrl();
-
     SecureStorageProvider secureStorageProvider();
 
     ForegroundActivityTracker foregroundActivityTracker();
@@ -110,4 +104,12 @@ public interface DataComponent extends ActionComponent {
     LogoutActions logoutActions();
 
     ApplicationLockManager applicationLockManager();
+
+    SatellitePairingDao satellitePairingDao();
+
+    ObjectMapper objectMapper();
+
+    HoustonConfig houstonConfig();
+
+    ModelObjectsMapper modelObjectsMapper();
 }

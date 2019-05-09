@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.model;
 
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.external.Globals;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,7 +20,7 @@ public class SignupDraft {
     }
 
     @NotNull
-    public Integer versionCode = BuildConfig.VERSION_CODE;
+    public Integer versionCode = Globals.INSTANCE.getVersionCode();
 
     @Nullable
     public Boolean isExistingUser;

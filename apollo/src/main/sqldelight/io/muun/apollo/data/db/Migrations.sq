@@ -59,3 +59,41 @@ ALTER TABLE contacts ADD cosigning_public_key TEXT;
 
 migration_13_add_contact_cosigning_pubkey_path:
 ALTER TABLE contacts ADD cosigning_public_key_path TEXT;
+
+migration_14_move_operations_to_a_temporary_table:
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+migration_14_drop_temporary_table:
+DROP TABLE tmp_operations;
+
+migration_17_add_hardware_wallet_to_op:
+ALTER TABLE operations
+ADD COLUMN hardware_wallet_hid INTEGER REFERENCES hardware_wallets(hid);
+
+migration_18_add_encryption_key_to_pairings:
+ALTER TABLE satellite_pairings
+ADD COLUMN encryption_key TEXT;
+
+migration_19_add_brand_to_hardware_wallet:
+ALTER TABLE hardware_wallets
+ADD COLUMN brand TEXT;
+
+migration_20_add_brand_to_hardware_wallet:
+ALTER TABLE hardware_wallets
+ADD COLUMN brand TEXT;
+
+migration_20_copy_brand_from_hardware_wallet_model:
+UPDATE hardware_wallets
+SET
+    brand = upper(substr(model, 1, instr(model, '/') - 1)),
+    model = substr(model, instr(model, '/') + 1)
+;
+
+migration_21_add_is_in_use_to_pairings:
+ALTER TABLE satellite_pairings
+ADD COLUMN is_in_use INTEGER NOT NULL DEFAULT 0;
+
+migration_22_add_submarine_swap_to_operation:
+ALTER TABLE operations
+ADD COLUMN submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid);

@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class CountryNotSupportedError extends UserFacingError {
 
     public CountryNotSupportedError() {
-        super("Sorry! Muun is not yet available in that country");
+        super(UserFacingErrorMessages.INSTANCE.countryNotSupported());
     }
 }

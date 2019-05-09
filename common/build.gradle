@@ -1,10 +1,8 @@
 apply plugin: 'idea'
 apply plugin: 'java-library'
 
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
-
-idea.module.excludeDirs = [file('build')]
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
 
 jar {
     // Bitcoinj native libraries
@@ -15,8 +13,9 @@ jar {
 
 dependencies {
     api 'javax.validation:validation-api:1.1.0.Final'
+    api 'org.hibernate:hibernate-validator:5.4.2.Final'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.2'
-    implementation 'org.hibernate:hibernate-validator:5.4.2.Final'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.4'
 
     // networking
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
@@ -36,13 +35,8 @@ dependencies {
     implementation 'org.javamoney:moneta-bp:1.1'
 
     // phone utils
-    implementation 'com.googlecode.libphonenumber:libphonenumber:5.5'
+    api 'com.googlecode.libphonenumber:libphonenumber:8.10.5'
 
-    // Testing dependencies
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.assertj:assertj-core:3.9.1'
-
-    // to silence bitcoinj's slf4j
-    testImplementation 'org.slf4j:slf4j-nop:1.7.14'
-    testImplementation 'org.mockito:mockito-core:2.17.0'
+    // java 8 and 9 backports optimized for android
+    api "com.jakewharton.threetenabp:threetenabp:$global_threetenabp_version"
 }

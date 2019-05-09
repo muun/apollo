@@ -1,7 +1,9 @@
 package io.muun.apollo.domain.action.base;
 
+import io.muun.apollo.data.logging.CrashReportingUtils;
 import io.muun.apollo.data.logging.Logger;
 
+import android.util.Log;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -31,9 +33,10 @@ public class AsyncAction<T> {
     /**
      * Execute an observable in the context of this async action.
      */
-    protected void run(Observable<T> action) {
+    protected synchronized void run(Observable<T> action) {
 
         if (isRunning()) {
+            this.log("Already running");
             return;
         }
 
@@ -141,7 +144,7 @@ public class AsyncAction<T> {
     }
 
     private void setError(Throwable error) {
-        log("ERROR " + error);
+        log("ERROR " + Log.getStackTraceString(CrashReportingUtils.summarize(error)));
         subject.onNext(ActionState.createError(error));
     }
 

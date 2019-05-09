@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.errors;
 
 
-import io.muun.common.api.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationJson;
 
 public class NotificationProcessingError extends RuntimeException {
 
@@ -12,8 +12,9 @@ public class NotificationProcessingError extends RuntimeException {
                                                              long lastProcessedId) {
 
         final String message = String.format(
-                "Attempted to process notification ID %s, but last processed ID was %s",
+                "Attempted to process notification ID=%s prevID=%s, but last processed ID was %s",
                 Long.toString(notification.id),
+                Long.toString(notification.previousId),
                 Long.toString(lastProcessedId)
         );
 

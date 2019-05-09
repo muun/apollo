@@ -1,6 +1,7 @@
 package io.muun.common.api.messages;
 
 import io.muun.common.api.NextTransactionSizeJson;
+import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.model.OperationStatus;
 import io.muun.common.model.SessionStatus;
 
@@ -13,9 +14,11 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OperationUpdateMessage extends AbstractMessage {
 
-    public static final String TYPE = "operations/update";
-
-    public static final SessionStatus PERMISSION = SessionStatus.LOGGED_IN;
+    public static final MessageSpec SPEC = new MessageSpec(
+            "operations/update",
+            SessionStatus.LOGGED_IN,
+            MessageOrigin.HOUSTON
+    );
 
     public Long id;
 
@@ -28,19 +31,12 @@ public class OperationUpdateMessage extends AbstractMessage {
 
     public NextTransactionSizeJson nextTransactionSize;
 
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public SessionStatus getPermission() {
-        return PERMISSION;
-    }
+    @Nullable
+    public SubmarineSwapJson swapDetails;
 
     @Override
     public String toLog() {
-        return String.format("%s about tx '%s' with %s confirmations", TYPE, hash, confirmations);
+        return String.format("Update about tx '%s' with %s confirmations", hash, confirmations);
     }
 
     /**
@@ -56,11 +52,18 @@ public class OperationUpdateMessage extends AbstractMessage {
                                   Long confirmations,
                                   String hash,
                                   OperationStatus status,
-                                  NextTransactionSizeJson nextTransactionSize) {
+                                  NextTransactionSizeJson nextTransactionSize,
+                                  SubmarineSwapJson swapDetails) {
         this.id = id;
         this.confirmations = confirmations;
         this.hash = hash;
         this.status = status;
         this.nextTransactionSize = nextTransactionSize;
+        this.swapDetails = swapDetails;
+    }
+
+    @Override
+    public MessageSpec getSpec() {
+        return SPEC;
     }
 }

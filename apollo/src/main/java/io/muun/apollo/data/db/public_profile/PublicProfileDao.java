@@ -1,17 +1,15 @@
 package io.muun.apollo.data.db.public_profile;
 
-import io.muun.apollo.data.db.base.HoustonDao;
+import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.PublicProfile;
 
 import rx.Observable;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class PublicProfileDao extends HoustonDao<PublicProfile> {
+public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
 
     /**
      * Constructor.

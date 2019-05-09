@@ -5,6 +5,8 @@ import io.muun.apollo.data.serialization.dates.MuunZonedDateTimeDeserializer;
 import io.muun.apollo.data.serialization.dates.MuunZonedDateTimeSerializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeDeserializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeSerializer;
+import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.PhoneNumber;
 
@@ -15,9 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.javamoney.moneta.Money;
-import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
 import org.zalando.jackson.datatype.money.MoneyModule;
 
 import java.io.ByteArrayInputStream;
@@ -54,9 +54,10 @@ public final class SerializationUtils {
                                 MuunZonedDateTime.class,
                                 new MuunZonedDateTimeDeserializer()
                         )
-
                         .addSerializer(PhoneNumber.class, new PhoneNumberSerializer())
-                        .addDeserializer(PhoneNumber.class, new PhoneNumberDeserializer());
+                        .addDeserializer(PhoneNumber.class, new PhoneNumberDeserializer())
+                        .addSerializer(BitcoinAmount.class, new BitcoinAmountSerializer())
+                        .addDeserializer(BitcoinAmount.class, new BitcoinAmountDeserializer());
 
         JSON_MAPPER = new ObjectMapper()
                 .registerModule(simpleModule)
@@ -91,9 +92,7 @@ public final class SerializationUtils {
     @NotNull
     public static String serializeDate(@NotNull ZonedDateTime dateValue) {
 
-        final ZonedDateTime utcDateTime = dateValue.withZoneSameInstant(ZoneId.of("UTC"));
-
-        return utcDateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+        return DateUtils.toIsoString(DateUtils.toUtc(dateValue));
     }
 
     /**
@@ -102,7 +101,7 @@ public final class SerializationUtils {
     @NotNull
     public static ZonedDateTime deserializeDate(@NotNull String dateString) {
 
-        return ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME);
+        return DateUtils.fromIsoString(dateString);
     }
 
     /**

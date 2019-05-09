@@ -8,7 +8,9 @@ import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 import io.muun.apollo.domain.model.ContactsPermissionState;
+import io.muun.apollo.domain.model.FeedbackCategory;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
@@ -39,6 +41,8 @@ import javax.money.CurrencyUnit;
 @Singleton
 public class UserActions {
 
+    public static final String NOTIFY_LOGOUT_ACTION = "user/logout";
+
     private final UserRepository userRepository;
     private final KeysRepository keysRepository;
     private final AuthRepository authRepository;
@@ -48,20 +52,23 @@ public class UserActions {
     private final AddressActions addressActions;
     private final ContactActions contactActions;
 
+    private final UpdateProfilePictureAction updateProfilePictureAction;
+
     public final AsyncAction1<PhoneNumber, UserPhoneNumber> createPhoneAction;
     public final AsyncAction1<VerificationType, Void> resendVerificationCodeAction;
     public final AsyncAction1<String, UserPhoneNumber> confirmPhoneAction;
     public final AsyncAction1<UserProfile, UserProfile> createProfileAction;
 
     public final AsyncAction2<String, String, User> updateUsernameAction;
-    public final AsyncAction0<UserProfile> updateProfilePictureAction;
     public final AsyncAction1<CurrencyUnit, User> updatePrimaryCurrencyAction;
 
     public final AsyncAction2<String, ChallengeType, PendingChallengeUpdate>
             beginPasswordChangeAction;
     public final AsyncAction2<String, String, Void> finishPasswordChangeAction;
 
-    public final AsyncAction1<String, Void> submitFeedbackAction;
+    public final AsyncAction2<FeedbackCategory, String, Void> submitFeedbackAction;
+
+    public final AsyncAction0<Void> notifyLogoutAction;
 
     /**
      * Constructor.
@@ -73,7 +80,8 @@ public class UserActions {
                        AuthRepository authRepository,
                        HoustonClient houstonClient,
                        AddressActions addressActions,
-                       ContactActions contactActions) {
+                       ContactActions contactActions,
+                       UpdateProfilePictureAction updateProfilePictureAction) {
 
         this.userRepository = userRepository;
         this.keysRepository = keysRepository;
@@ -82,6 +90,8 @@ public class UserActions {
 
         this.addressActions = addressActions;
         this.contactActions = contactActions;
+
+        this.updateProfilePictureAction = updateProfilePictureAction;
 
         this.createPhoneAction = asyncActionStore
             .get("user/createPhone", this::createPhone);
@@ -99,9 +109,6 @@ public class UserActions {
         this.updateUsernameAction = asyncActionStore
             .get("user/editUsername", this::updateUsername);
 
-        this.updateProfilePictureAction = asyncActionStore
-            .get("user/editProfilePicture", this::uploadPendingProfilePictureIfPresent);
-
         this.updatePrimaryCurrencyAction = asyncActionStore
             .get("user/editPrimaryCurrency", this::updatePrimaryCurrency);
 
@@ -113,6 +120,8 @@ public class UserActions {
 
         this.submitFeedbackAction = asyncActionStore
             .get("user/submitFeedbackAction", this::submitFeedback);
+
+        this.notifyLogoutAction = asyncActionStore.get(NOTIFY_LOGOUT_ACTION, this::notifyLogout);
     }
 
     public User fetchOneUser() {
@@ -125,22 +134,6 @@ public class UserActions {
 
     public void setPendingProfilePicture(@Nullable Uri uri) {
         userRepository.setPendingProfilePictureUri(uri);
-    }
-
-    /**
-     * Uploads the pending profile picture if present.
-     */
-    public Observable<UserProfile> uploadPendingProfilePictureIfPresent() {
-
-        final Uri pendingProfilePictureUri = userRepository.getPendingProfilePictureUri();
-
-        if (pendingProfilePictureUri == null) {
-            return Observable.just(null);
-        }
-
-        return houstonClient.uploadProfilePicture(pendingProfilePictureUri)
-            .doOnNext(userRepository::storeProfile)
-            .doOnNext(ignore -> userRepository.setPendingProfilePictureUri(null));
     }
 
     /**
@@ -176,7 +169,7 @@ public class UserActions {
     private Observable<UserProfile> createProfile(UserProfile userProfile) {
         return houstonClient.createProfile(userProfile)
                 .doOnNext(userRepository::store)
-                .flatMap(ignore -> uploadPendingProfilePictureIfPresent());
+                .flatMap(ignore -> updateProfilePictureAction.action());
     }
 
     private Observable<User> updateUsername(String firstName, String lastName) {
@@ -312,8 +305,11 @@ public class UserActions {
         return challengePrivateKey.sign(challenge.challenge);
     }
 
-    private Observable<Void> submitFeedback(String feedbackContent) {
-        return houstonClient.submitFeedback(feedbackContent);
+    private Observable<Void> submitFeedback(FeedbackCategory category, String feedback) {
+        // A tiny little hack to avoid changing the Houston endpoint:
+        final String body = "--- On " + category.name() + " feedback ---\n\n" + feedback;
+
+        return houstonClient.submitFeedback(body);
     }
 
     public void resetPhoneNumber() {
@@ -359,5 +355,9 @@ public class UserActions {
         if (prevState != ContactsPermissionState.PERMANENTLY_DENIED) {
             userRepository.storeContactsPermissionState(ContactsPermissionState.DENIED);
         }
+    }
+
+    private Observable<Void> notifyLogout() {
+        return houstonClient.notifyLogout();
     }
 }

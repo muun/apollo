@@ -1,0 +1,31 @@
+CREATE TABLE submarine_swaps (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    invoice TEXT NOT NULL,
+    receiver_alias TEXT,
+    receiver_network_addresses TEXT NOT NULL,
+    receiver_public_key TEXT NOT NULL,
+    funding_output_address TEXT NOT NULL,
+    funding_output_amount_in_satoshis INTEGER NOT NULL,
+    funding_confirmations_needed INTEGER NOT NULL,
+    funding_user_lock_time INTEGER NOT NULL,
+    funding_user_refund_address TEXT NOT NULL,
+    funding_user_refund_address_path TEXT NOT NULL,
+    funding_user_refund_address_version INTEGER NOT NULL,
+    funding_server_payment_hash_in_hex TEXT NOT NULL,
+    funding_server_public_key_in_hex TEXT NOT NULL,
+    sweep_fee_in_satoshis INTEGER NOT NULL,
+    lightning_fee_in_satoshis INTEGER NOT NULL,
+    expires_at TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
+    payed_at TEXT AS org.threeten.bp.ZonedDateTime,
+    preimage_in_hex TEXT
+);
+
+selectAll:
+SELECT *
+FROM submarine_swaps;
+
+updatePaymentInfo:
+UPDATE submarine_swaps
+SET payed_at = ?, preimage_in_hex = ?
+WHERE houston_uuid = ?;

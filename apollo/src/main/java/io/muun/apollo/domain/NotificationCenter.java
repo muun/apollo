@@ -17,6 +17,7 @@ public class NotificationCenter {
     private final OperationActions operationActions;
     private final UserActions userActions;
 
+
     private final ExecutionTransformerFactory transformerFactory;
 
     /**
@@ -38,7 +39,7 @@ public class NotificationCenter {
      * Watch the count of pending notifications.
      */
     public Observable<Integer> watchCount() {
-        return Observable.zip(
+        return Observable.combineLatest(
                 watchSetUpRecoveryCode(),
                 watchVerifyEmail(),
 
@@ -60,8 +61,7 @@ public class NotificationCenter {
                         userRepository.watchHasRecoveryCode(),
                         (balance, hasRecoveryCode) -> (balance > 0 && !hasRecoveryCode)
                 )
-                .compose(transformerFactory.getAsyncExecutor())
-                .takeUntil(needSetUp -> !needSetUp); // stop after setup is complete
+                .compose(transformerFactory.getAsyncExecutor());
     }
 
     /**

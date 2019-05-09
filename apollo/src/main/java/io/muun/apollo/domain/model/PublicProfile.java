@@ -1,13 +1,13 @@
 package io.muun.apollo.domain.model;
 
-import io.muun.apollo.domain.model.base.HoustonModel;
+import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.common.utils.Preconditions;
 
 import android.support.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 
-public class PublicProfile extends HoustonModel {
+public class PublicProfile extends HoustonIdModel {
 
     @NotNull
     public final String firstName;

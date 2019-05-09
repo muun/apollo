@@ -1,20 +1,21 @@
 package io.muun.apollo.domain.action;
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
-import io.muun.apollo.data.os.GcmTokenProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
+import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.errors.InitialSyncError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.PasswordIntegrityError;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
+import io.muun.apollo.external.Globals;
 import io.muun.common.Optional;
 import io.muun.common.api.KeySet;
 import io.muun.common.api.SetupChallengeResponse;
@@ -51,14 +52,15 @@ public class SigninActions {
 
     private final HoustonClient houstonClient;
 
-    private final GcmTokenProvider gcmTokenProvider;
-
     private final CurrencyActions currencyActions;
     private final ContactActions contactActions;
     private final OperationActions operationActions;
     private final AddressActions addressActions;
     private final UserActions userActions;
-    private final SyncActions syncActions;
+    private final HardwareWalletActions hardwareWalletActions;
+
+    private final FetchNextTransactionSizeAction fetchNextTransactionSize;
+    private final FetchRealTimeDataAction fetchRealTimeData;
 
     public final AsyncAction1<String, CreateSessionOk> createSessionAction;
     public final AsyncAction2<ChallengeType, String, SetupChallengeResponse>
@@ -75,25 +77,24 @@ public class SigninActions {
                          AuthRepository authRepository,
                          UserRepository userRepository,
                          HoustonClient houstonClient,
-                         GcmTokenProvider gcmTokenProvider,
                          CurrencyActions currencyActions,
                          ContactActions contactActions,
                          OperationActions operationActions,
                          AddressActions addressActions,
                          UserActions userActions,
-                         SyncActions syncActions,
-                         KeysRepository keysRepository) {
+                         KeysRepository keysRepository,
+                         HardwareWalletActions hardwareWalletActions,
+                         FetchNextTransactionSizeAction fetchNextTransactionSize,
+                         FetchRealTimeDataAction fetchRealTimeData) {
 
         this.authRepository = authRepository;
         this.houstonClient = houstonClient;
-        this.gcmTokenProvider = gcmTokenProvider;
         this.userRepository = userRepository;
         this.currencyActions = currencyActions;
         this.contactActions = contactActions;
         this.operationActions = operationActions;
         this.addressActions = addressActions;
         this.userActions = userActions;
-        this.syncActions = syncActions;
         this.keysRepository = keysRepository;
 
         this.createSessionAction = asyncActionStore.get("session/create", this::createSession);
@@ -107,22 +108,22 @@ public class SigninActions {
         this.syncApplicationDataAction =
                 asyncActionStore.get("application/sync", this::syncApplicationData);
 
+        this.hardwareWalletActions = hardwareWalletActions;
+        this.fetchNextTransactionSize = fetchNextTransactionSize;
+        this.fetchRealTimeData = fetchRealTimeData;
     }
 
     /**
      * Creates a new session in Houston, associated with a given email.
      */
     public Observable<CreateSessionOk> createSession(@NotNull String email) {
-
-        return gcmTokenProvider.getToken()
-                .flatMap(
-                        gcmToken -> houstonClient.createSession(
-                                email,
-                                BuildConfig.BUILD_TYPE,
-                                BuildConfig.VERSION_CODE,
-                                gcmToken
-                        )
-                );
+        return userRepository.getFcmToken().asObservable()
+                .flatMap((token) -> houstonClient.createSession(
+                        email,
+                        Globals.INSTANCE.getOldBuildType(),
+                        Globals.INSTANCE.getVersionCode(),
+                        token
+                )).doOnNext(ignored -> Logger.configureForUser("NotLoggedYet", email));
     }
 
     /**
@@ -140,7 +141,7 @@ public class SigninActions {
      */
     public void setupCrashlytics() {
         final User user = userRepository.fetchOne();
-        Logger.configureForUser(user);
+        Logger.configureForUser(user.hid.toString(), user.email);
     }
 
     /**
@@ -194,6 +195,7 @@ public class SigninActions {
                 .flatMap(maybeChallenge -> {
                     if (maybeChallenge.isPresent()) {
                         return loginWithChallenge(maybeChallenge.get(), userInput);
+
                     } else {
                         return loginCompatWithoutChallenge(userInput);
                     }
@@ -233,14 +235,15 @@ public class SigninActions {
 
         final Observable<?> step1 = Observable.zip(
                 fetchUserInfo(),
-                operationActions.fetchReplaceOperations(),
-                operationActions.fetchNextTransactionSize(),
-                syncActions.syncRealTimeData(),
+                fetchNextTransactionSize.action(),
+                hardwareWalletActions.fetchReplaceHardwareWallets(),
+                fetchRealTimeData.action(),
+                syncContacts,
                 RxHelper::toVoid
         );
 
         final Observable<?> step2 = Observable.zip(
-                syncContacts,
+                operationActions.fetchReplaceOperations(),
                 addressActions.syncPublicKeySet(),
                 RxHelper::toVoid
         );
@@ -272,20 +275,20 @@ public class SigninActions {
 
     private Observable<Void> loginCompatWithoutChallenge(String password) {
         return houstonClient.loginCompatWithoutChallenge()
-            .flatMap(keySet ->
-                decryptStoreKeySet(keySet, password)
-            )
-            .compose(ObservableFn.replaceTypedError(
-                // Without challenges, a decryption error is not necessarily an integrity
-                // error. Much more likely, the user entered the wrong password. We'll fake a wrong
-                // challenge signature.
-                PasswordIntegrityError.class,
-                error -> new InvalidChallengeSignatureError()
-            ))
-            .flatMap(ignored ->
-                setupChallenge(ChallengeType.PASSWORD, password)
-            )
-            .map(RxHelper::toVoid);
+                .flatMap(keySet ->
+                        decryptStoreKeySet(keySet, password)
+                )
+                .compose(ObservableFn.replaceTypedError(
+                        // Without challenges, a decryption error is not necessarily an integrity
+                        // error. Much more likely, the user entered the wrong password.
+                        // We'll fake a wrong challenge signature.
+                        PasswordIntegrityError.class,
+                        error -> new InvalidChallengeSignatureError()
+                ))
+                .flatMap(ignored ->
+                        setupChallenge(ChallengeType.PASSWORD, password)
+                )
+                .map(RxHelper::toVoid);
     }
 
     private Observable<Void> decryptStoreKeySet(KeySet keySet, String userInput) {
@@ -301,16 +304,20 @@ public class SigninActions {
             }
         }
 
+        if (keySet.muunKey != null) {
+            keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey);
+        }
+
         return addressActions.decryptAndStoreRootPrivateKey(
-            keySet.encryptedPrivateKey,
-            userInput
+                keySet.encryptedPrivateKey,
+                userInput
         );
     }
 
     private ChallengeSignature signChallenge(Challenge challenge, String userInput) {
         final byte[] signatureBytes = ChallengePrivateKey
-            .fromUserInput(userInput, challenge.salt)
-            .sign(challenge.challenge);
+                .fromUserInput(userInput, challenge.salt)
+                .sign(challenge.challenge);
 
         return new ChallengeSignature(challenge.type, signatureBytes);
     }
@@ -326,7 +333,7 @@ public class SigninActions {
                         pair.first.publicKey
                 ))
                 .doOnNext(pair -> {
-                    if (pair.second.muunKey !=  null) {
+                    if (pair.second.muunKey != null) {
                         keysRepository.storeEncryptedMuunPrivateKey(pair.second.muunKey);
                     }
                 })

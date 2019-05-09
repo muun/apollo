@@ -9,5 +9,5 @@ public enum SignupStep {
     NEW_PASSWORD,
     WAITING_FOR_EMAIL_VERIFICATION,
     SYNC,
-    FORGOT_PASSWORD;
+    FORGOT_PASSWORD
 }

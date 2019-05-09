@@ -1,14 +1,21 @@
 package io.muun.common.crypto.hd;
 
+import io.muun.common.bitcoinj.MainNetParamsY;
+import io.muun.common.bitcoinj.MainNetParamsZ;
 import io.muun.common.bitcoinj.NetworkParametersHelper;
+import io.muun.common.bitcoinj.TestNetParamsU;
+import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDDerivationException;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.params.TestNet3Params;
 
 import java.util.List;
 
@@ -26,7 +33,8 @@ public class PublicKey extends BaseKey {
     private final DeterministicKey deterministicKey;
 
     @NotNull
-    private final NetworkParameters networkParameters;
+    @VisibleForTesting
+    public NetworkParameters networkParameters;
 
     /**
      * Deserialize a base58-encoded extended public key.
@@ -189,5 +197,49 @@ public class PublicKey extends BaseKey {
     @Override
     public int hashCode() {
         return deterministicKey.hashCode();
+    }
+
+    public boolean isXpub() {
+        return getNetworkParameters().equals(MainNetParams.get());
+    }
+
+    public boolean isYpub() {
+        return getNetworkParameters().equals(MainNetParamsY.get());
+    }
+
+    public boolean isZpub() {
+        return getNetworkParameters().equals(MainNetParamsZ.get());
+    }
+
+    public boolean isTpub() {
+        return getNetworkParameters().equals(TestNet3Params.get());
+    }
+
+    public boolean isUpub() {
+        return getNetworkParameters().equals(TestNetParamsU.get());
+    }
+
+    public boolean isVpub() {
+        return getNetworkParameters().equals(TestNetParamsV.get());
+    }
+
+    public boolean isFromMainnet() {
+        return isXpub() || isYpub() || isZpub();
+    }
+
+    public boolean isFromTestnet() {
+        return isTpub() || isUpub() || isVpub();
+    }
+
+    public boolean isHardwareWalletP2Pkh() {
+        return isXpub() || isTpub();
+    }
+
+    public boolean isHardwareWalletWrappedP2Wpkh() {
+        return isYpub() || isUpub();
+    }
+
+    public boolean isHardwareWalletNativeP2Wpkh() {
+        return isZpub() || isVpub();
     }
 }

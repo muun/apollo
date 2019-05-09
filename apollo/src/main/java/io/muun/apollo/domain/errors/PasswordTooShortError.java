@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class PasswordTooShortError extends UserFacingError {
 
     public PasswordTooShortError() {
-        super("Password is too short");
+        super(UserFacingErrorMessages.INSTANCE.passwordTooShort());
     }
 }

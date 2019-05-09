@@ -1,10 +1,7 @@
 package io.muun.apollo.data.logging;
 
-import io.muun.apollo.BuildConfig;
-import io.muun.apollo.domain.model.User;
 import io.muun.common.exception.HttpException;
 
-import android.support.annotation.VisibleForTesting;
 import com.crashlytics.android.Crashlytics;
 import timber.log.Timber;
 
@@ -25,7 +22,7 @@ import static java.util.Collections.synchronizedList;
 
 public final class Logger {
 
-    private static boolean logToCrashlytics = !BuildConfig.DEBUG;
+    private static boolean logToCrashlytics = true;
 
     private static final int CRASHLYTICS_LAST_REQUESTS_AMOUNT = 5;
     private static final Map<String, String> idempotencyKeysToUris = new ConcurrentHashMap<>();
@@ -35,32 +32,31 @@ public final class Logger {
         throw new AssertionError();
     }
 
-    @VisibleForTesting
     public static void setLogToCrashlytics(boolean logToCrashlytics) {
         Logger.logToCrashlytics = logToCrashlytics;
     }
 
-    public static void configureForUser(User user) {
-        Crashlytics.setUserIdentifier(user.hid.toString());
-        Crashlytics.setUserName(user.email);
+    public static void configureForUser(String userId, String email) {
+        Crashlytics.setUserIdentifier(userId);
+        Crashlytics.setUserName(email);
     }
 
-    private static void logRemoteException(Throwable throwable) {
+    private static void logRemoteException(Throwable original, Throwable summarized) {
 
         if (!logToCrashlytics) {
             return;
         }
 
-        if (throwable instanceof HttpException) {
+        if (original instanceof HttpException) {
 
-            final HttpException httpException = (HttpException) throwable;
+            final HttpException httpException = (HttpException) original;
 
             Crashlytics.setLong("requestId", httpException.getRequestId());
             Crashlytics.setInt("errorCode", httpException.getErrorCode().getCode());
             Crashlytics.setString("developerMessage", httpException.getDeveloperMessage());
         }
 
-        if (throwable instanceof UnknownCurrencyException) {
+        if (original instanceof UnknownCurrencyException) {
 
             final CurrencyQuery query = CurrencyQueryBuilder.of()
                     .setCurrencyCodes("ARS")
@@ -80,19 +76,33 @@ public final class Logger {
             }
         }
 
-        if (throwable.getStackTrace() == null) {
-            Crashlytics.setString("Null stacktrace", throwable.getClass().getCanonicalName());
+        if (original.getStackTrace() == null) {
+            Crashlytics.setString("Null stacktrace", original.getClass().getCanonicalName());
             // pretty please fill that stack trace
-            throwable.fillInStackTrace();
+            original.fillInStackTrace();
         }
 
-        Crashlytics.logException(throwable);
+        // TEMP: we're logging BOTH versions, just to transition without losing info:
+        Crashlytics.logException(original);
+
+        if (summarized != original) {
+            Crashlytics.logException(summarized);
+        }
     }
 
-    private static void logRemoteException(Throwable throwable, String message, Object... args) {
+    private static void logRemoteException(Throwable throwable,
+                                           Throwable summarized,
+                                           String message,
+                                           Object... args) {
+
+        if (!logToCrashlytics) {
+            return;
+        }
+
         Crashlytics.setString("errorMessage", String.format(message, args));
         Crashlytics.setString("lastRequests", getLastRequests());
-        logRemoteException(throwable);
+
+        logRemoteException(throwable, summarized);
     }
 
     public static Void errorToVoid(Throwable throwable) {
@@ -104,31 +114,50 @@ public final class Logger {
         Timber.e(message, args);
     }
 
+    /**
+     * Print and log an error to crashlytics.
+     */
     public static void error(Throwable throwable) {
-        Timber.e(throwable, throwable.getMessage());
-        logRemoteException(throwable);
+        final Throwable summarized = CrashReportingUtils.summarize(throwable);
+
+        Timber.e(summarized, summarized.getMessage());
+        logRemoteException(throwable, summarized);
     }
 
     /**
      * Print and log an error to crashlytics.
      */
     public static void error(Throwable throwable, String message, Object... args) {
+        final Throwable summarized = CrashReportingUtils.summarize(throwable);
 
         // avoid crashing if there's no stacktrace (wtf, I know, right?)
         if (throwable.getStackTrace() == null) {
             Timber.e(message, args);
+
         } else {
-            Timber.e(throwable, message, args);
+            Timber.e(summarized, message, args);
         }
 
-        logRemoteException(throwable, message, args);
+        logRemoteException(throwable, summarized, message, args);
+    }
+
+    /**
+     * Report an error directly to Crashlytics and Timber, without any pre-processing. Only
+     * for errors that can occuring during error-processing, to avoid re-entrance.
+     */
+    public static void rawError(Throwable error) {
+        Timber.e(error);
+
+        if (logToCrashlytics) {
+            Crashlytics.logException(error);
+        }
     }
 
     /**
      * Logs message to Timber and Crashlytics.
      *
      * @param message with string interpolation.
-     * @param args to be interpolated on the message.
+     * @param args    to be interpolated on the message.
      */
     public static void info(String message, Object... args) {
         Timber.i(message, args);

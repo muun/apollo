@@ -1,120 +1,28 @@
 buildscript {
     repositories {
+        google()
+        maven { url 'https://maven.fabric.io/public' }  // Needed for crashlytics dependency
+        mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
     }
 
-    dependencies {
+    dependencies { // Add third party gradle plugins
         classpath 'com.squareup.sqldelight:gradle-plugin:0.6.1'
     }
 }
 
-apply plugin: 'idea'
+repositories {
+    google()
+    maven { url 'https://maven.fabric.io/public' }  // Needed for crashlytics dependency
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'com.squareup.sqldelight'
-
-idea.module.excludeDirs = [file('build')]
-
-android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
-
-    defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 27
-        versionCode 21
-
-        buildConfigField("String", "NETWORK_NAME", "\"testnet3\"")
-        buildConfigField("String", "TESTING_LOCAL_IP", "\"${testingLocalIp()}\"")
-        buildConfigField("String", "SERVER_CERT_PIN_L1", "\"sha1/AAAAAAAAAAAAAAAAAAAAAAAAAAA=\"")
-        buildConfigField("String", "SERVER_CERT_PIN_L2", "\"sha1/AAAAAAAAAAAAAAAAAAAAAAAAAAA=\"")
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    packagingOptions {
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/services/javax.annotation.processing.Processor'
-        exclude 'META-INF/maven/com.google.guava/guava/pom.properties'
-        exclude 'META-INF/maven/com.google.guava/guava/pom.xml'
-        exclude 'lib/x86_64/darwin/libscrypt.dylib'
-        exclude 'lib/x86_64/freebsd/libscrypt.so'
-        exclude 'lib/x86_64/linux/libscrypt.so'
-        merge 'META-INF/services/javax.money.spi.CurrencyProviderSpi'
-    }
-}
-
-dependencies {
-    // modules
-    implementation project(':common')
-
-    implementation 'org.slf4j:slf4j-nop:1.7.14'
-
-    // dev tools
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true
-    }
-
-    // support library
-    implementation "com.android.support:support-annotations:27.1.1"
-
-    // networking
-    implementation "com.squareup.retrofit2:retrofit:2.3.0"
-    implementation "com.squareup.retrofit2:converter-jackson:2.3.0"
-    implementation "com.squareup.retrofit2:adapter-rxjava:2.3.0"
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-
-    // dbs
-    implementation 'com.squareup.sqlbrite:sqlbrite:1.1.1'
-    implementation  'com.google.auto.value:auto-value-annotations:1.6'
-    annotationProcessor 'com.google.auto.value:auto-value:1.6'
-
-    // rx
-    implementation 'io.reactivex:rxjava:1.3.0'
-    implementation 'io.reactivex:rxandroid:1.2.1'
-    implementation 'com.f2prateek.rx.preferences:rx-preferences:1.0.2'
-
-    // dependency injection
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
-    implementation 'com.google.dagger:dagger:2.11'
-    compileOnly 'org.glassfish:javax.annotation:10.0-b28'
-
-    // logging
-    implementation 'com.jakewharton.timber:timber:4.5.1'
-
-    // java 8 and 9 backports
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.0.5'
-    implementation 'org.javamoney:moneta-bp:1.0'
-    implementation 'org.zalando:jackson-datatype-money:0.12.0'
-
-    // jwt
-    implementation 'io.jsonwebtoken:jjwt:0.7.0'
-
-    // others
-    implementation 'com.google.android.gms:play-services-base:10.2.6'
-    implementation 'com.google.android.gms:play-services-gcm:10.2.6'
-
-    // testing
-    testImplementation 'org.mockito:mockito-core:2.8.47'
-    testImplementation 'org.assertj:assertj-core:3.8.0'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.threeten:threetenbp:1.3.5'
-    testImplementation 'br.com.six2six:fixture-factory:3.1.0'
-    testImplementation 'net.sourceforge.streamsupport:streamsupport:1.5.5'
-    testImplementation 'com.github.tomakehurst:wiremock-standalone:2.6.0'
-}
 
 /**
  * Returns the ip of the local network specified by the TESTING_LOCAL_NETWORK env var.
  */
-static def testingLocalIp() {
+def testingLocalIp() {
     def interfaceName = System.getenv("TESTING_LOCAL_NETWORK")?.trim()
 
     return NetworkInterface.getNetworkInterfaces().
@@ -123,4 +31,97 @@ static def testingLocalIp() {
             flatten().
             find()?. // first or null
             getHostAddress()
+}
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+
+        // circle
+        buildConfigField("String", "TESTING_LOCAL_IP", "\"${testingLocalIp()}\"")
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        minified {
+            debuggable true
+            minifyEnabled true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError false
+        htmlReport true
+        lintConfig file("${project.rootDir}/linters/android-lint/config.xml")
+    }
+}
+
+ext {
+    version_retrofit = '2.3.0'
+}
+
+dependencies {
+    api project(':common')
+
+    // Android support:
+    api 'com.android.support:appcompat-v7:27.1.1'
+
+    // ReactiveX:
+    api 'io.reactivex:rxjava:1.3.0'
+    api 'io.reactivex:rxandroid:1.2.1'
+
+    // Dependency injection:
+    api 'com.google.dagger:dagger:2.11'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
+
+    compileOnly 'org.glassfish:javax.annotation:10.0-b28'
+
+    // Logging:
+    api 'com.jakewharton.timber:timber:4.5.1'
+
+    // Money:
+    api 'org.javamoney:moneta-bp:1.0'
+    api 'org.zalando:jackson-datatype-money:0.12.0'
+
+    // Firebase:
+    api 'com.google.firebase:firebase-core:16.0.6'
+    api 'com.google.firebase:firebase-messaging:17.3.4'
+    api 'com.firebase:firebase-jobdispatcher:0.8.5'
+
+    // Debugging:
+    api('com.crashlytics.sdk.android:crashlytics:2.9.7') {
+        transitive = true
+    }
+
+    api 'com.facebook.stetho:stetho:1.5.0'
+    api 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    api 'com.facebook.stetho:stetho-timber:1.5.0@aar'
+
+    // Storage:
+    implementation 'com.f2prateek.rx.preferences:rx-preferences:1.0.2'
+    implementation 'com.squareup.sqlbrite:sqlbrite:1.1.1'
+    implementation  'com.google.auto.value:auto-value-annotations:1.6'
+    annotationProcessor 'com.google.auto.value:auto-value:1.6'
+
+    // Networking:
+    implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
+    implementation "com.squareup.retrofit2:converter-jackson:$version_retrofit"
+    implementation "com.squareup.retrofit2:adapter-rxjava:$version_retrofit"
+    implementation "com.squareup.retrofit2:converter-scalars:$version_retrofit"
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+
+    // Kotlin:
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"
 }

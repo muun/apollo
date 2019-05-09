@@ -2,19 +2,30 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.domain.errors.InvalidAmountException;
+import io.muun.apollo.domain.errors.InvalidInvoiceException;
+import io.muun.apollo.domain.errors.InvalidSwapException;
+import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
+import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
+import io.muun.apollo.domain.errors.NoPaymentRouteException;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
+import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.api.ClientTypeJson;
 import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExternalAddressesRecord;
+import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
@@ -26,11 +37,15 @@ import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.SignupJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
-import io.muun.common.api.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.api.error.ErrorCode;
 import io.muun.common.api.houston.HoustonService;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
+import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hwallet.HardwareWalletState;
+import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
@@ -38,12 +53,14 @@ import io.muun.common.model.VerificationType;
 import io.muun.common.model.challenge.Challenge;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
+import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Encodings;
 
 import android.content.Context;
 import android.net.Uri;
 import okhttp3.MediaType;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import rx.Observable;
 
@@ -91,7 +108,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 email,
                 buildType,
                 version,
-                gcmRegistrationToken
+                gcmRegistrationToken,
+                ClientTypeJson.APOLLO
         );
 
         return getService().createSession(session)
@@ -100,7 +118,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     public Observable<UserPhoneNumber> createPhone(PhoneNumber phoneNumber) {
         return getService().createPhone(apiMapper.mapPhoneNumber(phoneNumber))
-            .map(modelMapper::mapUserPhoneNumber);
+                .map(modelMapper::mapUserPhoneNumber);
     }
 
     public Observable<Void> resendVerificationCode(@NotNull VerificationType verificationType) {
@@ -141,7 +159,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 ChallengeType.getVersion(ChallengeType.PASSWORD)
         );
 
-        final SignupJson signup = apiMapper.createSignup(
+        final SignupJson signup = apiMapper.mapSignup(
                 primaryCurrency,
                 basePublicKey,
                 passwordChallengeSetup
@@ -157,7 +175,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<KeySet> login(ChallengeSignature challengeSignature) {
         return getService()
-                .login(apiMapper.createChallengeSignature(challengeSignature));
+                .login(apiMapper.mapChallengeSignature(challengeSignature));
     }
 
     /**
@@ -168,10 +186,17 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Login with compatibility, no-challenge method.
+     */
+    public Observable<Void> notifyLogout() {
+        return getService().notifyLogout();
+    }
+
+    /**
      * Updates the GCM token for the current user.
      */
-    public Observable<Void> updateGcmToken(@NotNull String gcmToken) {
-        return getService().updateGcmToken(gcmToken);
+    public Observable<Void> updateFcmToken(@NotNull String fcmToken) {
+        return getService().updateFcmToken(fcmToken);
     }
 
     /**
@@ -192,6 +217,21 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Create a beam session authorized to send notification to this device.
+     */
+    public Observable<String> createReceivingSession(String satelliteSessionUuid) {
+
+        return getService().createReceivingSession(satelliteSessionUuid);
+    }
+
+    /**
+     * Expire a beam session authorized to send notifications to this device.
+     */
+    public Observable<Void> expireReceivingSession(String sessionUuid) {
+        return getService().expireReceivingSession(sessionUuid);
+    }
+
+    /**
      * Fetches the current user.
      */
     public Observable<User> fetchUser() {
@@ -205,7 +245,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<PublicKeySet> updatePublicKeySet(PublicKey basePublicKey) {
         final PublicKeySetJson publicKeySet = new PublicKeySetJson(
-                apiMapper.createPublicKey(basePublicKey)
+                apiMapper.mapPublicKey(basePublicKey)
         );
 
         return getService()
@@ -225,7 +265,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<ExternalAddressesRecord> updateExternalAddressesRecord(int maxUsedIndex) {
         final ExternalAddressesRecord externalAddressesRecord = apiMapper
-                .createExternalAddressesRecord(maxUsedIndex);
+                .mapExternalAddressesRecord(maxUsedIndex);
 
         return getService().updateExternalAddressesRecord(externalAddressesRecord);
     }
@@ -264,8 +304,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
         user.primaryCurrency = currencyUnit;
 
         return getService()
-            .changeCurrency(user)
-            .map(modelMapper::mapUser);
+                .changeCurrency(user)
+                .map(modelMapper::mapUser);
     }
 
     private Observable<User> updateUser(UserProfileJson user) {
@@ -279,7 +319,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<Void> submitFeedback(String feedbackContent) {
         return getService()
-                .submitFeedback(apiMapper.createFeedback(feedbackContent));
+                .submitFeedback(apiMapper.mapFeedback(feedbackContent));
     }
 
     /**
@@ -331,15 +371,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Pushes a raw transaction to Houston.
      *
-     * @param transaction  The bitcoinj's transaction.
+     * @param tx  The bitcoinj's transaction.
      * @param operationHid The houston operation id.
      */
-    public Observable<Void> pushTransaction(Transaction transaction, long operationHid) {
-        final String transactionHex = Encodings.bytesToHex(transaction.unsafeBitcoinSerialize());
+    public Observable<TransactionPushed> pushTransaction(Transaction tx, long operationHid) {
+        final String transactionHex = Encodings.bytesToHex(tx.unsafeBitcoinSerialize());
 
         return getService()
                 .pushTransaction(new RawTransaction(transactionHex), operationHid)
-                .map(RxHelper::toVoid);
+                .map(modelMapper::mapTransactionPushed);
     }
 
     /**
@@ -358,6 +398,69 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<NextTransactionSize> fetchNextTransactionSize() {
         return getService().fetchNextTransactionSize().map(modelMapper::mapNextTransactionSize);
+    }
+
+    /**
+     * Submit a new signed withdrawal operation.
+     */
+    public Observable<OperationCreated> newWithdrawalOperation(Operation operation,
+                                                               String signedTransaction,
+                                                               List<Long> inputAmounts) {
+
+        final HardwareWalletWithdrawalJson withdrawal = new HardwareWalletWithdrawalJson(
+                apiMapper.mapOperation(operation),
+                new RawTransaction(signedTransaction),
+                inputAmounts
+        );
+
+        return getService()
+                .newWithdrawalOperation(withdrawal)
+                .map(modelMapper::mapOperationCreated);
+
+    }
+
+    /**
+     * Request a new Submarine Swap.
+     */
+    public Observable<SubmarineSwap> prepareSubmarineSwap(String invoice,
+                                                          PublicKeyPair publicKeyPair,
+                                                          NetworkParameters network) {
+
+        return getService()
+                .prepareSubmarineSwap(invoice)
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.INVALID_INVOICE,
+                        InvalidInvoiceException::new
+                ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.INVALID_AMOUNT,
+                        InvalidAmountException::new
+                ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.INVOICE_ALREADY_USED,
+                        InvoiceAlreadyUsedException::new
+                ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.NO_PAYMENT_ROUTE,
+                        NoPaymentRouteException::new
+                ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.INVOICE_EXPIRES_TOO_SOON,
+                        InvoiceExpiresTooSoonException::new
+                ))
+                .doOnNext(submarineSwapJson -> {
+                    final boolean isValid = TransactionSchemeSubmarineSwap.validateSwap(
+                            invoice,
+                            publicKeyPair,
+                            submarineSwapJson,
+                            network
+                    );
+
+                    if (!isValid) {
+                        throw new InvalidSwapException();
+                    }
+                })
+                .map(modelMapper::mapSubmarineSwap);
     }
 
     /**
@@ -382,7 +485,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<SetupChallengeResponse> setupChallenge(ChallengeSetup setup) {
         return getService()
-                .setupChallenge(apiMapper.createChallengeSetup(setup));
+                .setupChallenge(apiMapper.mapChallengeSetup(setup));
     }
 
     /**
@@ -390,8 +493,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<PendingChallengeUpdate> beginPasswordChange(ChallengeSignature challengeSig) {
         return getService()
-               .beginPasswordChange(apiMapper.createChallengeSignature(challengeSig))
-               .map(modelMapper::mapPendingChallengeUpdate);
+                .beginPasswordChange(apiMapper.mapChallengeSignature(challengeSig))
+                .map(modelMapper::mapPendingChallengeUpdate);
     }
 
     /**
@@ -400,6 +503,43 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<SetupChallengeResponse> finishPasswordChange(String uuid,
                                                                    ChallengeSetup challengeSetup) {
         return getService()
-                .finishPasswordChange(apiMapper.createChallengeUpdate(uuid, challengeSetup));
+                .finishPasswordChange(apiMapper.mapChallengeUpdate(uuid, challengeSetup));
+    }
+
+    /**
+     * Create or update an existing HardwareWallet.
+     */
+    public Observable<HardwareWallet> createOrUpdateHardwareWallet(HardwareWallet wallet) {
+        return getService()
+                .createOrUpdateHardwareWallet(apiMapper.mapHardwareWallet(wallet))
+                .map(modelMapper::mapHardwareWallet);
+    }
+
+    /**
+     * Unpair (aka remove) a HardwareWallet.
+     */
+    public Observable<HardwareWallet> unpairHardwareWallet(HardwareWallet wallet) {
+        return getService()
+                .unpairHardwareWallet(wallet.hid)
+                .map(modelMapper::mapHardwareWallet);
+    }
+
+    /**
+     * Fetch HardwareWallets from Houston.
+     */
+    public Observable<List<HardwareWallet>> fetchHardwareWallets() {
+        return getService().fetchHardwareWallets()
+                .flatMap(Observable::from)
+                .map(modelMapper::mapHardwareWallet)
+                .toList();
+    }
+
+    /**
+     * Fetch a HardwareWallet state.
+     */
+    public Observable<HardwareWalletState> fetchHardwareWalletState(HardwareWallet wallet) {
+        return getService()
+                .fetchHardwareWalletState(wallet.hid)
+                .map(modelMapper::mapHardwareWalletState);
     }
 }

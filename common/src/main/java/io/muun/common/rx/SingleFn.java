@@ -116,6 +116,27 @@ public final class SingleFn {
     }
 
     /**
+     * If the error emitted by the single is of type HttpException and has a specific code, it gets
+     * replaced by the error returned when calling replacer with the original error.
+     */
+    public static <T> Single.Transformer<T, T> replaceHttpException(
+            final ErrorCode code,
+            final Func1<HttpException, Throwable> replacer) {
+
+        return onHttpExceptionResumeNext(
+                code,
+                new Func1<HttpException, Single<T>>() {
+
+                    @Override
+                    public Single<T> call(HttpException error) {
+                        return Single.error(replacer.call(error));
+                    }
+
+                }
+        );
+    }
+
+    /**
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static <T> Single.Transformer<T, T> onHttpExceptionResumeNext(
@@ -123,25 +144,33 @@ public final class SingleFn {
             final Func1<HttpException, Single<T>> resumeFunction) {
 
         return new Single.Transformer<T, T>() {
-
             @Override
             public Single<T> call(Single<T> single) {
 
-                return single.compose(onTypedErrorResumeNext(
-                        HttpException.class,
-                        new Func1<HttpException, Single<T>>() {
+                return single.onErrorResumeNext(
+
+                        new Func1<Throwable, Single<? extends T>>() {
 
                             @Override
-                            public Single<T> call(HttpException error) {
+                            public Single<? extends T> call(Throwable error) {
 
-                                if (error.getErrorCode().equals(code)) {
-                                    return resumeFunction.call(error);
+                                final Optional<HttpException> cause = getTypedCause(
+                                        error,
+                                        HttpException.class
+                                );
+
+                                if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                                    return resumeFunction.call(cause.get());
+
+                                } else {
+                                    return Single.error(error);
                                 }
 
-                                return Single.error(error);
                             }
                         }
-                ));
+
+                );
+
             }
         };
     }

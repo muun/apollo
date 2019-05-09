@@ -9,12 +9,12 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.NotificationService;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.apollo.domain.model.UserPhoneNumber;
+import io.muun.apollo.external.NotificationService;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
@@ -108,18 +108,6 @@ public class ContactActions {
                         .flatMap(this::createOrUpdateContact)
                         .lastOrDefault(null)
         );
-    }
-
-    /**
-     * Fetch and replace data for a single contact from Houston.
-     */
-    public Observable<Void> syncSingleContact(Contact contact) {
-        return houstonClient.fetchContact(contact.publicProfile.hid)
-                .doOnNext(remoteContact -> {
-                    publicProfileDao.store(remoteContact.publicProfile).toCompletable().await();
-                    contactDao.store(remoteContact).toCompletable().await();
-                })
-                .map(RxHelper::toVoid);
     }
 
     /**

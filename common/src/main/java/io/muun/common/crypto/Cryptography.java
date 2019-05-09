@@ -5,6 +5,7 @@ import io.muun.common.utils.RandomGenerator;
 import org.spongycastle.crypto.BufferedBlockCipher;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.engines.AESFastEngine;
+import org.spongycastle.crypto.engines.AESLightEngine;
 import org.spongycastle.crypto.modes.CBCBlockCipher;
 import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
@@ -17,6 +18,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -35,7 +37,7 @@ import javax.validation.constraints.NotNull;
  */
 public final class Cryptography {
 
-    // AES 256 configuration:
+    // AES 128 configuration:
     public static final int AES_BLOCK_SIZE = 16;
 
     // RSA configuration:
@@ -181,70 +183,120 @@ public final class Cryptography {
     }
 
     /**
-     * Encrypts a given input with AES using a keystore friendly way.
+     * Encrypts a given input with AES/CBC/PKCS7Padding using a keystore friendly way.
      */
-    public static byte[] aesEncrypt(byte[] input, byte[] iv, SecretKey key) throws
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
+    public static byte[] aesCbcPkcs7Encrypt(byte[] input, byte[] iv, SecretKey key)
+            throws InvalidCipherTextException {
 
-        return aesEncrypt(input, iv, key, AES_CBC_PKCS7_PADDING);
+        return aesTransformation(input, iv, key, true, true);
     }
 
     /**
-     * Encrypts a given input with AES using a keystore friendly way.
+     * Encrypts a given input with AES/CBC/NoPadding using a keystore friendly way.
      */
-    public static byte[] aesEncrypt(byte[] input, byte[] iv, SecretKey key, String mode) throws
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
+    public static byte[] aesCbcNoPaddingEncrypt(byte[] input, byte[] iv, SecretKey key)
+            throws InvalidCipherTextException {
 
-        final Cipher cipher = Cipher.getInstance(mode);
-
-        cipher.init(
-                Cipher.ENCRYPT_MODE,
-                key,
-                new IvParameterSpec(iv),
-                RandomGenerator.getSecureRandom()
-        );
-
-        return cipher.doFinal(input);
+        return aesTransformation(input, iv, key, false, true);
     }
 
     /**
-     * Decrypts a previously encrypted bytes with AES using a keystore friendly way.
+     * Decrypts a previously encrypted bytes with AES/CBC/PKCS7Padding using a keystore friendly
+     * way.
      */
-    public static byte[] aesDecrypt(byte[] input, SecretKey key, byte[] iv)
-            throws
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
-        return aesDecrypt(input, key, iv, AES_CBC_PKCS7_PADDING);
+    public static byte[] aesCbcPkcs7Decrypt(byte[] input, SecretKey key, byte[] iv)
+            throws InvalidCipherTextException {
+
+        return aesTransformation(input, iv, key, true, false);
     }
 
     /**
-     * Decrypts a previously encrypted bytes with AES using a keystore friendly way.
+     * Decrypts a previously encrypted bytes with AES/CBC/NoPadding using a keystore friendly way.
+     *
+     * @param input Precondition: should be a factor of 16
      */
-    public static byte[] aesDecrypt(byte[] input, SecretKey key, byte[] iv, String mode)
-            throws
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
-        final Cipher cipher = Cipher.getInstance(mode);
-        cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        return cipher.doFinal(input);
+    public static byte[] aesCbcNoPaddingDecrypt(byte[] input,
+                                                SecretKey key,
+                                                byte[] iv)
+            throws InvalidCipherTextException {
+
+        return aesTransformation(input, iv, key, false, false);
+    }
+
+    private static byte[] aesTransformation(byte[] input,
+                                            byte[] iv,
+                                            SecretKey key,
+                                            boolean hasPadding,
+                                            boolean forEncryption)
+            throws InvalidCipherTextException {
+
+        // Keys coming from the android keystore do not have the KeySpec type.
+        // We need to differentiate them because we cannot access an AndroidSecretKey directly with
+        // SpongyCastle (in other words: key.getEncoded() does not work for android secret keys).
+        // Instead, we have to rely on the AndroidKeyStoreBCWorkaroundProvider present on the
+        // platform.
+        if (key instanceof KeySpec) {
+
+            // We are able to manually handle the key using SpongyCastle directly
+            return aesTransformationSpongycastle(input,iv,key,hasPadding,forEncryption);
+        } else {
+
+            // key is most likely and AndroidSecretKey from the keystore, we cannot manually handle
+            // this case, we need to ask for the right provider using Cipher.getInstance.
+            return aesTransformationUsingProviders(input,iv,key,hasPadding,forEncryption);
+        }
+    }
+
+    private static byte[] aesTransformationSpongycastle(byte[] input,
+                                            byte[] iv,
+                                            SecretKey key,
+                                            boolean hasPadding,
+                                            boolean forEncryption)
+            throws InvalidCipherTextException {
+
+        // AESLightEngine is using AES128
+        final CBCBlockCipher cbcBlockCipher = new CBCBlockCipher(new AESLightEngine());
+
+        final BufferedBlockCipher cipher = hasPadding
+                ? new PaddedBufferedBlockCipher(cbcBlockCipher)
+                : new BufferedBlockCipher(cbcBlockCipher);
+
+        cipher.init(forEncryption, new ParametersWithIV(new KeyParameter(key.getEncoded()), iv));
+
+        final byte[] output = new byte[cipher.getOutputSize(input.length)];
+
+        final int length1 = cipher.processBytes(input, 0, input.length, output, 0);
+        final int length2 = cipher.doFinal(output, length1);
+
+        return Arrays.copyOf(output, length1 + length2);
+    }
+
+    private static byte[] aesTransformationUsingProviders(byte[] input,
+                                                          byte[] iv,
+                                                          SecretKey key,
+                                                          boolean hasPadding,
+                                                          boolean forEncryption) {
+        try {
+            final Cipher cipher = Cipher.getInstance(
+                    hasPadding ? AES_CBC_PKCS7_PADDING : AES_CBC_NO_PADDING);
+
+            cipher.init(
+                    forEncryption ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE,
+                    key,
+                    new IvParameterSpec(iv)
+            );
+
+            return cipher.doFinal(input);
+
+        } catch (IllegalBlockSizeException
+                | BadPaddingException
+                | InvalidKeyException
+                | InvalidAlgorithmParameterException
+                | NoSuchPaddingException
+                | NoSuchAlgorithmException e) {
+
+            throw new CryptographyException(e);
+        }
     }
 
     private static byte[] cipherToByteArray(byte[] inputData, Cipher cipher) throws IOException {
@@ -266,7 +318,8 @@ public final class Cryptography {
         return bytes;
     }
 
-    @NotNull private static ArrayList<Byte> cipherToList(byte[] input, Cipher cipher) throws
+    @NotNull
+    private static ArrayList<Byte> cipherToList(byte[] input, Cipher cipher) throws
             IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(input);
         final CipherInputStream cipherInputStream = new CipherInputStream(bais, cipher);

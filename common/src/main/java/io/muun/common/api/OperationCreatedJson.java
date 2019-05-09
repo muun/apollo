@@ -3,6 +3,7 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 
@@ -13,8 +14,8 @@ public class OperationCreatedJson {
     @NotNull
     public OperationJson operation;
 
-    @NotNull
-    public PartiallySignedTransaction partiallySignedTransaction;
+    @Nullable // null if the Operation was already fully signed
+    public PartiallySignedTransactionJson partiallySignedTransaction;
 
     @NotNull
     public NextTransactionSizeJson nextTransactionSize;
@@ -29,7 +30,7 @@ public class OperationCreatedJson {
      * Houston constructor.
      */
     public OperationCreatedJson(OperationJson operation,
-                                PartiallySignedTransaction partiallySignedTransaction,
+                                PartiallySignedTransactionJson partiallySignedTransaction,
                                 NextTransactionSizeJson nextTransactionSize) {
 
         this.operation = operation;

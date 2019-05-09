@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.action.base;
 
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
+import io.muun.apollo.domain.action.UserActions;
 
 import rx.Observable;
 import rx.functions.Func0;
@@ -79,11 +80,35 @@ public class AsyncActionStore {
         return new ArrayList<>(map.values());
     }
 
+    private List<AsyncAction> getAllExcept(String excludedAction) {
+        final List<AsyncAction> asyncActions = new ArrayList<>(map.size());
+
+        for (String name : map.keySet()) {
+            if (! excludedAction.equals(name)) {
+                asyncActions.add(map.get(name));
+            }
+        }
+
+        return asyncActions;
+    }
+
     /**
      * Reset the state of all active async actions, emitting an EMPTY ActionState.
      */
     public void resetAll() {
-        for (AsyncAction asyncAction : getAll()) {
+        reset(getAll());
+    }
+
+    /**
+     * Reset the state of all active async actions, except for the notifiyLogout action,
+     * emitting an EMPTY ActionState.
+     */
+    public void resetAllExceptLogout() {
+        reset(getAllExcept(UserActions.NOTIFY_LOGOUT_ACTION));
+    }
+
+    private void reset(List<AsyncAction> asyncActions) {
+        for (AsyncAction asyncAction : asyncActions) {
             asyncAction.reset();
         }
     }

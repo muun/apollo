@@ -25,6 +25,7 @@ public class IdempotencyKeyInterceptor extends BaseInterceptor {
         final String idempotencyKey = provider.getIdempotencyKey();
 
         if (idempotencyKey == null) {
+            // TODO find out why, when how, can this hapen
             return originalRequest;
         }
 
@@ -37,10 +38,16 @@ public class IdempotencyKeyInterceptor extends BaseInterceptor {
 
     @Override
     protected Response processResponse(Response originalResponse) {
-        final Request request = originalResponse.request();
-        final String idempotencyKey = request.headers().get(HeaderUtils.IDEMPOTENCY_KEY);
+        final Request req = originalResponse.request();
+        final String idempotencyKey = req.headers().get(HeaderUtils.IDEMPOTENCY_KEY);
 
-        Logger.saveRequestUri(idempotencyKey, request.url().toString() + originalResponse.code());
+        if (idempotencyKey != null) {
+            // TODO find out why, when how, can this happen
+            // Under some weird UNKNOWN circumstances, idempotencyKey CAN actually be null
+
+            final String log = req.url().toString() + ". Status:" + originalResponse.code();
+            Logger.saveRequestUri(idempotencyKey, log);
+        }
 
         return originalResponse;
     }

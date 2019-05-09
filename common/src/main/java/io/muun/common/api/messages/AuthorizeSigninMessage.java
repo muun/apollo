@@ -7,22 +7,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthorizeSigninMessage extends AbstractMessage {
 
-    public static final String TYPE = "sessions/authorized";
-    public static final SessionStatus PERMISSION = SessionStatus.BLOCKED_BY_EMAIL;
-
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public SessionStatus getPermission() {
-        return PERMISSION;
-    }
+    public static final MessageSpec SPEC = new MessageSpec(
+            "sessions/authorized",
+            SessionStatus.BLOCKED_BY_EMAIL,
+            MessageOrigin.HOUSTON
+    );
 
     /**
      * constructor.
      */
     public AuthorizeSigninMessage() {
+    }
+
+    @Override
+    public MessageSpec getSpec() {
+        return SPEC;
     }
 }

@@ -1,28 +1,38 @@
 package io.muun.apollo.domain.action.di;
 
 import io.muun.apollo.domain.action.AddressActions;
-import io.muun.apollo.domain.action.BitcoinActions;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
+import io.muun.apollo.domain.action.HardwareWalletActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.OperationActions;
 import io.muun.apollo.domain.action.PhoneActions;
+import io.muun.apollo.domain.action.SatelliteActions;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.SyncActions;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.operation.CreateOperationAction;
+import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
+import io.muun.apollo.domain.action.operation.PreparePaymentAction;
+import io.muun.apollo.domain.action.operation.ResolveBitcoinUriAction;
+import io.muun.apollo.domain.action.operation.ResolveMuunUriAction;
+import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
+import io.muun.apollo.domain.action.operation.SubmitIncomingPaymentAction;
+import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
+import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
+import io.muun.apollo.domain.action.operation.UpdateOperationAction;
+import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
+import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 
 public interface ActionComponent {
 
-    // Exposed to sub-components
-
+    // Action bags:
     PhoneActions phoneActions();
 
     SigninActions signinActions();
 
     ContactActions contactActions();
-
-    BitcoinActions transactionActions();
 
     OperationActions operationActions();
 
@@ -37,4 +47,33 @@ public interface ActionComponent {
     NotificationActions notificationActions();
 
     AsyncActionStore asyncActionStore();
+
+    SatelliteActions satelliteActions();
+
+    HardwareWalletActions hardwareWalletActions();
+
+    // Own-class actions:
+    UpdateProfilePictureAction updateProfilePictureAction();
+
+    FetchRealTimeDataAction fetchRealTimeDataAction();
+
+    FetchNextTransactionSizeAction fetchNextTransactionSizeAction();
+
+    PreparePaymentAction preparePaymentAction();
+
+    ResolveBitcoinUriAction resolveBitcoinUriAction();
+
+    ResolveMuunUriAction resolveMuunUriAction();
+
+    ResolveOperationUriAction resolveOperationUriAction();
+
+    SubmitIncomingPaymentAction submitIncomingPaymentAction();
+
+    SubmitOutgoingPaymentAction submitOutgoingPaymentAction();
+
+    SubmitPaymentAction submitPaymentAction();
+
+    CreateOperationAction createOperationAction();
+
+    UpdateOperationAction updateOperationAction();
 }

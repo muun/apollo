@@ -1,6 +1,6 @@
 package io.muun.apollo.data.db.operation;
 
-import io.muun.apollo.data.db.base.HoustonDao;
+import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.common.model.OperationStatus;
 
@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class OperationDao extends HoustonDao<Operation> {
+public class OperationDao extends HoustonIdDao<Operation> {
 
     /**
      * Constructor.

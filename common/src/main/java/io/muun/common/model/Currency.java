@@ -17,7 +17,7 @@ public class Currency {
     public static final Map<String, Currency> CURRENCIES;
 
     static {
-        CURRENCIES = new HashMap<String, Currency>();
+        CURRENCIES = new HashMap<>();
         CURRENCIES.put("AED", new Currency("AED", "د.إ", "UAE Dirham"));
         CURRENCIES.put("AFN", new Currency("AFN", "؋", "Afghan Afghani"));
         CURRENCIES.put("ALL", new Currency("ALL", "LEK", "Albanian Lek"));

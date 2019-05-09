@@ -8,13 +8,13 @@ import javax.validation.constraints.NotNull;
 public class OperationCreated {
 
     @NotNull
-    public Operation operation;
+    public final Operation operation;
 
     @NotNull
-    public PartiallySignedTransaction partiallySignedTransaction;
+    public final PartiallySignedTransaction partiallySignedTransaction;
 
     @NotNull
-    public NextTransactionSize nextTransactionSize;
+    public final NextTransactionSize nextTransactionSize;
 
     /**
      * Constructor.

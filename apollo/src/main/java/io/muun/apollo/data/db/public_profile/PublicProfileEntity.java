@@ -5,6 +5,7 @@ import io.muun.apollo.domain.model.PublicProfile;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
@@ -34,6 +35,14 @@ public abstract class PublicProfileEntity implements PublicProfileModel, BaseEnt
 
         final PublicProfileEntity entity = FACTORY.selectAllMapper().map(cursor);
 
+        return getPublicProfile(entity);
+    }
+
+    /**
+     * Builds a PublicProfile domain layer model from a data layer PublicProfileEntity.
+     */
+    @NonNull
+    public static PublicProfile getPublicProfile(PublicProfileEntity entity) {
         return new PublicProfile(
                 entity.id(),
                 entity.hid(),

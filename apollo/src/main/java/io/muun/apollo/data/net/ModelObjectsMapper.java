@@ -6,6 +6,7 @@ import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
+import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.domain.model.Operation;
@@ -14,12 +15,20 @@ import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.RealTimeData;
+import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
+import io.muun.apollo.domain.model.SubmarineSwapReceiver;
+import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.CommonModelObjectsMapper;
 import io.muun.common.api.CreateSessionOkJson;
+import io.muun.common.api.HardwareWalletJson;
+import io.muun.common.api.HardwareWalletOutputJson;
+import io.muun.common.api.HardwareWalletStateJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
@@ -28,14 +37,26 @@ import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SizeForAmountJson;
+import io.muun.common.api.SubmarineSwapFundingOutputJson;
+import io.muun.common.api.SubmarineSwapJson;
+import io.muun.common.api.SubmarineSwapReceiverJson;
+import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
-import io.muun.common.api.NotificationReportJson;
+import io.muun.common.api.beam.notification.NotificationReportJson;
+import io.muun.common.crypto.hd.HardwareWalletOutput;
+import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hwallet.HardwareWalletState;
+import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.SizeForAmount;
+import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Preconditions;
 
+import android.support.annotation.NonNull;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 
@@ -50,16 +71,22 @@ import javax.validation.constraints.NotNull;
 @Singleton
 public class ModelObjectsMapper extends CommonModelObjectsMapper {
 
+    private final ObjectMapper jsonMapper;
+
     @Inject
-    public ModelObjectsMapper(NetworkParameters networkParameters) {
+    public ModelObjectsMapper(NetworkParameters networkParameters, ObjectMapper jsonMapper) {
         super(networkParameters);
+        this.jsonMapper = jsonMapper;
     }
 
     /**
      * Create a date time.
      */
-    @NotNull
-    public ZonedDateTime mapDateTime(@NotNull MuunZonedDateTime dateTime) {
+    @Nullable
+    private ZonedDateTime mapZonedDateTime(@Nullable MuunZonedDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
 
         return ((ApolloZonedDateTime) dateTime).dateTime;
     }
@@ -92,7 +119,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create a public profile.
      */
     @NotNull
-    public PublicProfile mapPublicProfile(@NotNull PublicProfileJson publicProfile) {
+    private PublicProfile mapPublicProfile(@NotNull PublicProfileJson publicProfile) {
 
         return new PublicProfile(
                 null,
@@ -139,12 +166,12 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create an exchange rate window.
      */
     @NotNull
-    public ExchangeRateWindow mapExchangeRateWindow(
+    private ExchangeRateWindow mapExchangeRateWindow(
             @NotNull io.muun.common.api.ExchangeRateWindow window) {
 
         return new ExchangeRateWindow(
                 window.id,
-                mapDateTime(window.fetchDate),
+                mapZonedDateTime(window.fetchDate),
                 window.rates
         );
     }
@@ -153,7 +180,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create a bitcoin amount.
      */
     @NotNull
-    public BitcoinAmount mapBitcoinAmount(@NotNull io.muun.common.api.BitcoinAmount bitcoinAmount) {
+    private BitcoinAmount mapBitcoinAmount(@NotNull BitcoinAmountJson bitcoinAmount) {
 
         return new BitcoinAmount(
                 bitcoinAmount.inSatoshis,
@@ -182,15 +209,70 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.receiverIsExternal,
                 operation.receiverAddress,
                 operation.receiverAddressDerivationPath,
+                operation.hardwareWalletHid,
                 mapBitcoinAmount(operation.amount),
                 mapBitcoinAmount(operation.fee),
                 operation.transaction != null ? operation.transaction.confirmations : 0L,
                 operation.transaction != null ? operation.transaction.hash : null,
                 operation.description,
                 operation.status,
-                ((ApolloZonedDateTime) operation.creationDate).dateTime,
-                operation.exchangeRatesWindowId
+                mapZonedDateTime(operation.creationDate),
+                operation.exchangeRatesWindowId,
+                operation.swap != null ? mapSubmarineSwap(operation.swap) : null
         );
+    }
+
+    /**
+     * Create an operation swap.
+     */
+    @NotNull
+    public SubmarineSwap mapSubmarineSwap(SubmarineSwapJson swap) {
+        if (swap == null) {
+            return null;
+        }
+
+        return new SubmarineSwap(
+                null,
+                swap.swapUuid,
+                swap.invoice,
+                mapSwapReceiver(swap.receiver),
+                mapSwapFundingOutput(swap.fundingOutput),
+                swap.sweepFeeInSatoshis,
+                swap.lightningFeeInSatoshis,
+                mapZonedDateTime(swap.expiresAt),
+                mapZonedDateTime(swap.payedAt),
+                swap.preimageInHex
+        );
+    }
+
+    @NonNull
+    private SubmarineSwapFundingOutput mapSwapFundingOutput(SubmarineSwapFundingOutputJson output) {
+
+        return new SubmarineSwapFundingOutput(
+                output.outputAddress,
+                output.outputAmountInSatoshis,
+                output.confirmationsNeeded,
+                output.userLockTime,
+                MuunAddress.fromJson(output.userRefundAddress),
+                output.serverPaymentHashInHex,
+                output.serverPublicKeyInHex
+        );
+    }
+
+    @NotNull
+    private SubmarineSwapReceiver mapSwapReceiver(@NotNull SubmarineSwapReceiverJson receiver) {
+
+        try {
+
+            return new SubmarineSwapReceiver(
+                    receiver.alias,
+                    jsonMapper.writeValueAsString(receiver.networkAddresses),
+                    receiver.publicKey
+            );
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -201,15 +283,31 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         final OperationJson apiOperation = operationCreated.operation;
 
         Preconditions.checkNotNull(operationCreated.operation);
-        Preconditions.checkNotNull(operationCreated.partiallySignedTransaction);
         Preconditions.checkNotNull(operationCreated.nextTransactionSize);
 
         final Operation operation = mapOperation(apiOperation);
 
         return new OperationCreated(
                 operation,
-                mapPartiallySignedTransaction(operationCreated.partiallySignedTransaction),
+                PartiallySignedTransaction.fromJson(
+                        operationCreated.partiallySignedTransaction,
+                        networkParameters
+                ),
                 mapNextTransactionSize(operationCreated.nextTransactionSize)
+        );
+    }
+
+    /**
+     * Create a TransactionPushed object.
+     */
+    @NotNull
+    public TransactionPushed mapTransactionPushed(@NotNull TransactionPushedJson txPushed) {
+        Preconditions.checkNotNull(txPushed.hex);
+        Preconditions.checkNotNull(txPushed.nextTransactionSize);
+
+        return new TransactionPushed(
+                txPushed.hex,
+                mapNextTransactionSize(txPushed.nextTransactionSize)
         );
     }
 
@@ -217,11 +315,11 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create an expected fee.
      */
     @NotNull
-    public FeeWindow mapFeeWindow(@NotNull io.muun.common.api.FeeWindow window) {
+    private FeeWindow mapFeeWindow(@NotNull io.muun.common.api.FeeWindow window) {
 
         return new FeeWindow(
                 window.id,
-                mapDateTime(window.fetchDate),
+                mapZonedDateTime(window.fetchDate),
                 window.feeInSatoshisPerByte
         );
     }
@@ -271,7 +369,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create a SizeForAmount.
      */
     @NotNull
-    public SizeForAmount mapSizeForAmount(@NotNull SizeForAmountJson sizeForAmount) {
+    private SizeForAmount mapSizeForAmount(@NotNull SizeForAmountJson sizeForAmount) {
 
         return new SizeForAmount(
                 sizeForAmount.amountInSatoshis,
@@ -306,5 +404,49 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
             json.isExistingUser,
             json.canUseRecoveryCode
         );
+    }
+
+    /**
+     * Create a HardwareWallet.
+     */
+    public HardwareWallet mapHardwareWallet(HardwareWalletJson json) {
+        // NOTE: despite safeguards, `id` and `createdAt` are always non-null coming from Houston.
+        return new HardwareWallet(
+                null,
+                json.id,
+                json.brand,
+                json.model,
+                json.label,
+                mapPublicKey(json.publicKey),
+                mapZonedDateTime(json.createdAt),
+                mapZonedDateTime(json.lastPairedAt),
+                json.isPaired
+        );
+    }
+
+    /**
+     * Create an HardwareWalletOutput.
+     */
+    private HardwareWalletOutput mapHardwareWalletOutput(HardwareWalletOutputJson json) {
+        return new HardwareWalletOutput(
+                json.txId,
+                json.index,
+                json.amount,
+                mapPublicKey(json.publicKeyJson),
+                json.rawPreviousTransaction
+        );
+    }
+
+    /**
+     * Create an HardwareWalletStateJson.
+     */
+    public HardwareWalletState mapHardwareWalletState(HardwareWalletStateJson json) {
+
+        return new HardwareWalletState(
+                CollectionUtils.mapList(json.sortedUtxos, this::mapHardwareWalletOutput),
+                CollectionUtils.mapList(json.sizeForAmount, this::mapSizeForAmount),
+                mapHardwareWalletAddress(json.changeAddress),
+                mapHardwareWalletAddress(json.nextAddress)
+         );
     }
 }

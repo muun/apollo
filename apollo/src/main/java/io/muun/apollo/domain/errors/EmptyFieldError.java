@@ -1,9 +1,17 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class EmptyFieldError extends UserFacingError {
 
-    public EmptyFieldError(String fieldName) {
-        super(fieldName + " is required");
+    public enum Field {
+        FIRST_NAME,
+        LAST_NAME,
+        PASSWORD
+    }
+
+    public EmptyFieldError(Field field) {
+        super(UserFacingErrorMessages.INSTANCE.emptyField(field));
     }
 }

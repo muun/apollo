@@ -11,6 +11,7 @@ import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.support.annotation.RequiresApi;
+import org.spongycastle.crypto.InvalidCipherTextException;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
@@ -30,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -156,20 +155,18 @@ public class KeyStoreProvider {
 
     @TargetApi(Build.VERSION_CODES.M)
     private byte[] encryptDataM(byte[] input, String keyAlias, KeyStore keyStore, byte[] iv) {
+
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesEncrypt(input, iv, key);
+            return Cryptography.aesCbcPkcs7Encrypt(input, iv, key);
 
         } catch (
                 KeyStoreException
                         | NoSuchAlgorithmException
                         | UnrecoverableKeyException
-                        | InvalidKeyException
-                        | NoSuchPaddingException
-                        | BadPaddingException
-                        | IllegalBlockSizeException
-                        | InvalidAlgorithmParameterException e) {
+                        | InvalidCipherTextException e) {
+
             Logger.error(e);
             throw new MuunKeyStoreException(e);
         }
@@ -180,17 +177,14 @@ public class KeyStoreProvider {
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesDecrypt(input, key, iv);
+            return Cryptography.aesCbcPkcs7Decrypt(input, key, iv);
 
         } catch (
                 NoSuchAlgorithmException
-                        | NoSuchPaddingException
-                        | BadPaddingException
                         | UnrecoverableKeyException
                         | KeyStoreException
-                        | IllegalBlockSizeException
-                        | InvalidAlgorithmParameterException
-                        | InvalidKeyException e) {
+                        | InvalidCipherTextException e) {
+
             Logger.error(e);
             throw new MuunKeyStoreException(e);
         }

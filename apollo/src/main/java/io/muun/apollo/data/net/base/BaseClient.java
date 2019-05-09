@@ -1,26 +1,29 @@
 package io.muun.apollo.data.net.base;
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor;
 import io.muun.apollo.data.net.base.interceptor.DuplicatingInterceptor;
 import io.muun.apollo.data.net.base.interceptor.IdempotencyKeyInterceptor;
+import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor;
 import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor;
 import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.external.Globals;
+import io.muun.apollo.external.HoustonConfig;
 import io.muun.common.Optional;
 
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.CertificatePinner;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.validation.constraints.NotNull;
 
 public class BaseClient<ServiceT> {
@@ -44,14 +47,16 @@ public class BaseClient<ServiceT> {
     VersionHeaderInterceptor versionHeaderInterceptor;
 
     @Inject
+    LanguageHeaderInterceptor languageHeaderInterceptor;
+
+    @Inject
     IdempotencyKeyInterceptor idempotencyKeyInterceptor;
 
     @Inject
     Configuration config;
 
     @Inject
-    @Named("houstonUrl")
-    String houstonUrl;
+    HoustonConfig houstonConfig;
 
     /**
      * Creates a client.
@@ -75,8 +80,9 @@ public class BaseClient<ServiceT> {
             serverJwt = authRepository.getServerJwt();
 
             service = new Retrofit.Builder()
-                    .baseUrl(houstonUrl)
+                    .baseUrl(houstonConfig.getUrl())
                     .client(getHttpClient())
+                    .addConverterFactory(ScalarsConverterFactory.create()) // note: before jackson!
                     .addConverterFactory(JacksonConverterFactory.create(jsonMapper))
                     .addCallAdapterFactory(callAdapterFactory)
                     .build()
@@ -93,13 +99,11 @@ public class BaseClient<ServiceT> {
     private OkHttpClient getHttpClient() {
 
         final CertificatePinner certificatePinner = new CertificatePinner.Builder()
-                .add(
-                        config.getString("net.serverDomain"),
-                        BuildConfig.SERVER_CERT_PIN_L1
-                )
-                .add(
-                        config.getString("net.serverDomain"),
-                        BuildConfig.SERVER_CERT_PIN_L2
+                // CN=HOUSTON_DOMAIN
+                .add(houstonConfig.getDomain(), houstonConfig.getCertificatePin())
+                // CN=Amazon, OU=Server CA 1B
+                .add(houstonConfig.getDomain(),
+                        "sha256/JSMzqOOrtyOT1kmau6zKhgT676hGgczD5VMdRMyJZFA="
                 )
                 .build();
 
@@ -107,6 +111,7 @@ public class BaseClient<ServiceT> {
                 .certificatePinner(certificatePinner)
                 .readTimeout(config.getLong("net.timeoutInSec"), TimeUnit.SECONDS)
                 .addInterceptor(versionHeaderInterceptor)
+                .addInterceptor(languageHeaderInterceptor)
                 .addInterceptor(authHeaderInterceptor)
                 .addInterceptor(idempotencyKeyInterceptor);
 
@@ -117,6 +122,10 @@ public class BaseClient<ServiceT> {
             builder.addInterceptor(loggingInterceptor);
         }
 
+        if (!isReleaseBuild() && config.getBoolean("net.interceptors.stetho")) {
+            builder.addNetworkInterceptor(new StethoInterceptor());
+        }
+
         if (config.getBoolean("net.interceptors.idempotencyTester")) {
             builder.addInterceptor(new DuplicatingInterceptor());
         }
@@ -125,6 +134,6 @@ public class BaseClient<ServiceT> {
     }
 
     private boolean isReleaseBuild() {
-        return BuildConfig.BUILD_TYPE.equals("release");
+        return Globals.INSTANCE.getBuildType().equals("release");
     }
 }

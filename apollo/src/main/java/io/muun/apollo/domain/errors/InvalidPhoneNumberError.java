@@ -1,15 +1,16 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class InvalidPhoneNumberError extends UserFacingError {
 
-    private static final String message = "Invalid phone number";
 
     public InvalidPhoneNumberError() {
-        super(message);
+        super(UserFacingErrorMessages.INSTANCE.invalidPhoneNumber());
     }
 
     public InvalidPhoneNumberError(Throwable cause) {
-        super(message, cause);
+        super(UserFacingErrorMessages.INSTANCE.invalidPhoneNumber(), cause);
     }
 }

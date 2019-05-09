@@ -25,7 +25,7 @@ public class BitcoinCurrencyProvider implements CurrencyProviderSpi {
                 .setDefaultFractionDigits(BitcoinUtils.BITCOIN_PRECISION)
                 .build();
 
-        final Set<CurrencyUnit> currencies = new HashSet<CurrencyUnit>();
+        final Set<CurrencyUnit> currencies = new HashSet<>();
         currencies.add(btc);
 
         this.currencies = Collections.unmodifiableSet(currencies);
@@ -47,11 +47,8 @@ public class BitcoinCurrencyProvider implements CurrencyProviderSpi {
             return true;
         }
 
-        if (Boolean.TRUE.equals(query.getBoolean("Bitcoin"))) {
-            return true;
-        }
+        return Boolean.TRUE.equals(query.getBoolean("Bitcoin"));
 
-        return false;
     }
 
     @Override

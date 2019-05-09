@@ -1,27 +1,31 @@
 package io.muun.apollo.data.di;
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.db.contact.ContactDao;
+import io.muun.apollo.data.db.hwallet.HardwareWalletDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.phone_contact.PhoneContactDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
+import io.muun.apollo.data.db.satellite_pairing.SatellitePairingDao;
+import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
 import io.muun.apollo.data.os.Configuration;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.execution.JobExecutor;
-import io.muun.apollo.domain.NotificationService;
-import io.muun.common.bitcoinj.NetworkParametersHelper;
+import io.muun.apollo.external.HoustonConfig;
+import io.muun.apollo.external.NotificationService;
 
 import android.content.Context;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
 import org.bitcoinj.core.NetworkParameters;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
 import java.util.concurrent.Executor;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Module
@@ -29,14 +33,22 @@ public class DataModule {
 
     private final Context applicationContext;
 
-    private final NotificationService notificationService;
+    private final Func2<Context, ExecutionTransformerFactory, NotificationService>
+            notificationServiceFactory;
+
+    private final HoustonConfig houstonConfig;
 
     /**
      * Creates a data module.
      */
-    public DataModule(Context applicationContext, NotificationService notificationService) {
+    public DataModule(
+            Context applicationContext,
+            Func2<Context, ExecutionTransformerFactory, NotificationService> factory,
+            HoustonConfig houstonConfig) {
+
         this.applicationContext = applicationContext;
-        this.notificationService = notificationService;
+        this.notificationServiceFactory = factory;
+        this.houstonConfig = houstonConfig;
     }
 
     @Provides
@@ -56,9 +68,16 @@ public class DataModule {
      */
     @Provides
     @Singleton
-    DaoManager provideDaoManager(Context context, ContactDao contactDao, OperationDao operationDao,
-                                 PhoneContactDao phoneContactDao, PublicProfileDao publicProfileDao,
-                                 Configuration config, Executor executor) {
+    DaoManager provideDaoManager(Context context,
+                                 ContactDao contactDao,
+                                 OperationDao operationDao,
+                                 PhoneContactDao phoneContactDao,
+                                 PublicProfileDao publicProfileDao,
+                                 SatellitePairingDao satellitePairingDao,
+                                 HardwareWalletDao hardwareWalletDao,
+                                 SubmarineSwapDao submarineSwapDao,
+                                 Configuration config,
+                                 Executor executor) {
 
         return new DaoManager(
                 context,
@@ -68,14 +87,25 @@ public class DataModule {
                 contactDao,
                 operationDao,
                 phoneContactDao,
-                publicProfileDao
+                publicProfileDao,
+                satellitePairingDao,
+                hardwareWalletDao,
+                submarineSwapDao
         );
     }
 
     @Provides
     @Singleton
-    NetworkParameters provideNetworkParameters(Configuration config) {
-        return NetworkParametersHelper.getNetworkParametersFromName(BuildConfig.NETWORK_NAME);
+    NotificationService provideNotificationService(
+            Context context,
+            ExecutionTransformerFactory executionTransformerFactory) {
+        return notificationServiceFactory.call(context, executionTransformerFactory);
+    }
+
+    @Provides
+    @Singleton
+    NetworkParameters provideNetworkParameters() {
+        return houstonConfig.getNetwork();
     }
 
     @Provides
@@ -92,29 +122,13 @@ public class DataModule {
 
     @Provides
     @Singleton
-    NotificationService provideNotificationService() {
-        return notificationService;
+    ObjectMapper provideObjectMapper() {
+        return new ObjectMapper();
     }
 
-    /**
-     * Provide the URL of houston.
-     */
     @Provides
     @Singleton
-    @Named("houstonUrl")
-    String provideHoustonUrl(Configuration config) {
-        String basePath = config.getString("net.serverBasePath");
-
-        if (! basePath.isEmpty()) {
-            basePath += "/"; // baseUrl needs a trailing slash
-        }
-
-        return String.format(
-                "%s://%s:%s/%s",
-                config.getString("net.serverProtocol"),
-                config.getString("net.serverDomain"),
-                config.getString("net.serverPort"),
-                basePath
-        );
+    HoustonConfig provideHoustonConfig() {
+        return houstonConfig;
     }
 }

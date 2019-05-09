@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class TooManyWrongVerificationCodesError extends UserFacingError {
 
     public TooManyWrongVerificationCodesError() {
-        super("Too many failed attempts. We're sending you a new code");
+        super(UserFacingErrorMessages.INSTANCE.tooManyWrongVerificationCodes());
     }
 }

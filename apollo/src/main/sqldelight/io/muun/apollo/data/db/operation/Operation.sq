@@ -22,7 +22,9 @@ CREATE TABLE operations (
     description TEXT,
     status TEXT AS io.muun.common.model.OperationStatus NOT NULL,
     creation_date TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
-    exchange_rate_window_hid INTEGER NOT NULL
+    exchange_rate_window_hid INTEGER NOT NULL,
+    hardware_wallet_hid INTEGER REFERENCES hardware_wallets(hid),
+    submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid)
 );
 
 updateStatus:
@@ -31,30 +33,34 @@ SET confirmations = ?, hash = ?, status = ?
 WHERE hid = ?;
 
 selectAll:
-SELECT operations.*, sender_profile.*, receiver_profile.*
+SELECT operations.*, sender_profile.*, receiver_profile.*, swap.*
 FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
 ORDER BY creation_date DESC;
 
 selectById:
-SELECT operations.*, sender_profiles.*, receiver_profiles.*
+SELECT operations.*, sender_profiles.*, receiver_profiles.*, swap.*
 FROM operations
 LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
 LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
 WHERE operations.id = ?;
 
 selectByHid:
-SELECT operations.*, sender_profiles.*, receiver_profiles.*
+SELECT operations.*, sender_profiles.*, receiver_profiles.*, swap.*
 FROM operations
 LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
 LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
 WHERE operations.hid = ?;
 
 selectLatest:
-SELECT operations.*, sender_profiles.*, receiver_profiles.*
+SELECT operations.*, sender_profiles.*, receiver_profiles.*, swap.*
 FROM operations
 LEFT JOIN public_profiles AS sender_profiles ON sender_hid = sender_profiles.hid
 LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profiles.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
 ORDER BY operations.id DESC
 LIMIT 1;

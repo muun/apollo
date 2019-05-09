@@ -76,7 +76,7 @@ public class ClipboardProvider {
                         }
                 ),
 
-                clipboardListener -> clipboard.removePrimaryClipChangedListener(clipboardListener)
+                clipboard::removePrimaryClipChangedListener
 
         ).distinctUntilChanged();
     }

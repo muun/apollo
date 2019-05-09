@@ -15,8 +15,11 @@ import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptChunk;
 import org.bitcoinj.script.ScriptException;
+import org.bitcoinj.script.ScriptOpCodes;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 public final class TransactionHelpers {
 
@@ -55,9 +58,9 @@ public final class TransactionHelpers {
      * <p>We build the transaction with the same inputs and outputs, but without the input scripts,
      * and return the hash of this transaction.
      */
-    public static String getNonMalleableHash(org.bitcoinj.core.Transaction tx) {
+    public static String getNonMalleableHash(Transaction tx) {
 
-        final org.bitcoinj.core.Transaction txClone = new org.bitcoinj.core.Transaction(
+        final Transaction txClone = new Transaction(
                 tx.getParams(),
                 tx.unsafeBitcoinSerialize()
         );
@@ -72,9 +75,17 @@ public final class TransactionHelpers {
     /**
      * Get the hex-encoded raw transaction.
      */
-    public static String getHexRawTransaction(org.bitcoinj.core.Transaction tx) {
+    public static String getHexRawTransaction(Transaction tx) {
 
         return Encodings.bytesToHex(tx.unsafeBitcoinSerialize());
+    }
+
+    /**
+     * Deserialize a transaction from its hex encoding.
+     */
+    public static Transaction getTransactionFromHexRaw(NetworkParameters network, String hexTx) {
+
+        return new Transaction(network, Encodings.hexToBytes(hexTx));
     }
 
     /**
@@ -82,11 +93,80 @@ public final class TransactionHelpers {
      */
     public static String getAddressFromOutput(TransactionOutput output,
                                               NetworkParameters networkParameters) {
-        try {
-            return output.getScriptPubKey().getToAddress(networkParameters).toString();
-        } catch (ScriptException exception) {
-            return null; // Bitcoinj sometimes fail to parse non-standard outputs
+        final Address address = extractAddressFromOutput(output).orElse(null);
+        return address != null ? address.toBase58() : null;
+    }
+
+    /**
+     * Extract an address from an output.
+     *
+     * <p>We only support P2PKH and P2SH addresses. Neither the old P2PK addresses nor the new
+     * P2WPKH/P2WSH addresses are supported.
+     */
+    private static Optional<Address> extractAddressFromOutput(TransactionOutput output) {
+
+        final Script script = getOutputScript(output);
+        if (script == null) {
+            return Optional.empty();
         }
+
+        final List<ScriptChunk> chunks = script.getChunks();
+        final NetworkParameters network = output.getParams();
+
+        if (isP2PkhOutput(chunks)) {
+            final int header = network.getAddressHeader();
+            final byte[] hash = chunks.get(2).data;
+            return Optional.of(new Address(network, header, hash));
+        }
+
+        if (isP2ShOutput(chunks)) {
+            final int header = network.getP2SHHeader();
+            final byte[] hash = chunks.get(1).data;
+            return Optional.of(new Address(network, header, hash));
+        }
+
+        return Optional.empty();
+    }
+
+    @Nullable
+    private static Script getOutputScript(TransactionOutput output) {
+        try {
+            return output.getScriptPubKey();
+        } catch (ScriptException e) {
+            return null; // bitcoinj sometimes fails to parse non-standard outputs
+        }
+    }
+
+    /**
+     * Decide whether a script is a P2PKH output script.
+     */
+    private static boolean isP2PkhOutput(List<ScriptChunk> chunks) {
+
+        // A P2PKH output script is exactly:
+        // OP_DUP OP_HASH160 <public key hash> OP_EQUALVERIFY OP_CHECKSIG
+
+        return chunks.size() == 5
+                && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_DUP)
+                && chunks.get(1).equalsOpCode(ScriptOpCodes.OP_HASH160)
+                && chunks.get(2).data != null
+                && chunks.get(2).data.length == Address.LENGTH
+                && chunks.get(3).equalsOpCode(ScriptOpCodes.OP_EQUALVERIFY)
+                && chunks.get(4).equalsOpCode(ScriptOpCodes.OP_CHECKSIG);
+    }
+
+    /**
+     * Decide whether a script is a P2SH output script.
+     */
+    private static boolean isP2ShOutput(List<ScriptChunk> chunks) {
+
+        // A P2SH output script is exactly:
+        // OP_HASH160 <script hash> OP_EQUAL
+
+        return chunks.size() == 3
+                && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_HASH160)
+                && chunks.get(1).data != null
+                && chunks.get(1).data.length == Address.LENGTH
+                && chunks.get(2).equalsOpCode(ScriptOpCodes.OP_EQUAL);
     }
 
     /**
@@ -112,11 +192,15 @@ public final class TransactionHelpers {
             return Optional.empty();
         }
 
-        final Script script = input.getScriptSig();
+        final Script script = getInputScript(input);
+        if (script == null) {
+            return Optional.empty();
+        }
+
         final List<ScriptChunk> chunks = script.getChunks();
         final NetworkParameters network = input.getParams();
 
-        if (isP2Pkh(chunks)) {
+        if (isP2PkhInput(chunks)) {
             final byte[] rawPubKey = chunks.get(1).data;
             final byte[] addressHash = Hashes.sha256Ripemd160(rawPubKey);
 
@@ -124,7 +208,7 @@ public final class TransactionHelpers {
             return Optional.of(new Address(network, p2PkhHeader, addressHash));
         }
 
-        if (isP2Sh(chunks)) {
+        if (isP2ShInput(chunks)) {
             final byte[] rawRedeemScript = chunks.get(chunks.size() - 1).data;
             final byte[] addressHash = Hashes.sha256Ripemd160(rawRedeemScript);
 
@@ -135,10 +219,19 @@ public final class TransactionHelpers {
         return Optional.empty();
     }
 
+    @Nullable
+    private static Script getInputScript(TransactionInput input) {
+        try {
+            return input.getScriptSig();
+        } catch (ScriptException e) {
+            return null; // bitcoinj sometimes fails to parse non-standard inputs
+        }
+    }
+
     /**
      * Decide whether a script is a P2PKH-spending input script. This is a best effort guess.
      */
-    private static boolean isP2Pkh(List<ScriptChunk> chunks) {
+    private static boolean isP2PkhInput(List<ScriptChunk> chunks) {
 
         // P2PKH inputs consist of a push of a DER-encoded signature, followed by a push of a public
         // key.
@@ -168,7 +261,7 @@ public final class TransactionHelpers {
     /**
      * Decide whether a script is a P2SH-spending input script. This is a best effort guess.
      */
-    private static boolean isP2Sh(List<ScriptChunk> chunks) {
+    private static boolean isP2ShInput(List<ScriptChunk> chunks) {
 
         // P2SH inputs consist of a non-zero number of pushes, where the last push has the redeem
         // script.

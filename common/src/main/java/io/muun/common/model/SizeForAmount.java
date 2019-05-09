@@ -2,6 +2,7 @@ package io.muun.common.model;
 
 
 public class SizeForAmount {
+
     public long amountInSatoshis;
     public int sizeInBytes;
 

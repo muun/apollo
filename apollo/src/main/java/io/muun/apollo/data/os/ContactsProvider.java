@@ -1,5 +1,6 @@
 package io.muun.apollo.data.os;
 
+import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.Optional;
 import io.muun.common.model.PhoneNumber;
@@ -48,6 +49,12 @@ public class ContactsProvider {
         }
 
         final Cursor cursor = queryPhoneNumbers();
+
+        if (cursor == null) {
+            Logger.error("ContentResolver returned null cursor.");
+            return new ArrayList<>();
+        }
+
         final List<PhoneContact> phoneContacts = new ArrayList<>(cursor.getCount());
 
         while (cursor.moveToNext()) {

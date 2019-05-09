@@ -31,6 +31,9 @@ public class SessionJson {
     @NotEmpty
     public String gcmRegistrationToken;
 
+    @Nullable // This is sent only by newer clients. Older Apollos send it empty.
+    public ClientTypeJson clientType;
+
     /**
      * Json constructor.
      */
@@ -44,13 +47,15 @@ public class SessionJson {
                        String email,
                        String buildType,
                        int version,
-                       String gcmRegistrationToken) {
+                       String gcmRegistrationToken,
+                       ClientTypeJson clientType) {
 
         this.requestId = requestId;
         this.email = email;
         this.buildType = buildType;
         this.version = version;
         this.gcmRegistrationToken = gcmRegistrationToken;
+        this.clientType = clientType;
     }
 
     /**
@@ -61,7 +66,8 @@ public class SessionJson {
                        String email,
                        String buildType,
                        int version,
-                       String gcmRegistrationToken) {
+                       String gcmRegistrationToken,
+                       ClientTypeJson clientType) {
 
         this.uuid = uuid;
         this.requestId = requestId;
@@ -69,5 +75,6 @@ public class SessionJson {
         this.buildType = buildType;
         this.version = version;
         this.gcmRegistrationToken = gcmRegistrationToken;
+        this.clientType = clientType;
     }
 }

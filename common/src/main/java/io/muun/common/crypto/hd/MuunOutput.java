@@ -1,5 +1,7 @@
 package io.muun.common.crypto.hd;
 
+import io.muun.common.api.MuunOutputJson;
+
 import javax.validation.constraints.NotNull;
 
 public class MuunOutput {
@@ -10,6 +12,10 @@ public class MuunOutput {
     private final int index;
 
     private final long amount;
+
+    public static MuunOutput fromJson(MuunOutputJson json) {
+        return new MuunOutput(json.txId, json.index, json.amount);
+    }
 
     /**
      * Constructor.
@@ -30,5 +36,9 @@ public class MuunOutput {
 
     public long getAmount() {
         return amount;
+    }
+
+    public MuunOutputJson toJson() {
+        return new MuunOutputJson(txId, index, amount);
     }
 }

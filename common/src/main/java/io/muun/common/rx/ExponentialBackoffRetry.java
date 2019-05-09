@@ -1,5 +1,6 @@
 package io.muun.common.rx;
 
+import io.muun.common.Optional;
 import io.muun.common.utils.MathUtils;
 
 import rx.Observable;
@@ -15,19 +16,17 @@ public class ExponentialBackoffRetry implements
     private final int maxRetries;
     private final Class<? extends Throwable> retryErrorType;
 
+    private Throwable lastError;
+
     private static class CallState {
         int retryCount = 0;
-    }
-
-    public ExponentialBackoffRetry(long baseInterval, int maxRetries) {
-        this(baseInterval, maxRetries, Throwable.class);
     }
 
     /**
      * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
      *
-     * @param baseInterval the initial delay magnitude
-     * @param maxRetries the maximum amount of retries before failing
+     * @param baseInterval   the initial delay magnitude
+     * @param maxRetries     the maximum amount of retries before failing
      * @param retryErrorType the error type that will trigger a retry
      */
     public ExponentialBackoffRetry(
@@ -44,18 +43,17 @@ public class ExponentialBackoffRetry implements
     public Observable<?> call(Observable<? extends Throwable> errors) {
         final CallState state = new CallState();
 
-        return errors.flatMap(new Func1<Throwable, Observable<?>>() {
+        return errors.flatMap((Func1<Throwable, Observable<?>>) error -> {
 
-            public Observable<?> call(Throwable error) {
-                if (state.retryCount < maxRetries && shouldRetry(error)) {
-                    state.retryCount++;
-                    return Observable.timer(getDelayForRetry(state.retryCount), TimeUnit.SECONDS);
+            lastError = error;
 
-                } else {
-                    return Observable.error(error);
-                }
+            if (state.retryCount < maxRetries && shouldRetry(error)) {
+                state.retryCount++;
+                return Observable.timer(getDelayForRetry(state.retryCount), TimeUnit.SECONDS);
+
+            } else {
+                return Observable.error(error);
             }
-
         });
     }
 
@@ -64,11 +62,15 @@ public class ExponentialBackoffRetry implements
      * specific error, or abort the sequence. By default, all errors of type {retryErrorType} are
      * retried.
      */
-    protected boolean shouldRetry(Throwable error) {
+    private boolean shouldRetry(Throwable error) {
         return retryErrorType.isInstance(error);
     }
 
     private long getDelayForRetry(int retryNumber) {
         return MathUtils.longPow(2, retryNumber - 1) * baseInterval;
+    }
+
+    public Optional<Throwable> getLastError() {
+        return Optional.ofNullable(lastError);
     }
 }

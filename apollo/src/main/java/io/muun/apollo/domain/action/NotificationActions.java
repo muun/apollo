@@ -10,7 +10,7 @@ import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
-import io.muun.common.api.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationJson;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
@@ -85,15 +85,19 @@ public class NotificationActions {
      * Pull the latest notifications from Hosuton.
      */
     public Observable<Void> pullNotifications() {
-        Logger.debug("[Notifications] Pulling...");
 
-        final long lastProccessedId = notificationRepository.getLastProcessedId();
+        return Observable.defer(() -> {
 
-        return fetchNotificationReport(lastProccessedId)
-                .map(report -> {
-                    onNotificationReport(report);
-                    return null;
-                });
+            Logger.debug("[Notifications] Pulling...");
+
+            final long lastProccessedId = notificationRepository.getLastProcessedId();
+
+            return fetchNotificationReport(lastProccessedId)
+                    .map(report -> {
+                        onNotificationReport(report);
+                        return null;
+                    });
+        });
     }
 
     /**
@@ -169,7 +173,8 @@ public class NotificationActions {
         try {
             notificationProcessor.process(notification).await();
         } catch (Throwable error) {
-            throw NotificationProcessingError.fromCause(notification, error);
+            // Skip the notification, log the error:
+            Logger.error(NotificationProcessingError.fromCause(notification, error));
         }
 
         notificationRepository.setLastProcessedId(notification.id);

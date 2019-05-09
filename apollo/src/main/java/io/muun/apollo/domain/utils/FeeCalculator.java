@@ -27,20 +27,29 @@ public class FeeCalculator {
     }
 
     /**
-     * Calculate the maximum spendable amount for a total balance, subtracting the fee it would cost
-     * to actually send it.
+     * Calculate the maximum spendable amount (in satoshis) for a total balance, subtracting the
+     * fee it would cost to actually send it.
      */
     public long getMaxSpendableAmount() {
         if (sizeProgression.size() == 0) {
             return 0;
         }
 
-        final SizeForAmount maximumSizeForAmount = sizeProgression.get(sizeProgression.size() - 1);
+        long peak = 0;
+        for (SizeForAmount sizeForAmount : sizeProgression) {
 
-        final long amount = maximumSizeForAmount.amountInSatoshis;
-        final long fee = satoshisPerByte * maximumSizeForAmount.sizeInBytes;
+            final long fee = sizeForAmount.sizeInBytes * satoshisPerByte;
+            final long candidatePeak = sizeForAmount.amountInSatoshis - fee;
 
-        return amount - fee;
+            // A new candidatePeak may not be higher than the current peak. This happens because
+            // there are utxos that are worth less than the fee that it would cost to spend them.
+            // And this is regardless of the order of the utxos in the sizeProgression.
+            if (peak < candidatePeak) {
+                peak = candidatePeak;
+            }
+        }
+
+        return peak;
     }
 
     /**

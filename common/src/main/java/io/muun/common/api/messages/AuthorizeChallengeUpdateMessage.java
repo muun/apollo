@@ -8,20 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthorizeChallengeUpdateMessage extends AbstractMessage {
 
-    public static final String TYPE = "challenge/update/authorize";
-    public static final SessionStatus PERMISSION = SessionStatus.LOGGED_IN;
+    public static final MessageSpec SPEC = new MessageSpec(
+            "challenge/update/authorize",
+            SessionStatus.LOGGED_IN,
+            MessageOrigin.HOUSTON
+    );
 
     public PendingChallengeUpdateJson pendingUpdateJson;
-
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public SessionStatus getPermission() {
-        return PERMISSION;
-    }
 
     /**
      * Json constructor.
@@ -34,5 +27,10 @@ public class AuthorizeChallengeUpdateMessage extends AbstractMessage {
      */
     public AuthorizeChallengeUpdateMessage(PendingChallengeUpdateJson pendingUpdateJson) {
         this.pendingUpdateJson = pendingUpdateJson;
+    }
+
+    @Override
+    public MessageSpec getSpec() {
+        return SPEC;
     }
 }

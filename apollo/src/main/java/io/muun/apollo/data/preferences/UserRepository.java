@@ -53,6 +53,8 @@ public class UserRepository extends BaseRepository {
 
     private static final String CONTACTS_PERMISSION_STATE_KEY = "contacts_permission_state_key";
 
+    private static final String FCM_TOKEN_KEY = "fcm_token_key";
+
     private final Preference<Long> hidPreference;
 
     private final Preference<String> firstNamePreference;
@@ -84,6 +86,8 @@ public class UserRepository extends BaseRepository {
     private final Preference<String> passwordChangeAuthorizedUuidPreference;
 
     private final Preference<ContactsPermissionState> conctactsPermissionStatePreference;
+
+    private final Preference<String> fcmTokenPreference;
 
     /**
      * Creates a user preference repository.
@@ -129,6 +133,8 @@ public class UserRepository extends BaseRepository {
                 ContactsPermissionState.DENIED,
                 ContactsPermissionState.class
         );
+
+        fcmTokenPreference = rxSharedPreferences.getString(FCM_TOKEN_KEY);
     }
 
     @Override
@@ -187,6 +193,7 @@ public class UserRepository extends BaseRepository {
                 (firstName, lastName, profilePicture) -> {
                     if (firstName == null) {
                         return Optional.empty();
+
                     } else {
                         return Optional.of(new UserProfile(firstName, lastName, profilePicture));
                     }
@@ -202,6 +209,7 @@ public class UserRepository extends BaseRepository {
             firstNamePreference.delete();
             lastNamePreference.delete();
             profilePictureUrlPreference.delete();
+
         } else {
             firstNamePreference.set(profile.getFirstName());
             lastNamePreference.set(profile.getLastName());
@@ -218,6 +226,7 @@ public class UserRepository extends BaseRepository {
                 (phoneNumber, isVerified) -> {
                     if (phoneNumber == null) {
                         return Optional.empty();
+
                     } else {
                         return Optional.of(new UserPhoneNumber(phoneNumber, isVerified));
                     }
@@ -232,6 +241,7 @@ public class UserRepository extends BaseRepository {
         if (phoneNumber != null) {
             phoneNumberPreference.set(phoneNumber.toE164String());
             phoneNumberVerifiedPreference.set(phoneNumber.isVerified());
+
         } else {
             phoneNumberPreference.delete();
         }
@@ -279,6 +289,7 @@ public class UserRepository extends BaseRepository {
     public void storeSignupDraft(SignupDraft draft) {
         if (draft != null) {
             signupDraftPreference.set(draft.serialize());
+
         } else {
             signupDraftPreference.delete();
         }
@@ -301,6 +312,7 @@ public class UserRepository extends BaseRepository {
 
             } catch (IllegalArgumentException ex) {
                 // SignupDraft may have changed, and this is an old format. Discard it:
+                Logger.error("Could not deserialize signupDraft: " + signupDraftPreference.get());
                 signupDraftPreference.delete();
             }
         }
@@ -380,4 +392,13 @@ public class UserRepository extends BaseRepository {
             })
             .map(SerializationUtils::deserializeCurrencyUnit);
     }
+
+    public void storeFcmToken(String token) {
+        fcmTokenPreference.set(token);
+    }
+
+    public Preference<String> getFcmToken() {
+        return fcmTokenPreference;
+    }
+
 }

@@ -1,5 +1,6 @@
 package io.muun.apollo.data.db.base;
 
+import io.muun.apollo.domain.errors.DatabaseError;
 import io.muun.apollo.domain.model.base.PersistentModel;
 
 import android.content.ContentValues;
@@ -101,7 +102,7 @@ public class BaseDao<ModelT extends PersistentModel> {
 
         return Observable.defer(() ->
                 Observable.just(briteDb.insert(tableName, contentValues, conflictAlgorithm))
-        );
+        ).onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -130,7 +131,7 @@ public class BaseDao<ModelT extends PersistentModel> {
 
         return Observable.defer(() -> Observable.just(
                 briteDb.update(tableName, values, conflictAlgorithm, whereClause, whereArgs)
-        ));
+        )).onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -153,7 +154,7 @@ public class BaseDao<ModelT extends PersistentModel> {
 
         return Observable.defer(() ->
                 Observable.just(briteDb.delete(tableName, whereClause, whereArgs))
-        );
+        ).onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -163,7 +164,8 @@ public class BaseDao<ModelT extends PersistentModel> {
     protected Observable<List<ModelT>> fetchList(@NotNull SqlDelightStatement query) {
 
         return briteDb.createQuery(query.tables, query.statement, query.args)
-                .mapToList(outputMapper);
+                .mapToList(outputMapper)
+                .onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -173,14 +175,10 @@ public class BaseDao<ModelT extends PersistentModel> {
     protected List<ModelT> fetchListOnce(@NotNull SqlDelightStatement query) {
         final List<ModelT> results = new ArrayList<>();
 
-        final Cursor cursor = briteDb.query(query.statement, query.args);
-
-        try {
+        try (Cursor cursor = briteDb.query(query.statement, query.args)) {
             while (cursor.moveToNext()) {
                 results.add(outputMapper.call(cursor));
             }
-        } finally {
-            cursor.close();
         }
 
         return results;
@@ -249,7 +247,8 @@ public class BaseDao<ModelT extends PersistentModel> {
 
                     element.id = rowId;
                     return element;
-                });
+                })
+                .onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -272,7 +271,7 @@ public class BaseDao<ModelT extends PersistentModel> {
                         transaction.close();
                     })
                     .doOnError(error -> transaction.close());
-        });
+        }).onErrorResumeNext(this::wrapError);
     }
 
     /**
@@ -297,5 +296,9 @@ public class BaseDao<ModelT extends PersistentModel> {
     protected void executeStatement(SqlDelightCompiledStatement.Insert compiledStatement) {
 
         briteDb.executeInsert(compiledStatement.table, compiledStatement.program);
+    }
+
+    protected <T> Observable<T> wrapError(Throwable error) {
+        return Observable.error(new DatabaseError("Error on " + getClass().getSimpleName(), error));
     }
 }

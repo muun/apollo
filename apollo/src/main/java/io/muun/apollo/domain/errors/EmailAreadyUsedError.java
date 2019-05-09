@@ -1,9 +1,11 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class EmailAreadyUsedError extends UserFacingError {
 
     public EmailAreadyUsedError() {
-        super("Your e-mail address is already associated with a Muun user");
+        super(UserFacingErrorMessages.INSTANCE.emailAreadyUsed());
     }
 }

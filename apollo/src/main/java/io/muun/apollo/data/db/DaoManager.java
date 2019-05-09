@@ -10,8 +10,6 @@ import com.squareup.sqlbrite.SqlBrite;
 import rx.Observable;
 import rx.Scheduler;
 
-import java.io.IOException;
-
 public class DaoManager {
 
     private final BaseDao[] daos;
@@ -82,7 +80,7 @@ public class DaoManager {
     /**
      * Close the database.
      */
-    public void close() throws IOException {
+    public void close() {
 
         database.close();
     }

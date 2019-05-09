@@ -97,8 +97,8 @@ public class IntegrityActions {
         // piece on a future occasion.
 
         final PublicKeySetJson publicKeySet = new PublicKeySetJson(
-                apiObjectsMapper.createPublicKey(basePublicKey),
-                apiObjectsMapper.createExternalAddressesRecord(externalMaxUsedIndex)
+                apiObjectsMapper.mapPublicKey(basePublicKey),
+                apiObjectsMapper.mapExternalAddressesRecord(externalMaxUsedIndex)
         );
 
         final IntegrityCheck integrityCheck = new IntegrityCheck(publicKeySet, balanceInSatoshis);

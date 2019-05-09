@@ -2,43 +2,34 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.operation.OperationDao;
-import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
-import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.NotificationService;
-import io.muun.apollo.domain.action.base.AsyncAction1;
+import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.operation.CreateOperationAction;
+import io.muun.apollo.domain.action.operation.SubmitIncomingPaymentAction;
+import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
 import io.muun.apollo.domain.errors.AmountTooSmallError;
 import io.muun.apollo.domain.errors.InsufficientFundsError;
-import io.muun.apollo.domain.errors.InvalidOperationUriError;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.domain.model.BitcoinAmount;
-import io.muun.apollo.domain.model.BitcoinUriContent;
-import io.muun.apollo.domain.model.Contact;
-import io.muun.apollo.domain.model.ExchangeRateWindow;
-import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
-import io.muun.apollo.domain.model.PublicProfile;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.PendingWithdrawal;
+import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.utils.FeeCalculator;
-import io.muun.apollo.domain.utils.StringUtils;
 import io.muun.common.Optional;
+import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
-import io.muun.common.exception.MissingCaseError;
+import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.model.ExchangeRateProvider;
-import io.muun.common.model.OperationDirection;
-import io.muun.common.model.OperationStatus;
+import io.muun.common.model.SizeForAmount;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.BitcoinUtils;
@@ -46,14 +37,9 @@ import io.muun.common.utils.Preconditions;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import org.bitcoinj.core.Transaction;
-import org.javamoney.moneta.Money;
-import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
-import rx.subjects.BehaviorSubject;
 
-import java.math.BigDecimal;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -68,73 +54,64 @@ import javax.money.convert.CurrencyConversion;
 @Singleton
 public class OperationActions {
 
-    private final ContactActions contactActions;
-    private final BitcoinActions bitcoinActions;
-    private final SyncActions syncActions;
+    private final CreateOperationAction createOperation;
+    private final SubmitOutgoingPaymentAction submitOutgoingPayment;
+    private final SubmitIncomingPaymentAction submitIncomingPayment;
+
+    private final HardwareWalletActions hardwareWalletActions;
+    private final SatelliteActions satelliteActions;
+    private final AddressActions addressActions;
 
     private final OperationDao operationDao;
-    private final PublicProfileDao publicProfileDao;
 
-    private final KeysRepository keysRepository;
     private final UserRepository userRepository;
     private final FeeWindowRepository feeWindowRepository;
     private final ExchangeRateWindowRepository exchangeRateWindowRepository;
     private final TransactionSizeRepository transactionSizeRepository;
 
     private final HoustonClient houstonClient;
-    private final NotificationService notificationService;
     private final ClipboardProvider clipboardProvider;
 
-    public final AsyncAction1<OperationUri, PaymentRequest> resolveOperationUriAction;
-    public final AsyncAction1<PaymentRequest, Operation> prepareOperationAction;
-    public final AsyncAction1<Operation, Void> submitOperationAction;
-
-    private BehaviorSubject<Long> balanceInSatoshisCache;
+    public final AsyncAction2<String, String, Void> submitSignedWithdrawalAction;
 
     /**
      * Constructor.
      */
     @Inject
-    public OperationActions(ContactActions contactActions,
-                            BitcoinActions bitcoinActions,
-                            SyncActions syncActions,
+    public OperationActions(CreateOperationAction createOperation,
+                            SubmitOutgoingPaymentAction submitOutgoingPayment,
+                            SubmitIncomingPaymentAction submitIncomingPayment,
+                            HardwareWalletActions hardwareWalletActions,
+                            SatelliteActions satelliteActions,
+                            AddressActions addressActions,
                             OperationDao operationDao,
-                            PublicProfileDao publicProfileDao,
-                            KeysRepository keysRepository,
                             UserRepository userRepository,
                             FeeWindowRepository feeWindowRepository,
                             ExchangeRateWindowRepository exchangeRateWindowRepository,
                             TransactionSizeRepository transactionSizeRepository,
                             HoustonClient houstonClient,
-                            NotificationService notificationService,
                             ClipboardProvider clipboardProvider,
                             AsyncActionStore asyncActionStore) {
 
-        this.contactActions = contactActions;
-        this.bitcoinActions = bitcoinActions;
-        this.syncActions = syncActions;
+        this.createOperation = createOperation;
+        this.submitOutgoingPayment = submitOutgoingPayment;
+        this.submitIncomingPayment = submitIncomingPayment;
+        this.hardwareWalletActions = hardwareWalletActions;
+        this.satelliteActions = satelliteActions;
+        this.addressActions = addressActions;
 
         this.operationDao = operationDao;
-        this.publicProfileDao = publicProfileDao;
 
-        this.keysRepository = keysRepository;
         this.userRepository = userRepository;
         this.feeWindowRepository = feeWindowRepository;
         this.exchangeRateWindowRepository = exchangeRateWindowRepository;
         this.transactionSizeRepository = transactionSizeRepository;
 
         this.houstonClient = houstonClient;
-        this.notificationService = notificationService;
         this.clipboardProvider = clipboardProvider;
 
-        this.resolveOperationUriAction = asyncActionStore
-                .get("operation/resolveUri", this::resolveOperationUri);
-
-        this.prepareOperationAction = asyncActionStore
-                .get("operation/prepare", this::prepareOperation);
-
-        this.submitOperationAction = asyncActionStore
-                .get("operation/submit", this::submitOperation);
+        this.submitSignedWithdrawalAction = asyncActionStore
+                .get("operation/submit-signed-withdrawal", this::submitSignedWithdrawal);
     }
 
     /**
@@ -164,91 +141,79 @@ public class OperationActions {
     }
 
     /**
-     * Initialize an PaymentRequest using an OperationUri.
+     * Copy a Lightning Invoice to the system clipboard.
      */
-    private Observable<PaymentRequest> resolveOperationUri(OperationUri uri) {
-        return Observable.defer(() -> {
-            switch (uri.getScheme()) {
-                case "muun":
-                    return Observable.just(resolveMuunUri(uri));
-
-                case "bitcoin":
-                    return Observable.just(resolveBitcoinUri(uri));
-
-                default:
-                    throw new IllegalArgumentException(uri.toString());
-            }
-        }).onErrorReturn(error -> {
-            throw new InvalidOperationUriError(uri, error);
-        });
+    public void copyLnInvoiceToClipboard(String invoice) {
+        clipboardProvider.copy("Lightning invoice", invoice);
     }
 
     /**
-     * Build an Operation from an PaymentRequest, pre-fetching outdated information if needed.
+     * Copy a Submarine Swap Payment Preimage to the system clipboard.
      */
-    private Observable<Operation> prepareOperation(PaymentRequest draft) {
-        // We need to ensure our local data is up to date before creating an Operation from this
-        // Draft. If everything is already fresh (almost always the case) these calls will return
-        // immediately:
-        final List<Observable<?>> preparations = new LinkedList<>();
-
-        preparations.add(syncActions.syncRealTimeData());
-        preparations.add(fetchNextTransactionSize());
-
-        if (draft.contact != null) {
-            preparations.add(contactActions.syncSingleContact(draft.contact));
-        }
-
-        return Observable.zip(preparations, RxHelper::toVoid)
-                .map(ignored -> buildOperationFromDraft(draft));
+    public void copySwapPreimageToClipboard(String preimage) {
+        clipboardProvider.copy("Swap preimage", preimage);
     }
 
     /**
      * Send an Operation to Houston.
      */
     @VisibleForTesting
-    public Observable<Void> submitOperation(Operation operation) {
-        return Observable.defer(keysRepository::getBasePrivateKey)
-                .flatMap(baseUserPrivateKey -> houstonClient.newOperation(operation)
-                        .flatMap(operationCreated -> {
-                            final PublicKey baseMuunPublicKey = keysRepository
-                                    .getBaseMuunPublicKey();
+    public Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
 
-                            // Extract data from response:
-                            final Operation createdOperation = operationCreated.operation;
+        // Mmmh, this is not very elegant, or well named.
+        if (payReq.type == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
+            return submitIncomingPayment.action(payReq, prepPayment);
 
-                            final PartiallySignedTransaction partiallySignedTransaction =
-                                    operationCreated.partiallySignedTransaction;
+        } else {
+            return submitOutgoingPayment.action(payReq, prepPayment);
+        }
+    }
 
-                            final NextTransactionSize nextTransactionSize =
-                                    operationCreated.nextTransactionSize;
+    private Observable<Void> submitSignedWithdrawal(String uuid, String signedTransaction) {
+        return satelliteActions.watchPendingWithdrawal()
+                .first()
+                .flatMap(maybePendingWithdrawal -> {
+                    Logger.debug("[Operations] Submitting signed withdrawal");
 
-                            partiallySignedTransaction.addUserSignatures(
-                                    baseUserPrivateKey,
-                                    baseMuunPublicKey
-                            );
+                    if (! maybePendingWithdrawal.isPresent()) {
+                        Logger.debug("[Operations] No pending withdrawal present, ignoring");
+                        return Observable.just(null);
+                    }
 
-                            final Transaction fullySignedTransaction = partiallySignedTransaction
-                                    .getTransaction();
+                    final PendingWithdrawal pendingWithdrawal = maybePendingWithdrawal.get();
 
-                            operation.hid = createdOperation.hid;
-                            operation.hash = fullySignedTransaction.getHashAsString();
-                            operation.status = OperationStatus.SIGNED;
+                    if (! pendingWithdrawal.uuid.equals(uuid)) {
+                        Logger.debug("[Operations] Signed withdrawal with wrong UUID, ignoring");
+                        return Observable.just(null);
+                    }
 
-                            // Maybe Houston identified the receiver for us:
-                            operation.direction = createdOperation.direction;
-                            operation.receiverIsExternal = createdOperation.receiverIsExternal;
-                            operation.receiverProfile = createdOperation.receiverProfile;
-                            operation.receiverAddress = createdOperation.receiverAddress;
-                            operation.receiverAddressDerivationPath = createdOperation
-                                    .receiverAddressDerivationPath;
+                    pendingWithdrawal.signedSerializedTransaction = signedTransaction;
 
-                            return houstonClient
-                                    .pushTransaction(fullySignedTransaction, createdOperation.hid)
-                                    .flatMap(ignored -> onRemoteOperationCreated(
-                                            operation, nextTransactionSize
-                                    ));
-                        }));
+                    final List<HardwareWalletOutput> spentOutputs = hardwareWalletActions
+                            .buildWithdrawal(pendingWithdrawal)
+                            .getInputs();
+
+                    final List<Long> inputAmounts = new ArrayList<>();
+                    for (HardwareWalletOutput spentOutput : spentOutputs) {
+                        inputAmounts.add(spentOutput.getAmount());
+                    }
+
+                    return houstonClient
+                            .newWithdrawalOperation(
+                                    buildOperationFromPendingWithdrawal(pendingWithdrawal),
+                                    signedTransaction,
+                                    inputAmounts
+                            )
+                            .flatMap(operationCreated -> createOperation.action(
+                                    operationCreated.operation,
+                                    operationCreated.nextTransactionSize
+                            ))
+                            .flatMap(res -> satelliteActions.endWithdrawal(pendingWithdrawal))
+                            .doOnError(error -> {
+                                Logger.debug("[Operations] Error submitting signed withdrawal");
+                                // TODO notify Satellite about this failure.
+                            });
+                });
     }
 
     /**
@@ -260,7 +225,7 @@ public class OperationActions {
         return operationDao.deleteAll().flatMap(ignored ->
                 houstonClient.fetchOperations()
                         .flatMap(Observable::from)
-                        .flatMap(this::saveOperation)
+                        .flatMap(createOperation::saveOperation)
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)
         );
@@ -269,99 +234,72 @@ public class OperationActions {
     /**
      * Watch the total balance of the wallet.
      */
-    public synchronized Observable<Long> watchBalance() {
-        if (balanceInSatoshisCache == null) {
-            balanceInSatoshisCache = BehaviorSubject.create();
+    public Observable<Long> watchBalance() {
+        return watchValidNextTransactionSize()
+                .filter(validOrNull -> validOrNull != null) // waiting for update
+                .map(t -> {
+                    if (t.sizeProgression == null || t.sizeProgression.isEmpty()) {
+                        return 0L;
+                    }
 
-            // This subscription can last forever, as long as only one exists:
-            computeBalanceFromOperationHistory().subscribe(balanceInSatoshisCache::onNext);
+                    return t.sizeProgression.get(t.sizeProgression.size() - 1).amountInSatoshis;
+                });
+    }
+
+    /**
+     * Return an Observable of null if the PaymentRequest can be paid with current balance, or an
+     * error if not (either AmountTooSmall or InsufficientFunds).
+     */
+    public Observable<UserFacingError> verifyCanPay(PaymentRequest payReq) {
+        Preconditions.checkNotNull(payReq);
+        Preconditions.checkNotNull(payReq.amount);
+
+        return Observable.zip(
+                transformToSatoshis(payReq.amount),
+                watchMaxSpendableAmount(payReq),
+
+                (amount, maxSpendableAmount) -> {
+
+                    // For submarine swaps invoice amount can be < DUST. What it can't be
+                    // is the total swap/funding transaction output amount.
+                    if (payReq.swap != null ) {
+                        amount = payReq.swap.fundingOutput.outputAmountInSatoshis;
+                    }
+
+                    return validateAmount(amount, maxSpendableAmount);
+                }
+        ).first();
+    }
+
+    @Nullable
+    private UserFacingError validateAmount(Long amount, Long maxSpendableAmount) {
+        if (amount < BitcoinUtils.DUST_IN_SATOSHIS) {
+            return new AmountTooSmallError();
         }
 
-        return balanceInSatoshisCache.asObservable();
+        if (amount > maxSpendableAmount) {
+            return new InsufficientFundsError();
+        }
+
+        return null;
     }
 
     /**
      * Watch the maximum spendable (balance - fee) amount, updating on fee/transactionSize changes.
      */
-    public Observable<Long> watchMaxSpendableAmount() {
+    public Observable<Long> watchMaxSpendableAmount(PaymentRequest payReq) {
         return Observable.combineLatest(
                 feeWindowRepository.fetch(),
-                transactionSizeRepository.watchNextTransactionSize(),
-                this::getMaxSpendableAmount
-        );
-    }
+                watchSizeProgression(payReq),
 
-    private long getMaxSpendableAmount(FeeWindow feeWindow, NextTransactionSize transactionSize) {
-        Preconditions.checkNotNull(feeWindow);
-        Preconditions.checkNotNull(transactionSize);
+                (feeWindow, sizeProgression) -> {
+                    Preconditions.checkNotNull(feeWindow);
+                    Preconditions.checkNotNull(sizeProgression);
 
-        return new FeeCalculator(feeWindow.feeInSatoshisPerByte, transactionSize.sizeProgression)
-                .getMaxSpendableAmount();
-    }
-
-    private Observable<Long> computeBalanceFromOperationHistory() {
-        return operationDao.fetchAll().map(operations -> {
-            long amount = 0L;
-
-            for (Operation operation : operations) {
-                if (!operation.isFailed()) {
-                    amount += operation.getBalanceInSatoshisForUser();
+                    return new FeeCalculator(feeWindow.feeInSatoshisPerByte, sizeProgression)
+                            .getMaxSpendableAmount();
                 }
-            }
-
-            return amount;
-        });
-    }
-
-    /**
-     * Returns a new Observable that returns the current fee on `onNext` or some exception
-     * on `onError` (i.e.: InsufficientFundsError, AmountTooSmallError).
-     *
-     * @return an observable for the fee, if it was able to calculate it.
-     */
-    public Observable<UserFacingError> verifyCanSpendObs(MonetaryAmount monetaryAmount) {
-
-        final Observable<Long> balance = watchBalance().first();
-
-        final Observable<NextTransactionSize> nextTxSize = watchValidNextTransactionSize().first();
-
-        final CurrencyUnit btc = Monetary.getCurrency("BTC");
-        final Observable<Long> amount = transformCurrency(monetaryAmount, btc)
-                .map(BitcoinUtils::bitcoinsToSatoshis)
-                .first();
-
-        return Observable.zip(balance, amount, nextTxSize, this::verifySufficientAmount);
-    }
-
-    @Nullable
-    private UserFacingError verifySufficientAmount(Long balance,
-                                                   Long amount,
-                                                   NextTransactionSize size)
-            throws InsufficientFundsError, AmountTooSmallError {
-
-        if (balance < amount) {
-            return new InsufficientFundsError();
-        }
-
-        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
-        final FeeCalculator feeCalculator = new FeeCalculator(
-                feeWindow.feeInSatoshisPerByte,
-                size.sizeProgression
         );
-
-        final long feeForAmount;
-
-        try {
-            feeForAmount = feeCalculator.getFeeForAmount(amount);
-        } catch (UserFacingError e) {
-            return e;
-        }
-
-        if (balance < feeForAmount + amount) {
-            return new InsufficientFundsError();
-        }
-
-        return null; // No errors found.
     }
 
     /**
@@ -380,214 +318,40 @@ public class OperationActions {
         return operationDao.fetchAll();
     }
 
-    /**
-     * Fetch and store the size estimation for the next transaction, if necessary.
-     */
-    public Observable<Void> fetchNextTransactionSize() {
-        return watchValidNextTransactionSize()
-                .first()
-                .flatMap(transactionSize -> {
-                    if (transactionSize != null) {
-                        return Observable.just(null); // we don't need to re-fetch
-                    }
-
-                    return houstonClient.fetchNextTransactionSize()
-                            .doOnNext(this::onNextTransactionSizeUpdated)
-                            .map(RxHelper::toVoid);
-                });
-    }
-
-    /**
-     * Invoked when a new transaction size estimation is reported by Houston.
-     */
-    public void onNextTransactionSizeUpdated(NextTransactionSize nextTransactionSize) {
-        Logger.debug("Updating next transaction size estimation");
-        transactionSizeRepository.setTransactionSize(nextTransactionSize);
-    }
-
-    /**
-     * Invoked when a new Operation is reported by Houston.
-     */
-    public Observable<Void> onRemoteOperationCreated(Operation operation,
-                                                     NextTransactionSize nextTransactionSize) {
-        return saveOperation(operation)
-                .doOnNext(savedOperation -> {
-                    onNextTransactionSizeUpdated(nextTransactionSize);
-
-                    if (savedOperation.direction == OperationDirection.INCOMING) {
-                        notificationService.showNewOperationNotification(savedOperation);
-                    }
-                })
-                .map(RxHelper::toVoid);
-    }
-
-    /**
-     * Invoked when an Operation update is reported by Houston.
-     */
-    public Observable<Void> onRemoteOperationUpdated(long hid,
-                                                     long confirmations,
-                                                     String hash,
-                                                     OperationStatus status) {
-
-        // TODO: show a push notification if the operation was dropped
-
-        operationDao.updateStatus(hid, confirmations, hash, status);
-
-        // TODO: remove this quick fix
-        return Observable.just(null);
-    }
-
-
     // ---------------------------------------------------------------------------------------------
     // Private helpers
 
-    private PaymentRequest resolveMuunUri(OperationUri uri) {
-        final User user = userRepository.fetchOne();
+    private Operation buildOperationFromPendingWithdrawal(PendingWithdrawal withdrawal) {
+        final MuunAddress address = addressActions.getExternalMuunAddress();
 
-        final String amountParam = uri.getParam(OperationUri.MUUN_AMOUNT)
-                .orElse("0");
-
-        final String currencyParam = uri.getParam(OperationUri.MUUN_CURRENCY)
-                .orElse(user.primaryCurrency.getCurrencyCode());
-
-        final String descriptionParam = uri.getParam(OperationUri.MUUN_DESCRIPTION)
-                .orElse("");
-
-        final MonetaryAmount amount = Money.of(new BigDecimal(amountParam), currencyParam);
-
-        switch (uri.getHost()) {
-            case OperationUri.MUUN_HOST_CONTACT:
-                final Contact contact = contactActions
-                        .fetchContact(Long.parseLong(uri.getPath()))
-                        .toBlocking()
-                        .first();
-
-                return PaymentRequest.toContact(contact, amount, descriptionParam);
-
-            case OperationUri.MUUN_HOST_EXTERNAL:
-                return PaymentRequest.toAddress(uri.getPath(), amount, descriptionParam);
-
-            default:
-                throw new IllegalArgumentException("Invalid host: " + uri.getHost());
-        }
-    }
-
-    private PaymentRequest resolveBitcoinUri(OperationUri uri) {
-        final User user = userRepository.fetchOne();
-
-        final BitcoinUriContent uriContent = bitcoinActions
-                .getBitcoinUriContent(uri.toString())
-                .toBlocking()
-                .first();
-
-        final MonetaryAmount amount = (uriContent.amountInStatoshis != null)
-                ? BitcoinUtils.satoshisToBitcoins(uriContent.amountInStatoshis)
-                : Money.of(0, user.primaryCurrency);
-
-
-        final String description = StringUtils.joinText(": ", new String[]{
-                uriContent.merchant,
-                uriContent.memo
-        });
-
-        return PaymentRequest.toAddress(uriContent.address, amount, description);
-    }
-
-    Operation buildOperationFromDraft(PaymentRequest draft) {
-
-        switch (draft.type) {
-            case TO_CONTACT:
-                final MuunAddress muunAddress = contactActions
-                        .getAddressForContact(draft.contact);
-
-                return buildOperationFromData(
-                        publicProfileDao.fetchOneByHid(draft.contact.hid),
-                        muunAddress.getAddress(),
-                        muunAddress.getDerivationPath(),
-                        draft.amount,
-                        draft.description
-                );
-
-            case TO_ADDRESS:
-                return buildOperationFromData(
-                        null,
-                        draft.address,
-                        null,
-                        draft.amount,
-                        draft.description
-                );
-
-            default:
-                throw new MissingCaseError(draft.type);
-        }
-    }
-
-    private Operation buildOperationFromData(PublicProfile contactProfile,
-                                             String address,
-                                             String addressDerivationPath,
-                                             MonetaryAmount inputAmount,
-                                             String description) {
-
-        final User user = userRepository.fetchOne();
-
-        final ExchangeRateWindow rateWindow = exchangeRateWindowRepository.fetchOne();
-        final ExchangeRateProvider rates = new ExchangeRateProvider(rateWindow.rates);
-
-        final CurrencyConversion toBtc = rates.getCurrencyConversion("BTC");
-        final CurrencyConversion toInput = rates.getCurrencyConversion(inputAmount.getCurrency());
-        final CurrencyConversion toPrimary = rates.getCurrencyConversion(user.primaryCurrency);
-
-        final long inputAmountInSatoshis = BitcoinUtils.bitcoinsToSatoshis(inputAmount.with(toBtc));
-        final Long feeInSatoshis = getFeeForAmount(inputAmountInSatoshis);
-
-        return new Operation(
-                null,
-                -1L, // we won't have the operation hid until houston's response
-                null,
-                contactProfile == null,
-                user.getCompatPublicProfile(),
-                false,
-                contactProfile,
-                contactProfile == null,
-                address,
-                addressDerivationPath,
-                new BitcoinAmount(
-                        inputAmountInSatoshis,
-                        inputAmount,
-                        inputAmount.with(toPrimary)
-                ),
-                new BitcoinAmount(
-                        feeInSatoshis,
-                        BitcoinUtils.satoshisToBitcoins(feeInSatoshis).with(toInput),
-                        BitcoinUtils.satoshisToBitcoins(feeInSatoshis).with(toPrimary)
-                ),
-                0L,
-                null, // we won't have the hash until the tx is signed
-                description,
-                OperationStatus.CREATED,
-                ZonedDateTime.now(),
-                rateWindow.windowHid
+        return Operation.createIncoming(
+                userRepository.fetchOne().getCompatPublicProfile(),
+                withdrawal.hardwareWalletHid,
+                address.getAddress(),
+                address.getDerivationPath(),
+                withdrawal.amount,
+                withdrawal.fee,
+                withdrawal.description,
+                withdrawal.exchangeRateWindowHid
         );
     }
 
-    /**
-     * Return the suggested transaction fee to transfer a given amount.
-     */
-    public long getFeeForAmount(long operationAmount) throws InsufficientFundsError {
-        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
+    private Observable<List<SizeForAmount>> watchSizeProgression(PaymentRequest payReq) {
+        if (payReq.type == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
+            final HardwareWalletState state = hardwareWalletActions
+                    .getHardwareWalletState(payReq.hardwareWallet.hid);
 
-        final NextTransactionSize transactionSize = watchValidNextTransactionSize()
-                .toBlocking()
-                .first();
+            // NOTE: nothing is being watched here, we just assume it's always fresh:
+            return Observable.just(state.getSizeForAmounts());
 
-        Preconditions.checkNotNull(transactionSize);
+        } else {
+            return watchValidNextTransactionSize().map(t -> t.sizeProgression);
+        }
+    }
 
-        final FeeCalculator feeCalculator = new FeeCalculator(
-                feeWindow.feeInSatoshisPerByte,
-                transactionSize.sizeProgression
-        );
-
-        return feeCalculator.getFeeForAmount(operationAmount);
+    private Observable<Long> transformToSatoshis(MonetaryAmount amount) {
+        return transformCurrency(amount, Monetary.getCurrency("BTC"))
+                .map(BitcoinUtils::bitcoinsToSatoshis);
     }
 
     private Observable<MonetaryAmount> transformCurrency(MonetaryAmount amount,
@@ -602,34 +366,6 @@ public class OperationActions {
                     return amount.with(toCurrency);
                 });
     }
-
-    private Observable<Operation> saveOperation(Operation operation) {
-        return operationDao.fetchByHid(operation.hid)
-                .first()
-                .compose(ObservableFn.onTypedErrorResumeNext(
-                        ElementNotFoundException.class,
-                        error -> {
-                            Observable<Operation> chain = Observable.just(operation);
-
-                            if (operation.senderProfile != null) {
-                                chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
-                                        publicProfileDao.store(operation.senderProfile)
-                                ));
-                            }
-
-                            if (operation.receiverProfile != null) {
-                                chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
-                                        publicProfileDao.store(operation.receiverProfile)
-                                ));
-                            }
-
-                            chain = chain.flatMap(operationDao::store);
-
-                            return chain;
-                        }
-                ));
-    }
-
 
     /**
      * Return the stored NextTransactionSize if available and up-to-date.

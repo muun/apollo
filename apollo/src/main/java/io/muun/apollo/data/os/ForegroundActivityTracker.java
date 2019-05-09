@@ -1,5 +1,7 @@
 package io.muun.apollo.data.os;
 
+import io.muun.common.Optional;
+
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
@@ -57,5 +59,9 @@ public class ForegroundActivityTracker implements Application.ActivityLifecycleC
 
         throw new RuntimeException("Last foreground activity is invalid. Activity = "
                 + lastForegroundActivity);
+    }
+
+    public Optional<Activity> getForegroundActivity() {
+        return Optional.ofNullable(lastForegroundActivity);
     }
 }

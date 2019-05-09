@@ -6,9 +6,8 @@ import io.muun.common.crypto.Cryptography;
 import io.muun.common.crypto.CryptographyException;
 import io.muun.common.crypto.hd.PrivateKey;
 
+import org.spongycastle.crypto.CryptoException;
 import org.spongycastle.pqc.math.linearalgebra.ByteUtils;
-
-import java.security.GeneralSecurityException;
 
 import javax.crypto.SecretKey;
 
@@ -40,13 +39,12 @@ public class MuunAsymmetricEncryption {
         final byte[] cypherText;
 
         try {
-            cypherText = Cryptography.aesEncrypt(
+            cypherText = Cryptography.aesCbcNoPaddingEncrypt(
                     message,
                     secretKeyContainer.publicKey.generateIv(),
-                    secretKeyContainer.sharedSecretKey,
-                    Cryptography.AES_CBC_NO_PADDING
+                    secretKeyContainer.sharedSecretKey
             );
-        } catch (GeneralSecurityException e) {
+        } catch (CryptoException e) {
             throw new CryptographyException(e);
         }
 
@@ -76,13 +74,12 @@ public class MuunAsymmetricEncryption {
         );
 
         try {
-            return Cryptography.aesDecrypt(
+            return Cryptography.aesCbcNoPaddingDecrypt(
                     container.cypherText,
                     secretAesDecryptKey,
-                    container.publicKey.generateIv(),
-                    Cryptography.AES_CBC_NO_PADDING
+                    container.publicKey.generateIv()
             );
-        } catch (GeneralSecurityException e) {
+        } catch (CryptoException e) {
             throw new CryptographyException(e);
         }
     }

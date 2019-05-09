@@ -7,6 +7,7 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.PasswordIntegrityError;
 import io.muun.common.Optional;
 import io.muun.common.crypto.hd.KeyCrypter;
+import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hd.Schema;
@@ -48,9 +49,16 @@ public class AddressActions {
     }
 
     /**
-     * Return an external address.
+     * Return an external address, as a plain string.
      */
     public String getExternalAddress() {
+        return getExternalMuunAddress().getAddress();
+    }
+
+    /**
+     * Return an external address.
+     */
+    public MuunAddress getExternalMuunAddress() {
 
         final Integer maxUsedIndex = keysRepository.getMaxUsedExternalAddressIndex();
         final Integer maxWatchingIndex = keysRepository.getMaxWatchingExternalAddressIndex();
@@ -62,8 +70,10 @@ public class AddressActions {
 
         if (maxUsedIndex == null) {
             nextIndex = 0;
+
         } else if (maxUsedIndex < maxWatchingIndex) {
             nextIndex = maxUsedIndex + 1;
+
         } else {
             nextIndex = RandomGenerator.getInt(maxWatchingIndex + 1);
         }
@@ -84,9 +94,7 @@ public class AddressActions {
         syncExternalAddressIndexes.run();
 
         // ALWAYS use latest supported TransactionScheme
-        return TransactionSchemeV3
-                .createAddress(derivedPublicKeyPair)
-                .getAddress();
+        return TransactionSchemeV3.createAddress(derivedPublicKeyPair);
     }
 
     /**
@@ -135,7 +143,7 @@ public class AddressActions {
     public Observable<Void> syncPublicKeySet() {
 
         return Observable.defer(() ->
-            houstonClient.updatePublicKeySet(keysRepository.getBasePublicKey())
+                houstonClient.updatePublicKeySet(keysRepository.getBasePublicKey())
 
         ).doOnNext(keySet -> {
             storeExternalAddressIndexes(
@@ -181,7 +189,7 @@ public class AddressActions {
                 final PrivateKey rootPrivateKey = keysRepository.createRootPrivateKey();
 
                 // Check if we can derive all the subtree keys
-                for (String subtreePath: Schema.getAllSubtreePaths()) {
+                for (String subtreePath : Schema.getAllSubtreePaths()) {
                     rootPrivateKey.deriveFromAbsolutePath(subtreePath);
                 }
 
@@ -208,7 +216,7 @@ public class AddressActions {
      * Try to decrypt a private key with the given user input.
      */
     public Observable<Void> decryptAndStoreRootPrivateKey(String encryptedRootPrivateKey,
-                                                     String userInput)
+                                                          String userInput)
             throws PasswordIntegrityError {
 
         final Optional<PrivateKey> rootPrivateKey =
@@ -216,6 +224,7 @@ public class AddressActions {
 
         if (rootPrivateKey.isPresent()) {
             return storeRootPrivateKey(rootPrivateKey.get());
+
         } else {
             throw new PasswordIntegrityError();
         }

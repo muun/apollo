@@ -1,19 +1,26 @@
 package io.muun.apollo.domain.errors;
 
 
+import io.muun.apollo.external.UserFacingErrorMessages;
+
 public class InvalidPaymentRequestError extends UserFacingError {
 
-    private static final String MESSAGE = "The payment link is not valid";
 
     public InvalidPaymentRequestError() {
-        super(MESSAGE);
+        super(UserFacingErrorMessages.INSTANCE.invalidPaymentRequest());
     }
 
     public InvalidPaymentRequestError(Throwable cause) {
-        super(MESSAGE, cause);
+        super(UserFacingErrorMessages.INSTANCE.invalidPaymentRequest(), cause);
     }
 
+    /**
+     * Strange constructor with innerMessage instead of just message.
+     */
     public InvalidPaymentRequestError(String innerMessage) {
-        super(MESSAGE, new RuntimeException(innerMessage));
+        super(
+                UserFacingErrorMessages.INSTANCE.invalidPaymentRequest(),
+                new RuntimeException(innerMessage)
+        );
     }
 }

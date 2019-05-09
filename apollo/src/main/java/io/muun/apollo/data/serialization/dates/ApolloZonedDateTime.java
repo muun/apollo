@@ -1,28 +1,42 @@
 package io.muun.apollo.data.serialization.dates;
 
+import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.dates.MuunZonedDateTime;
+import io.muun.common.utils.Preconditions;
 
 import org.threeten.bp.ZonedDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.Objects;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 public class ApolloZonedDateTime implements MuunZonedDateTime {
 
     public final ZonedDateTime dateTime;
 
-    public static ApolloZonedDateTime fromString(String dateString) {
-        final ZonedDateTime date = ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME);
-        return new ApolloZonedDateTime(date);
+    public static ApolloZonedDateTime fromString(@NotNull String dateString) {
+        return new ApolloZonedDateTime(DateUtils.fromIsoString(dateString));
     }
 
-    public ApolloZonedDateTime(ZonedDateTime dateTime) {
+    @Nullable
+    public static ApolloZonedDateTime fromNullable(@Nullable ZonedDateTime dateTime) {
+        return dateTime == null ? null : of(dateTime);
+    }
+
+    @NotNull
+    public static ApolloZonedDateTime of(@NotNull ZonedDateTime dateTime) {
+        return new ApolloZonedDateTime(dateTime);
+    }
+
+    private ApolloZonedDateTime(@NotNull ZonedDateTime dateTime) {
+        Preconditions.checkNotNull(dateTime);
         this.dateTime = dateTime;
     }
 
     @Override
     public String toString() {
-        return dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
+        return DateUtils.toIsoString(dateTime);
     }
 
     @Override
