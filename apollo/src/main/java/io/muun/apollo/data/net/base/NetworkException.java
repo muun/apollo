@@ -1,8 +1,14 @@
 package io.muun.apollo.data.net.base;
 
-public class NetworkException extends RuntimeException {
+import io.muun.common.exception.PotentialBug;
 
-    public NetworkException(Throwable throwable) {
-        super("Can't reach the Muun server", throwable);
+public class NetworkException extends RuntimeException implements PotentialBug {
+
+    public NetworkException(String url, Throwable cause) {
+        super("Can't reach " + url, cause);
+    }
+
+    public NetworkException(Throwable cause) {
+        super("Can't reach the remote server", cause);
     }
 }

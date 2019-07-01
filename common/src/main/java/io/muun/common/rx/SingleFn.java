@@ -3,6 +3,7 @@ package io.muun.common.rx;
 import io.muun.common.Optional;
 import io.muun.common.api.error.ErrorCode;
 import io.muun.common.exception.HttpException;
+import io.muun.common.utils.ExceptionUtils;
 
 import rx.Single;
 import rx.functions.Func1;
@@ -23,39 +24,13 @@ public final class SingleFn {
      */
     public static <T, U> Single.Transformer<T, T> flatDoOnSuccess(final Func1<T, Single<U>> func) {
 
-        return new Single.Transformer<T, T>() {
-
-            @Override
-            public Single<T> call(Single<T> single) {
-
-                return single.flatMap(
-
-                        new Func1<T, Single<T>>() {
-
-                            @Override
-                            public Single<T> call(final T returnedItem) {
-
-                                return func.call(returnedItem).map(
-
-                                        new Func1<U, T>() {
-
-                                            @Override
-                                            public T call(U ignoredItem) {
-                                                return returnedItem;
-                                            }
-
-                                        }
-
-                                );
-
-                            }
-                        }
-
-                );
-
-            }
-
-        };
+        return single -> single.flatMap(
+                returnedItem -> {
+                    return func.call(returnedItem).map(
+                            ignoredItem -> returnedItem
+                    );
+                }
+        );
     }
 
     /**
@@ -68,14 +43,7 @@ public final class SingleFn {
 
         return onTypedErrorResumeNext(
                 errorClass,
-                new Func1<ErrorT, Single<T>>() {
-
-                    @Override
-                    public Single<T> call(ErrorT error) {
-                        return Single.error(replacer.call(error));
-                    }
-
-                }
+                error -> Single.error(replacer.call(error))
         );
     }
 
@@ -86,33 +54,21 @@ public final class SingleFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Single<T>> resumeFunction) {
 
-        return new Single.Transformer<T, T>() {
+        return single -> single.onErrorResumeNext(
 
-            @Override
-            public Single<T> call(Single<T> single) {
+                (Func1<Throwable, Single<? extends T>>) error -> {
 
-                return single.onErrorResumeNext(
+                    final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
 
-                        new Func1<Throwable, Single<? extends T>>() {
+                    if (cause.isPresent()) {
+                        return resumeFunction.call(errorClass.cast(cause.get()));
 
-                            @Override
-                            public Single<? extends T> call(Throwable error) {
+                    } else {
+                        return Single.error(error);
+                    }
 
-                                final Optional<ErrorT> cause = getTypedCause(error, errorClass);
-
-                                if (cause.isPresent()) {
-                                    return resumeFunction.call(errorClass.cast(cause.get()));
-                                } else {
-                                    return Single.error(error);
-                                }
-
-                            }
-                        }
-
-                );
-
-            }
-        };
+                }
+        );
     }
 
     /**
@@ -125,14 +81,7 @@ public final class SingleFn {
 
         return onHttpExceptionResumeNext(
                 code,
-                new Func1<HttpException, Single<T>>() {
-
-                    @Override
-                    public Single<T> call(HttpException error) {
-                        return Single.error(replacer.call(error));
-                    }
-
-                }
+                error -> Single.error(replacer.call(error))
         );
     }
 
@@ -143,48 +92,23 @@ public final class SingleFn {
             final ErrorCode code,
             final Func1<HttpException, Single<T>> resumeFunction) {
 
-        return new Single.Transformer<T, T>() {
-            @Override
-            public Single<T> call(Single<T> single) {
+        return single -> single.onErrorResumeNext(
 
-                return single.onErrorResumeNext(
+                (Func1<Throwable, Single<? extends T>>) error -> {
 
-                        new Func1<Throwable, Single<? extends T>>() {
+                    final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
+                            error,
+                            HttpException.class
+                    );
 
-                            @Override
-                            public Single<? extends T> call(Throwable error) {
+                    if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                        return resumeFunction.call(cause.get());
 
-                                final Optional<HttpException> cause = getTypedCause(
-                                        error,
-                                        HttpException.class
-                                );
+                    } else {
+                        return Single.error(error);
+                    }
 
-                                if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
-                                    return resumeFunction.call(cause.get());
-
-                                } else {
-                                    return Single.error(error);
-                                }
-
-                            }
-                        }
-
-                );
-
-            }
-        };
-    }
-
-    private static <T extends Throwable> Optional<T> getTypedCause(
-            Throwable error,
-            Class<T> errorClass) {
-
-        for (Throwable cause = error;  cause != null; cause = cause.getCause()) {
-            if (errorClass.isInstance(cause)) {
-                return Optional.of(errorClass.cast(cause));
-            }
-        }
-
-        return Optional.empty();
+                }
+        );
     }
 }

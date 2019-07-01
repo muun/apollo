@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 public class RealTimeData {
 
     @NotNull
-    public FeeWindow feeWindow;
+    public FeeWindowJson feeWindow;
 
     @NotNull
     public ExchangeRateWindow exchangeRateWindow;
@@ -24,7 +24,7 @@ public class RealTimeData {
     /**
      * Houston constructor.
      */
-    public RealTimeData(FeeWindow feeWindow, ExchangeRateWindow exchangeRateWindow) {
+    public RealTimeData(FeeWindowJson feeWindow, ExchangeRateWindow exchangeRateWindow) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
     }

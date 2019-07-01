@@ -1,10 +1,6 @@
 package io.muun.common.api.houston;
 
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import io.muun.common.api.ChallengeJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
@@ -41,6 +37,7 @@ import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.beam.notification.NotificationRequestJson;
 import io.muun.common.model.VerificationType;
+
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -52,7 +49,12 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import rx.Completable;
 import rx.Observable;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 
 public interface HoustonService {

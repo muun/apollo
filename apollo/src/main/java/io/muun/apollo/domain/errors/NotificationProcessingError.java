@@ -2,8 +2,9 @@ package io.muun.apollo.domain.errors;
 
 
 import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.exception.PotentialBug;
 
-public class NotificationProcessingError extends RuntimeException {
+public class NotificationProcessingError extends RuntimeException implements PotentialBug {
 
     /**
      *  Create an Error caused by a gap in the notification processing ID sequence.

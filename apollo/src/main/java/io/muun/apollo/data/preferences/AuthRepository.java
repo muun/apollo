@@ -49,7 +49,7 @@ public class AuthRepository extends BaseRepository {
             return Optional.empty();
         }
 
-        final byte[] serverJwt = secureStorageProvider.get(KEY_SERVER_JWT).toBlocking().first();
+        final byte[] serverJwt = secureStorageProvider.get(KEY_SERVER_JWT);
 
         return Optional.ofNullable(Encodings.bytesToString(serverJwt));
     }
@@ -58,9 +58,7 @@ public class AuthRepository extends BaseRepository {
      * Store server JWT on secure storage.
      */
     public void storeServerJwt(@NotNull String serverJwt) {
-        this.secureStorageProvider.put(KEY_SERVER_JWT, Encodings.stringToBytes(serverJwt))
-                .toBlocking()
-                .first();
+        this.secureStorageProvider.put(KEY_SERVER_JWT, Encodings.stringToBytes(serverJwt));
     }
 
     public void storeSessionStatus(SessionStatus sessionStatus) {

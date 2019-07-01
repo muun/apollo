@@ -1,12 +1,10 @@
 package io.muun.apollo.domain.errors;
 
-public class InvalidInvoiceException extends RuntimeException {
+import io.muun.common.exception.PotentialBug;
 
-    public InvalidInvoiceException() {
-        super();
-    }
+public class InvalidInvoiceException extends RuntimeException implements PotentialBug {
 
-    public InvalidInvoiceException(Throwable cause) {
-        super(cause);
+    public InvalidInvoiceException(String invoice, Throwable cause) {
+        super(invoice, cause);
     }
 }

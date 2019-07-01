@@ -11,6 +11,7 @@ import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction4;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.ExpiredSatelliteSession;
+import io.muun.apollo.domain.errors.InvalidSatelliteQrCodeError;
 import io.muun.apollo.domain.errors.SatelliteAlreadyPairedError;
 import io.muun.apollo.domain.errors.SatelliteProtocolNotSupportedError;
 import io.muun.apollo.domain.model.HardwareWallet;
@@ -28,6 +29,7 @@ import io.muun.apollo.domain.satellite.states.SatelliteWithdrawalBeginState;
 import io.muun.apollo.domain.satellite.states.SatelliteWithdrawalEndState;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.Optional;
+import io.muun.common.bitcoinj.ValidationHelpers;
 import io.muun.common.model.HardwareWalletBrand;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
@@ -281,15 +283,7 @@ public class SatelliteActions {
 
     private Observable<SatellitePairing> beginPairing(String qrCodeString) {
         return Observable.defer(() -> {
-            final String[] parts = qrCodeString.split("\\$");
-
-            final int version = Integer.parseInt(parts[0]);
-            final String satelliteSessionUuid = parts[1];
-
-            if (version != SatelliteProtocol.VERSION) {
-                // We don't support this version.
-                throw new SatelliteProtocolNotSupportedError();
-            }
+            final String satelliteSessionUuid = readSatelliteSessionFromQr(qrCodeString);
 
             if (isAlreadyPaired(satelliteSessionUuid)) {
                 throw new SatelliteAlreadyPairedError();
@@ -369,15 +363,41 @@ public class SatelliteActions {
     }
 
     private Observable<Void> sendTakeoverMessages(SatellitePairing currentPairing) {
-        SessionTakeoverMessage message = new SessionTakeoverMessage();
+        final SessionTakeoverMessage msg = new SessionTakeoverMessage();
 
         return satellitePairingDao
                 .fetchActivePairings()
                 .first()
                 .flatMap(Observable::from)
                 .filter(pairing -> !pairing.equals(currentPairing))
-                .flatMap(pairing -> satelliteClient.sendMessage(pairing.satelliteSessionUuid, message))
+                .flatMap(pairing -> satelliteClient.sendMessage(pairing.satelliteSessionUuid, msg))
                 .lastOrDefault(null)
                 .map(RxHelper::toVoid);
+    }
+
+    private String readSatelliteSessionFromQr(String qrCodeString) {
+        final String[] parts = qrCodeString.split("\\$");
+
+        final int version;
+        final String satelliteSessionUuid;
+
+        try {
+            version = Integer.parseInt(parts[0]);
+            satelliteSessionUuid = parts[1];
+
+        } catch (IndexOutOfBoundsException ex) {
+            throw new InvalidSatelliteQrCodeError(qrCodeString, ex);
+        }
+
+        if (! ValidationHelpers.isValidUuid(satelliteSessionUuid)) {
+            throw new InvalidSatelliteQrCodeError(qrCodeString);
+        }
+
+        if (version != SatelliteProtocol.VERSION) {
+            // We don't support this version.
+            throw new SatelliteProtocolNotSupportedError();
+        }
+
+        return satelliteSessionUuid;
     }
 }

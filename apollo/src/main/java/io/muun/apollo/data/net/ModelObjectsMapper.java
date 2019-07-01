@@ -26,6 +26,7 @@ import io.muun.common.Optional;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.CommonModelObjectsMapper;
 import io.muun.common.api.CreateSessionOkJson;
+import io.muun.common.api.FeeWindowJson;
 import io.muun.common.api.HardwareWalletJson;
 import io.muun.common.api.HardwareWalletOutputJson;
 import io.muun.common.api.HardwareWalletStateJson;
@@ -315,12 +316,12 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create an expected fee.
      */
     @NotNull
-    private FeeWindow mapFeeWindow(@NotNull io.muun.common.api.FeeWindow window) {
+    private FeeWindow mapFeeWindow(@NotNull FeeWindowJson window) {
 
         return new FeeWindow(
                 window.id,
                 mapZonedDateTime(window.fetchDate),
-                window.feeInSatoshisPerByte
+                window.targetedFees
         );
     }
 

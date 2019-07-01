@@ -2,7 +2,7 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
-import io.muun.apollo.domain.errors.InvalidAmountException;
+import io.muun.apollo.domain.errors.InvalidInvoiceAmountException;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
@@ -430,23 +430,23 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 .prepareSubmarineSwap(invoice)
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVALID_INVOICE,
-                        InvalidInvoiceException::new
+                        e -> new InvalidInvoiceException(invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
-                        ErrorCode.INVALID_AMOUNT,
-                        InvalidAmountException::new
+                        ErrorCode.INVALID_INVOICE_AMOUNT,
+                        e -> new InvalidInvoiceAmountException(invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_ALREADY_USED,
-                        InvoiceAlreadyUsedException::new
+                        e -> new InvoiceAlreadyUsedException(invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.NO_PAYMENT_ROUTE,
-                        NoPaymentRouteException::new
+                        e -> new NoPaymentRouteException(invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_EXPIRES_TOO_SOON,
-                        InvoiceExpiresTooSoonException::new
+                        e -> new InvoiceExpiresTooSoonException(invoice, e)
                 ))
                 .doOnNext(submarineSwapJson -> {
                     final boolean isValid = TransactionSchemeSubmarineSwap.validateSwap(
@@ -457,7 +457,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                     );
 
                     if (!isValid) {
-                        throw new InvalidSwapException();
+                        throw new InvalidSwapException(submarineSwapJson.swapUuid);
                     }
                 })
                 .map(modelMapper::mapSubmarineSwap);

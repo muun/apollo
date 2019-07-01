@@ -1,7 +1,10 @@
 package io.muun.apollo.domain.errors;
 
-public class InvalidSwapException extends RuntimeException {
+import io.muun.common.exception.PotentialBug;
 
-    public InvalidSwapException() {
+public class InvalidSwapException extends RuntimeException implements PotentialBug {
+
+    public InvalidSwapException(String swapUuid) {
+        super("Validation failed for swap UUID " + swapUuid);
     }
 }

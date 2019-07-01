@@ -9,12 +9,15 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.action.contacts.FetchSingleContactAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.CustomFeeRate;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.utils.FeeCalculator;
+import io.muun.common.Rules;
+import io.muun.common.Temporary;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.model.SizeForAmount;
@@ -140,7 +143,9 @@ public class PreparePaymentAction extends BaseAsyncAction1<PaymentRequest, Prepa
         }
 
         // With the actual output amount, let's calculate the effective fee for this transaction:
-        final long feeInSatoshis = new FeeCalculator(feeWindow.feeInSatoshisPerByte, txSize)
+        final long feeInSatoshisPerByte = getFeeRateFor(payReq, feeWindow);
+
+        final long feeInSatoshis = new FeeCalculator(feeInSatoshisPerByte, txSize)
                 .getFeeForAmount(outputAmountInSatoshis);
 
         // And knowing that, the actual total we'll spend:
@@ -191,6 +196,25 @@ public class PreparePaymentAction extends BaseAsyncAction1<PaymentRequest, Prepa
 
         } else {
             return transactionSizeRepository.getNextTransactionSize().sizeProgression;
+        }
+    }
+
+
+    private long getFeeRateFor(PaymentRequest payReq, FeeWindow feeWindow) {
+        if (payReq.customFeeRate != null) {
+            // If specified in the PaymentRequest, we use the given fee rate:
+            return Temporary.feeDoubleToLong(payReq.customFeeRate.satoshisPerByte);
+
+        } else if (payReq.swap != null && payReq.swap.fundingOutput.confirmationsNeeded == 0) {
+            // For 0-conf payments, fee can be low and aim for a longer confirmation target:
+            final CustomFeeRate rate = feeWindow
+                    .getMinimumFeeInSatoshisPerByte(Rules.CONF_TARGET_FOR_ZERO_CONF_SWAP);
+
+            return Temporary.feeDoubleToLong(rate.satoshisPerByte);
+
+        } else {
+            // By default, use the fastest fee rate:
+            return feeWindow.getFastestFeeInSatoshisPerByte();
         }
     }
 }

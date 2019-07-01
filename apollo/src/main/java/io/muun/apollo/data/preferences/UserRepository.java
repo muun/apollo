@@ -394,11 +394,12 @@ public class UserRepository extends BaseRepository {
     }
 
     public void storeFcmToken(String token) {
+        Logger.debug("FCM: Updating token in auth repository");
         fcmTokenPreference.set(token);
     }
 
-    public Preference<String> getFcmToken() {
-        return fcmTokenPreference;
+    public Observable<String> watchFcmToken() {
+        return fcmTokenPreference.asObservable();
     }
 
 }

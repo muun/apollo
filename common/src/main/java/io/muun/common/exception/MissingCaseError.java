@@ -1,6 +1,6 @@
 package io.muun.common.exception;
 
-public class MissingCaseError extends RuntimeException {
+public class MissingCaseError extends RuntimeException implements PotentialBug {
 
     public MissingCaseError(Enum<?> enumItem) {
         this(enumItem.name(), enumItem.getClass().getSimpleName());

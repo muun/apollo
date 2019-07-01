@@ -103,11 +103,8 @@ public class IntegrityActions {
 
         final IntegrityCheck integrityCheck = new IntegrityCheck(publicKeySet, balanceInSatoshis);
 
-        final IntegrityStatus integrityStatus = houstonClient.checkIntegrity(integrityCheck)
-                .toBlocking()
-                .first();
-
-        return handleIntegrityStatus(integrityCheck, integrityStatus);
+        return houstonClient.checkIntegrity(integrityCheck)
+                .flatMap(status -> handleIntegrityStatus(integrityCheck, status));
     }
 
     private Observable<Void> handleIntegrityStatus(IntegrityCheck integrityCheck,

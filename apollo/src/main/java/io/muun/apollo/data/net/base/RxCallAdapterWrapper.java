@@ -22,7 +22,6 @@ import io.muun.apollo.domain.errors.TooManyWrongVerificationCodesError;
 import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
 import io.muun.common.exception.HttpException;
-import io.muun.common.rx.ExponentialBackoffRetry;
 import io.muun.common.rx.ObservableFn;
 
 import android.support.annotation.NonNull;
@@ -31,14 +30,13 @@ import retrofit2.Call;
 import retrofit2.CallAdapter;
 import rx.Completable;
 import rx.Observable;
+import rx.Observable.Transformer;
 import rx.Single;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.validation.constraints.NotNull;
 
@@ -47,9 +45,9 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
     // TODO move this to external configuration:
     private static final long CALL_TIMEOUT_SECONDS = 60;
 
-    private static final Observable.Transformer HTTP_EXCEPTION_TRANSFORMER;
-    private static final Observable.Transformer IO_EXCEPTION_TRANSFORMER;
-    private static final Observable.Transformer SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER;
+    private static final Transformer HTTP_EXCEPTION_TRANSFORMER;
+    private static final Transformer IO_EXCEPTION_TRANSFORMER;
+    private static final Transformer SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER;
 
     static {
 
@@ -191,6 +189,7 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
     @Override
     public Object adapt(@NonNull Call<R> call) {
 
+        final String url = call.request().url().toString();
         final String idempotencyKey = UUID.randomUUID().toString();
 
         // In order to use the same idempotency key for all the retries in the same request chain,
@@ -208,11 +207,12 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         // idempotency key. Since we know that the interceptor will be run in the same thread, we
         // can ask for the key annotated for the thread in which the interceptor is being run.
 
-        final ExponentialBackoffRetry networkExceptionRetryPolicy =
-                new ExponentialBackoffRetry(1, 7, NetworkException.class);
+        final HttpRetryTransformer retryTransformer = new HttpRetryTransformer();
 
-        final ExponentialBackoffRetry serverExceptionRetryPolicy =
-                new ExponentialBackoffRetry(2, 3, ServerFailureException.class);
+        final Transformer attachUrlTransformer = ObservableFn.replaceTypedError(
+                NetworkException.class,
+                original -> new NetworkException(url, original)
+        );
 
         final Observable<?> result = getRequestObservable(call)
                 .doOnSubscribe(() -> idempotencyKeyForThreadHack.put(
@@ -222,16 +222,8 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 .compose(HTTP_EXCEPTION_TRANSFORMER)
                 .compose(SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER)
                 .compose(IO_EXCEPTION_TRANSFORMER)
-                .retryWhen(networkExceptionRetryPolicy)
-                .retryWhen(serverExceptionRetryPolicy)
-                .timeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                // Avoid TimeoutException from "eating" information about an underlying error
-                .compose(ObservableFn.replaceTypedError(
-                        TimeoutException.class,
-                        timeoutException -> networkExceptionRetryPolicy.getLastError()
-                                .ifEmptyGet(serverExceptionRetryPolicy::getLastError)
-                                .orElse(new NetworkException(timeoutException))
-                ));
+                .compose(retryTransformer)
+                .compose(attachUrlTransformer);
 
         return getResponseObservable(result);
     }

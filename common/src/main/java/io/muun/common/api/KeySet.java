@@ -1,5 +1,7 @@
 package io.muun.common.api;
 
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -22,6 +24,7 @@ public class KeySet {
     @Nullable
     public Map<String, byte[]> challengePublicKeys;
 
+    @Since(apolloVersion = 40)
     @Nullable
     public List<ChallengeKeyJson> challengeKeys;
 

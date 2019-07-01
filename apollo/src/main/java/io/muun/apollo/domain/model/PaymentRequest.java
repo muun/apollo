@@ -35,6 +35,7 @@ public class PaymentRequest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
     }
@@ -54,6 +55,7 @@ public class PaymentRequest {
                 description,
                 null,
                 address,
+                null,
                 null,
                 null,
                 null
@@ -77,6 +79,7 @@ public class PaymentRequest {
                 null,
                 hardwareWallet,
                 null,
+                null,
                 null
         );
     }
@@ -97,6 +100,7 @@ public class PaymentRequest {
                 null,
                 null,
                 hardwareWallet,
+                null,
                 null,
                 null
         );
@@ -120,7 +124,8 @@ public class PaymentRequest {
                 null,
                 null,
                 invoice,
-                submarineSwap
+                submarineSwap,
+                null
         );
     }
 
@@ -129,6 +134,9 @@ public class PaymentRequest {
 
     @Nullable
     public final MonetaryAmount amount;
+
+    @Nullable
+    public final CustomFeeRate customFeeRate;
 
     @Nullable
     public final String description;
@@ -155,7 +163,9 @@ public class PaymentRequest {
                            @Nullable String address,
                            @Nullable HardwareWallet hardwareWallet,
                            @Nullable LnInvoice invoice,
-                           @Nullable SubmarineSwap swap) {
+                           @Nullable SubmarineSwap swap,
+                           @Nullable CustomFeeRate customFeeRate) {
+
         this.type = type;
         this.amount = amount;
         this.description = description;
@@ -164,6 +174,7 @@ public class PaymentRequest {
         this.hardwareWallet = hardwareWallet;
         this.invoice = invoice;
         this.swap = swap;
+        this.customFeeRate = customFeeRate;
     }
 
     /**
@@ -178,7 +189,15 @@ public class PaymentRequest {
      */
     public PaymentRequest withChanges(MonetaryAmount newAmount, String newDesc) {
         return new PaymentRequest(
-                type, newAmount, newDesc, contact, address, hardwareWallet, invoice, swap
+                type,
+                newAmount,
+                newDesc,
+                contact,
+                address,
+                hardwareWallet,
+                invoice,
+                swap,
+                customFeeRate
         );
     }
 }

@@ -198,8 +198,8 @@ public enum ErrorCode {
     LAST_NAME_EMPTY(
             2057, StatusCode.CLIENT_FAILURE, "Last Name cannot be empty"
     ),
-    INVALID_AMOUNT(
-            2058, StatusCode.CLIENT_FAILURE, "Amount is invalid"
+    INVALID_INVOICE_AMOUNT(
+            2058, StatusCode.CLIENT_FAILURE, "Invoice amount is invalid"
     ),
 
     // error responses
@@ -393,6 +393,9 @@ public enum ErrorCode {
     ),
     REPORT_ILLEGAL_STATE_TRANSITION(
             8158, StatusCode.CLIENT_FAILURE, "Report implies an invalid route state transition"
+    ),
+    INVALID_PREIMAGE(
+            8159, StatusCode.CLIENT_FAILURE, "Provided preimage doesn't match the payment hash"
     ),
 
     // rebalancer errors

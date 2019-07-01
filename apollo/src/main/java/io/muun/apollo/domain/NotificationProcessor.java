@@ -178,9 +178,9 @@ public class NotificationProcessor {
         final NextTransactionSize nextTransactionSize = mapper
                 .mapNextTransactionSize(message.nextTransactionSize);
 
-        createOperation.run(operation, nextTransactionSize);
-
-        return createOperation.getCompletion();
+        return createOperation
+                .action(operation, nextTransactionSize)
+                .toCompletable();
     }
 
     private Completable handleOperationUpdate(NotificationJson notification) {
@@ -202,9 +202,9 @@ public class NotificationProcessor {
                 nextTransactionSize,
                 submarineSwap);
 
-        updateOperation.run(operationUpdated);
-
-        return updateOperation.getCompletion();
+        return updateOperation
+                .action(operationUpdated)
+                .toCompletable();
     }
 
     private Completable handleEmailVerified(NotificationJson notificationJson) {

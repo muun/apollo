@@ -3,12 +3,13 @@ package io.muun.common.rx;
 import io.muun.common.Optional;
 import io.muun.common.api.error.ErrorCode;
 import io.muun.common.exception.HttpException;
+import io.muun.common.utils.ExceptionUtils;
 
 import rx.Completable;
 import rx.functions.Func1;
 
 /**
- * Utility transformers for modifying singles.
+ * Utility transformers for modifying completables.
  */
 public final class CompletableFn {
 
@@ -26,14 +27,7 @@ public final class CompletableFn {
 
         return onTypedErrorResumeNext(
                 errorClass,
-                new Func1<ErrorT, Completable>() {
-
-                    @Override
-                    public Completable call(ErrorT error) {
-                        return Completable.error(replacer.call(error));
-                    }
-
-                }
+                error -> Completable.error(replacer.call(error))
         );
     }
 
@@ -45,14 +39,7 @@ public final class CompletableFn {
 
         return onTypedErrorResumeNext(
                 errorClass,
-                new Func1<ErrorT, Completable>() {
-
-                    @Override
-                    public Completable call(ErrorT error) {
-                        return Completable.complete();
-                    }
-
-                }
+                error -> Completable.complete()
         );
     }
 
@@ -63,33 +50,19 @@ public final class CompletableFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Completable> resumeFunction) {
 
-        return new Completable.Transformer() {
+        return completable -> completable.onErrorResumeNext(
+                error -> {
 
-            @Override
-            public Completable call(Completable completable) {
+                    final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
 
-                return completable.onErrorResumeNext(
+                    if (cause.isPresent()) {
+                        return resumeFunction.call(errorClass.cast(cause.get()));
 
-                        new Func1<Throwable, Completable>() {
-
-                            @Override
-                            public Completable call(Throwable error) {
-
-                                final Optional<ErrorT> cause = getTypedCause(error, errorClass);
-
-                                if (cause.isPresent()) {
-                                    return resumeFunction.call(errorClass.cast(cause.get()));
-                                } else {
-                                    return Completable.error(error);
-                                }
-
-                            }
-                        }
-
-                );
-
-            }
-        };
+                    } else {
+                        return Completable.error(error);
+                    }
+                }
+        );
     }
 
     /**
@@ -99,14 +72,7 @@ public final class CompletableFn {
 
         return onHttpExceptionResumeNext(
                 code,
-                new Func1<HttpException, Completable>() {
-
-                    @Override
-                    public Completable call(HttpException error) {
-                        return Completable.complete();
-                    }
-
-                }
+                error -> Completable.complete()
         );
     }
 
@@ -117,45 +83,19 @@ public final class CompletableFn {
             final ErrorCode code,
             final Func1<HttpException, Completable> resumeFunction) {
 
-        return new Completable.Transformer() {
+        return completable -> completable.onErrorResumeNext(
+                error -> {
+                    final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
+                            error,
+                            HttpException.class
+                    );
 
-            @Override
-            public Completable call(Completable completable) {
+                    if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                        return resumeFunction.call(cause.get());
 
-                return completable.onErrorResumeNext(
-
-                        new Func1<Throwable, Completable>() {
-
-                            @Override
-                            public Completable call(Throwable error) {
-
-                                final Optional<HttpException> cause = getTypedCause(
-                                        error,
-                                        HttpException.class
-                                );
-
-                                if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
-                                    return resumeFunction.call(cause.get());
-
-                                } else {
-                                    return Completable.error(error);
-                                }
-                            }
-                        });
-            }
-        };
-    }
-
-    private static <T extends Throwable> Optional<T> getTypedCause(
-            Throwable error,
-            Class<T> errorClass) {
-
-        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
-            if (errorClass.isInstance(cause)) {
-                return Optional.of(errorClass.cast(cause));
-            }
-        }
-
-        return Optional.empty();
+                    } else {
+                        return Completable.error(error);
+                    }
+                });
     }
 }

@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.operation;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
-import io.muun.apollo.domain.errors.InvalidAmountException;
+import io.muun.apollo.domain.errors.InvalidInvoiceAmountException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.model.OperationUri;
@@ -51,11 +51,11 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
         final LnInvoice invoice = LnInvoice.decode(network, uri.getHost());
 
         if (invoice.amount == null) {
-            throw new InvalidAmountException();
+            throw new InvalidInvoiceAmountException(invoice.original);
         }
 
         if (invoice.getExpirationTime().isBefore(DateUtils.now())) {
-            throw new InvoiceExpiredException();
+            throw new InvoiceExpiredException(invoice.original);
         }
 
         return prepareSwap(invoice.original)
@@ -72,11 +72,11 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
                 - swap.lightningFeeInSatoshis;
 
         if (invoice.amount.amountInSatoshis != paymentAmount) {
-            throw new InvalidSwapException();
+            throw new InvalidSwapException(swap.houstonUuid);
         }
 
         if (!DateUtils.isEqual(invoice.getExpirationTime(), swap.expiresAt)) {
-            throw new InvalidSwapException();
+            throw new InvalidSwapException(swap.houstonUuid);
         }
 
         if (invoice.addresses.isEmpty()) {

@@ -1,7 +1,14 @@
 package io.muun.apollo.domain.model;
 
+import io.muun.common.Temporary;
+import io.muun.common.utils.Preconditions;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.threeten.bp.ZonedDateTime;
+
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,18 +24,18 @@ public class FeeWindow {
     public final ZonedDateTime fetchDate;
 
     @NotNull
-    public final Long feeInSatoshisPerByte;
+    public final SortedMap<Integer, Double> targetedFees = new TreeMap<>();
 
     /**
      * Constructor.
      */
     public FeeWindow(@NotNull Long houstonId,
                      @NotNull ZonedDateTime fetchDate,
-                     @NotNull Long feeInSatoshisPerByte) {
+                     @NotNull Map<Integer, Double> targetedFees) {
 
         this.houstonId = houstonId;
         this.fetchDate = fetchDate;
-        this.feeInSatoshisPerByte = feeInSatoshisPerByte;
+        this.targetedFees.putAll(targetedFees);
     }
 
     /**
@@ -40,5 +47,36 @@ public class FeeWindow {
                 .now(fetchDate.getZone())
                 .minusMinutes(EXPIRATION_TIME_MINUTES)
                 .isBefore(fetchDate);
+    }
+
+    /**
+     * Get the fastest fee rate, in satoshis per byte.
+     */
+    public long getFastestFeeInSatoshisPerByte() {
+        final int shortestTarget = targetedFees.firstKey();
+        final double satoshisPerByte = targetedFees.get(shortestTarget);
+
+        return Temporary.feeDoubleToLong(satoshisPerByte);
+    }
+
+    /**
+     * Get the minimum available fee rate that will hit a given confirmation target. We make no
+     * guesses (no averages or interpolations), so we might overshoot the fee if data is too sparse.
+     */
+    public CustomFeeRate getMinimumFeeInSatoshisPerByte(int confirmationTarget) {
+        Preconditions.checkPositive(confirmationTarget);
+
+        // Walk the available targets backwards, finding the highest target below the given one:
+        for (int closestTarget = confirmationTarget; closestTarget > 0; closestTarget--) {
+            if (targetedFees.containsKey(closestTarget)) {
+                // Found! This is the lowest fee rate that hits the given target.
+                return new CustomFeeRate(closestTarget, targetedFees.get(closestTarget));
+            }
+        }
+
+        // No result? This is odd, but not illogical. It means *all* of our available targets
+        // are above the requested one. Let's use the fastest:
+        final int lowestTarget = targetedFees.firstKey();
+        return new CustomFeeRate(lowestTarget, targetedFees.get(lowestTarget));
     }
 }

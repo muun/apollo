@@ -8,9 +8,9 @@ import timber.log.Timber;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.money.CurrencyQuery;
 import javax.money.CurrencyQueryBuilder;
@@ -18,15 +18,13 @@ import javax.money.UnknownCurrencyException;
 import javax.money.spi.Bootstrap;
 import javax.money.spi.CurrencyProviderSpi;
 
-import static java.util.Collections.synchronizedList;
-
 public final class Logger {
 
     private static boolean logToCrashlytics = true;
 
     private static final int CRASHLYTICS_LAST_REQUESTS_AMOUNT = 5;
-    private static final Map<String, String> idempotencyKeysToUris = new ConcurrentHashMap<>();
-    private static final List<String> lastRequests = synchronizedList(new ArrayList<>());
+    private static final Map<String, String> idempotencyKeysToUris = new HashMap<>();
+    private static final List<String> lastRequests = new ArrayList<>();
 
     private Logger() {
         throw new AssertionError();
@@ -181,7 +179,7 @@ public final class Logger {
         Timber.d(throwable, message, args);
     }
 
-    private static String getLastRequests() {
+    private static synchronized String getLastRequests() {
         final StringBuilder builder = new StringBuilder();
         for (String idempotencyKey : lastRequests) {
             final String uri = idempotencyKeysToUris.get(idempotencyKey);
@@ -194,7 +192,7 @@ public final class Logger {
     /**
      * Save the URIs of the last requests made by the app to enhance error logs.
      */
-    public static void saveRequestUri(String idempotencyKey, String uri) {
+    public static synchronized void saveRequestUri(String idempotencyKey, String uri) {
         final String previousValue = idempotencyKeysToUris.put(idempotencyKey, uri);
         if (previousValue == null) {
             lastRequests.add(0, idempotencyKey);

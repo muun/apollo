@@ -1,35 +1,56 @@
 package io.muun.apollo.data.preferences;
 
-import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.domain.model.FeeWindow;
 
 import android.content.Context;
 import com.f2prateek.rx.preferences.Preference;
+import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
+
+import java.util.SortedMap;
 
 import javax.inject.Inject;
 
 public class FeeWindowRepository extends BaseRepository {
 
-    private static final String KEY_HOUSTON_ID = "houston_id";
-    private static final String KEY_FETCH_DATE = "fetch_date";
-    private static final String KEY_FEE_IN_SATOSHIS_PER_BYTE = "fee_in_satoshis_per_byte";
+    /**
+     * Like FeeWindow, but JSON-serializable.
+     */
+    private static class StoredFeeWindow {
+        public Long houstonId;
+        public ZonedDateTime fetchDate;
+        public SortedMap<Integer, Double> targetedFees;
 
-    private final Preference<Long> houstonIdPreference;
-    private final Preference<String> fetchDatePreference;
-    private final Preference<Long> feeInSatoshisPerByte;
+        public StoredFeeWindow() {
+        }
+
+        StoredFeeWindow(FeeWindow feeWindow) {
+            this.houstonId = feeWindow.houstonId;
+            this.fetchDate = feeWindow.fetchDate;
+            this.targetedFees = feeWindow.targetedFees;
+        }
+
+        FeeWindow toFeeWindow() {
+            return new FeeWindow(houstonId, fetchDate, targetedFees);
+        }
+    }
+
+    private static final String KEY_FEE_WINDOW = "fee_window";
+
+    private final Preference<StoredFeeWindow> feeWindowPreference;
 
     /**
      * Constructor.
      */
     @Inject
     public FeeWindowRepository(Context context) {
-
         super(context);
 
-        houstonIdPreference = rxSharedPreferences.getLong(KEY_HOUSTON_ID);
-        fetchDatePreference = rxSharedPreferences.getString(KEY_FETCH_DATE);
-        feeInSatoshisPerByte = rxSharedPreferences.getLong(KEY_FEE_IN_SATOSHIS_PER_BYTE);
+        feeWindowPreference = rxSharedPreferences.getObject(
+                KEY_FEE_WINDOW,
+                new JsonPreferenceAdapter<>(StoredFeeWindow.class)
+        );
     }
 
     @Override
@@ -41,22 +62,14 @@ public class FeeWindowRepository extends BaseRepository {
      * Return true if `fetch()` is safe to call.
      */
     public boolean isSet() {
-        return houstonIdPreference.isSet()
-                && fetchDatePreference.isSet()
-                && feeInSatoshisPerByte.isSet();
+        return feeWindowPreference.isSet();
     }
 
     /**
      * Fetch an observable instance of the latest expected fee.
      */
     public Observable<FeeWindow> fetch() {
-
-        return Observable.combineLatest(
-                houstonIdPreference.asObservable(),
-                fetchDatePreference.asObservable().map(SerializationUtils::deserializeDate),
-                feeInSatoshisPerByte.asObservable(),
-                FeeWindow::new
-        );
+        return feeWindowPreference.asObservable().map(StoredFeeWindow::toFeeWindow);
     }
 
     public FeeWindow fetchOne() {
@@ -67,9 +80,6 @@ public class FeeWindowRepository extends BaseRepository {
      * Store the current expected fee.
      */
     public void store(FeeWindow feeWindow) {
-
-        houstonIdPreference.set(feeWindow.houstonId);
-        fetchDatePreference.set(SerializationUtils.serializeDate(feeWindow.fetchDate));
-        feeInSatoshisPerByte.set(feeWindow.feeInSatoshisPerByte);
+        feeWindowPreference.set(new StoredFeeWindow(feeWindow));
     }
 }

@@ -1,6 +1,7 @@
 package io.muun.apollo.data.logging;
 
 import io.muun.apollo.domain.errors.ErrorProcessingError;
+import io.muun.common.utils.ExceptionUtils;
 
 import rx.exceptions.AssemblyStackTraceException;
 
@@ -49,17 +50,7 @@ public class CrashReportingUtils {
     }
 
     private static boolean hasRxAssemblyException(Throwable error) {
-        Throwable cause = error;
-
-        while (cause != null) {
-            if (cause instanceof AssemblyStackTraceException) {
-                return true;
-            }
-
-            cause = cause.getCause();
-        }
-
-        return false;
+        return ExceptionUtils.getTypedCause(error, AssemblyStackTraceException.class).isPresent();
     }
 
 }

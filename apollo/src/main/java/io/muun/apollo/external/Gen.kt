@@ -15,20 +15,28 @@ import kotlin.random.Random
 
 object Gen {
 
+    private val CHARSET_ALPHA = ('A'..'Z').union('a'..'z')
+    private val CHARSET_NUM = ('0'..'9')
+
     /**
      * Get an alphabetic string of random length within a range.
      */
-    fun alpha(min: Int, max: Int) = concatGen(min, max) { ('A'..'z').random() }
+    fun alpha(min: Int, max: Int) = concatGen(min, max) { CHARSET_ALPHA.random() }
 
     /**
      * Get an alphabetic string of exact length.
      */
-    fun alpha(length: Int) = concatGen(length) { ('A'..'z').random() }
+    fun alpha(length: Int) = concatGen(length) { CHARSET_ALPHA.random() }
 
     /**
      * Get a numeric string of random length within a range.
      */
-    fun numeric(min: Int, max: Int) = concatGen(min, max) { ('0'..'9').random() }
+    fun numeric(min: Int, max: Int) = concatGen(min, max) { CHARSET_NUM.random() }
+
+    /**
+     * Get a numeric string of exact length.
+     */
+    fun numeric(length: Int) = concatGen(length) { CHARSET_NUM.random() }
 
     /**
      * Get a Houston ID.
@@ -64,7 +72,9 @@ object Gen {
     /**
      * Get a phone number string.
      */
-    fun phoneNumber() = PhoneNumber.getExample(countryCode()).get().toE164String()
+    fun phoneNumber() = PhoneNumber.getExample(countryCode()).get()
+            .toE164String()
+            .dropLast(6) + numeric(6) // randomize by replacing the last digits, keeping prefixes
 
     /**
      * Get a UserPhoneNumber.

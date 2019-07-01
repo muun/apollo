@@ -1,7 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.domain.errors.SecureStorageError;
-import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
 
@@ -27,64 +26,78 @@ public class SecureStorageProvider {
     }
 
     /**
-     * @param key      Key alias under which the secret was stored.
-     * @return Secret which was encrypted under this storage.
+     * Fetch and decrypt a value from secure storage.
      */
-    public Observable<byte[]> get(String key) {
+    public byte[] get(String key) {
+        throwIfModeInconsistent();
+        throwIfKeyCorruptedOrMissing(key);
+
         try {
-            if (!preferences.isCompatibleFormat()) {
-                return Observable.error(new InconsistentModeError());
-            }
+            return retrieveDecrypted(key);
 
-            throwIfKeyCorruptedOrMissing(key);
-
-            return Observable.fromCallable(() -> retrieveDecrypted(key))
-                    .onErrorResumeNext(throwable ->
-                            Observable.error(new SecureStorageError(throwable)));
-        } catch (Exception e) {
-            return Observable.error(e);
+        } catch (Throwable e) {
+            throw new SecureStorageError(e);
         }
     }
 
     /**
-     * Store a given secret in the store.
-     *
-     * @param key      Key alias under which this secret will be stored.
-     * @param input    secret to store.
-     * @return encrypted secret.
+     * Like `get(key)`, but asynchronous.
      */
-    public Observable<Void> put(String key, byte[] input) {
+    public Observable<byte[]> getAsync(String key) {
+        return Observable.fromCallable(() -> get(key));
+    }
+
+    /**
+     * Encrypt and save a value in secure storage.
+     */
+    public void put(String key, byte[] value) {
+        throwIfModeInconsistent();
+
         try {
-            if (!preferences.isCompatibleFormat()) {
-                return Observable.error(new InconsistentModeError());
-            }
+            storeEncrypted(key, value);
 
-            return Observable
-                    .fromCallable(() -> {
-                        storeEncrypted(input, key);
-                        return null;
-                    })
-                    .map(RxHelper::toVoid)
-                    .onErrorResumeNext(error -> Observable.error(new SecureStorageError(error)));
-
-        } catch (Exception e) {
-            return Observable.error(new SecureStorageError(e));
+        } catch (Throwable e) {
+            throw new SecureStorageError(e);
         }
     }
 
+    /**
+     * Like `put(key, value)`, but asynchronous.
+     */
+    public Observable<Void> putAsync(String key, byte[] value) {
+        return Observable.fromCallable(() -> {
+            put(key, value);
+            return null;
+        });
+    }
+
+    /**
+     * Remove a single value from secure storage.
+     */
     public void delete(String key) {
         preferences.delete(key);
         keyStore.deleteEntry(key);
     }
 
+    /**
+     * Return `true` if the key exists in secure storage.
+     */
     public boolean has(String key) {
-        return keyStore.hasKey(key)
-                && preferences.hasKey(key);
+        return keyStore.hasKey(key) && preferences.hasKey(key);
     }
 
+    /**
+     * Remove all values from secure storage (careful!).
+     */
     public void wipe() {
         preferences.wipe();
         keyStore.wipe();
+    }
+
+    private void throwIfModeInconsistent() {
+        if (!preferences.isCompatibleFormat()) {
+            throw new InconsistentModeError();
+        }
     }
 
     private void throwIfKeyCorruptedOrMissing(String key) {
@@ -105,56 +118,47 @@ public class SecureStorageProvider {
     }
 
     private byte[] retrieveDecrypted(String key) {
-        return keyStore.decryptData(
-                preferences.getBytes(key),
-                key,
-                preferences.getAesIv(key));
+        return keyStore.decryptData(preferences.getBytes(key), key, preferences.getAesIv(key));
     }
 
-    private void storeEncrypted(byte[] input, String key) {
-        preferences.saveBytes(
-                keyStore.encryptData(input, key, preferences.getAesIv(key)),
-                key
-        );
+    private void storeEncrypted(String key, byte[] input) {
+        preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
     }
 
     /**
-     * This exception is raised when keystore appears to be corrupted, lacking data that other
-     * storages has, you can either delete the conflicting key with {@link #delete(String)} or wipe
-     * the secure storage with {@link #wipe()}.
+     * The Android KeyStore appears to be corrupted: a key present in our Preference map is missing.
      */
     public class KeyStoreCorruptedError extends SecureStorageError {
         public KeyStoreCorruptedError(Throwable throwable) {
             super(throwable);
         }
 
-        public KeyStoreCorruptedError() { }
+        public KeyStoreCorruptedError() {
+        }
     }
 
     /**
-     * This exception is raised when sharedpreferences appears to be corrupted, lacking data that
-     * other storages has, you can either delete the conflicting key with {@link #delete(String)} or
-     * wipe the secure storage with {@link #wipe()}.
+     * The SharedPreferences bag appears to be corrupted: a key present in our KeyStore is missing.
      */
     public class SharedPreferencesCorruptedError extends SecureStorageError {
         public SharedPreferencesCorruptedError(Throwable throwable) {
             super(throwable);
         }
 
-        public SharedPreferencesCorruptedError() { }
+        public SharedPreferencesCorruptedError() {
+        }
     }
 
     /**
-     * This exception is raised when trying to perform an operation in a secure storage that has
-     * been initialized in another mode. Most likely due to a system update to marshmallow from a
-     * previous version, automatic migration is not currently supported, you can wipe the secure
-     * storage with{@link #wipe()}.
+     * An operation was attempted using a SecureStorageMode different from the one used last time.
+     * This is most likely due to a system update to Marshmallow from a previous version.
      */
     public class InconsistentModeError extends SecureStorageError {
         public InconsistentModeError(Throwable throwable) {
             super(throwable);
         }
 
-        public InconsistentModeError() { }
+        public InconsistentModeError() {
+        }
     }
 }

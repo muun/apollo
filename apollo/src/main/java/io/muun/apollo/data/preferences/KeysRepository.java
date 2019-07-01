@@ -100,7 +100,7 @@ public class KeysRepository extends BaseRepository {
      */
     @NotNull
     public Observable<PrivateKey> getBasePrivateKey() {
-        return secureStorageProvider.get(KEY_BASE_58_PRIVATE_KEY)
+        return secureStorageProvider.getAsync(KEY_BASE_58_PRIVATE_KEY)
                 .map(base58Bytes -> {
                     final String path = basePrivateKeyPathPreference.get();
                     final String base58 = new String(base58Bytes);
@@ -152,7 +152,7 @@ public class KeysRepository extends BaseRepository {
     public Observable<Void> storeBasePrivateKey(@NotNull PrivateKey basePrivateKey) {
         final byte[] base58 = basePrivateKey.serializeBase58().getBytes();
 
-        return secureStorageProvider.put(KEY_BASE_58_PRIVATE_KEY, base58)
+        return secureStorageProvider.putAsync(KEY_BASE_58_PRIVATE_KEY, base58)
                 .flatMap(ignored -> storeEncryptedBasePrivateKey(basePrivateKey))
                 .doOnNext(ignored -> {
                     basePrivateKeyPathPreference.set(basePrivateKey.getAbsoluteDerivationPath());
@@ -196,7 +196,7 @@ public class KeysRepository extends BaseRepository {
 
                     Timber.d("Storing encrypted Apollo private key in secure storage.");
 
-                    return secureStorageProvider.put(
+                    return secureStorageProvider.putAsync(
                             KEY_ENCRYPTED_PRIVATE_APOLLO_KEY,
                             encryptedKey.getBytes()
                     );
@@ -204,13 +204,13 @@ public class KeysRepository extends BaseRepository {
     }
 
     public Observable<String> getEncryptedBasePrivateKey() {
-        return secureStorageProvider.get(KEY_ENCRYPTED_PRIVATE_APOLLO_KEY)
+        return secureStorageProvider.getAsync(KEY_ENCRYPTED_PRIVATE_APOLLO_KEY)
                 .map(String::new);
     }
 
     private Observable<ChallengePublicKey> getChallengePublicKey(ChallengeType type) {
         return secureStorageProvider
-                .get(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
+                .getAsync(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
                 .map(ChallengePublicKey::fromBytes);
     }
 
@@ -230,11 +230,11 @@ public class KeysRepository extends BaseRepository {
         secureStorageProvider.put(
                 KEY_ENCRYPTED_PRIVATE_MUUN_KEY,
                 encryptedPrivateMuunKey.getBytes()
-        ).toBlocking().first();
+        );
     }
 
     public Observable<String> getEncryptedMuunPrivateKey() {
-        return secureStorageProvider.get(KEY_ENCRYPTED_PRIVATE_MUUN_KEY)
+        return secureStorageProvider.getAsync(KEY_ENCRYPTED_PRIVATE_MUUN_KEY)
                 .map(String::new);
     }
 
@@ -251,7 +251,7 @@ public class KeysRepository extends BaseRepository {
         secureStorageProvider.put(
                 KEY_CHALLENGE_PUBLIC_KEY + type.toString(),
                 publicKey.toBytes()
-        ).toBlocking().first();
+        );
 
         // Update the encrypted Apollo private key when some challenge key changes.
         if (secureStorageProvider.has(KEY_BASE_58_PRIVATE_KEY)) {

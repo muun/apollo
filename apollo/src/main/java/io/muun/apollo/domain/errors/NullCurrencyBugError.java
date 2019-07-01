@@ -1,7 +1,9 @@
 package io.muun.apollo.domain.errors;
 
 
-public class NullCurrencyBugError extends RuntimeException {
+import io.muun.common.exception.PotentialBug;
+
+public class NullCurrencyBugError extends RuntimeException implements PotentialBug {
 
     public NullCurrencyBugError() {
         super("The primary currency preference was found to be null");

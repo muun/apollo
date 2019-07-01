@@ -13,11 +13,13 @@ import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
 
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
-
 import rx.BackpressureOverflow;
+import rx.Completable;
 import rx.Observable;
+import rx.Observable.Transformer;
+import rx.Single;
 import rx.Subscription;
+import rx.functions.Func1;
 import rx.subjects.PublishSubject;
 
 import java.util.List;
@@ -101,84 +103,86 @@ public class NotificationActions {
     }
 
     /**
-     * Synchronously process a notification report. Do not call directly.
+     * Process a notification report. Do not call directly.
      */
-    @VisibleForTesting
-    public void processReport(NotificationReport report) {
+    private Completable processReport(NotificationReport report) {
 
-        final long lastProcessedId = notificationRepository.getLastProcessedId();
+        return getPendingNotifications(report, notificationRepository.getLastProcessedId())
+                .flatMapCompletable(this::processNotificationList);
+    }
 
-        final List<NotificationJson> notifications;
+    /**
+     * Process a list of notifications. Do not call directly.
+     */
+    private Completable processNotificationList(List<NotificationJson> notifications) {
+
+        return Completable.defer(() -> {
+            final long lastIdBefore = notificationRepository.getLastProcessedId();
+
+            return Observable.from(notifications)
+                    .compose(forEach(this::processNotification))
+                    .lastOrDefault(null)
+                    .flatMap(ignored -> {
+                        final long lastIdAfter = notificationRepository.getLastProcessedId();
+
+                        if (lastIdAfter > lastIdBefore) {
+                            return houstonClient.confirmNotificationsDeliveryUntil(lastIdAfter);
+                        } else {
+                            return Observable.just(null);
+                        }
+                    })
+                    .toCompletable();
+        });
+    }
+
+    /**
+     * Process a single notification. Do not call directly.
+     */
+    private Completable processNotification(NotificationJson notification) {
+
+        return Completable.defer(() -> {
+            Logger.debug("[Notifications] Processing " + notification.messageType);
+
+            final long lastProcessedId = notificationRepository.getLastProcessedId();
+
+            if (notification.id <= lastProcessedId) {
+                return Completable.complete(); // already processed!
+            }
+
+            if (notification.previousId != lastProcessedId) {
+                throw NotificationProcessingError.fromMissingIds(notification, lastProcessedId);
+            }
+
+            return notificationProcessor.process(notification)
+                    .onErrorComplete(cause -> {
+                        Logger.error(NotificationProcessingError.fromCause(notification, cause));
+                        return true; // skip notification, log the error
+                    })
+                    .doOnCompleted(() -> {
+                        notificationRepository.setLastProcessedId(notification.id);
+                    });
+        });
+    }
+
+    private Single<List<NotificationJson>> getPendingNotifications(NotificationReport report,
+                                                                   long lastProcessedId) {
 
         if (report.isMissingNotifications(lastProcessedId)) {
             // This report starts later than expected (we missed past notifications), or ends
             // earlier (more notifications are available in Houston):
-            notifications = houstonClient.fetchNotificationsAfter(lastProcessedId)
-                    .toBlocking()
-                    .first();
+            return houstonClient.fetchNotificationsAfter(lastProcessedId).toSingle();
+
+            // TODO: a relatively easy optimization here would be to use the report preview and
+            // only fetch the missing notifications, instead of discarding those already obtained.
+            // This could be done in parallel.
+
         } else {
             // The report contains everything we need. It may even contain some notifications we
             // already processed:
-            notifications = report.getPreview();
-        }
-
-        // TODO: a relatively easy optimization here would be to use the report preview and
-        // only fetch the missing notifications, instead of discarding those already obtained.
-        // This could be done in parallel.
-        processNotificationList(notifications);
-    }
-
-    /**
-     * Synchronously process a list of notifications. Do not call directly.
-     */
-    @VisibleForTesting
-    public void processNotificationList(List<NotificationJson> notifications) {
-        final long lastProcessedIdBefore = notificationRepository.getLastProcessedId();
-
-        for (NotificationJson notification: notifications) {
-            try {
-                processNotification(notification);
-            } catch (RuntimeException error) {
-                Logger.error(error);
-                break;
-            }
-        }
-
-        final long lastProcessedIdAfter = notificationRepository.getLastProcessedId();
-
-        if (lastProcessedIdAfter > lastProcessedIdBefore) {
-            houstonClient.confirmNotificationsDeliveryUntil(lastProcessedIdAfter)
-                .toCompletable()
-                .await();
+            return Single.just(report.getPreview());
         }
     }
 
-    /**
-     * Synchronously process a single notification. Do not call directly.
-     */
-    @VisibleForTesting
-    public void processNotification(NotificationJson notification) {
-        Logger.debug("[Notifications] Processing " + notification.messageType);
-
-        final long lastProcessedId = notificationRepository.getLastProcessedId();
-
-        if (notification.id <= lastProcessedId) {
-            return; // already processed!
-        }
-
-        if (notification.previousId != lastProcessedId) {
-            throw NotificationProcessingError.fromMissingIds(notification, lastProcessedId);
-        }
-
-        try {
-            notificationProcessor.process(notification).await();
-        } catch (Throwable error) {
-            // Skip the notification, log the error:
-            Logger.error(NotificationProcessingError.fromCause(notification, error));
-        }
-
-        notificationRepository.setLastProcessedId(notification.id);
-    }
 
     private Observable<NotificationReport> fetchNotificationReport(@Nullable Long afterId) {
         // We'll create a fake NotificationReport from the notification list Houston gives us.
@@ -210,13 +214,20 @@ public class NotificationActions {
                         BackpressureOverflow.ON_OVERFLOW_DROP_OLDEST
                 )
                 .observeOn(transformerFactory.getBackgroundScheduler())
-                .doOnNext(report -> {
-                    try {
-                        processReport(report);
-                    } catch (Throwable error) {
-                        Logger.error(error);
-                    }
-                })
+                .compose(forEach(this::processReport))
                 .subscribe();
+    }
+
+    /**
+     * Transformer to run a task on each item of an Observable, logging and skipping errors.
+     */
+    private <T> Transformer<T, Void> forEach(Func1<T, Completable> createTask) {
+        return (items) -> items
+                .map(createTask)
+                .concatMap(task -> task
+                        .doOnError(Logger::error)
+                        .onErrorComplete() // skip the error
+                        .toObservable()
+                );
     }
 }

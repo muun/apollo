@@ -6,6 +6,8 @@ import rx.functions.Func1;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class CollectionUtils {
 
@@ -56,5 +58,36 @@ public class CollectionUtils {
      */
     public static <T> boolean any(List<T> items, Func1<? super T, Boolean> predicate) {
         return find(items, predicate).isPresent();
+    }
+
+    /**
+     * Create a SortedMap from a List of Pairs. If keys collide, latest value will be preserved.
+     */
+    public static <K extends Comparable, V> SortedMap<K, V> mapPairs(List<Pair<K, V>> pairs) {
+        final SortedMap<K, V> map = new TreeMap<>(); // preserve order
+
+        for (final Pair<K, V> pair : pairs) {
+            map.put(pair.fst, pair.snd);
+        }
+
+        return map;
+    }
+
+    /**
+     * Create a list of pairs by zipping together two lists of elements.
+     */
+    public static <T, U> List<Pair<T, U>> zip(List<T> a, List<U> b) {
+        Preconditions.checkArgument(a.size() == b.size());
+
+        final List<Pair<T, U>> result = new ArrayList<>(a.size());
+
+        for (int i = 0; i < a.size(); i++) {
+            final T first = a.get(i);
+            final U second = b.get(i);
+
+            result.add(new Pair<>(first, second));
+        }
+
+        return result;
     }
 }

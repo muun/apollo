@@ -4,7 +4,6 @@ import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 
 import android.util.Log;
-import rx.Completable;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -105,16 +104,6 @@ public class BaseAsyncAction<ReturnT> {
                     }
                 })
                 .map(ActionState::getValue);
-    }
-
-    /**
-     * Get a Completable that completes when the current run finishes, or now if not running.
-     */
-    public Completable getCompletion() {
-        return getState()
-                .filter(state -> state.getKind() == ActionState.Kind.EMPTY)
-                .first()
-                .toCompletable();
     }
 
     /**

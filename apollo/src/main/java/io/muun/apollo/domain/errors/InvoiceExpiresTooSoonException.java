@@ -2,7 +2,7 @@ package io.muun.apollo.domain.errors;
 
 public class InvoiceExpiresTooSoonException extends RuntimeException {
 
-    public InvoiceExpiresTooSoonException(Throwable cause) {
-        super(cause);
+    public InvoiceExpiresTooSoonException(String invoice, Throwable cause) {
+        super(invoice, cause);
     }
 }

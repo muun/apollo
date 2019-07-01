@@ -1,7 +1,9 @@
 package io.muun.apollo.domain.errors;
 
-public class NoPaymentRouteException extends RuntimeException {
-    public NoPaymentRouteException(Throwable cause) {
-        super(cause);
+import io.muun.common.exception.PotentialBug;
+
+public class NoPaymentRouteException extends RuntimeException implements PotentialBug {
+    public NoPaymentRouteException(String invoice, Throwable cause) {
+        super(invoice, cause);
     }
 }

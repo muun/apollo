@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -10,6 +11,7 @@ import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
+import io.muun.apollo.domain.errors.FcmTokenNotAvailableError;
 import io.muun.apollo.domain.errors.InitialSyncError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.PasswordIntegrityError;
@@ -36,6 +38,8 @@ import rx.Observable;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -62,6 +66,8 @@ public class SigninActions {
     private final FetchNextTransactionSizeAction fetchNextTransactionSize;
     private final FetchRealTimeDataAction fetchRealTimeData;
 
+    private final ExecutionTransformerFactory transformerFactory;
+
     public final AsyncAction1<String, CreateSessionOk> createSessionAction;
     public final AsyncAction2<ChallengeType, String, SetupChallengeResponse>
             updateChallengeSetupAction;
@@ -85,7 +91,8 @@ public class SigninActions {
                          KeysRepository keysRepository,
                          HardwareWalletActions hardwareWalletActions,
                          FetchNextTransactionSizeAction fetchNextTransactionSize,
-                         FetchRealTimeDataAction fetchRealTimeData) {
+                         FetchRealTimeDataAction fetchRealTimeData,
+                         ExecutionTransformerFactory transformerFactory) {
 
         this.authRepository = authRepository;
         this.houstonClient = houstonClient;
@@ -111,19 +118,36 @@ public class SigninActions {
         this.hardwareWalletActions = hardwareWalletActions;
         this.fetchNextTransactionSize = fetchNextTransactionSize;
         this.fetchRealTimeData = fetchRealTimeData;
+        this.transformerFactory = transformerFactory;
     }
 
     /**
      * Creates a new session in Houston, associated with a given email.
      */
     public Observable<CreateSessionOk> createSession(@NotNull String email) {
-        return userRepository.getFcmToken().asObservable()
+        return waitForFcmToken()
                 .flatMap((token) -> houstonClient.createSession(
                         email,
                         Globals.INSTANCE.getOldBuildType(),
                         Globals.INSTANCE.getVersionCode(),
                         token
                 )).doOnNext(ignored -> Logger.configureForUser("NotLoggedYet", email));
+    }
+
+    /**
+     * Return the current FCM token, waiting a few seconds if it's not immediately available.
+     */
+    private Observable<String> waitForFcmToken() {
+        return userRepository.watchFcmToken()
+                .observeOn(transformerFactory.getBackgroundScheduler())
+                .filter(token -> token != null)
+                .first()
+                .timeout(15, TimeUnit.SECONDS)
+                .compose(ObservableFn.replaceTypedError(
+                        TimeoutException.class,
+                        error -> new FcmTokenNotAvailableError()
+                ))
+                .doOnError(Logger::error); // force-log this UserFacingError
     }
 
     /**

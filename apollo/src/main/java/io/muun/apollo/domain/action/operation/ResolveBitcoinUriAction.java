@@ -44,7 +44,14 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
 
     @Override
     public Observable<PaymentRequest> action(OperationUri operationUri) {
-        return Observable.fromCallable(() -> resolveBitcoinUri(operationUri));
+        return Observable.fromCallable(() -> {
+            try {
+                return resolveBitcoinUri(operationUri);
+
+            } catch (InvalidPaymentRequestError e) {
+                throw new InvalidPaymentRequestError(operationUri.toString(), e);
+            }
+        });
     }
 
     private PaymentRequest resolveBitcoinUri(OperationUri uri) {
@@ -96,7 +103,7 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
             return new BitcoinUri(networkParameters, text);
 
         } catch (BitcoinURIParseException e) {
-            throw new InvalidPaymentRequestError(e);
+            throw new InvalidPaymentRequestError("Unable to parse URI", e);
         }
     }
 
@@ -155,7 +162,7 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
             return PaymentSession.createFromUrl(bitcoinUri.getPaymentRequestUrl()).get();
 
         } catch (PaymentProtocolException e) {
-            throw new InvalidPaymentRequestError(e);
+            throw new InvalidPaymentRequestError("Cannot start PaymentSession", e);
 
         } catch (InterruptedException | ExecutionException e) {
             throw new NetworkException(e);
@@ -168,7 +175,7 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
                                                   String merchant) {
 
         if (address == null) {
-            throw new InvalidPaymentRequestError();
+            throw new InvalidPaymentRequestError("Missing address");
         }
 
         return new BitcoinUriContent(

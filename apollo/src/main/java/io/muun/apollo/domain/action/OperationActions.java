@@ -25,6 +25,7 @@ import io.muun.apollo.domain.model.PendingWithdrawal;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.utils.FeeCalculator;
 import io.muun.common.Optional;
+import io.muun.common.Temporary;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
@@ -296,7 +297,11 @@ public class OperationActions {
                     Preconditions.checkNotNull(feeWindow);
                     Preconditions.checkNotNull(sizeProgression);
 
-                    return new FeeCalculator(feeWindow.feeInSatoshisPerByte, sizeProgression)
+                    final long feeInSatoshisPerByte = (payReq.customFeeRate != null)
+                            ? Temporary.feeDoubleToLong(payReq.customFeeRate.satoshisPerByte)
+                            : feeWindow.getFastestFeeInSatoshisPerByte();
+
+                    return new FeeCalculator(feeInSatoshisPerByte, sizeProgression)
                             .getMaxSpendableAmount();
                 }
         );

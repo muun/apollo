@@ -21,7 +21,7 @@ public class PinManager {
      * Store the pin.
      */
     public void storePin(String pin) {
-        secureStorageProvider.put(PIN_KEY, Encodings.stringToBytes(pin)).toBlocking().first();
+        secureStorageProvider.put(PIN_KEY, Encodings.stringToBytes(pin));
     }
 
     public boolean hasPin() {
@@ -33,7 +33,7 @@ public class PinManager {
      */
     public boolean verifyPin(String pin) {
         final byte[] pinBytes = Encodings.stringToBytes(pin);
-        final byte[] storedPinBytes = secureStorageProvider.get(PIN_KEY).toBlocking().first();
+        final byte[] storedPinBytes = secureStorageProvider.get(PIN_KEY);
 
         return Arrays.areEqual(storedPinBytes, pinBytes);
     }

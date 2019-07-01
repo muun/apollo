@@ -99,7 +99,7 @@ public class HardwareWalletActions {
     public Observable<Long> getMaxSpendableAmount(HardwareWalletState hardwareWalletState) {
         return feeWindowRepository.fetch()
                 .map(feeWindow -> TrezorActions.availableBalance(
-                        feeWindow.feeInSatoshisPerByte,
+                        feeWindow.getFastestFeeInSatoshisPerByte(),
                         hardwareWalletState
                 ))
                 .first();

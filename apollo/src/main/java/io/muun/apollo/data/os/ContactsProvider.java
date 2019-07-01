@@ -4,6 +4,7 @@ import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.Optional;
 import io.muun.common.model.PhoneNumber;
+import io.muun.common.utils.Preconditions;
 
 import android.Manifest;
 import android.content.ContentResolver;
@@ -13,11 +14,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import rx.Observable;
+import rx.Subscriber;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 public class ContactsProvider {
@@ -86,6 +90,10 @@ public class ContactsProvider {
                 cursor.getColumnIndex(Phone.NUMBER)
         );
 
+        if (TextUtils.isEmpty(number)) {
+            return Optional.empty();
+        }
+
         try {
             number = normalizePhoneNumber(number, defaultAreaCode, defaultRegionCode);
         } catch (IllegalArgumentException ex) {
@@ -107,7 +115,7 @@ public class ContactsProvider {
     private Cursor queryPhoneNumbers() {
         final Uri uri = Phone.CONTENT_URI;
 
-        final String[] projection = new String[] {
+        final String[] projection = new String[]{
                 Phone._ID,
                 Phone.CONTACT_ID,
                 Phone.DISPLAY_NAME,
@@ -127,25 +135,33 @@ public class ContactsProvider {
         final Uri rootUri = Phone.CONTENT_URI;
 
         return Observable.using(
-                () -> new SubscriberContentObserver(),
+                SubscriberContentObserver::new,
 
                 contentObserver -> Observable.create((Observable.OnSubscribe<String>)
-                    (subscriber) -> {
-                        contentObserver.setSubscriber(subscriber);
-                        subscriber.onNext(rootUri.toString());
-
-                        contentResolver.registerContentObserver(rootUri, true, contentObserver);
-                    }
+                        (subscriber) -> {
+                            registerContentObserver(rootUri, contentObserver, subscriber);
+                        }
                 ),
 
-                contentObserver -> contentResolver.unregisterContentObserver(contentObserver)
+                contentResolver::unregisterContentObserver
         );
     }
 
-    private String normalizePhoneNumber(String number,
+    private void registerContentObserver(Uri rootUri,
+                                         SubscriberContentObserver contentObserver,
+                                         Subscriber<? super String> subscriber) {
+
+        contentObserver.setSubscriber(subscriber);
+        subscriber.onNext(rootUri.toString());
+
+        contentResolver.registerContentObserver(rootUri, true, contentObserver);
+    }
+
+    private String normalizePhoneNumber(@Nonnull String number,
                                         String defaultAreaCode,
-                                        String defaultRegionCode)
-            throws IllegalArgumentException {
+                                        String defaultRegionCode) throws IllegalArgumentException {
+
+        Preconditions.checkArgument(number != null);
 
         PhoneNumber phoneNumber;
 

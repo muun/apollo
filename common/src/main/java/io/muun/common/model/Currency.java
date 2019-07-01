@@ -40,7 +40,6 @@ public class Currency {
         CURRENCIES.put("BTC", new Currency("BTC", "", "Bitcoin"));
         CURRENCIES.put("BTN", new Currency("BTN", "Nu", "Bhutanese Ngultrum"));
         CURRENCIES.put("BWP", new Currency("BWP", "P", "Botswanan Pula"));
-        CURRENCIES.put("BYR", new Currency("BYR", "p.", "Belarusian Ruble"));
         CURRENCIES.put("BZD", new Currency("BZD", "BZ$", "Belize Dollar"));
         CURRENCIES.put("CAD", new Currency("CAD", "$", "Canadian Dollar"));
         CURRENCIES.put("CDF", new Currency("CDF", "FC", "Congolese Franc"));
@@ -105,7 +104,6 @@ public class Currency {
         CURRENCIES.put("MMK", new Currency("MMK", "K", "Myanma Kyat"));
         CURRENCIES.put("MNT", new Currency("MNT", "₮", "Mongolian Tugrik"));
         CURRENCIES.put("MOP", new Currency("MOP", "MOP$", "Macanese Pataca"));
-        CURRENCIES.put("MRO", new Currency("MRO", "UM", "Mauritanian Ouguiya"));
         CURRENCIES.put("MUR", new Currency("MUR", "₨", "Mauritian Rupee"));
         CURRENCIES.put("MVR", new Currency("MVR", "MRf", "Maldivian Rufiyaa"));
         CURRENCIES.put("MWK", new Currency("MWK", "MK", "Malawian Kwacha"));
@@ -140,7 +138,6 @@ public class Currency {
         CURRENCIES.put("SLL", new Currency("SLL", "Le", "Sierra Leonean Leone"));
         CURRENCIES.put("SOS", new Currency("SOS", "S", "Somali Shilling"));
         CURRENCIES.put("SRD", new Currency("SRD", "$", "Surinamese Dollar"));
-        CURRENCIES.put("STD", new Currency("STD", "Db", "São Tomé and Príncipe Dobra"));
         CURRENCIES.put("SVC", new Currency("SVC", "₡", "Salvadoran Colón"));
         CURRENCIES.put("SZL", new Currency("SZL", "L", "Swazi Lilangeni"));
         CURRENCIES.put("THB", new Currency("THB", "฿", "Thai Baht"));

@@ -148,22 +148,12 @@ public class ApplicationLockManager {
         // constant is modified in an application update. This is a bit of an overkill, but it
         // doesn't add that much complexity.
 
-        final byte[] incorrectAttemptBytes = Encodings.intToBytes(incorrectAttempts);
-
-        secureStorageProvider
-                .put(KEY_INCORRECT_ATTEMPTS, incorrectAttemptBytes)
-                .toBlocking()
-                .first();
+        secureStorageProvider.put(KEY_INCORRECT_ATTEMPTS, Encodings.intToBytes(incorrectAttempts));
     }
 
     private synchronized int fetchIncorrectAttempts() {
         try {
-            final byte[] incorrectAttemptBytes = secureStorageProvider
-                    .get(KEY_INCORRECT_ATTEMPTS)
-                    .toBlocking()
-                    .first();
-
-            return Encodings.bytesToInt(incorrectAttemptBytes);
+            return Encodings.bytesToInt(secureStorageProvider.get(KEY_INCORRECT_ATTEMPTS));
 
         } catch (NoSuchElementException error) {
             storeIncorrectAttempts(0);
