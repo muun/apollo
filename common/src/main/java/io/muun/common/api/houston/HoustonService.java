@@ -49,7 +49,6 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import rx.Completable;
 import rx.Observable;
 
 import java.util.List;
@@ -217,5 +216,4 @@ public interface HoustonService {
 
     @POST("integrity/check")
     Observable<IntegrityStatus> checkIntegrity(@Body IntegrityCheck request);
-
 }

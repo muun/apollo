@@ -121,21 +121,21 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
     @VisibleForTesting
     public Operation buildOperation(PaymentRequest payReq, PreparedPayment prepPayment) {
 
-        switch (payReq.type) {
+        switch (payReq.getType()) {
             case TO_CONTACT:
-                return buildOperationToContact(payReq.contact, prepPayment);
+                return buildOperationToContact(payReq.getContact(), prepPayment);
 
             case TO_ADDRESS:
-                return buildOperationToExternal(payReq.address, prepPayment);
+                return buildOperationToExternal(payReq.getAddress(), prepPayment);
 
             case TO_HARDWARE_WALLET:
-                return buildOperationToHardwareWallet(payReq.hardwareWallet, prepPayment);
+                return buildOperationToHardwareWallet(payReq.getHardwareWallet(), prepPayment);
 
             case TO_LN_INVOICE:
-                return buildOperationToLnInvoice(payReq.swap, prepPayment);
+                return buildOperationToLnInvoice(payReq.getSwap(), prepPayment);
 
             default:
-                throw new MissingCaseError(payReq.type);
+                throw new MissingCaseError(payReq.getType());
         }
     }
 

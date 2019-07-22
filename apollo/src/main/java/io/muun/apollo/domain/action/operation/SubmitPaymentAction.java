@@ -35,7 +35,7 @@ public class SubmitPaymentAction extends BaseAsyncAction2<
     }
 
     private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
-        if (payReq.type == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
+        if (payReq.getType() == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
             return submitIncomingPayment.action(payReq, prepPayment);
         } else {
             return submitOutgoingPayment.action(payReq, prepPayment);

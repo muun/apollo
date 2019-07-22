@@ -67,4 +67,37 @@ public class Contact extends HoustonIdModel {
                 Math.max(lastDerivationIndex, other.lastDerivationIndex)
         );
     }
+
+    /**
+     * Convert to a json-serializable representation.
+     */
+    public io.muun.common.api.Contact toJson() {
+        return new io.muun.common.api.Contact(
+                publicProfile.toJson(),
+                maxAddressVersion,
+                publicKey.toJson(),
+                cosigningPublicKey != null ? cosigningPublicKey.toJson() : null,
+                lastDerivationIndex
+        );
+    }
+
+    /**
+     * Build from a json-serializable representation.
+     */
+    @Nullable
+    public static Contact fromJson(io.muun.common.api.Contact contact) {
+        if (contact == null) {
+            return null;
+        }
+
+        return new Contact(
+                null,
+                contact.publicProfile.userId,
+                PublicProfile.fromJson(contact.publicProfile),
+                contact.maxAddressVersion,
+                PublicKey.fromJson(contact.publicKey),
+                PublicKey.fromJson(contact.cosigningPublicKey),
+                contact.lastDerivationIndex
+        );
+    }
 }

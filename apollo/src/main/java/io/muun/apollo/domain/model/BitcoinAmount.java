@@ -26,4 +26,17 @@ public class BitcoinAmount {
         this.inInputCurrency = inInputCurrency;
         this.inPrimaryCurrency = inPrimaryCurrency;
     }
+
+    /**
+     * Return the sum of two BitcoinAmounts.
+     */
+    public BitcoinAmount add(BitcoinAmount other) {
+        // TODO we should NOT be adding MonetaryAmounts, instead recalculating with the implied
+        // exchange rate using only satoshis.
+        return new BitcoinAmount(
+                inSatoshis + other.inSatoshis,
+                inInputCurrency.add(other.inInputCurrency),
+                inPrimaryCurrency.add(other.inPrimaryCurrency)
+        );
+    }
 }

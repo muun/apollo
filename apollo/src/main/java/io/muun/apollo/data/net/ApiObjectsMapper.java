@@ -94,7 +94,7 @@ public class ApiObjectsMapper {
     public OperationJson mapOperation(@NotNull Operation operation) {
 
         final Long outputAmountInSatoshis = operation.swap != null
-                ? operation.swap.fundingOutput.outputAmountInSatoshis
+                ? operation.swap.getOutputAmountInSatoshis()
                 : operation.amount.inSatoshis;
 
         return new OperationJson(

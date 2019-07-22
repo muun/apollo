@@ -29,6 +29,18 @@ public class ApolloZonedDateTime implements MuunZonedDateTime {
         return new ApolloZonedDateTime(dateTime);
     }
 
+    /**
+     * Build from a json-serializable representation.
+     */
+    @Nullable
+    public static ApolloZonedDateTime fromMuunZonedDateTime(MuunZonedDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+
+        return ((ApolloZonedDateTime) dateTime);
+    }
+
     private ApolloZonedDateTime(@NotNull ZonedDateTime dateTime) {
         Preconditions.checkNotNull(dateTime);
         this.dateTime = dateTime;

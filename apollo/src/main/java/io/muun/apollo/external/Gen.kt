@@ -1,16 +1,19 @@
 package io.muun.apollo.external
 
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.model.UserPhoneNumber
-import io.muun.apollo.domain.model.UserProfile
+import io.muun.apollo.domain.model.*
 import io.muun.common.Optional
+import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.PhoneNumber
+import io.muun.common.model.SizeForAmount
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.params.TestNet3Params
+import org.javamoney.moneta.Money
+import org.threeten.bp.ZonedDateTime
 import javax.money.CurrencyUnit
 import javax.money.Monetary
+import javax.money.MonetaryAmount
 import kotlin.random.Random
 
 object Gen {
@@ -112,6 +115,39 @@ object Gen {
     )
 
     /**
+     * Get a FeeWindow.
+     */
+    fun feeWindow(vararg feeRates: Pair<Int, Double>) =
+        FeeWindow(
+            1,
+            ZonedDateTime.now(),
+            if (feeRates.isNotEmpty()) mapOf(*feeRates) else mapOf(1 to double(), 5 to double(), 9 to double())
+        )
+
+    /**
+     * Get an ExchangeRateWindow.
+     */
+    fun exchangeRateWindow(vararg exchangeRates: Pair<String, Double>) =
+        ExchangeRateWindow(
+            1,
+            ZonedDateTime.now(),
+            if (exchangeRates.isNotEmpty()) mapOf(*exchangeRates) else mapOf("USD" to 10.0, "BTC" to 30.0)
+        )
+
+    /**
+     * Get a NextTransactionSize vector.
+     */
+    fun nextTransactionSize(vararg entries: Pair<Long, Int>) =
+        NextTransactionSize(
+            if (entries.isNotEmpty()) {
+                entries.map { (amount, size) -> SizeForAmount(amount, size) }
+            } else {
+                listOf(SizeForAmount(10000, 240))
+            },
+            1
+        )
+
+    /**
      * Get an address.
      */
     fun address() = when (val network = Globals.INSTANCE.network) {
@@ -121,6 +157,79 @@ object Gen {
         else ->
             throw MissingCaseError(network, "NetworkParameters")
     }
+
+    /**
+     * Get a MuunAddress.
+     */
+    fun muunAddress() =
+        MuunAddress(1, "m/1/2/3", address())
+
+    /**
+     * Get a PaymentRequest
+     */
+    fun payReq(amount: MonetaryAmount = Money.of(0, "USD"),
+               feeRate: Double = 10.0,
+               takeFeeFromAmount: Boolean = false
+
+    ) = PaymentRequest(
+        type = PaymentRequest.Type.TO_ADDRESS,
+        amount = amount,
+        description = "foo",
+        address = address(),
+        feeInSatoshisPerByte = feeRate,
+        takeFeeFromAmount = takeFeeFromAmount
+    )
+
+    fun submarineSwap(outputAmountInSatoshis: Long,
+                      sweepFeeInSatoshis: Long,
+                      lightningFeeInSatoshis: Long) =
+        SubmarineSwap(
+            houstonId(),
+            "1234-5675",
+            lnInvoice(),
+            submarineSwapReceiver(),
+            submarineSwapFundingOutput(outputAmountInSatoshis),
+            sweepFeeInSatoshis,
+            lightningFeeInSatoshis,
+            futureDate(),
+            null,
+            null
+        )
+
+    fun submarineSwapReceiver() =
+        SubmarineSwapReceiver("Some ln node", lnAddress(), lnPublicKey())
+
+    fun submarineSwapFundingOutput(outputAmountInSatoshis: Long,
+                                   confirmationsNeeded: Int = 0,
+                                   userLockTime: Int = 30,
+                                   userRefundAddress: MuunAddress = muunAddress()
+   ) =
+        SubmarineSwapFundingOutput(
+            address(),
+            outputAmountInSatoshis,
+            confirmationsNeeded,
+            userLockTime,
+            userRefundAddress,
+            lnPaymentHash(),
+            lnPublicKey()
+        )
+
+    fun lnInvoice() =
+        """
+            lnbcrt100n1pw3vtrqpp57dcqv2lx8a4tk86rc6gptkngwcea0mdqslw5034dgz0kdyvs664qdqqcqzpgu0rt752
+            vxd3re6qgknyfa6ff54prg7n42d4d7at2rnpcxvjk2eysypz9f80tu0ew5afvq2mm2drjhk2jshsnjy5g7lffqva
+            al792ttqpvserp8
+        """.trimIndent().replace("\n", "")
+
+    fun lnAddress() =
+        "${lnPublicKey()}:123.456.789.123:8080"
+
+    fun lnPublicKey() =
+        "0351114ba294a8802c6c49301a45a99c5ed5d2da71f2a19a53c5b192532fdd744d"
+
+    /** TODO this should be in hex **/
+    fun lnPaymentHash() =
+            Gen.alpha(32)
 
     /**
      * Get a string of fixed length with characters obtained from a generator.
@@ -150,4 +259,17 @@ object Gen {
      * Get a boolean.
      */
     fun bool() = Random.nextBoolean()
+
+    /**
+     * Get a double.
+     */
+    fun double() = Random.nextDouble()
+
+    fun long(max: Long) = Random.nextLong(max)
+
+    fun futureDate() =
+        ZonedDateTime.now().plusDays(long(1000))
+
+    fun pastDate() =
+        ZonedDateTime.now().minusDays(long(1000))
 }

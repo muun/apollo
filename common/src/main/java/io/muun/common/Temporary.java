@@ -2,11 +2,8 @@ package io.muun.common;
 
 public class Temporary {
 
-    /**
-     * TODO: by the time custom fees are fully implemented, this method should no longer exist.
-     */
-    public static long feeDoubleToLong(double fractionalFeeAsDouble) {
-        return (long) Math.ceil(fractionalFeeAsDouble);
-    }
+    // While working on refactors and updates, you can add temporary methods here to
+    // adjust stuff that will change when the work is done. By having them in this class, the
+    // usages are easy to track down later.
 
 }

@@ -2,9 +2,11 @@ package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.base.NetworkException;
+import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
 import io.muun.apollo.domain.model.BitcoinUriContent;
+import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.utils.StringUtils;
@@ -33,13 +35,17 @@ import javax.money.MonetaryAmount;
 public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, PaymentRequest> {
 
     private final NetworkParameters networkParameters;
+    private final FeeWindowRepository feeWindowRepository;
 
     /**
      * Resolves a Bitcoin URI, using BIP-72 or BIP-21 as appropriate.
      */
     @Inject
-    public ResolveBitcoinUriAction(NetworkParameters networkParameters) {
+    public ResolveBitcoinUriAction(NetworkParameters networkParameters,
+                                   FeeWindowRepository feeWindowRepository) {
+
         this.networkParameters = networkParameters;
+        this.feeWindowRepository = feeWindowRepository;
     }
 
     @Override
@@ -55,6 +61,7 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
     }
 
     private PaymentRequest resolveBitcoinUri(OperationUri uri) {
+        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
         final BitcoinUriContent uriContent = getBitcoinUriContent(uri);
 
         final MonetaryAmount amount = (uriContent.amountInStatoshis != null)
@@ -66,7 +73,9 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
                 uriContent.memo
         });
 
-        return PaymentRequest.toAddress(uriContent.address, amount, description);
+        final double feeRate = feeWindow.getFastestFeeInSatoshisPerByte();
+
+        return PaymentRequest.toAddress(uriContent.address, amount, description, feeRate);
     }
 
     @VisibleForTesting

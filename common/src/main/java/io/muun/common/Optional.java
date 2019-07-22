@@ -32,7 +32,11 @@ public final class Optional<ValueT> {
     }
 
     public static <ValueT> Optional<ValueT> ofNullable(ValueT value) {
-        return value == null ? Optional.<ValueT>empty() : of(value);
+        return value == null ? Optional.empty() : of(value);
+    }
+
+    public static Optional<Double> ifNonNegative(double value) {
+        return (value >= 0) ? Optional.of(value) : Optional.empty();
     }
 
     public boolean isPresent() {

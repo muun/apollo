@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.base.HoustonIdModel;
+import io.muun.common.api.PublicProfileJson;
 import io.muun.common.utils.Preconditions;
 
 import android.support.annotation.Nullable;
@@ -62,6 +63,35 @@ public class PublicProfile extends HoustonIdModel {
                 other.firstName,
                 other.lastName,
                 other.profilePictureUrl
+        );
+    }
+
+    /**
+     * Convert to a json-serializable representation.
+     */
+    public PublicProfileJson toJson() {
+        return new PublicProfileJson(
+                hid,
+                firstName,
+                lastName,
+                profilePictureUrl
+        );
+    }
+
+    /**
+     * Build from a json-serializable representation.
+     */
+    public static PublicProfile fromJson(PublicProfileJson publicProfile) {
+        if (publicProfile == null) {
+            return null;
+        }
+
+        return new PublicProfile(
+                null,
+                publicProfile.userId,
+                publicProfile.firstName,
+                publicProfile.lastName,
+                publicProfile.profilePictureUrl
         );
     }
 }

@@ -70,7 +70,7 @@ public class Operation extends HoustonIdModel {
                 false,
                 null,
                 true,
-                swap.fundingOutput.outputAddress,
+                swap.getFundingOutput().getOutputAddress(),
                 null,
                 null,
                 amount,

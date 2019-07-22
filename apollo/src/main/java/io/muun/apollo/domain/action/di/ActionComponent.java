@@ -14,7 +14,6 @@ import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
-import io.muun.apollo.domain.action.operation.PreparePaymentAction;
 import io.muun.apollo.domain.action.operation.ResolveBitcoinUriAction;
 import io.muun.apollo.domain.action.operation.ResolveMuunUriAction;
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
@@ -58,8 +57,6 @@ public interface ActionComponent {
     FetchRealTimeDataAction fetchRealTimeDataAction();
 
     FetchNextTransactionSizeAction fetchNextTransactionSizeAction();
-
-    PreparePaymentAction preparePaymentAction();
 
     ResolveBitcoinUriAction resolveBitcoinUriAction();
 

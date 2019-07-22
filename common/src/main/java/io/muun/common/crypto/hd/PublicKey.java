@@ -1,5 +1,6 @@
 package io.muun.common.crypto.hd;
 
+import io.muun.common.api.PublicKeyJson;
 import io.muun.common.bitcoinj.MainNetParamsY;
 import io.muun.common.bitcoinj.MainNetParamsZ;
 import io.muun.common.bitcoinj.NetworkParametersHelper;
@@ -19,6 +20,7 @@ import org.bitcoinj.params.TestNet3Params;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 public class PublicKey extends BaseKey {
@@ -177,6 +179,31 @@ public class PublicKey extends BaseKey {
 
     public int getLastLevelIndex() {
         return deterministicKey.getChildNumber().num();
+    }
+
+    /**
+     * Convert to a json-serializable representation.
+     */
+    public PublicKeyJson toJson() {
+        return new PublicKeyJson(
+                serializeBase58(),
+                getAbsoluteDerivationPath()
+        );
+    }
+
+    /**
+     * Build from a json-serializable representation.
+     */
+    @Nullable
+    public static PublicKey fromJson(PublicKeyJson publicKey) {
+        if (publicKey == null) {
+            return null;
+        }
+
+        return PublicKey.deserializeFromBase58(
+                publicKey.path,
+                publicKey.key
+        );
     }
 
     @Override

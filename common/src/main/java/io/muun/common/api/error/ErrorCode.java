@@ -397,6 +397,12 @@ public enum ErrorCode {
     INVALID_PREIMAGE(
             8159, StatusCode.CLIENT_FAILURE, "Provided preimage doesn't match the payment hash"
     ),
+    PAYMENT_REQUEST_ALREADY_STARTED(
+            8160, StatusCode.CLIENT_FAILURE, "Payment request already started"
+    ),
+    PAYMENT_REQUEST_NOT_STARTED(
+            8161, StatusCode.CLIENT_FAILURE, "Payment request not started"
+    ),
 
     // rebalancer errors
     PLAN_NOT_FOUND(

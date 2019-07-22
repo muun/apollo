@@ -94,18 +94,6 @@ public class HardwareWalletActions {
     }
 
     /**
-     * Calculate maximum spendable amount for a hardware wallet state.
-     */
-    public Observable<Long> getMaxSpendableAmount(HardwareWalletState hardwareWalletState) {
-        return feeWindowRepository.fetch()
-                .map(feeWindow -> TrezorActions.availableBalance(
-                        feeWindow.getFastestFeeInSatoshisPerByte(),
-                        hardwareWalletState
-                ))
-                .first();
-    }
-
-    /**
      * Build the opaque payload sent to a HardwareWallet for a withdrawal.
      */
     public HardwareWalletWithdrawal buildWithdrawal(PendingWithdrawal pendingWithdrawal) {

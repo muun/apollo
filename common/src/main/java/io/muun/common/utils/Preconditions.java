@@ -184,6 +184,23 @@ public final class Preconditions {
     }
 
     /**
+     * If a condition is true, ensures that an object reference is not null. If it's false, ensure
+     * that the the reference is null.
+     *
+     * @return the null reference that was validated
+     * @throws IllegalArgumentException if {@code reference} is not null
+     */
+
+    public static <T> T checkNotNullOnlyIf(@Nullable T reference, boolean condition) {
+        if (condition) {
+            return checkNotNull(reference);
+        } else {
+            return checkNull(reference);
+        }
+    }
+
+
+    /**
      * Ensures that an object reference passed as a parameter to the calling method is null.
      *
      * @param reference an object reference
@@ -212,7 +229,6 @@ public final class Preconditions {
         }
         return reference;
     }
-
 
     /**
      * Ensures that {@code number} is not negative.

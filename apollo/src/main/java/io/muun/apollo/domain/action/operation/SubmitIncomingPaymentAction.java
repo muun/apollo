@@ -46,7 +46,7 @@ public class SubmitIncomingPaymentAction extends BaseAsyncAction2<
 
         final PendingWithdrawal pendingWithdrawal = new PendingWithdrawal(
                 RandomGenerator.getRandomUuid(),
-                payReq.hardwareWallet.hid,
+                payReq.getHardwareWallet().hid,
                 address.getAddress(),
                 address.getDerivationPath(),
                 prepPayment.amount,

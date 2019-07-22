@@ -1,9 +1,8 @@
 package io.muun.common.bitcoinj;
 
-import com.google.common.base.Preconditions;
+import io.muun.common.utils.Preconditions;
+
 import org.bitcoinj.core.Block;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionInput;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,84 +10,115 @@ import java.util.List;
 
 public class BlockHelpers {
 
-    private static final byte MOST_SIGNIFICANT_BIT_MASK = (byte) 0x80;
+    private BlockHelpers() {
+        throw new AssertionError();
+    }
 
     /**
-     * Gets the data from the coinbase transaction's first input. See BIP-34 for more info.
+     * As per BIP 34, blocks (with version 2 or more) contain the height of the block in the script
+     * of the only input of the coinbase transaction.
      */
     public static int getBlockHeightFromCoinbase(Block block) {
 
-        Preconditions.checkState(block.getVersion() != 1,
-                "Version 1 blocks don't have their height");
+        Preconditions.checkArgument(
+                block.getVersion() != 1,
+                "version 1 blocks don't have the height in its coinbase transaction"
+        );
 
-        final List<Transaction> transactions = block.getTransactions();
+        final List<org.bitcoinj.core.Transaction> transactions = block.getTransactions();
 
-        Preconditions.checkNotNull(transactions);
+        Preconditions.checkArgument(transactions != null);
+        Preconditions.checkArgument(block.getVersion() > 1);
 
-        final Transaction coinbaseTransaction = transactions.get(0);
+        final byte[] script = transactions
+                .get(0) // get coinbase tx
+                .getInput(0) // get first input
+                .getScriptBytes(); // get script bytes
 
-        final TransactionInput firstInput = coinbaseTransaction.getInputs().get(0);
+        Preconditions.checkArgument(script != null && script.length > 0);
+        Preconditions.checkArgument(script[0] <= 4 && script.length > script[0]);
 
-        final byte[] sigScriptData = firstInput.getScriptBytes();
+        final ByteBuffer buffer = ByteBuffer.allocate(4)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .put(script, 1, script[0]);
 
-        Preconditions.checkNotNull(sigScriptData);
+        buffer.rewind();
 
-        // We extract the data by hand, because bitcoinj merges consecutive PUSHes.
-
-        final byte numberOfBytes = sigScriptData[0];
-
-        Preconditions.checkArgument(sigScriptData.length >= numberOfBytes + 1,
-                "Not enough bytes in coinbase's block height");
-
-        Preconditions.checkArgument(numberOfBytes <= 4, "Height must be at most 4 bytes");
-
-        // We copy create a 4-bytes byte[] and copy the height's pushed bytes to the beginning of
-        // it. This way, if they are less than 4, the most significant bytes will be 0, as we are
-        // working in little endian.
-
-        final byte[] heightBytes = new byte[]{0, 0, 0, 0};
-
-        System.arraycopy(sigScriptData, 1, heightBytes, 0, numberOfBytes);
-
-        // We move the sign bit to the last byte if needed
-
-        if (numberOfBytes < 4) {
-
-            // First copy it to the last byte
-            heightBytes[heightBytes.length - 1] = (byte) (heightBytes[numberOfBytes - 1]
-                    & MOST_SIGNIFICANT_BIT_MASK);
-
-            // Remove it from the previous byte
-            heightBytes[numberOfBytes - 1] = (byte) (heightBytes[numberOfBytes - 1]
-                    & ~MOST_SIGNIFICANT_BIT_MASK);
-        }
-
-        return parseSignMagnitudeLittleEndianInt32(heightBytes);
+        return buffer.getInt();
     }
 
-    private static int parseSignMagnitudeLittleEndianInt32(byte[] numberBytes) {
+    /**
+     * Find the time t for which P(time until numBlocks are mined ≤ t) = certainty. That is, the
+     * number of seconds one has to wait in order to be certain that numBlocks have been mined, with
+     * a given certainty level.
+     */
+    public static int timeInSecsForBlocksWithCertainty(int numBlocks, double certainty) {
 
-        Preconditions.checkNotNull(numberBytes);
-        Preconditions.checkArgument(numberBytes.length == 4);
-
-        // The sign is stored in the MSB of its last byte, we save its value before parsing the
-        // number.
+        // Since the emission of blocks is a poisson process with a number of arrivals per unit of
+        // time (lambda) of 1/10 min, the time between blocks follows an exponential distribution:
+        // x~exp(lambda). It turns out that's equivalent to saying that x has a gamma distribution:
+        // x~gamma(1, lambda).
         //
-        // Note that a positive number's sign-magnitude representation matches with its
-        // two-complement one (both with the same endianness). As we have already saved its sign,
-        // we transform it to positive, and solve the easier problem of parsing a two-complement
-        // little endian number (which is Java's choice of number representation).
+        // Knowing that the sum of the gamma random variables x_i~gamma(k_i, r) is
+        // sum(x_i)~gamma(sum(k_i), r), we can infer that the time of emission of k bitcoin blocks
+        // is x~gamma(k, lambda).
         //
-        // The last thing to do, is to consider its endianness, as we get it in little endian, and
-        // Java uses big endian.
+        // So, if T is the time it takes for k blocks to be emitted, then:
+        //
+        //     P(T ≤ t) = F(t; k, lambda)
+        //
+        // where F is the cumulative distribution function of gamma. It turns out that F can be
+        // computed as:
+        //
+        //     P(T ≤ t) = 1 - e^(-lambda * t) * sum for i=0 to k-1 of ((lambda * t)^i / i!)
+        //
+        // For example, for K=1 (ie. just one block) and P = 0.9 (90% certainty), we get t = 24 min.
 
-        final boolean isNegative = (numberBytes[numberBytes.length - 1] & MOST_SIGNIFICANT_BIT_MASK)
-                != 0;
+        if (numBlocks == 0) {
+            return 0;
+        }
 
-        numberBytes[numberBytes.length - 1] = (byte) (numberBytes[numberBytes.length - 1]
-                & ~MOST_SIGNIFICANT_BIT_MASK);
+        Preconditions.checkArgument(numBlocks > 0);
+        Preconditions.checkArgument(certainty > 0 && certainty < 1);
 
-        return ByteBuffer.wrap(numberBytes).order(ByteOrder.LITTLE_ENDIAN).getInt()
-                * (isNegative ? -1 : 1);
+        // find the time T that makes the gammaCdf at least a given certainty using exponential &
+        // binary search over T
+
+        int left = 0;
+        int right = 1;
+
+        while (gammaCdf(right, numBlocks, 1. / 600) < certainty) {
+            right *= 2;
+        }
+
+        do {
+            final int mid = (left + right) / 2;
+
+            if (gammaCdf(mid, numBlocks, 1. / 600) < certainty) {
+                left = mid;
+            } else {
+                right = mid;
+            }
+        } while (left + 1 < right);
+
+        return right;
+    }
+
+    /**
+     * Compute F(t; k, lambda) = 1 - e^(-lambda * t) * sum for i=0 to k-1 of ((lambda * t)^i / i!).
+     */
+    private static double gammaCdf(int time, int numBlocks, double lambda) {
+
+        double sum = 1;
+        double numerator = 1;
+        double denominator = 1;
+
+        for (int i = 1; i < numBlocks; i++) {
+            numerator *= lambda * time;
+            denominator *= i;
+            sum += numerator / denominator;
+        }
+
+        return 1 - Math.exp(-lambda * time) * sum;
     }
 }

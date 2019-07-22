@@ -14,30 +14,16 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.SubmitIncomingPaymentAction;
 import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
-import io.muun.apollo.domain.errors.AmountTooSmallError;
-import io.muun.apollo.domain.errors.InsufficientFundsError;
-import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
-import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PendingWithdrawal;
-import io.muun.apollo.domain.model.PreparedPayment;
-import io.muun.apollo.domain.utils.FeeCalculator;
 import io.muun.common.Optional;
-import io.muun.common.Temporary;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.hwallet.HardwareWalletState;
-import io.muun.common.model.ExchangeRateProvider;
-import io.muun.common.model.SizeForAmount;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
-import io.muun.common.utils.BitcoinUtils;
-import io.muun.common.utils.Preconditions;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 import rx.Observable;
 
 import java.util.ArrayList;
@@ -46,10 +32,6 @@ import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.money.CurrencyUnit;
-import javax.money.Monetary;
-import javax.money.MonetaryAmount;
-import javax.money.convert.CurrencyConversion;
 
 
 @Singleton
@@ -155,21 +137,6 @@ public class OperationActions {
         clipboardProvider.copy("Swap preimage", preimage);
     }
 
-    /**
-     * Send an Operation to Houston.
-     */
-    @VisibleForTesting
-    public Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
-
-        // Mmmh, this is not very elegant, or well named.
-        if (payReq.type == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
-            return submitIncomingPayment.action(payReq, prepPayment);
-
-        } else {
-            return submitOutgoingPayment.action(payReq, prepPayment);
-        }
-    }
-
     private Observable<Void> submitSignedWithdrawal(String uuid, String signedTransaction) {
         return satelliteActions.watchPendingWithdrawal()
                 .first()
@@ -248,66 +215,6 @@ public class OperationActions {
     }
 
     /**
-     * Return an Observable of null if the PaymentRequest can be paid with current balance, or an
-     * error if not (either AmountTooSmall or InsufficientFunds).
-     */
-    public Observable<UserFacingError> verifyCanPay(PaymentRequest payReq) {
-        Preconditions.checkNotNull(payReq);
-        Preconditions.checkNotNull(payReq.amount);
-
-        return Observable.zip(
-                transformToSatoshis(payReq.amount),
-                watchMaxSpendableAmount(payReq),
-
-                (amount, maxSpendableAmount) -> {
-
-                    // For submarine swaps invoice amount can be < DUST. What it can't be
-                    // is the total swap/funding transaction output amount.
-                    if (payReq.swap != null ) {
-                        amount = payReq.swap.fundingOutput.outputAmountInSatoshis;
-                    }
-
-                    return validateAmount(amount, maxSpendableAmount);
-                }
-        ).first();
-    }
-
-    @Nullable
-    private UserFacingError validateAmount(Long amount, Long maxSpendableAmount) {
-        if (amount < BitcoinUtils.DUST_IN_SATOSHIS) {
-            return new AmountTooSmallError();
-        }
-
-        if (amount > maxSpendableAmount) {
-            return new InsufficientFundsError();
-        }
-
-        return null;
-    }
-
-    /**
-     * Watch the maximum spendable (balance - fee) amount, updating on fee/transactionSize changes.
-     */
-    public Observable<Long> watchMaxSpendableAmount(PaymentRequest payReq) {
-        return Observable.combineLatest(
-                feeWindowRepository.fetch(),
-                watchSizeProgression(payReq),
-
-                (feeWindow, sizeProgression) -> {
-                    Preconditions.checkNotNull(feeWindow);
-                    Preconditions.checkNotNull(sizeProgression);
-
-                    final long feeInSatoshisPerByte = (payReq.customFeeRate != null)
-                            ? Temporary.feeDoubleToLong(payReq.customFeeRate.satoshisPerByte)
-                            : feeWindow.getFastestFeeInSatoshisPerByte();
-
-                    return new FeeCalculator(feeInSatoshisPerByte, sizeProgression)
-                            .getMaxSpendableAmount();
-                }
-        );
-    }
-
-    /**
      * Fetches a single operation from the database, by id.
      */
     public Observable<Operation> fetchOperationById(Long operationId) {
@@ -339,37 +246,6 @@ public class OperationActions {
                 withdrawal.description,
                 withdrawal.exchangeRateWindowHid
         );
-    }
-
-    private Observable<List<SizeForAmount>> watchSizeProgression(PaymentRequest payReq) {
-        if (payReq.type == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
-            final HardwareWalletState state = hardwareWalletActions
-                    .getHardwareWalletState(payReq.hardwareWallet.hid);
-
-            // NOTE: nothing is being watched here, we just assume it's always fresh:
-            return Observable.just(state.getSizeForAmounts());
-
-        } else {
-            return watchValidNextTransactionSize().map(t -> t.sizeProgression);
-        }
-    }
-
-    private Observable<Long> transformToSatoshis(MonetaryAmount amount) {
-        return transformCurrency(amount, Monetary.getCurrency("BTC"))
-                .map(BitcoinUtils::bitcoinsToSatoshis);
-    }
-
-    private Observable<MonetaryAmount> transformCurrency(MonetaryAmount amount,
-                                                         CurrencyUnit targetCurrency) {
-        return exchangeRateWindowRepository.fetch()
-                .map(rateWindow -> {
-
-                    final CurrencyConversion toCurrency =
-                            new ExchangeRateProvider(rateWindow.rates)
-                                    .getCurrencyConversion(targetCurrency);
-
-                    return amount.with(toCurrency);
-                });
     }
 
     /**

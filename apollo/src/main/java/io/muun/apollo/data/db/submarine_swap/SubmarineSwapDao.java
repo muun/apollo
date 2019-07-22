@@ -43,7 +43,7 @@ public class SubmarineSwapDao extends HoustonUuidDao<SubmarineSwap> {
         final SubmarineSwapModel.UpdatePaymentInfo statement =
                 new SubmarineSwapEntity.UpdatePaymentInfo(db, SubmarineSwapEntity.FACTORY);
 
-        statement.bind(swap.payedAt, swap.preimageInHex, swap.houstonUuid);
+        statement.bind(swap.getPayedAt(), swap.getPreimageInHex(), swap.houstonUuid);
 
         executeStatement(statement);
     }

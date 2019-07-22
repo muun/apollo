@@ -1,15 +1,18 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.InvalidInvoiceAmountException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
+import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.utils.DateUtils;
+import io.muun.common.Rules;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.LnInvoice;
@@ -29,6 +32,7 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     private final NetworkParameters network;
     private final HoustonClient houstonClient;
     private final KeysRepository keysRepository;
+    private final FeeWindowRepository feeWindowRepository;
 
     /**
      * Resolves a LightningNetwork OperationUri.
@@ -36,10 +40,12 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     @Inject
     ResolveLnUriAction(NetworkParameters network,
                        HoustonClient houstonClient,
-                       KeysRepository keysRepository) {
+                       KeysRepository keysRepository,
+                       FeeWindowRepository feeWindowRepository) {
         this.network = network;
         this.houstonClient = houstonClient;
         this.keysRepository = keysRepository;
+        this.feeWindowRepository = feeWindowRepository;
     }
 
     @Override
@@ -64,27 +70,32 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
 
     @NonNull
     private PaymentRequest buildPaymentRequest(LnInvoice invoice, SubmarineSwap swap) {
-
+        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
         final MonetaryAmount amount = getInvoiceAmount(invoice);
 
-        final Long paymentAmount = swap.fundingOutput.outputAmountInSatoshis
-                - swap.sweepFeeInSatoshis
-                - swap.lightningFeeInSatoshis;
+        final Long paymentAmount = swap.getFundingOutput().getOutputAmountInSatoshis()
+                - swap.getSweepFeeInSatoshis()
+                - swap.getLightningFeeInSatoshis();
+
+        final double feeRate = (swap.getFundingOutput().getConfirmationsNeeded() == 0)
+                ? feeWindow.getMinimumFeeInSatoshisPerByte(Rules.CONF_TARGET_FOR_ZERO_CONF_SWAP)
+                : feeWindow.getFastestFeeInSatoshisPerByte();
 
         if (invoice.amount.amountInSatoshis != paymentAmount) {
             throw new InvalidSwapException(swap.houstonUuid);
         }
 
-        if (!DateUtils.isEqual(invoice.getExpirationTime(), swap.expiresAt)) {
+        if (!DateUtils.isEqual(invoice.getExpirationTime(), swap.getExpiresAt())) {
             throw new InvalidSwapException(swap.houstonUuid);
         }
 
         if (invoice.addresses.isEmpty()) {
-            return PaymentRequest.toLnInvoice(invoice, amount, invoice.description, swap);
+            return PaymentRequest.toLnInvoice(invoice, amount, invoice.description, swap, feeRate);
 
         } else {
             // NOTE: as long as we use submarine swaps, this is cheaper:
-            return PaymentRequest.toAddress(invoice.addresses.get(0), amount, invoice.description);
+            return PaymentRequest
+                    .toAddress(invoice.addresses.get(0), amount, invoice.description, feeRate);
         }
     }
 

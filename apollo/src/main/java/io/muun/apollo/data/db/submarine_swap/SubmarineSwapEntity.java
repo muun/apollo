@@ -27,31 +27,31 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
      */
     public static ContentValues fromModel(SubmarineSwap swap) {
 
-        final SubmarineSwapReceiver receiver = swap.receiver;
-        final SubmarineSwapFundingOutput fundingOutput = swap.fundingOutput;
-        final MuunAddress userRefundAddress = fundingOutput.userRefundAddress;
+        final SubmarineSwapReceiver receiver = swap.getReceiver();
+        final SubmarineSwapFundingOutput fundingOutput = swap.getFundingOutput();
+        final MuunAddress userRefundAddress = fundingOutput.getUserRefundAddress();
 
         return FACTORY.marshal()
                 .id(swap.id == null ? BaseEntity.NULL_ID : swap.id)
                 .houston_uuid(swap.houstonUuid)
-                .invoice(swap.invoice)
-                .receiver_alias(receiver.alias)
-                .receiver_network_addresses(receiver.serializedNetworkAddresses)
-                .receiver_public_key(receiver.publicKey)
-                .funding_output_address(fundingOutput.outputAddress)
-                .funding_output_amount_in_satoshis(fundingOutput.outputAmountInSatoshis)
-                .funding_confirmations_needed(fundingOutput.confirmationsNeeded)
-                .funding_user_lock_time(fundingOutput.userLockTime)
+                .invoice(swap.getInvoice())
+                .receiver_alias(receiver.getAlias())
+                .receiver_network_addresses(receiver.getSerializedNetworkAddresses())
+                .receiver_public_key(receiver.getPublicKey())
+                .funding_output_address(fundingOutput.getOutputAddress())
+                .funding_output_amount_in_satoshis(fundingOutput.getOutputAmountInSatoshis())
+                .funding_confirmations_needed(fundingOutput.getConfirmationsNeeded())
+                .funding_user_lock_time(fundingOutput.getUserLockTime())
                 .funding_user_refund_address(userRefundAddress.getAddress())
                 .funding_user_refund_address_path(userRefundAddress.getDerivationPath())
                 .funding_user_refund_address_version(userRefundAddress.getVersion())
-                .funding_server_payment_hash_in_hex(fundingOutput.serverPaymentHashInHex)
-                .funding_server_public_key_in_hex(fundingOutput.serverPublicKeyInHex)
-                .sweep_fee_in_satoshis(swap.sweepFeeInSatoshis)
-                .lightning_fee_in_satoshis(swap.lightningFeeInSatoshis)
-                .expires_at(swap.expiresAt)
-                .payed_at(swap.payedAt)
-                .preimage_in_hex(swap.preimageInHex)
+                .funding_server_payment_hash_in_hex(fundingOutput.getServerPaymentHashInHex())
+                .funding_server_public_key_in_hex(fundingOutput.getServerPublicKeyInHex())
+                .sweep_fee_in_satoshis(swap.getSweepFeeInSatoshis())
+                .lightning_fee_in_satoshis(swap.getLightningFeeInSatoshis())
+                .expires_at(swap.getExpiresAt())
+                .payed_at(swap.getPayedAt())
+                .preimage_in_hex(swap.getPreimageInHex())
                 .asContentValues();
     }
 
