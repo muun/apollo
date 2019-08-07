@@ -69,18 +69,19 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
         switch (uri.getHost()) {
             case OperationUri.MUUN_HOST_CONTACT:
                 final Contact contact = contactDao
-                        .fetchByHid(Long.parseLong(uri.getPath()))
+                        .fetchByHid(uri.getContactHid())
                         .toBlocking()
                         .first();
 
                 return PaymentRequest.toContact(contact, amount, descriptionParam, feeRate);
 
             case OperationUri.MUUN_HOST_EXTERNAL:
-                return PaymentRequest.toAddress(uri.getPath(), amount, descriptionParam, feeRate);
+                final String externalAddress = uri.getExternalAddress();
+                return PaymentRequest.toAddress(externalAddress, amount, descriptionParam, feeRate);
 
             case OperationUri.MUUN_HOST_DEPOSIT:
                 final HardwareWallet receiver = hardwareWalletDao
-                        .fetchByHid(Long.parseLong(uri.getPath()))
+                        .fetchByHid(uri.getHardwareWalletHid())
                         .toBlocking()
                         .first();
 
@@ -88,7 +89,7 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
 
             case OperationUri.MUUN_HOST_WITHDRAW:
                 final HardwareWallet sender = hardwareWalletDao
-                        .fetchByHid(Long.parseLong(uri.getPath()))
+                        .fetchByHid(uri.getHardwareWalletHid())
                         .toBlocking()
                         .first();
 

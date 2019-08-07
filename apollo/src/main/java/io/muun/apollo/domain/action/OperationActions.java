@@ -264,7 +264,7 @@ public class OperationActions {
                             .orElse(0L);
 
                     final long latestOperationHid = getLatestOperation()
-                            .map(latestOperation -> latestOperation.hid)
+                            .map(latestOperation -> latestOperation.getHid())
                             .orElse(0L);
 
                     // NOTE: if an Operation has been made, giving us new UTXOs (and thus

@@ -4,7 +4,6 @@ import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.hwallet.HardwareWalletDao;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
-import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
@@ -14,6 +13,7 @@ import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PendingWithdrawal;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.trezor.HardwareWalletWithdrawal;
+import io.muun.apollo.domain.selector.HardwareWalletStateSelector;
 import io.muun.common.crypto.hwallet.ExtendedHardwareWalletState;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.model.ExchangeRateProvider;
@@ -24,7 +24,6 @@ import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +39,6 @@ public class HardwareWalletActions {
     private final HardwareWalletDao hardwareWalletDao;
 
     private final UserRepository userRepository;
-    private final FeeWindowRepository feeWindowRepository;
     private final ExchangeRateWindowRepository exchangeRateWindowRepository;
 
     private final HoustonClient houstonClient;
@@ -49,8 +47,7 @@ public class HardwareWalletActions {
     public final AsyncAction1<HardwareWallet, ExtendedHardwareWalletState>
             fetchHardwareWalletStateAction;
 
-    // NOTE: the following state relies on this class being @Singleton:
-    private final Map<Long, HardwareWalletState> walletStateByHid = new HashMap<>();
+    public final HardwareWalletStateSelector hardwareWalletStateSelector;
 
     /**
      * Constructor.
@@ -58,14 +55,13 @@ public class HardwareWalletActions {
     @Inject
     public HardwareWalletActions(HardwareWalletDao hardwareWalletDao,
                                  UserRepository userRepository,
-                                 FeeWindowRepository feeWindowRepository,
                                  ExchangeRateWindowRepository exchangeRateWindowRepository,
                                  HoustonClient houstonClient,
-                                 AsyncActionStore asyncActionStore) {
+                                 AsyncActionStore asyncActionStore,
+                                 HardwareWalletStateSelector hardwareWalletStateSelector) {
 
         this.hardwareWalletDao = hardwareWalletDao;
         this.userRepository = userRepository;
-        this.feeWindowRepository = feeWindowRepository;
         this.exchangeRateWindowRepository = exchangeRateWindowRepository;
         this.houstonClient = houstonClient;
 
@@ -74,6 +70,7 @@ public class HardwareWalletActions {
 
         this.fetchHardwareWalletStateAction = asyncActionStore
                 .get("hwallets/state", this::fetchHardwareWalletState);
+        this.hardwareWalletStateSelector = hardwareWalletStateSelector;
     }
 
     public Observable<List<HardwareWallet>> fetchAll() {
@@ -124,7 +121,7 @@ public class HardwareWalletActions {
     public Observable<HardwareWallet> createOrUpdate(HardwareWallet walletInfo) {
         return houstonClient.createOrUpdateHardwareWallet(walletInfo)
                 .flatMap(houstonHardwareWallet ->
-                        hardwareWalletDao.fetchByHid(houstonHardwareWallet.hid)
+                        hardwareWalletDao.fetchByHid(houstonHardwareWallet.getHid())
                                 .first()
                                 .map(localHW -> localHW.mergeWithUpdate(houstonHardwareWallet))
                                 .compose(ObservableFn.onTypedErrorResumeNext(
@@ -143,8 +140,8 @@ public class HardwareWalletActions {
     private Observable<ExtendedHardwareWalletState> fetchHardwareWalletState(HardwareWallet hw) {
         return houstonClient.fetchHardwareWalletState(hw)
                 .doOnNext(state -> {
-                    walletStateByHid.clear(); // "cache eviction policy" haha
-                    walletStateByHid.put(hw.hid, state);
+                    HardwareWalletStateSelector.Companion.putInCache(hw.getHid(), state);
+
                 })
                 .map(state -> {
                     final User user = userRepository.fetchOne();
@@ -167,10 +164,10 @@ public class HardwareWalletActions {
      */
     @NotNull
     public HardwareWalletState getHardwareWalletState(long hardwareWalletHid) {
+        final Map<Long, HardwareWalletState> walletStateByHid = hardwareWalletStateSelector.get();
         final HardwareWalletState hardwareWalletState = walletStateByHid.get(hardwareWalletHid);
         Preconditions.checkNotNull(hardwareWalletState);
 
         return hardwareWalletState;
     }
-
 }

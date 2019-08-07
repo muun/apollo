@@ -37,17 +37,6 @@ public class NextTransactionSize {
     public NextTransactionSize() {
     }
 
-    /**
-     * Get the amount associated with the maximum FeeForAmount entry in the sizeProgression.
-     */
-    public long getMaxAmountInSatoshis() {
-        if (sizeProgression.isEmpty()) {
-            return 0;
-        } else {
-            return sizeProgression.get(sizeProgression.size() - 1).amountInSatoshis;
-        }
-    }
-
     @Override
     public String toString() {
         return SerializationUtils.serializeList(SizeForAmount.class, sizeProgression);

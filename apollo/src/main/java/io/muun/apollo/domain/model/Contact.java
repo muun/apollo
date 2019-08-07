@@ -31,7 +31,7 @@ public class Contact extends HoustonIdModel {
      */
     public Contact(
             @Nullable Long id,
-            @NotNull Long hid,
+            @NotNull long hid,
             @NotNull PublicProfile publicProfile,
             int maxAddressVersion,
             @NotNull PublicKey publicKey,
@@ -54,12 +54,12 @@ public class Contact extends HoustonIdModel {
      * Merge this Contact with an updated copy, choosing whether to keep or replace each field.
      */
     public Contact mergeWithUpdate(Contact other) {
-        Preconditions.checkArgument(hid.equals(other.hid));
-        Preconditions.checkArgument(other.id == null || id.equals(other.id));
+        Preconditions.checkArgument(getHid() == other.getHid());
+        Preconditions.checkArgument(other.getId() == null || getId().equals(other.getId()));
 
         return new Contact(
-                id,
-                hid,
+                getId(),
+                getHid(),
                 publicProfile.mergeWithUpdate(other.publicProfile),
                 other.maxAddressVersion,
                 other.publicKey,

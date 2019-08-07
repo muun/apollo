@@ -520,7 +520,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<HardwareWallet> unpairHardwareWallet(HardwareWallet wallet) {
         return getService()
-                .unpairHardwareWallet(wallet.hid)
+                .unpairHardwareWallet(wallet.getHid())
                 .map(modelMapper::mapHardwareWallet);
     }
 
@@ -539,7 +539,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<HardwareWalletState> fetchHardwareWalletState(HardwareWallet wallet) {
         return getService()
-                .fetchHardwareWalletState(wallet.hid)
+                .fetchHardwareWalletState(wallet.getHid())
                 .map(modelMapper::mapHardwareWalletState);
     }
 }

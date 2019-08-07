@@ -216,7 +216,7 @@ public class BaseDao<ModelT extends PersistentModel> {
 
         final ContentValues values = inputMapper.call(element);
 
-        final Long id = element.id;
+        final Long id = element.getId();
 
         if (id != null) {
 
@@ -245,7 +245,7 @@ public class BaseDao<ModelT extends PersistentModel> {
                         throw new RuntimeException("Error while inserting new value in the db");
                     }
 
-                    element.id = rowId;
+                    element.setId(rowId);
                     return element;
                 })
                 .onErrorResumeNext(this::wrapError);

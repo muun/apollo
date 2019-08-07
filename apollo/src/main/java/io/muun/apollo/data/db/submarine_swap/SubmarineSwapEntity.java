@@ -32,7 +32,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
         final MuunAddress userRefundAddress = fundingOutput.getUserRefundAddress();
 
         return FACTORY.marshal()
-                .id(swap.id == null ? BaseEntity.NULL_ID : swap.id)
+                .id(swap.getId() == null ? BaseEntity.NULL_ID : swap.getId())
                 .houston_uuid(swap.houstonUuid)
                 .invoice(swap.getInvoice())
                 .receiver_alias(receiver.getAlias())

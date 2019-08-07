@@ -23,7 +23,7 @@ public class HoustonUuidDao<ModelT extends HoustonUuidModel> extends BaseDao<Mod
 
         return Observable.defer(() -> {
 
-            if (element.id != null) {
+            if (element.getId() != null) {
                 return super.store(element);
             }
 
@@ -38,7 +38,7 @@ public class HoustonUuidDao<ModelT extends HoustonUuidModel> extends BaseDao<Mod
 
             if (cursor.getCount() == 1) {
                 cursor.moveToFirst();
-                element.id = cursor.getLong(cursor.getColumnIndex("id"));
+                element.setId(cursor.getLong(cursor.getColumnIndex("id")));
                 return super.store(element);
             }
 

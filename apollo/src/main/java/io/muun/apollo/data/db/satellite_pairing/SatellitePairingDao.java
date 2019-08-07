@@ -53,7 +53,7 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
         final SatellitePairingModel.SetPairingInUse statement =
                 new SatellitePairingEntity.SetPairingInUse(db);
 
-        statement.bind(pairing.id);
+        statement.bind(pairing.getId());
 
         executeStatement(statement);
     }

@@ -213,11 +213,11 @@ public class ContactActions {
      * Generate a new address to pay a contact.
      */
     public MuunAddress getAddressForContact(Contact contact) {
-        Preconditions.checkNotNull(contact.hid);
+        Preconditions.checkNotNull(contact.getHid());
 
         synchronized (addressCreationLock) {
             // Re-fetch the contact inside this synchronized block to avoid races:
-            contact = fetchContact(contact.hid).toBlocking().first();
+            contact = fetchContact(contact.getHid()).toBlocking().first();
 
             switch (contact.maxAddressVersion) {
                 case TransactionSchemeV1.ADDRESS_VERSION:
@@ -240,7 +240,7 @@ public class ContactActions {
                 .deriveNextValidChild(contact.lastDerivationIndex.intValue() + 1);
 
         contact.lastDerivationIndex = (long) derivedPublicKey.getLastLevelIndex();
-        contactDao.updateLastDerivationIndex(contact.hid, contact.lastDerivationIndex);
+        contactDao.updateLastDerivationIndex(contact.getHid(), contact.lastDerivationIndex);
 
         return TransactionSchemeV1.createAddress(networkParameters, derivedPublicKey);
     }
@@ -264,7 +264,7 @@ public class ContactActions {
                 .deriveNextValidChild(contact.lastDerivationIndex.intValue() + 1);
 
         contact.lastDerivationIndex = (long) derivedPublicKeyPair.getLastLevelIndex();
-        contactDao.updateLastDerivationIndex(contact.hid, contact.lastDerivationIndex);
+        contactDao.updateLastDerivationIndex(contact.getHid(), contact.lastDerivationIndex);
 
         return derivedPublicKeyPair;
     }
@@ -274,7 +274,7 @@ public class ContactActions {
      */
     public void updateContact(Contact contact) {
 
-        contactDao.updateLastDerivationIndex(contact.hid, contact.lastDerivationIndex);
+        contactDao.updateLastDerivationIndex(contact.getHid(), contact.lastDerivationIndex);
         publicProfileDao.update(contact.publicProfile);
     }
 
@@ -288,7 +288,7 @@ public class ContactActions {
     public Observable<Void> createOrUpdateContact(Contact maybeNewContact) {
 
         final Observable<Contact> contactToStore = contactDao
-                .fetchByHid(maybeNewContact.hid)
+                .fetchByHid(maybeNewContact.getHid())
                 .first()
                 .map(existingContact -> existingContact.mergeWithUpdate(maybeNewContact))
                 .compose(ObservableFn.onTypedErrorResumeNext(

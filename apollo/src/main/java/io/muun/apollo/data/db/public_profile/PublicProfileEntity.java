@@ -20,8 +20,8 @@ public abstract class PublicProfileEntity implements PublicProfileModel, BaseEnt
     public static ContentValues fromModel(PublicProfile profile) {
 
         return FACTORY.marshal()
-                .id(profile.id == null ? NULL_ID : profile.id)
-                .hid(profile.hid)
+                .id(profile.getId() == null ? NULL_ID : profile.getId())
+                .hid(profile.getHid())
                 .first_name(profile.firstName)
                 .last_name(profile.lastName)
                 .profile_picture_url(profile.profilePictureUrl)

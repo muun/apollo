@@ -24,7 +24,7 @@ public class PublicProfile extends HoustonIdModel {
      */
     public PublicProfile(
             @Nullable Long id,
-            @NotNull Long hid,
+            @NotNull long hid,
             @NotNull String firstName,
             @NotNull String lastName,
             @Nullable String profilePictureUrl) {
@@ -54,12 +54,12 @@ public class PublicProfile extends HoustonIdModel {
      * Merge this PublicProfile with an updated copy, choosing whether to replace each field.
      */
     public PublicProfile mergeWithUpdate(PublicProfile other) {
-        Preconditions.checkArgument(hid.equals(other.hid));
-        Preconditions.checkArgument(other.id == null || id.equals(other.id));
+        Preconditions.checkArgument(getHid() == other.getHid());
+        Preconditions.checkArgument(other.getId() == null || getId().equals(other.getId()));
 
         return new PublicProfile(
-                id,
-                hid,
+                getId(),
+                getHid(),
                 other.firstName,
                 other.lastName,
                 other.profilePictureUrl
@@ -71,7 +71,7 @@ public class PublicProfile extends HoustonIdModel {
      */
     public PublicProfileJson toJson() {
         return new PublicProfileJson(
-                hid,
+                getHid(),
                 firstName,
                 lastName,
                 profilePictureUrl

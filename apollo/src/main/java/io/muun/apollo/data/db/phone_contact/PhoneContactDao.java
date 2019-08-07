@@ -104,7 +104,7 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
     private void updatePhoneHash(PhoneContact contact) {
         final PhoneContactModel.UpdatePhoneHash q = new PhoneContactModel.UpdatePhoneHash(db);
 
-        q.bind(contact.phoneNumberHash, contact.id);
+        q.bind(contact.phoneNumberHash, contact.getId());
         executeStatement(q);
     }
 

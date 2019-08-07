@@ -43,7 +43,7 @@ data class PaymentRequest (val type: Type,
 
     fun withTakeFeeFromAmount(takeFeeFromAmount: Boolean) =
         copy(takeFeeFromAmount = takeFeeFromAmount)
-    
+
     fun toJson() =
             PaymentRequestJson(
                     type,
@@ -51,7 +51,7 @@ data class PaymentRequest (val type: Type,
                     description,
                     contact?.toJson(),
                     address,
-                    hardwareWallet,
+                    hardwareWallet?.toJson(),
                     invoice?.original,
                     swap?.toJson(),
                     feeInSatoshisPerByte,
@@ -69,7 +69,7 @@ data class PaymentRequest (val type: Type,
                         payReqJson.description,
                         Contact.fromJson(payReqJson.contact),
                         payReqJson.address,
-                        payReqJson.hardwareWallet,
+                        HardwareWallet.fromJson(payReqJson.hardwareWallet),
                         payReqJson.invoice?.let { LnInvoice.decode(Globals.INSTANCE.network, it) },
                         SubmarineSwap.fromJson(payReqJson.swap),
                         payReqJson.feeInSatoshisPerByte,

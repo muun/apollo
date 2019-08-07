@@ -55,7 +55,7 @@ public class ApiObjectsMapper {
     private PublicProfileJson mapPublicProfile(@NotNull PublicProfile publicProfile) {
 
         return new PublicProfileJson(
-                publicProfile.hid,
+                publicProfile.getHid(),
                 publicProfile.firstName,
                 publicProfile.lastName,
                 publicProfile.profilePictureUrl
@@ -197,14 +197,14 @@ public class ApiObjectsMapper {
      */
     public HardwareWalletJson mapHardwareWallet(HardwareWallet wallet) {
         return new HardwareWalletJson(
-                wallet.hid,
-                wallet.brand,
-                wallet.model,
-                wallet.label,
-                mapPublicKey(wallet.basePublicKey),
-                ApolloZonedDateTime.of(wallet.createdAt),
-                ApolloZonedDateTime.of(wallet.lastPairedAt),
-                wallet.isPaired
+                wallet.getHid(),
+                wallet.getBrand(),
+                wallet.getModel(),
+                wallet.getLabel(),
+                mapPublicKey(wallet.getBasePublicKey()),
+                ApolloZonedDateTime.of(wallet.getCreatedAt()),
+                ApolloZonedDateTime.of(wallet.getLastPairedAt()),
+                wallet.isPaired()
         );
     }
 }

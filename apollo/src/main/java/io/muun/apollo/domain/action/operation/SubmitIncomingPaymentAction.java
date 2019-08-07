@@ -7,6 +7,7 @@ import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PendingWithdrawal;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.common.crypto.hd.MuunAddress;
+import io.muun.common.utils.Preconditions;
 import io.muun.common.utils.RandomGenerator;
 
 import org.threeten.bp.ZonedDateTime;
@@ -44,9 +45,11 @@ public class SubmitIncomingPaymentAction extends BaseAsyncAction2<
     private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
         final MuunAddress address = addressActions.getExternalMuunAddress();
 
+        Preconditions.checkNotNull(payReq.getHardwareWallet());
+
         final PendingWithdrawal pendingWithdrawal = new PendingWithdrawal(
                 RandomGenerator.getRandomUuid(),
-                payReq.getHardwareWallet().hid,
+                payReq.getHardwareWallet().getHid(),
                 address.getAddress(),
                 address.getDerivationPath(),
                 prepPayment.amount,

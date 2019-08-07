@@ -27,16 +27,16 @@ public abstract class HardwareWalletEntity implements HardwareWalletModel, BaseE
     public static ContentValues fromModel(HardwareWallet wallet) {
 
         return FACTORY.marshal()
-                .id(wallet.id == null ? BaseEntity.NULL_ID : wallet.id)
-                .hid(wallet.hid)
-                .brand(wallet.brand)
-                .model(wallet.model)
-                .label(wallet.label)
-                .base_public_key(wallet.basePublicKey.serializeBase58())
-                .base_public_key_path(wallet.basePublicKey.getAbsoluteDerivationPath())
-                .created_at(wallet.createdAt)
-                .last_paired_at(wallet.lastPairedAt)
-                .is_paired(wallet.isPaired)
+                .id(wallet.getId() == null ? BaseEntity.NULL_ID : wallet.getId())
+                .hid(wallet.getHid())
+                .brand(wallet.getBrand())
+                .model(wallet.getModel())
+                .label(wallet.getLabel())
+                .base_public_key(wallet.getBasePublicKey().serializeBase58())
+                .base_public_key_path(wallet.getBasePublicKey().getAbsoluteDerivationPath())
+                .created_at(wallet.getCreatedAt())
+                .last_paired_at(wallet.getLastPairedAt())
+                .is_paired(wallet.isPaired())
                 .asContentValues();
     }
 

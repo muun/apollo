@@ -34,7 +34,7 @@ public class FetchSingleContactAction extends BaseAsyncAction1<Contact, Contact>
 
     @Override
     public Observable<Contact> action(Contact contact) {
-        return houstonClient.fetchContact(contact.publicProfile.hid)
+        return houstonClient.fetchContact(contact.publicProfile.getHid())
                 .doOnNext(remoteContact -> {
                     publicProfileDao.store(remoteContact.publicProfile).toCompletable().await();
                     contactDao.store(remoteContact).toCompletable().await();

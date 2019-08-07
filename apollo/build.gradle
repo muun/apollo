@@ -18,6 +18,7 @@ repositories {
 
 apply plugin: 'com.android.library'
 apply plugin: 'com.squareup.sqldelight'
+apply plugin: 'kotlin-android'
 
 /**
  * Returns the ip of the local network specified by the TESTING_LOCAL_NETWORK env var.

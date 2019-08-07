@@ -28,8 +28,8 @@ public abstract class ContactEntity implements ContactModel, BaseEntity {
     public static Func1<Contact, ContentValues> fromModel() {
 
         return contact -> FACTORY.marshal()
-                .id(contact.id == null ? BaseEntity.NULL_ID : contact.id)
-                .hid(contact.hid)
+                .id(contact.getId() == null ? BaseEntity.NULL_ID : contact.getId())
+                .hid(contact.getHid())
                 .max_address_version(contact.maxAddressVersion)
                 .public_key(contact.publicKey.serializeBase58())
                 .public_key_path(contact.publicKey.getAbsoluteDerivationPath())

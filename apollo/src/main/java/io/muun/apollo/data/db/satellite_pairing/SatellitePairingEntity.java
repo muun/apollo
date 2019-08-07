@@ -28,7 +28,7 @@ public abstract class SatellitePairingEntity implements SatellitePairingModel, B
     public static ContentValues fromModel(SatellitePairing pairing) {
 
         return FACTORY.marshal()
-                .id(pairing.id == null ? NULL_ID : pairing.id)
+                .id(pairing.getId() == null ? NULL_ID : pairing.getId())
                 .satellite_session_uuid(pairing.satelliteSessionUuid)
                 .apollo_session_uuid(pairing.apolloSessionUuid)
                 .status(pairing.status)

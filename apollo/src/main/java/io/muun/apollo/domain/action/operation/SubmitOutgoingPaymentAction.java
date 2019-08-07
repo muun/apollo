@@ -82,7 +82,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                     .getBaseMuunPublicKey();
 
                             // Extract data from response:
-                            final Operation createdOperation = operationCreated.operation;
+                            final Operation houstonOp = operationCreated.operation;
 
                             final PartiallySignedTransaction partiallySignedTransaction =
                                     operationCreated.partiallySignedTransaction;
@@ -95,22 +95,16 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                             final Transaction fullySignedTransaction = partiallySignedTransaction
                                     .getTransaction();
 
-                            operation.hid = createdOperation.hid;
                             operation.hash = fullySignedTransaction.getHashAsString();
                             operation.status = OperationStatus.SIGNED;
 
                             // Maybe Houston identified the receiver for us:
-                            operation.direction = createdOperation.direction;
-                            operation.receiverIsExternal = createdOperation.receiverIsExternal;
-                            operation.receiverProfile = createdOperation.receiverProfile;
-                            operation.receiverAddress = createdOperation.receiverAddress;
-                            operation.receiverAddressDerivationPath = createdOperation
-                                    .receiverAddressDerivationPath;
+                            final Operation mergedOperation = operation.mergeWithUpdate(houstonOp);
 
                             return houstonClient
-                                    .pushTransaction(fullySignedTransaction, createdOperation.hid)
+                                    .pushTransaction(fullySignedTransaction, houstonOp.getHid())
                                     .flatMap(txPushed -> createOperation.action(
-                                            operation, txPushed.nextTransactionSize
+                                            mergedOperation, txPushed.nextTransactionSize
                                     ));
                         }));
     }
@@ -146,7 +140,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
 
         return Operation.createOutgoing(
                 userRepository.fetchOne().getCompatPublicProfile(),
-                publicProfileDao.fetchOneByHid(contact.hid),
+                publicProfileDao.fetchOneByHid(contact.getHid()),
                 null,
                 receiverAddress.getAddress(),
                 receiverAddress.getDerivationPath(),
@@ -171,16 +165,16 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
         );
     }
 
-    private Operation buildOperationToHardwareWallet(HardwareWallet wallet,
+    private Operation buildOperationToHardwareWallet(HardwareWallet hw,
                                                      PreparedPayment prepPayment) {
 
-        final HardwareWalletState state = hardwareWalletActions.getHardwareWalletState(wallet.hid);
+        final HardwareWalletState state = hardwareWalletActions.getHardwareWalletState(hw.getHid());
         final HardwareWalletAddress nextAddress = state.getNextAddress();
 
         return Operation.createOutgoing(
                 userRepository.fetchOne().getCompatPublicProfile(),
                 null,
-                wallet.hid,
+                hw.getHid(),
                 nextAddress.getAddress(),
                 nextAddress.getDerivationPath(),
                 prepPayment.amount,

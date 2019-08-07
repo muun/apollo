@@ -7,6 +7,7 @@ import io.muun.common.Optional;
 import io.muun.common.bitcoinj.BitcoinUri;
 import io.muun.common.bitcoinj.ValidationHelpers;
 import io.muun.common.utils.LnInvoice;
+import io.muun.common.utils.Preconditions;
 
 import android.net.Uri;
 import android.support.annotation.VisibleForTesting;
@@ -224,6 +225,24 @@ public class OperationUri {
 
     public boolean isWithdrawal() {
         return getHost().equals(MUUN_HOST_WITHDRAW);
+    }
+
+    /**
+     * Get the HardwareWallet Houston id contained in this URI, if included.
+     */
+    public long getHardwareWalletHid() {
+        Preconditions.checkArgument(isWithdrawal() || isDeposit());
+        return Long.parseLong(getPath());
+    }
+
+    public long getContactHid() {
+        Preconditions.checkArgument(getHost().equals(MUUN_HOST_CONTACT));
+        return Long.parseLong(getPath());
+    }
+
+    public String getExternalAddress() {
+        Preconditions.checkArgument(getHost().equals(MUUN_HOST_EXTERNAL));
+        return getPath();
     }
 
     public boolean isLn() {

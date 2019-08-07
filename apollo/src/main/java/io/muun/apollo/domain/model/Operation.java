@@ -4,8 +4,10 @@ import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Preconditions;
 
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.money.MonetaryAmount;
@@ -13,7 +15,8 @@ import javax.validation.constraints.NotNull;
 
 public class Operation extends HoustonIdModel {
 
-    private static final long NO_HID = -1;
+    @VisibleForTesting
+    public static final long NO_HID = -1;
     private static final String NO_HASH = null;
 
     /**
@@ -180,7 +183,7 @@ public class Operation extends HoustonIdModel {
      */
     public Operation(
             @Nullable Long id,
-            @NotNull Long hid,
+            @NotNull long hid,
             @NotNull OperationDirection direction,
             @NotNull Boolean isExternal,
             @Nullable PublicProfile senderProfile,
@@ -253,5 +256,35 @@ public class Operation extends HoustonIdModel {
 
     public MonetaryAmount getTotal() {
         return this.amount.inInputCurrency.add(this.fee.inInputCurrency);
+    }
+
+    /**
+     * Merge this Operation with an updated copy, choosing whether to replace each field.
+     */
+    public Operation mergeWithUpdate(Operation other) {
+        Preconditions.checkArgument(other.getId() == null || getId().equals(other.getId()));
+
+        return new Operation(
+                getId(),
+                other.getHid(),
+                other.direction,
+                isExternal,
+                senderProfile,
+                senderIsExternal,
+                other.receiverProfile,
+                other.receiverIsExternal,
+                other.receiverAddress,
+                other.receiverAddressDerivationPath,
+                hardwareWalletHid,
+                amount,
+                fee,
+                confirmations,
+                hash,
+                description,
+                status,
+                creationDate,
+                exchangeRateWindowHid,
+                swap
+        );
     }
 }

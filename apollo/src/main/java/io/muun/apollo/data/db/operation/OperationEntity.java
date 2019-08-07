@@ -53,13 +53,13 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
         final PublicProfile receiverProfile = operation.receiverProfile;
 
         return FACTORY.marshal()
-                .id(operation.id == null ? BaseEntity.NULL_ID : operation.id)
-                .hid(operation.hid)
+                .id(operation.getId() == null ? BaseEntity.NULL_ID : operation.getId())
+                .hid(operation.getHid())
                 .direction(operation.direction)
                 .is_external(operation.isExternal)
-                .sender_hid(senderProfile == null ? null : senderProfile.hid)
+                .sender_hid(senderProfile == null ? null : senderProfile.getHid())
                 .sender_is_external(operation.senderIsExternal)
-                .receiver_hid(receiverProfile == null ? null : receiverProfile.hid)
+                .receiver_hid(receiverProfile == null ? null : receiverProfile.getHid())
                 .receiver_is_external(operation.receiverIsExternal)
                 .receiver_address(operation.receiverAddress)
                 .receiver_address_derivation_path(operation.receiverAddressDerivationPath)

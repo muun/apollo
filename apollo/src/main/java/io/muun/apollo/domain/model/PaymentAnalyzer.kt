@@ -10,14 +10,14 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
     // Extract some vars for easy access:
     private val inputCurrency = payReq.amount!!.currency
-    private val sizeProgression = payCtx.nextTransactionSize.sizeProgression
+    private val sizeProgression = payCtx.sizeProgression
 
     // Set up fee calculators:
     private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte!!, sizeProgression)
     private val minimumFeeCalculator = FeeCalculator(Rules.OP_MINIMUM_FEE_RATE, sizeProgression)
 
     // Obtain balances:
-    private val totalBalanceInSatoshis = payCtx.nextTransactionSize.maxAmountInSatoshis
+    private val totalBalanceInSatoshis = payCtx.totalBalance
 
     // Amounts and fees we can pre-compute:
     private val originalAmountInSatoshis = payCtx.convertToSatoshis(payReq.amount!!)

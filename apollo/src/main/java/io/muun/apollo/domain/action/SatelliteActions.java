@@ -211,8 +211,8 @@ public class SatelliteActions {
                 })
                 .flatMap(wallet -> setSatelliteState(new SatelliteWithdrawalBeginState(
                         pendingWithdrawal.uuid,
-                        wallet.brand,
-                        wallet.label,
+                        wallet.getBrand(),
+                        wallet.getLabel(),
                         pendingWithdrawal.receiverAddress,
                         pendingWithdrawal.amount,
                         hardwareWalletActions.buildWithdrawal(pendingWithdrawal)

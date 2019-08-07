@@ -37,7 +37,7 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
                 publicProfile.firstName,
                 publicProfile.lastName,
                 publicProfile.profilePictureUrl,
-                publicProfile.hid
+                publicProfile.getHid()
         );
 
         executeStatement(statement);

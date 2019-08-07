@@ -25,13 +25,13 @@ public abstract class HoustonIdDao<ModelT extends HoustonIdModel> extends BaseDa
 
         return Observable.defer(() -> {
 
-            if (element.id != null) {
+            if (element.getId() != null) {
                 return super.store(element);
             }
 
             final Cursor cursor = briteDb.query(
                     "select id from " + tableName + " where hid = ?",
-                    String.valueOf(element.hid)
+                    String.valueOf(element.getHid())
             );
 
             if (cursor.getCount() == 0) {
@@ -40,13 +40,13 @@ public abstract class HoustonIdDao<ModelT extends HoustonIdModel> extends BaseDa
 
             if (cursor.getCount() == 1) {
                 cursor.moveToFirst();
-                element.id = cursor.getLong(cursor.getColumnIndex("id"));
+                element.setId(cursor.getLong(cursor.getColumnIndex("id")));
                 return super.store(element);
             }
 
             return Observable.error(
                     new IllegalStateException(
-                            "More than one entity with a single hid " + element.hid
+                            "More than one entity with a single hid " + element.getHid()
                                     + " found in table " + tableName
                     )
             );

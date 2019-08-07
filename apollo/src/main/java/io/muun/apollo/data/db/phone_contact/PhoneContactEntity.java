@@ -19,7 +19,7 @@ public abstract class PhoneContactEntity implements PhoneContactModel, BaseEntit
     public static ContentValues fromModel(PhoneContact phoneContact) {
 
         return FACTORY.marshal()
-                .id(phoneContact.id == null ? BaseEntity.NULL_ID : phoneContact.id)
+                .id(phoneContact.getId() == null ? BaseEntity.NULL_ID : phoneContact.getId())
                 .internal_id(phoneContact.internalId)
                 .name(phoneContact.name)
                 .phone_number(phoneContact.phoneNumber)

@@ -64,7 +64,7 @@ public class CreateOperationAction extends BaseAsyncAction2<Operation, NextTrans
      * Save an operation to the database.
      */
     public Observable<Operation> saveOperation(Operation operation) {
-        return operationDao.fetchByHid(operation.hid)
+        return operationDao.fetchByHid(operation.getHid())
                 .first()
                 .compose(ObservableFn.onTypedErrorResumeNext(
                         ElementNotFoundException.class,
