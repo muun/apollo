@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
         PaymentRequest,
         PreparedPayment,
-        Void> {
+        Operation> {
 
     private final CreateOperationAction createOperation;
 
@@ -68,11 +68,13 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
     }
 
     @Override
-    public Observable<Void> action(PaymentRequest payReq, PreparedPayment prepPayment) {
+    public Observable<Operation> action(PaymentRequest payReq, PreparedPayment prepPayment) {
         return Observable.defer(() -> submitPayment(payReq, prepPayment));
     }
 
-    private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
+    private Observable<Operation> submitPayment(PaymentRequest payReq,
+                                                PreparedPayment prepPayment) {
+
         final Operation operation = buildOperation(payReq, prepPayment);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
@@ -105,7 +107,8 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                     .pushTransaction(fullySignedTransaction, houstonOp.getHid())
                                     .flatMap(txPushed -> createOperation.action(
                                             mergedOperation, txPushed.nextTransactionSize
-                                    ));
+                                    ))
+                                    .map(aVoid -> mergedOperation);
                         }));
     }
 
@@ -132,7 +135,6 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                 throw new MissingCaseError(payReq.getType());
         }
     }
-
 
     private Operation buildOperationToContact(Contact contact, PreparedPayment prepPayment) {
 

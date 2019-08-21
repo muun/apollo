@@ -137,6 +137,8 @@ public class RxHelper {
     /**
      * Return a List without null items.
      */
+    @SafeVarargs // Tell Java that we dont cast the varargs generics.
+    // See https://stackoverflow.com/a/14252221/469300
     public static <T> List<T> toListWithoutNulls(T... items) {
         final List<T> list = new ArrayList<>(items.length);
 

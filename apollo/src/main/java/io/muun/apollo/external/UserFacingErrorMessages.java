@@ -62,6 +62,8 @@ public abstract class UserFacingErrorMessages {
 
     public abstract String passwordTooShort();
 
+    public abstract String passwordsDontMatch();
+
     public abstract String satelliteProtocolNotSupported();
 
     public abstract String fcmTokenNotAvailable();

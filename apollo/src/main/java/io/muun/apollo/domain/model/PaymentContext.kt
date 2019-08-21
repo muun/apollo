@@ -103,7 +103,6 @@ class PaymentContext(
      */
     fun analyze(payReq: PaymentRequest): PaymentAnalysis {
         checkNotNull(payReq.amount)
-        checkNotNull(payReq.feeInSatoshisPerByte)
 
         return PaymentAnalyzer(this, payReq).analyze()
     }
@@ -121,8 +120,6 @@ class PaymentContext(
         return PreparedPayment(
             analysis.amount,
             analysis.fee,
-            analysis.sweepFee,
-            analysis.total,
             analysis.payReq.description,
             analysis.rateWindowHid
         )

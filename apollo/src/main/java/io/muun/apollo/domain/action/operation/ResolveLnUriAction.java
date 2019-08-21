@@ -73,9 +73,11 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
         final FeeWindow feeWindow = feeWindowRepository.fetchOne();
         final MonetaryAmount amount = getInvoiceAmount(invoice);
 
-        final Long paymentAmount = swap.getFundingOutput().getOutputAmountInSatoshis()
-                - swap.getSweepFeeInSatoshis()
-                - swap.getLightningFeeInSatoshis();
+        final long paymentAmount = swap.getFundingOutput().getOutputAmountInSatoshis()
+                - swap.getFees().getSweepInSats()
+                - swap.getFees().getLightningInSats()
+                - swap.getFees().getChannelOpenInSats()
+                - swap.getFees().getChannelCloseInSats(); // I hate you, outputAmountInSatoshis.
 
         final double feeRate = (swap.getFundingOutput().getConfirmationsNeeded() == 0)
                 ? feeWindow.getMinimumFeeInSatoshisPerByte(Rules.CONF_TARGET_FOR_ZERO_CONF_SWAP)
@@ -89,14 +91,7 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
             throw new InvalidSwapException(swap.houstonUuid);
         }
 
-        if (invoice.addresses.isEmpty()) {
-            return PaymentRequest.toLnInvoice(invoice, amount, invoice.description, swap, feeRate);
-
-        } else {
-            // NOTE: as long as we use submarine swaps, this is cheaper:
-            return PaymentRequest
-                    .toAddress(invoice.addresses.get(0), amount, invoice.description, feeRate);
-        }
+        return PaymentRequest.toLnInvoice(invoice, amount, invoice.description, swap, feeRate);
     }
 
     @NonNull

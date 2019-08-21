@@ -16,6 +16,7 @@ import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.SubmarineSwapFees;
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.apollo.domain.model.TransactionPushed;
@@ -38,6 +39,7 @@ import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SizeForAmountJson;
+import io.muun.common.api.SubmarineSwapFeesJson;
 import io.muun.common.api.SubmarineSwapFundingOutputJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.SubmarineSwapReceiverJson;
@@ -238,9 +240,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 swap.invoice,
                 mapSwapReceiver(swap.receiver),
                 mapSwapFundingOutput(swap.fundingOutput),
-                swap.sweepFeeInSatoshis,
-                swap.lightningFeeInSatoshis,
+                mapSwapFees(swap.fees),
                 mapZonedDateTime(swap.expiresAt),
+                swap.willPreOpenChannel,
                 mapZonedDateTime(swap.payedAt),
                 swap.preimageInHex
         );
@@ -274,6 +276,16 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @NotNull
+    public SubmarineSwapFees mapSwapFees(@NotNull SubmarineSwapFeesJson fees) {
+        return new SubmarineSwapFees(
+                fees.lightningInSats,
+                fees.sweepInSats,
+                fees.channelOpenInSats,
+                fees.channelCloseInSats
+        );
     }
 
     /**

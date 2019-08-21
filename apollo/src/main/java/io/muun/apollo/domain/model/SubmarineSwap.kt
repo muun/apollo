@@ -2,22 +2,17 @@ package io.muun.apollo.domain.model
 
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime
 import io.muun.apollo.domain.model.base.HoustonUuidModel
-import io.muun.common.api.SubmarineSwapFundingOutputJson
 import io.muun.common.api.SubmarineSwapJson
-import io.muun.common.api.SubmarineSwapReceiverJson
-import io.muun.common.utils.Encodings
-import org.spongycastle.asn1.x500.style.RFC4519Style.description
-
 import org.threeten.bp.ZonedDateTime
 
-class SubmarineSwap(id: Long?,
+class SubmarineSwap (id: Long?,
                     houstonUuid: String,
                     val invoice: String,
                     val receiver: SubmarineSwapReceiver,
                     val fundingOutput: SubmarineSwapFundingOutput,
-                    val sweepFeeInSatoshis: Long,
-                    val lightningFeeInSatoshis: Long,
+                    val fees: SubmarineSwapFees,
                     val expiresAt: ZonedDateTime,
+                    val willPreOpenChannel: Boolean,
                     var payedAt: ZonedDateTime?,         // may not be payed yet
                     var preimageInHex: String?) : HoustonUuidModel(id, houstonUuid) {
 
@@ -30,9 +25,9 @@ class SubmarineSwap(id: Long?,
                     invoice,
                     receiver.toJson(),
                     fundingOutput.toJson(),
-                    sweepFeeInSatoshis,
-                    lightningFeeInSatoshis,
+                    fees.toJson(),
                     ApolloZonedDateTime.of(expiresAt),
+                    willPreOpenChannel,
                     ApolloZonedDateTime.fromNullable(payedAt),
                     preimageInHex
             )
@@ -49,9 +44,9 @@ class SubmarineSwap(id: Long?,
                     swap.invoice,
                     SubmarineSwapReceiver.fromJson(swap.receiver),
                     SubmarineSwapFundingOutput.fromJson(swap.fundingOutput),
-                    swap.sweepFeeInSatoshis,
-                    swap.lightningFeeInSatoshis,
+                    SubmarineSwapFees.fromJson(swap.fees),
                     ApolloZonedDateTime.fromMuunZonedDateTime(swap.expiresAt)!!.dateTime,
+                    swap.willPreOpenChannel,
                     ApolloZonedDateTime.fromMuunZonedDateTime(swap.payedAt)?.dateTime,
                     swap.preimageInHex
             )

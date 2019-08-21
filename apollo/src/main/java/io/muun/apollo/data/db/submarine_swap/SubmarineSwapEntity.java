@@ -3,6 +3,7 @@ package io.muun.apollo.data.db.submarine_swap;
 import io.muun.apollo.data.db.base.BaseEntity;
 import io.muun.apollo.data.db.operation.SubmarineSwapModel;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.SubmarineSwapFees;
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.common.crypto.hd.MuunAddress;
@@ -47,9 +48,12 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 .funding_user_refund_address_version(userRefundAddress.getVersion())
                 .funding_server_payment_hash_in_hex(fundingOutput.getServerPaymentHashInHex())
                 .funding_server_public_key_in_hex(fundingOutput.getServerPublicKeyInHex())
-                .sweep_fee_in_satoshis(swap.getSweepFeeInSatoshis())
-                .lightning_fee_in_satoshis(swap.getLightningFeeInSatoshis())
+                .sweep_fee_in_satoshis(swap.getFees().getSweepInSats())
+                .lightning_fee_in_satoshis(swap.getFees().getLightningInSats())
+                .channel_open_fee_in_satoshis(swap.getFees().getChannelOpenInSats())
+                .channel_close_fee_in_satoshis(swap.getFees().getChannelCloseInSats())
                 .expires_at(swap.getExpiresAt())
+                .will_pre_open_channel(swap.getWillPreOpenChannel())
                 .payed_at(swap.getPayedAt())
                 .preimage_in_hex(swap.getPreimageInHex())
                 .asContentValues();
@@ -92,9 +96,14 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                         entity.funding_server_payment_hash_in_hex(),
                         entity.funding_server_public_key_in_hex()
                 ),
-                entity.sweep_fee_in_satoshis(),
-                entity.lightning_fee_in_satoshis(),
+                new SubmarineSwapFees(
+                        entity.lightning_fee_in_satoshis(),
+                        entity.sweep_fee_in_satoshis(),
+                        entity.channel_open_fee_in_satoshis(),
+                        entity.channel_close_fee_in_satoshis()
+                ),
                 entity.expires_at(),
+                entity.will_pre_open_channel(),
                 entity.payed_at(),
                 entity.preimage_in_hex()
         );

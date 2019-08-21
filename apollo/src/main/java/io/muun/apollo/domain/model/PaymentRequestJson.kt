@@ -6,7 +6,6 @@ import io.muun.apollo.domain.model.PaymentRequest.Type
 import io.muun.common.api.Contact
 import io.muun.common.api.HardwareWalletJson
 import io.muun.common.api.SubmarineSwapJson
-import io.muun.common.utils.LnInvoice
 import javax.money.MonetaryAmount
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
@@ -18,5 +17,5 @@ data class PaymentRequestJson(var type: Type? = null,
                               var hardwareWallet: HardwareWalletJson? = null,
                               var invoice: String? = null,
                               var swap: SubmarineSwapJson? = null,
-                              var feeInSatoshisPerByte: Double? = null,
+                              var feeInSatoshisPerByte: Double = 0.0, // workaround Kotlin+Jackson
                               var takeFeeFromAmount: Boolean = false)

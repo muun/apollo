@@ -16,6 +16,9 @@ public class Challenge {
     @NotNull
     public byte[] salt;
 
+    /**
+     * Constructor.
+     */
     public Challenge(ChallengeType type, byte[] challenge, byte[] salt) {
         this.type = type;
         this.challenge = challenge;

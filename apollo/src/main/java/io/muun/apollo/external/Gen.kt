@@ -1,6 +1,16 @@
 package io.muun.apollo.external
 
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.FeeWindow
+import io.muun.apollo.domain.model.NextTransactionSize
+import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.SubmarineSwap
+import io.muun.apollo.domain.model.SubmarineSwapFees
+import io.muun.apollo.domain.model.SubmarineSwapFundingOutput
+import io.muun.apollo.domain.model.SubmarineSwapReceiver
+import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.UserPhoneNumber
+import io.muun.apollo.domain.model.UserProfile
 import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.exception.MissingCaseError
@@ -68,9 +78,14 @@ object Gen {
     fun email() = alpha(3, 20) + "@" + alpha(2, 5) + "." + alpha(2, 3)
 
     /**
+     * Get a known PIN.
+     */
+    fun pin() = listOf(1, 1, 1, 1)
+
+    /**
      * Get a PIN.
      */
-    fun pin() = listOf(digit(), digit(), digit(), digit())
+    fun randomPin() = listOf(digit(), digit(), digit(), digit())
 
     /**
      * Get a phone number string.
@@ -135,17 +150,20 @@ object Gen {
         )
 
     /**
+     * Get a size progression for the next transaction size.
+     */
+    fun sizeProgression(vararg entries: Pair<Long, Int>) =
+        if (entries.isNotEmpty()) {
+            entries.map { (amount, size) -> SizeForAmount(amount, size) }
+        } else {
+            listOf(SizeForAmount(10000, 240))
+        }
+
+    /**
      * Get a NextTransactionSize vector.
      */
     fun nextTransactionSize(vararg entries: Pair<Long, Int>) =
-        NextTransactionSize(
-            if (entries.isNotEmpty()) {
-                entries.map { (amount, size) -> SizeForAmount(amount, size) }
-            } else {
-                listOf(SizeForAmount(10000, 240))
-            },
-            1
-        )
+        NextTransactionSize(sizeProgression(*entries), 1)
 
     /**
      * Get an address.
@@ -182,16 +200,23 @@ object Gen {
 
     fun submarineSwap(outputAmountInSatoshis: Long,
                       sweepFeeInSatoshis: Long,
-                      lightningFeeInSatoshis: Long) =
+                      lightningFeeInSatoshis: Long,
+                      channelOpenFeeInSatoshis: Long = 0,
+                      channelCloseFeeInSatoshis: Long = 0) =
         SubmarineSwap(
             houstonId(),
             "1234-5675",
             lnInvoice(),
             submarineSwapReceiver(),
             submarineSwapFundingOutput(outputAmountInSatoshis),
-            sweepFeeInSatoshis,
-            lightningFeeInSatoshis,
+            submarineSwapFees(
+                lightningFeeInSatoshis,
+                sweepFeeInSatoshis,
+                channelOpenFeeInSatoshis,
+                channelCloseFeeInSatoshis
+            ),
             futureDate(),
+            false,
             null,
             null
         )
@@ -212,6 +237,17 @@ object Gen {
             userRefundAddress,
             lnPaymentHash(),
             lnPublicKey()
+        )
+
+    fun submarineSwapFees(lightningInSats: Long,
+                          sweepInSats: Long,
+                          channelOpenInSats: Long,
+                          channelCloseInSats: Long) =
+        SubmarineSwapFees(
+            lightningInSats,
+            sweepInSats,
+            channelOpenInSats,
+            channelCloseInSats
         )
 
     fun lnInvoice() =

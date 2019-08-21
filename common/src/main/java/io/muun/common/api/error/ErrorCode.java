@@ -365,6 +365,9 @@ public enum ErrorCode {
     INVALID_FUNDING_TRANSACTION(
             8107, StatusCode.CLIENT_FAILURE, "The funding transaction is invalid"
     ),
+    INVALID_SWAP_EXPIRATION(
+            8108, StatusCode.CLIENT_FAILURE, "The proposed swap expiration is too low"
+    ),
 
     // exchangehub errors
     MISSING_INVOICE_AMOUNT(

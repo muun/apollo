@@ -1,8 +1,10 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
+import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
+import io.muun.common.Optional;
 
 import rx.Observable;
 
@@ -13,7 +15,7 @@ import javax.inject.Singleton;
 public class SubmitPaymentAction extends BaseAsyncAction2<
         PaymentRequest,
         PreparedPayment,
-        Void> {
+        Optional<Operation>> {
 
     private final SubmitIncomingPaymentAction submitIncomingPayment;
     private final SubmitOutgoingPaymentAction submitOutgoingPayment;
@@ -30,15 +32,20 @@ public class SubmitPaymentAction extends BaseAsyncAction2<
     }
 
     @Override
-    public Observable<Void> action(PaymentRequest payReq, PreparedPayment prepPayment) {
-        return Observable.defer(() -> submitPayment(payReq, prepPayment));
+    public Observable<Optional<Operation>> action(PaymentRequest payReq, PreparedPayment payment) {
+        return Observable.defer(() -> submitPayment(payReq, payment));
     }
 
-    private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
+    private Observable<Optional<Operation>> submitPayment(PaymentRequest payReq,
+                                                          PreparedPayment prepPayment) {
+
         if (payReq.getType() == PaymentRequest.Type.FROM_HARDWARE_WALLET) {
-            return submitIncomingPayment.action(payReq, prepPayment);
+            return submitIncomingPayment.action(payReq, prepPayment)
+                    .map(aVoid -> Optional.empty());
+
         } else {
-            return submitOutgoingPayment.action(payReq, prepPayment);
+            return submitOutgoingPayment.action(payReq, prepPayment)
+                    .map(Optional::of);
         }
     }
 }

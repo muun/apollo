@@ -64,11 +64,11 @@ public interface ActionComponent {
 
     ResolveOperationUriAction resolveOperationUriAction();
 
+    SubmitPaymentAction submitPaymentAction();
+
     SubmitIncomingPaymentAction submitIncomingPaymentAction();
 
     SubmitOutgoingPaymentAction submitOutgoingPaymentAction();
-
-    SubmitPaymentAction submitPaymentAction();
 
     CreateOperationAction createOperationAction();
 

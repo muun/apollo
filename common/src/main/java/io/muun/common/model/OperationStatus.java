@@ -59,6 +59,17 @@ public enum OperationStatus {
     SWAP_EXPIRED,
 
     /**
+     * For a submarine swap Operation, negotiating the channel open with the remote peer.
+     */
+    SWAP_OPENING_CHANNEL,
+
+    /**
+     * For a submarine swap Operation, waiting for a channel to be open in order to start
+     * routing the payment.
+     */
+    SWAP_WAITING_CHANNEL,
+
+    /**
      * Operation with its transaction present in a block (0 < confirmations < SETTLEMENT_NUMBER),
      * but not with enough transactions to be settled.
      */

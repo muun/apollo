@@ -1,6 +1,8 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
 import io.muun.common.dates.MuunZonedDateTime;
+import io.muun.common.utils.Deprecated;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,13 +27,23 @@ public class SubmarineSwapJson {
     public SubmarineSwapFundingOutputJson fundingOutput;
 
     @NotNull
+    @Deprecated(atApolloVersion = Supports.PreOpenChannel.APOLLO,
+            atFalconVersion = Supports.PreOpenChannel.FALCON)
     public Long sweepFeeInSatoshis;
 
     @NotNull
+    @Deprecated(atApolloVersion = Supports.PreOpenChannel.APOLLO,
+            atFalconVersion = Supports.PreOpenChannel.FALCON)
     public Long lightningFeeInSatoshis;
 
     @NotNull
+    public SubmarineSwapFeesJson fees;
+
+    @NotNull
     public MuunZonedDateTime expiresAt;
+
+    @NotNull
+    public Boolean willPreOpenChannel;
 
     @Nullable
     public MuunZonedDateTime payedAt;
@@ -52,9 +64,9 @@ public class SubmarineSwapJson {
                              String invoice,
                              SubmarineSwapReceiverJson receiver,
                              SubmarineSwapFundingOutputJson fundingOutput,
-                             Long sweepFeeInSatoshis,
-                             Long lightningFeeInSatoshis,
+                             SubmarineSwapFeesJson fees,
                              MuunZonedDateTime expiresAt,
+                             Boolean willPreOpenChannel,
                              @Nullable MuunZonedDateTime payedAt,
                              @Nullable String preimageInHex) {
 
@@ -62,10 +74,17 @@ public class SubmarineSwapJson {
         this.invoice = invoice;
         this.receiver = receiver;
         this.fundingOutput = fundingOutput;
-        this.sweepFeeInSatoshis = sweepFeeInSatoshis;
-        this.lightningFeeInSatoshis = lightningFeeInSatoshis;
+        this.fees = fees;
         this.expiresAt = expiresAt;
+        this.willPreOpenChannel = willPreOpenChannel;
         this.payedAt = payedAt;
         this.preimageInHex = preimageInHex;
+
+        // Compatibility:
+        this.lightningFeeInSatoshis = fees.lightningInSats
+                + fees.channelOpenInSats
+                + fees.channelCloseInSats;
+
+        this.sweepFeeInSatoshis = fees.sweepInSats;
     }
 }

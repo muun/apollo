@@ -13,7 +13,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     private val sizeProgression = payCtx.sizeProgression
 
     // Set up fee calculators:
-    private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte!!, sizeProgression)
+    private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte, sizeProgression)
     private val minimumFeeCalculator = FeeCalculator(Rules.OP_MINIMUM_FEE_RATE, sizeProgression)
 
     // Obtain balances:
@@ -27,7 +27,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
      */
     fun analyze(): PaymentAnalysis {
         checkNotNull(payReq.amount)
-        checkNotNull(payReq.feeInSatoshisPerByte)
 
         return if (originalAmountInSatoshis > totalBalanceInSatoshis) {
             // Case 1: user cannot pay the base amount she entered
@@ -59,19 +58,21 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     }
 
     private fun analyzeFeeFromAmount(): PaymentAnalysis {
+        val totalInSatoshis = originalAmountInSatoshis
+
         val feeInSatoshis = feeCalculator
-            .calculate(originalAmountInSatoshis, takeFeeFromAmount = true)
+            .calculate(totalInSatoshis, takeFeeFromAmount = true)
 
         val minimumFeeInSats = minimumFeeCalculator
-            .calculate(originalAmountInSatoshis, takeFeeFromAmount = true)
+            .calculate(totalInSatoshis, takeFeeFromAmount = true)
 
         return createAnalysis(
-            amountInSatoshis = max(0, originalAmountInSatoshis - feeInSatoshis),
+            amountInSatoshis = max(0, totalInSatoshis - feeInSatoshis),
             feeInSatoshis = feeInSatoshis,
-            totalInSatoshis = originalAmountInSatoshis,
+            totalInSatoshis = totalInSatoshis,
             canPayWithoutFee = true,
-            canPayWithMinimumFee = (originalAmountInSatoshis > minimumFeeInSats + DUST_IN_SATOSHIS),
-            canPayWithSelectedFee = (originalAmountInSatoshis > feeInSatoshis + DUST_IN_SATOSHIS)
+            canPayWithMinimumFee = (totalInSatoshis > minimumFeeInSats + DUST_IN_SATOSHIS),
+            canPayWithSelectedFee = (totalInSatoshis > feeInSatoshis + DUST_IN_SATOSHIS)
         )
     }
 
@@ -96,8 +97,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         checkNotNull(payReq.swap)
 
         val outputAmountInSatoshis = payReq.swap.outputAmountInSatoshis
-        val sweepFeeInSatoshis = payReq.swap.sweepFeeInSatoshis
-        val lightningFeeInSatoshis = payReq.swap.lightningFeeInSatoshis
 
         if (outputAmountInSatoshis > totalBalanceInSatoshis) {
             // Unlike other cases, this can happen because we calculate fee for the total output
@@ -108,8 +107,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                 feeInSatoshis = null,
                 totalInSatoshis = null,
                 outputAmountInSatoshis = outputAmountInSatoshis,
-                sweepFeeInSatoshis = sweepFeeInSatoshis,
-                lightningFeeInSatoshis = lightningFeeInSatoshis,
+                swapFees = payReq.swap.fees,
                 canPayWithoutFee = false,
                 canPayWithSelectedFee = false,
                 canPayWithMinimumFee = false
@@ -127,8 +125,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             feeInSatoshis =  feeInSatoshis,
             totalInSatoshis = totalInSatoshis,
             outputAmountInSatoshis = outputAmountInSatoshis,
-            sweepFeeInSatoshis = sweepFeeInSatoshis,
-            lightningFeeInSatoshis = lightningFeeInSatoshis,
+            swapFees = payReq.swap.fees,
             canPayWithoutFee = true,
             canPayWithMinimumFee = (minimumTotalInSatoshis <= totalBalanceInSatoshis),
             canPayWithSelectedFee = (totalInSatoshis <= totalBalanceInSatoshis)
@@ -139,8 +136,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                                feeInSatoshis: Long?,
                                totalInSatoshis: Long?,
                                outputAmountInSatoshis: Long? = null, // swap only
-                               sweepFeeInSatoshis: Long? = null, // swap only
-                               lightningFeeInSatoshis: Long? = null, // guess what
+                               swapFees: SubmarineSwapFees? = null, // same
                                canPayWithoutFee: Boolean,
                                canPayWithSelectedFee: Boolean,
                                canPayWithMinimumFee: Boolean): PaymentAnalysis {
@@ -151,10 +147,12 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
             amount = convertToBitcoinAmount(amountInSatoshis),
             outputAmount = convertToBitcoinAmount(outputAmountInSatoshis ?: amountInSatoshis),
-            sweepFee = convertToBitcoinAmount(sweepFeeInSatoshis ?: 0L),
-            lightningFee = convertToBitcoinAmount(lightningFeeInSatoshis ?: 0L),
-            fee = feeInSatoshis?.let(this::convertToBitcoinAmount),
-            total = totalInSatoshis?.let(this::convertToBitcoinAmount),
+            sweepFee = convertToNullableBitcoinAmount(swapFees?.sweepInSats),
+            lightningFee = convertToNullableBitcoinAmount(swapFees?.lightningInSats),
+            channelOpenFee = convertToNullableBitcoinAmount(swapFees?.channelOpenInSats),
+            channelCloseFee = convertToNullableBitcoinAmount(swapFees?.channelCloseInSats),
+            fee = convertToNullableBitcoinAmount(feeInSatoshis),
+            total = convertToNullableBitcoinAmount(totalInSatoshis),
 
             canPayWithoutFee = canPayWithoutFee,
             canPayWithSelectedFee = canPayWithSelectedFee,
@@ -166,4 +164,9 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
     private fun convertToBitcoinAmount(amountInSatoshis: Long) =
         payCtx.convertToBitcoinAmount(amountInSatoshis, inputCurrency)
+
+    private fun convertToNullableBitcoinAmount(amountInSatoshis: Long?) =
+        amountInSatoshis?.let {
+            payCtx.convertToBitcoinAmount(it, inputCurrency)
+        }
 }

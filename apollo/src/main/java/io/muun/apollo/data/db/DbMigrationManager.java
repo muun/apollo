@@ -393,6 +393,11 @@ public class DbMigrationManager {
         add(21, MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE);
 
         add(22, MigrationsModel.MIGRATION_22_ADD_SUBMARINE_SWAP_TO_OPERATION);
+
+        add(23, MigrationsModel.MIGRATION_23_ADD_SUBMARINE_SWAP_WILL_PRE_OPEN_CHANNEL);
+
+        add(24, MigrationsModel.MIGRATION_24_ADD_SUBMARINE_SWAP_CHANNEL_OPEN_FEE);
+        add(25, MigrationsModel.MIGRATION_25_ADD_SUBMARINE_SWAP_CHANNEL_CLOSE_FEE);
     }
 
     /**

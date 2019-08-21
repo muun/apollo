@@ -13,7 +13,7 @@ data class PaymentRequest (val type: Type,
                            val hardwareWallet: HardwareWallet? = null,
                            val invoice: LnInvoice? = null,
                            val swap: SubmarineSwap? = null,
-                           val feeInSatoshisPerByte: Double? = null,
+                           val feeInSatoshisPerByte: Double,
                            val takeFeeFromAmount: Boolean = false) {
 
     enum class Type {
@@ -29,7 +29,7 @@ data class PaymentRequest (val type: Type,
      */
     fun withChanges(newAmount: MonetaryAmount,
                     newDesc: String,
-                    newFeeInSatoshisPerByte: Double?): PaymentRequest {
+                    newFeeInSatoshisPerByte: Double): PaymentRequest {
 
         return copy(
             amount = newAmount,
@@ -38,7 +38,7 @@ data class PaymentRequest (val type: Type,
         )
     }
 
-    fun withFeeRate(newFeeInSatoshisPerByte: Double?) =
+    fun withFeeRate(newFeeInSatoshisPerByte: Double) =
             copy(feeInSatoshisPerByte = newFeeInSatoshisPerByte)
 
     fun withTakeFeeFromAmount(takeFeeFromAmount: Boolean) =
