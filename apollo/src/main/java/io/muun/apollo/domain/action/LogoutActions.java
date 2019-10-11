@@ -100,6 +100,7 @@ public class LogoutActions {
     public void logout() {
 
         taskScheduler.unscheduleAllTasks();
+
         asyncActionStore.resetAllExceptLogout();
         secureStorageProvider.wipe();
 

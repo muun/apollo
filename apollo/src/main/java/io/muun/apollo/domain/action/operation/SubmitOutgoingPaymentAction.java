@@ -21,7 +21,7 @@ import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.OperationStatus;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import org.bitcoinj.core.Transaction;
 import rx.Observable;
 

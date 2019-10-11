@@ -2,7 +2,7 @@ package io.muun.apollo.data.db.base;
 
 import io.muun.apollo.data.serialization.SerializationUtils;
 
-import com.squareup.sqldelight.ColumnAdapter;
+import com.squareup.sqldelight.prerelease.ColumnAdapter;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.money.MonetaryAmount;

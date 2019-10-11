@@ -5,6 +5,7 @@ import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PublicProfile;
+import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeSetupJson;
@@ -18,6 +19,7 @@ import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SignupJson;
+import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.PhoneNumber;
@@ -206,5 +208,12 @@ public class ApiObjectsMapper {
                 ApolloZonedDateTime.of(wallet.getLastPairedAt()),
                 wallet.isPaired()
         );
+    }
+
+    /**
+     * Create a Submarine Swap Request.
+     */
+    public SubmarineSwapRequestJson mapSubmarineSwapRequest(SubmarineSwapRequest request) {
+        return new SubmarineSwapRequestJson(request.invoice, request.swapExpirationInBlocks);
     }
 }

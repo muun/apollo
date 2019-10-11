@@ -68,7 +68,7 @@ public class AuthRepository extends BaseRepository {
     /**
      * Wait for the authorized email notification.
      */
-    public Completable awaitForAuthorizedSignin() {
+    public Completable awaitAuthorizedByEmail() {
         return sessionStatusPreference.asObservable()
                 .filter(signInStatus -> signInStatus != null
                         && signInStatus.hasPermisionFor(SessionStatus.AUTHORIZED_BY_EMAIL))
@@ -98,14 +98,5 @@ public class AuthRepository extends BaseRepository {
             storeServerJwt(serverJwt);
             serverJwtPrefs.delete();
         }
-    }
-
-    /**
-     * Returns true if the session status is available and LOGGED_IN.
-     */
-    public boolean isLoggedIn() {
-        return getSessionStatus()
-                .map(SessionStatus.LOGGED_IN::equals)
-                .orElse(false);
     }
 }

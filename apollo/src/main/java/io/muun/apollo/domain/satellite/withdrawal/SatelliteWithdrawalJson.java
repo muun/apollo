@@ -4,7 +4,7 @@ import io.muun.apollo.domain.model.trezor.HardwareWalletWithdrawal;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.crypto.hd.PublicKey;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 

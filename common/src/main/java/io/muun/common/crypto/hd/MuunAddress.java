@@ -8,6 +8,8 @@ import io.muun.common.crypto.schemes.TransactionSchemeV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV3;
 import io.muun.common.exception.MissingCaseError;
 
+import org.bitcoinj.core.LegacyAddress;
+
 import javax.validation.constraints.NotNull;
 
 public class MuunAddress {
@@ -94,7 +96,7 @@ public class MuunAddress {
     }
 
     public byte[] getHash160() {
-        return toBitcoinJ().getHash160();
+        return toBitcoinJ().getHash();
     }
 
     /**
@@ -111,7 +113,7 @@ public class MuunAddress {
     private org.bitcoinj.core.Address toBitcoinJ() {
         // NOTE: we provide `null` NetworkParameters. The information is already contained in the
         // base58 serialization, and we don't need to validate it.
-        return org.bitcoinj.core.Address.fromBase58(null, address);
+        return LegacyAddress.fromString(null, address);
     }
 
     public MuunAddressJson toJson() {

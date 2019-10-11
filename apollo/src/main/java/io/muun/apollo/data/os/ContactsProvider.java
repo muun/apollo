@@ -13,8 +13,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import androidx.core.content.ContextCompat;
 import rx.Observable;
 import rx.Subscriber;
 

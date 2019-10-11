@@ -83,13 +83,6 @@ migration_20_add_brand_to_hardware_wallet:
 ALTER TABLE hardware_wallets
 ADD COLUMN brand TEXT;
 
-migration_20_copy_brand_from_hardware_wallet_model:
-UPDATE hardware_wallets
-SET
-    brand = upper(substr(model, 1, instr(model, '/') - 1)),
-    model = substr(model, instr(model, '/') + 1)
-;
-
 migration_21_add_is_in_use_to_pairings:
 ALTER TABLE satellite_pairings
 ADD COLUMN is_in_use INTEGER NOT NULL DEFAULT 0;

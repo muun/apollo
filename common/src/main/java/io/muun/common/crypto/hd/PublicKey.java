@@ -11,7 +11,7 @@ import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.bitcoinj.core.Address;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDDerivationException;
@@ -133,8 +133,8 @@ public class PublicKey extends BaseKey {
      * Returns the P2PKH address of this key.
      */
     public String toAddress() {
-        final Address address = new Address(networkParameters, deterministicKey.getPubKeyHash());
-        return address.toString();
+        return LegacyAddress.fromPubKeyHash(networkParameters, deterministicKey.getPubKeyHash())
+                .toString();
     }
 
     public String serializeBase58() {
@@ -143,10 +143,6 @@ public class PublicKey extends BaseKey {
 
     public byte[] getPublicKeyBytes() {
         return deterministicKey.getPubKey();
-    }
-
-    public boolean verifyTransactionHash(byte[] txHash, Signature signature) {
-        return deterministicKey.verify(txHash, signature.getBytes());
     }
 
     @NotNull

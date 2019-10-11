@@ -52,7 +52,7 @@ class PaymentAnalysis(
 
     /** Whether the amount entered is below dust. */
     val isAmountTooSmall =
-        outputAmount.inSatoshis <= BitcoinUtils.DUST_IN_SATOSHIS
+        outputAmount.inSatoshis < BitcoinUtils.DUST_IN_SATOSHIS
 
     /** Whether the description length is below the mininum set by Rules. */
     val isDescriptionTooShort =

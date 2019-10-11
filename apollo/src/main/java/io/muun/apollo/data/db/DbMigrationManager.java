@@ -3,7 +3,7 @@ package io.muun.apollo.data.db;
 import io.muun.apollo.data.logging.Logger;
 
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -254,7 +254,13 @@ public class DbMigrationManager {
             + "    is_paired INTEGER NOT NULL\n"
             + ")";
 
-    public static final String MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE = ""
+    private static final String MIGRATION_20_COPY_BRAND_FROM_HARDWARE_WALLET_MODEL = ""
+            + "UPDATE hardware_wallets\n"
+            + "SET\n"
+            + "    brand = upper(substr(model, 1, instr(model, '/') - 1)),\n"
+            + "    model = substr(model, instr(model, '/') + 1)";
+
+    private static final String MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE = ""
             + "CREATE TABLE submarine_swaps (\n"
             + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
             + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
@@ -386,8 +392,9 @@ public class DbMigrationManager {
 
         add(19,
                 MigrationsModel.MIGRATION_19_ADD_BRAND_TO_HARDWARE_WALLET,
-                MigrationsModel.MIGRATION_20_COPY_BRAND_FROM_HARDWARE_WALLET_MODEL
+                MIGRATION_20_COPY_BRAND_FROM_HARDWARE_WALLET_MODEL
         );
+
         add(20, MigrationsModel.MIGRATION_21_ADD_IS_IN_USE_TO_PAIRINGS);
 
         add(21, MIGRATION_21_CREATE_OPERATION_SWAPS_TABLE);
@@ -417,7 +424,7 @@ public class DbMigrationManager {
      * This method will be called from the DaoManager to execute the migrations. Do not call this
      * method directly.
      */
-    public void run(SQLiteDatabase database, int oldVersion, int newVersion) {
+    public void run(SupportSQLiteDatabase database, int oldVersion, int newVersion) {
 
         for (int version = oldVersion + 1; version <= newVersion; version++) {
 

@@ -1,6 +1,6 @@
 package io.muun.apollo.data.net.base;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import retrofit2.CallAdapter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;

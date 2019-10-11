@@ -31,7 +31,6 @@ public class SubmarineSwapDao extends HoustonUuidDao<SubmarineSwap> {
      * Fetches all operation swaps from the db.
      */
     public Observable<List<SubmarineSwap>> fetchAll() {
-
         return fetchList(SubmarineSwapEntity.FACTORY.selectAll());
     }
 
@@ -39,12 +38,11 @@ public class SubmarineSwapDao extends HoustonUuidDao<SubmarineSwap> {
      * Updates the submarine swap payment data. Sets payedAt date and preimage.
      */
     public void updatePaymentInfo(SubmarineSwap swap) {
-
-        final SubmarineSwapModel.UpdatePaymentInfo statement =
-                new SubmarineSwapEntity.UpdatePaymentInfo(db, SubmarineSwapEntity.FACTORY);
+        final SubmarineSwapModel.UpdatePaymentInfo statement = new SubmarineSwapEntity
+                .UpdatePaymentInfo(db, SubmarineSwapEntity.FACTORY);
 
         statement.bind(swap.getPayedAt(), swap.getPreimageInHex(), swap.houstonUuid);
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 }

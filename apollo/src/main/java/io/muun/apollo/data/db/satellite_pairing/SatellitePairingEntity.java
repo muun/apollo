@@ -3,11 +3,12 @@ package io.muun.apollo.data.db.satellite_pairing;
 import io.muun.apollo.data.db.base.BaseEntity;
 import io.muun.apollo.domain.model.SatellitePairing;
 
-import android.content.ContentValues;
 import android.database.Cursor;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
-import com.squareup.sqldelight.ColumnAdapter;
-import com.squareup.sqldelight.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.ColumnAdapter;
+import com.squareup.sqldelight.prerelease.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class SatellitePairingEntity implements SatellitePairingModel, BaseEntity {
@@ -25,28 +26,33 @@ public abstract class SatellitePairingEntity implements SatellitePairingModel, B
     /**
      * Map from the model to the content values.
      */
-    public static ContentValues fromModel(SatellitePairing pairing) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db,
+                                                SatellitePairing pairing) {
 
-        return FACTORY.marshal()
-                .id(pairing.getId() == null ? NULL_ID : pairing.getId())
-                .satellite_session_uuid(pairing.satelliteSessionUuid)
-                .apollo_session_uuid(pairing.apolloSessionUuid)
-                .status(pairing.status)
-                .browser(pairing.browser)
-                .os_version(pairing.osVersion)
-                .ip(pairing.ip)
-                .creation_date(pairing.creationDate)
-                .last_active(pairing.lastActive)
-                .encryption_key(pairing.encryptionKey)
-                .is_in_use(pairing.isInUse)
-                .asContentValues();
+        final SatellitePairingModel.InsertPairing insertStatement = new SatellitePairingModel
+                .InsertPairing(db, FACTORY);
+
+        insertStatement.bind(
+                pairing.getId() == null ? NULL_ID : pairing.getId(),
+                pairing.satelliteSessionUuid,
+                pairing.apolloSessionUuid,
+                pairing.status,
+                pairing.browser,
+                pairing.osVersion,
+                pairing.ip,
+                pairing.creationDate,
+                pairing.lastActive,
+                pairing.encryptionKey,
+                pairing.isInUse
+        );
+
+        return insertStatement;
     }
 
     /**
      * Map from the database cursor to the model.
      */
     public static SatellitePairing toModel(Cursor cursor) {
-
         final SatellitePairingEntity entity = FACTORY.selectAllMapper().map(cursor);
 
         return new SatellitePairing(

@@ -15,7 +15,7 @@ import io.muun.common.bitcoinj.BitcoinUri;
 import io.muun.common.bitcoinj.ValidationHelpers;
 import io.muun.common.utils.BitcoinUtils;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.protocols.payments.PaymentProtocol;

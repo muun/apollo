@@ -19,7 +19,7 @@ public class MainNetParamsZ extends MainNetParams {
     private MainNetParamsZ() {
         super();
         id = "org.bitcoin.production.p2wpkh";
-        bip32HeaderPub = 0x4b24746;
-        bip32HeaderPriv = 0x4b2430c;
+        bip32HeaderP2WPKHpub = 0x04b24746;
+        bip32HeaderP2WPKHpriv = 0x04b2430c;
     }
 }

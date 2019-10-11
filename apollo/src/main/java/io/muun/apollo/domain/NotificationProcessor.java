@@ -44,7 +44,7 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.SessionStatus;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import rx.Completable;
 import rx.functions.Func1;
 
@@ -214,7 +214,7 @@ public class NotificationProcessor {
     }
 
     private Completable handleAuthorizedSignin(NotificationJson notificationJson) {
-        signinActions.authorizeSignin();
+        signinActions.reportAuthorizedByEmail();
 
         return Completable.complete();
     }

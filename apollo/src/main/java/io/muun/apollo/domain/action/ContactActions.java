@@ -105,7 +105,9 @@ public class ContactActions {
         return contactDao.deleteAll().flatMap(ignored ->
                 houstonClient.fetchContacts()
                         .flatMap(Observable::from)
-                        .flatMap(this::createOrUpdateContact)
+                        // using concatMap to avoid parallelization, overflows JobExecutor's queue
+                        // TODO use batching
+                        .concatMap(this::createOrUpdateContact)
                         .lastOrDefault(null)
         );
     }

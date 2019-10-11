@@ -9,6 +9,10 @@ CREATE TABLE contacts (
     cosigning_public_key_path TEXT
 );
 
+insertContact:
+INSERT OR REPLACE INTO contacts
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
 updateLastDerivationIndex:
 UPDATE contacts
 SET last_derivation_index = max(last_derivation_index, ?)

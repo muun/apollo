@@ -6,7 +6,7 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import rx.Observable;
 import rx.Subscription;
 

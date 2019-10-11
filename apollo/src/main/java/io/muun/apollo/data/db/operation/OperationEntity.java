@@ -10,12 +10,13 @@ import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
 
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
-import com.squareup.sqldelight.ColumnAdapter;
-import com.squareup.sqldelight.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.ColumnAdapter;
+import com.squareup.sqldelight.prerelease.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class OperationEntity implements OperationModel, BaseEntity {
@@ -47,39 +48,43 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
     /**
      * Map from the model to the content values.
      */
-    public static ContentValues fromModel(Operation operation) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, Operation operation) {
 
         final PublicProfile senderProfile = operation.senderProfile;
         final PublicProfile receiverProfile = operation.receiverProfile;
 
-        return FACTORY.marshal()
-                .id(operation.getId() == null ? BaseEntity.NULL_ID : operation.getId())
-                .hid(operation.getHid())
-                .direction(operation.direction)
-                .is_external(operation.isExternal)
-                .sender_hid(senderProfile == null ? null : senderProfile.getHid())
-                .sender_is_external(operation.senderIsExternal)
-                .receiver_hid(receiverProfile == null ? null : receiverProfile.getHid())
-                .receiver_is_external(operation.receiverIsExternal)
-                .receiver_address(operation.receiverAddress)
-                .receiver_address_derivation_path(operation.receiverAddressDerivationPath)
-                .hardware_wallet_hid(operation.hardwareWalletHid)
-                .amount_in_satoshis(operation.amount.inSatoshis)
-                .amount_in_input_currency(operation.amount.inInputCurrency)
-                .amount_in_primary_currency(operation.amount.inPrimaryCurrency)
-                .fee_in_satoshis(operation.fee.inSatoshis)
-                .fee_in_input_currency(operation.fee.inInputCurrency)
-                .fee_in_primary_currency(operation.fee.inPrimaryCurrency)
-                .confirmations(operation.confirmations)
-                .hash(operation.hash)
-                .description(operation.description)
-                .status(operation.status)
-                .creation_date(operation.creationDate)
-                .exchange_rate_window_hid(operation.exchangeRateWindowHid)
-                .submarine_swap_houston_uuid(
-                        operation.swap == null ? null : operation.swap.houstonUuid
-                )
-                .asContentValues();
+        final OperationModel.InsertOperation insertStatement = new OperationModel
+                .InsertOperation(db, FACTORY);
+
+
+        insertStatement.bind(
+                operation.getId() == null ? BaseEntity.NULL_ID : operation.getId(),
+                operation.getHid(),
+                operation.direction,
+                operation.isExternal,
+                senderProfile == null ? null : senderProfile.getHid(),
+                operation.senderIsExternal,
+                receiverProfile == null ? null : receiverProfile.getHid(),
+                operation.receiverIsExternal,
+                operation.receiverAddress,
+                operation.receiverAddressDerivationPath,
+                operation.amount.inSatoshis,
+                operation.amount.inInputCurrency,
+                operation.amount.inPrimaryCurrency,
+                operation.fee.inSatoshis,
+                operation.fee.inInputCurrency,
+                operation.fee.inPrimaryCurrency,
+                operation.confirmations,
+                operation.hash,
+                operation.description,
+                operation.status,
+                operation.creationDate,
+                operation.exchangeRateWindowHid,
+                operation.hardwareWalletHid,
+                operation.swap == null ? null : operation.swap.houstonUuid
+        );
+
+        return insertStatement;
     }
 
     /**

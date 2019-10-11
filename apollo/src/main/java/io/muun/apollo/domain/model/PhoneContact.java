@@ -4,7 +4,7 @@ import io.muun.apollo.domain.model.base.PersistentModel;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 

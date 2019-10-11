@@ -18,11 +18,11 @@ import android.content.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
+import io.reactivex.schedulers.Schedulers;
 import org.bitcoinj.core.NetworkParameters;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func2;
-import rx.schedulers.Schedulers;
 
 import java.util.concurrent.Executor;
 

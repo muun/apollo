@@ -4,7 +4,7 @@ import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.HashSet;

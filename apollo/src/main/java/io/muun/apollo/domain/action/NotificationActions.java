@@ -12,7 +12,7 @@ import io.muun.apollo.domain.errors.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import rx.BackpressureOverflow;
 import rx.Completable;
 import rx.Observable;

@@ -1,5 +1,6 @@
 package io.muun.common;
 
+import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 
 import java.util.NoSuchElementException;
@@ -59,11 +60,19 @@ public final class Optional<ValueT> {
     /**
      * If there is a value present executes {@code consumer.consume(get())}.
      */
-    public void ifPresent(Consumer<? super ValueT> consumer) {
+    public Conditional ifPresent(Consumer<? super ValueT> consumer) {
 
         if (isPresent()) {
             consumer.consume(get());
+            return RxHelper::nop;
         }
+
+        return Action::run;
+    }
+
+    public interface Conditional {
+
+        void orElse(Action action);
     }
 
     /**
@@ -197,6 +206,11 @@ public final class Optional<ValueT> {
         }
 
         return "Optional[" + get() + "]";
+    }
+
+    public interface Action {
+
+        void run();
     }
 
     public interface Producer<ProducedT> {

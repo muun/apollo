@@ -6,6 +6,7 @@ import io.muun.common.utils.Hashes;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
@@ -47,7 +48,7 @@ public final class TransactionHelpers {
                                              int inputIndex,
                                              Script witnessScript,
                                              Coin value) {
-        return tx.hashForSignatureWitness(inputIndex, witnessScript, value, SigHash.ALL, false)
+        return tx.hashForWitnessSignature(inputIndex, witnessScript, value, SigHash.ALL, false)
                 .getBytes();
     }
 
@@ -69,7 +70,7 @@ public final class TransactionHelpers {
             input.setScriptSig(new Script(new byte[]{}));
         }
 
-        return txClone.getHashAsString();
+        return txClone.getTxId().toString();
     }
 
     /**
@@ -91,10 +92,10 @@ public final class TransactionHelpers {
     /**
      * Get the destination address from a given output.
      */
-    public static String getAddressFromOutput(TransactionOutput output,
-                                              NetworkParameters networkParameters) {
+    public static String getAddressFromOutput(TransactionOutput output) {
+
         final Address address = extractAddressFromOutput(output).orElse(null);
-        return address != null ? address.toBase58() : null;
+        return address != null ? address.toString() : null;
     }
 
     /**
@@ -103,7 +104,7 @@ public final class TransactionHelpers {
      * <p>We only support P2PKH and P2SH addresses. Neither the old P2PK addresses nor the new
      * P2WPKH/P2WSH addresses are supported.
      */
-    private static Optional<Address> extractAddressFromOutput(TransactionOutput output) {
+    public static Optional<Address> extractAddressFromOutput(TransactionOutput output) {
 
         final Script script = getOutputScript(output);
         if (script == null) {
@@ -114,15 +115,13 @@ public final class TransactionHelpers {
         final NetworkParameters network = output.getParams();
 
         if (isP2PkhOutput(chunks)) {
-            final int header = network.getAddressHeader();
             final byte[] hash = chunks.get(2).data;
-            return Optional.of(new Address(network, header, hash));
+            return Optional.of(LegacyAddress.fromPubKeyHash(network, hash));
         }
 
         if (isP2ShOutput(chunks)) {
-            final int header = network.getP2SHHeader();
             final byte[] hash = chunks.get(1).data;
-            return Optional.of(new Address(network, header, hash));
+            return Optional.of(LegacyAddress.fromScriptHash(network, hash));
         }
 
         return Optional.empty();
@@ -149,7 +148,7 @@ public final class TransactionHelpers {
                 && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_DUP)
                 && chunks.get(1).equalsOpCode(ScriptOpCodes.OP_HASH160)
                 && chunks.get(2).data != null
-                && chunks.get(2).data.length == Address.LENGTH
+                && chunks.get(2).data.length == LegacyAddress.LENGTH
                 && chunks.get(3).equalsOpCode(ScriptOpCodes.OP_EQUALVERIFY)
                 && chunks.get(4).equalsOpCode(ScriptOpCodes.OP_CHECKSIG);
     }
@@ -165,17 +164,17 @@ public final class TransactionHelpers {
         return chunks.size() == 3
                 && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_HASH160)
                 && chunks.get(1).data != null
-                && chunks.get(1).data.length == Address.LENGTH
+                && chunks.get(1).data.length == LegacyAddress.LENGTH
                 && chunks.get(2).equalsOpCode(ScriptOpCodes.OP_EQUAL);
     }
 
     /**
      * Get the spent address from a given P2PKH input.
      */
-    public static String getAddressFromInput(TransactionInput input,
-                                             NetworkParameters networkParameters) {
+    public static String getAddressFromInput(TransactionInput input) {
+
         final Address address = extractAddressFromInput(input).orElse(null);
-        return address != null ? address.toBase58() : null;
+        return address != null ? address.toString() : null;
     }
 
     /**
@@ -185,7 +184,7 @@ public final class TransactionHelpers {
      * <p>We only support P2PKH and P2SH addresses. Neither the old P2PK addresses nor the new
      * P2WPKH/P2WSH addresses are supported.
      */
-    private static Optional<Address> extractAddressFromInput(TransactionInput input) {
+    public static Optional<Address> extractAddressFromInput(TransactionInput input) {
 
         // skip coinbase inputs
         if (input.getOutpoint().getHash().equals(Sha256Hash.ZERO_HASH)) {
@@ -204,16 +203,14 @@ public final class TransactionHelpers {
             final byte[] rawPubKey = chunks.get(1).data;
             final byte[] addressHash = Hashes.sha256Ripemd160(rawPubKey);
 
-            final int p2PkhHeader = network.getAddressHeader();
-            return Optional.of(new Address(network, p2PkhHeader, addressHash));
+            return Optional.of(LegacyAddress.fromPubKeyHash(network, addressHash));
         }
 
         if (isP2ShInput(chunks)) {
             final byte[] rawRedeemScript = chunks.get(chunks.size() - 1).data;
             final byte[] addressHash = Hashes.sha256Ripemd160(rawRedeemScript);
 
-            final int p2ShHeader = network.getP2SHHeader();
-            return Optional.of(new Address(network, p2ShHeader, addressHash));
+            return Optional.of(LegacyAddress.fromScriptHash(network, addressHash));
         }
 
         return Optional.empty();

@@ -19,6 +19,7 @@ import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.external.Globals;
 import io.muun.common.Optional;
+import io.muun.common.api.ChallengeKeyJson;
 import io.muun.common.api.KeySet;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.crypto.ChallengePrivateKey;
@@ -30,13 +31,13 @@ import io.muun.common.model.challenge.Challenge;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
+import io.muun.common.utils.Encodings;
 
-import android.support.annotation.VisibleForTesting;
-import android.support.v4.util.Pair;
+import androidx.annotation.VisibleForTesting;
+import androidx.core.util.Pair;
 import rx.Completable;
 import rx.Observable;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,7 +72,7 @@ public class SigninActions {
     public final AsyncAction1<String, CreateSessionOk> createSessionAction;
     public final AsyncAction2<ChallengeType, String, SetupChallengeResponse>
             updateChallengeSetupAction;
-    public final AsyncAction1<SignupDraft, Void> signupAction;
+    public final AsyncAction1<String, Void> signupAction;
     public final AsyncAction2<ChallengeType, String, Void> loginAction;
     public final AsyncAction1<Boolean, Void> syncApplicationDataAction;
 
@@ -124,14 +125,15 @@ public class SigninActions {
     /**
      * Creates a new session in Houston, associated with a given email.
      */
-    public Observable<CreateSessionOk> createSession(@NotNull String email) {
+    private Observable<CreateSessionOk> createSession(@NotNull String email) {
         return waitForFcmToken()
                 .flatMap((token) -> houstonClient.createSession(
                         email,
                         Globals.INSTANCE.getOldBuildType(),
                         Globals.INSTANCE.getVersionCode(),
                         token
-                )).doOnNext(ignored -> Logger.configureForUser("NotLoggedYet", email));
+                )).doOnNext(ignored -> Logger.configureForUser("NotLoggedYet", email))
+                .doOnNext(resp -> userRepository.storeHasRecoveryCode(resp.canUseRecoveryCode()));
     }
 
     /**
@@ -153,7 +155,7 @@ public class SigninActions {
     /**
      * Fetches the user information from Houston and creates an User and stores it.
      */
-    public Observable<User> fetchUserInfo() {
+    private Observable<User> fetchUserInfo() {
 
         return houstonClient.fetchUser()
                 .doOnNext(userRepository::store)
@@ -185,14 +187,15 @@ public class SigninActions {
     /**
      * Signs up a user.
      */
-    public Observable<Void> signup(SignupDraft draft) {
+    public Observable<Void> signup(String password) {
 
         final byte[] salt = userActions.generateSaltForChallengeKey();
-        final ChallengePrivateKey passwordPrivateKey = ChallengePrivateKey
-                .fromUserInput(draft.password, salt);
-        final ChallengePublicKey passwordPublicKey = passwordPrivateKey.getChallengePublicKey();
 
-        return Observable.defer(() -> addressActions.createAndStoreRootPrivateKey(draft.password)
+        final ChallengePublicKey passwordPublicKey = ChallengePrivateKey
+                .fromUserInput(password, salt)
+                .getChallengePublicKey();
+
+        return Observable.defer(() -> addressActions.createAndStoreRootPrivateKey(password)
                 .flatMap(encryptedPrivateKey -> {
                     final CurrencyUnit primaryCurrency = getPrimaryCurrency();
 
@@ -214,7 +217,7 @@ public class SigninActions {
     /**
      * Login with a challenge.
      */
-    public Observable<Void> login(ChallengeType challengeType, String userInput) {
+    private Observable<Void> login(ChallengeType challengeType, String userInput) {
         return houstonClient.requestChallenge(challengeType)
                 .flatMap(maybeChallenge -> {
                     if (maybeChallenge.isPresent()) {
@@ -230,20 +233,14 @@ public class SigninActions {
         return authRepository.getSessionStatus();
     }
 
-    /**
-     * Returns true if the users is currently signed in.
-     */
-    public boolean isSignedIn() {
-        return authRepository.getSessionStatus()
-                .map(SessionStatus.LOGGED_IN::equals)
-                .map(isLoggedIn -> isLoggedIn && !userRepository.hasSignupDraft())
-                .orElse(false);
+    public void clearSession() {
+        authRepository.clear();
     }
 
     /**
      * Synchronize Apollo with Houston.
      */
-    public Observable<Void> syncApplicationData(boolean haveContactsPermission) {
+    private Observable<Void> syncApplicationData(boolean haveContactsPermission) {
 
         final Observable<Void> syncContacts;
 
@@ -275,18 +272,19 @@ public class SigninActions {
         return Observable.concat(step1, step2)
                 .lastOrDefault(null)
                 .onErrorResumeNext(throwable -> Observable.error(new InitialSyncError(throwable)))
+                .doOnNext(ignored -> userRepository.storeInitialSyncCompleted())
                 .map(RxHelper::toVoid);
     }
 
-    public void authorizeSignin() {
+    public void reportAuthorizedByEmail() {
         authRepository.storeSessionStatus(SessionStatus.AUTHORIZED_BY_EMAIL);
     }
 
     /**
      * Watch for the user to confirm session.
      */
-    public Completable awaitAuthorizedSignin() {
-        return authRepository.awaitForAuthorizedSignin();
+    public Completable awaitAuthorizedByEmail() {
+        return authRepository.awaitAuthorizedByEmail();
     }
 
     private Observable<Void> loginWithChallenge(Challenge challenge, String userInput) {
@@ -317,14 +315,15 @@ public class SigninActions {
 
     private Observable<Void> decryptStoreKeySet(KeySet keySet, String userInput) {
 
-        if (keySet.challengePublicKeys != null) {
-            for (Map.Entry<String, byte[]> challenge : keySet.challengePublicKeys.entrySet()) {
-                final ChallengeType type = ChallengeType.valueOf(challenge.getKey());
+        if (keySet.challengeKeys != null) {
+            for (ChallengeKeyJson challengeKey : keySet.challengeKeys) {
 
-                final ChallengePublicKey publicKey = ChallengePublicKey
-                        .fromBytes(challenge.getValue());
+                final ChallengePublicKey publicKey = new ChallengePublicKey(
+                        Encodings.hexToBytes(challengeKey.publicKey),
+                        Encodings.hexToBytes(challengeKey.salt)
+                );
 
-                userActions.storeChallengeKey(type, publicKey);
+                userActions.storeChallengeKey(challengeKey.type, publicKey);
             }
         }
 
@@ -362,5 +361,17 @@ public class SigninActions {
                     }
                 })
                 .map(pair -> pair.second);
+    }
+
+    public boolean hasRecoveryCode() {
+        return userRepository.hasRecoveryCode();
+    }
+
+    public Optional<SignupDraft> fetchSignupDraft() {
+        return userRepository.fetchSignupDraft();
+    }
+
+    public void saveSignupDraft(SignupDraft signupDraft) {
+        userRepository.storeSignupDraft(signupDraft);
     }
 }

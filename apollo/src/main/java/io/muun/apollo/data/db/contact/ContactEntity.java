@@ -6,10 +6,10 @@ import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.common.crypto.hd.PublicKey;
 
-import android.content.ContentValues;
 import android.database.Cursor;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
-import rx.functions.Func1;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class ContactEntity implements ContactModel, BaseEntity {
@@ -25,65 +25,64 @@ public abstract class ContactEntity implements ContactModel, BaseEntity {
     /**
      * Map from the model to the content values.
      */
-    public static Func1<Contact, ContentValues> fromModel() {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, Contact contact) {
+        final ContactModel.InsertContact insertStatement = new ContactModel.InsertContact(db);
 
-        return contact -> FACTORY.marshal()
-                .id(contact.getId() == null ? BaseEntity.NULL_ID : contact.getId())
-                .hid(contact.getHid())
-                .max_address_version(contact.maxAddressVersion)
-                .public_key(contact.publicKey.serializeBase58())
-                .public_key_path(contact.publicKey.getAbsoluteDerivationPath())
-                .cosigning_public_key(contact.cosigningPublicKey != null
+        insertStatement.bind(
+                contact.getId() == null ? BaseEntity.NULL_ID : contact.getId(),
+                contact.getHid(),
+                contact.publicKey.serializeBase58(),
+                contact.publicKey.getAbsoluteDerivationPath(),
+                contact.lastDerivationIndex,
+                contact.maxAddressVersion,
+                contact.cosigningPublicKey != null
                         ? contact.cosigningPublicKey.serializeBase58()
-                        : null
-                )
-                .cosigning_public_key_path(contact.cosigningPublicKey != null
+                        : null,
+                contact.cosigningPublicKey != null
                         ? contact.cosigningPublicKey.getAbsoluteDerivationPath()
-                        : null)
-                .last_derivation_index(contact.lastDerivationIndex)
-                .asContentValues();
+                        : null
+        );
+
+        return insertStatement;
     }
 
     /**
      * Map from the database cursor to the model.
      */
-    public static Func1<Cursor, Contact> toModel() {
+    public static Contact toModel(Cursor cursor) {
 
-        return cursor -> {
+        final CompleteContact entity = FACTORY.selectAllMapper(
+                AutoValue_ContactEntity_CompleteContact::new,
+                PublicProfileEntity.FACTORY
+        ).map(cursor);
 
-            final CompleteContact entity = FACTORY.selectAllMapper(
-                    AutoValue_ContactEntity_CompleteContact::new,
-                    PublicProfileEntity.FACTORY
-            ).map(cursor);
-
-            final PublicKey cosigningPublicKey;
-            if (entity.contacts().cosigning_public_key() != null) {
-                cosigningPublicKey = PublicKey.deserializeFromBase58(
-                        entity.contacts().cosigning_public_key_path(),
-                        entity.contacts().cosigning_public_key()
-                );
-            } else {
-                cosigningPublicKey = null;
-            }
-
-            return new Contact(
-                    entity.contacts().id(),
-                    entity.contacts().hid(),
-                    new PublicProfile(
-                            entity.public_profiles().id(),
-                            entity.public_profiles().hid(),
-                            entity.public_profiles().first_name(),
-                            entity.public_profiles().last_name(),
-                            entity.public_profiles().profile_picture_url()
-                    ),
-                    (int) entity.contacts().max_address_version(),
-                    PublicKey.deserializeFromBase58(
-                            entity.contacts().public_key_path(),
-                            entity.contacts().public_key()
-                    ),
-                    cosigningPublicKey,
-                    entity.contacts().last_derivation_index()
+        final PublicKey cosigningPublicKey;
+        if (entity.contacts().cosigning_public_key() != null) {
+            cosigningPublicKey = PublicKey.deserializeFromBase58(
+                    entity.contacts().cosigning_public_key_path(),
+                    entity.contacts().cosigning_public_key()
             );
-        };
+        } else {
+            cosigningPublicKey = null;
+        }
+
+        return new Contact(
+                entity.contacts().id(),
+                entity.contacts().hid(),
+                new PublicProfile(
+                        entity.public_profiles().id(),
+                        entity.public_profiles().hid(),
+                        entity.public_profiles().first_name(),
+                        entity.public_profiles().last_name(),
+                        entity.public_profiles().profile_picture_url()
+                ),
+                (int) entity.contacts().max_address_version(),
+                PublicKey.deserializeFromBase58(
+                        entity.contacts().public_key_path(),
+                        entity.contacts().public_key()
+                ),
+                cosigningPublicKey,
+                entity.contacts().last_derivation_index()
+        );
     }
 }

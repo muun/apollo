@@ -1,8 +1,11 @@
 package io.muun.common.model;
 
+import io.muun.common.bitcoinj.NetworkParametersHelper;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.bitcoinj.core.NetworkParameters;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public enum OperationStatus {
@@ -93,6 +96,22 @@ public enum OperationStatus {
     @JsonCreator
     public static OperationStatus fromValue(String value) {
         return OperationStatus.valueOf(value.toUpperCase());
+    }
+
+    /**
+     * Get the operation status for a transaction with a certain number of confirmations.
+     */
+    public static OperationStatus fromTxWithConfirmations(long numConf, NetworkParameters network) {
+
+        if (numConf == 0) {
+            return BROADCASTED;
+        }
+
+        if (numConf < NetworkParametersHelper.getSettlementNumber(network)) {
+            return CONFIRMED;
+        }
+
+        return OperationStatus.SETTLED;
     }
 
     @JsonValue

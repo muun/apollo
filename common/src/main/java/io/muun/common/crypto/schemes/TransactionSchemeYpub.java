@@ -7,12 +7,13 @@ import io.muun.common.utils.Hashes;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.script.ScriptOpCodes;
-import org.spongycastle.pqc.math.linearalgebra.ByteUtils;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import static org.bitcoinj.script.ScriptOpCodes.OP_CHECKSIG;
 import static org.bitcoinj.script.ScriptOpCodes.OP_DUP;
@@ -29,7 +30,7 @@ public class TransactionSchemeYpub {
         final Script redeemScript = createRedeemScript(publicKey);
         final byte[] addressHash160 = Hashes.sha256Ripemd160(redeemScript.getProgram());
 
-        return Address.fromP2SHHash(publicKey.networkParameters, addressHash160);
+        return LegacyAddress.fromScriptHash(publicKey.networkParameters, addressHash160);
     }
 
     /**
@@ -62,7 +63,7 @@ public class TransactionSchemeYpub {
 
         return new ScriptBuilder()
                 .op(ScriptOpCodes.OP_HASH160)
-                .data(address.getHash160())
+                .data(address.getHash())
                 .op(ScriptOpCodes.OP_EQUAL)
                 .build();
     }

@@ -4,14 +4,13 @@ buildscript {
     repositories {
         google()
         jcenter()
-        
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.4.2'
     }
 }
 
-allprojects {
+subprojects {
     repositories {
         google()
         jcenter()
@@ -32,6 +31,16 @@ allprojects {
         global_threetenabp_version = '1.1.1'
     }
 
+    buildscript {
+        repositories {
+            jcenter()
+            maven { url "https://plugins.gradle.org/m2/" }
+        }
+
+        dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$global_kotlin_version"
+        }
+    }
 }
 
 task clean(type: Delete) {

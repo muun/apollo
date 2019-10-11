@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action.realtime;
 
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
@@ -18,6 +19,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     private final HoustonClient houstonClient;
     private final FeeWindowRepository feeWindowRepository;
     private final ExchangeRateWindowRepository exchangeRateWindowRepository;
+    private final BlockchainHeightRepository blockchainHeightRepository;
 
     /**
      * Update time-sensitive data, such as network fees and exchange rates.
@@ -25,11 +27,13 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     @Inject
     public FetchRealTimeDataAction(HoustonClient houstonClient,
                                    FeeWindowRepository feeWindowRepository,
-                                   ExchangeRateWindowRepository exchangeRateWindowRepository) {
+                                   ExchangeRateWindowRepository exchangeRateWindowRepository,
+                                   BlockchainHeightRepository blockchainHeightRepository) {
 
         this.houstonClient = houstonClient;
         this.feeWindowRepository = feeWindowRepository;
         this.exchangeRateWindowRepository = exchangeRateWindowRepository;
+        this.blockchainHeightRepository = blockchainHeightRepository;
     }
 
     @Override
@@ -52,6 +56,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                     Logger.debug("[Sync] Saving updated fee/rates");
                     feeWindowRepository.store(realTimeData.feeWindow);
                     exchangeRateWindowRepository.store(realTimeData.exchangeRateWindow);
+                    blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                 })
                 .map(RxHelper::toVoid);
     }

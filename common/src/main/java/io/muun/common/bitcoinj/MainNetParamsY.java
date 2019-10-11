@@ -19,7 +19,7 @@ public class MainNetParamsY extends MainNetParams {
     private MainNetParamsY() {
         super();
         id = "org.bitcoin.production.ps2h(p2wpkh)";
-        bip32HeaderPub = 0x049d7cb2;
-        bip32HeaderPriv = 0x049d7878;
+        bip32HeaderP2PKHpub = 0x049d7cb2;
+        bip32HeaderP2PKHpriv = 0x049d7878;
     }
 }

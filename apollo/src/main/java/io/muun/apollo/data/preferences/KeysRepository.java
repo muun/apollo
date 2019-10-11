@@ -3,17 +3,20 @@ package io.muun.apollo.data.preferences;
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
+import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
-import io.muun.common.crypto.agreement.MuunAsymmetricEncryption;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.rx.ObservableFn;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import com.f2prateek.rx.preferences.Preference;
 import org.bitcoinj.core.NetworkParameters;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
+import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
@@ -22,6 +25,8 @@ import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 public class KeysRepository extends BaseRepository {
+
+    private static final int SECONDS_IN_A_DAY = 60 * 60 * 24;
 
     // Storage-level keys:
     private static final String KEY_BASE_PRIVATE_KEY_PATH = "xpriv_path";
@@ -51,6 +56,7 @@ public class KeysRepository extends BaseRepository {
     // Dependencies:
     private final NetworkParameters networkParameters;
     private final SecureStorageProvider secureStorageProvider;
+    private final UserRepository userRepository;
 
     /**
      * Creates a KeysRepository.
@@ -59,13 +65,16 @@ public class KeysRepository extends BaseRepository {
     public KeysRepository(
             Context context,
             NetworkParameters networkParameters,
-            SecureStorageProvider secureStorageProvider) {
+            SecureStorageProvider secureStorageProvider,
+            UserRepository userRepository) {
 
         super(context);
 
         this.networkParameters = networkParameters;
 
         this.secureStorageProvider = secureStorageProvider;
+
+        this.userRepository = userRepository;
 
         basePrivateKeyPathPreference = rxSharedPreferences
                 .getString(KEY_BASE_PRIVATE_KEY_PATH);
@@ -168,23 +177,16 @@ public class KeysRepository extends BaseRepository {
         // the observable. `onErrorResumeNext(Observable.just(null))` keeps the flow on errors
         // and the `return Observable.just(null)` on `flatMap` is just passing that that null.
 
-        if (!hasChallengePublicKey(ChallengeType.PASSWORD)
-                || !hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
-
+        if (!hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
             // Without challenge keys, we can't store the exportable encrypted private key:
             return Observable.just(null);
         }
 
-        return Observable
-                .zip(
-                        getChallengePublicKey(ChallengeType.PASSWORD),
-                        getChallengePublicKey(ChallengeType.RECOVERY_CODE),
-                        (passwordChallenge, rcChallenge) -> MuunAsymmetricEncryption.encryptWith(
-                                basePrivateKey,
-                                passwordChallenge,
-                                rcChallenge
-                        )
-                )
+        return getChallengePublicKey(ChallengeType.RECOVERY_CODE)
+                .map(challengePublicKey -> {
+                    final long birthday = getWalletBirthdaySinceGenesis();
+                    return challengePublicKey.encryptPrivateKey(basePrivateKey, birthday);
+                })
                 .onErrorResumeNext(error -> {
                     Logger.error(error);
                     return Observable.just(null);
@@ -203,15 +205,57 @@ public class KeysRepository extends BaseRepository {
                 });
     }
 
+    private long getWalletBirthdaySinceGenesis() {
+
+        final ZonedDateTime createdAt = userRepository.fetchOne().createdAt;
+        if (createdAt == null) {
+            return 0xFFFF;
+        }
+
+        final long creationTimestamp = createdAt.toEpochSecond();
+        final long genesisTimestamp = networkParameters.getGenesisBlock().getTimeSeconds();
+        return (creationTimestamp - genesisTimestamp) / SECONDS_IN_A_DAY;
+    }
+
     public Observable<String> getEncryptedBasePrivateKey() {
         return secureStorageProvider.getAsync(KEY_ENCRYPTED_PRIVATE_APOLLO_KEY)
                 .map(String::new);
     }
 
     private Observable<ChallengePublicKey> getChallengePublicKey(ChallengeType type) {
+
         return secureStorageProvider
                 .getAsync(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
-                .map(ChallengePublicKey::fromBytes);
+                .map(publicKeySerialization -> {
+                    final int length = ChallengePublicKey.PUBLIC_KEY_LENGTH;
+                    final byte[] publicKey = ByteUtils.subArray(publicKeySerialization, 0, length);
+                    final byte[] salt = ByteUtils.subArray(publicKeySerialization, length);
+
+                    // NOTE:
+                    // Old Apollo versions did not store the challenge key salt. Modern Apollo
+                    // versions concatenate the salt to the public key bytes (see the store method
+                    // below). We use the length of the stored key to determine whether the salt
+                    // is present (the subArray will be empty if not):
+                    if (salt.length == 0) {
+                        throw new MissingMigrationError("ChallengePublicKey salt");
+                    }
+
+                    return new ChallengePublicKey(publicKey, salt);
+                });
+    }
+
+    /**
+     * Return true if ChallengeKeys have already been migrated.
+     */
+    public boolean hasMigratedChallengeKeys() {
+        return getChallengePublicKey(ChallengeType.PASSWORD)
+                .compose(ObservableFn.onTypedErrorResumeNext(
+                        MissingMigrationError.class,
+                        error -> Observable.just(false)
+                ))
+                .map(key -> true)
+                .toBlocking()
+                .first();
     }
 
     private boolean hasChallengePublicKey(ChallengeType type) {
@@ -248,9 +292,13 @@ public class KeysRepository extends BaseRepository {
 
         Timber.d("Storing challenge public key %s on secure storage.", type.toString());
 
+        if (publicKey.getSalt() == null) {
+            throw new MissingMigrationError("ChallengePublicKey salt");
+        }
+
         secureStorageProvider.put(
                 KEY_CHALLENGE_PUBLIC_KEY + type.toString(),
-                publicKey.toBytes()
+                ByteUtils.concatenate(publicKey.toBytes(), publicKey.getSalt())
         );
 
         // Update the encrypted Apollo private key when some challenge key changes.
@@ -260,6 +308,25 @@ public class KeysRepository extends BaseRepository {
                     .toBlocking()
                     .first();
         }
+    }
+
+    /**
+     * Add the salt to an existing challenge key for old sessions.
+     *
+     * <p>This is compat method and should not be used for anything else.</p>
+     */
+    public void seasonPublicChallengeKey(final byte[] salt, final ChallengeType type) {
+        Logger.debug("Adding salt to %s", type.toString());
+
+        final byte[] publicKey = secureStorageProvider
+                .get(KEY_CHALLENGE_PUBLIC_KEY + type.toString());
+
+        if (publicKey.length != ChallengePublicKey.PUBLIC_KEY_LENGTH) {
+            Logger.error("Tried to migrate salt for key %s more than once", type.toString());
+            return;
+        }
+
+        storePublicChallengeKey(new ChallengePublicKey(publicKey, salt), type);
     }
 
     @Override

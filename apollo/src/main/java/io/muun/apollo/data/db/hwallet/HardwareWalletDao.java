@@ -18,7 +18,6 @@ public class HardwareWalletDao extends HoustonIdDao<HardwareWallet> {
      */
     @Inject
     public HardwareWalletDao() {
-
         super(
                 HardwareWalletEntity.CREATE_TABLE,
                 HardwareWalletEntity::fromModel,
@@ -31,7 +30,6 @@ public class HardwareWalletDao extends HoustonIdDao<HardwareWallet> {
      * Fetches a single HardwareWallet by its Houston id.
      */
     public Observable<HardwareWallet> fetchByHid(long hid) {
-
         return fetchOneOrFail(HardwareWalletEntity.FACTORY.selectByHid(hid));
     }
 
@@ -39,7 +37,6 @@ public class HardwareWalletDao extends HoustonIdDao<HardwareWallet> {
      * Fetches all paired HardwareWallets.
      */
     public Observable<List<HardwareWallet>> fetchPaired() {
-
         return fetchList(HardwareWalletEntity.FACTORY.selectPaired());
     }
 
@@ -47,7 +44,6 @@ public class HardwareWalletDao extends HoustonIdDao<HardwareWallet> {
      * Fetches all HardwareWallets.
      */
     public Observable<List<HardwareWallet>> fetchAllIncludingUnpaired() {
-
         return fetchList(HardwareWalletEntity.FACTORY.selectAll());
     }
 }

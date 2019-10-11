@@ -6,8 +6,8 @@ import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
 import io.muun.common.utils.Preconditions;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.money.MonetaryAmount;

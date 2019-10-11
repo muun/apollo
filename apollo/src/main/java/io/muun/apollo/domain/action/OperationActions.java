@@ -193,7 +193,9 @@ public class OperationActions {
         return operationDao.deleteAll().flatMap(ignored ->
                 houstonClient.fetchOperations()
                         .flatMap(Observable::from)
-                        .flatMap(createOperation::saveOperation)
+                        // using concatMap to avoid parallelization, overflows JobExecutor's queue
+                        // TODO use batching
+                        .concatMap(createOperation::saveOperation)
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)
         );

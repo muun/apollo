@@ -10,7 +10,7 @@ import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
-import org.spongycastle.pqc.math.linearalgebra.ByteUtils;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import static org.bitcoinj.script.ScriptOpCodes.OP_CHECKSIG;
 import static org.bitcoinj.script.ScriptOpCodes.OP_DUP;
@@ -23,7 +23,7 @@ public class TransactionSchemeXpub {
      * Create an address.
      */
     public static Address createAddress(PublicKey userPublicKey) {
-        return Address.fromBase58(userPublicKey.networkParameters, userPublicKey.toAddress());
+        return Address.fromString(userPublicKey.networkParameters, userPublicKey.toAddress());
     }
 
     /**
@@ -43,7 +43,7 @@ public class TransactionSchemeXpub {
         return new ScriptBuilder()
                 .op(OP_DUP)
                 .op(OP_HASH160)
-                .data(userAddress.getHash160())
+                .data(userAddress.getHash())
                 .op(OP_EQUALVERIFY)
                 .op(OP_CHECKSIG)
                 .build();
@@ -53,8 +53,7 @@ public class TransactionSchemeXpub {
      * Create an empty witness.
      */
     public static TransactionWitness createWitness() {
-
-        return TransactionWitness.getEmpty();
+        return TransactionWitness.EMPTY;
     }
 
     /**
@@ -70,7 +69,7 @@ public class TransactionSchemeXpub {
         final Script spentOutputScript = createOutputScript(userAddress);
 
         return TransactionHelpers.getDataToSign(
-                transaction.disableWitnessSerialization(),
+                transaction,
                 inputIndex,
                 spentOutputScript
         );

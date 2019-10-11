@@ -8,6 +8,7 @@ import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
 import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
 import io.muun.apollo.domain.errors.NoPaymentRouteException;
+import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
@@ -17,6 +18,7 @@ import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
@@ -422,35 +424,35 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Request a new Submarine Swap.
      */
-    public Observable<SubmarineSwap> prepareSubmarineSwap(String invoice,
-                                                          PublicKeyPair publicKeyPair,
-                                                          NetworkParameters network) {
+    public Observable<SubmarineSwap> createSubmarineSwap(SubmarineSwapRequest request,
+                                                         PublicKeyPair publicKeyPair,
+                                                         NetworkParameters network) {
 
         return getService()
-                .prepareSubmarineSwap(invoice)
+                .createSubmarineSwap(apiMapper.mapSubmarineSwapRequest(request))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVALID_INVOICE,
-                        e -> new InvalidInvoiceException(invoice, e)
+                        e -> new InvalidInvoiceException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVALID_INVOICE_AMOUNT,
-                        e -> new InvalidInvoiceAmountException(invoice, e)
+                        e -> new InvalidInvoiceAmountException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_ALREADY_USED,
-                        e -> new InvoiceAlreadyUsedException(invoice, e)
+                        e -> new InvoiceAlreadyUsedException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.NO_PAYMENT_ROUTE,
-                        e -> new NoPaymentRouteException(invoice, e)
+                        e -> new NoPaymentRouteException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_EXPIRES_TOO_SOON,
-                        e -> new InvoiceExpiresTooSoonException(invoice, e)
+                        e -> new InvoiceExpiresTooSoonException(request.invoice, e)
                 ))
                 .doOnNext(submarineSwapJson -> {
                     final boolean isValid = TransactionSchemeSubmarineSwap.validateSwap(
-                            invoice,
+                            request.invoice,
                             publicKeyPair,
                             submarineSwapJson,
                             network
@@ -541,5 +543,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService()
                 .fetchHardwareWalletState(wallet.getHid())
                 .map(modelMapper::mapHardwareWalletState);
+    }
+
+    /**
+     * Fetch data required for the challenge key crypto migration.
+     */
+    public Observable<ChallengeKeyUpdateMigration> fetchChallengeKeyMigrationData() {
+        return getService()
+                .fetchChallengeKeyUpdateMigration()
+                .map(modelMapper::mapChalengeKeyUpdateMigration);
     }
 }

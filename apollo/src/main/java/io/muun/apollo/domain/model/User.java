@@ -1,8 +1,10 @@
 package io.muun.apollo.domain.model;
 
 import io.muun.common.Optional;
+import io.muun.common.utils.Since;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
+import org.threeten.bp.ZonedDateTime;
 
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
@@ -24,6 +26,10 @@ public class User {
     public final boolean hasRecoveryCode;
     public final boolean hasP2PEnabled;
 
+    @Nullable
+    @Since(apolloVersion = 46)
+    public ZonedDateTime createdAt;
+
     /**
      * Constructor.
      */
@@ -34,7 +40,8 @@ public class User {
                 Optional<UserProfile> profile,
                 @NotNull CurrencyUnit primaryCurrency,
                 boolean hasRecoveryCode,
-                boolean hasP2PEnabled) {
+                boolean hasP2PEnabled,
+                ZonedDateTime createdAt) {
 
         this.hid = hid;
 
@@ -47,6 +54,8 @@ public class User {
 
         this.hasRecoveryCode = hasRecoveryCode;
         this.hasP2PEnabled = hasP2PEnabled;
+
+        this.createdAt = createdAt;
     }
 
     /**

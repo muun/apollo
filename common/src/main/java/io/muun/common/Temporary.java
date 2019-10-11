@@ -6,4 +6,5 @@ public class Temporary {
     // adjust stuff that will change when the work is done. By having them in this class, the
     // usages are easy to track down later.
 
+    public static final boolean enableCrashlyticsForDebug = true;
 }

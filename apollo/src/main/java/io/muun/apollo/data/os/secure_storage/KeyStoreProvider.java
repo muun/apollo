@@ -10,8 +10,7 @@ import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
-import android.support.annotation.RequiresApi;
-import org.spongycastle.crypto.InvalidCipherTextException;
+import androidx.annotation.RequiresApi;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 
@@ -159,13 +158,9 @@ public class KeyStoreProvider {
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesCbcPkcs7Encrypt(input, iv, key);
+            return Cryptography.aesCbcPkcs7PaddingUsingProviders(input, iv, key, true);
 
-        } catch (
-                KeyStoreException
-                        | NoSuchAlgorithmException
-                        | UnrecoverableKeyException
-                        | InvalidCipherTextException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
 
             Logger.error(e);
             throw new MuunKeyStoreException(e);
@@ -177,13 +172,9 @@ public class KeyStoreProvider {
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesCbcPkcs7Decrypt(input, key, iv);
+            return Cryptography.aesCbcPkcs7PaddingUsingProviders(input, iv, key, false);
 
-        } catch (
-                NoSuchAlgorithmException
-                        | UnrecoverableKeyException
-                        | KeyStoreException
-                        | InvalidCipherTextException e) {
+        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
 
             Logger.error(e);
             throw new MuunKeyStoreException(e);

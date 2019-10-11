@@ -1,5 +1,8 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -15,6 +18,12 @@ public class RealTimeData {
     @NotNull
     public ExchangeRateWindow exchangeRateWindow;
 
+    @Since(
+            apolloVersion = Supports.BlockchainHeight.APOLLO,
+            falconVersion = Supports.BlockchainHeight.FALCON
+    )
+    public int currentBlockchainHeight;
+
     /**
      * Json constructor.
      */
@@ -24,8 +33,11 @@ public class RealTimeData {
     /**
      * Houston constructor.
      */
-    public RealTimeData(FeeWindowJson feeWindow, ExchangeRateWindow exchangeRateWindow) {
+    public RealTimeData(FeeWindowJson feeWindow,
+                        ExchangeRateWindow exchangeRateWindow,
+                        int currentBlockchainHeight) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
+        this.currentBlockchainHeight = currentBlockchainHeight;
     }
 }

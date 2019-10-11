@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.logging.Logger;
+import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.NullCurrencyBugError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
@@ -41,19 +42,23 @@ public class UserRepository extends BaseRepository {
 
     private static final String EMAIL_VERIFIED_KEY = "email_verified_key";
 
-    private static final String SIGNUP_DRAFT = "signup_draft";
-
     private static final String EMAIL_KEY = "email";
 
     private static final String HAS_RECOVERY_CODE_KEY = "has_recovery_code";
 
     private static final String HAS_P2P_ENABLED_KEY = "has_p2p_enabled";
 
+    private static final String CREATED_AT_KEY = "created_at";
+
     private static final String PASSWORD_CHANGE_AUTHORIZED_UUID = "password_change_authorized_uuid";
 
     private static final String CONTACTS_PERMISSION_STATE_KEY = "contacts_permission_state_key";
 
     private static final String FCM_TOKEN_KEY = "fcm_token_key";
+
+    private static final String INITIAL_SYNC_COMPLETED_KEY = "initial_sync_completed_key";
+
+    private static final String SIGNUP_DRAFT = "signup_draft";
 
     private final Preference<Long> hidPreference;
 
@@ -73,8 +78,6 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<String> pendingProfilePictureUriPreference;
 
-    private final Preference<String> signupDraftPreference;
-
     private final Preference<String> emailPreference;
 
     private final Preference<Boolean> isEmailVerifiedPreference;
@@ -83,11 +86,17 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<Boolean> hasP2PEnabledPreference;
 
+    private final Preference<String> createdAtPreference;
+
     private final Preference<String> passwordChangeAuthorizedUuidPreference;
 
     private final Preference<ContactsPermissionState> conctactsPermissionStatePreference;
 
     private final Preference<String> fcmTokenPreference;
+
+    private final Preference<Boolean> initialSyncCompletedPreference;
+
+    private final Preference<SignupDraft> signupDraftPreference;
 
     /**
      * Creates a user preference repository.
@@ -115,14 +124,14 @@ public class UserRepository extends BaseRepository {
                 PENDING_PROFILE_PICTURE_URI_KEY
         );
 
-        signupDraftPreference = rxSharedPreferences.getString(SIGNUP_DRAFT);
-
         emailPreference = rxSharedPreferences.getString(EMAIL_KEY);
 
         isEmailVerifiedPreference = rxSharedPreferences.getBoolean(EMAIL_VERIFIED_KEY, false);
 
         hasRecoveryCodePreference = rxSharedPreferences.getBoolean(HAS_RECOVERY_CODE_KEY, false);
         hasP2PEnabledPreference = rxSharedPreferences.getBoolean(HAS_P2P_ENABLED_KEY, false);
+
+        createdAtPreference = rxSharedPreferences.getString(CREATED_AT_KEY);
 
         passwordChangeAuthorizedUuidPreference = rxSharedPreferences.getString(
                 PASSWORD_CHANGE_AUTHORIZED_UUID
@@ -135,6 +144,16 @@ public class UserRepository extends BaseRepository {
         );
 
         fcmTokenPreference = rxSharedPreferences.getString(FCM_TOKEN_KEY);
+
+        initialSyncCompletedPreference = rxSharedPreferences.getBoolean(
+                INITIAL_SYNC_COMPLETED_KEY,
+                false
+        );
+
+        signupDraftPreference = rxSharedPreferences.getObject(
+                SIGNUP_DRAFT,
+                new JsonPreferenceAdapter<>(SignupDraft.class)
+        );
     }
 
     @Override
@@ -160,6 +179,8 @@ public class UserRepository extends BaseRepository {
 
         hasRecoveryCodePreference.set(user.hasRecoveryCode);
         hasP2PEnabledPreference.set(user.hasP2PEnabled);
+
+        createdAtPreference.set(SerializationUtils.serializeDate(user.createdAt));
     }
 
     /**
@@ -175,6 +196,8 @@ public class UserRepository extends BaseRepository {
                 fetchPrimaryCurrency(),
                 hasRecoveryCodePreference.asObservable(),
                 hasP2PEnabledPreference.asObservable(),
+                createdAtPreference.asObservable()
+                        .map(s -> s == null ? null : SerializationUtils.deserializeDate(s)),
                 User::new
         );
     }
@@ -251,10 +274,6 @@ public class UserRepository extends BaseRepository {
         return getPrimaryCurrencyCatchingBug();
     }
 
-    public Long getUserHid() {
-        return hidPreference.get();
-    }
-
     /**
      * Returns the Uri of a profile picture that needs to be uploaded.
      */
@@ -282,51 +301,6 @@ public class UserRepository extends BaseRepository {
         pendingProfilePictureUriPreference.set(uri.toString());
     }
 
-
-    /**
-     * Save an ongoing signup process.
-     */
-    public void storeSignupDraft(SignupDraft draft) {
-        if (draft != null) {
-            signupDraftPreference.set(draft.serialize());
-
-        } else {
-            signupDraftPreference.delete();
-        }
-    }
-
-    /**
-     * Forget an ongoing signup process.
-     */
-    public void clearSignupDraft() {
-        storeSignupDraft(null);
-    }
-
-    /**
-     * Recover an ongoing signup process.
-     */
-    public Optional<SignupDraft> fetchSignupDraft() {
-        if (hasSignupDraft()) {
-            try {
-                return Optional.of(SignupDraft.deserialize(signupDraftPreference.get()));
-
-            } catch (IllegalArgumentException ex) {
-                // SignupDraft may have changed, and this is an old format. Discard it:
-                Logger.error("Could not deserialize signupDraft: " + signupDraftPreference.get());
-                signupDraftPreference.delete();
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Returns true if there's an ongoing signup process.
-     */
-    public boolean hasSignupDraft() {
-        return signupDraftPreference.isSet();
-    }
-
     @Nullable
     public String getLastCopiedAddress() {
         return lastCopiedAddress.get();
@@ -338,10 +312,6 @@ public class UserRepository extends BaseRepository {
 
     public void storeEmailVerified() {
         isEmailVerifiedPreference.set(true);
-    }
-
-    public boolean isEmailVerified() {
-        return isEmailVerifiedPreference.get();
     }
 
     public void storeHasRecoveryCode(boolean value) {
@@ -402,4 +372,48 @@ public class UserRepository extends BaseRepository {
         return fcmTokenPreference.asObservable();
     }
 
+    public void storeInitialSyncCompleted() {
+        initialSyncCompletedPreference.set(true);
+    }
+
+    public boolean isInitialSyncCompleted() {
+        return initialSyncCompletedPreference.get();
+    }
+
+    /**
+     * Save an ongoing signup process.
+     */
+    public void storeSignupDraft(SignupDraft draft) {
+        if (draft != null) {
+            signupDraftPreference.set(draft);
+
+        } else {
+            signupDraftPreference.delete();
+        }
+    }
+
+    /**
+     * Recover an ongoing signup process.
+     */
+    public Optional<SignupDraft> fetchSignupDraft() {
+        if (hasSignupDraft()) {
+            try {
+                return Optional.ofNullable(signupDraftPreference.get());
+
+            } catch (IllegalArgumentException ex) {
+                // SignupDraft may have changed, and this is an old format. Discard it:
+                Logger.error("Could not deserialize signupDraft: " + signupDraftPreference.get());
+                signupDraftPreference.delete();
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Returns true if there's an ongoing signup process.
+     */
+    private boolean hasSignupDraft() {
+        return signupDraftPreference.isSet();
+    }
 }

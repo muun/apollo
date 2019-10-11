@@ -74,7 +74,7 @@ public class TransactionSchemeV1 {
         final Script spentOutputScript = createOutputScript(userAddress);
 
         return TransactionHelpers.getDataToSign(
-                transaction.disableWitnessSerialization(),
+                transaction,
                 inputIndex,
                 spentOutputScript
         );

@@ -10,8 +10,17 @@ public class RealTimeData {
     @NotNull
     public final ExchangeRateWindow exchangeRateWindow;
 
-    public RealTimeData(FeeWindow feeWindow, ExchangeRateWindow exchangeRateWindow) {
+    @NotNull
+    public final int currentBlockchainHeight;
+
+    /**
+     * Constructor.
+     */
+    public RealTimeData(FeeWindow feeWindow,
+                        ExchangeRateWindow exchangeRateWindow,
+                        int currentBlockchainHeight) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
+        this.currentBlockchainHeight = currentBlockchainHeight;
     }
 }

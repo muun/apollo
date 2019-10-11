@@ -143,7 +143,7 @@ public class LedgerBuilder {
             previousTransaction.setLocktime(Long.toHexString(transaction.getLockTime()));
         }
 
-        if (transaction.hasWitness()) {
+        if (transaction.hasWitnesses()) {
             previousTransaction.setWitness(getWitness(transaction));
         }
 
@@ -154,7 +154,7 @@ public class LedgerBuilder {
         final ByteBuffer stream = ByteBuffer.allocate(transaction.getMessageSize());
 
         for (int i = 0; i < transaction.getInputs().size(); i++) {
-            final TransactionWitness witness = transaction.getWitness(i);
+            final TransactionWitness witness = transaction.getInput(i).getWitness();
             stream.put(new VarInt(witness.getPushCount()).encode());
             for (int y = 0; y < witness.getPushCount(); y++) {
                 final byte[] push = witness.getPush(y);

@@ -38,8 +38,11 @@ data class PaymentRequest (val type: Type,
         )
     }
 
+    fun withAmount(newAmount: MonetaryAmount) =
+        copy(amount = newAmount)
+
     fun withFeeRate(newFeeInSatoshisPerByte: Double) =
-            copy(feeInSatoshisPerByte = newFeeInSatoshisPerByte)
+        copy(feeInSatoshisPerByte = newFeeInSatoshisPerByte)
 
     fun withTakeFeeFromAmount(takeFeeFromAmount: Boolean) =
         copy(takeFeeFromAmount = takeFeeFromAmount)

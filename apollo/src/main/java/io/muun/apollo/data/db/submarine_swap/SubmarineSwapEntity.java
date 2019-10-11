@@ -8,10 +8,11 @@ import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.common.crypto.hd.MuunAddress;
 
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEntity {
@@ -26,44 +27,48 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
     /**
      * Map from the model to the content values.
      */
-    public static ContentValues fromModel(SubmarineSwap swap) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, SubmarineSwap swap) {
 
         final SubmarineSwapReceiver receiver = swap.getReceiver();
         final SubmarineSwapFundingOutput fundingOutput = swap.getFundingOutput();
         final MuunAddress userRefundAddress = fundingOutput.getUserRefundAddress();
 
-        return FACTORY.marshal()
-                .id(swap.getId() == null ? BaseEntity.NULL_ID : swap.getId())
-                .houston_uuid(swap.houstonUuid)
-                .invoice(swap.getInvoice())
-                .receiver_alias(receiver.getAlias())
-                .receiver_network_addresses(receiver.getSerializedNetworkAddresses())
-                .receiver_public_key(receiver.getPublicKey())
-                .funding_output_address(fundingOutput.getOutputAddress())
-                .funding_output_amount_in_satoshis(fundingOutput.getOutputAmountInSatoshis())
-                .funding_confirmations_needed(fundingOutput.getConfirmationsNeeded())
-                .funding_user_lock_time(fundingOutput.getUserLockTime())
-                .funding_user_refund_address(userRefundAddress.getAddress())
-                .funding_user_refund_address_path(userRefundAddress.getDerivationPath())
-                .funding_user_refund_address_version(userRefundAddress.getVersion())
-                .funding_server_payment_hash_in_hex(fundingOutput.getServerPaymentHashInHex())
-                .funding_server_public_key_in_hex(fundingOutput.getServerPublicKeyInHex())
-                .sweep_fee_in_satoshis(swap.getFees().getSweepInSats())
-                .lightning_fee_in_satoshis(swap.getFees().getLightningInSats())
-                .channel_open_fee_in_satoshis(swap.getFees().getChannelOpenInSats())
-                .channel_close_fee_in_satoshis(swap.getFees().getChannelCloseInSats())
-                .expires_at(swap.getExpiresAt())
-                .will_pre_open_channel(swap.getWillPreOpenChannel())
-                .payed_at(swap.getPayedAt())
-                .preimage_in_hex(swap.getPreimageInHex())
-                .asContentValues();
+        final SubmarineSwapModel.InsertSwap insertStatement = new SubmarineSwapModel
+                .InsertSwap(db, FACTORY);
+
+        insertStatement.bind(
+                swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
+                swap.houstonUuid,
+                swap.getInvoice(),
+                receiver.getAlias(),
+                receiver.getSerializedNetworkAddresses(),
+                receiver.getPublicKey(),
+                fundingOutput.getOutputAddress(),
+                fundingOutput.getOutputAmountInSatoshis(),
+                fundingOutput.getConfirmationsNeeded(),
+                fundingOutput.getUserLockTime(),
+                userRefundAddress.getAddress(),
+                userRefundAddress.getDerivationPath(),
+                userRefundAddress.getVersion(),
+                fundingOutput.getServerPaymentHashInHex(),
+                fundingOutput.getServerPublicKeyInHex(),
+                swap.getFees().getSweepInSats(),
+                swap.getFees().getLightningInSats(),
+                swap.getExpiresAt(),
+                swap.getPayedAt(),
+                swap.getPreimageInHex(),
+                swap.getWillPreOpenChannel(),
+                swap.getFees().getChannelOpenInSats(),
+                swap.getFees().getChannelCloseInSats()
+        );
+
+        return insertStatement;
     }
 
     /**
      * Map from the database cursor to the model.
      */
     public static SubmarineSwap toModel(Cursor cursor) {
-
         final SubmarineSwapEntity entity = FACTORY.selectAllMapper().map(cursor);
 
         return getSubmarineSwap(entity);

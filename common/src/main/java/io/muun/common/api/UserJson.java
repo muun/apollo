@@ -1,5 +1,9 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
+import io.muun.common.dates.MuunZonedDateTime;
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -24,6 +28,12 @@ public class UserJson {
 
     public boolean hasP2PEnabled;
 
+    @Since(
+            apolloVersion = Supports.CreationDateInUserInfo.APOLLO,
+            falconVersion = Supports.CreationDateInUserInfo.FALCON
+    )
+    public MuunZonedDateTime createdAt;
+
     /**
      * Json constructor.
      */
@@ -41,7 +51,8 @@ public class UserJson {
                     CurrencyUnit primaryCurrency,
                     boolean hasPasswordChallengeKey,
                     boolean hasRecoveryCodeChallengeKey,
-                    boolean hasP2PEnabled) {
+                    boolean hasP2PEnabled,
+                    MuunZonedDateTime createdAt) {
 
         this.id = id;
         this.email = email;
@@ -52,5 +63,6 @@ public class UserJson {
         this.hasPasswordChallengeKey = hasPasswordChallengeKey;
         this.hasRecoveryCodeChallengeKey = hasRecoveryCodeChallengeKey;
         this.hasP2PEnabled = hasP2PEnabled;
+        this.createdAt = createdAt;
     }
 }

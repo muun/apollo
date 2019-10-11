@@ -21,6 +21,7 @@ import org.bitcoinj.crypto.HDDerivationException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.Wallet;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 public class PrivateKey extends BaseKey {
+
+    private static final int PRIVATE_KEY_LENGTH_IN_BYTES = 32;
 
     @NotNull
     private final String absoluteDerivationPath;
@@ -60,8 +63,7 @@ public class PrivateKey extends BaseKey {
     public static PrivateKey getNewRootPrivateKey(@NotNull Context bitcoinContext) {
         final Wallet wallet = new Wallet(bitcoinContext);
 
-        final DeterministicKey deterministicKey = wallet.getKeyByPath(
-                new ArrayList<org.bitcoinj.crypto.ChildNumber>());
+        final DeterministicKey deterministicKey = wallet.getKeyByPath(new ArrayList<>());
 
         return new PrivateKey("m", deterministicKey, bitcoinContext.getParams());
     }
@@ -84,6 +86,27 @@ public class PrivateKey extends BaseKey {
                 absoluteDerivationPath,
                 deterministicKey,
                 networkParameters);
+    }
+
+    /**
+     * Deserialize a private key from its compact byte representation.
+     */
+    public static PrivateKey fromCompactSerialization(@NotNull byte[] serialization,
+                                                      @NotNull NetworkParameters network) {
+
+        // the serialization for our extended private key is the concatenation of the raw private
+        // key and the chain code, each of them 32 bytes
+        final byte[] privateKey = ByteUtils.subArray(serialization, 0, PRIVATE_KEY_LENGTH_IN_BYTES);
+        final byte[] chainCode = ByteUtils.subArray(serialization, PRIVATE_KEY_LENGTH_IN_BYTES);
+
+        final DeterministicKey deterministicKey = new DeterministicKey(
+                ImmutableList.of(),
+                chainCode,
+                Encodings.bytesToBigInteger(privateKey),
+                null
+        );
+
+        return new PrivateKey("m", deterministicKey, network);
     }
 
     /**
@@ -216,6 +239,19 @@ public class PrivateKey extends BaseKey {
 
     public String serializeBase58() {
         return deterministicKey.serializePrivB58(networkParameters);
+    }
+
+    /**
+     * Serialize the private key to a compact byte representation.
+     */
+    public byte[] toCompactSerialization() {
+
+        // the plaintext for our extended private key is the concatenation of the raw private key
+        // and the chain code, each of them 32 bytes
+        return ByteUtils.concatenate(
+                getPrivKey32(),
+                deterministicKey.getChainCode()
+        );
     }
 
     /**

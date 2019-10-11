@@ -3,10 +3,11 @@ package io.muun.apollo.data.db.public_profile;
 import io.muun.apollo.data.db.base.BaseEntity;
 import io.muun.apollo.domain.model.PublicProfile;
 
-import android.content.ContentValues;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class PublicProfileEntity implements PublicProfileModel, BaseEntity {
@@ -17,22 +18,26 @@ public abstract class PublicProfileEntity implements PublicProfileModel, BaseEnt
     /**
      * Map from the model to the content values.
      */
-    public static ContentValues fromModel(PublicProfile profile) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, PublicProfile profile) {
 
-        return FACTORY.marshal()
-                .id(profile.getId() == null ? NULL_ID : profile.getId())
-                .hid(profile.getHid())
-                .first_name(profile.firstName)
-                .last_name(profile.lastName)
-                .profile_picture_url(profile.profilePictureUrl)
-                .asContentValues();
+        final PublicProfileModel.InsertPublicProfile insertStatement = new PublicProfileModel
+                .InsertPublicProfile(db);
+
+        insertStatement.bind(
+                profile.getId() == null ? NULL_ID : profile.getId(),
+                profile.getHid(),
+                profile.firstName,
+                profile.lastName,
+                profile.profilePictureUrl
+        );
+
+        return insertStatement;
     }
 
     /**
      * Map from the database cursor to the model.
      */
     public static PublicProfile toModel(Cursor cursor) {
-
         final PublicProfileEntity entity = FACTORY.selectAllMapper().map(cursor);
 
         return getPublicProfile(entity);

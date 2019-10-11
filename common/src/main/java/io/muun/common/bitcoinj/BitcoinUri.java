@@ -5,6 +5,7 @@ import io.muun.common.utils.Bech32SegwitAddress;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.AbstractBitcoinNetParams;
 import org.bitcoinj.uri.BitcoinURIParseException;
@@ -201,7 +202,7 @@ public class BitcoinUri {
             BitcoinURIParseException {
 
         try {
-            Address.fromBase58(params, addressToken);
+            LegacyAddress.fromBase58(params, addressToken);
             putWithValidation(FIELD_ADDRESS, addressToken);
             return true;
 

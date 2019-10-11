@@ -3,12 +3,13 @@ package io.muun.apollo.data.db;
 import io.muun.apollo.data.db.base.BaseDao;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import com.squareup.sqlbrite.BriteDatabase;
-import com.squareup.sqlbrite.SqlBrite;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory;
+import com.squareup.sqlbrite3.BriteDatabase;
+import com.squareup.sqlbrite3.SqlBrite;
+import io.reactivex.Scheduler;
 import rx.Observable;
-import rx.Scheduler;
 
 public class DaoManager {
 
@@ -31,28 +32,38 @@ public class DaoManager {
             BaseDao... daos) {
 
         final SqlBrite sqlBrite = new SqlBrite.Builder().build();
-        final SQLiteOpenHelper databaseHelper = new SQLiteOpenHelper(context, name, null, version) {
+
+        final SupportSQLiteOpenHelper.Callback callback = new SupportSQLiteOpenHelper
+                .Callback(version) {
 
             @Override
-            public void onCreate(SQLiteDatabase db) {
+            public void onCreate(SupportSQLiteDatabase db) {
                 createTables(db);
             }
 
             @Override
-            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            public void onUpgrade(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
                 runMigrations(db, oldVersion, newVersion);
             }
 
             @Override
-            public void onOpen(SQLiteDatabase db) {
+            public void onOpen(SupportSQLiteDatabase db) {
                 super.onOpen(db);
                 db.execSQL("PRAGMA foreign_keys=ON");
             }
         };
 
+        final SupportSQLiteOpenHelper.Configuration conf = SupportSQLiteOpenHelper.Configuration
+                .builder(context)
+                .name(name)
+                .callback(callback)
+                .build();
+
+        final SupportSQLiteOpenHelper helper = new FrameworkSQLiteOpenHelperFactory().create(conf);
+
         this.version = version;
         this.daos = daos;
-        this.database = sqlBrite.wrapDatabaseHelper(databaseHelper, scheduler);
+        this.database = sqlBrite.wrapDatabaseHelper(helper, scheduler);
         this.database.setLoggingEnabled(true);
 
         initializeDaos();
@@ -62,7 +73,6 @@ public class DaoManager {
      * Get the database version.
      */
     public int getVersion() {
-
         return version;
     }
 
@@ -70,7 +80,6 @@ public class DaoManager {
      * Delete the content from all daos.
      */
     public void delete() {
-
         Observable.from(daos)
                 .flatMap(BaseDao::deleteAll)
                 .toBlocking()
@@ -81,26 +90,22 @@ public class DaoManager {
      * Close the database.
      */
     public void close() {
-
         database.close();
     }
 
     private void initializeDaos() {
-
-        for (BaseDao dao: daos) {
+        for (BaseDao dao : daos) {
             dao.setBriteDb(database);
         }
     }
 
-    private void createTables(SQLiteDatabase db) {
-
-        for (BaseDao dao: daos) {
+    private void createTables(SupportSQLiteDatabase db) {
+        for (BaseDao dao : daos) {
             dao.createTable(db);
         }
     }
 
-    private void runMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+    private void runMigrations(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
         dbMigrationManager.run(db, oldVersion, newVersion);
     }
 }

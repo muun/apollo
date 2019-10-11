@@ -1,7 +1,17 @@
 package io.muun.common.utils;
 
+import io.muun.common.crypto.CryptographyException;
 import io.muun.common.utils.internal.Base58;
 
+import org.bitcoinj.core.ECKey;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -238,6 +248,40 @@ public final class Encodings {
         }
 
         return bytes;
+    }
+
+    /**
+     * Serialize a bouncy castle secp256k1 EC public key into its compressed ASN.1 point
+     * serialization.
+     */
+    @Nonnull
+    public static byte[] ecPublicKeyToBytes(@Nonnull ECPublicKey publicKey) {
+
+        return publicKey.getQ().getEncoded(true);
+    }
+
+    /**
+     * Deserialize a bouncy castle secp256k1 EC public key from its compressed ASN.1 point
+     * serialization.
+     */
+    @Nonnull
+    public static ECPublicKey bytesToEcPublicKey(@Nonnull byte[] bytes) {
+
+        final ECPublicKeyParameters keyParameters = new ECPublicKeyParameters(
+                ECKey.CURVE.getCurve().decodePoint(bytes),
+                ECKey.CURVE
+        );
+
+        try {
+
+            final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfoFactory
+                    .createSubjectPublicKeyInfo(keyParameters);
+
+            return (BCECPublicKey) new KeyFactorySpi.ECDH().generatePublic(keyInfo);
+
+        } catch (IOException e) {
+            throw new CryptographyException(e);
+        }
     }
 
     /**

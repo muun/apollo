@@ -20,6 +20,7 @@ import io.muun.common.crypto.ChallengePrivateKey;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.PhoneNumber;
+import io.muun.common.model.SessionStatus;
 import io.muun.common.model.VerificationType;
 import io.muun.common.model.challenge.Challenge;
 import io.muun.common.model.challenge.ChallengeSetup;
@@ -28,9 +29,9 @@ import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.RandomGenerator;
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.Pair;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -190,10 +191,6 @@ public class UserActions {
         return keysRepository.getEncryptedBasePrivateKey();
     }
 
-    public Observable<Boolean> watchHasRecoveryCode() {
-        return userRepository.watchHasRecoveryCode();
-    }
-
     public boolean hasRecoveryCode() {
         return userRepository.hasRecoveryCode();
     }
@@ -202,8 +199,8 @@ public class UserActions {
      * Starts password change process by requesting a challenge and sending a challenge signature,
      * signed with the current password or recovery code.
      */
-    public Observable<PendingChallengeUpdate> beginPasswordChange(String userInput,
-                                                                  ChallengeType challengeType) {
+    private Observable<PendingChallengeUpdate> beginPasswordChange(String userInput,
+                                                                   ChallengeType challengeType) {
 
         return houstonClient.requestChallenge(challengeType)
             .flatMap(maybeChallenge -> {
@@ -344,7 +341,7 @@ public class UserActions {
 
         if (granted) {
             // if we detect a permission grant (via android settings) => trigger sync phone contacts
-            if (authRepository.isLoggedIn() && prevState != ContactsPermissionState.GRANTED) {
+            if (isLoggedIn() && prevState != ContactsPermissionState.GRANTED) {
                 contactActions.initialSyncPhoneContactsAction.run();
             }
 
@@ -359,5 +356,16 @@ public class UserActions {
 
     private Observable<Void> notifyLogout() {
         return houstonClient.notifyLogout();
+    }
+
+    /**
+     * Returns true if the session status is available and LOGGED_IN and initial sync process is
+     * fully completed.
+     */
+    public boolean isLoggedIn() {
+        return authRepository.getSessionStatus()
+                .map(SessionStatus.LOGGED_IN::equals)
+                .map(isLoggedIn -> isLoggedIn && userRepository.isInitialSyncCompleted())
+                .orElse(false);
     }
 }

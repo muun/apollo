@@ -82,7 +82,7 @@ public class IntegrityActions {
                                             final Long balanceInSatoshis) {
 
         final SessionStatus sessionStatus = authRepository.getSessionStatus().orElse(null);
-        final boolean hasNotReachedHome = userRepository.hasSignupDraft();
+        final boolean hasNotReachedHome = !userRepository.isInitialSyncCompleted();
 
         if (sessionStatus != SessionStatus.LOGGED_IN || hasNotReachedHome) {
             return Observable.just(null);

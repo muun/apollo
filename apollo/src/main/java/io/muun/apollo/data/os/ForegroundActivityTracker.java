@@ -5,7 +5,7 @@ import io.muun.common.Optional;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

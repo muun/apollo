@@ -4,7 +4,7 @@ import io.muun.apollo.data.db.base.BaseDao;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.model.Diff;
 
-import com.squareup.sqlbrite.BriteDatabase;
+import com.squareup.sqlbrite3.BriteDatabase;
 import rx.Observable;
 
 import java.util.List;
@@ -20,7 +20,6 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
      */
     @Inject
     public PhoneContactDao() {
-
         super(
                 PhoneContactEntity.CREATE_TABLE,
                 PhoneContactEntity::fromModel,
@@ -80,9 +79,10 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
     }
 
     private void insertOrIgnore(PhoneContact contact) {
-        final PhoneContactEntity.InsertOrIgnore q = new PhoneContactEntity.InsertOrIgnore(db);
+        final PhoneContactEntity.InsertOrIgnore statement = new PhoneContactEntity
+                .InsertOrIgnore(db);
 
-        q.bind(
+        statement.bind(
                 contact.internalId,
                 contact.name,
                 contact.phoneNumber,
@@ -91,28 +91,29 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
                 contact.lastUpdated
         );
 
-        executeStatement(q);
+        executeInsert(statement);
     }
 
     private void updateLastSeen(PhoneContact contact) {
-        final PhoneContactModel.UpdateLastSeen q = new PhoneContactModel.UpdateLastSeen(db);
+        final PhoneContactModel.UpdateLastSeen statement = new PhoneContactModel.UpdateLastSeen(db);
 
-        q.bind(contact.lastSeen, contact.internalId, contact.phoneNumber);
-        executeStatement(q);
+        statement.bind(contact.lastSeen, contact.internalId, contact.phoneNumber);
+        executeUpdate(statement);
     }
 
     private void updatePhoneHash(PhoneContact contact) {
-        final PhoneContactModel.UpdatePhoneHash q = new PhoneContactModel.UpdatePhoneHash(db);
+        final PhoneContactModel.UpdatePhoneHash statement = new PhoneContactModel
+                .UpdatePhoneHash(db);
 
-        q.bind(contact.phoneNumberHash, contact.getId());
-        executeStatement(q);
+        statement.bind(contact.phoneNumberHash, contact.getId());
+        executeUpdate(statement);
     }
 
     private void deleteLastSeenNotAt(long currentTs) {
-        final PhoneContactModel.DeleteLastSeenNotAt q =
-                new PhoneContactModel.DeleteLastSeenNotAt(db);
+        final PhoneContactModel.DeleteLastSeenNotAt statement = new PhoneContactModel
+                .DeleteLastSeenNotAt(db);
 
-        q.bind(currentTs);
-        executeStatement(q);
+        statement.bind(currentTs);
+        executeDelete(statement);
     }
 }

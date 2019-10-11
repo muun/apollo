@@ -6,6 +6,7 @@ import io.muun.common.crypto.hd.Signature;
 import io.muun.common.crypto.tx.TransactionHelpers;
 import io.muun.common.utils.Hashes;
 
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.script.Script;
@@ -37,7 +38,7 @@ public class TransactionSchemeV2 {
         return new MuunAddress(
                 ADDRESS_VERSION,
                 publicKeyPair.getAbsoluteDerivationPath(),
-                org.bitcoinj.core.Address.fromP2SHHash(network, addressHash160).toBase58()
+                LegacyAddress.fromScriptHash(network, addressHash160).toString()
         );
     }
 
@@ -78,7 +79,7 @@ public class TransactionSchemeV2 {
                                                PublicKeyPair publicKeyPair) {
 
         return TransactionHelpers.getDataToSign(
-                transaction.disableWitnessSerialization(),
+                transaction,
                 inputIndex,
                 createRedeemScript(publicKeyPair)
         );

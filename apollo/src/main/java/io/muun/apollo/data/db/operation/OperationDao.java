@@ -30,7 +30,9 @@ public class OperationDao extends HoustonIdDao<Operation> {
     /**
      * Update the operations status and confirmations.
      */
-    public void updateStatus(long operationHid, long confirmations, String hash,
+    public void updateStatus(long operationHid,
+                             long confirmations,
+                             String hash,
                              OperationStatus status) {
 
         final OperationModel.UpdateStatus statement =
@@ -38,14 +40,13 @@ public class OperationDao extends HoustonIdDao<Operation> {
 
         statement.bind(confirmations, hash, status, operationHid);
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 
     /**
      * Fetches all operations from the db.
      */
     public Observable<List<Operation>> fetchAll() {
-
         return fetchList(OperationEntity.FACTORY.selectAll());
     }
 
@@ -53,7 +54,6 @@ public class OperationDao extends HoustonIdDao<Operation> {
      * Fetches a single operation by its id.
      */
     public Observable<Operation> fetchById(long operationId) {
-
         return fetchOneOrFail(OperationEntity.FACTORY.selectById(operationId));
     }
 
@@ -61,7 +61,6 @@ public class OperationDao extends HoustonIdDao<Operation> {
      * Fetches a single operation by its Houston id.
      */
     public Observable<Operation> fetchByHid(long operationHid) {
-
         return fetchOneOrFail(OperationEntity.FACTORY.selectByHid(operationHid));
     }
 

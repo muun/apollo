@@ -33,7 +33,6 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Fetches all active pairings from the db.
      */
     public Observable<List<SatellitePairing>> fetchActivePairings() {
-
         return fetchList(SatellitePairingEntity.FACTORY.selectActivePairings());
     }
 
@@ -41,7 +40,6 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Fetches the currently in use pairing from the db.
      */
     public Observable<SatellitePairing> fetchPairingInUse() {
-
         return fetchOneOrFail(SatellitePairingEntity.FACTORY.selectPairingInUse());
     }
 
@@ -49,13 +47,12 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Updates the currently in use pairing in the db.
      */
     public void setPairingInUse(SatellitePairing pairing) {
-
-        final SatellitePairingModel.SetPairingInUse statement =
-                new SatellitePairingEntity.SetPairingInUse(db);
+        final SatellitePairingModel.SetPairingInUse statement = new SatellitePairingEntity
+                .SetPairingInUse(db);
 
         statement.bind(pairing.getId());
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 
     /**
@@ -68,19 +65,18 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
                                 String ip,
                                 ZonedDateTime lastActive) {
 
-        final SatellitePairingModel.UpdateStatus statement =
-                new SatellitePairingEntity.UpdateStatus(db, SatellitePairingEntity.FACTORY);
+        final SatellitePairingModel.UpdateStatus statement = new SatellitePairingEntity
+                .UpdateStatus(db, SatellitePairingEntity.FACTORY);
 
         statement.bind(COMPLETE, browser, osVersion, ip, lastActive, apolloSessionUuid);
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 
     /**
      * Fetch the pairing associated with a satelliteSessionUuid.
      */
     public Observable<SatellitePairing> fetchBySatelliteSession(String satelliteSessionUuid) {
-
         return fetchOneOrFail(
                 SatellitePairingEntity.FACTORY.selectBySatelliteSessionUuid(satelliteSessionUuid)
         );
@@ -90,7 +86,6 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Fetch the pairing associated with an apolloSessionUuid.
      */
     public Observable<SatellitePairing> fetchByApolloSession(String apolloSessionUuid) {
-
         return fetchOneOrFail(
                 SatellitePairingEntity.FACTORY.selectByApolloSessionUuid(apolloSessionUuid)
         );
@@ -100,12 +95,11 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Fetch the pairing associated with a satelliteSessionUuid.
      */
     public void expirePairing(String satelliteSessionUuid) {
-
-        final SatellitePairingModel.ExpirePairing statement =
-                new SatellitePairingEntity.ExpirePairing(db);
+        final SatellitePairingModel.ExpirePairing statement = new SatellitePairingEntity
+                .ExpirePairing(db);
 
         statement.bind(satelliteSessionUuid);
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 }

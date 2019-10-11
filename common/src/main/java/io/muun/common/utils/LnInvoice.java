@@ -4,8 +4,8 @@ import io.muun.common.exception.ParsingException;
 import io.muun.common.utils.internal.Bech32;
 
 import com.google.common.primitives.Bytes;
-import org.bitcoinj.core.Address;
 import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.threeten.bp.Instant;
@@ -414,10 +414,10 @@ public class LnInvoice {
         switch (version) {
 
             case P2PKH_ADDRESS_VERSION:
-                return new Address(params, encodedAddress).toBase58();
+                return LegacyAddress.fromPubKeyHash(params, encodedAddress).toString();
 
             case P2SH_ADDRESS_VERSION:
-                return Address.fromP2SHHash(params, encodedAddress).toBase58();
+                return LegacyAddress.fromScriptHash(params, encodedAddress).toString();
 
             case WITNESS_V0_ADDRESS_VERSION:
                 return Bech32SegwitAddress.encode(params, version, encodedAddress);

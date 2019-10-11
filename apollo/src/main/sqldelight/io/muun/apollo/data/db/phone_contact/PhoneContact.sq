@@ -11,6 +11,9 @@ CREATE TABLE phone_contacts (
     UNIQUE (internal_id, phone_number)
 );
 
+insertPhoneContact:
+INSERT OR REPLACE INTO phone_contacts
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAll:
 SELECT *

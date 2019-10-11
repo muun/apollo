@@ -13,6 +13,7 @@ import io.muun.common.utils.LnInvoice;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
@@ -60,7 +61,7 @@ public class TransactionSchemeSubmarineSwap {
         final Script redeemScript = createRedeemScript(witnessScript);
         final byte[] addressHash160 = getScriptHash(redeemScript);
 
-        return Address.fromP2SHHash(network, addressHash160);
+        return LegacyAddress.fromScriptHash(network, addressHash160);
     }
 
     /**
@@ -167,7 +168,8 @@ public class TransactionSchemeSubmarineSwap {
         // script
         final byte[] swapPaymentHash160 = Hashes.ripemd160(swapPaymentHash256);
 
-        final byte[] refundPublicKeyHash160 = Address.fromBase58(null, refundAddress).getHash160();
+        final byte[] refundPublicKeyHash160 = LegacyAddress.fromString(null, refundAddress)
+                .getHash();
 
         return new ScriptBuilder()
                 .op(OP_DUP)

@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.model;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 

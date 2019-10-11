@@ -2,7 +2,7 @@ package io.muun.apollo.data.async.tasks;
 
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
-import io.muun.apollo.domain.action.SigninActions;
+import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.NoStackTraceException;
 import io.muun.apollo.external.DataComponentProvider;
 
@@ -22,7 +22,7 @@ public class PeriodicTaskService extends SimpleJobService {
     TaskDispatcher taskDispatcher;
 
     @Inject
-    SigninActions signinActions;
+    UserActions userActions;
 
     @Inject
     ExecutionTransformerFactory transformerFactory;
@@ -40,7 +40,7 @@ public class PeriodicTaskService extends SimpleJobService {
     @Override
     public int onRunJob(JobParameters taskParams) {
 
-        if (!signinActions.isSignedIn()) {
+        if (!userActions.isLoggedIn()) {
             return JobService.RESULT_SUCCESS;
         }
 

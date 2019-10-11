@@ -24,7 +24,7 @@ import io.muun.common.api.error.Error;
 import io.muun.common.exception.HttpException;
 import io.muun.common.rx.ObservableFn;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.CallAdapter;

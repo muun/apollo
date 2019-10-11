@@ -19,7 +19,7 @@ public class TestNetParamsU extends TestNet3Params {
     private TestNetParamsU() {
         super();
         id = "org.bitcoin.test.ps2h(p2wpkh)";
-        bip32HeaderPub = 0x044a5262;
-        bip32HeaderPriv = 0x044a4e28;
+        bip32HeaderP2PKHpub = 0x044a5262;
+        bip32HeaderP2PKHpriv = 0x044a4e28;
     }
 }

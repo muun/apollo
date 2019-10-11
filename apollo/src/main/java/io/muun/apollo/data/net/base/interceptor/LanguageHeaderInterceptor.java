@@ -4,7 +4,7 @@ import io.muun.apollo.data.net.base.BaseInterceptor;
 import io.muun.common.net.HeaderUtils;
 
 import android.content.Context;
-import android.support.v4.os.ConfigurationCompat;
+import androidx.core.os.ConfigurationCompat;
 import okhttp3.Request;
 
 import javax.inject.Inject;

@@ -12,6 +12,10 @@ CREATE TABLE satellite_pairings (
     is_in_use INTEGER AS Boolean NOT NULL
 );
 
+insertPairing:
+INSERT OR REPLACE INTO satellite_pairings
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
 updateStatus:
 UPDATE satellite_pairings
 SET status = ?, browser = ?, os_version = ?, ip = ?, last_active = ?

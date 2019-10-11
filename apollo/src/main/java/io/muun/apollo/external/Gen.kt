@@ -28,7 +28,8 @@ import kotlin.random.Random
 
 object Gen {
 
-    private val CHARSET_ALPHA = ('A'..'Z').union('a'..'z')
+    private val CHARSET_ALPHA_LOWER = ('a'..'z')
+    private val CHARSET_ALPHA = ('A'..'Z').union(CHARSET_ALPHA_LOWER)
     private val CHARSET_NUM = ('0'..'9')
 
     /**
@@ -40,6 +41,11 @@ object Gen {
      * Get an alphabetic string of exact length.
      */
     fun alpha(length: Int) = concatGen(length) { CHARSET_ALPHA.random() }
+
+    /**
+     * Get an alphabetic lowercase string of random length within a range.
+     */
+    fun alphaLower(min: Int, max: Int) = concatGen(min, max) { CHARSET_ALPHA_LOWER.random() }
 
     /**
      * Get a numeric string of random length within a range.
@@ -75,7 +81,7 @@ object Gen {
     /**
      * Get an email.
      */
-    fun email() = alpha(3, 20) + "@" + alpha(2, 5) + "." + alpha(2, 3)
+    fun email() = alpha(3, 20) + "@" + alpha(2, 5) + "." + alphaLower(2, 3)
 
     /**
      * Get a known PIN.
@@ -116,7 +122,8 @@ object Gen {
             profile: Optional<UserProfile> = maybe(Gen::userProfile),
             primaryCurrency: CurrencyUnit = currencyUnit(),
             hasRecoveryCode: Boolean = bool(),
-            hasP2PEnabled: Boolean = bool()
+            hasP2PEnabled: Boolean = bool(),
+            createdAt: ZonedDateTime = pastDate()
 
     ) = User(
             hid,
@@ -126,7 +133,8 @@ object Gen {
             profile,
             primaryCurrency,
             hasRecoveryCode,
-            hasP2PEnabled
+            hasP2PEnabled,
+            createdAt
     )
 
     /**
@@ -277,7 +285,7 @@ object Gen {
     /**
      * Get a string of a random length with characters obtained from a generator.
      */
-    fun concatGen(min: Int, max: Int, gen: () -> Char) = (min..Random.nextInt(min, max))
+    fun concatGen(min: Int, max: Int, gen: () -> Char) = (min..1 +Random.nextInt(min, max))
             .map { gen() }
             .fold("", String::plus)
 

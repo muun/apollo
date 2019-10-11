@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.AsyncAction0;
@@ -19,6 +20,7 @@ public class SyncActions {
 
     private final ExchangeRateWindowRepository exchangeRateWindowRepository;
     private final FeeWindowRepository feeWindowRepository;
+    private final BlockchainHeightRepository blockchainHeightRepository;
 
     private final HoustonClient houstonClient;
 
@@ -30,11 +32,13 @@ public class SyncActions {
     @Inject
     public SyncActions(ExchangeRateWindowRepository exchangeRateWindowRepository,
                        FeeWindowRepository feeWindowRepository,
+                       BlockchainHeightRepository blockchainHeightRepository,
                        HoustonClient houstonClient,
                        AsyncActionStore asyncActionStore) {
 
         this.exchangeRateWindowRepository = exchangeRateWindowRepository;
         this.feeWindowRepository = feeWindowRepository;
+        this.blockchainHeightRepository = blockchainHeightRepository;
         this.houstonClient = houstonClient;
 
         this.syncRealTimeDataAction = asyncActionStore.get("realTime/sync", this::syncRealTimeData);
@@ -69,6 +73,7 @@ public class SyncActions {
                     Logger.debug("[Sync] Saving updated fee/rates");
                     feeWindowRepository.store(realTimeData.feeWindow);
                     exchangeRateWindowRepository.store(realTimeData.exchangeRateWindow);
+                    blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                 })
                 .map(RxHelper::toVoid);
     }

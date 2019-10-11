@@ -1,30 +1,40 @@
 package io.muun.common.crypto;
 
+import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
+import io.muun.common.utils.Preconditions;
 
 import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
-import org.spongycastle.crypto.params.ECPrivateKeyParameters;
-import org.spongycastle.crypto.util.PrivateKeyInfoFactory;
-import org.spongycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Arrays;
 
+import javax.crypto.SecretKey;
 import javax.validation.constraints.NotNull;
 
 public class ChallengePrivateKey {
 
     private final ECKey key;
 
+    private final byte[] salt;
+
     /**
      * Constructor.
      */
-    private ChallengePrivateKey(ECKey key) {
+    private ChallengePrivateKey(ECKey key, byte[] salt) {
 
         this.key = key;
+        this.salt = salt;
     }
 
     /**
@@ -38,7 +48,7 @@ public class ChallengePrivateKey {
     }
 
     public ChallengePublicKey getChallengePublicKey() {
-        return ChallengePublicKey.fromBytes(key.getPubKey());
+        return new ChallengePublicKey(key.getPubKey(), salt);
     }
 
     /**
@@ -47,16 +57,18 @@ public class ChallengePrivateKey {
      * @return an EC private key.
      */
     @NotNull
-    public PrivateKey getPrivateKey() {
+    private BCECPrivateKey getPrivateKey() {
         try {
-            return new KeyFactorySpi.ECDH().generatePrivate(
-                    PrivateKeyInfoFactory.createPrivateKeyInfo(
-                            new ECPrivateKeyParameters(
-                                    key.getPrivKey(),
-                                    ECKey.CURVE
-                            )
+
+            final PrivateKeyInfo privateKeyInfo = PrivateKeyInfoFactory.createPrivateKeyInfo(
+                    new ECPrivateKeyParameters(
+                            key.getPrivKey(),
+                            ECKey.CURVE
                     )
             );
+
+            return (BCECPrivateKey) new KeyFactorySpi.ECDH().generatePrivate(privateKeyInfo);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -74,6 +86,46 @@ public class ChallengePrivateKey {
 
         final ECKey ecKey = ECKey.fromPrivate(point);
 
-        return new ChallengePrivateKey(ecKey);
+        return new ChallengePrivateKey(ecKey, salt);
+    }
+
+    /**
+     * Decrypt an asymmetrically encrypted private key.
+     *
+     * <p>Notice that the resulting private key will be a root master private key, since the
+     * derivation path information isn't included in the serialization. This shouldn't be a problem,
+     * but is clarified since it might make the key serialization before encryption deffer from the
+     * one after decryption.
+     */
+    public PrivateKey decryptPrivateKey(String cypherText, NetworkParameters networkParameters) {
+
+        final MuunEncryptedPrivateKey encryptedKey = MuunEncryptedPrivateKey.fromBase58(cypherText);
+
+        Preconditions.checkArgument(Arrays.equals(encryptedKey.recoveryCodeSalt, salt));
+
+        // use the least significant bytes of the ephemeral public key as deterministic IV
+        final byte[] iv = Cryptography.extractDeterministicIvFromPublicKeyBytes(
+                encryptedKey.ephemeralPublicKey
+        );
+
+        final PublicKey ephemeralPublicKey = Encodings.bytesToEcPublicKey(
+                encryptedKey.ephemeralPublicKey
+        );
+
+        // use ECDH to compute a shared secret
+        final SecretKey sharedSecret = Cryptography.computeSharedSecret(
+                ephemeralPublicKey,
+                getPrivateKey()
+        );
+
+        // decrypt the plaintext with AES
+        final byte[] plainText = Cryptography.aesCbcNoPadding(
+                encryptedKey.cypherText,
+                iv,
+                sharedSecret,
+                false
+        );
+
+        return PrivateKey.fromCompactSerialization(plainText, networkParameters);
     }
 }

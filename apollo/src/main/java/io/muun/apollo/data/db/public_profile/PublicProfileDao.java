@@ -16,7 +16,6 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
      */
     @Inject
     public PublicProfileDao() {
-
         super(
                 PublicProfileEntity.CREATE_TABLE,
                 PublicProfileEntity::fromModel,
@@ -40,14 +39,13 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
                 publicProfile.getHid()
         );
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 
     /**
      * Fetches a single public profile by its Houston id.
      */
     public Observable<PublicProfile> fetchByHid(long contactHid) {
-
         return fetchOneOrFail(PublicProfileEntity.FACTORY.selectByHid(contactHid));
     }
 

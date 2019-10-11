@@ -3,6 +3,7 @@ package io.muun.apollo.data.net;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
 import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
@@ -25,6 +26,7 @@ import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.BitcoinAmountJson;
+import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.CommonModelObjectsMapper;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.FeeWindowJson;
@@ -55,9 +57,10 @@ import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.SizeForAmount;
 import io.muun.common.utils.CollectionUtils;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitcoinj.core.NetworkParameters;
@@ -114,7 +117,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 maybeProfile,
                 apiUser.primaryCurrency,
                 apiUser.hasRecoveryCodeChallengeKey,
-                apiUser.hasP2PEnabled
+                apiUser.hasP2PEnabled,
+                ((ApolloZonedDateTime) apiUser.createdAt).dateTime
         );
     }
 
@@ -278,8 +282,11 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         }
     }
 
+    /**
+     * Create a SubmarineSwapFees object.
+     */
     @NotNull
-    public SubmarineSwapFees mapSwapFees(@NotNull SubmarineSwapFeesJson fees) {
+    private SubmarineSwapFees mapSwapFees(@NotNull SubmarineSwapFeesJson fees) {
         return new SubmarineSwapFees(
                 fees.lightningInSats,
                 fees.sweepInSats,
@@ -344,7 +351,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     public RealTimeData mapRealTimeData(@NotNull io.muun.common.api.RealTimeData realTimeData) {
         return new RealTimeData(
                 mapFeeWindow(realTimeData.feeWindow),
-                mapExchangeRateWindow(realTimeData.exchangeRateWindow)
+                mapExchangeRateWindow(realTimeData.exchangeRateWindow),
+                realTimeData.currentBlockchainHeight
         );
     }
 
@@ -462,4 +470,23 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 mapHardwareWalletAddress(json.nextAddress)
          );
     }
+
+    /**
+     * Create a ChallengeKeyUpdateMigration.
+     */
+    public ChallengeKeyUpdateMigration mapChalengeKeyUpdateMigration(
+            final ChallengeKeyUpdateMigrationJson json) {
+
+        final byte[] passwordKeySalt = Encodings.hexToBytes(json.passwordKeySaltInHex);
+
+        final byte[] recoveryCodeKeySalt = (json.recoveryCodeKeySaltInHex != null)
+                        ? Encodings.hexToBytes(json.recoveryCodeKeySaltInHex) : null;
+
+        return new ChallengeKeyUpdateMigration(
+                passwordKeySalt,
+                recoveryCodeKeySalt,
+                json.newEncrytpedMuunKey
+        );
+    }
+
 }

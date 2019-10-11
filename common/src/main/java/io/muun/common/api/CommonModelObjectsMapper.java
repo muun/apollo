@@ -54,12 +54,18 @@ public class CommonModelObjectsMapper {
     /**
      * Create a ChallengePublicKey.
      */
-    public ChallengePublicKey mapChallengePublicKey(String challengePublicKeyHex) {
-        if (challengePublicKeyHex == null) {
+    public ChallengePublicKey mapChallengePublicKey(
+            String challengePublicKeyHex,
+            String challengeSaltHex) {
+
+        if (challengePublicKeyHex == null || challengeSaltHex == null) {
             return null;
         }
 
-        return ChallengePublicKey.fromBytes(Encodings.hexToBytes(challengePublicKeyHex));
+        return new ChallengePublicKey(
+                Encodings.hexToBytes(challengePublicKeyHex),
+                Encodings.hexToBytes(challengeSaltHex)
+        );
     }
 
     /**
@@ -72,7 +78,7 @@ public class CommonModelObjectsMapper {
 
         return new ChallengeSetup(
                 challengeSetupJson.type,
-                mapChallengePublicKey(challengeSetupJson.publicKey),
+                mapChallengePublicKey(challengeSetupJson.publicKey, challengeSetupJson.salt),
                 Encodings.hexToBytes(challengeSetupJson.salt),
                 challengeSetupJson.encryptedPrivateKey,
                 challengeSetupJson.version

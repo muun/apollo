@@ -263,7 +263,7 @@ public class PartiallySignedTransaction {
                 input.getUserSignature(),
                 input.getMuunSignature()
         );
-        transaction.setWitness(inputIndex, witness);
+        transaction.getInput(inputIndex).setWitness(witness);
     }
 
     private void addMuunSignatureV3(int inputIndex,
@@ -332,7 +332,7 @@ public class PartiallySignedTransaction {
         final Script inputScript = TransactionSchemeSubmarineSwap.createInputScript(witnessScript);
 
         transaction.getInput(inputIndex).setScriptSig(inputScript);
-        transaction.setWitness(inputIndex, witness);
+        transaction.getInput(inputIndex).setWitness(witness);
     }
 
     /**

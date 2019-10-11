@@ -13,6 +13,10 @@ CREATE TABLE hardware_wallets (
     is_paired INTEGER AS Boolean NOT NULL
 );
 
+insertHardwareWallet:
+INSERT OR REPLACE INTO hardware_wallets
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
 selectAll:
 SELECT *
 FROM hardware_wallets

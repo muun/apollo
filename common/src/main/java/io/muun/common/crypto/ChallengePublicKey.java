@@ -1,25 +1,45 @@
 package io.muun.common.crypto;
 
+import io.muun.common.crypto.hd.PrivateKey;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
+import io.muun.common.utils.Preconditions;
+import io.muun.common.utils.RandomGenerator;
 
 import org.bitcoinj.core.ECKey;
-import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.spongycastle.crypto.params.ECPublicKeyParameters;
-import org.spongycastle.crypto.util.SubjectPublicKeyInfoFactory;
-import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.spongycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
-import org.spongycastle.pqc.math.linearalgebra.ByteUtils;
+import org.bitcoinj.core.SignatureDecodeException;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
 
-import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.spec.ECGenParameterSpec;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nullable;
+import javax.crypto.SecretKey;
 
 public class ChallengePublicKey {
 
-    private final ECKey key;
+    public static final int PUBLIC_KEY_LENGTH = MuunEncryptedPrivateKey.PUBLIC_KEY_SIZE;
 
-    private ChallengePublicKey(byte[] publicKey) {
-        key = ECKey.fromPublicOnly(publicKey);
+    private static final String CURVE_NAME = "secp256k1";
+
+    private final byte[] key;
+
+    @Nullable // nullable until migration is complete
+    private final byte[] salt;
+
+    /**
+     * Constructor.
+     */
+    public ChallengePublicKey(byte[] publicKey, @Nullable byte[] salt) {
+
+        // check that the public key is a valid point on the secp256k1 curve
+        ECKey.CURVE.getCurve().decodePoint(publicKey);
+
+        this.key = publicKey;
+        this.salt = salt;
     }
 
     /**
@@ -28,61 +48,94 @@ public class ChallengePublicKey {
     public boolean verify(byte[] data, byte[] signature) {
         final byte[] hash = Hashes.sha256(data);
 
-        return key.verify(hash, signature);
+        try {
+            return ECKey.fromPublicOnly(key).verify(hash, signature);
+        } catch (SignatureDecodeException e) {
+            // TODO handle better?
+            return false;
+        }
     }
 
     /**
      * Serialize public key.
      */
     public byte[] toBytes() {
-        return key.getPubKey();
+        return key;
+    }
+
+    @Nullable
+    public byte[] getSalt() {
+        return salt;
     }
 
     /**
-     * Deserialize a public key.
-     */
-    public static ChallengePublicKey fromBytes(byte[] publicKey) {
-        return new ChallengePublicKey(publicKey);
-    }
-
-    /**
-     * Transforms a compressed Q `ECPoint` into a `BCECPublicKey`.
+     * Encrypt a private key asymmetrically, so that it can be decrypted with the corresponding
+     * challenge private key.
      *
-     * @return a challenge public key as a `BCECPublicKey`
-     */
-    @NotNull
-    public BCECPublicKey getPublicKey() {
-        try {
-
-            final SubjectPublicKeyInfo
-                    subjectPublicKeyInfo =
-                    SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(
-                            new ECPublicKeyParameters(
-                                    ECKey.CURVE.getCurve().decodePoint(this.toBytes()),
-                                    ECKey.CURVE
-                            )
-                    );
-
-            return (BCECPublicKey) new KeyFactorySpi.ECDH().generatePublic(subjectPublicKeyInfo);
-
-        } catch (IOException e) {
-            throw new CryptographyException(e);
-        }
-    }
-
-    /**
-     * Calculates an IV from the Q point of this EC public key.
+     * <p>IMPORTANT: to use this method, the salt of this public key must be NON-NULL.
      *
-     * @return an IV
+     * <p>Notice that the network parameters won't be included in the serialization, so they must be
+     * provided when decrypting.
+     *
+     * @param privateKey the extended private key that will be encrypted.
+     * @param walletBirthday the number of days since the timestamp in Bitcoin’s genesis block.
      */
-    public byte[] generateIv() {
+    public String encryptPrivateKey(PrivateKey privateKey, long walletBirthday) {
 
-        final byte[] pointBytes = this.getPublicKey().getQ().getEncoded(true);
+        final KeyPair ephemeralKeypair = createEphemeralKeypair();
 
-        return ByteUtils.subArray(
-                pointBytes,
-                pointBytes.length - Cryptography.AES_BLOCK_SIZE,
-                pointBytes.length
+        final byte[] ephemeralPubkeyBytes = Encodings.ecPublicKeyToBytes(
+                (ECPublicKey) ephemeralKeypair.getPublic()
         );
+
+        // use the least significant bytes of the ephemeral public key as deterministic IV
+        final byte[] iv = Cryptography.extractDeterministicIvFromPublicKeyBytes(
+                ephemeralPubkeyBytes
+        );
+
+        // use ECDH to compute a shared secret
+        final SecretKey sharedSecret = Cryptography.computeSharedSecret(
+                Encodings.bytesToEcPublicKey(toBytes()),
+                ephemeralKeypair.getPrivate()
+        );
+
+        // encrypt the plaintext with AES
+        final byte[] cypherText = Cryptography.aesCbcNoPadding(
+                privateKey.toCompactSerialization(),
+                iv,
+                sharedSecret,
+                true
+        );
+
+        final MuunEncryptedPrivateKey encryptedPrivateKey = new MuunEncryptedPrivateKey(
+                MuunEncryptedPrivateKey.CURRENT_VERSION,
+                walletBirthday,
+                ephemeralPubkeyBytes,
+                cypherText,
+                Preconditions.checkNotNull(salt)
+        );
+
+        return encryptedPrivateKey.toBase58();
+    }
+
+    /**
+     * Create a random ephemeral key pair in the bitcoin curve.
+     */
+    private KeyPair createEphemeralKeypair() {
+
+        final KeyPairGenerator kpg;
+
+        try {
+            // Using SpongyCastle's class directly, without java.security/javax.crypto security
+            // providers system, to avoid issues with proguard discarding them.
+            kpg = new KeyPairGeneratorSpi.ECDH();
+
+            kpg.initialize(new ECGenParameterSpec(CURVE_NAME), RandomGenerator.getSecureRandom());
+
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+
+        return kpg.generateKeyPair();
     }
 }

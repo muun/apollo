@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.base.PersistentModel;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import org.threeten.bp.ZonedDateTime;
 
 import javax.validation.constraints.NotNull;

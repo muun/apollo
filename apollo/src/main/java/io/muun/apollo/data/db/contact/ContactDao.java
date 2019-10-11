@@ -20,8 +20,8 @@ public class ContactDao extends HoustonIdDao<Contact> {
     public ContactDao() {
         super(
                 ContactEntity.CREATE_TABLE,
-                ContactEntity.fromModel(),
-                ContactEntity.toModel(),
+                ContactEntity::fromModel,
+                ContactEntity::toModel,
                 ContactEntity.TABLE_NAME
         );
     }
@@ -36,14 +36,13 @@ public class ContactDao extends HoustonIdDao<Contact> {
 
         statement.bind(lastDerivationIndex, contactHid);
 
-        executeStatement(statement);
+        executeUpdate(statement);
     }
 
     /**
      * Fetches all contacts from the db.
      */
     public Observable<List<Contact>> fetchAll() {
-
         return fetchList(ContactEntity.FACTORY.selectAll());
     }
 
@@ -51,7 +50,6 @@ public class ContactDao extends HoustonIdDao<Contact> {
      * Fetches a single contact by its Houston id.
      */
     public Observable<Contact> fetchByHid(long contactHid) {
-
         return fetchOneOrFail(ContactEntity.FACTORY.selectByHid(contactHid));
     }
 }

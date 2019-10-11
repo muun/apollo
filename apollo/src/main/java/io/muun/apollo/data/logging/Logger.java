@@ -108,8 +108,15 @@ public final class Logger {
         return null;
     }
 
+    /**
+     * Report an error.
+     *
+     * <p>This will go into crashlytics.</p>
+     */
     public static void error(String message, Object... args) {
-        Timber.e(message, args);
+        error(new RuntimeException(
+                String.format(message, args)
+        ));
     }
 
     /**

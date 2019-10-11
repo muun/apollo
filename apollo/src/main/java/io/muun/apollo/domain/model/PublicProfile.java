@@ -4,7 +4,7 @@ import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.utils.Preconditions;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 

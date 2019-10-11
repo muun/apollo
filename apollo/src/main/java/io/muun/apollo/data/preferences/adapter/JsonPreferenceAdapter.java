@@ -3,7 +3,7 @@ package io.muun.apollo.data.preferences.adapter;
 import io.muun.apollo.data.serialization.SerializationUtils;
 
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import com.f2prateek.rx.preferences.Preference;
 
 public class JsonPreferenceAdapter<T> implements Preference.Adapter<T> {

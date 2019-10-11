@@ -2,7 +2,7 @@ package io.muun.apollo.data.os.execution;
 
 import io.muun.apollo.data.logging.Logger;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,6 +29,9 @@ public class JobExecutor implements Executor {
     // The HARD maximum of threads, to which threadPool can grow ONLY WHEN workQueue is FULL
     private static final int MAX_POOL_SIZE = 10;
 
+    /* The maximum queue size, when reached a RejectedExecutionHandler is thrown */
+    private static final int QUEUE_SIZE = 5; // capacity-bound queue needed for pool resizing
+
     // When over CORE_POOL_SIZE, this is the time to wait before terminating idle threads.
     private static final int KEEP_ALIVE_SECONDS = 10;
 
@@ -46,7 +49,7 @@ public class JobExecutor implements Executor {
                 MAX_POOL_SIZE,
                 KEEP_ALIVE_SECONDS,
                 TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(CORE_POOL_SIZE), // avoid infinite task scheduling
+                new LinkedBlockingQueue<>(QUEUE_SIZE), // avoid infinite task scheduling
                 new JobThreadFactory(),
                 getRejectedExecutionHandler()
         );

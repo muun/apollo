@@ -8,6 +8,7 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.model.FeeWindow;
+import io.muun.common.model.SessionStatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -26,10 +27,10 @@ public class PreferencesMigrationManager {
 
     private final SchemaVersionRepository schemaVersionRepository;
     private final AuthRepository authRepository;
+    private final UserRepository userRepository;
 
     private final LogoutActions logoutActions;
 
-    private final UserRepository userRepository;
     private final FeeWindowRepository feeWindowRepository;
 
     /**
@@ -57,7 +58,10 @@ public class PreferencesMigrationManager {
             this::logout,
 
             // jun 2019, implement customizable fee feature, with more than 1 fee rate in FeeWindow
-            this::upgradeFeeWindowRepositoryForCustomFees
+            this::upgradeFeeWindowRepositoryForCustomFees,
+
+            // sep 2019, Apollo 30 replaces SignupDraft with isInitialSyncCompleted
+            this::setInitialSyncCompleted
     };
 
     /**
@@ -66,16 +70,16 @@ public class PreferencesMigrationManager {
     @Inject
     public PreferencesMigrationManager(Context context,
                                        AuthRepository authRepository,
-                                       UserRepository userRepository,
                                        SchemaVersionRepository schemaVersionRepository,
+                                       UserRepository userRepository,
                                        LogoutActions logoutActions,
                                        FeeWindowRepository feeWindowRepository) {
         this.context = context;
 
         this.schemaVersionRepository = schemaVersionRepository;
 
-        this.userRepository = userRepository;
         this.authRepository = authRepository;
+        this.userRepository = userRepository;
         this.feeWindowRepository = feeWindowRepository;
 
         this.logoutActions = logoutActions;
@@ -111,9 +115,15 @@ public class PreferencesMigrationManager {
 
     /**
      * Destroys information for SignupDraft.
+     *
+     * @Deprecated Keeping it for client migrations retro compat.
      */
-    public void clearSignupDraft() {
-        userRepository.clearSignupDraft();
+    private void clearSignupDraft() {
+        // we no longer store signup draft
+        context.getSharedPreferences("user", Context.MODE_PRIVATE)
+                .edit()
+                .remove("signup_draft")
+                .apply();
     }
 
     private void moveJwtKeyToSecureStorage() {
@@ -145,5 +155,26 @@ public class PreferencesMigrationManager {
                 .remove(keyFetchDate)
                 .remove(feeFeeInSatoshisPerByte)
                 .apply();
+    }
+
+
+    private void setInitialSyncCompleted() {
+        final SharedPreferences prefs = context
+                .getSharedPreferences("user", Context.MODE_PRIVATE);
+
+        // Before Apollo 30, we considered the initial sync to be completed when the SignupDraft
+        // preference was cleared at the end of the signup/login flow. Now, we need to set the
+        // boolean that indicates that based on the old mechanism.
+        final boolean hasSignupDraft = prefs.contains("signup_draft");
+
+        final boolean isInitialSyncCompleted = authRepository
+                .getSessionStatus()
+                .map(SessionStatus.LOGGED_IN::equals)
+                .map(isLoggedIn -> isLoggedIn && !hasSignupDraft)
+                .orElse(false);
+
+        if (isInitialSyncCompleted) {
+            userRepository.storeInitialSyncCompleted();
+        }
     }
 }

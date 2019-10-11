@@ -7,11 +7,12 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.utils.Bech32SegwitAddress;
 import io.muun.common.utils.Encodings;
 
-import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.ProtocolException;
+import org.bitcoinj.core.SignatureDecodeException;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.crypto.DeterministicKey;
 
@@ -27,7 +28,7 @@ public class ValidationHelpers {
     // NOTE: emails are complicated beasts (https://stackoverflow.com/a/201378/469300).
     // We run a very simple validation, aimed at preventing common user mistakes. This expression
     // does NOT attempt to filter invalid emails in general.
-    private static final Pattern emailPattern = Pattern.compile("[^@ ]+@[^@ ]+[.][^@ ]+");
+    private static final Pattern emailPattern = Pattern.compile("[^@ ]+@[^@ ]+[.][^@ ]*[a-z0-9]$");
 
     /**
      * Check if an e-mail address is valid.
@@ -50,7 +51,7 @@ public class ValidationHelpers {
     public static boolean isValidBase58Address(NetworkParameters params, String address) {
 
         try {
-            Address.fromBase58(params, address);
+            LegacyAddress.fromBase58(params, address);
             return true;
 
         } catch (AddressFormatException e) {
@@ -152,8 +153,9 @@ public class ValidationHelpers {
         }
 
         try {
-            final byte[] hexPublicKey = Encodings.hexToBytes(challengeSetup.publicKey);
-            ChallengePublicKey.fromBytes(hexPublicKey);
+            final byte[] publicKey = Encodings.hexToBytes(challengeSetup.publicKey);
+            final byte[] salt = Encodings.hexToBytes(challengeSetup.salt);
+            new ChallengePublicKey(publicKey, salt);
 
             return true;
 
@@ -200,7 +202,7 @@ public class ValidationHelpers {
             ECKey.ECDSASignature.decodeFromDER(hexSignature);
 
             return true;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | SignatureDecodeException e) {
             return false;
         }
     }

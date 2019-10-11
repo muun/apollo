@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model;
 
 import io.muun.common.model.OperationStatus;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
 

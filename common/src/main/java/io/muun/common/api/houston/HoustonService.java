@@ -2,6 +2,7 @@ package io.muun.common.api.houston;
 
 
 import io.muun.common.api.ChallengeJson;
+import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
@@ -31,6 +32,7 @@ import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.SignupJson;
 import io.muun.common.api.SignupOkJson;
 import io.muun.common.api.SubmarineSwapJson;
+import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
@@ -193,8 +195,8 @@ public interface HoustonService {
             @Body HardwareWalletWithdrawalJson withdrawal
     );
 
-    @POST("operations/sswap/prepare")
-    Observable<SubmarineSwapJson> prepareSubmarineSwap(@Body String invoice);
+    @POST("operations/sswap/create")
+    Observable<SubmarineSwapJson> createSubmarineSwap(@Body SubmarineSwapRequestJson data);
 
     // ---------------------------------------------------------------------------------------------
     // Hardware wallets:
@@ -216,4 +218,10 @@ public interface HoustonService {
 
     @POST("integrity/check")
     Observable<IntegrityStatus> checkIntegrity(@Body IntegrityCheck request);
+
+    // ---------------------------------------------------------------------------------------------
+    // Migrations:
+
+    @GET("migrations/challenge-keys")
+    Observable<ChallengeKeyUpdateMigrationJson> fetchChallengeKeyUpdateMigration();
 }

@@ -10,7 +10,7 @@ import io.muun.common.utils.LnInvoice;
 import io.muun.common.utils.Preconditions;
 
 import android.net.Uri;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 import org.bitcoinj.uri.BitcoinURIParseException;
 
 public class OperationUri {

@@ -109,16 +109,43 @@ public class BlockHelpers {
      */
     private static double gammaCdf(int time, int numBlocks, double lambda) {
 
+        // We have to compute sum((lambda * t)^i / i!) and then divide it by e^(lambda * t). For
+        // high t's, the sum can get really big before we divide it by the exponential.
+        //
+        // In order to avoid losing precision, as we compute and accumulate each term of the sum,
+        // we divide the partial sum by as many e^lambda factors as we can without making the
+        // partial sum too small. Of course we'll only divide by up to t factors.
+
+        final double factor = Math.exp(lambda);
+        int appliedFactors = 0;
+
         double sum = 1;
-        double numerator = 1;
-        double denominator = 1;
+        double term = 1;
 
         for (int i = 1; i < numBlocks; i++) {
-            numerator *= lambda * time;
-            denominator *= i;
-            sum += numerator / denominator;
+            term *= (lambda * time) / i;
+            sum += term;
+
+            if (term >= factor) {
+                final int numFactors = Math.min(impreciseLog(term, factor), time - appliedFactors);
+                appliedFactors += numFactors;
+
+                final double divisor = Math.pow(factor, numFactors);
+                term /= divisor;
+                sum /= divisor;
+            }
         }
 
-        return 1 - Math.exp(-lambda * time) * sum;
+        return 1 - sum / Math.pow(factor, time - appliedFactors);
+    }
+
+    /**
+     * Compute the integer logarithm of a number in an arbitrary base. Due to the way the
+     * computation is done, we might have off by one errors due to precision loss. Fortunately, in
+     * this case it isn't a problem.
+     */
+    private static int impreciseLog(double x, double base) {
+
+        return (int) (Math.log(x) / Math.log(base));
     }
 }

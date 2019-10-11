@@ -6,6 +6,10 @@ CREATE TABLE public_profiles (
     profile_picture_url TEXT
 );
 
+insertPublicProfile:
+INSERT OR REPLACE INTO public_profiles
+VALUES (?, ?, ?, ?, ?);
+
 updateProfile:
 UPDATE public_profiles
 SET first_name = ?, last_name = ?, profile_picture_url = ?

@@ -5,10 +5,11 @@ import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.HardwareWalletBrand;
 
-import android.content.ContentValues;
 import android.database.Cursor;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
-import com.squareup.sqldelight.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.EnumColumnAdapter;
+import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
 public abstract class HardwareWalletEntity implements HardwareWalletModel, BaseEntity {
@@ -24,20 +25,25 @@ public abstract class HardwareWalletEntity implements HardwareWalletModel, BaseE
     /**
      * Map from the model to the content values.
      */
-    public static ContentValues fromModel(HardwareWallet wallet) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, HardwareWallet wallet) {
 
-        return FACTORY.marshal()
-                .id(wallet.getId() == null ? BaseEntity.NULL_ID : wallet.getId())
-                .hid(wallet.getHid())
-                .brand(wallet.getBrand())
-                .model(wallet.getModel())
-                .label(wallet.getLabel())
-                .base_public_key(wallet.getBasePublicKey().serializeBase58())
-                .base_public_key_path(wallet.getBasePublicKey().getAbsoluteDerivationPath())
-                .created_at(wallet.getCreatedAt())
-                .last_paired_at(wallet.getLastPairedAt())
-                .is_paired(wallet.isPaired())
-                .asContentValues();
+        final HardwareWalletModel.InsertHardwareWallet insertStatement = new HardwareWalletModel
+                .InsertHardwareWallet(db, FACTORY);
+
+        insertStatement.bind(
+                wallet.getId() == null ? BaseEntity.NULL_ID : wallet.getId(),
+                wallet.getHid(),
+                wallet.getBrand(),
+                wallet.getModel(),
+                wallet.getLabel(),
+                wallet.getBasePublicKey().serializeBase58(),
+                wallet.getBasePublicKey().getAbsoluteDerivationPath(),
+                wallet.getCreatedAt(),
+                wallet.getLastPairedAt(),
+                wallet.isPaired()
+        );
+
+        return insertStatement;
     }
 
     /**

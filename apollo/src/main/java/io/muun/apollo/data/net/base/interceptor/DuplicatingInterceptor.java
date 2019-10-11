@@ -3,7 +3,7 @@ package io.muun.apollo.data.net.base.interceptor;
 import io.muun.apollo.data.logging.Logger;
 import io.muun.common.utils.Encodings;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 import okhttp3.ResponseBody;

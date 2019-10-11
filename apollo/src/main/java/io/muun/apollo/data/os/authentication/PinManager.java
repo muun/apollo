@@ -3,7 +3,7 @@ package io.muun.apollo.data.os.authentication;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.common.utils.Encodings;
 
-import org.spongycastle.util.Arrays;
+import java.util.Arrays;
 
 import javax.inject.Inject;
 
@@ -35,6 +35,6 @@ public class PinManager {
         final byte[] pinBytes = Encodings.stringToBytes(pin);
         final byte[] storedPinBytes = secureStorageProvider.get(PIN_KEY);
 
-        return Arrays.areEqual(storedPinBytes, pinBytes);
+        return Arrays.equals(storedPinBytes, pinBytes);
     }
 }

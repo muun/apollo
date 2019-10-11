@@ -27,6 +27,10 @@ CREATE TABLE operations (
     submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid)
 );
 
+insertOperation:
+INSERT OR REPLACE INTO operations
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
 updateStatus:
 UPDATE operations
 SET confirmations = ?, hash = ?, status = ?
