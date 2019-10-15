@@ -402,7 +402,8 @@ public class UserRepository extends BaseRepository {
 
             } catch (IllegalArgumentException ex) {
                 // SignupDraft may have changed, and this is an old format. Discard it:
-                Logger.error("Could not deserialize signupDraft: " + signupDraftPreference.get());
+                final String rawValue = sharedPreferences.getString(SIGNUP_DRAFT, null);
+                Logger.error("Could not deserialize signupDraft: " + rawValue);
                 signupDraftPreference.delete();
             }
         }

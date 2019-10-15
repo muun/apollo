@@ -8,7 +8,7 @@ public abstract class BaseRepository {
 
     protected final RxSharedPreferences rxSharedPreferences;
 
-    private final SharedPreferences sharedPreferences;
+    protected final SharedPreferences sharedPreferences;
 
     /**
      * Creates a base preferences repository.
