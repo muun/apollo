@@ -22,6 +22,7 @@ import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
+import io.muun.apollo.domain.action.user.SendEncryptedKeysEmailAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 
 public interface ActionComponent {
@@ -73,4 +74,6 @@ public interface ActionComponent {
     CreateOperationAction createOperationAction();
 
     UpdateOperationAction updateOperationAction();
+
+    SendEncryptedKeysEmailAction sendEncryptedKeysEmailAction();
 }

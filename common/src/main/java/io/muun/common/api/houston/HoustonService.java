@@ -27,6 +27,7 @@ import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.RealTimeData;
+import io.muun.common.api.SendEncryptedKeysJson;
 import io.muun.common.api.SessionJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.SignupJson;
@@ -157,6 +158,9 @@ public interface HoustonService {
 
     @POST("user/profile")
     Observable<UserJson> createProfile(@Body UserProfileJson userProfileJson);
+
+    @POST("user/export-keys")
+    Observable<Void> sendExportKeysEmail(@Body SendEncryptedKeysJson json);
 
     // ---------------------------------------------------------------------------------------------
     // Contacts:

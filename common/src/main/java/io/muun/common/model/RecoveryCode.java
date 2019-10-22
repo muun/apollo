@@ -5,17 +5,14 @@ import io.muun.common.utils.RandomGenerator;
 
 import com.google.common.base.Preconditions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public class RecoveryCode {
 
-    public static final Character[] ALPHABET = {
+    private static final Character[] ALPHABET = {
             // Upper-case characters except for numbers/letters that look alike:
             'A', 'B', 'C', 'D', 'E', 'F', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S',
             'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -65,21 +62,6 @@ public class RecoveryCode {
         return segments[segmentIndex];
     }
 
-    /**
-     * Generate a random list of {numSegment} recovery code segment indexes.
-     */
-    public List<Integer> getRandomSegmentIndexes(int numSegments) {
-        final List<Integer> segmentIndexes = new ArrayList<>();
-
-        for (int i = 0; i < segments.length; i++) {
-            segmentIndexes.add(i);
-        }
-
-        Collections.shuffle(segmentIndexes);
-
-        return segmentIndexes.subList(0, numSegments);
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -112,10 +94,6 @@ public class RecoveryCode {
         return Arrays.hashCode(segments);
     }
 
-    private static void validateCodeString(String code) {
-        validateSegmentArray(split(code));
-    }
-
     private static void validateSegmentArray(String[] segments) {
         // Detect alphabet errors first (so incomplete codes are already known to be wrong):
         for (String segment: segments) {
@@ -146,11 +124,11 @@ public class RecoveryCode {
         return code.split(Pattern.quote("" + SEPARATOR));
     }
 
-    public abstract static class RecoveryCodeError extends RuntimeException {
-        public RecoveryCodeError() {
+    abstract static class RecoveryCodeError extends RuntimeException {
+        RecoveryCodeError() {
         }
 
-        public RecoveryCodeError(String message) {
+        RecoveryCodeError(String message) {
             super(message);
         }
     }
@@ -159,7 +137,7 @@ public class RecoveryCode {
     }
 
     public static class RecoveryCodeAlphabetError extends RecoveryCodeError {
-        public RecoveryCodeAlphabetError() {
+        RecoveryCodeAlphabetError() {
             super("There's an invalid character in this code");
         }
     }

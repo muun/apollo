@@ -34,6 +34,7 @@ import io.muun.common.api.KeySet;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
+import io.muun.common.api.SendEncryptedKeysJson;
 import io.muun.common.api.SessionJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.SignupJson;
@@ -314,6 +315,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService()
                 .updateUser(user)
                 .map(modelMapper::mapUser);
+    }
+
+    /**
+     * Request an email containing our encrypted private keys.
+     */
+    public Observable<Void> sendEncryptedKeysEmail(String userKey) {
+        return getService()
+                .sendExportKeysEmail(new SendEncryptedKeysJson(userKey));
     }
 
     /**
