@@ -1,13 +1,12 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.net.HoustonClient;
-import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
-import io.muun.apollo.domain.errors.InvalidInvoiceAmountException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
+import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
@@ -34,13 +33,12 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     private final HoustonClient houstonClient;
     private final KeysRepository keysRepository;
     private final FeeWindowRepository feeWindowRepository;
-    private final BlockchainHeightRepository blockchainHeightRepository;
 
     private static final int BLOCKS_IN_A_DAY = 24 * 6; // this is 144
     private static final int DAYS_IN_A_WEEK = 7;
     private static final int DYNAMIC_TARGET_THRESHOLD_IN_SATS = 150_000;
-    private static final double SAFE_CONF_TARGET_FACTOR = 1. / 4;
-    private static final int SAFE_CONF_TARGET_LEEWAY = 3;
+
+    private static final int SWAP_V2_CONF_TARGET = 250; // Approx 2 days
 
     /**
      * Resolves a LightningNetwork OperationUri.
@@ -49,13 +47,11 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     ResolveLnUriAction(NetworkParameters network,
                        HoustonClient houstonClient,
                        KeysRepository keysRepository,
-                       FeeWindowRepository feeWindowRepository,
-                       BlockchainHeightRepository blockchainHeightRepository) {
+                       FeeWindowRepository feeWindowRepository) {
         this.network = network;
         this.houstonClient = houstonClient;
         this.keysRepository = keysRepository;
         this.feeWindowRepository = feeWindowRepository;
-        this.blockchainHeightRepository = blockchainHeightRepository;
     }
 
     @Override
@@ -64,10 +60,10 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     private Observable<PaymentRequest> resolveLnUri(OperationUri uri) {
-        final LnInvoice invoice = LnInvoice.decode(network, uri.getHost());
+        final LnInvoice invoice = LnInvoice.decode(network, uri.getLnInvoice().get());
 
         if (invoice.amount == null) {
-            throw new InvalidInvoiceAmountException(invoice.original);
+            throw new InvoiceMissingAmountException(invoice.original);
         }
 
         if (invoice.getExpirationTime().isBefore(DateUtils.now())) {
@@ -89,7 +85,7 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
         if (amountInSats > DYNAMIC_TARGET_THRESHOLD_IN_SATS) {
             return BLOCKS_IN_A_DAY;
         }
-        
+
         return (int) (BLOCKS_IN_A_DAY * (DAYS_IN_A_WEEK
                 - (DAYS_IN_A_WEEK - 1) * amountInSats / DYNAMIC_TARGET_THRESHOLD_IN_SATS));
     }
@@ -113,16 +109,6 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
             throw new InvalidSwapException(swap.houstonUuid);
         }
 
-        /**
-         * The plus one is to prevent a race condition if the server finds out about a new block
-         * before the client.
-         */
-        final int blockchainHeight = blockchainHeightRepository.fetchLatest();
-        final int refundBlocks = calculateExpirationTimeInBlocks(invoice.amount.amountInSatoshis);
-        if (blockchainHeight + refundBlocks + 1 < swap.getFundingOutput().getUserLockTime()) {
-            throw new InvalidSwapException(swap.houstonUuid);
-        }
-
         return PaymentRequest.toLnInvoice(
                 invoice,
                 amount,
@@ -133,19 +119,10 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     private double getFeeRate(SubmarineSwap swap, FeeWindow feeWindow) {
-        /**
-         * The minus 3 is to prevent a race condition between the client and server finding out
-         * about blocks, and also having slightly different values of the fee rates per block
-         * target.
-        **/
         if (swap.getFundingOutput().getConfirmationsNeeded() == 0) {
-            final int lockTime = swap.getFundingOutput().getUserLockTime();
-            final int blockchainHeight = blockchainHeightRepository.fetchLatest();
-
-            final int blockTarget = (int) ((lockTime - blockchainHeight) * SAFE_CONF_TARGET_FACTOR)
-                    - SAFE_CONF_TARGET_LEEWAY;
-            return feeWindow.getMinimumFeeInSatoshisPerByte(blockTarget);
+            return feeWindow.getMinimumFeeInSatoshisPerByte(SWAP_V2_CONF_TARGET);
         }
+
         return feeWindow.getFastestFeeInSatoshisPerByte();
     }
 

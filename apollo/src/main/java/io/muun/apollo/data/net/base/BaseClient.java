@@ -1,7 +1,6 @@
 package io.muun.apollo.data.net.base;
 
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor;
-import io.muun.apollo.data.net.base.interceptor.DuplicatingInterceptor;
 import io.muun.apollo.data.net.base.interceptor.IdempotencyKeyInterceptor;
 import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor;
 import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor;
@@ -124,10 +123,6 @@ public class BaseClient<ServiceT> {
 
         if (!isReleaseBuild() && config.getBoolean("net.interceptors.stetho")) {
             builder.addNetworkInterceptor(new StethoInterceptor());
-        }
-
-        if (config.getBoolean("net.interceptors.idempotencyTester")) {
-            builder.addInterceptor(new DuplicatingInterceptor());
         }
 
         return builder.build();

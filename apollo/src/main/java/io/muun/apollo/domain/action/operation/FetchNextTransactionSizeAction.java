@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.operation.OperationDao;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
@@ -12,6 +11,7 @@ import io.muun.common.Optional;
 import io.muun.common.rx.ObservableFn;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -52,7 +52,7 @@ public class FetchNextTransactionSizeAction extends BaseAsyncAction0<NextTransac
 
         return houstonClient.fetchNextTransactionSize()
                 .doOnNext(newNextTransactionSize -> {
-                    Logger.debug("Updating next transaction size estimation");
+                    Timber.d("Updating next transaction size estimation");
                     transactionSizeRepository.setTransactionSize(newNextTransactionSize);
                 });
     }

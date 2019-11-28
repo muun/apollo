@@ -1,6 +1,5 @@
 package io.muun.apollo.data.preferences.migration;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
@@ -12,6 +11,7 @@ import io.muun.common.model.SessionStatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import timber.log.Timber;
 
 import java.util.Collections;
 
@@ -99,7 +99,7 @@ public class PreferencesMigrationManager {
         final int currentVersion = schemaVersionRepository.getVersion();
 
         for (int version = currentVersion + 1; version < migrations.length; version++) {
-            Logger.info("Running shared preferences' migration %s...", version);
+            Timber.d("Running shared preferences' migration %s...", version);
             migrations[version].run();
             schemaVersionRepository.setVersion(version);
         }

@@ -1,6 +1,5 @@
 package io.muun.apollo.data.db.base;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.domain.errors.DatabaseError;
 import io.muun.apollo.domain.model.base.PersistentModel;
 import io.muun.common.Optional;
@@ -17,6 +16,7 @@ import io.reactivex.functions.Function;
 import rx.Observable;
 import rx.exceptions.OnErrorThrowable;
 import rx.functions.Func2;
+import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,7 +130,7 @@ public class BaseDao<ModelT extends PersistentModel> {
             }
         } catch (Exception e) {
             // TODO handle?
-            Logger.error(e);
+            Timber.e(e);
         }
 
         return results;

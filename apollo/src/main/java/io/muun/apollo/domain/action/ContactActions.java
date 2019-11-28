@@ -4,11 +4,11 @@ import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.phone_contact.PhoneContactDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.domain.LibwalletBridge;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.model.Contact;
@@ -21,6 +21,7 @@ import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.schemes.TransactionSchemeV1;
 import io.muun.common.crypto.schemes.TransactionSchemeV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV3;
+import io.muun.common.crypto.schemes.TransactionSchemeV4;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.rx.ObservableFn;
@@ -31,6 +32,7 @@ import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Func0;
+import timber.log.Timber;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -100,7 +102,7 @@ public class ContactActions {
      * Fetch the complete contact list from Houston.
      */
     public Observable<Void> fetchReplaceContacts() {
-        Logger.debug("[Contacts] Fetching full contact list");
+        Timber.d("[Contacts] Fetching full contact list");
 
         return contactDao.deleteAll().flatMap(ignored ->
                 houstonClient.fetchContacts()
@@ -121,14 +123,18 @@ public class ContactActions {
             return;
         }
 
-        Logger.debug("[Contacts] Watch started");
+        Timber.d("[Contacts] Watch started");
 
         phoneContactsAutoSyncSub = contactsProvider
                 .watchContactChanges()
                 .debounce(2, TimeUnit.SECONDS) // changes instantly trigger more than one event
                 .concatMap(uselessUriAndroidPlease -> {
-                    Logger.debug("[Contacts] Watch triggered sync");
-                    return syncPhoneContacts().onErrorReturn(Logger::errorToVoid);
+                    Timber.d("[Contacts] Watch triggered sync");
+
+                    return syncPhoneContacts().onErrorReturn(error -> {
+                        Timber.e(error);
+                        return null;
+                    });
                 })
                 .compose(transformerFactory.getAsyncExecutor())
                 .subscribe();
@@ -162,12 +168,12 @@ public class ContactActions {
 
             return phoneContactDao
                     .syncWith(phoneContacts, currentTs)
-                    .doOnSubscribe(() -> Logger.debug("[Contacts] Reading system address book..."))
+                    .doOnSubscribe(() -> Timber.d("[Contacts] Reading system address book..."))
                     .doOnNext(this::logDiff)
                     .filter(diff -> !diff.isEmpty())
                     .flatMap(houstonClient::patchPhoneNumbers)
                     .doOnNext(newContacts -> {
-                        Logger.debug("[Contacts] Synchronized changes with Houston.");
+                        Timber.d("[Contacts] Synchronized changes with Houston.");
 
                         for (Contact contact: newContacts) {
                             createOrUpdateContact(contact).toCompletable().await();
@@ -229,8 +235,12 @@ public class ContactActions {
                     return createContactAddressV2(contact);
 
                 case TransactionSchemeV3.ADDRESS_VERSION:
-                default: // contact can handle higher, we can't.
                     return createContactAddressV3(contact);
+
+                case TransactionSchemeV4.ADDRESS_VERSION:
+                default: // contact can handle higher, we can't.
+                    return createContactAddressV4(contact);
+
             }
         }
     }
@@ -244,19 +254,25 @@ public class ContactActions {
         contact.lastDerivationIndex = (long) derivedPublicKey.getLastLevelIndex();
         contactDao.updateLastDerivationIndex(contact.getHid(), contact.lastDerivationIndex);
 
-        return TransactionSchemeV1.createAddress(networkParameters, derivedPublicKey);
+        return LibwalletBridge.createAddressV1(derivedPublicKey, networkParameters);
     }
 
     private MuunAddress createContactAddressV2(Contact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
-        return TransactionSchemeV2.createAddress(derivedPublicKeyPair);
+        return LibwalletBridge.createAddressV2(derivedPublicKeyPair, networkParameters);
     }
 
     private MuunAddress createContactAddressV3(Contact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
-        return TransactionSchemeV3.createAddress(derivedPublicKeyPair);
+        return LibwalletBridge.createAddressV3(derivedPublicKeyPair, networkParameters);
+    }
+
+    private MuunAddress createContactAddressV4(Contact contact) {
+        final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
+
+        return LibwalletBridge.createAddressV4(derivedPublicKeyPair, networkParameters);
     }
 
     private PublicKeyPair derivePublicKeyPair(Contact contact) {
@@ -312,7 +328,7 @@ public class ContactActions {
     }
 
     private void logDiff(Diff<String> diff) {
-        Logger.debug(String.format(
+        Timber.d(String.format(
                 "[Contacts] Found %d additions and %d deletions",
                 diff.added.size(),
                 diff.removed.size()

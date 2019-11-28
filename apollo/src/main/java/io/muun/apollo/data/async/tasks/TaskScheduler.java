@@ -1,7 +1,5 @@
 package io.muun.apollo.data.async.tasks;
 
-import io.muun.apollo.data.logging.Logger;
-
 import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -15,6 +13,7 @@ import com.firebase.jobdispatcher.Trigger;
 import org.threeten.bp.Duration;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 import java.util.concurrent.TimeUnit;
 
@@ -88,7 +87,7 @@ public class TaskScheduler {
                 .build();
 
         dispatcher.schedule(task);
-        Logger.info("Scheduled a periodic task of type %s", type);
+        Timber.d("Scheduled a periodic task of type %s", type);
     }
 
     @NonNull

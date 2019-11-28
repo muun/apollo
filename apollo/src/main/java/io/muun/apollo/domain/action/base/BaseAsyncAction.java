@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.base;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 
 import android.util.Log;
@@ -9,6 +8,7 @@ import rx.Subscriber;
 import rx.Subscription;
 import rx.exceptions.Exceptions;
 import rx.subjects.BehaviorSubject;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -25,7 +25,7 @@ public class BaseAsyncAction<ReturnT> {
     /**
      * Get the action running in a background thread and posting results to the UI thread.
      */
-    protected Observable<ReturnT> actionInBackground(Observable<ReturnT> action) {
+    private Observable<ReturnT> actionInBackground(Observable<ReturnT> action) {
 
         return action.compose(executionTransformerFactory.getAsyncExecutor());
     }
@@ -151,6 +151,6 @@ public class BaseAsyncAction<ReturnT> {
     }
 
     private void log(String what) {
-        Logger.debug("[AsyncAction " + this.getClass().getSimpleName() + "] " + what);
+        Timber.d("[AsyncAction " + this.getClass().getSimpleName() + "] " + what);
     }
 }

@@ -1,9 +1,10 @@
 package io.muun.apollo.data.db;
 
-import io.muun.apollo.data.logging.Logger;
+import io.muun.apollo.domain.errors.DbMigrationError;
 
 import android.database.SQLException;
 import androidx.sqlite.db.SupportSQLiteDatabase;
+import timber.log.Timber;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -284,6 +285,42 @@ public class DbMigrationManager {
             + "    preimage_in_hex TEXT\n"
             + ")";
 
+    private static final String MIGRATION_26_CREATE_SUBMARINE_SWAPS_TABLE = ""
+            + "CREATE TABLE submarine_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    invoice TEXT NOT NULL,\n"
+            + "    receiver_alias TEXT,\n"
+            + "    receiver_network_addresses TEXT NOT NULL,\n"
+            + "    receiver_public_key TEXT NOT NULL,\n"
+            + "    funding_output_address TEXT NOT NULL,\n"
+            + "    funding_output_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    funding_confirmations_needed INTEGER NOT NULL,\n"
+            + "    funding_user_lock_time INTEGER,\n"       // DROPPING NOT NULL CONSTRAINT HERE
+            + "    funding_user_refund_address TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_path TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_version INTEGER NOT NULL,\n"
+            + "    funding_server_payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    funding_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    sweep_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    lightning_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    expires_at TEXT NOT NULL,\n"
+            + "    payed_at TEXT,\n"
+            + "    preimage_in_hex TEXT,\n"
+            + "    will_pre_open_channel INTEGER NOT NULL,\n"
+            + "    channel_open_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    channel_close_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    funding_script_version INTEGER NOT NULL,\n"
+            + "    funding_expiration_in_blocks INTEGER,\n"
+            + "    funding_user_public_key TEXT,\n"
+            + "    funding_user_public_key_path TEXT,\n"
+            + "    funding_muun_public_key TEXT,\n"
+            + "    funding_muun_public_key_path TEXT\n"
+            + ")";
+
+    private static final String MIGRATION_26_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_SUBMARINE_SWAPS =
+            "INSERT INTO submarine_swaps SELECT * FROM tmp_submarine_swaps";
+
     /**
      * Constructor. Here go all the database migrations.
      *
@@ -405,6 +442,29 @@ public class DbMigrationManager {
 
         add(24, MigrationsModel.MIGRATION_24_ADD_SUBMARINE_SWAP_CHANNEL_OPEN_FEE);
         add(25, MigrationsModel.MIGRATION_25_ADD_SUBMARINE_SWAP_CHANNEL_CLOSE_FEE);
+
+        // Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+        //
+        //  1. Rename your table to a temporary name.
+        //  2. Create a table exactly as the original one, except for the column in question.
+        //  3. Insert all the rows from the temporary table to the new one.
+        //  4. Delete the temporary table.
+
+        add(26, MigrationsModel.MIGRATION_26_MOVE_SUBMARINE_SWAPS_TO_A_TEMPORARY_TABLE,
+                MIGRATION_26_CREATE_SUBMARINE_SWAPS_TABLE,
+                MIGRATION_26_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_SUBMARINE_SWAPS,
+                MigrationsModel.MIGRATION_26_DROP_TEMPORARY_TABLE
+        );
+
+        add(27, MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_SCRIPT_VERSION,
+                MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_EXPIRATION_IN_BLOCKS,
+                MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_USER_PUBLIC_KEY,
+                MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_USER_PUBLIC_KEY_PATH,
+                MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_MUUN_PUBLIC_KEY,
+                MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_MUUN_PUBLIC_KEY_PATH
+        );
+
+
     }
 
     /**
@@ -434,7 +494,7 @@ public class DbMigrationManager {
                 continue;
             }
 
-            Logger.info("Running database migration %d...", version);
+            Timber.d("Running database migration %d...", version);
 
             database.beginTransaction();
 
@@ -443,7 +503,7 @@ public class DbMigrationManager {
                     try {
                         database.execSQL(statement);
                     } catch (SQLException e) {
-                        Logger.error(e, "Error while running migration: " + statement);
+                        Timber.e(new DbMigrationError(version, statement, e));
                     }
                 }
 

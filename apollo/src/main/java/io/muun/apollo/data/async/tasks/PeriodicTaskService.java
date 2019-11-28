@@ -1,9 +1,9 @@
 package io.muun.apollo.data.async.tasks;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.NoStackTraceException;
+import io.muun.apollo.domain.errors.PeriodicTaskError;
 import io.muun.apollo.external.DataComponentProvider;
 
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.firebase.jobdispatcher.SimpleJobService;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -34,7 +35,7 @@ public class PeriodicTaskService extends SimpleJobService {
         final DataComponentProvider provider = (DataComponentProvider) getApplication();
         provider.getDataComponent().inject(this);
 
-        Logger.info("Starting PeriodicTaskService");
+        Timber.d("Starting PeriodicTaskService");
     }
 
     @Override
@@ -51,7 +52,7 @@ public class PeriodicTaskService extends SimpleJobService {
         final Bundle params = taskParams.getExtras();
         final String type = params.getString(TASK_TYPE_KEY);
 
-        Logger.info("Running periodic task of type %s", type);
+        Timber.d("Running periodic task of type %s", type);
 
         final long startMs = SystemClock.elapsedRealtime();
 
@@ -77,18 +78,18 @@ public class PeriodicTaskService extends SimpleJobService {
                         throwable = new NoStackTraceException(message);
                     }
 
-                    Logger.error(throwable);
+                    Timber.e(throwable);
                 })
                 .compose(transformerFactory.getAsyncExecutor())
                 .toBlocking()
                 .subscribe();
 
         } catch (RuntimeException error) {
-            Logger.error(error, "Error after " + secondsSince(startMs) + "s on periodic %s", type);
+            Timber.e(new PeriodicTaskError(type, secondsSince(startMs), error));
             return JobService.RESULT_FAIL_RETRY;
         }
 
-        Logger.info("Success after " + secondsSince(startMs) + "s on periodic %s", type);
+        Timber.d("Success after " + secondsSince(startMs) + "s on periodic %s", type);
         return JobService.RESULT_SUCCESS;
     }
 
@@ -100,7 +101,7 @@ public class PeriodicTaskService extends SimpleJobService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Logger.info("Destroying PeriodicTaskService");
+        Timber.d("Destroying PeriodicTaskService");
     }
 
     private long secondsSince(long startingRealtime) {

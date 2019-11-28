@@ -189,8 +189,11 @@ public enum ErrorCode {
     PUBLIC_PROFILE_NOT_SET_UP(
             2051, StatusCode.CLIENT_FAILURE, "Public profile is not set up"
     ),
+    RECOVERY_CODE_NOT_SET_UP(
+            2059, StatusCode.CLIENT_FAILURE, "Recovery code is not set up"
+    ),
     P2P_NOT_ENABLED(
-      2055, StatusCode.CLIENT_FAILURE, "Peer to Peer payments not enabled"
+            2055, StatusCode.CLIENT_FAILURE, "Peer to Peer payments not enabled"
     ),
     FIRST_NAME_EMPTY(
             2056, StatusCode.CLIENT_FAILURE, "First Name cannot be empty"
@@ -340,10 +343,11 @@ public enum ErrorCode {
     INVALID_INVOICE(
             8100, StatusCode.CLIENT_FAILURE, "Couldn't parse the lightning invoice"
     ),
+    INVOICE_EXPIRED(
+            8112, StatusCode.CLIENT_FAILURE, "Invoice provided is already expired"
+    ),
     INVOICE_EXPIRES_TOO_SOON(
-            8101,
-            StatusCode.CLIENT_FAILURE,
-            "Invoice provided is already expired or will expire too soon"
+            8101, StatusCode.CLIENT_FAILURE, "Invoice provided will expire too soon"
     ),
     INVOICE_ALREADY_USED(
             8102, StatusCode.CLIENT_FAILURE, "Invoice already used in another swap"
@@ -367,6 +371,17 @@ public enum ErrorCode {
     ),
     INVALID_SWAP_EXPIRATION(
             8108, StatusCode.CLIENT_FAILURE, "The proposed swap expiration is too low"
+    ),
+    SWAP_NOT_FAILED(
+            8109, StatusCode.CLIENT_FAILURE, "Won't sign a refund for a swap that hasn't failed"
+    ),
+    INVALID_REFUND_TRANSACTION(
+            8110, StatusCode.CLIENT_FAILURE, "The refund transaction is invalid"
+    ),
+    SCRIPT_VERSION_TOO_OLD(
+            8111,
+            StatusCode.CLIENT_FAILURE,
+            "The funding output script version is too old for the requested operation"
     ),
 
     // exchangehub errors
@@ -405,6 +420,9 @@ public enum ErrorCode {
     ),
     PAYMENT_REQUEST_NOT_STARTED(
             8161, StatusCode.CLIENT_FAILURE, "Payment request not started"
+    ),
+    INVALID_NETWORK(
+            8162, StatusCode.CLIENT_FAILURE, "Invalid network"
     ),
 
     // rebalancer errors

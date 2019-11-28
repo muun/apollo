@@ -8,15 +8,17 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.SegwitAddress;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.Transaction.SigHash;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptChunk;
 import org.bitcoinj.script.ScriptException;
-import org.bitcoinj.script.ScriptOpCodes;
+import org.bitcoinj.script.ScriptPattern;
 
 import java.util.List;
 
@@ -111,17 +113,21 @@ public final class TransactionHelpers {
             return Optional.empty();
         }
 
-        final List<ScriptChunk> chunks = script.getChunks();
         final NetworkParameters network = output.getParams();
 
-        if (isP2PkhOutput(chunks)) {
-            final byte[] hash = chunks.get(2).data;
+        if (ScriptPattern.isP2PKH(script)) {
+            final byte[] hash = ScriptPattern.extractHashFromP2PKH(script);
             return Optional.of(LegacyAddress.fromPubKeyHash(network, hash));
         }
 
-        if (isP2ShOutput(chunks)) {
-            final byte[] hash = chunks.get(1).data;
+        if (ScriptPattern.isP2SH(script)) {
+            final byte[] hash = ScriptPattern.extractHashFromP2SH(script);
             return Optional.of(LegacyAddress.fromScriptHash(network, hash));
+        }
+
+        if (ScriptPattern.isP2WH(script)) {
+            final byte[] hash = ScriptPattern.extractHashFromP2WH(script);
+            return Optional.of(SegwitAddress.fromHash(network, hash));
         }
 
         return Optional.empty();
@@ -134,38 +140,6 @@ public final class TransactionHelpers {
         } catch (ScriptException e) {
             return null; // bitcoinj sometimes fails to parse non-standard outputs
         }
-    }
-
-    /**
-     * Decide whether a script is a P2PKH output script.
-     */
-    private static boolean isP2PkhOutput(List<ScriptChunk> chunks) {
-
-        // A P2PKH output script is exactly:
-        // OP_DUP OP_HASH160 <public key hash> OP_EQUALVERIFY OP_CHECKSIG
-
-        return chunks.size() == 5
-                && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_DUP)
-                && chunks.get(1).equalsOpCode(ScriptOpCodes.OP_HASH160)
-                && chunks.get(2).data != null
-                && chunks.get(2).data.length == LegacyAddress.LENGTH
-                && chunks.get(3).equalsOpCode(ScriptOpCodes.OP_EQUALVERIFY)
-                && chunks.get(4).equalsOpCode(ScriptOpCodes.OP_CHECKSIG);
-    }
-
-    /**
-     * Decide whether a script is a P2SH output script.
-     */
-    private static boolean isP2ShOutput(List<ScriptChunk> chunks) {
-
-        // A P2SH output script is exactly:
-        // OP_HASH160 <script hash> OP_EQUAL
-
-        return chunks.size() == 3
-                && chunks.get(0).equalsOpCode(ScriptOpCodes.OP_HASH160)
-                && chunks.get(1).data != null
-                && chunks.get(1).data.length == LegacyAddress.LENGTH
-                && chunks.get(2).equalsOpCode(ScriptOpCodes.OP_EQUAL);
     }
 
     /**
@@ -196,8 +170,9 @@ public final class TransactionHelpers {
             return Optional.empty();
         }
 
-        final List<ScriptChunk> chunks = script.getChunks();
         final NetworkParameters network = input.getParams();
+        final List<ScriptChunk> chunks = script.getChunks();
+
 
         if (isP2PkhInput(chunks)) {
             final byte[] rawPubKey = chunks.get(1).data;
@@ -211,6 +186,14 @@ public final class TransactionHelpers {
             final byte[] addressHash = Hashes.sha256Ripemd160(rawRedeemScript);
 
             return Optional.of(LegacyAddress.fromScriptHash(network, addressHash));
+        }
+
+        if (isP2WhInput(chunks, input)) {
+            final TransactionWitness witness = input.getWitness();
+            final byte[] scriptInput = witness.getPush(witness.getPushCount() - 1);
+            final byte[] addressHash = Hashes.sha256(scriptInput);
+
+            return Optional.of(SegwitAddress.fromHash(network, addressHash));
         }
 
         return Optional.empty();
@@ -280,4 +263,14 @@ public final class TransactionHelpers {
 
         return true;
     }
+
+    /**
+     * Decide whether a script is a P2WH-spending input script. This is a best effort guess.
+     */
+    private static boolean isP2WhInput(List<ScriptChunk> chunks, TransactionInput input) {
+
+        // P2WH inputs don't have any scripts.
+        return input.hasWitness() && chunks.size() == 0;
+    }
+
 }

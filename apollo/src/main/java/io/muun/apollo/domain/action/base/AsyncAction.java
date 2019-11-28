@@ -1,14 +1,11 @@
 package io.muun.apollo.domain.action.base;
 
-import io.muun.apollo.data.logging.CrashReportingUtils;
-import io.muun.apollo.data.logging.Logger;
-
-import android.util.Log;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.exceptions.Exceptions;
 import rx.subjects.BehaviorSubject;
+import timber.log.Timber;
 
 public class AsyncAction<T> {
 
@@ -36,7 +33,7 @@ public class AsyncAction<T> {
     protected synchronized void run(Observable<T> action) {
 
         if (isRunning()) {
-            this.log("Already running");
+            Timber.d(name + ": already running");
             return;
         }
 
@@ -129,27 +126,23 @@ public class AsyncAction<T> {
     }
 
     private void setEmpty() {
-        log("EMPTY");
+        Timber.d(name + ": EMPTY");
         subject.onNext(ActionState.createEmpty());
     }
 
     private void setLoading() {
-        log("LOADING");
+        Timber.d(name + ": LOADING");
         subject.onNext(ActionState.createLoading());
     }
 
     private void setValue(T value) {
-        log("VALUE " + value);
+        Timber.d(name + ": VALUE " + value);
         subject.onNext(ActionState.createValue(value));
     }
 
     private void setError(Throwable error) {
-        log("ERROR " + Log.getStackTraceString(CrashReportingUtils.summarize(error)));
+        Timber.e(error);
         subject.onNext(ActionState.createError(error));
-    }
-
-    private void log(String what) {
-        Logger.debug("AsyncAction " + name + " " + what);
     }
 
     private void unsubscribe() {

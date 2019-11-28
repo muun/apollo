@@ -1,10 +1,10 @@
 package io.muun.apollo.data.serialization;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.serialization.dates.MuunZonedDateTimeDeserializer;
 import io.muun.apollo.data.serialization.dates.MuunZonedDateTimeSerializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeDeserializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeSerializer;
+import io.muun.apollo.domain.errors.MissingCurrencyError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.dates.MuunZonedDateTime;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.javamoney.moneta.Money;
 import org.threeten.bp.ZonedDateTime;
 import org.zalando.jackson.datatype.money.MoneyModule;
+import timber.log.Timber;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +35,7 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 import javax.money.MonetaryException;
+import javax.money.UnknownCurrencyException;
 import javax.validation.constraints.NotNull;
 
 public final class SerializationUtils {
@@ -204,8 +206,14 @@ public final class SerializationUtils {
 
         try {
             return Monetary.getCurrency(currencyString);
+
+        } catch (UnknownCurrencyException e) {
+            // In practice, only this type of error should arise.
+            Timber.e(new MissingCurrencyError(e));
+            throw new IllegalArgumentException(e);
+
         } catch (MonetaryException e) {
-            Logger.error(e, "Unable to deserialize currency: %s", currencyString);
+            // This more general kind can only happen when providers are incorrectly initialized.
             throw new IllegalArgumentException(e);
         }
     }

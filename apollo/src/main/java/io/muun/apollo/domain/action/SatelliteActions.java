@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.satellite_pairing.SatellitePairingDao;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.ApiObjectsMapper;
 import io.muun.apollo.data.net.SatelliteClient;
 import io.muun.apollo.data.preferences.SatelliteStateRepository;
@@ -35,6 +34,7 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import java.util.List;
 
@@ -183,7 +183,7 @@ public class SatelliteActions {
                 .compose(ObservableFn.onTypedErrorResumeNext(
                         ExpiredSatelliteSession.class,
                         error -> {
-                            Logger.error(error);
+                            Timber.e(error);
                             return Observable.just(null);
                         }
                 ));
@@ -274,7 +274,7 @@ public class SatelliteActions {
                         pairing,
                         satelliteStateRepository.getSatelliteState()
                 ))
-                .doOnError(Logger::error);
+                .doOnError(Timber::e);
     }
 
     public Observable<List<SatellitePairing>> getCompletedPairings() {

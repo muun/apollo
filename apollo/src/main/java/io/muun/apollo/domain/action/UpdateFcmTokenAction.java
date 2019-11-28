@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
@@ -8,9 +7,12 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
 
     private final HoustonClient houstonClient;
@@ -51,9 +53,12 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
             return Observable.just(null);
         }
 
+        Timber.d("Updating FCM token");
+
         return houstonClient.updateFcmToken(token)
                 .compose(executionTransformerFactory.getAsyncExecutor())
                 .flatMap(ignore -> notificationActions.pullNotifications())
-                .doOnError(error -> Logger.error(error, "Error while trying to refresh FCM token"));
+                // TODO: replace this with generic mechanism for all async actions to log errors
+                .doOnError(error -> Timber.e(error, "Error while trying to refresh FCM token"));
     }
 }

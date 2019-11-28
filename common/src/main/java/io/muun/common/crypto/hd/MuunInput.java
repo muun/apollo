@@ -21,7 +21,10 @@ public class MuunInput {
     private Signature muunSignature; // co-signed inputs only
 
     @Nullable
-    private MuunInputSubmarineSwap submarineSwap; // submarine swap refund inputs only
+    private MuunInputSubmarineSwapV101 submarineSwap; // submarine swap V101 refund inputs only
+
+    @Nullable
+    private MuunInputSubmarineSwapV102 submarineSwapV102; // submarine swap V102 refund inputs only
 
     /**
      * Build from a json-serializable representation.
@@ -33,8 +36,11 @@ public class MuunInput {
                 MuunAddress.fromJson(json.address),
                 json.userSignature == null ? null : Signature.fromJson(json.userSignature),
                 json.muunSignature == null ? null : Signature.fromJson(json.muunSignature),
-                json.submarineSwap == null ? null : MuunInputSubmarineSwap.fromJson(
+                json.submarineSwap == null ? null : MuunInputSubmarineSwapV101.fromJson(
                         json.submarineSwap
+                ),
+                json.submarineSwapV102 == null ? null : MuunInputSubmarineSwapV102.fromJson(
+                        json.submarineSwapV102
                 )
         );
     }
@@ -54,13 +60,15 @@ public class MuunInput {
                      MuunAddress address,
                      @Nullable Signature userSignature,
                      @Nullable Signature muunSignature,
-                     @Nullable MuunInputSubmarineSwap submarineSwap) {
+                     @Nullable MuunInputSubmarineSwapV101 submarineSwap,
+                     @Nullable MuunInputSubmarineSwapV102 submarineSwapV102) {
 
         this.prevOut = prevOut;
         this.address = address;
         this.userSignature = userSignature;
         this.muunSignature = muunSignature;
         this.submarineSwap = submarineSwap;
+        this.submarineSwapV102 = submarineSwapV102;
     }
 
     public MuunOutput getPrevOut() {
@@ -98,12 +106,21 @@ public class MuunInput {
     }
 
     @Nullable
-    public MuunInputSubmarineSwap getSubmarineSwap() {
+    public MuunInputSubmarineSwapV101 getSubmarineSwap() {
         return submarineSwap;
     }
 
-    public void setSubmarineSwap(@Nullable MuunInputSubmarineSwap submarineSwap) {
+    public void setSubmarineSwap(@Nullable MuunInputSubmarineSwapV101 submarineSwap) {
         this.submarineSwap = submarineSwap;
+    }
+
+    @Nullable
+    public MuunInputSubmarineSwapV102 getSubmarineSwapV102() {
+        return submarineSwapV102;
+    }
+
+    public void setSubmarineSwapV102(@Nullable MuunInputSubmarineSwapV102 submarineSwapV102) {
+        this.submarineSwapV102 = submarineSwapV102;
     }
 
     /**
@@ -116,7 +133,8 @@ public class MuunInput {
                 address.toJson(),
                 userSignature == null ? null : userSignature.toJson(),
                 muunSignature == null ? null : muunSignature.toJson(),
-                submarineSwap == null ? null : submarineSwap.toJson()
+                submarineSwap == null ? null : submarineSwap.toJson(),
+                submarineSwapV102 == null ? null : submarineSwapV102.toJson()
         );
     }
 

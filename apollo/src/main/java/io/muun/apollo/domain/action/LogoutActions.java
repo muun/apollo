@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.BaseRepository;
@@ -19,6 +18,7 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.external.NotificationService;
 
 import android.content.Context;
+import timber.log.Timber;
 
 import java.util.Arrays;
 import java.util.List;
@@ -121,7 +121,7 @@ public class LogoutActions {
             try {
                 repository.clear();
             } catch (Exception e) {
-                Logger.error(e);
+                Timber.e(e);
             }
         }
 

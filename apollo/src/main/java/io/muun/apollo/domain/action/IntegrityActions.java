@@ -24,7 +24,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class IntegrityActions {
 
     private final OperationActions operationActions;

@@ -39,7 +39,7 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_IF;
 public class TransactionSchemeSubmarineSwap {
 
     public static final int CLIENT_VERSION = 35;
-    public static final int ADDRESS_VERSION = MuunAddress.VERSION_SUBMARINE_SWAP_REFUND;
+    public static final int ADDRESS_VERSION = MuunAddress.VERSION_SUBMARINE_SWAP_V1;
 
     /**
      * Create a refund address for the failure case of the SubmarineSwap.
@@ -208,7 +208,9 @@ public class TransactionSchemeSubmarineSwap {
      * them as a parameter because the base58 serialization of bitcoin addresses does not
      * differentiate between testnet and regtest (and so this information is lost and cause trouble
      * on local environment).
+     * NOTE: @Deprecated. Only old Apollo clients use this code. Leaving it as reference
      */
+    @Deprecated
     public static boolean validateSwap(String invoice,
                                        PublicKeyPair userPublicKeyPair,
                                        SubmarineSwapJson swapJson,
@@ -223,8 +225,6 @@ public class TransactionSchemeSubmarineSwap {
             return false;
         }
 
-        //TODO: check that timelock is acceptable
-
         // Check that the refund address belongs to the user
         final MuunAddressJson swapRefundAddress = swapJson.fundingOutput.userRefundAddress;
         final PublicKeyPair derivedPublicKeyPair = userPublicKeyPair
@@ -232,7 +232,8 @@ public class TransactionSchemeSubmarineSwap {
 
         final MuunAddress derivedAddress = MuunAddress.create(
                 swapRefundAddress.version,
-                derivedPublicKeyPair
+                derivedPublicKeyPair,
+                network
         );
 
         if (!derivedAddress.getAddress().equals(swapRefundAddress.address)) {

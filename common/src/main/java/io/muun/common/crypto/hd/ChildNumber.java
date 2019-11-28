@@ -34,6 +34,22 @@ public class ChildNumber {
     }
 
     @Override
+    public boolean equals(Object other) {
+
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof ChildNumber)) {
+            return false;
+        }
+
+        final ChildNumber otherChildNumber = (ChildNumber) other;
+
+        return index == otherChildNumber.index && isHardened == otherChildNumber.isHardened;
+    }
+
+    @Override
     public String toString() {
 
         String result = String.valueOf(index);

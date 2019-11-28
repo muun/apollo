@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.KeysRepository;
+import io.muun.apollo.domain.LibwalletBridge;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.PasswordIntegrityError;
@@ -13,10 +14,13 @@ import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hd.Schema;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.crypto.schemes.TransactionSchemeV3;
+import io.muun.common.crypto.schemes.TransactionSchemeV4;
+import io.muun.common.exception.MissingCaseError;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 import io.muun.common.utils.RandomGenerator;
 
+import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 
 import javax.annotation.Nullable;
@@ -31,6 +35,8 @@ public class AddressActions {
 
     private final HoustonClient houstonClient;
 
+    private final NetworkParameters networkParameters;
+
     public final AsyncAction0<Void> syncExternalAddressIndexes;
 
     /**
@@ -39,26 +45,29 @@ public class AddressActions {
     @Inject
     public AddressActions(KeysRepository keysRepository,
                           HoustonClient houstonClient,
+                          NetworkParameters networkParameters,
                           AsyncActionStore asyncActionStore) {
 
         this.keysRepository = keysRepository;
         this.houstonClient = houstonClient;
+        this.networkParameters = networkParameters;
 
         this.syncExternalAddressIndexes = asyncActionStore
                 .get("address/syncExternalIndexes", this::syncExternalAddressesIndexes);
     }
 
     /**
-     * Return an external address, as a plain string.
-     */
-    public String getExternalAddress() {
-        return getExternalMuunAddress().getAddress();
-    }
-
-    /**
      * Return an external address.
      */
-    public MuunAddress getExternalMuunAddress() {
+    public MuunAddress createLegacyAddress() {
+        return createMuunAddress(TransactionSchemeV3.ADDRESS_VERSION);
+    }
+
+    public MuunAddress createSegwitAddress() {
+        return createMuunAddress(TransactionSchemeV4.ADDRESS_VERSION);
+    }
+
+    private MuunAddress createMuunAddress(int addressVersion) {
 
         final Integer maxUsedIndex = keysRepository.getMaxUsedExternalAddressIndex();
         final Integer maxWatchingIndex = keysRepository.getMaxWatchingExternalAddressIndex();
@@ -93,8 +102,17 @@ public class AddressActions {
 
         syncExternalAddressIndexes.run();
 
-        // ALWAYS use latest supported TransactionScheme
-        return TransactionSchemeV3.createAddress(derivedPublicKeyPair);
+        // Use only latest supported TransactionSchemes
+        switch (addressVersion) {
+            case TransactionSchemeV3.ADDRESS_VERSION:
+                return LibwalletBridge.createAddressV3(derivedPublicKeyPair, networkParameters);
+
+            case TransactionSchemeV4.ADDRESS_VERSION:
+                return LibwalletBridge.createAddressV4(derivedPublicKeyPair, networkParameters);
+
+            default:
+                throw new MissingCaseError(addressVersion, "Unexpected address version");
+        }
     }
 
     /**

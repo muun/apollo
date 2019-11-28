@@ -1,9 +1,9 @@
 package io.muun.apollo.data.preferences;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.NullCurrencyBugError;
+import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
@@ -15,6 +15,7 @@ import android.content.Context;
 import android.net.Uri;
 import com.f2prateek.rx.preferences.Preference;
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -354,7 +355,7 @@ public class UserRepository extends BaseRepository {
         return primaryCurrencyPreference.asObservable()
             .map(code -> {
                 if (code == null) {
-                    Logger.error(new NullCurrencyBugError());
+                    Timber.e(new NullCurrencyBugError());
                     code = "USD";
                 }
 
@@ -364,7 +365,7 @@ public class UserRepository extends BaseRepository {
     }
 
     public void storeFcmToken(String token) {
-        Logger.debug("FCM: Updating token in auth repository");
+        Timber.d("FCM: Updating token in auth repository");
         fcmTokenPreference.set(token);
     }
 
@@ -403,7 +404,8 @@ public class UserRepository extends BaseRepository {
             } catch (IllegalArgumentException ex) {
                 // SignupDraft may have changed, and this is an old format. Discard it:
                 final String rawValue = sharedPreferences.getString(SIGNUP_DRAFT, null);
-                Logger.error("Could not deserialize signupDraft: " + rawValue);
+                Timber.e(new SignupDraftFormatError(rawValue));
+
                 signupDraftPreference.delete();
             }
         }

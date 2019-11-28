@@ -13,7 +13,7 @@
 gradle-app.setting
 
 # Intellij IDEA (see https://intellij-support.jetbrains.com/entries/23393067)
-/.idea
+.idea
 *.iml
 *.iml.bak
 projectFilesBackup

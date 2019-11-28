@@ -43,7 +43,7 @@ public class SubmitIncomingPaymentAction extends BaseAsyncAction2<
     }
 
     private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
-        final MuunAddress address = addressActions.getExternalMuunAddress();
+        final MuunAddress address = addressActions.createLegacyAddress();
 
         Preconditions.checkNotNull(payReq.getHardwareWallet());
 

@@ -1,8 +1,8 @@
 package io.muun.apollo.data.preferences;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
+import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
@@ -188,7 +188,7 @@ public class KeysRepository extends BaseRepository {
                     return challengePublicKey.encryptPrivateKey(basePrivateKey, birthday);
                 })
                 .onErrorResumeNext(error -> {
-                    Logger.error(error);
+                    Timber.e(error);
                     return Observable.just(null);
                 })
                 .flatMap(encryptedKey -> {
@@ -316,13 +316,13 @@ public class KeysRepository extends BaseRepository {
      * <p>This is compat method and should not be used for anything else.</p>
      */
     public void seasonPublicChallengeKey(final byte[] salt, final ChallengeType type) {
-        Logger.debug("Adding salt to %s", type.toString());
+        Timber.d("Adding salt to %s", type.toString());
 
         final byte[] publicKey = secureStorageProvider
                 .get(KEY_CHALLENGE_PUBLIC_KEY + type.toString());
 
         if (publicKey.length != ChallengePublicKey.PUBLIC_KEY_LENGTH) {
-            Logger.error("Tried to migrate salt for key %s more than once", type.toString());
+            Timber.e(new BugDetected("Tried to double-migrate salt for key " + type.toString()));
             return;
         }
 

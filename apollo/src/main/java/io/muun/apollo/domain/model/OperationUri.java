@@ -16,6 +16,7 @@ import org.bitcoinj.uri.BitcoinURIParseException;
 public class OperationUri {
 
     private static final String BIP72_PAYREQ_PARAM = "r";
+    private static final String BOLT11_INVOICE_PARAM = "lightning";
 
     public static final String MUUN_SCHEME = "muun";
     public static final String BITCOIN_SCHEME = "bitcoin";
@@ -89,6 +90,9 @@ public class OperationUri {
      */
     @VisibleForTesting
     public static OperationUri fromBitcoinUri(String bitcoinUri) {
+        // workaround for some uris that include this invalid char (e.g satoshitango)
+        bitcoinUri = bitcoinUri.replace("|", "%7C");
+
         try {
             new BitcoinUri(Globals.INSTANCE.getNetwork(), bitcoinUri);
 
@@ -215,7 +219,11 @@ public class OperationUri {
         }
     }
 
-    public boolean isExternal() {
+    public boolean isMuun() {
+        return getScheme().equals(MUUN_SCHEME);
+    }
+
+    public boolean isBitcoin() {
         return getScheme().equals(BITCOIN_SCHEME);
     }
 
@@ -225,6 +233,10 @@ public class OperationUri {
 
     public boolean isWithdrawal() {
         return getHost().equals(MUUN_HOST_WITHDRAW);
+    }
+
+    public boolean isLn() {
+        return getScheme().equals(LN_SCHEME);
     }
 
     /**
@@ -245,16 +257,27 @@ public class OperationUri {
         return getPath();
     }
 
-    public boolean isLn() {
-        return getScheme().equals(LN_SCHEME);
-    }
-
     /**
      * Get the address contained in this URI, or empty if not included.
      */
-    public Optional<String> getEmbeddedAddress() {
-        if (isExternal() && !getHost().isEmpty()) {
-            return Optional.of(getHost());
+    public Optional<String> getBitcoinAddress() {
+        if (isBitcoin()) {
+            return Optional.ifNotEmpty(getHost());
+
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Get the Lightning invoice contained in this URI, or empty if not included.
+     */
+    public Optional<String> getLnInvoice() {
+        if (isLn()) {
+            return Optional.ifNotEmpty(getHost());
+
+        } else if (isBitcoin()) {
+            return getParam(BOLT11_INVOICE_PARAM);
 
         } else {
             return Optional.empty();

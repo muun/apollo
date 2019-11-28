@@ -7,6 +7,7 @@ import io.muun.apollo.domain.model.SubmarineSwapFees;
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.common.crypto.hd.MuunAddress;
+import io.muun.common.crypto.hd.PublicKey;
 
 import android.database.Cursor;
 import androidx.annotation.NonNull;
@@ -36,6 +37,11 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
         final SubmarineSwapModel.InsertSwap insertStatement = new SubmarineSwapModel
                 .InsertSwap(db, FACTORY);
 
+        final Integer userLockTime = fundingOutput.getUserLockTime();
+        final Integer expirationInBlocks = fundingOutput.getExpirationInBlocks();
+        final PublicKey userPublicKey = fundingOutput.getUserPublicKey();
+        final PublicKey muunPublicKey = fundingOutput.getMuunPublicKey();
+
         insertStatement.bind(
                 swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
                 swap.houstonUuid,
@@ -46,7 +52,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 fundingOutput.getOutputAddress(),
                 fundingOutput.getOutputAmountInSatoshis(),
                 fundingOutput.getConfirmationsNeeded(),
-                fundingOutput.getUserLockTime(),
+                userLockTime != null ? Long.valueOf(userLockTime) : null,
                 userRefundAddress.getAddress(),
                 userRefundAddress.getDerivationPath(),
                 userRefundAddress.getVersion(),
@@ -59,7 +65,13 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 swap.getPreimageInHex(),
                 swap.getWillPreOpenChannel(),
                 swap.getFees().getChannelOpenInSats(),
-                swap.getFees().getChannelCloseInSats()
+                swap.getFees().getChannelCloseInSats(),
+                fundingOutput.getScriptVersion(),
+                expirationInBlocks != null ? Long.valueOf(expirationInBlocks) : null,
+                userPublicKey != null ? userPublicKey.serializeBase58() : null,
+                userPublicKey != null ? userPublicKey.getAbsoluteDerivationPath() : null,
+                muunPublicKey != null ? muunPublicKey.serializeBase58() : null,
+                muunPublicKey != null ? muunPublicKey.getAbsoluteDerivationPath() : null
         );
 
         return insertStatement;
@@ -79,6 +91,9 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
      */
     @NonNull
     public static SubmarineSwap getSubmarineSwap(SubmarineSwapEntity entity) {
+        final Long userLockTime = entity.funding_user_lock_time();
+        final Long expirationInBlocks = entity.funding_expiration_in_blocks();
+
         return new SubmarineSwap(
                 entity.id(),
                 entity.houston_uuid(),
@@ -92,14 +107,18 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                         entity.funding_output_address(),
                         entity.funding_output_amount_in_satoshis(),
                         (int) entity.funding_confirmations_needed(),
-                        (int) entity.funding_user_lock_time(),
+                        userLockTime != null ? (int) userLockTime.longValue() : null,
                         new MuunAddress(
                                 (int) entity.funding_user_refund_address_version(),
                                 entity.funding_user_refund_address_path(),
                                 entity.funding_user_refund_address()
                         ),
                         entity.funding_server_payment_hash_in_hex(),
-                        entity.funding_server_public_key_in_hex()
+                        entity.funding_server_public_key_in_hex(),
+                        (int) entity.funding_script_version(),
+                        expirationInBlocks != null ? (int) expirationInBlocks.longValue() : null,
+                        getUserPublicKey(entity),
+                        getMuunPublicKey(entity)
                 ),
                 new SubmarineSwapFees(
                         entity.lightning_fee_in_satoshis(),
@@ -111,6 +130,28 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 entity.will_pre_open_channel(),
                 entity.payed_at(),
                 entity.preimage_in_hex()
+        );
+    }
+
+    private static PublicKey getUserPublicKey(SubmarineSwapEntity entity) {
+        if (entity.funding_user_public_key() == null) {
+            return null;
+        }
+
+        return PublicKey.deserializeFromBase58(
+                entity.funding_user_public_key_path(),
+                entity.funding_user_public_key()
+        );
+    }
+
+    private static PublicKey getMuunPublicKey(SubmarineSwapEntity entity) {
+        if (entity.funding_muun_public_key() == null) {
+            return null;
+        }
+
+        return PublicKey.deserializeFromBase58(
+                entity.funding_muun_public_key_path(),
+                entity.funding_muun_public_key()
         );
     }
 }

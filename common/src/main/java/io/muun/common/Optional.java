@@ -40,6 +40,10 @@ public final class Optional<ValueT> {
         return (value >= 0) ? Optional.of(value) : Optional.empty();
     }
 
+    public static Optional<String> ifNotEmpty(String value) {
+        return (value.isEmpty()) ? Optional.empty() : Optional.of(value);
+    }
+
     public boolean isPresent() {
         return value != null;
     }

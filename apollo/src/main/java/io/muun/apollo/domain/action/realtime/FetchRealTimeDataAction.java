@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.realtime;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
@@ -9,6 +8,7 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction0;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -49,11 +49,11 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     }
 
     private Observable<Void> forceSyncRealTimeData() {
-        Logger.debug("[Sync] Updating fee/rates");
+        Timber.d("[Sync] Updating fee/rates");
 
         return houstonClient.fetchRealTimeData()
                 .doOnNext(realTimeData -> {
-                    Logger.debug("[Sync] Saving updated fee/rates");
+                    Timber.d("[Sync] Saving updated fee/rates");
                     feeWindowRepository.store(realTimeData.feeWindow);
                     exchangeRateWindowRepository.store(realTimeData.exchangeRateWindow);
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);

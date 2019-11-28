@@ -18,7 +18,9 @@ import org.bitcoinj.crypto.HDDerivationException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -213,7 +215,13 @@ public class PublicKey extends BaseKey {
             return false;
         }
 
-        return deterministicKey.equals(((PublicKey) other).deterministicKey);
+        final PublicKey that = (PublicKey) other;
+        final DeterministicKey thatKey = that.deterministicKey;
+
+        return networkParameters.equals(that.networkParameters)
+                && Objects.equals(absoluteDerivationPath, that.absoluteDerivationPath)
+                && Arrays.equals(deterministicKey.getChainCode(), thatKey.getChainCode())
+                && Arrays.equals(deterministicKey.getPubKey(), thatKey.getPubKey());
 
     }
 

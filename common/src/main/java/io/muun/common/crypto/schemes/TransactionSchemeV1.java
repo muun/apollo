@@ -6,7 +6,6 @@ import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.Signature;
 import io.muun.common.crypto.tx.TransactionHelpers;
 
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
@@ -22,13 +21,12 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_HASH160;
  */
 public class TransactionSchemeV1 {
 
-    public static final int CLIENT_VERSION = 1;
     public static final int ADDRESS_VERSION = MuunAddress.VERSION_P2PKH;
 
     /**
      * Create an address.
      */
-    public static MuunAddress createAddress(NetworkParameters network, PublicKey userPublicKey) {
+    public static MuunAddress createAddress(PublicKey userPublicKey) {
         return new MuunAddress(
                 ADDRESS_VERSION,
                 userPublicKey.getAbsoluteDerivationPath(),
@@ -53,7 +51,7 @@ public class TransactionSchemeV1 {
         return new ScriptBuilder()
                 .op(OP_DUP)
                 .op(OP_HASH160)
-                .data(userAddress.getHash160())
+                .data(userAddress.getHash())
                 .op(OP_EQUALVERIFY)
                 .op(OP_CHECKSIG)
                 .build();
@@ -66,10 +64,8 @@ public class TransactionSchemeV1 {
     public static byte[] createDataToSignInput(Transaction transaction,
                                                int inputIndex,
                                                PublicKey publicKey) {
-
-        final NetworkParameters network = transaction.getParams();
-
-        final MuunAddress userAddress = createAddress(network, publicKey);
+        
+        final MuunAddress userAddress = createAddress(publicKey);
 
         final Script spentOutputScript = createOutputScript(userAddress);
 

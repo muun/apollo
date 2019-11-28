@@ -24,7 +24,10 @@ public class MuunInputJson {
     public SignatureJson muunSignature;
 
     @Nullable
-    public MuunInputSubmarineSwapJson submarineSwap;
+    public MuunInputSubmarineSwapV101Json submarineSwap;
+
+    @Nullable
+    public MuunInputSubmarineSwapV102Json submarineSwapV102;
 
     /**
      * Json constructor.
@@ -39,12 +42,14 @@ public class MuunInputJson {
                          MuunAddressJson address,
                          @Nullable SignatureJson userSignature,
                          @Nullable SignatureJson muunSignature,
-                         @Nullable MuunInputSubmarineSwapJson submarineSwap) {
+                         @Nullable MuunInputSubmarineSwapV101Json submarineSwap,
+                         @Nullable MuunInputSubmarineSwapV102Json submarineSwapV102) {
 
         this.prevOut = prevOut;
         this.address = address;
         this.userSignature = userSignature;
         this.muunSignature = muunSignature;
         this.submarineSwap = submarineSwap;
+        this.submarineSwapV102 = submarineSwapV102;
     }
 }

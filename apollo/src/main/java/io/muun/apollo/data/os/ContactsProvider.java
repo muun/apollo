@@ -1,6 +1,6 @@
 package io.muun.apollo.data.os;
 
-import io.muun.apollo.data.logging.Logger;
+import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.Optional;
 import io.muun.common.model.PhoneNumber;
@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import androidx.core.content.ContextCompat;
 import rx.Observable;
 import rx.Subscriber;
+import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,7 @@ public class ContactsProvider {
         final Cursor cursor = queryPhoneNumbers();
 
         if (cursor == null) {
-            Logger.error("ContentResolver returned null cursor.");
+            Timber.e(new BugDetected("PHONE ContentResolver returned null cursor."));
             return new ArrayList<>();
         }
 

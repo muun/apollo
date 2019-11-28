@@ -1,7 +1,6 @@
 package io.muun.apollo.data.net;
 
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.common.Optional;
 
 import android.content.BroadcastReceiver;
@@ -12,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -60,7 +60,7 @@ public class NetworkInfoProvider {
         final IntentFilter filter = new IntentFilter();
         filter.addAction(CONNECTIVITY_CHANGE);
 
-        Logger.debug("NETWORK INFO: adding receiver");
+        Timber.d("NETWORK INFO: adding receiver");
         context.registerReceiver(receiver, filter);
     }
 

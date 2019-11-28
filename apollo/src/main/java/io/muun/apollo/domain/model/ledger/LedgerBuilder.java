@@ -7,6 +7,7 @@ import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.schemes.TransactionSchemeV1;
 import io.muun.common.crypto.schemes.TransactionSchemeV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV3;
+import io.muun.common.crypto.schemes.TransactionSchemeV4;
 import io.muun.common.crypto.schemes.TransactionSchemeYpub;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.utils.Encodings;
@@ -89,6 +90,9 @@ public class LedgerBuilder {
 
             case TransactionSchemeV3.ADDRESS_VERSION:
                 return TransactionSchemeV3.createOutputScript(address);
+
+            case TransactionSchemeV4.ADDRESS_VERSION:
+                return TransactionSchemeV4.createOutputScript(address);
 
             default:
                 throw new MissingCaseError(address.getVersion(), "ADDRESS_VERSION");

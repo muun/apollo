@@ -4,7 +4,6 @@ import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
 import io.muun.apollo.domain.model.NextTransactionSize;
@@ -15,6 +14,7 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -50,7 +50,7 @@ public class CreateOperationAction extends BaseAsyncAction2<Operation, NextTrans
     public Observable<Void> action(Operation operation, NextTransactionSize nextTransactionSize) {
         return saveOperation(operation)
                 .doOnNext(savedOperation -> {
-                    Logger.debug("Updating next transaction size estimation");
+                    Timber.d("Updating next transaction size estimation");
                     transactionSizeRepository.setTransactionSize(nextTransactionSize);
 
                     if (savedOperation.direction == OperationDirection.INCOMING) {

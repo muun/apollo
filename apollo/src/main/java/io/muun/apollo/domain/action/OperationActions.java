@@ -2,18 +2,13 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.operation.OperationDao;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ClipboardProvider;
-import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
-import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
-import io.muun.apollo.domain.action.operation.SubmitIncomingPaymentAction;
-import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
@@ -25,6 +20,7 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +34,6 @@ import javax.inject.Singleton;
 public class OperationActions {
 
     private final CreateOperationAction createOperation;
-    private final SubmitOutgoingPaymentAction submitOutgoingPayment;
-    private final SubmitIncomingPaymentAction submitIncomingPayment;
-
     private final HardwareWalletActions hardwareWalletActions;
     private final SatelliteActions satelliteActions;
     private final AddressActions addressActions;
@@ -48,8 +41,6 @@ public class OperationActions {
     private final OperationDao operationDao;
 
     private final UserRepository userRepository;
-    private final FeeWindowRepository feeWindowRepository;
-    private final ExchangeRateWindowRepository exchangeRateWindowRepository;
     private final TransactionSizeRepository transactionSizeRepository;
 
     private final HoustonClient houstonClient;
@@ -62,23 +53,17 @@ public class OperationActions {
      */
     @Inject
     public OperationActions(CreateOperationAction createOperation,
-                            SubmitOutgoingPaymentAction submitOutgoingPayment,
-                            SubmitIncomingPaymentAction submitIncomingPayment,
                             HardwareWalletActions hardwareWalletActions,
                             SatelliteActions satelliteActions,
                             AddressActions addressActions,
                             OperationDao operationDao,
                             UserRepository userRepository,
-                            FeeWindowRepository feeWindowRepository,
-                            ExchangeRateWindowRepository exchangeRateWindowRepository,
                             TransactionSizeRepository transactionSizeRepository,
                             HoustonClient houstonClient,
                             ClipboardProvider clipboardProvider,
                             AsyncActionStore asyncActionStore) {
 
         this.createOperation = createOperation;
-        this.submitOutgoingPayment = submitOutgoingPayment;
-        this.submitIncomingPayment = submitIncomingPayment;
         this.hardwareWalletActions = hardwareWalletActions;
         this.satelliteActions = satelliteActions;
         this.addressActions = addressActions;
@@ -86,8 +71,6 @@ public class OperationActions {
         this.operationDao = operationDao;
 
         this.userRepository = userRepository;
-        this.feeWindowRepository = feeWindowRepository;
-        this.exchangeRateWindowRepository = exchangeRateWindowRepository;
         this.transactionSizeRepository = transactionSizeRepository;
 
         this.houstonClient = houstonClient;
@@ -141,17 +124,17 @@ public class OperationActions {
         return satelliteActions.watchPendingWithdrawal()
                 .first()
                 .flatMap(maybePendingWithdrawal -> {
-                    Logger.debug("[Operations] Submitting signed withdrawal");
+                    Timber.d("[Operations] Submitting signed withdrawal");
 
-                    if (! maybePendingWithdrawal.isPresent()) {
-                        Logger.debug("[Operations] No pending withdrawal present, ignoring");
+                    if (!maybePendingWithdrawal.isPresent()) {
+                        Timber.d("[Operations] No pending withdrawal present, ignoring");
                         return Observable.just(null);
                     }
 
                     final PendingWithdrawal pendingWithdrawal = maybePendingWithdrawal.get();
 
-                    if (! pendingWithdrawal.uuid.equals(uuid)) {
-                        Logger.debug("[Operations] Signed withdrawal with wrong UUID, ignoring");
+                    if (!pendingWithdrawal.uuid.equals(uuid)) {
+                        Timber.d("[Operations] Signed withdrawal with wrong UUID, ignoring");
                         return Observable.just(null);
                     }
 
@@ -178,7 +161,7 @@ public class OperationActions {
                             ))
                             .flatMap(res -> satelliteActions.endWithdrawal(pendingWithdrawal))
                             .doOnError(error -> {
-                                Logger.debug("[Operations] Error submitting signed withdrawal");
+                                Timber.d("[Operations] Error submitting signed withdrawal");
                                 // TODO notify Satellite about this failure.
                             });
                 });
@@ -188,7 +171,7 @@ public class OperationActions {
      * Fetch the complete operation list from Houston.
      */
     public Observable<Void> fetchReplaceOperations() {
-        Logger.debug("[Operations] Fetching full operation list");
+        Timber.d("[Operations] Fetching full operation list");
 
         return operationDao.deleteAll().flatMap(ignored ->
                 houstonClient.fetchOperations()
@@ -236,7 +219,7 @@ public class OperationActions {
     // Private helpers
 
     private Operation buildOperationFromPendingWithdrawal(PendingWithdrawal withdrawal) {
-        final MuunAddress address = addressActions.getExternalMuunAddress();
+        final MuunAddress address = addressActions.createLegacyAddress();
 
         return Operation.createIncoming(
                 userRepository.fetchOne().getCompatPublicProfile(),
@@ -266,7 +249,7 @@ public class OperationActions {
                             .orElse(0L);
 
                     final long latestOperationHid = getLatestOperation()
-                            .map(latestOperation -> latestOperation.getHid())
+                            .map(Operation::getHid)
                             .orElse(0L);
 
                     // NOTE: if an Operation has been made, giving us new UTXOs (and thus

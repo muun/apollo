@@ -1,9 +1,9 @@
 package io.muun.apollo.domain.action.operation;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.base.NetworkException;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
+import io.muun.apollo.domain.errors.Bip72FallbackAlert;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
 import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.FeeWindow;
@@ -24,6 +24,7 @@ import org.bitcoinj.protocols.payments.PaymentSession;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.uri.BitcoinURIParseException;
 import rx.Observable;
+import timber.log.Timber;
 
 import java.util.concurrent.ExecutionException;
 
@@ -102,7 +103,7 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
             return getPaymentRequestBip72(bitcoinUri);
 
         } catch (Throwable e) {
-            Logger.error(e, "Falling back to BIP-21");
+            Timber.e(new Bip72FallbackAlert(uriString, e));
             return getPaymentRequestBip21(bitcoinUri);
         }
     }

@@ -1,6 +1,5 @@
 package io.muun.apollo.data.os.secure_storage;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.common.crypto.Cryptography;
 import io.muun.common.crypto.CryptographyException;
 
@@ -13,6 +12,7 @@ import android.security.keystore.KeyProperties;
 import androidx.annotation.RequiresApi;
 import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
+import timber.log.Timber;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -61,7 +61,7 @@ public class KeyStoreProvider {
             return keyStore;
 
         } catch (Exception e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -101,7 +101,7 @@ public class KeyStoreProvider {
                     : encryptDataM(input, keyAlias, keyStore, iv);
 
         } catch (Exception e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -121,7 +121,7 @@ public class KeyStoreProvider {
                     : decryptDataM(input, keyAlias, keyStore, iv);
 
         } catch (Exception e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -147,7 +147,7 @@ public class KeyStoreProvider {
                 NoSuchAlgorithmException
                         | NoSuchProviderException
                         | InvalidAlgorithmParameterException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -162,7 +162,7 @@ public class KeyStoreProvider {
 
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
 
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -176,7 +176,7 @@ public class KeyStoreProvider {
 
         } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
 
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -211,7 +211,7 @@ public class KeyStoreProvider {
                 NoSuchAlgorithmException
                         | NoSuchProviderException
                         | InvalidAlgorithmParameterException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -231,7 +231,7 @@ public class KeyStoreProvider {
                         | InvalidKeyException
                         | NoSuchPaddingException
                         | IOException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -252,7 +252,7 @@ public class KeyStoreProvider {
                         | KeyStoreException
                         | InvalidKeyException
                         | IOException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -266,7 +266,7 @@ public class KeyStoreProvider {
             return loadKeystore().containsAlias(getAlias(keyAlias));
 
         } catch (KeyStoreException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -282,7 +282,7 @@ public class KeyStoreProvider {
             loadKeystore().deleteEntry(getAlias(keyAlias));
 
         } catch (KeyStoreException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
@@ -299,7 +299,7 @@ public class KeyStoreProvider {
             keyStore = loadKeystore();
             allKeysAliases = Collections.list(keyStore.aliases());
         } catch (KeyStoreException e) {
-            Logger.error(e);
+            Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
 
@@ -308,7 +308,7 @@ public class KeyStoreProvider {
                 try {
                     keyStore.deleteEntry(alias);
                 } catch (KeyStoreException e) {
-                    Logger.error(e);
+                    Timber.e(e);
                 }
             }
         }

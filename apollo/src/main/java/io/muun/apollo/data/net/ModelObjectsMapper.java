@@ -17,9 +17,6 @@ import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.SubmarineSwap;
-import io.muun.apollo.domain.model.SubmarineSwapFees;
-import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
-import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
@@ -41,15 +38,11 @@ import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SizeForAmountJson;
-import io.muun.common.api.SubmarineSwapFeesJson;
-import io.muun.common.api.SubmarineSwapFundingOutputJson;
 import io.muun.common.api.SubmarineSwapJson;
-import io.muun.common.api.SubmarineSwapReceiverJson;
 import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
-import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.crypto.tx.PartiallySignedTransaction;
@@ -60,8 +53,6 @@ import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
-import androidx.annotation.NonNull;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
@@ -234,65 +225,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     @NotNull
     public SubmarineSwap mapSubmarineSwap(SubmarineSwapJson swap) {
-        if (swap == null) {
-            return null;
-        }
-
-        return new SubmarineSwap(
-                null,
-                swap.swapUuid,
-                swap.invoice,
-                mapSwapReceiver(swap.receiver),
-                mapSwapFundingOutput(swap.fundingOutput),
-                mapSwapFees(swap.fees),
-                mapZonedDateTime(swap.expiresAt),
-                swap.willPreOpenChannel,
-                mapZonedDateTime(swap.payedAt),
-                swap.preimageInHex
-        );
-    }
-
-    @NonNull
-    private SubmarineSwapFundingOutput mapSwapFundingOutput(SubmarineSwapFundingOutputJson output) {
-
-        return new SubmarineSwapFundingOutput(
-                output.outputAddress,
-                output.outputAmountInSatoshis,
-                output.confirmationsNeeded,
-                output.userLockTime,
-                MuunAddress.fromJson(output.userRefundAddress),
-                output.serverPaymentHashInHex,
-                output.serverPublicKeyInHex
-        );
-    }
-
-    @NotNull
-    private SubmarineSwapReceiver mapSwapReceiver(@NotNull SubmarineSwapReceiverJson receiver) {
-
-        try {
-
-            return new SubmarineSwapReceiver(
-                    receiver.alias,
-                    jsonMapper.writeValueAsString(receiver.networkAddresses),
-                    receiver.publicKey
-            );
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Create a SubmarineSwapFees object.
-     */
-    @NotNull
-    private SubmarineSwapFees mapSwapFees(@NotNull SubmarineSwapFeesJson fees) {
-        return new SubmarineSwapFees(
-                fees.lightningInSats,
-                fees.sweepInSats,
-                fees.channelOpenInSats,
-                fees.channelCloseInSats
-        );
+        return SubmarineSwap.Companion.fromJson(swap);
     }
 
     /**

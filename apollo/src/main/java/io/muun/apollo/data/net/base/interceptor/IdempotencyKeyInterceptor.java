@@ -1,6 +1,6 @@
 package io.muun.apollo.data.net.base.interceptor;
 
-import io.muun.apollo.data.logging.Logger;
+import io.muun.apollo.data.logging.LoggingRequestTracker;
 import io.muun.apollo.data.net.base.BaseInterceptor;
 import io.muun.apollo.data.net.base.CallAdapterFactory;
 import io.muun.common.net.HeaderUtils;
@@ -29,7 +29,7 @@ public class IdempotencyKeyInterceptor extends BaseInterceptor {
             return originalRequest;
         }
 
-        Logger.saveRequestUri(idempotencyKey, originalRequest.url().toString());
+        reportRequest(idempotencyKey, originalRequest.url().toString());
 
         return originalRequest.newBuilder()
                 .addHeader(HeaderUtils.IDEMPOTENCY_KEY, idempotencyKey)
@@ -44,11 +44,17 @@ public class IdempotencyKeyInterceptor extends BaseInterceptor {
         if (idempotencyKey != null) {
             // TODO find out why, when how, can this happen
             // Under some weird UNKNOWN circumstances, idempotencyKey CAN actually be null
-
-            final String log = req.url().toString() + ". Status:" + originalResponse.code();
-            Logger.saveRequestUri(idempotencyKey, log);
+            reportResponse(idempotencyKey, originalResponse.code());
         }
 
         return originalResponse;
+    }
+
+    private void reportResponse(String idempotencyKey, int resCode) {
+        LoggingRequestTracker.INSTANCE.reportRecentResponse(idempotencyKey, resCode);
+    }
+
+    private void reportRequest(String idempotencyKey, String url) {
+        LoggingRequestTracker.INSTANCE.reportRecentRequest(idempotencyKey, url);
     }
 }

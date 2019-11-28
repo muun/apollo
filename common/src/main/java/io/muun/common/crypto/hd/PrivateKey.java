@@ -278,7 +278,7 @@ public class PrivateKey extends BaseKey {
         while (true) {
 
             try {
-                return deriveFromRelativePath(String.valueOf(nextIndex) + "'");
+                return deriveFromRelativePath(nextIndex + "'");
             } catch (KeyDerivationException e) {
                 nextIndex += 1;
             }
@@ -308,9 +308,9 @@ public class PrivateKey extends BaseKey {
         final PrivateKey that = (PrivateKey) other;
         final DeterministicKey thatKey = that.deterministicKey;
 
-        return Objects.equals(absoluteDerivationPath, that.absoluteDerivationPath)
+        return networkParameters.equals(that.networkParameters)
+                && Objects.equals(absoluteDerivationPath, that.absoluteDerivationPath)
                 && Arrays.equals(deterministicKey.getChainCode(), thatKey.getChainCode())
-                && Objects.equals(deterministicKey.getPath(), thatKey.getPath())
                 && Objects.equals(deterministicKey.getPrivKey(), thatKey.getPrivKey());
     }
 

@@ -1,13 +1,13 @@
 package io.muun.apollo.domain.action;
 
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.NotificationRepository;
 import io.muun.apollo.domain.NotificationProcessor;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
@@ -21,6 +21,7 @@ import rx.Single;
 import rx.Subscription;
 import rx.functions.Func1;
 import rx.subjects.PublishSubject;
+import timber.log.Timber;
 
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class NotificationActions {
 
         return Observable.defer(() -> {
 
-            Logger.debug("[Notifications] Pulling...");
+            Timber.d("[Notifications] Pulling...");
 
             final long lastProccessedId = notificationRepository.getLastProcessedId();
 
@@ -141,7 +142,7 @@ public class NotificationActions {
     private Completable processNotification(NotificationJson notification) {
 
         return Completable.defer(() -> {
-            Logger.debug("[Notifications] Processing " + notification.messageType);
+            Timber.d("[Notifications] Processing " + notification.messageType);
 
             final long lastProcessedId = notificationRepository.getLastProcessedId();
 
@@ -155,7 +156,7 @@ public class NotificationActions {
 
             return notificationProcessor.process(notification)
                     .onErrorComplete(cause -> {
-                        Logger.error(NotificationProcessingError.fromCause(notification, cause));
+                        Timber.e(NotificationProcessingError.fromCause(notification, cause));
                         return true; // skip notification, log the error
                     })
                     .doOnCompleted(() -> {
@@ -210,7 +211,9 @@ public class NotificationActions {
         return queue
                 .onBackpressureBuffer(
                         MAX_PENDING_REPORTS_BEFORE_DROP_OLDEST,
-                        () -> Logger.error("NotificationReport queue overflow: dropping oldest"),
+                        () -> Timber.e(
+                                new BugDetected("NotificationReport queue too big: dropping oldest")
+                        ),
                         BackpressureOverflow.ON_OVERFLOW_DROP_OLDEST
                 )
                 .observeOn(transformerFactory.getBackgroundScheduler())
@@ -225,7 +228,7 @@ public class NotificationActions {
         return (items) -> items
                 .map(createTask)
                 .concatMap(task -> task
-                        .doOnError(Logger::error)
+                        .doOnError(Timber::e)
                         .onErrorComplete() // skip the error
                         .toObservable()
                 );

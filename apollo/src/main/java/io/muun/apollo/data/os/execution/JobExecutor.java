@@ -1,8 +1,7 @@
 package io.muun.apollo.data.os.execution;
 
-import io.muun.apollo.data.logging.Logger;
-
 import androidx.annotation.NonNull;
+import timber.log.Timber;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -61,7 +60,7 @@ public class JobExecutor implements Executor {
     @NonNull
     private RejectedExecutionHandler getRejectedExecutionHandler() {
         // TODO log more information about the rejected task? About the tasks in the workQueue?
-        return (runnable, executor) -> Logger.error(
+        return (runnable, executor) -> Timber.e(
                 new RejectedExecutionException(
                         String.format("Task  %s rejected from %s. %s",
                                 runnable,

@@ -1,15 +1,16 @@
 package io.muun.apollo.data.async.tasks;
 
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.domain.action.AddressActions;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.NotificationActions;
-import io.muun.apollo.domain.action.SyncActions;
+import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
+import io.muun.apollo.domain.errors.PeriodicTaskOnMainThreadError;
 
 import android.os.Looper;
 import rx.Observable;
 import rx.functions.Func0;
+import timber.log.Timber;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,13 +29,13 @@ public class TaskDispatcher {
     @Inject
     public TaskDispatcher(ContactActions contactActions,
                           AddressActions addressActions,
-                          SyncActions syncActions,
                           NotificationActions notificationActions,
-                          IntegrityActions integrityActions) {
+                          IntegrityActions integrityActions,
+                          FetchRealTimeDataAction fetchRealTimeData) {
 
         registerTaskType("pullNotifications", notificationActions::pullNotifications);
 
-        registerTaskType("syncRealTimeData", syncActions::syncRealTimeData);
+        registerTaskType("syncRealTimeData", fetchRealTimeData::action);
         registerTaskType("syncPhoneContacts", contactActions::syncPhoneContacts);
         registerTaskType("syncExternalAddressesIndexes",
                 addressActions::syncExternalAddressesIndexes);
@@ -54,7 +55,7 @@ public class TaskDispatcher {
         }
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            Logger.error(new RuntimeException(), "PeriodicTask %s ran on MainThread", taskName);
+            Timber.e(new PeriodicTaskOnMainThreadError(taskName));
         }
 
         return handler.call();

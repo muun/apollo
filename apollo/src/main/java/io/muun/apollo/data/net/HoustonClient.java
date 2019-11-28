@@ -2,11 +2,12 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
-import io.muun.apollo.domain.errors.InvalidInvoiceAmountException;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
+import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
+import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.NoPaymentRouteException;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
@@ -48,7 +49,7 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
+import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
@@ -445,7 +446,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVALID_INVOICE_AMOUNT,
-                        e -> new InvalidInvoiceAmountException(request.invoice, e)
+                        e -> new InvoiceMissingAmountException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_ALREADY_USED,
@@ -456,12 +457,17 @@ public class HoustonClient extends BaseClient<HoustonService> {
                         e -> new NoPaymentRouteException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.INVOICE_EXPIRED,
+                        e -> new InvoiceExpiredException(request.invoice, e)
+                ))
+                .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_EXPIRES_TOO_SOON,
                         e -> new InvoiceExpiresTooSoonException(request.invoice, e)
                 ))
                 .doOnNext(submarineSwapJson -> {
-                    final boolean isValid = TransactionSchemeSubmarineSwap.validateSwap(
+                    final boolean isValid = TransactionSchemeSubmarineSwapV2.validateSwap(
                             request.invoice,
+                            request.swapExpirationInBlocks,
                             publicKeyPair,
                             submarineSwapJson,
                             network

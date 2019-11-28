@@ -3,12 +3,15 @@ package io.muun.common.crypto.hd;
 
 import io.muun.common.api.MuunAddressJson;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
+import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV1;
 import io.muun.common.crypto.schemes.TransactionSchemeV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV3;
+import io.muun.common.crypto.schemes.TransactionSchemeV4;
 import io.muun.common.exception.MissingCaseError;
 
-import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.NetworkParameters;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,8 +20,10 @@ public class MuunAddress {
     public static final int VERSION_P2PKH = 1;
     public static final int VERSION_COSIGNED_P2SH = 2;
     public static final int VERSION_COSIGNED_P2SH_P2WSH = 3;
+    public static final int VERSION_COSIGNED_P2WSH = 4;
 
-    public static final int VERSION_SUBMARINE_SWAP_REFUND = 101;
+    public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
+    public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
 
     /**
      * Return the TransactionScheme version used in new Addresses by default.
@@ -42,23 +47,26 @@ public class MuunAddress {
     /**
      * Create MuunAddress from a pair of PublicKeys.
      */
-    public static MuunAddress create(Integer addressVersion, PublicKeyPair publicKeyPair) {
+    public static MuunAddress create(Integer addressVersion,
+                                     PublicKeyPair publicKeyPair,
+                                     NetworkParameters params) {
 
         switch (addressVersion) {
             case TransactionSchemeV1.ADDRESS_VERSION:
-                return TransactionSchemeV1.createAddress(
-                        publicKeyPair.getNetworkParameters(),
-                        publicKeyPair.getUserPublicKey()
-                );
+                return TransactionSchemeV1.createAddress(publicKeyPair.getUserPublicKey());
 
             case TransactionSchemeV2.ADDRESS_VERSION:
-                return TransactionSchemeV2.createAddress(publicKeyPair);
+                return TransactionSchemeV2.createAddress(publicKeyPair, params);
 
             case TransactionSchemeV3.ADDRESS_VERSION:
-                return TransactionSchemeV3.createAddress(publicKeyPair);
+                return TransactionSchemeV3.createAddress(publicKeyPair, params);
+
+            case TransactionSchemeV4.ADDRESS_VERSION:
+                return TransactionSchemeV4.createAddress(publicKeyPair, params);
 
             case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
-                throw new IllegalStateException("These addresses shouldn't be built manually");
+            case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
+                throw new IllegalArgumentException("These addresses shouldn't be built manually");
 
             default:
                 throw new MissingCaseError(addressVersion, "ADDRESS_VERSION");
@@ -95,7 +103,7 @@ public class MuunAddress {
         return address;
     }
 
-    public byte[] getHash160() {
+    public byte[] getHash() {
         return toBitcoinJ().getHash();
     }
 
@@ -113,7 +121,7 @@ public class MuunAddress {
     private org.bitcoinj.core.Address toBitcoinJ() {
         // NOTE: we provide `null` NetworkParameters. The information is already contained in the
         // base58 serialization, and we don't need to validate it.
-        return LegacyAddress.fromString(null, address);
+        return Address.fromString(null, address);
     }
 
     public MuunAddressJson toJson() {

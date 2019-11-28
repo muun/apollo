@@ -10,6 +10,8 @@ jar {
     exclude 'lib/x86_64/darwin/libscrypt.dylib'
     exclude 'lib/x86_64/freebsd/libscrypt.so'
     exclude 'lib/x86_64/linux/libscrypt.so'
+
+    archiveName "_lib_${project.name}.jar"
 }
 
 dependencies {
@@ -53,4 +55,10 @@ dependencies {
 
     // to silence bitcoinj's slf4j
     testImplementation "org.mockito:mockito-core:$global_version_mockito"
+}
+
+// This forces our builds to be reproducible
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }

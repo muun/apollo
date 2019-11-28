@@ -1,19 +1,20 @@
 package io.muun.apollo.data.async.gcm;
 
 import io.muun.apollo.data.db.DaoManager;
-import io.muun.apollo.data.logging.Logger;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.UpdateFcmTokenAction;
+import io.muun.apollo.domain.errors.FcmMessageProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.external.DataComponentProvider;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -44,14 +45,14 @@ public class GcmMessageListenerService extends FirebaseMessagingService {
         final DataComponentProvider provider = (DataComponentProvider) getApplication();
         provider.getDataComponent().inject(this);
 
-        Logger.info("Starting GcmMessageListenerService");
+        Timber.d("Starting GcmMessageListenerService");
     }
 
     @Override
     public void onNewToken(String token) {
         super.onNewToken(token);
 
-        Logger.info("Received a new GCM token");
+        Timber.d("Received a new GCM token");
 
         updateFcmTokenAction.run(token);
     }
@@ -73,7 +74,7 @@ public class GcmMessageListenerService extends FirebaseMessagingService {
             processMessage(message);
 
         } catch (Throwable error) {
-            Logger.error(error, "While processing FCM message");
+            Timber.e(new FcmMessageProcessingError(remoteMessage, error));
         }
     }
 
@@ -95,6 +96,6 @@ public class GcmMessageListenerService extends FirebaseMessagingService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Logger.info("Destroying GcmMessageListenerService");
+        Timber.d("Destroying GcmMessageListenerService");
     }
 }

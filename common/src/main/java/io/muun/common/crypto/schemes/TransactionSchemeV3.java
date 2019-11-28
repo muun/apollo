@@ -26,22 +26,19 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_HASH160;
  */
 public class TransactionSchemeV3 {
 
-    public static final int CLIENT_VERSION = 15;
     public static final int ADDRESS_VERSION = MuunAddress.VERSION_COSIGNED_P2SH_P2WSH;
 
     /**
      * Create an address.
      */
-    public static MuunAddress createAddress(PublicKeyPair publicKeyPair) {
-        final NetworkParameters network = publicKeyPair.getNetworkParameters();
-
+    public static MuunAddress createAddress(PublicKeyPair publicKeyPair, NetworkParameters params) {
         final Script redeemScript = createRedeemScript(publicKeyPair);
         final byte[] addressHash160 = getScriptHash(redeemScript);
 
         return new MuunAddress(
                 ADDRESS_VERSION,
                 publicKeyPair.getAbsoluteDerivationPath(),
-                LegacyAddress.fromScriptHash(network, addressHash160).toString()
+                LegacyAddress.fromScriptHash(params, addressHash160).toString()
         );
     }
 
@@ -65,7 +62,7 @@ public class TransactionSchemeV3 {
      * Create an output script, given the user address.
      */
     public static Script createOutputScript(MuunAddress userAddress) {
-        return createOutputScript(userAddress.getHash160());
+        return createOutputScript(userAddress.getHash());
     }
 
     private static Script createOutputScript(byte[] redeemScriptHash160) {
