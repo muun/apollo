@@ -41,6 +41,7 @@ public class NotificationCenter {
     public Observable<Integer> watchCount() {
         return Observable.combineLatest(
                 watchSetUpRecoveryCode(),
+                watchResumeRecoveryCodeSetup(),
                 watchVerifyEmail(),
 
                 RxHelper::countTrue
@@ -59,9 +60,18 @@ public class NotificationCenter {
                 .combineLatest(
                         operationActions.watchBalance(),
                         userRepository.watchHasRecoveryCode(),
-                        (balance, hasRecoveryCode) -> (balance > 0 && !hasRecoveryCode)
+                        userRepository.watchRecoveryCodeSetupInProcess(),
+                        (balance, hasRecoveryCode, isSetupInProcess) ->
+                                (!hasRecoveryCode && !isSetupInProcess && balance > 0)
                 )
                 .compose(transformerFactory.getAsyncExecutor());
+    }
+
+    /**
+     * Watch whether the user should set up her recovery code.
+     */
+    public Observable<Boolean> watchResumeRecoveryCodeSetup() {
+        return userRepository.watchRecoveryCodeSetupInProcess();
     }
 
     /**

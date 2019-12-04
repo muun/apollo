@@ -49,6 +49,14 @@ public final class RandomGenerator {
     }
 
     /**
+     * Returns a pseudo-random, uniformly distributed int value between lowerBound (inclusive) and
+     * upperBound (exclusive).
+     */
+    public static int getInt(int lowerBound, int upperBound) {
+        return random.nextInt(upperBound - lowerBound) + lowerBound;
+    }
+
+    /**
      * Returns a pseudo-random, uniformly distributed, positive int value.
      */
     public static int getPositiveInt() {

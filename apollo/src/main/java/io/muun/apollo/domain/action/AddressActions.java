@@ -7,6 +7,7 @@ import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.PasswordIntegrityError;
 import io.muun.common.Optional;
+import io.muun.common.Rules;
 import io.muun.common.crypto.hd.KeyCrypter;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
@@ -84,7 +85,10 @@ public class AddressActions {
             nextIndex = maxUsedIndex + 1;
 
         } else {
-            nextIndex = RandomGenerator.getInt(maxWatchingIndex + 1);
+            final int minUsable = maxWatchingIndex - Rules.EXTERNAL_ADDRESSES_WATCH_WINDOW_SIZE;
+            final int maxUsable = maxWatchingIndex;
+
+            nextIndex = RandomGenerator.getInt(minUsable, maxUsable + 1);
         }
 
         // FIXME: if the nextIndex derived key is invalid (highly improbable),

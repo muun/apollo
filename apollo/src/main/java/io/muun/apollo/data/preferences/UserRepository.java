@@ -61,6 +61,8 @@ public class UserRepository extends BaseRepository {
 
     private static final String SIGNUP_DRAFT = "signup_draft";
 
+    private static final String RC_SETUP_IN_PROCESS = "rc_setup_in_process";
+
     private final Preference<Long> hidPreference;
 
     private final Preference<String> firstNamePreference;
@@ -98,6 +100,8 @@ public class UserRepository extends BaseRepository {
     private final Preference<Boolean> initialSyncCompletedPreference;
 
     private final Preference<SignupDraft> signupDraftPreference;
+
+    private final Preference<Boolean> recoveryCodeSetupInProcessPreference;
 
     /**
      * Creates a user preference repository.
@@ -155,6 +159,8 @@ public class UserRepository extends BaseRepository {
                 SIGNUP_DRAFT,
                 new JsonPreferenceAdapter<>(SignupDraft.class)
         );
+
+        recoveryCodeSetupInProcessPreference = rxSharedPreferences.getBoolean(RC_SETUP_IN_PROCESS);
     }
 
     @Override
@@ -315,8 +321,16 @@ public class UserRepository extends BaseRepository {
         isEmailVerifiedPreference.set(true);
     }
 
+    /**
+     * Set whether the user has a recovery code available.
+     */
     public void storeHasRecoveryCode(boolean value) {
         hasRecoveryCodePreference.set(value);
+
+        if (value) {
+            // This shouldn't be necessary, but instinct tells me to put it here:
+            recoveryCodeSetupInProcessPreference.set(false);
+        }
     }
 
     public Observable<Boolean> watchHasRecoveryCode() {
@@ -418,5 +432,13 @@ public class UserRepository extends BaseRepository {
      */
     private boolean hasSignupDraft() {
         return signupDraftPreference.isSet();
+    }
+
+    public void setRecoveryCodeSetupInProcess(boolean isInProcess) {
+        recoveryCodeSetupInProcessPreference.set(isInProcess);
+    }
+
+    public Observable<Boolean> watchRecoveryCodeSetupInProcess() {
+        return recoveryCodeSetupInProcessPreference.asObservable();
     }
 }

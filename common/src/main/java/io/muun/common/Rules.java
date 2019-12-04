@@ -2,6 +2,9 @@ package io.muun.common;
 
 public class Rules {
 
+    /** The size of the address derivation window watched in advance. */
+    public static final int EXTERNAL_ADDRESSES_WATCH_WINDOW_SIZE = 15;
+
     /** The minimum length of a user password. */
     public static final int PASSWORD_MIN_LENGTH = 8;
 

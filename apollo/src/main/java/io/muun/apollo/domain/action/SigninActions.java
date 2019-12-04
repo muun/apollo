@@ -99,6 +99,10 @@ public class SigninActions {
                     if (pair.second.muunKey != null) {
                         keysRepository.storeEncryptedMuunPrivateKey(pair.second.muunKey);
                     }
+
+                    if (challengeType == ChallengeType.RECOVERY_CODE) {
+                        userRepository.setRecoveryCodeSetupInProcess(false);
+                    }
                 })
                 .map(pair -> pair.second);
     }

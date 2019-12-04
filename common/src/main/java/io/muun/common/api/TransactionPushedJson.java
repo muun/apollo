@@ -16,6 +16,9 @@ public class TransactionPushedJson {
     @NotNull
     public NextTransactionSizeJson nextTransactionSize;
 
+    @NotNull
+    public OperationJson updatedOperation;
+
     /**
      * Json constructor.
      */
@@ -23,10 +26,15 @@ public class TransactionPushedJson {
     }
 
     /**
-     * Apollo constructor.
+     * Houston constructor.
      */
-    public TransactionPushedJson(String hex, NextTransactionSizeJson nextTransactionSize) {
+    public TransactionPushedJson(
+            String hex,
+            NextTransactionSizeJson nextTransactionSize,
+            OperationJson operation) {
+
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
+        this.updatedOperation = operation;
     }
 }
