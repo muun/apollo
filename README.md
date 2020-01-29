@@ -14,6 +14,24 @@ The app follows the [clean](https://fernandocejas.com/2014/09/03/architecting-an
 
 There's also a pure java **common** module with code shared all over. This repository contains all but the presentation layer.
 
+### LibWallet
+
+Setup
+```
+brew install golang
+# Add your GOPATH to your bash profile
+bash tools/bootstrap-gomobile.sh
+```
+
+ - Set the `ANDROID_HOME` env var to the SDK installation path for Android Studio. Most likely `~/Library/Android/sdk/`
+ - Install the Android NDK using Android Studio. Go to Tools > SDK Manager > SDK Tools and select `NDK (Side by side)`.
+ - Take note of the SDK path it shows when the install process ends and set it as `ANDROID_NDK_HOME` env var. It should of the form `~/Android/sdk/ndk/20.0.5594570`
+
+Building for Android
+```
+GO111MODULE=off go run golang.org/x/mobile/cmd/gomobile bind -target=android -o android/apollo/libs/libwallet.aar github.com/muun/muun/libwallet
+```
+
 ## Auditing
 
 * Most of the key handling and transaction crafting operations happen in the **common** module.
