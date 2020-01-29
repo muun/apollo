@@ -350,7 +350,7 @@ public class KeysRepository extends BaseRepository {
         return maxWatchingExternalAddressIndexPreference.get();
     }
 
-    public void setMaxUsedExternalAddressIndex(Integer maxUsedExternalAddressIndex) {
+    public void setMaxUsedExternalAddressIndex(@Nullable Integer maxUsedExternalAddressIndex) {
         this.maxUsedExternalAddressIndexPreference.set(maxUsedExternalAddressIndex);
     }
 

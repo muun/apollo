@@ -29,7 +29,7 @@ func TestGetPaymentURI(t *testing.T) {
 	)
 
 	invoiceDestination, _ := hex.DecodeString(invoiceDestinationHex)
-	invoicePaymentHash := [32]byte{}
+	invoicePaymentHash := make([]byte, 32)
 	hex.Decode(invoicePaymentHash[:], []byte(invoiceHashHex))
 
 	type args struct {
@@ -217,8 +217,8 @@ func Test_normalizeAddress(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := normalizeAddress(tt.args.rawAddress); got != tt.want {
-				t.Errorf("normalizeAddress() = %v, want %v", got, tt.want)
+			if got := buildUriFromString(tt.args.rawAddress); got != tt.want {
+				t.Errorf("buildUriFromString() = %v, want %v", got, tt.want)
 			}
 		})
 	}

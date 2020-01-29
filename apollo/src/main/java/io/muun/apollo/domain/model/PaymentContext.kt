@@ -121,7 +121,7 @@ class PaymentContext(
             analysis.amount,
             analysis.fee,
             analysis.payReq.description,
-            analysis.rateWindowHid
+            analysis.rateWindow.windowHid
         )
     }
 
@@ -144,12 +144,22 @@ class PaymentContext(
         Money.of(amountInSatoshis, "BTC").scaleByPowerOfTen(-BitcoinUtils.BITCOIN_PRECISION)
 
     /**
+     * Convert a MonetaryAmount to BTC.
+     */
+    fun convertToBitcoin(amount: MonetaryAmount) =
+        convert(amount, Monetary.getCurrency("BTC"));
+
+    /**
      * Convert a MonetaryAmount to another currency.
      */
     fun convert(amount: MonetaryAmount, targetUnit: CurrencyUnit) =
         amount.with(rateProvider.getCurrencyConversion(targetUnit))
 
-
+    /**
+     * Convert a MonetaryAmount to the user's primary currency.
+     */
+    fun convertToPrimary(amount: MonetaryAmount) =
+        amount.with(rateProvider.getCurrencyConversion(user.primaryCurrency))
     /**
      * Convert satoshis to a complex BitcoinAmount.
      */

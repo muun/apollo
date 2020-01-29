@@ -2,12 +2,12 @@ package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.action.AddressActions
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.HardwareWalletActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.errors.InitialSyncError
@@ -26,8 +26,8 @@ class SyncApplicationDataAction @Inject constructor(
     private val hardwareWalletActions: HardwareWalletActions,
     private val contactActions: ContactActions,
     private val operationActions: OperationActions,
-    private val addressActions: AddressActions,
     private val signinActions: SigninActions,
+    private val syncPublicKeySet: SyncPublicKeySetAction,
     private val fetchNextTransactionSize: FetchNextTransactionSizeAction,
     private val fetchRealTimeData: FetchRealTimeDataAction
 
@@ -62,7 +62,7 @@ class SyncApplicationDataAction @Inject constructor(
 
         val step2 = Observable.zip(
             operationActions.fetchReplaceOperations(),
-            addressActions.syncPublicKeySet(),
+            syncPublicKeySet.action(),
             RxHelper::toVoid
         )
 

@@ -113,4 +113,24 @@ public class MuunInputSubmarineSwapV102 {
                 swapServerSignature == null ? null : swapServerSignature.toJson()
         );
     }
+
+    public byte[] getSwapPaymentHash256() {
+        return swapPaymentHash256;
+    }
+
+    public byte[] getUserPublicKey() {
+        return userPublicKey;
+    }
+
+    public byte[] getMuunPublicKey() {
+        return muunPublicKey;
+    }
+
+    public byte[] getSwapServerPublicKey() {
+        return swapServerPublicKey;
+    }
+
+    public int getNumBlocksForExpiration() {
+        return numBlocksForExpiration;
+    }
 }

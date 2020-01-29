@@ -1,11 +1,11 @@
 package io.muun.common.model;
 
-import io.muun.common.bitcoinj.NetworkParametersHelper;
+import io.muun.common.api.TransactionStatusJson;
+import io.muun.common.exception.MissingCaseError;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.bitcoinj.core.NetworkParameters;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public enum OperationStatus {
@@ -99,19 +99,33 @@ public enum OperationStatus {
     }
 
     /**
-     * Get the operation status for a transaction with a certain number of confirmations.
+     * Get the operation status for a transaction with a certain status.
      */
-    public static OperationStatus fromTxWithConfirmations(long numConf, NetworkParameters network) {
+    public static OperationStatus fromTransactionStatus(TransactionStatusJson status) {
 
-        if (numConf == 0) {
-            return BROADCASTED;
+        switch (status) {
+
+            case BROADCASTED:
+                return OperationStatus.BROADCASTED;
+
+            case CONFIRMED:
+                return OperationStatus.CONFIRMED;
+
+            case SETTLED:
+                return OperationStatus.SETTLED;
+
+            case DROPPED:
+                return OperationStatus.DROPPED;
+
+            case FAILED:
+                return OperationStatus.FAILED;
+
+            case CREATED:
+                throw new IllegalStateException("Illegal transaction state: " + status);
+
+            default:
+                throw new MissingCaseError(status);
         }
-
-        if (numConf < NetworkParametersHelper.getSettlementNumber(network)) {
-            return CONFIRMED;
-        }
-
-        return OperationStatus.SETTLED;
     }
 
     @JsonValue

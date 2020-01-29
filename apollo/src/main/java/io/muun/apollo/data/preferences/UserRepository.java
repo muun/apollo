@@ -5,6 +5,7 @@ import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.NullCurrencyBugError;
 import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
+import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
@@ -63,6 +64,8 @@ public class UserRepository extends BaseRepository {
 
     private static final String RC_SETUP_IN_PROCESS = "rc_setup_in_process";
 
+    private static final String DISPLAY_SATS = "use_sats_as_currency";
+
     private final Preference<Long> hidPreference;
 
     private final Preference<String> firstNamePreference;
@@ -102,6 +105,8 @@ public class UserRepository extends BaseRepository {
     private final Preference<SignupDraft> signupDraftPreference;
 
     private final Preference<Boolean> recoveryCodeSetupInProcessPreference;
+
+    private final Preference<CurrencyDisplayMode> displaySatsPreference;
 
     /**
      * Creates a user preference repository.
@@ -161,6 +166,12 @@ public class UserRepository extends BaseRepository {
         );
 
         recoveryCodeSetupInProcessPreference = rxSharedPreferences.getBoolean(RC_SETUP_IN_PROCESS);
+
+        displaySatsPreference = rxSharedPreferences.getEnum(
+                DISPLAY_SATS,
+                CurrencyDisplayMode.BTC,
+                CurrencyDisplayMode.class
+        );
     }
 
     @Override
@@ -440,5 +451,17 @@ public class UserRepository extends BaseRepository {
 
     public Observable<Boolean> watchRecoveryCodeSetupInProcess() {
         return recoveryCodeSetupInProcessPreference.asObservable();
+    }
+
+    public CurrencyDisplayMode getCurrencyDisplayMode() {
+        return displaySatsPreference.get();
+    }
+
+    public Observable<CurrencyDisplayMode> watchCurrencyDisplayMode() {
+        return displaySatsPreference.asObservable();
+    }
+
+    public void setCurrencyDisplayMode(CurrencyDisplayMode value) {
+        displaySatsPreference.set(value);
     }
 }

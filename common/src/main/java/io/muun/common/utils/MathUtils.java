@@ -1,6 +1,7 @@
 package io.muun.common.utils;
 
 import javax.annotation.Nonnegative;
+import javax.annotation.Nullable;
 
 public class MathUtils {
 
@@ -20,5 +21,12 @@ public class MathUtils {
         }
 
         return result;
+    }
+
+    /**
+     * The maximum between `a` and `b`, considering any number to be greater than null.
+     */
+    public static Integer maxWithNulls(@Nullable Integer a, @Nullable Integer b) {
+        return a == null ? b : b == null ? a : (Integer) Math.max(a, b);
     }
 }

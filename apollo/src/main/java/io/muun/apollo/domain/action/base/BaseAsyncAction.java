@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.base;
 
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 
-import android.util.Log;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -28,6 +27,16 @@ public class BaseAsyncAction<ReturnT> {
     private Observable<ReturnT> actionInBackground(Observable<ReturnT> action) {
 
         return action.compose(executionTransformerFactory.getAsyncExecutor());
+    }
+
+    /**
+     * Execute a blocking observable in the context of this async action.
+     */
+    protected ReturnT runNow(Observable<ReturnT> action) {
+        return getResult()
+                .doOnSubscribe(() -> run(action))
+                .toBlocking()
+                .first();
     }
 
     /**
@@ -131,23 +140,28 @@ public class BaseAsyncAction<ReturnT> {
     }
 
     private void setEmpty() {
-        log("EMPTY");
+        Timber.d(getName() + ": EMPTY");
         subject.onNext(ActionState.createEmpty());
     }
 
     private void setLoading() {
-        log("LOADING");
+        Timber.d(getName() + ": LOADING");
         subject.onNext(ActionState.createLoading());
     }
 
     private void setValue(ReturnT value) {
-        log("VALUE " + value);
+        Timber.d(getName() + ": VALUE " + value);
         subject.onNext(ActionState.createValue(value));
     }
 
     private void setError(Throwable error) {
-        log("ERROR " + Log.getStackTraceString(error));
+        Timber.d(getName() + ": ERROR " + error);
+        Timber.e(error);
         subject.onNext(ActionState.createError(error));
+    }
+
+    private String getName() {
+        return this.getClass().getSimpleName();
     }
 
     private void log(String what) {

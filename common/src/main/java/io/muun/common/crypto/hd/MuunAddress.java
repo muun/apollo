@@ -40,7 +40,14 @@ public class MuunAddress {
     @NotNull
     private final String address;
 
+    /**
+     * Create a MuunAddress model from its Json counterpart.
+     */
     public static MuunAddress fromJson(MuunAddressJson json) {
+        if (json == null) {
+            return null;
+        }
+
         return new MuunAddress(json.version, json.derivationPath, json.address);
     }
 

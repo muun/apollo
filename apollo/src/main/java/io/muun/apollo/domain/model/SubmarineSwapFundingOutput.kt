@@ -5,6 +5,7 @@ import io.muun.common.api.SubmarineSwapFundingOutputJson
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap
+import io.muun.common.model.DebtType
 import io.muun.common.utils.Deprecated
 
 class SubmarineSwapFundingOutput(
@@ -37,7 +38,9 @@ class SubmarineSwapFundingOutput(
             muunPublicKey?.toJson(),
             serverPaymentHashInHex,
             serverPublicKeyInHex,
-            scriptVersion
+            scriptVersion,
+            DebtType.NONE,      // TODO: update once user debt client work is done
+            0
         )
 
     companion object {

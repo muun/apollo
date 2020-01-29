@@ -20,6 +20,9 @@ public class OperationCreatedJson {
     @NotNull
     public NextTransactionSizeJson nextTransactionSize;
 
+    @Nullable // null if the Operation has no change
+    public MuunAddressJson changeAddress;
+
     /**
      * Json constructor.
      */
@@ -31,10 +34,12 @@ public class OperationCreatedJson {
      */
     public OperationCreatedJson(OperationJson operation,
                                 PartiallySignedTransactionJson partiallySignedTransaction,
-                                NextTransactionSizeJson nextTransactionSize) {
+                                NextTransactionSizeJson nextTransactionSize,
+                                @Nullable MuunAddressJson changeAddress) {
 
         this.operation = operation;
         this.partiallySignedTransaction = partiallySignedTransaction;
         this.nextTransactionSize = nextTransactionSize;
+        this.changeAddress = changeAddress;
     }
 }

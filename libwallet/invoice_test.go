@@ -24,14 +24,14 @@ func TestParseInvoice(t *testing.T) {
 
 	invoiceDestination, _ := hex.DecodeString(invoiceDestinationHex)
 
-	invoicePaymentHash := [32]byte{}
+	invoicePaymentHash := make([]byte, 32)
 	hex.Decode(invoicePaymentHash[:], []byte(invoiceHashHex))
 
-	invoiceWithAmountPaymentHash := [32]byte{}
+	invoiceWithAmountPaymentHash := make([]byte, 32)
 	hex.Decode(invoiceWithAmountPaymentHash[:], []byte(invoiceWithAmountHashHex))
-	invoiceWithDescriptionPaymentHash := [32]byte{}
+	invoiceWithDescriptionPaymentHash := make([]byte, 32)
 	hex.Decode(invoiceWithDescriptionPaymentHash[:], []byte(invoiceWithDescriptionHashHex))
-	invoiceWithFallbackAddrPaymentHash := [32]byte{}
+	invoiceWithFallbackAddrPaymentHash := make([]byte, 32)
 	hex.Decode(invoiceWithFallbackAddrPaymentHash[:], []byte(invoiceWithFallbackAddrHashHex))
 
 	fallbackAddr, _ := GetPaymentURI("bcrt1qhv0a0uhrt2crdehgfge8e8e6texw3q4has8jh7", network)

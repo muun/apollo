@@ -158,7 +158,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             canPayWithSelectedFee = canPayWithSelectedFee,
             canPayWithMinimumFee = canPayWithMinimumFee,
 
-            rateWindowHid = payCtx.exchangeRateWindow.windowHid
+            rateWindow = payCtx.exchangeRateWindow
         )
     }
 

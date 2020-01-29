@@ -89,12 +89,12 @@ const (
 	muunScheme    = "muun:"
 )
 
-// GetPaymentURI builds a MuunPaymentURI from an address and a network
-func GetPaymentURI(address string, network *Network) (*MuunPaymentURI, error) {
+// GetPaymentURI builds a MuunPaymentURI from text (Bitcoin Uri, Muun Uri or address) and a network
+func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
-	uriAddress := normalizeAddress(address)
+	bitcoinUri := buildUriFromString(rawInput)
 
-	components, err := url.Parse(uriAddress)
+	components, err := url.Parse(bitcoinUri)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func GetPaymentURI(address string, network *Network) (*MuunPaymentURI, error) {
 				Label:    label,
 				Message:  message,
 				Amount:   amount,
-				URI:      uriAddress,
+				URI:      bitcoinUri,
 				BIP70Url: queryValues["r"][0],
 			}, nil
 		}
@@ -154,7 +154,7 @@ func GetPaymentURI(address string, network *Network) (*MuunPaymentURI, error) {
 			Label:    label,
 			Message:  message,
 			Amount:   amount,
-			URI:      uriAddress,
+			URI:      bitcoinUri,
 			BIP70Url: queryValues["r"][0],
 		}, nil
 	}
@@ -174,7 +174,7 @@ func GetPaymentURI(address string, network *Network) (*MuunPaymentURI, error) {
 		Label:   label,
 		Message: message,
 		Amount:  amount,
-		URI:     uriAddress,
+		URI:     bitcoinUri,
 	}, nil
 
 }
@@ -244,14 +244,14 @@ func getAddressFromScript(script []byte, network *Network) (string, error) {
 	return address.String(), nil
 }
 
-func normalizeAddress(rawAddress string) string {
-	newAddress := rawAddress
+func buildUriFromString(rawInput string) string {
+	newUri := rawInput
 
-	newAddress = strings.Replace(newAddress, muunScheme, bitcoinScheme, 1)
+	newUri = strings.Replace(newUri, muunScheme, bitcoinScheme, 1)
 
-	if !strings.Contains(newAddress, bitcoinScheme) {
-		newAddress = bitcoinScheme + rawAddress
+	if !strings.Contains(newUri, bitcoinScheme) {
+		newUri = bitcoinScheme + rawInput
 	}
 
-	return newAddress
+	return newUri
 }

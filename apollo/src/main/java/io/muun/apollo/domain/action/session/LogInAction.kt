@@ -2,10 +2,10 @@ package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.action.AddressActions
 import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
+import io.muun.apollo.domain.action.keys.DecryptRootPrivateKeyAction
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError
 import io.muun.apollo.domain.errors.PasswordIntegrityError
 import io.muun.apollo.domain.utils.replaceTypedError
@@ -28,8 +28,8 @@ class LogInAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val signinActions: SigninActions,
     private val userActions: UserActions,
-    private val addressActions: AddressActions,
-    private val keysRepository: KeysRepository
+    private val keysRepository: KeysRepository,
+    private val decryptRootPrivateKey: DecryptRootPrivateKeyAction
 
 ): BaseAsyncAction2<ChallengeType, String, Void>() {
 
@@ -101,7 +101,7 @@ class LogInAction @Inject constructor(
             keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey!!)
         }
 
-        return addressActions.decryptAndStoreRootPrivateKey(
+        return decryptRootPrivateKey.action(
             keySet.encryptedPrivateKey,
             userInput
         )

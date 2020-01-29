@@ -1,9 +1,9 @@
 package io.muun.apollo.data.async.tasks;
 
-import io.muun.apollo.domain.action.AddressActions;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.NotificationActions;
+import io.muun.apollo.domain.action.address.SyncExternalAddressIndexesAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.errors.PeriodicTaskOnMainThreadError;
 
@@ -28,17 +28,16 @@ public class TaskDispatcher {
      */
     @Inject
     public TaskDispatcher(ContactActions contactActions,
-                          AddressActions addressActions,
                           NotificationActions notificationActions,
                           IntegrityActions integrityActions,
-                          FetchRealTimeDataAction fetchRealTimeData) {
+                          FetchRealTimeDataAction fetchRealTimeData,
+                          SyncExternalAddressIndexesAction syncExternalAddressIndexes) {
 
         registerTaskType("pullNotifications", notificationActions::pullNotifications);
 
         registerTaskType("syncRealTimeData", fetchRealTimeData::action);
         registerTaskType("syncPhoneContacts", contactActions::syncPhoneContacts);
-        registerTaskType("syncExternalAddressesIndexes",
-                addressActions::syncExternalAddressesIndexes);
+        registerTaskType("syncExternalAddressesIndexes", syncExternalAddressIndexes::action);
 
         registerTaskType("checkIntegrity", integrityActions::checkIntegrity);
     }

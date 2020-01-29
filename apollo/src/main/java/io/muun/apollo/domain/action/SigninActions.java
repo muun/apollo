@@ -118,4 +118,8 @@ public class SigninActions {
     public void saveSignupDraft(SignupDraft signupDraft) {
         userRepository.storeSignupDraft(signupDraft);
     }
+
+    public void clearSignupDraft() {
+        userRepository.storeSignupDraft(null);
+    }
 }

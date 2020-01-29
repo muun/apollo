@@ -2,10 +2,10 @@ package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.action.AddressActions
 import io.muun.apollo.domain.action.CurrencyActions
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.action.keys.CreateRootPrivateKeyAction
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.crypto.ChallengePrivateKey
 import io.muun.common.crypto.ChallengeType
@@ -18,9 +18,9 @@ import javax.inject.Singleton
 class SignUpAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val userActions: UserActions,
-    private val addressActions: AddressActions,
     private val currencyActions: CurrencyActions,
-    private val keysRepository: KeysRepository
+    private val keysRepository: KeysRepository,
+    private val createRootPrivateKey: CreateRootPrivateKeyAction
 
 ): BaseAsyncAction1<String, Void>() {
 
@@ -38,7 +38,7 @@ class SignUpAction @Inject constructor(
             .challengePublicKey
 
         return Observable.defer {
-            addressActions.createAndStoreRootPrivateKey(password)
+            createRootPrivateKey.action(password)
                 .flatMap { encryptedPrivateKey ->
                     val primaryCurrency = getDefaultPrimaryCurrency()
 

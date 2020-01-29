@@ -6,6 +6,7 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.domain.action.address.CreateAddressAction;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
@@ -34,9 +35,9 @@ import javax.inject.Singleton;
 public class OperationActions {
 
     private final CreateOperationAction createOperation;
+    private final CreateAddressAction createAddress;
     private final HardwareWalletActions hardwareWalletActions;
     private final SatelliteActions satelliteActions;
-    private final AddressActions addressActions;
 
     private final OperationDao operationDao;
 
@@ -48,14 +49,15 @@ public class OperationActions {
 
     public final AsyncAction2<String, String, Void> submitSignedWithdrawalAction;
 
+
     /**
      * Constructor.
      */
     @Inject
     public OperationActions(CreateOperationAction createOperation,
+                            CreateAddressAction createAddress,
                             HardwareWalletActions hardwareWalletActions,
                             SatelliteActions satelliteActions,
-                            AddressActions addressActions,
                             OperationDao operationDao,
                             UserRepository userRepository,
                             TransactionSizeRepository transactionSizeRepository,
@@ -64,9 +66,9 @@ public class OperationActions {
                             AsyncActionStore asyncActionStore) {
 
         this.createOperation = createOperation;
+        this.createAddress = createAddress;
         this.hardwareWalletActions = hardwareWalletActions;
         this.satelliteActions = satelliteActions;
-        this.addressActions = addressActions;
 
         this.operationDao = operationDao;
 
@@ -118,6 +120,10 @@ public class OperationActions {
      */
     public void copySwapPreimageToClipboard(String preimage) {
         clipboardProvider.copy("Swap preimage", preimage);
+    }
+
+    public void copyTransactionIdToClipboard(String transactionId) {
+        clipboardProvider.copy("Transaction ID", transactionId);
     }
 
     private Observable<Void> submitSignedWithdrawal(String uuid, String signedTransaction) {
@@ -219,7 +225,7 @@ public class OperationActions {
     // Private helpers
 
     private Operation buildOperationFromPendingWithdrawal(PendingWithdrawal withdrawal) {
-        final MuunAddress address = addressActions.createLegacyAddress();
+        final MuunAddress address = createAddress.runNow().legacy;
 
         return Operation.createIncoming(
                 userRepository.fetchOne().getCompatPublicProfile(),

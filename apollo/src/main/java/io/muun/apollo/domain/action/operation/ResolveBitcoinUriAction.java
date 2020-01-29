@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.net.base.NetworkException;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
+import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.Bip72FallbackAlert;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
@@ -63,7 +64,8 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
 
     private PaymentRequest resolveBitcoinUri(OperationUri uri) {
         final FeeWindow feeWindow = feeWindowRepository.fetchOne();
-        final BitcoinUriContent uriContent = getBitcoinUriContent(uri);
+
+        final BitcoinUriContent uriContent = getBitcoinUriContentAndCheck(uri);
 
         final MonetaryAmount amount = (uriContent.amountInStatoshis != null)
                 ? BitcoinUtils.satoshisToBitcoins(uriContent.amountInStatoshis)
@@ -77,6 +79,18 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
         final double feeRate = feeWindow.getFastestFeeInSatoshisPerByte();
 
         return PaymentRequest.toAddress(uriContent.address, amount, description, feeRate);
+    }
+
+    private BitcoinUriContent getBitcoinUriContentAndCheck(OperationUri uri) {
+        final BitcoinUriContent expectedBitcoinUriContent = getBitcoinUriContent(uri);
+
+        try {
+            LibwalletBridge.checkBitcoinUriContent(uri, expectedBitcoinUriContent);
+        } catch (Throwable error) {
+            Timber.e(error);
+        }
+
+        return expectedBitcoinUriContent;
     }
 
     @VisibleForTesting

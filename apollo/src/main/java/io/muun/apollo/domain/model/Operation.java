@@ -2,6 +2,7 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.apollo.domain.utils.DateUtils;
+import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
 import io.muun.common.utils.Preconditions;
@@ -150,6 +151,9 @@ public class Operation extends HoustonIdModel {
 
     @Nullable
     public String receiverAddressDerivationPath;
+
+    @Nullable
+    public MuunAddress changeAddress;
 
     @NotNull
     public final BitcoinAmount amount;

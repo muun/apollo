@@ -1,5 +1,7 @@
 package io.muun.common.api;
 
+import io.muun.common.model.DebtType;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -50,6 +52,13 @@ public class SubmarineSwapFundingOutputJson {
     @NotNull
     public Integer scriptVersion;
 
+    @NotNull
+    public DebtType debtType;
+
+    @Nullable
+    public Long debtAmountInSats;
+
+
     /**
      * Json constructor.
      */
@@ -70,7 +79,9 @@ public class SubmarineSwapFundingOutputJson {
             @Nullable PublicKeyJson muunPublicKey,
             String serverPaymentHashInHex,
             String serverPublicKeyInHex,
-            Integer scriptVersion) {
+            Integer scriptVersion,
+            DebtType debtType,
+            @Nullable Long debtAmountInSats) {
 
         this.outputAddress = outputAddress;
         this.outputAmountInSatoshis = outputAmountInSatoshis;
@@ -83,5 +94,7 @@ public class SubmarineSwapFundingOutputJson {
         this.serverPaymentHashInHex = serverPaymentHashInHex;
         this.serverPublicKeyInHex = serverPublicKeyInHex;
         this.scriptVersion = scriptVersion;
+        this.debtType = debtType;
+        this.debtAmountInSats = debtAmountInSats;
     }
 }

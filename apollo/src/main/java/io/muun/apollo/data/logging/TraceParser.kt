@@ -48,30 +48,30 @@ object TraceExpr {
      * character properties. You can access the methods in {@link java.lang.Character} class
      * e.g #isJavaIdentifierStart and #isJavaIdentifierPart.
      */
-    private val ID = "\\p{javaJavaIdentifierStart}[\\p{javaJavaIdentifierPart}\\$]*"
-    private val FQ_ID = "$ID(\\.$ID)*"
+    val ID = "[\\p{javaJavaIdentifierStart}\\-][\\p{javaJavaIdentifierPart}\\$\\-]*"
+    val FQ_ID = "$ID(\\.$ID)+"
 
-    private val MESSAGE = ".*"
-    private val FILE_NAME = ".*"
-    private val LINE_NUMBER = "[0-9]+"
+    val MESSAGE = ".*"
 
-    private val TRACE_CAUSE_HEADER = "^ComposedException (\\d+) :"
-    private val TRACE_CAUSE = "^(Caused by: )?($FQ_ID):($MESSAGE)"
-    private val TRACE_LINE = "^at ($FQ_ID)\\.($ID)\\(($FILE_NAME):($LINE_NUMBER)\\)"
+    val FILE_NAME = ".*?"
+    val LINE_NUMBER = "[0-9]+"
+    val LOCATION = "($FILE_NAME):?($LINE_NUMBER)?" // note "(lambda)" has no line number
 
+    val TRACE_CAUSE_HEADER = "^ComposedException (\\d+) :"
+    val TRACE_CAUSE = "^(Caused by: )?($FQ_ID):?($MESSAGE)"
+    val TRACE_LINE = "^at ($FQ_ID)\\.($ID)\\($LOCATION\\)$"
 
-    private val parseTraceCause = Pattern.compile(TRACE_CAUSE).toParser {
+    val parseTraceCause = Pattern.compile(TRACE_CAUSE).toParser {
         TraceCause(it[2], it[4])
     }
 
-    private val parseTraceLine = Pattern.compile(TRACE_LINE).toParser {
-        TraceLine(it[1], it[3], it[4], it[5].toInt())
+    val parseTraceLine = Pattern.compile(TRACE_LINE).toParser {
+        TraceLine(it[1], it[3], it[4], (it.getOrNull(5) ?: "0").toInt())
     }
 
-    private val parseTraceCauseHeader = Pattern.compile(TRACE_CAUSE_HEADER).toParser {
+    val parseTraceCauseHeader = Pattern.compile(TRACE_CAUSE_HEADER).toParser {
         TraceCompositeCauseHeader(it[1].toInt())
     }
-
 
     fun parse(line: String) =
         parseTraceLine(line)

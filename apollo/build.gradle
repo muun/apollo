@@ -79,19 +79,21 @@ task libwallet(type: Exec) {
 
     ext {
         aar = "${project.projectDir}/libs/libwallet.aar"
-        packageName = "github.com/muun/muun/libwallet"
+        script = "${project.rootDir}/tools/libwallet-android.sh"
     }
 
     inputs.property("aar", aar)
-    inputs.property("packageName", packageName)
+    inputs.property("script", script)
 
     inputs.dir("${project.rootDir}/libwallet")
+    inputs.file(script)
 
     outputs.file(aar)
 
-    environment "GO111MODULE", "off"
-    executable "gomobile"
-    args "bind", "-target=android", "-o", aar, packageName
+    outputs.cacheIf { true }
+
+    executable script
+    args aar
 }
 
 preBuild.dependsOn "libwallet"

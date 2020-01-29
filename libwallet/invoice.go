@@ -15,7 +15,7 @@ type Invoice struct {
 	Network         *Network
 	MilliSat        string
 	Destination     []byte
-	PaymentHash     [32]byte
+	PaymentHash     []byte
 	Expiry          int64
 	Description     string
 }
@@ -60,7 +60,7 @@ func ParseInvoice(invoice string, network *Network) (*Invoice, error) {
 		Network:         network,
 		MilliSat:        milliSats,
 		Destination:     parsedInvoice.Destination.SerializeCompressed(),
-		PaymentHash:     *parsedInvoice.PaymentHash,
+		PaymentHash:     parsedInvoice.PaymentHash[:],
 		Expiry:          parsedInvoice.Timestamp.Unix() + int64(parsedInvoice.Expiry().Seconds()),
 		Description:     description,
 	}, nil

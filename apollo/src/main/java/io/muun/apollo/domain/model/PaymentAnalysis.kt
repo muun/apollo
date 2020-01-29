@@ -46,8 +46,8 @@ class PaymentAnalysis(
     /** Whether the user could pay for this PaymentRequest, if she selected the minimum fee. */
     val canPayWithMinimumFee: Boolean,
 
-    /** Houston's ID for the exchange rate window in use. */
-    val rateWindowHid: Long
+    /** The exchange rate window in use. */
+    val rateWindow: ExchangeRateWindow
 ) {
 
     /** Whether the amount entered is below dust. */

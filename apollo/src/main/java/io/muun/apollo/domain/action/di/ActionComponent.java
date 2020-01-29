@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.di;
 
-import io.muun.apollo.domain.action.AddressActions;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
 import io.muun.apollo.domain.action.HardwareWalletActions;
@@ -47,8 +46,6 @@ public interface ActionComponent {
     CurrencyActions currencyActions();
 
     SyncActions feeActions();
-
-    AddressActions addressActions();
 
     NotificationActions notificationActions();
 

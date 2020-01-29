@@ -59,13 +59,11 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
-import io.muun.common.utils.Encodings;
 
 import android.content.Context;
 import android.net.Uri;
 import okhttp3.MediaType;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Transaction;
 import rx.Observable;
 
 import java.util.List;
@@ -383,11 +381,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Pushes a raw transaction to Houston.
      *
-     * @param tx  The bitcoinj's transaction.
-     * @param operationHid The houston operation id.
+     * @param transactionHex The bitcoinj's transaction.
+     * @param operationHid   The houston operation id.
      */
-    public Observable<TransactionPushed> pushTransaction(Transaction tx, long operationHid) {
-        final String transactionHex = Encodings.bytesToHex(tx.unsafeBitcoinSerialize());
+    public Observable<TransactionPushed> pushTransaction(String transactionHex, long operationHid) {
 
         return getService()
                 .pushTransaction(new RawTransaction(transactionHex), operationHid)

@@ -4,6 +4,7 @@ import io.muun.common.Optional;
 
 import android.content.Context;
 import com.f2prateek.rx.preferences.Preference;
+import rx.Observable;
 
 import javax.inject.Inject;
 
@@ -19,7 +20,7 @@ public class ClientVersionRepository extends BaseRepository {
     @Inject
     public ClientVersionRepository(Context context) {
         super(context);
-        minClientVersionPreference = rxSharedPreferences.getInteger(KEY_MIN_CLIENT_VERSION);
+        minClientVersionPreference = rxSharedPreferences.getInteger(KEY_MIN_CLIENT_VERSION, null);
     }
 
     @Override
@@ -38,10 +39,11 @@ public class ClientVersionRepository extends BaseRepository {
      * Load minClientVersion from preferences, if present.
      */
     public Optional<Integer> getMinClientVersion() {
-        if (minClientVersionPreference.isSet()) {
-            return Optional.of(minClientVersionPreference.get());
-        } else {
-            return Optional.empty();
-        }
+        return watchMinClientVersion().toBlocking().first();
+    }
+
+    public Observable<Optional<Integer>> watchMinClientVersion() {
+        return minClientVersionPreference.asObservable()
+                .map(Optional::ofNullable);
     }
 }

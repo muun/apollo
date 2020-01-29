@@ -430,6 +430,20 @@ public enum ErrorCode {
             8200, StatusCode.CLIENT_FAILURE, "There's no plan with that UUID"
     ),
 
+    // syncer errors
+    ADDRESS_NOT_FOUND(
+            10000, StatusCode.CLIENT_FAILURE, "There's no address with that raw serialization"
+    ),
+    PAYMENT_NOT_FOUND(
+            10001, StatusCode.CLIENT_FAILURE, "There's no payment with that UUID"
+    ),
+    INCOMPATIBLE_ADDRESS_METADATA(
+            10002, StatusCode.CLIENT_FAILURE, "Address metadata doesn't match for existing address"
+    ),
+    NO_MATCHING_OUTPUT(
+            10003, StatusCode.CLIENT_FAILURE, "No output found matching the given arguments"
+    ),
+
     // server errors
     JSON_GENERATION_EXCEPTION(
             1002, StatusCode.SERVER_FAILURE, "Error generating JSON"

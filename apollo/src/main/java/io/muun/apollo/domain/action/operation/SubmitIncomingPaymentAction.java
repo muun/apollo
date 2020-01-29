@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.action.operation;
 
-import io.muun.apollo.domain.action.AddressActions;
 import io.muun.apollo.domain.action.SatelliteActions;
+import io.muun.apollo.domain.action.address.CreateAddressAction;
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PendingWithdrawal;
@@ -24,17 +24,17 @@ public class SubmitIncomingPaymentAction extends BaseAsyncAction2<
 
     // TODO: remove these dependencies when related actions are extracted
     private final SatelliteActions satelliteActions;
-    private final AddressActions addressActions;
+    private final CreateAddressAction createAddress;
 
     /**
      * Submit an incoming payment to Houston, and update local data in response.
      */
     @Inject
     public SubmitIncomingPaymentAction(SatelliteActions satelliteActions,
-                                       AddressActions addressActions) {
+                                       CreateAddressAction createAddress) {
 
         this.satelliteActions = satelliteActions;
-        this.addressActions = addressActions;
+        this.createAddress = createAddress;
     }
 
     @Override
@@ -43,23 +43,26 @@ public class SubmitIncomingPaymentAction extends BaseAsyncAction2<
     }
 
     private Observable<Void> submitPayment(PaymentRequest payReq, PreparedPayment prepPayment) {
-        final MuunAddress address = addressActions.createLegacyAddress();
-
         Preconditions.checkNotNull(payReq.getHardwareWallet());
 
-        final PendingWithdrawal pendingWithdrawal = new PendingWithdrawal(
-                RandomGenerator.getRandomUuid(),
-                payReq.getHardwareWallet().getHid(),
-                address.getAddress(),
-                address.getDerivationPath(),
-                prepPayment.amount,
-                prepPayment.fee,
-                prepPayment.rateWindowHid,
-                prepPayment.description,
-                ZonedDateTime.now(),
-                null
-        );
+        return createAddress.action()
+                .flatMap(addressGroup -> {
+                    final MuunAddress address = addressGroup.legacy;
 
-        return satelliteActions.beginWithdrawal(pendingWithdrawal);
+                    final PendingWithdrawal pendingWithdrawal = new PendingWithdrawal(
+                            RandomGenerator.getRandomUuid(),
+                            payReq.getHardwareWallet().getHid(),
+                            address.getAddress(),
+                            address.getDerivationPath(),
+                            prepPayment.amount,
+                            prepPayment.fee,
+                            prepPayment.rateWindowHid,
+                            prepPayment.description,
+                            ZonedDateTime.now(),
+                            null
+                    );
+
+                    return satelliteActions.beginWithdrawal(pendingWithdrawal);
+                });
     }
 }

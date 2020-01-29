@@ -103,6 +103,7 @@ class TraceTransformer(val includeAny: List<String>, val excludeAll: List<String
     private fun isApplicationLine(traceLine: TraceLine) =
         includeAny.any { traceLine.className.startsWith(it) }
             && !excludeAll.any { traceLine.className.startsWith(it) }
+            && traceLine.lineNumber > 0
 
     private fun createRelevantLineFromAssemblySection(section: TraceSection): TraceLine? {
         // Assembly sections usually contain one relevant piece of information, followed by a lot

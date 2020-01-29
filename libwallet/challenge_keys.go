@@ -99,9 +99,9 @@ func (k *ChallengePrivateKey) DecryptKey(encryptedKey string, network *Network) 
 
 	iv := rawPubEph[len(rawPubEph)-aes.BlockSize:]
 
-	block, err := aes.NewCipher(sharedSecret.Bytes())
+	block, err := aes.NewCipher(paddedSerializeBigInt(32, sharedSecret))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "challenge_key: failed to generate encryption key")
 	}
 
 	plaintext := make([]byte, len(ciphertext))

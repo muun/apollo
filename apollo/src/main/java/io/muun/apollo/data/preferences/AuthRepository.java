@@ -8,6 +8,7 @@ import io.muun.common.utils.Encodings;
 import android.content.Context;
 import com.f2prateek.rx.preferences.Preference;
 import rx.Completable;
+import rx.Observable;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -32,7 +33,9 @@ public class AuthRepository extends BaseRepository {
         this.secureStorageProvider = secureStorageProvider;
         this.sessionStatusPreference = rxSharedPreferences.getEnum(
                 KEY_SESSION_STATUS,
-                SessionStatus.class);
+                null,
+                SessionStatus.class
+        );
     }
 
     @Override
@@ -80,11 +83,12 @@ public class AuthRepository extends BaseRepository {
      * Returns the session status.
      */
     public Optional<SessionStatus> getSessionStatus() {
-        if (!secureStorageProvider.has(KEY_SERVER_JWT)) {
-            return Optional.empty();
-        }
+        return watchSessionStatus().toBlocking().first();
+    }
 
-        return Optional.ofNullable(sessionStatusPreference.get());
+    public Observable<Optional<SessionStatus>> watchSessionStatus() {
+        return sessionStatusPreference.asObservable()
+                .map(Optional::ofNullable);
     }
 
 

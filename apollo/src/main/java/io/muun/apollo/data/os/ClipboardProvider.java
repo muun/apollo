@@ -5,6 +5,7 @@ import io.muun.common.Optional;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Handler;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -70,9 +71,13 @@ public class ClipboardProvider {
                 clipboardListener -> Observable.create((Observable.OnSubscribe<String>)
                         (subscriber) -> {
                             clipboardListener.setSubscriber(subscriber);
-                            clipboardListener.onPrimaryClipChanged();
-
                             clipboard.addPrimaryClipChangedListener(clipboardListener);
+
+                            // We want to immediately call `onPrimaryClipChanged`, so our subscriber
+                            // gets the current content of the clipboard. Doing it synchronously
+                            // will show us an empty clipboard on *some devices*, but posting it
+                            // to the event loop fixes the problem:
+                            new Handler().post(clipboardListener::onPrimaryClipChanged);
                         }
                 ),
 

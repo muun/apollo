@@ -51,9 +51,9 @@ func (k *ChallengePublicKey) EncryptKey(privKey *HDPrivateKey, recoveryCodeSalt 
 	serializedPubkey := privEph.PubKey().SerializeCompressed()
 	iv := serializedPubkey[len(serializedPubkey)-aes.BlockSize:]
 
-	block, err := aes.NewCipher(sharedSecret.Bytes())
+	block, err := aes.NewCipher(paddedSerializeBigInt(32, sharedSecret))
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "challenge_public_key: failed to generate encryption key")
 	}
 
 	ciphertext := make([]byte, len(plaintext))

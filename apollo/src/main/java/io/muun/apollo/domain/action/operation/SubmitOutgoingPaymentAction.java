@@ -7,22 +7,24 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.HardwareWalletActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
+import io.muun.apollo.domain.libwallet.LibwalletBridge;
+import io.muun.apollo.domain.libwallet.TransactionInfo;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.external.Globals;
 import io.muun.common.crypto.hd.HardwareWalletAddress;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
-import org.bitcoinj.core.Transaction;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -85,26 +87,32 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
 
                             // Extract data from response:
                             final Operation houstonOp = operationCreated.operation;
+                            final MuunAddress changeAddress = operationCreated.changeAddress;
 
-                            final PartiallySignedTransaction partiallySignedTransaction =
-                                    operationCreated.partiallySignedTransaction;
+                            // Update the operation from Houston's response:
+                            operation.changeAddress = changeAddress;
 
-                            partiallySignedTransaction.addUserSignatures(
+                            // Produce the signed Bitcoin transaction:
+                            final TransactionInfo txInfo = LibwalletBridge.sign(
+                                    operation,
                                     baseUserPrivateKey,
-                                    baseMuunPublicKey
+                                    baseMuunPublicKey,
+                                    operationCreated.partiallySignedTransaction,
+                                    Globals.INSTANCE.getNetwork()
                             );
 
-                            final Transaction fullySignedTransaction = partiallySignedTransaction
-                                    .getTransaction();
-
-                            operation.hash = fullySignedTransaction.getHashAsString();
+                            // Update the Operation after signing:
+                            operation.hash = txInfo.getHash();
                             operation.status = OperationStatus.SIGNED;
 
                             // Maybe Houston identified the receiver for us:
                             final Operation mergedOperation = operation.mergeWithUpdate(houstonOp);
 
+                            // Finish the flow by uploading the signed transaction:
+                            final String transactionHex = Encodings.bytesToHex(txInfo.getBytes());
+
                             return houstonClient
-                                    .pushTransaction(fullySignedTransaction, houstonOp.getHid())
+                                    .pushTransaction(transactionHex, houstonOp.getHid())
                                     .flatMap(txPushed -> createOperation.action(
                                             mergedOperation, txPushed.nextTransactionSize
                                     ))

@@ -141,6 +141,7 @@ public class AsyncAction<T> {
     }
 
     private void setError(Throwable error) {
+        Timber.d(name + ": ERROR " + error);
         Timber.e(error);
         subject.onNext(ActionState.createError(error));
     }

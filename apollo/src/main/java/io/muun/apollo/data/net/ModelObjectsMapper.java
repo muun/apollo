@@ -43,6 +43,7 @@ import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
+import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.crypto.tx.PartiallySignedTransaction;
@@ -246,7 +247,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                         operationCreated.partiallySignedTransaction,
                         networkParameters
                 ),
-                mapNextTransactionSize(operationCreated.nextTransactionSize)
+                mapNextTransactionSize(operationCreated.nextTransactionSize),
+                MuunAddress.fromJson(operationCreated.changeAddress)
         );
     }
 

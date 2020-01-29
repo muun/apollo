@@ -19,6 +19,7 @@ import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.crypto.ChallengePrivateKey;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
+import io.muun.common.crypto.hd.KeyCrypter;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.SessionStatus;
 import io.muun.common.model.VerificationType;
@@ -50,7 +51,6 @@ public class UserActions {
 
     private final HoustonClient houstonClient;
 
-    private final AddressActions addressActions;
     private final ContactActions contactActions;
 
     private final UpdateProfilePictureAction updateProfilePictureAction;
@@ -80,7 +80,6 @@ public class UserActions {
                        KeysRepository keysRepository,
                        AuthRepository authRepository,
                        HoustonClient houstonClient,
-                       AddressActions addressActions,
                        ContactActions contactActions,
                        UpdateProfilePictureAction updateProfilePictureAction) {
 
@@ -89,7 +88,6 @@ public class UserActions {
         this.authRepository = authRepository;
         this.houstonClient = houstonClient;
 
-        this.addressActions = addressActions;
         this.contactActions = contactActions;
 
         this.updateProfilePictureAction = updateProfilePictureAction;
@@ -263,7 +261,7 @@ public class UserActions {
 
         final Observable<String> afterEncryptingPrivateKey = keysRepository
                 .getBasePrivateKey()
-                .map(key -> addressActions.encryptRootPrivateKey(key, userInput));
+                .map(key -> new KeyCrypter().encrypt(key, userInput));
 
         return afterEncryptingPrivateKey.map(encryptedPrivateKey -> new ChallengeSetup(
             challengeType,

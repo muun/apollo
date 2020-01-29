@@ -453,3 +453,217 @@ func TestBlo(t *testing.T) {
 	str, _ := txscript.DisasmString(data)
 	fmt.Println(str)
 }
+
+func TestPartiallySignedTransaction_Verify(t *testing.T) {
+
+	const (
+		hexTx1            = "0100000002a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffffdf39591fa749826f87a3d7e5fd5f0468d338c3d81dd3b2c953534b0210f98c560000000000ffffffff02a8d6c20400000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c787000e2707000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
+
+		txIndex1          = 1
+		txAmount1         = 100000000
+		txIdHex1          = "ae57aa2bc55298cc79459db058a91a45bc4a5cd57c9a988ce4de31b64ac01ca5"
+		txAddressPath1    = "m/schema:1'/recovery:1'/external:1/0"
+		txAddress1        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
+		txAddressVersion1 = addressV4
+
+		txIndex2          = 0
+		txAmount2         = 100000000
+		txIdHex2          = "568cf910024b5353c9b2d31dd8c338d368045ffde5d7a3876f8249a71f5939df"
+		txAddressPath2    = "m/schema:1'/recovery:1'/external:1/0"
+		txAddress2        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
+		txAddressVersion2 = addressV4
+
+		changeAddress1    = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath1       = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion1    = addressV4
+
+		hexTx2            = "01000000010ead2fa0d6866d0414aba97fd8f1b242fdc3d4c8e7771e40969402319b6e876b0000000000ffffffff02922988040000000017a914d1ac5d61107d2bef187d1aef5cfd3536f4fd5dbe87d6b2050100000000220020bac6de765432ee16e10ce268341062f8f5a417b15a7f6ee8fe903e6d7470f0f700000000"
+
+		txIndex3          = 0
+		txAmount3         = 93266680
+		txIdHex3          = "6b876e9b31029496401e77e7c8d4c3fd42b2f1d87fa9ab14046d86d6a02fad0e"
+		txAddressPath3    = "m/schema:1'/recovery:1'/change:0/8"
+		txAddress3        = "bcrt1q9yzsghvmmn7wv3esylrvn3c469s4ce4thk7qmxdly4tzk4f8vvjsqv0crh"
+		txAddressVersion3 = addressV4
+
+		changeAddress2    = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath2       = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion2    = addressV4
+
+		encodedUserKey    = "tpubDAKxNPypXDF3GNCpXFUh6sCdxz7DY9eKMgFxYBgyRSiYWXrBLgdtkPuMbQQzrsYLVyPPSHmNcduLRRd9TSMaYrGLryp8KNkkYBm6eka1Bem"
+		encodedMuunKey    = "tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8"
+
+		basePath = "m/schema:1'/recovery:1'"
+	)
+
+	txId1, _ := hex.DecodeString(txIdHex1)
+	txId2, _ := hex.DecodeString(txIdHex2)
+	txId3, _ := hex.DecodeString(txIdHex3)
+
+	userPublicKey, _ := NewHDPublicKeyFromString(
+		encodedUserKey,
+		basePath,
+		Regtest())
+
+	muunPublicKey, _ := NewHDPublicKeyFromString(
+		encodedMuunKey,
+		basePath,
+		Regtest())
+
+	type fields struct {
+		tx           *wire.MsgTx
+		inputs       []Input
+		Expectations *SigningExpectations
+	}
+	type args struct {
+		userPublicKey  *HDPublicKey
+		muunPublickKey *HDPublicKey
+	}
+	firstInput := input{
+		outpoint: outpoint{index: txIndex1, amount: txAmount1, txId: txId1},
+		address:  muunAddress{address: txAddress1, derivationPath: txAddressPath1, version: txAddressVersion1},
+	}
+	secondInput := input{
+		outpoint: outpoint{index: txIndex2, amount: txAmount2, txId: txId2},
+		address:  muunAddress{address: txAddress2, derivationPath: txAddressPath2, version: txAddressVersion2},
+	}
+	thirdInput := input{
+		outpoint: outpoint{index: txIndex3, amount: txAmount3, txId: txId3},
+		address:  muunAddress{address: txAddress3, derivationPath: txAddressPath3, version: txAddressVersion3},
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "2 inputs, one change",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      120000000,
+					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					fee:         122200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+		},
+		{
+			name: "lied about destination amount",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      110000000,
+					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					fee:         122200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+		{
+			name: "lied about change",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      120000000,
+					change:      &muunAddress{address: changeAddress1, derivationPath: basePath + "/123", version: changeVersion1},
+					fee:         122200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+		{
+			name: "lied about destination",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "2N2giv9tsN3pV7Rkm89SReRBgdqKNBESVBk",
+					amount:      120000000,
+					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					fee:         122200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+		{
+			name: "lied about fee",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      120000000,
+					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					fee:         12200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+		{
+			name: "wasnt expecting change",
+			fields: fields{
+				tx: parseTx(hexTx1),
+				inputs: []Input{&firstInput, &secondInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      120000000,
+					change:      nil,
+					fee:         122200,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+		{
+			name: "lying change",
+			fields: fields{
+				tx: parseTx(hexTx2),
+				inputs: []Input{&thirdInput},
+				Expectations: &SigningExpectations{
+					destination: "bcrt1qhtrduaj5xthpdcgvuf5rgyrzlr66g9a3tflka687jqlx6ars7rms0flpmy",
+					amount:      17150678,
+					change:      &muunAddress{address: changeAddress2, derivationPath: changePath2, version: changeVersion2},
+					fee:         83600,
+				},
+			},
+			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &PartiallySignedTransaction{
+				tx:           tt.fields.tx,
+				inputs:       tt.fields.inputs,
+				Expectations: tt.fields.Expectations,
+			}
+			err := p.Verify(tt.args.userPublicKey, tt.args.muunPublickKey)
+			t.Logf("test %v returnedd %v", tt.name, err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Verify() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func parseTx(hexTx string) *wire.MsgTx {
+
+	rawTx, _ := hex.DecodeString(hexTx)
+
+	tx := wire.NewMsgTx(0)
+	tx.BtcDecode(bytes.NewBuffer(rawTx), 0, wire.WitnessEncoding)
+
+	return tx
+}

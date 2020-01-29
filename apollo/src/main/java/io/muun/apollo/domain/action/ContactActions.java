@@ -8,7 +8,7 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.LibwalletBridge;
+import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.model.Contact;
