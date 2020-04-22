@@ -62,7 +62,10 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
         final String descriptionParam = uri.getParam(OperationUri.MUUN_DESCRIPTION)
                 .orElse("");
 
-        final MonetaryAmount amount = Money.of(new BigDecimal(amountParam), currencyParam);
+        final MonetaryAmount amount = Money.of(
+                new BigDecimal(amountParam),
+                currencyParam.toUpperCase()
+        );
 
         final double feeRate = feeWindow.getFastestFeeInSatoshisPerByte();
 

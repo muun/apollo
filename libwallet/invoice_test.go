@@ -106,6 +106,7 @@ func TestParseInvoice(t *testing.T) {
 				FallbackAddress: nil,
 				Network:         network,
 				MilliSat:        "1000000",
+				Sats:            1000,
 				Destination:     invoiceDestination,
 				PaymentHash:     invoiceWithAmountPaymentHash,
 				Description:     "",
@@ -160,6 +161,38 @@ func TestParseInvoice(t *testing.T) {
 				network: network,
 			},
 			wantErr: true,
+		},
+		{
+			name: "simple invoice with muun scheme",
+			args: args{
+				invoice: muunScheme + invoice,
+				network: network,
+			},
+			want: &Invoice{
+				RawInvoice:      invoice,
+				FallbackAddress: nil,
+				Network:         network,
+				MilliSat:        "",
+				Destination:     invoiceDestination,
+				PaymentHash:     invoicePaymentHash,
+				Description:     "",
+			},
+		},
+		{
+			name: "simple invoice with muun:// scheme",
+			args: args{
+				invoice: muunScheme + "//" + invoice,
+				network: network,
+			},
+			want: &Invoice{
+				RawInvoice:      invoice,
+				FallbackAddress: nil,
+				Network:         network,
+				MilliSat:        "",
+				Destination:     invoiceDestination,
+				PaymentHash:     invoicePaymentHash,
+				Description:     "",
+			},
 		},
 	}
 

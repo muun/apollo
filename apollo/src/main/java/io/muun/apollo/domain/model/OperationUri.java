@@ -10,8 +10,10 @@ import io.muun.common.utils.LnInvoice;
 import io.muun.common.utils.Preconditions;
 
 import android.net.Uri;
-import androidx.annotation.VisibleForTesting;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.uri.BitcoinURIParseException;
+
+import java.util.regex.Pattern;
 
 public class OperationUri {
 
@@ -29,10 +31,10 @@ public class OperationUri {
 
     public static final String MUUN_AMOUNT = "amount";
     public static final String MUUN_CURRENCY = "currency";
-    public static final String MUUN_DESCRIPTION = "description";
+    public static final String MUUN_DESCRIPTION = "message";
 
     /**
-     * Createn an OperationUri from any input String, by trying to use the other factory methods.
+     * Create an OperationUri from any input String, by trying to use the other factory methods.
      * Supports plain addresses, Bitcoin URIs and Muun URIs.
      */
     public static OperationUri fromString(String text) throws IllegalArgumentException {
@@ -63,6 +65,18 @@ public class OperationUri {
         }
 
         try {
+            return fromMuunBitcoinUri(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a Muun Bitcoin URI.
+        }
+
+        try {
+            return fromMuunLightningUri(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a Muun Lightning URI.
+        }
+
+        try {
             return fromMuunUri(text);
         } catch (IllegalArgumentException ex) {
             // Not a Muun URI.
@@ -76,7 +90,6 @@ public class OperationUri {
      * Create an OperationUri from a plain Bitcoin address. The address must belong to the network
      * in use, as specified by Globals.INSTANCE.
      */
-    @VisibleForTesting
     public static OperationUri fromAddress(String address) {
         if (!ValidationHelpers.isValidAddress(Globals.INSTANCE.getNetwork(), address)) {
             throw new IllegalArgumentException(address);
@@ -88,13 +101,23 @@ public class OperationUri {
     /**
      * Create an OperationUri from a "bitcoin:" URI.
      */
-    @VisibleForTesting
     public static OperationUri fromBitcoinUri(String bitcoinUri) {
         // workaround for some uris that include this invalid char (e.g satoshitango)
         bitcoinUri = bitcoinUri.replace("|", "%7C");
 
+        final NetworkParameters network = Globals.INSTANCE.getNetwork();
+        final String uriScheme = network.getUriScheme();
+
+        // some sites put the uri in all caps and BitcoinJ doesn't like that
+        if (bitcoinUri.toLowerCase().startsWith(uriScheme)) {
+            bitcoinUri = bitcoinUri.replaceFirst(
+                    Pattern.quote(bitcoinUri.substring(0, uriScheme.length())),
+                    uriScheme
+            );
+        }
+
         try {
-            new BitcoinUri(Globals.INSTANCE.getNetwork(), bitcoinUri);
+            new BitcoinUri(network, bitcoinUri);
 
         } catch (BitcoinURIParseException e) {
             throw new IllegalArgumentException(bitcoinUri);
@@ -106,7 +129,6 @@ public class OperationUri {
     /**
      * Create an OperationUri from a "lightning:" URI.
      */
-    @VisibleForTesting
     public static OperationUri fromLnUri(String lnUri) {
         if (!lnUri.toLowerCase().startsWith(LN_SCHEME + ":")) {
             throw new IllegalArgumentException(lnUri);
@@ -118,7 +140,6 @@ public class OperationUri {
     /**
      * Create an OperationUri from a raw LN invoice.
      */
-    @VisibleForTesting
     public static OperationUri fromLnInvoice(String lnInvoice) {
         try {
             LnInvoice.decode(Globals.INSTANCE.getNetwork(), lnInvoice);
@@ -130,9 +151,33 @@ public class OperationUri {
     }
 
     /**
+     * Create an OperationUri from a "muun:{address}?amount={amount}" URI.
+     */
+    public static OperationUri fromMuunBitcoinUri(String muunBitcoinUri) {
+        if (!muunBitcoinUri.startsWith(MUUN_SCHEME + ":")) {
+            throw new IllegalArgumentException(muunBitcoinUri);
+        }
+
+        final String bitcoinScheme = Globals.INSTANCE.getNetwork().getUriScheme();
+        final String bitcoinUri = bitcoinScheme + muunBitcoinUri.substring(MUUN_SCHEME.length());
+        return fromBitcoinUri(bitcoinUri);
+    }
+
+    /**
+     * Create an OperationUri from a "muun:{invoice}" URI.
+     */
+    public static OperationUri fromMuunLightningUri(String muunLightningUri) {
+        if (!muunLightningUri.startsWith(MUUN_SCHEME + ":")) {
+            throw new IllegalArgumentException(muunLightningUri);
+        }
+
+        final String bitcoinUri = LN_SCHEME + muunLightningUri.substring(MUUN_SCHEME.length());
+        return fromLnUri(bitcoinUri);
+    }
+
+    /**
      * Create an OperationUri from a "muun:" URI.
      */
-    @VisibleForTesting
     public static OperationUri fromMuunUri(String muunUri) {
         if (!muunUri.startsWith(MUUN_SCHEME + ":")) {
             throw new IllegalArgumentException(muunUri);

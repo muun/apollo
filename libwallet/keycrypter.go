@@ -42,7 +42,7 @@ func KeyEncrypt(key *HDPrivateKey, passphrase string) (string, error) {
 		scryptBlockSize,
 		scryptParallelizationFactor)
 
-	encrypted, err := encrypt(inputSecret, iv, privateKeyBytes)
+	encrypted, err := encryptAesCbcPkcs7(inputSecret, iv, privateKeyBytes)
 	if err != nil {
 		return "", err
 	}
@@ -118,7 +118,7 @@ func KeyDecrypt(value, passphrase string, network *Network) (*DecryptedKey, erro
 		blockSize,
 		parallelizationFactor)
 
-	decryptedBytes, err := decrypt(inputSecret, iv, payload)
+	decryptedBytes, err := decryptAesCbcPkcs7(inputSecret, iv, payload)
 	if err != nil {
 		return nil, errors.New("KeyCrypter: failed to decrypt pk: " + err.Error())
 	}

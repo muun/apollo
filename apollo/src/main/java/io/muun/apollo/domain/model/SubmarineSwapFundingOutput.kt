@@ -8,9 +8,11 @@ import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap
 import io.muun.common.model.DebtType
 import io.muun.common.utils.Deprecated
 
-class SubmarineSwapFundingOutput(
+class SubmarineSwapFundingOutput constructor(
     val outputAddress: String,
     val outputAmountInSatoshis: Long,
+    val debtType: DebtType,
+    val debtAmountInSatoshis: Long,
     val confirmationsNeeded: Int,
     val userLockTime: Int?,                 // for swaps v2 is null until funding tx confirmation
     @Deprecated(
@@ -39,8 +41,8 @@ class SubmarineSwapFundingOutput(
             serverPaymentHashInHex,
             serverPublicKeyInHex,
             scriptVersion,
-            DebtType.NONE,      // TODO: update once user debt client work is done
-            0
+            debtType,
+            debtAmountInSatoshis
         )
 
     companion object {
@@ -49,6 +51,8 @@ class SubmarineSwapFundingOutput(
             return SubmarineSwapFundingOutput(
                 output.outputAddress,
                 output.outputAmountInSatoshis,
+                output.debtType,
+                output.debtAmountInSats ?: 0,
                 output.confirmationsNeeded,
                 output.userLockTime,
                 MuunAddress.fromJson(output.userRefundAddress),

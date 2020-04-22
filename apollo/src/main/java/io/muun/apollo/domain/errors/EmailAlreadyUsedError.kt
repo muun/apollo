@@ -3,5 +3,5 @@ package io.muun.apollo.domain.errors
 
 import io.muun.apollo.external.UserFacingErrorMessages
 
-class EmailAreadyUsedError:
+class EmailAlreadyUsedError:
     UserFacingError(UserFacingErrorMessages.INSTANCE.emailAreadyUsed())

@@ -3,6 +3,7 @@ package libwallet
 import (
 	"encoding/hex"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -13,11 +14,11 @@ const (
 	uriWithSlashes = "bitcoin://" + amountURI
 
 	invalidAddress = "2NDhvuRPCYXq4fB8SprminieZ2a1i3JFXya"
+	randomText     = "fooo"
 
 	bip70URL                   = "https://bitpay.com/i/KXCEAtJQssR9vG2BxdjFwx"
 	bip70NonRetroCompatAddress = bitcoinScheme + "?r=" + bip70URL
 	bip70RetroCompatAddress    = bitcoinScheme + address + "?r=" + bip70URL
-
 )
 
 func TestGetPaymentURI(t *testing.T) {
@@ -85,6 +86,14 @@ func TestGetPaymentURI(t *testing.T) {
 			name: "invalidAddress",
 			args: args{
 				address: invalidAddress,
+				network: *Regtest(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "randomText",
+			args: args{
+				address: randomText,
 				network: *Regtest(),
 			},
 			wantErr: true,
@@ -164,6 +173,28 @@ func TestGetPaymentURI(t *testing.T) {
 				Description:     "",
 			}},
 		},
+		{
+			name: "ALL CAPS",
+			args: args{
+				address: "BITCOIN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+				network: *Mainnet(),
+			},
+			want: &MuunPaymentURI{
+				Address: strings.ToLower("BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"),
+				URI:     "BITCOIN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+			},
+		},
+		{
+			name: "MiXeD Case",
+			args: args{
+				address: "BiTcOiN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+				network: *Mainnet(),
+			},
+			want: &MuunPaymentURI{
+				Address: strings.ToLower("BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"),
+				URI:     "BiTcOiN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -187,6 +218,7 @@ func TestGetPaymentURI(t *testing.T) {
 func Test_normalizeAddress(t *testing.T) {
 	type args struct {
 		rawAddress string
+		targetScheme string
 	}
 	tests := []struct {
 		name string
@@ -197,6 +229,7 @@ func Test_normalizeAddress(t *testing.T) {
 			name: "normalAddress",
 			args: args{
 				rawAddress: address,
+				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
 		},
@@ -204,6 +237,7 @@ func Test_normalizeAddress(t *testing.T) {
 			name: "bitcoinAddress",
 			args: args{
 				rawAddress: bitcoinScheme + address,
+				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
 		},
@@ -211,13 +245,22 @@ func Test_normalizeAddress(t *testing.T) {
 			name: "muunAddress",
 			args: args{
 				rawAddress: muunScheme + address,
+				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
+		},
+		{
+			name: "muun to lightning",
+			args: args{
+				rawAddress: muunScheme + address,
+				targetScheme: lightningScheme,
+			},
+			want: lightningScheme + address,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildUriFromString(tt.args.rawAddress); got != tt.want {
+			if got, _ := buildUriFromString(tt.args.rawAddress, tt.args.targetScheme); got != tt.want {
 				t.Errorf("buildUriFromString() = %v, want %v", got, tt.want)
 			}
 		})

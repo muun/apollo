@@ -240,6 +240,11 @@ public class Operation extends HoustonIdModel {
         return status.equals(OperationStatus.DROPPED) || status.equals(OperationStatus.FAILED);
     }
 
+    public boolean isLendingSwap() {
+
+        return swap != null && swap.isLend();
+    }
+
     /**
      * Get the creation date of the operation, localized to the system timezone.
      */

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 public class OperationCreated {
 
     @NotNull
-    public final Operation operation;
+    public final OperationWithMetadata operation;
 
     @NotNull
     public final PartiallySignedTransaction partiallySignedTransaction;
@@ -24,7 +24,7 @@ public class OperationCreated {
     /**
      * Constructor.
      */
-    public OperationCreated(Operation operation,
+    public OperationCreated(OperationWithMetadata operation,
                             PartiallySignedTransaction partiallySignedTransaction,
                             NextTransactionSize nextTransactionSize,
                             @Nullable MuunAddress changeAddress) {

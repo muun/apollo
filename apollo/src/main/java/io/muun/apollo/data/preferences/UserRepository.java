@@ -185,7 +185,7 @@ public class UserRepository extends BaseRepository {
     public void store(User user) {
         hidPreference.set(user.hid);
 
-        emailPreference.set(user.email);
+        emailPreference.set(user.email.orElse(null));
         isEmailVerifiedPreference.set(user.isEmailVerified);
 
         storePhoneNumber(user.phoneNumber.orElse(null));
@@ -207,7 +207,7 @@ public class UserRepository extends BaseRepository {
     public Observable<User> fetch() {
         return Observable.combineLatest(
                 hidPreference.asObservable(),
-                emailPreference.asObservable(),
+                emailPreference.asObservable().map(Optional::ofNullable),
                 isEmailVerifiedPreference.asObservable(),
                 fetchPhoneNumber(),
                 fetchProfile(),

@@ -15,7 +15,7 @@ public class User {
     public final Long hid;
 
     @NotNull
-    public final String email;
+    public final Optional<String> email;
     public final boolean isEmailVerified;
 
     public final Optional<UserPhoneNumber> phoneNumber;
@@ -34,7 +34,7 @@ public class User {
      * Constructor.
      */
     public User(@NotNull Long hid,
-                @NotNull String email,
+                Optional<String> email,
                 boolean isEmailVerified,
                 Optional<UserPhoneNumber> phoneNumber,
                 Optional<UserProfile> profile,

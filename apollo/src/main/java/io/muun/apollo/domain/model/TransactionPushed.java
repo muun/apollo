@@ -1,11 +1,12 @@
 package io.muun.apollo.domain.model;
 
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 public class TransactionPushed {
 
-    @NotNull
+    @Nullable
     public final String hex;
 
     @NotNull
@@ -14,7 +15,7 @@ public class TransactionPushed {
     /**
      * Constructor.
      */
-    public TransactionPushed(String hex, NextTransactionSize nextTransactionSize) {
+    public TransactionPushed(@Nullable String hex, NextTransactionSize nextTransactionSize) {
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
     }

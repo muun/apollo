@@ -27,12 +27,14 @@ CREATE TABLE submarine_swaps (
     funding_user_public_key TEXT,
     funding_user_public_key_path TEXT,
     funding_muun_public_key TEXT,
-    funding_muun_public_key_path TEXT
+    funding_muun_public_key_path TEXT,
+    funding_output_debt_type TEXT as io.muun.common.model.DebtType NOT NULL,
+    funding_output_debt_amount_in_satoshis INTEGER NOT NULL
 );
 
 insertSwap:
 INSERT OR REPLACE INTO submarine_swaps
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAll:
 SELECT *

@@ -3,6 +3,7 @@ package io.muun.apollo.domain.model
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime
 import io.muun.apollo.domain.model.base.HoustonUuidModel
 import io.muun.common.api.SubmarineSwapJson
+import io.muun.common.model.DebtType
 import org.threeten.bp.ZonedDateTime
 
 class SubmarineSwap (id: Long?,
@@ -16,8 +17,11 @@ class SubmarineSwap (id: Long?,
                     var payedAt: ZonedDateTime?,         // may not be payed yet
                     var preimageInHex: String?) : HoustonUuidModel(id, houstonUuid) {
 
-    val outputAmountInSatoshis: Long
-        get() = fundingOutput.outputAmountInSatoshis
+    fun isLend() =
+        fundingOutput.debtType == DebtType.LEND
+
+    fun isCollect() =
+        fundingOutput.debtType == DebtType.COLLECT
 
     fun toJson() =
             SubmarineSwapJson(

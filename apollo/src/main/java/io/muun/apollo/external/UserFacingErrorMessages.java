@@ -44,6 +44,8 @@ public abstract class UserFacingErrorMessages {
 
     public abstract String emailAreadyUsed();
 
+    public abstract String emailNotRegistered();
+
     public abstract String invalidPicture();
 
     public abstract String recoveryCodeVerification();

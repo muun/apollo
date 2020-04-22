@@ -188,6 +188,9 @@ public interface HoustonService {
     Observable<OperationCreatedJson> newOperation(@Body OperationJson operation);
 
     @PUT("operations/{operationId}/raw-transaction")
+    Observable<TransactionPushedJson> pushTransaction(@Path("operationId") Long operationId);
+
+    @PUT("operations/{operationId}/raw-transaction")
     Observable<TransactionPushedJson> pushTransaction(@Body RawTransaction rawTransaction,
                                                       @Path("operationId") Long operationId);
 

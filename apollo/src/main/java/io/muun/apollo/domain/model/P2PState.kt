@@ -1,0 +1,10 @@
+package io.muun.apollo.domain.model
+
+import io.muun.apollo.domain.action.base.ActionState
+
+class P2PState(
+    val user: User,
+    val permissionState: ContactsPermissionState,
+    val syncState: ActionState<*>,
+    val contacts: List<Contact>
+)

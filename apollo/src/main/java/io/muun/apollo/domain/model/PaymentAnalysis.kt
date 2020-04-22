@@ -2,6 +2,8 @@ package io.muun.apollo.domain.model
 
 import io.muun.common.Rules
 import io.muun.common.utils.BitcoinUtils
+import io.muun.common.utils.Preconditions.checkNonNegative
+import io.muun.common.utils.Preconditions.checkPositive
 
 /**
  * The result of analyzing a PaymentRequest, performing validation and currency conversions.
@@ -27,7 +29,7 @@ class PaymentAnalysis(
 
     /** The fee required to pre-open a channel for a lightning payment */
     val channelOpenFee: BitcoinAmount?,
-    
+
     /** The fee required to close a pre-opened channel for a lightning payment */
     val channelCloseFee: BitcoinAmount?,
 
@@ -50,9 +52,14 @@ class PaymentAnalysis(
     val rateWindow: ExchangeRateWindow
 ) {
 
-    /** Whether the amount entered is below dust. */
+    /** Whether the payment requires an on-chain transaction */
+    val hasOnChainTransaction =
+        !(payReq.swap?.isLend() ?: false) // only true for lend swaps (sorry for the logic)
+
+    /** Whether the amount entered (when an on-chain transaction is needed) is below dust. */
     val isAmountTooSmall =
-        outputAmount.inSatoshis < BitcoinUtils.DUST_IN_SATOSHIS
+        hasOnChainTransaction &&
+            checkNonNegative(outputAmount.inSatoshis) < BitcoinUtils.DUST_IN_SATOSHIS
 
     /** Whether the description length is below the mininum set by Rules. */
     val isDescriptionTooShort =

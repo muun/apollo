@@ -34,7 +34,7 @@ object CrashReportBuilder {
         var message = origMessage ?: ""
 
         if (origError != null) {
-            message = removeRedundantStackTrace(origMessage, origError)
+            message = removeRedundantStackTrace(origMessage, origError) ?: ""
         }
 
         // Prepare the error:

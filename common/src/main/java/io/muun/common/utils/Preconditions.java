@@ -298,11 +298,24 @@ public final class Preconditions {
      * @throws IllegalArgumentException if {@code number} is not positive
      */
     public static int checkPositive(int number) {
+        return (int) checkPositive((long) number);
+    }
+
+    /**
+     * Ensures that {@code number} is positive.
+     *
+     * @param number a number
+     * @return the value of {@code number}
+     * @throws IllegalArgumentException if {@code number} is not positive
+     */
+    public static long checkPositive(long number) {
         if (number <= 0) {
             throw new IllegalArgumentException(format("non-positive number: " + number));
         }
         return number;
     }
+
+
 
     /**
      * Ensures that {@code number} is positive.
@@ -316,6 +329,20 @@ public final class Preconditions {
     public static int checkPositive(int number, @Nullable Object errorMessage) {
         if (number <= 0) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
+        }
+        return number;
+    }
+
+    /**
+     * Ensures that {@code number} is positive.
+     *
+     * @param number a number
+     * @return the value of {@code number}
+     * @throws IllegalArgumentException if {@code number} is negative
+     */
+    public static long checkNonNegative(long number) {
+        if (number < 0) {
+            throw new IllegalArgumentException("Number " + number + " expected to be non-negative");
         }
         return number;
     }

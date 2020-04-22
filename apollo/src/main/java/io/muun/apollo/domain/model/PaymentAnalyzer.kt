@@ -10,14 +10,15 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
     // Extract some vars for easy access:
     private val inputCurrency = payReq.amount!!.currency
-    private val sizeProgression = payCtx.sizeProgression
+    private val nextTransactionSize = payCtx.nextTransactionSize
 
     // Set up fee calculators:
-    private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte, sizeProgression)
-    private val minimumFeeCalculator = FeeCalculator(Rules.OP_MINIMUM_FEE_RATE, sizeProgression)
+    private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
+    private val minimumFeeCalculator = FeeCalculator(Rules.OP_MINIMUM_FEE_RATE, nextTransactionSize)
 
     // Obtain balances:
-    private val totalBalanceInSatoshis = payCtx.totalBalance
+    private val totalBalanceInSatoshis = payCtx.userBalance
+    private val totalUtxoBalanceInSatoshis = payCtx.utxoBalance
 
     // Amounts and fees we can pre-compute:
     private val originalAmountInSatoshis = payCtx.convertToSatoshis(payReq.amount!!)
@@ -51,6 +52,8 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             amountInSatoshis = originalAmountInSatoshis,
             feeInSatoshis = null,
             totalInSatoshis = null,
+            outputAmountInSatoshis = payReq.swap?.fundingOutput?.outputAmountInSatoshis,
+            swapFees = payReq.swap?.fees,
             canPayWithoutFee = false,
             canPayWithSelectedFee = false,
             canPayWithMinimumFee = false
@@ -96,22 +99,89 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     private fun analyzeSubmarineSwap(): PaymentAnalysis {
         checkNotNull(payReq.swap)
 
-        val outputAmountInSatoshis = payReq.swap.outputAmountInSatoshis
+        return if (payReq.swap.isLend()) {
+            analyzeLendSubmarineSwap()
+
+        } else if (payReq.swap.isCollect()) {
+            analyzeCollectSubmarineSwap()
+
+        } else {
+            analyzeNonDebtSubmarineSwap()
+        }
+    }
+
+    private fun analyzeLendSubmarineSwap(): PaymentAnalysis {
+        checkNotNull(payReq.swap)
+
+        // When lending, the outputAmount and sweepFee fields given by Swapper must be ignored:
+        val totalInSatoshis = originalAmountInSatoshis + payReq.swap.fees.lightningInSats
+        var swapFees = SubmarineSwapFees(lightningInSats = payReq.swap.fees.lightningInSats)
+
+        val canPayLightningFee = (totalInSatoshis <= totalBalanceInSatoshis)
+
+        return createAnalysis(
+            amountInSatoshis = originalAmountInSatoshis,
+            feeInSatoshis = 0, // no actual transaction
+            totalInSatoshis = if (canPayLightningFee) totalInSatoshis else null,
+            outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis,
+            swapFees = swapFees,
+            canPayWithoutFee = (originalAmountInSatoshis <= totalBalanceInSatoshis),
+            canPayWithMinimumFee = canPayLightningFee,
+            canPayWithSelectedFee = canPayLightningFee
+        )
+    }
+
+    private fun analyzeCollectSubmarineSwap(): PaymentAnalysis {
+        checkNotNull(payReq.swap)
+
+        val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
+        val collectAmountInSatoshis = payReq.swap.fundingOutput.debtAmountInSatoshis
+        val amountInSatoshis = outputAmountInSatoshis - collectAmountInSatoshis
+
+        check(amountInSatoshis == originalAmountInSatoshis
+            + payReq.swap.fees.lightningInSats
+            + payReq.swap.fees.sweepInSats
+        )
+
+        // For COLLECT swaps, outputAmountInSatoshis includes collectAmount so check must be
+        // performed against utxoBalance
+        if (outputAmountInSatoshis > totalUtxoBalanceInSatoshis) {
+            // Unlike other cases, this can happen because we calculate fee for the total output
+            // amount (which includes the sweep fee) and not the original payment amount. So, our
+            // caller has not verified this can be payed.
+            return analyzeCannotPay()
+        }
+
+        val feeInSatoshis = feeCalculator.calculateForCollect(outputAmountInSatoshis)
+        val totalInSatoshis = outputAmountInSatoshis + feeInSatoshis
+
+        val minimumFeeInSatoshis = minimumFeeCalculator.calculateForCollect(outputAmountInSatoshis)
+        val minimumTotalInSatoshis = outputAmountInSatoshis + minimumFeeInSatoshis
+
+        val totalForDisplayInSatoshis = amountInSatoshis + feeInSatoshis
+
+        return createAnalysis(
+            amountInSatoshis = originalAmountInSatoshis,
+            feeInSatoshis =  feeInSatoshis,
+            totalInSatoshis = totalForDisplayInSatoshis,
+            outputAmountInSatoshis = outputAmountInSatoshis,
+            swapFees = payReq.swap.fees,
+            canPayWithoutFee = true,
+            canPayWithMinimumFee = (minimumTotalInSatoshis <= totalUtxoBalanceInSatoshis),
+            canPayWithSelectedFee = (totalInSatoshis <= totalUtxoBalanceInSatoshis)
+        )
+    }
+
+    private fun analyzeNonDebtSubmarineSwap(): PaymentAnalysis {
+        checkNotNull(payReq.swap)
+
+        val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
 
         if (outputAmountInSatoshis > totalBalanceInSatoshis) {
             // Unlike other cases, this can happen because we calculate fee for the total output
             // amount (which includes the sweep fee) and not the original payment amount. So, our
             // caller has not verified this can be payed.
-            return createAnalysis(
-                amountInSatoshis = originalAmountInSatoshis,
-                feeInSatoshis = null,
-                totalInSatoshis = null,
-                outputAmountInSatoshis = outputAmountInSatoshis,
-                swapFees = payReq.swap.fees,
-                canPayWithoutFee = false,
-                canPayWithSelectedFee = false,
-                canPayWithMinimumFee = false
-            )
+            return analyzeCannotPay()
         }
 
         val feeInSatoshis = feeCalculator.calculate(outputAmountInSatoshis)

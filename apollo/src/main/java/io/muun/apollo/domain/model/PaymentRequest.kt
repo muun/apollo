@@ -1,7 +1,8 @@
 package io.muun.apollo.domain.model
 
+import io.muun.apollo.domain.libwallet.Invoice
+import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.apollo.external.Globals
-import io.muun.common.utils.LnInvoice
 import io.muun.common.utils.Preconditions
 import javax.money.MonetaryAmount
 
@@ -11,7 +12,7 @@ data class PaymentRequest (val type: Type,
                            val contact: Contact? = null,
                            val address: String? = null,
                            val hardwareWallet: HardwareWallet? = null,
-                           val invoice: LnInvoice? = null,
+                           val invoice: Invoice? = null,
                            val swap: SubmarineSwap? = null,
                            val feeInSatoshisPerByte: Double,
                            val takeFeeFromAmount: Boolean = false) {
@@ -73,7 +74,9 @@ data class PaymentRequest (val type: Type,
                         Contact.fromJson(payReqJson.contact),
                         payReqJson.address,
                         HardwareWallet.fromJson(payReqJson.hardwareWallet),
-                        payReqJson.invoice?.let { LnInvoice.decode(Globals.INSTANCE.network, it) },
+                        payReqJson.invoice?.let {
+                            LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, it)
+                        },
                         SubmarineSwap.fromJson(payReqJson.swap),
                         payReqJson.feeInSatoshisPerByte,
                         payReqJson.takeFeeFromAmount
@@ -153,7 +156,7 @@ data class PaymentRequest (val type: Type,
 
         /** Create a PaymentRequest to send money to an Invoice. */
         @JvmStatic
-        fun toLnInvoice(invoice: LnInvoice,
+        fun toLnInvoice(invoice: Invoice,
                         amount: MonetaryAmount,
                         description: String,
                         submarineSwap: SubmarineSwap,

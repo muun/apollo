@@ -7,6 +7,7 @@ import io.muun.common.utils.Since;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,7 +16,9 @@ public class UserJson {
 
     public Long id;
 
+    @Nullable
     public String email;
+
     public boolean isEmailVerified;
 
     public PublicProfileJson publicProfile;
@@ -44,7 +47,7 @@ public class UserJson {
      * Houston constructor.
      */
     public UserJson(Long id,
-                    String email,
+                    @Nullable String email,
                     boolean isEmailVerified,
                     PublicProfileJson publicProfile,
                     PhoneNumberJson phoneNumber,

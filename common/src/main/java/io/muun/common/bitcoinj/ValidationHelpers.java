@@ -28,7 +28,8 @@ public class ValidationHelpers {
     // NOTE: emails are complicated beasts (https://stackoverflow.com/a/201378/469300).
     // We run a very simple validation, aimed at preventing common user mistakes. This expression
     // does NOT attempt to filter invalid emails in general.
-    private static final Pattern emailPattern = Pattern.compile("[^@ ]+@[^@ ]+[.][^@ ]*[a-z0-9]$");
+    private static final Pattern emailPattern = Pattern
+            .compile("[^@ ]+@[^@ ]+[.][^@ ]*[a-zA-Z0-9]$");
 
     /**
      * Check if an e-mail address is valid.

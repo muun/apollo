@@ -13,8 +13,8 @@ import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
-import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationCreated;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
@@ -67,7 +67,6 @@ import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
@@ -106,8 +105,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                                                      @NotNull String gcmRegistrationToken) {
 
         final SessionJson session = new SessionJson(
-                UUID.randomUUID().toString(),
-                email,
+                email.trim(),
                 buildType,
                 version,
                 gcmRegistrationToken,
@@ -372,7 +370,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * Sends a new operation to houston, that will return it with more data, including a transaction
      * draft.
      */
-    public Observable<OperationCreated> newOperation(Operation operation) {
+    public Observable<OperationCreated> newOperation(OperationWithMetadata operation) {
         return getService()
                 .newOperation(apiMapper.mapOperation(operation))
                 .map(modelMapper::mapOperationCreated);
@@ -381,20 +379,27 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Pushes a raw transaction to Houston.
      *
-     * @param transactionHex The bitcoinj's transaction.
+     * @param txHex The bitcoinj's transaction.
      * @param operationHid   The houston operation id.
      */
-    public Observable<TransactionPushed> pushTransaction(String transactionHex, long operationHid) {
+    public Observable<TransactionPushed> pushTransaction(@Nullable String txHex,
+                                                         long operationHid) {
 
-        return getService()
-                .pushTransaction(new RawTransaction(transactionHex), operationHid)
-                .map(modelMapper::mapTransactionPushed);
+        if (txHex != null) {
+            return getService()
+                    .pushTransaction(new RawTransaction(txHex), operationHid)
+                    .map(modelMapper::mapTransactionPushed);
+        } else {
+            return getService()
+                    .pushTransaction(operationHid) // empty body when txHex is not given
+                    .map(modelMapper::mapTransactionPushed);
+        }
     }
 
     /**
      * Fetches the operation history for this user from Houston.
      */
-    public Observable<List<Operation>> fetchOperations() {
+    public Observable<List<OperationWithMetadata>> fetchOperations() {
         return getService()
                 .fetchOperations()
                 .flatMap(Observable::from)
@@ -412,7 +417,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Submit a new signed withdrawal operation.
      */
-    public Observable<OperationCreated> newWithdrawalOperation(Operation operation,
+    public Observable<OperationCreated> newWithdrawalOperation(OperationWithMetadata operation,
                                                                String signedTransaction,
                                                                List<Long> inputAmounts) {
 

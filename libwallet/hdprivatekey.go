@@ -134,3 +134,19 @@ func (p *HDPrivateKey) Sign(data []byte) ([]byte, error) {
 
 	return sig.Serialize(), nil
 }
+
+func (p *HDPrivateKey) Decrypter() Decrypter {
+	return &hdPrivKeyDecrypter{p, nil, true}
+}
+
+func (p *HDPrivateKey) DecrypterFrom(senderKey *PublicKey) Decrypter {
+	return &hdPrivKeyDecrypter{p, senderKey, false}
+}
+
+func (p *HDPrivateKey) Encrypter() Encrypter {
+	return &hdPubKeyEncrypter{p.PublicKey(), p}
+}
+
+func (p *HDPrivateKey) EncrypterTo(receiver *HDPublicKey) Encrypter {
+	return &hdPubKeyEncrypter{receiver, p}
+}

@@ -5,9 +5,9 @@ import io.muun.common.Optional;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.os.Handler;
 import rx.Observable;
-import rx.Subscriber;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -43,7 +43,7 @@ public class ClipboardProvider {
         }
 
         final ClipData primaryClip = clipboard.getPrimaryClip();
-        if (primaryClip.getItemCount() == 0) {
+        if (primaryClip == null || primaryClip.getItemCount() == 0) {
             return Optional.empty();
         }
 
@@ -61,43 +61,13 @@ public class ClipboardProvider {
     }
 
     /**
-     * Create an Observable that reports changes on the system clipboard (fires immediately upon
-     * subscribe).
+     * Create an Observable that reports changes on the system clipboard (fires on subscribe).
      */
     public Observable<String> watchPrimaryClip() {
-        return Observable.using(
-                ClipboardListener::new,
-
-                clipboardListener -> Observable.create((Observable.OnSubscribe<String>)
-                        (subscriber) -> {
-                            clipboardListener.setSubscriber(subscriber);
-                            clipboard.addPrimaryClipChangedListener(clipboardListener);
-
-                            // We want to immediately call `onPrimaryClipChanged`, so our subscriber
-                            // gets the current content of the clipboard. Doing it synchronously
-                            // will show us an empty clipboard on *some devices*, but posting it
-                            // to the event loop fixes the problem:
-                            new Handler().post(clipboardListener::onPrimaryClipChanged);
-                        }
-                ),
-
-                clipboard::removePrimaryClipChangedListener
-
-        ).distinctUntilChanged();
-    }
-
-    private class ClipboardListener implements ClipboardManager.OnPrimaryClipChangedListener {
-        Subscriber<? super String> subscriber;
-
-        public void setSubscriber(Subscriber<? super String> subscriber) {
-            this.subscriber = subscriber;
-        }
-
-        @Override
-        public void onPrimaryClipChanged() {
-            if (subscriber != null && !subscriber.isUnsubscribed()) {
-                subscriber.onNext(paste().orElse(""));
-            }
-        }
+        return Observable
+                .interval(250, TimeUnit.MILLISECONDS) // emits sequential numbers 0+ on each tick
+                .startWith(-1L) // emits -1 immediately (since interval waits for the first delay)
+                .map(i -> paste().orElse(""))
+                .distinctUntilChanged();
     }
 }

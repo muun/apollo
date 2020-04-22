@@ -9,6 +9,7 @@ import io.muun.apollo.domain.action.SatelliteActions;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
+import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
 import io.muun.apollo.domain.errors.MessageFromExpiredPairingError;
 import io.muun.apollo.domain.errors.MessageOriginError;
@@ -19,6 +20,7 @@ import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUpdated;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.SatellitePairing;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.satellite.messages.AddHardwareWalletMessage;
@@ -65,6 +67,7 @@ public class NotificationProcessor {
     private final SatelliteActions satelliteActions;
 
     private final ModelObjectsMapper mapper;
+    private final OperationMetadataMapper operationMapper;
 
     private final Map<String, NotificationHandler> handlers =
             new HashMap<>();
@@ -80,7 +83,8 @@ public class NotificationProcessor {
                                  UserActions userActions,
                                  SigninActions signinActions,
                                  SatelliteActions satelliteActions,
-                                 ModelObjectsMapper mapper) {
+                                 ModelObjectsMapper mapper,
+                                 OperationMetadataMapper operationMapper) {
 
         this.updateOperation = updateOperation;
         this.createOperation = createOperation;
@@ -90,6 +94,7 @@ public class NotificationProcessor {
         this.signinActions = signinActions;
         this.satelliteActions = satelliteActions;
         this.mapper = mapper;
+        this.operationMapper = operationMapper;
 
 
         addHandler(NewContactMessage.SPEC, this::handleNewContact);
@@ -173,7 +178,8 @@ public class NotificationProcessor {
                 notification.message
         );
 
-        final Operation operation = mapper.mapOperation(message.operation);
+        final OperationWithMetadata operationWithMetadata = mapper.mapOperation(message.operation);
+        final Operation operation = operationMapper.mapFromMetadata(operationWithMetadata);
 
         final NextTransactionSize nextTransactionSize = mapper
                 .mapNextTransactionSize(message.nextTransactionSize);

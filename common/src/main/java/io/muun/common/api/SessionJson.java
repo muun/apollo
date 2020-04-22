@@ -6,18 +6,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SessionJson {
-
-    @Null
-    @Nullable
-    public String uuid;
-
-    @NotEmpty
-    public String requestId;
 
     @Nullable // COMPAT: Apollo <22 sent phone instead of email, could not receive DEPRECATED msg
     public String email;
@@ -43,34 +35,12 @@ public class SessionJson {
     /**
      * Apollo constructor.
      */
-    public SessionJson(String requestId,
-                       String email,
+    public SessionJson(String email,
                        String buildType,
                        int version,
                        String gcmRegistrationToken,
                        ClientTypeJson clientType) {
 
-        this.requestId = requestId;
-        this.email = email;
-        this.buildType = buildType;
-        this.version = version;
-        this.gcmRegistrationToken = gcmRegistrationToken;
-        this.clientType = clientType;
-    }
-
-    /**
-     * Houston constructor.
-     */
-    public SessionJson(String uuid,
-                       String requestId,
-                       String email,
-                       String buildType,
-                       int version,
-                       String gcmRegistrationToken,
-                       ClientTypeJson clientType) {
-
-        this.uuid = uuid;
-        this.requestId = requestId;
         this.email = email;
         this.buildType = buildType;
         this.version = version;

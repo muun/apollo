@@ -3,6 +3,7 @@ package io.muun.apollo.data.preferences.migration;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
+import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.LogoutActions;
@@ -33,6 +34,8 @@ public class PreferencesMigrationManager {
 
     private final FeeWindowRepository feeWindowRepository;
 
+    private final TransactionSizeRepository transactionSizeRepository;
+
     /**
      * An array of migrations, in the order that they must be run.
      */
@@ -61,7 +64,13 @@ public class PreferencesMigrationManager {
             this::upgradeFeeWindowRepositoryForCustomFees,
 
             // sep 2019, Apollo 30 replaces SignupDraft with isInitialSyncCompleted
-            this::setInitialSyncCompleted
+            this::setInitialSyncCompleted,
+
+            // feb 2020, Apollo 38 divides signup and login flows
+            this::clearSignupDraft,
+
+            // apr 2020, Apollo 64 rolls out user debt and 0 sat fees low amount  ln payments
+            this::initExpectedDebt
     };
 
     /**
@@ -73,7 +82,8 @@ public class PreferencesMigrationManager {
                                        SchemaVersionRepository schemaVersionRepository,
                                        UserRepository userRepository,
                                        LogoutActions logoutActions,
-                                       FeeWindowRepository feeWindowRepository) {
+                                       FeeWindowRepository feeWindowRepository,
+                                       TransactionSizeRepository transactionSizeRepository) {
         this.context = context;
 
         this.schemaVersionRepository = schemaVersionRepository;
@@ -83,6 +93,7 @@ public class PreferencesMigrationManager {
         this.feeWindowRepository = feeWindowRepository;
 
         this.logoutActions = logoutActions;
+        this.transactionSizeRepository = transactionSizeRepository;
     }
 
     /**
@@ -115,15 +126,9 @@ public class PreferencesMigrationManager {
 
     /**
      * Destroys information for SignupDraft.
-     *
-     * @Deprecated Keeping it for client migrations retro compat.
      */
     private void clearSignupDraft() {
-        // we no longer store signup draft
-        context.getSharedPreferences("user", Context.MODE_PRIVATE)
-                .edit()
-                .remove("signup_draft")
-                .apply();
+        userRepository.storeSignupDraft(null);
     }
 
     private void moveJwtKeyToSecureStorage() {
@@ -157,7 +162,6 @@ public class PreferencesMigrationManager {
                 .apply();
     }
 
-
     private void setInitialSyncCompleted() {
         final SharedPreferences prefs = context
                 .getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -176,5 +180,18 @@ public class PreferencesMigrationManager {
         if (isInitialSyncCompleted) {
             userRepository.storeInitialSyncCompleted();
         }
+    }
+
+    private void initExpectedDebt() {
+        final SharedPreferences prefs = context
+                .getSharedPreferences("transaction_size", Context.MODE_PRIVATE);
+
+        final boolean hasNts = prefs.contains("transaction_size");
+
+        if (!hasNts) {
+            return;
+        }
+
+        transactionSizeRepository.initExpectedDebt();
     }
 }

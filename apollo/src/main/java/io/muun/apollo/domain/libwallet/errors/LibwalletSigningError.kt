@@ -2,19 +2,14 @@ package io.muun.apollo.domain.libwallet.errors
 
 import io.muun.apollo.domain.errors.MuunError
 
-private var msg = "Libwallet produced an invalid signature"
+private var msg = "Libwallet failed to produce a signature"
 
-class LibwalletMismatchSignatureError : MuunError {
+class LibwalletSigningError : MuunError {
 
-    val txId: String
+    val tx: String
 
-    constructor(txId: String): super(msg) {
-        this.txId = txId
-        metadata["txId"] = txId
-    }
-
-    constructor(txId: String, cause: Throwable): super(msg, cause) {
-        this.txId = txId
-        metadata["txId"] = txId
+    constructor(tx: String, cause: Throwable): super(msg, cause) {
+        this.tx = tx
+        metadata["tx"] = tx
     }
 }

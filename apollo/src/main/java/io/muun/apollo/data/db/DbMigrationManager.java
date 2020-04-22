@@ -464,7 +464,8 @@ public class DbMigrationManager {
                 MigrationsModel.MIGRATION_27_ADD_SWAP_FUNDING_OUTPUT_MUUN_PUBLIC_KEY_PATH
         );
 
-
+        add(28, MigrationsModel.MIGRATION_28_ADD_SWAP_DEBT_TYPE,
+                MigrationsModel.MIGRATION_28_ADD_SWAP_DEBT_AMOUNT);
     }
 
     /**

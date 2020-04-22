@@ -2,15 +2,15 @@ package io.muun.common.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionPushedJson {
 
-    @NotEmpty
+    @Nullable
     public String hex; // COMPAT: lousy modeling, but this field is expected by Apollo < 35
 
     @NotNull
@@ -29,7 +29,7 @@ public class TransactionPushedJson {
      * Houston constructor.
      */
     public TransactionPushedJson(
-            String hex,
+            @Nullable String hex,
             NextTransactionSizeJson nextTransactionSize,
             OperationJson operation) {
 

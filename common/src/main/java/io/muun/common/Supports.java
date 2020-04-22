@@ -2,7 +2,7 @@ package io.muun.common;
 
 public class Supports {
 
-    public static final int NOT_SUPPORTED = Integer.MAX_VALUE;
+    private static final int NOT_SUPPORTED = Integer.MAX_VALUE;
 
     public interface OutputAmountInSatoshis {
         int APOLLO = 35;
@@ -14,7 +14,6 @@ public class Supports {
         int FALCON = 22;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface CreationDateInUserInfo {
         int APOLLO = 46;
         int FALCON = 24;
@@ -25,13 +24,11 @@ public class Supports {
         int FALCON = 1;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface BlockchainHeight {
         int APOLLO = 47;
         int FALCON = 25;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface SubmarineSwapsV2 {
         int APOLLO = 52;
         int FALCON = 36;
@@ -45,15 +42,25 @@ public class Supports {
         int APOLLO = 15;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface TransactionSchemeV4 {
         int APOLLO = 52;
         int FALCON = 36;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface InvoiceExpiredError {
         int APOLLO = 52;
+        int FALCON = NOT_SUPPORTED;
+    }
+
+    // ON-RELEASE: check that these versions are right
+    public interface UserDebt {
+        int APOLLO = 63;
+        int FALCON = NOT_SUPPORTED;
+    }
+
+    // ON-RELEASE: check that these versions are right
+    public interface ReSigning {
+        int APOLLO = NOT_SUPPORTED;
         int FALCON = NOT_SUPPORTED;
     }
 }

@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
+import io.muun.apollo.data.net.ApiObjectsMapper;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -8,16 +9,18 @@ import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.HardwareWalletActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
-import io.muun.apollo.domain.libwallet.TransactionInfo;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.model.OperationCreated;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.external.Globals;
 import io.muun.common.crypto.hd.HardwareWalletAddress;
 import io.muun.common.crypto.hd.MuunAddress;
+import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.exception.MissingCaseError;
@@ -25,6 +28,8 @@ import io.muun.common.model.OperationStatus;
 import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
+import libwallet.Transaction;
+import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -47,6 +52,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
     // TODO: remove this dependencies when actions are extracted.
     private final ContactActions contactActions;
     private final HardwareWalletActions hardwareWalletActions;
+    private final OperationMetadataMapper operationMapper;
 
     /**
      * Submit an outgoing payment to Houston, and update local data in response.
@@ -58,7 +64,9 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                        PublicProfileDao publicProfileDao,
                                        HoustonClient houstonClient,
                                        ContactActions contactActions,
-                                       HardwareWalletActions hardwareWalletActions) {
+                                       HardwareWalletActions hardwareWalletActions,
+                                       ApiObjectsMapper apiObjectsMapper,
+                                       OperationMetadataMapper operationMetadataMapper) {
 
         this.createOperation = createOperation;
         this.userRepository = userRepository;
@@ -67,6 +75,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
         this.houstonClient = houstonClient;
         this.contactActions = contactActions;
         this.hardwareWalletActions = hardwareWalletActions;
+        this.operationMapper = operationMetadataMapper;
     }
 
     @Override
@@ -78,38 +87,21 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                                 PreparedPayment prepPayment) {
 
         final Operation operation = buildOperation(payReq, prepPayment);
+        final OperationWithMetadata operationWithMetadata =
+                buildOperationWithMetadata(payReq, operation);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
-                .flatMap(baseUserPrivateKey -> houstonClient.newOperation(operation)
+                .flatMap(baseUserPrivateKey -> houstonClient.newOperation(operationWithMetadata)
                         .flatMap(operationCreated -> {
-                            final PublicKey baseMuunPublicKey = keysRepository
-                                    .getBaseMuunPublicKey();
+                            final Operation houstonOp =
+                                    operationMapper.mapFromMetadata(operationCreated.operation);
 
-                            // Extract data from response:
-                            final Operation houstonOp = operationCreated.operation;
-                            final MuunAddress changeAddress = operationCreated.changeAddress;
-
-                            // Update the operation from Houston's response:
-                            operation.changeAddress = changeAddress;
-
-                            // Produce the signed Bitcoin transaction:
-                            final TransactionInfo txInfo = LibwalletBridge.sign(
-                                    operation,
-                                    baseUserPrivateKey,
-                                    baseMuunPublicKey,
-                                    operationCreated.partiallySignedTransaction,
-                                    Globals.INSTANCE.getNetwork()
-                            );
-
-                            // Update the Operation after signing:
-                            operation.hash = txInfo.getHash();
-                            operation.status = OperationStatus.SIGNED;
+                            final String transactionHex = operation.isLendingSwap()
+                                    ? null // money was lent, involves no actual transaction
+                                    : signToHex(operation, baseUserPrivateKey, operationCreated);
 
                             // Maybe Houston identified the receiver for us:
                             final Operation mergedOperation = operation.mergeWithUpdate(houstonOp);
-
-                            // Finish the flow by uploading the signed transaction:
-                            final String transactionHex = Encodings.bytesToHex(txInfo.getBytes());
 
                             return houstonClient
                                     .pushTransaction(transactionHex, houstonOp.getHid())
@@ -118,6 +110,51 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                     ))
                                     .map(aVoid -> mergedOperation);
                         }));
+    }
+
+    private OperationWithMetadata buildOperationWithMetadata(final PaymentRequest payReq,
+                                                             final Operation operation) {
+
+        if (payReq.getType() == PaymentRequest.Type.TO_CONTACT) {
+
+            return operationMapper.mapWithMetadataForContact(
+                    operation,
+                    payReq.getContact()
+            );
+        } else {
+            return operationMapper.mapWithMetadata(operation);
+        }
+    }
+
+    @NotNull
+    private String signToHex(Operation operation,
+                             PrivateKey baseUserPrivateKey,
+                             OperationCreated operationCreated) {
+
+        final PublicKey baseMuunPublicKey = keysRepository
+                .getBaseMuunPublicKey();
+
+        // Extract data from response:
+        final MuunAddress changeAddress = operationCreated.changeAddress;
+
+        // Update the operation from Houston's response:
+        operation.changeAddress = changeAddress;
+
+        // Produce the signed Bitcoin transaction:
+        final Transaction txInfo = LibwalletBridge.sign(
+                operation,
+                baseUserPrivateKey,
+                baseMuunPublicKey,
+                operationCreated.partiallySignedTransaction,
+                Globals.INSTANCE.getNetwork()
+        );
+
+        // Update the Operation after signing:
+        operation.hash = txInfo.getHash();
+        operation.status = OperationStatus.SIGNED;
+
+        // Encode signed transaction:
+        return Encodings.bytesToHex(txInfo.getBytes());
     }
 
     /**

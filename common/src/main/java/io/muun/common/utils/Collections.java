@@ -39,10 +39,15 @@ public final class Collections {
      *
      * <p>Make sure {@code T} implements equals and hashCode.
      */
-    public static <T> Set<T> union(Collection<? extends T> a, Collection<? extends T> b) {
+    @SafeVarargs
+    public static <T> Set<T> union(Collection<? extends T> a, Collection<? extends T> ...others) {
 
         final Set<T> union = new HashSet<>(a);
-        union.addAll(b);
+
+        for (Collection<? extends T> other : others) {
+            union.addAll(other);
+        }
+
         return union;
     }
 

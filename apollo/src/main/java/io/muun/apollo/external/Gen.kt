@@ -1,19 +1,10 @@
 package io.muun.apollo.external
 
-import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.FeeWindow
-import io.muun.apollo.domain.model.NextTransactionSize
-import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.SubmarineSwap
-import io.muun.apollo.domain.model.SubmarineSwapFees
-import io.muun.apollo.domain.model.SubmarineSwapFundingOutput
-import io.muun.apollo.domain.model.SubmarineSwapReceiver
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.model.UserPhoneNumber
-import io.muun.apollo.domain.model.UserProfile
+import io.muun.apollo.domain.model.*
 import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.exception.MissingCaseError
+import io.muun.common.model.DebtType
 import io.muun.common.model.PhoneNumber
 import io.muun.common.model.SizeForAmount
 import org.bitcoinj.params.MainNetParams
@@ -127,7 +118,7 @@ object Gen {
 
     ) = User(
             hid,
-            email,
+            Optional.ofNullable(email),
             isEmailVerified,
             phoneNumber,
             profile,
@@ -170,8 +161,8 @@ object Gen {
     /**
      * Get a NextTransactionSize vector.
      */
-    fun nextTransactionSize(vararg entries: Pair<Long, Int>) =
-        NextTransactionSize(sizeProgression(*entries), 1)
+    fun nextTransactionSize(vararg entries: Pair<Long, Int>, expectedDebtInSat: Long = 0) =
+        NextTransactionSize(sizeProgression(*entries), 1, expectedDebtInSat)
 
     /**
      * Get an address.
@@ -207,16 +198,22 @@ object Gen {
     )
 
     fun submarineSwap(outputAmountInSatoshis: Long,
-                      sweepFeeInSatoshis: Long,
-                      lightningFeeInSatoshis: Long,
+                      sweepFeeInSatoshis: Long = 0,
+                      lightningFeeInSatoshis: Long = 0,
                       channelOpenFeeInSatoshis: Long = 0,
-                      channelCloseFeeInSatoshis: Long = 0) =
+                      channelCloseFeeInSatoshis: Long = 0,
+                      debtType: DebtType = DebtType.NONE,
+                      debtAmountInSatoshis: Long = 0) =
         SubmarineSwap(
             houstonId(),
             "1234-5675",
             lnInvoice(),
             submarineSwapReceiver(),
-            submarineSwapFundingOutput(outputAmountInSatoshis),
+            submarineSwapFundingOutput(
+                outputAmountInSatoshis,
+                debtType = debtType,
+                debtAmountInSatoshis = debtAmountInSatoshis
+            ),
             submarineSwapFees(
                 lightningFeeInSatoshis,
                 sweepFeeInSatoshis,
@@ -235,11 +232,14 @@ object Gen {
     fun submarineSwapFundingOutput(outputAmountInSatoshis: Long,
                                    confirmationsNeeded: Int = 0,
                                    userLockTime: Int = 30,
-                                   userRefundAddress: MuunAddress = muunAddress()
-   ) =
+                                   userRefundAddress: MuunAddress = muunAddress(),
+                                   debtType: DebtType = DebtType.NONE,
+                                   debtAmountInSatoshis: Long = 0) =
         SubmarineSwapFundingOutput(
             address(),
             outputAmountInSatoshis,
+            debtType,
+            debtAmountInSatoshis,
             confirmationsNeeded,
             userLockTime,
             userRefundAddress,

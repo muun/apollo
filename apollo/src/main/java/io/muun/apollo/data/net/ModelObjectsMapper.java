@@ -10,8 +10,8 @@ import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.NotificationReport;
-import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationCreated;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.PublicProfile;
@@ -71,8 +71,12 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
 
     private final ObjectMapper jsonMapper;
 
+    /**
+     * Constructor.
+     */
     @Inject
-    public ModelObjectsMapper(NetworkParameters networkParameters, ObjectMapper jsonMapper) {
+    public ModelObjectsMapper(NetworkParameters networkParameters,
+                              ObjectMapper jsonMapper) {
         super(networkParameters);
         this.jsonMapper = jsonMapper;
     }
@@ -103,7 +107,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
 
         return new User(
                 apiUser.id,
-                apiUser.email,
+                Optional.ofNullable(apiUser.email),
                 apiUser.isEmailVerified,
                 maybePhoneNumber,
                 maybeProfile,
@@ -192,12 +196,11 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create an operation.
      */
     @NotNull
-    public Operation mapOperation(@NotNull OperationJson operation) {
+    public OperationWithMetadata mapOperation(@NotNull OperationJson operation) {
 
         Preconditions.checkNotNull(operation.id);
 
-        return new Operation(
-                null,
+        return new OperationWithMetadata(
                 operation.id,
                 operation.direction,
                 operation.isExternal,
@@ -206,9 +209,10 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.receiverProfile != null
                         ? mapPublicProfile(operation.receiverProfile) : null,
                 operation.receiverIsExternal,
+                operation.hardwareWalletHid,
                 operation.receiverAddress,
                 operation.receiverAddressDerivationPath,
-                operation.hardwareWalletHid,
+                null,
                 mapBitcoinAmount(operation.amount),
                 mapBitcoinAmount(operation.fee),
                 operation.transaction != null ? operation.transaction.confirmations : 0L,
@@ -217,7 +221,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.status,
                 mapZonedDateTime(operation.creationDate),
                 operation.exchangeRatesWindowId,
-                operation.swap != null ? mapSubmarineSwap(operation.swap) : null
+                operation.swap != null ? mapSubmarineSwap(operation.swap) : null,
+                operation.receiverMetadata,
+                operation.senderMetadata
         );
     }
 
@@ -239,7 +245,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         Preconditions.checkNotNull(operationCreated.operation);
         Preconditions.checkNotNull(operationCreated.nextTransactionSize);
 
-        final Operation operation = mapOperation(apiOperation);
+        final OperationWithMetadata operation = mapOperation(apiOperation);
 
         return new OperationCreated(
                 operation,
@@ -257,7 +263,6 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     @NotNull
     public TransactionPushed mapTransactionPushed(@NotNull TransactionPushedJson txPushed) {
-        Preconditions.checkNotNull(txPushed.hex);
         Preconditions.checkNotNull(txPushed.nextTransactionSize);
 
         return new TransactionPushed(
@@ -317,7 +322,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
 
         return new NextTransactionSize(
                 progression,
-                json.validAtOperationHid
+                json.validAtOperationHid,
+                json.expectedDebtInSat
         );
     }
 

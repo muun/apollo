@@ -3,6 +3,7 @@ package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.NextTransactionSize;
+import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import com.f2prateek.rx.preferences.Preference;
@@ -57,5 +58,16 @@ public class TransactionSizeRepository extends BaseRepository {
         transactionSizePreference.set(
                 SerializationUtils.serializeJson(NextTransactionSize.class, transactionSize)
         );
+    }
+
+    /**
+     * Migration to init expected debt for pre-existing NTSs.
+     */
+    public void initExpectedDebt() {
+        final NextTransactionSize nts = getNextTransactionSize();
+
+        Preconditions.checkNotNull(nts);
+
+        setTransactionSize(nts.initExpectedDebt());
     }
 }

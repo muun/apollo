@@ -92,11 +92,9 @@ const (
 // GetPaymentURI builds a MuunPaymentURI from text (Bitcoin Uri, Muun Uri or address) and a network
 func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
-	bitcoinUri := buildUriFromString(rawInput)
-
-	components, err := url.Parse(bitcoinUri)
-	if err != nil {
-		return nil, err
+	bitcoinUri, components := buildUriFromString(rawInput, bitcoinScheme)
+	if components == nil {
+		return nil, errors.Errorf("failed to parse uri %v", rawInput)
 	}
 
 	if components.Scheme != "bitcoin" {
@@ -244,14 +242,19 @@ func getAddressFromScript(script []byte, network *Network) (string, error) {
 	return address.String(), nil
 }
 
-func buildUriFromString(rawInput string) string {
+func buildUriFromString(rawInput string, targetScheme string) (string, *url.URL) {
 	newUri := rawInput
 
-	newUri = strings.Replace(newUri, muunScheme, bitcoinScheme, 1)
+	newUri = strings.Replace(newUri, muunScheme, targetScheme, 1)
 
-	if !strings.Contains(newUri, bitcoinScheme) {
-		newUri = bitcoinScheme + rawInput
+	if !strings.HasPrefix(strings.ToLower(newUri), targetScheme) {
+		newUri = targetScheme + rawInput
 	}
 
-	return newUri
+	components, err := url.Parse(newUri)
+	if err != nil {
+		return "", nil
+	}
+
+	return newUri, components
 }

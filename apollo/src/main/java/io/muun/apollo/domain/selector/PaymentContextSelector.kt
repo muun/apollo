@@ -4,9 +4,9 @@ import io.muun.apollo.data.preferences.ExchangeRateWindowRepository
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.data.preferences.UserRepository
+import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentContext
-import io.muun.common.model.SizeForAmount
 import rx.Observable
 import javax.inject.Inject
 
@@ -23,7 +23,7 @@ class PaymentContextSelector @Inject constructor(
         userRepository.fetch(),
         exchangeRateWindowRepository.fetch(),
         feeWindowRepository.fetch(),
-        getSizeProgression(operationUri),
+        watchtNextTransactionSize(operationUri),
         ::PaymentContext
     )
 
@@ -32,23 +32,24 @@ class PaymentContextSelector @Inject constructor(
     fun watch() =
         watch(null)
 
-    private fun getSizeProgression(opUri: OperationUri? = null): Observable<List<SizeForAmount>> {
-        if (opUri != null && opUri.isWithdrawal) {
-
-            return hardwareWalletStateSelector.watch().map { walletStateByHid ->
-                val hardwareWalletState = walletStateByHid[opUri.hardwareWalletHid]
-                checkNotNull(hardwareWalletState)
-                checkNotNull(hardwareWalletState.sizeForAmounts)
-                hardwareWalletState.sizeForAmounts
-            }
-
-        } else {
-            return transactionSizeRepository.watchNextTransactionSize()
-                    .map { it.sizeProgression }
-        }
-    }
-
     fun get(operationUri: OperationUri? = null) =
         watch(operationUri).toBlocking().first()
+
+    private fun watchtNextTransactionSize(opUri: OperationUri? = null) =
+        if (opUri != null && opUri.isWithdrawal) {
+            watchHardwareWalletNextTransactionSize(opUri.hardwareWalletHid)
+        } else {
+            transactionSizeRepository.watchNextTransactionSize()
+        }
+
+    private fun watchHardwareWalletNextTransactionSize(hardwareWalletHid: Long) =
+        hardwareWalletStateSelector.watch()
+            .map { walletStateByHid ->
+                val hardwareWalletState = walletStateByHid[hardwareWalletHid]
+                checkNotNull(hardwareWalletState)
+                checkNotNull(hardwareWalletState.sizeForAmounts)
+
+                NextTransactionSize(hardwareWalletState.sizeForAmounts, 0L, 0L)
+            }
 
 }

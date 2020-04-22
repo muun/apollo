@@ -3,11 +3,12 @@ package io.muun.apollo.domain.action.operation;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
-import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
+import io.muun.apollo.domain.libwallet.Invoice;
+import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
@@ -16,7 +17,6 @@ import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.utils.BitcoinUtils;
-import io.muun.common.utils.LnInvoice;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -61,24 +61,24 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     private Observable<PaymentRequest> resolveLnUri(OperationUri uri) {
-        final LnInvoice invoice = LibwalletBridge.decodeInvoice(network, uri.getLnInvoice().get());
+        final Invoice invoice = LibwalletBridge.decodeInvoice(network, uri.getLnInvoice().get());
 
-        if (invoice.amount == null) {
-            throw new InvoiceMissingAmountException(invoice.original);
+        if (invoice.getAmountInSat() == null) {
+            throw new InvoiceMissingAmountException(invoice.getOriginal());
         }
 
         if (invoice.getExpirationTime().isBefore(DateUtils.now())) {
-            throw new InvoiceExpiredException(invoice.original);
+            throw new InvoiceExpiredException(invoice.getOriginal());
         }
 
         return prepareSwap(buildSubmarineSwapRequest(invoice))
                 .map(swap -> buildPaymentRequest(invoice, swap));
     }
 
-    private SubmarineSwapRequest buildSubmarineSwapRequest(LnInvoice invoice) {
+    private SubmarineSwapRequest buildSubmarineSwapRequest(Invoice invoice) {
         return new SubmarineSwapRequest(
-                invoice.original,
-                calculateExpirationTimeInBlocks(invoice.amount.amountInSatoshis)
+                invoice.getOriginal(),
+                calculateExpirationTimeInBlocks(invoice.getAmountInSat())
         );
     }
 
@@ -92,18 +92,12 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     @NonNull
-    private PaymentRequest buildPaymentRequest(LnInvoice invoice, SubmarineSwap swap) {
+    private PaymentRequest buildPaymentRequest(Invoice invoice, SubmarineSwap swap) {
         final FeeWindow feeWindow = feeWindowRepository.fetchOne();
         final MonetaryAmount amount = getInvoiceAmount(invoice);
 
-        final long paymentAmount = swap.getFundingOutput().getOutputAmountInSatoshis()
-                - swap.getFees().getSweepInSats()
-                - swap.getFees().getLightningInSats()
-                - swap.getFees().getChannelOpenInSats()
-                - swap.getFees().getChannelCloseInSats(); // I hate you, outputAmountInSatoshis.
-
-        if (invoice.amount.amountInSatoshis != paymentAmount) {
-            throw new InvalidSwapException(swap.houstonUuid);
+        if (! swap.isLend()) {
+            validateNonLendSwap(invoice, swap);
         }
 
         if (!DateUtils.isEqual(invoice.getExpirationTime(), swap.getExpiresAt())) {
@@ -113,10 +107,29 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
         return PaymentRequest.toLnInvoice(
                 invoice,
                 amount,
-                invoice.description,
+                invoice.getDescription(),
                 swap,
                 getFeeRate(swap, feeWindow)
         );
+    }
+
+    private void validateNonLendSwap(Invoice invoice, SubmarineSwap swap) {
+        final long actualOutputAmount = swap.getFundingOutput().getOutputAmountInSatoshis();
+
+
+        long expectedOutputAmount = invoice.getAmountInSat()
+                + swap.getFees().getSweepInSats()
+                + swap.getFees().getLightningInSats()
+                + swap.getFees().getChannelOpenInSats()
+                + swap.getFees().getChannelCloseInSats(); // I hate you, outputAmountInSatoshis.
+
+        if (swap.isCollect()) {
+            expectedOutputAmount += swap.getFundingOutput().getDebtAmountInSatoshis();
+        }
+
+        if (actualOutputAmount != expectedOutputAmount) {
+            throw new InvalidSwapException(swap.houstonUuid);
+        }
     }
 
     private double getFeeRate(SubmarineSwap swap, FeeWindow feeWindow) {
@@ -128,8 +141,8 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     @NonNull
-    private MonetaryAmount getInvoiceAmount(LnInvoice invoice) {
-        return BitcoinUtils.satoshisToBitcoins(invoice.amount.amountInSatoshis);
+    private MonetaryAmount getInvoiceAmount(Invoice invoice) {
+        return BitcoinUtils.satoshisToBitcoins(invoice.getAmountInSat());
     }
 
     /**

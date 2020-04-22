@@ -323,10 +323,11 @@ public enum ErrorCode {
     ),
 
     // hubble errors
+    @Deprecated
     STALE_MEMPOOL(
             8000, StatusCode.SERVER_FAILURE, "Mempool not present or too old"
     ),
-    // hubble errors
+    @Deprecated
     INVALID_BLOCK_HASH(
             8001, StatusCode.SERVER_FAILURE, "Invalid block hash"
     ),
@@ -382,6 +383,21 @@ public enum ErrorCode {
             8111,
             StatusCode.CLIENT_FAILURE,
             "The funding output script version is too old for the requested operation"
+    ),
+    INVALID_DEBT_TYPE(
+            8113, StatusCode.CLIENT_FAILURE, "The debt type is invalid"
+    ),
+    SWAP_ALREADY_EXECUTED(
+            8114, StatusCode.CLIENT_FAILURE, "Swap has already been executed"
+    ),
+    INVALID_UTXO_BALANCE(
+            8115, StatusCode.CLIENT_FAILURE, "The expected utxo balance is invalid"
+    ),
+    INVALID_DEFAULT_UPDATE(
+            8116, StatusCode.CLIENT_FAILURE, "The default is invalid"
+    ),
+    INVALID_DEBT_STATE_OWNER(
+            8117, StatusCode.CLIENT_FAILURE, "The debt owner is invalid"
     ),
 
     // exchangehub errors
@@ -442,6 +458,18 @@ public enum ErrorCode {
     ),
     NO_MATCHING_OUTPUT(
             10003, StatusCode.CLIENT_FAILURE, "No output found matching the given arguments"
+    ),
+    TRANSACTION_NOT_FOUND(
+            10004, StatusCode.CLIENT_FAILURE, "There's no transaction with that txid"
+    ),
+    NO_MORE_NOTIFICATIONS(
+            10005, StatusCode.CLIENT_FAILURE, "Test payment notification queue is empty"
+    ),
+    OUTPUT_NOT_FOUND(
+            10006, StatusCode.CLIENT_FAILURE, "There's no output with that outpoint"
+    ),
+    NON_REPLACING_OUTPUT(
+            10007, StatusCode.CLIENT_FAILURE, "The selected output has no replacement proof"
     ),
 
     // server errors

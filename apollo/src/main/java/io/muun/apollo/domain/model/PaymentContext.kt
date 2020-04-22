@@ -2,7 +2,6 @@ package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.utils.FeeCalculator
 import io.muun.common.model.ExchangeRateProvider
-import io.muun.common.model.SizeForAmount
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
 import org.javamoney.moneta.Money
@@ -18,7 +17,7 @@ class PaymentContext(
     val user: User,
     val exchangeRateWindow: ExchangeRateWindow,
     val feeWindow: FeeWindow,
-    val sizeProgression: List<SizeForAmount>
+    val nextTransactionSize: NextTransactionSize
 ) {
 
     companion object {
@@ -31,17 +30,15 @@ class PaymentContext(
 
     private val rateProvider = ExchangeRateProvider(exchangeRateWindow.rates)
 
-    /** The total balance in the wallet, independent of fees */
-    val totalBalance =
-            if (sizeProgression.isEmpty()) {
-                0
-            } else {
-                sizeProgression[sizeProgression.size - 1].amountInSatoshis
-            }
+    /** The total UI balance in the wallet, independent of fees, as calculated by NTS */
+    val userBalance = nextTransactionSize.userBalance
+
+    /** The total UTXO balance in the wallet, independent of fees, as calculated by NTS */
+    val utxoBalance = nextTransactionSize.utxoBalance
 
     /** The recommended fee rates for the user to pick */
     private val feeOptions = feeWindow.targetedFees.mapValues { (confTarget, satoshisPerByte) ->
-        val feeCalculator = FeeCalculator(satoshisPerByte, sizeProgression)
+        val feeCalculator = FeeCalculator(satoshisPerByte, nextTransactionSize)
 
         FeeOption(
             satoshisPerByte = satoshisPerByte,

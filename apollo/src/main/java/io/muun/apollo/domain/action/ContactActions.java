@@ -194,13 +194,6 @@ public class ContactActions {
     }
 
     /**
-     * Fetch the contact list from the database.
-     */
-    public Observable<List<Contact>> fetchContacts() {
-        return contactDao.fetchAll();
-    }
-
-    /**
      * Fetch a single contact from the database, by id.
      */
     public Observable<Contact> fetchContact(Long contactHid) {

@@ -10,7 +10,8 @@ public class Schema {
     public enum DerivationBranches {
         CHANGE(0),
         EXTERNAL(1),
-        CONTACTS(2);
+        CONTACTS(2),
+        METADATA(3);
 
         public final int index;
 
@@ -42,6 +43,10 @@ public class Schema {
         return BASE_PATH + "/contacts:" + DerivationBranches.CONTACTS.index;
     }
 
+    public static String getMetadataKeyPath() {
+        return BASE_PATH + "/metadata:" + DerivationBranches.METADATA.index;
+    }
+
     /**
      * Returns the list of subtree paths that MUST be derivable from a root key.
      */
@@ -49,7 +54,8 @@ public class Schema {
         return Arrays.asList(
                 getChangeKeyPath(),
                 getExternalKeyPath(),
-                getContactsKeyPath()
+                getContactsKeyPath(),
+                getMetadataKeyPath()
         );
     }
 

@@ -79,6 +79,12 @@ public class AuthRepository extends BaseRepository {
                 .toCompletable();
     }
 
+    @Override
+    public void clear() {
+        super.clear();
+        secureStorageProvider.delete(KEY_SERVER_JWT);
+    }
+
     /**
      * Returns the session status.
      */

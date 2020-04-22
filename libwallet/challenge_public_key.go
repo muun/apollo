@@ -2,8 +2,6 @@ package libwallet
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
 	"encoding/binary"
 
 	"github.com/btcsuite/btcd/btcec"
@@ -42,33 +40,19 @@ func (k *ChallengePublicKey) EncryptKey(privKey *HDPrivateKey, recoveryCodeSalt 
 		return "", errors.Errorf("failed to encrypt key: expected payload of 64 bytes, found %v", len(plaintext))
 	}
 
-	privEph, err := btcec.NewPrivateKey(btcec.S256())
+	pubEph, ciphertext, err := encryptWithPubKey(k.pubKey, plaintext)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to encrypt key")
+		return "", err
 	}
-
-	sharedSecret, _ := k.pubKey.ScalarMult(k.pubKey.X, k.pubKey.Y, privEph.D.Bytes())
-	serializedPubkey := privEph.PubKey().SerializeCompressed()
-	iv := serializedPubkey[len(serializedPubkey)-aes.BlockSize:]
-
-	block, err := aes.NewCipher(paddedSerializeBigInt(32, sharedSecret))
-	if err != nil {
-		return "", errors.Wrapf(err, "challenge_public_key: failed to generate encryption key")
-	}
-
-	ciphertext := make([]byte, len(plaintext))
-
-	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(ciphertext, plaintext)
 
 	birthdayBytes := make([]byte, 2)
 	binary.BigEndian.PutUint16(birthdayBytes, uint16(birthday))
 
-	result := make([]byte, 0, 1+2+33+len(ciphertext)+len(recoveryCodeSalt))
+	result := make([]byte, 0, 1+2+serializedPublicKeyLength+len(ciphertext)+len(recoveryCodeSalt))
 	buf := bytes.NewBuffer(result)
 	buf.WriteByte(2)
 	buf.Write(birthdayBytes)
-	buf.Write(privEph.PubKey().SerializeCompressed())
+	buf.Write(pubEph.SerializeCompressed())
 	buf.Write(ciphertext)
 	buf.Write(recoveryCodeSalt)
 

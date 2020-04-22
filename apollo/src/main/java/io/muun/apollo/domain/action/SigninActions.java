@@ -61,7 +61,10 @@ public class SigninActions {
      */
     public void setupCrashlytics() {
         final User user = userRepository.fetchOne();
-        LoggingContext.configure(user.email, user.hid.toString());
+
+        if (user.email.isPresent()) {
+            LoggingContext.configure(user.email.get(), user.hid.toString());
+        }
     }
 
     public Optional<SessionStatus> getSessionStatus() {

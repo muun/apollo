@@ -3,7 +3,7 @@ package io.muun.apollo.data.net;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.HardwareWallet;
-import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.UserProfile;
@@ -93,32 +93,35 @@ public class ApiObjectsMapper {
      * Create an API operation.
      */
     @NotNull
-    public OperationJson mapOperation(@NotNull Operation operation) {
+    public OperationJson mapOperation(@NotNull OperationWithMetadata operation) {
 
-        final Long outputAmountInSatoshis = operation.swap != null
-                ? operation.swap.getOutputAmountInSatoshis()
-                : operation.amount.inSatoshis;
+        final Long outputAmountInSatoshis = operation.getSwap() != null
+                ? operation.getSwap().getFundingOutput().getOutputAmountInSatoshis()
+                : operation.getAmount().inSatoshis;
 
         return new OperationJson(
                 UUID.randomUUID().toString(),
-                operation.direction,
-                operation.isExternal,
-                operation.senderProfile != null ? mapPublicProfile(operation.senderProfile) : null,
-                operation.senderIsExternal,
-                operation.receiverProfile != null
-                        ? mapPublicProfile(operation.receiverProfile) : null,
-                operation.receiverIsExternal,
-                operation.receiverAddress,
-                operation.receiverAddressDerivationPath,
-                operation.hardwareWalletHid,
-                mapBitcoinAmount(operation.amount),
-                mapBitcoinAmount(operation.fee),
+                operation.getDirection(),
+                operation.isExternal(),
+                operation.getSenderProfile() != null
+                        ? mapPublicProfile(operation.getSenderProfile()) : null,
+                operation.getSenderIsExternal(),
+                operation.getReceiverProfile() != null
+                        ? mapPublicProfile(operation.getReceiverProfile()) : null,
+                operation.getReceiverIsExternal(),
+                operation.getReceiverAddress(),
+                operation.getReceiverAddressDerivationPath(),
+                operation.getHardwareWalletHid(),
+                mapBitcoinAmount(operation.getAmount()),
+                mapBitcoinAmount(operation.getFee()),
                 outputAmountInSatoshis,
-                operation.exchangeRateWindowHid,
-                operation.description,
-                operation.status,
-                ApolloZonedDateTime.of(operation.creationDate),
-                operation.swap != null ? operation.swap.houstonUuid : null
+                operation.getExchangeRateWindowHid(),
+                operation.getDescription(),
+                operation.getStatus(),
+                ApolloZonedDateTime.of(operation.getCreationDate()),
+                operation.getSwap() != null ? operation.getSwap().houstonUuid : null,
+                operation.getSenderMetadata(),
+                operation.getReceiverMetadata()
         );
     }
 

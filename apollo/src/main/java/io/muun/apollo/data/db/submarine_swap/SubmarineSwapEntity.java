@@ -8,11 +8,13 @@ import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
+import io.muun.common.model.DebtType;
 
 import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
+import com.squareup.sqldelight.prerelease.EnumColumnAdapter;
 import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
 @AutoValue
@@ -22,7 +24,8 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
             FACTORY = new SubmarineSwapModel.Factory<>(
             AutoValue_SubmarineSwapEntity::new,
             ZONED_DATE_TIME_ADAPTER,
-            ZONED_DATE_TIME_ADAPTER
+            ZONED_DATE_TIME_ADAPTER,
+            EnumColumnAdapter.create(DebtType.class)
     );
 
     /**
@@ -71,7 +74,9 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 userPublicKey != null ? userPublicKey.serializeBase58() : null,
                 userPublicKey != null ? userPublicKey.getAbsoluteDerivationPath() : null,
                 muunPublicKey != null ? muunPublicKey.serializeBase58() : null,
-                muunPublicKey != null ? muunPublicKey.getAbsoluteDerivationPath() : null
+                muunPublicKey != null ? muunPublicKey.getAbsoluteDerivationPath() : null,
+                swap.getFundingOutput().getDebtType(),
+                swap.getFundingOutput().getDebtAmountInSatoshis()
         );
 
         return insertStatement;
@@ -106,6 +111,8 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 new SubmarineSwapFundingOutput(
                         entity.funding_output_address(),
                         entity.funding_output_amount_in_satoshis(),
+                        entity.funding_output_debt_type(),
+                        entity.funding_output_debt_amount_in_satoshis(),
                         (int) entity.funding_confirmations_needed(),
                         userLockTime != null ? (int) userLockTime.longValue() : null,
                         new MuunAddress(

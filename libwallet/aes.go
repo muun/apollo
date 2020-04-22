@@ -8,10 +8,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func encrypt(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
+const aesKeySize = 32
 
+func encryptAesCbcPkcs7(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	plaintext = pkcs7Padding(plaintext)
+	return encryptAesCbcNoPadding(key, iv, plaintext)
+}
 
+func encryptAesCbcNoPadding(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -25,8 +29,17 @@ func encrypt(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func decrypt(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
+func decryptAesCbcPkcs7(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 
+	paddedPlaintext, err := decryptAesCbcNoPadding(key, iv, cypertext)
+	if err != nil {
+		return nil, err
+	}
+
+	return pkcs7UnPadding(paddedPlaintext)
+}
+
+func decryptAesCbcNoPadding(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -36,11 +49,6 @@ func decrypt(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 
 	mode := cipher.NewCBCDecrypter(block, iv)
 	mode.CryptBlocks(plaintext, cypertext)
-
-	plaintext, err = pkcs7UnPadding(plaintext)
-	if err != nil {
-		return nil, err
-	}
 
 	return plaintext, nil
 }

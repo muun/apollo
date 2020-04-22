@@ -10,13 +10,13 @@ import io.muun.apollo.domain.action.address.CreateAddressAction;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
+import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
-import io.muun.apollo.domain.model.OperationUri;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingWithdrawal;
 import io.muun.common.Optional;
 import io.muun.common.crypto.hd.HardwareWalletOutput;
-import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 
@@ -25,7 +25,6 @@ import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,6 +47,7 @@ public class OperationActions {
     private final ClipboardProvider clipboardProvider;
 
     public final AsyncAction2<String, String, Void> submitSignedWithdrawalAction;
+    private final OperationMetadataMapper operationMapper;
 
 
     /**
@@ -63,7 +63,8 @@ public class OperationActions {
                             TransactionSizeRepository transactionSizeRepository,
                             HoustonClient houstonClient,
                             ClipboardProvider clipboardProvider,
-                            AsyncActionStore asyncActionStore) {
+                            AsyncActionStore asyncActionStore,
+                            OperationMetadataMapper operationMapper) {
 
         this.createOperation = createOperation;
         this.createAddress = createAddress;
@@ -80,24 +81,7 @@ public class OperationActions {
 
         this.submitSignedWithdrawalAction = asyncActionStore
                 .get("operation/submit-signed-withdrawal", this::submitSignedWithdrawal);
-    }
-
-    /**
-     * Return an OperationUri present in the system clipboard, if any.
-     */
-    public Observable<Optional<OperationUri>> watchClipboardForUris() {
-        return clipboardProvider.watchPrimaryClip().map(content -> {
-            if (Objects.equals(content, userRepository.getLastCopiedAddress())) {
-                return Optional.empty(); // don't show the user the address he just generated
-            }
-
-            try {
-                return Optional.of(OperationUri.fromString(content));
-
-            } catch (IllegalArgumentException ex) {
-                return Optional.empty(); // not an URI or address
-            }
-        });
+        this.operationMapper = operationMapper;
     }
 
     /**
@@ -162,7 +146,7 @@ public class OperationActions {
                                     inputAmounts
                             )
                             .flatMap(operationCreated -> createOperation.action(
-                                    operationCreated.operation,
+                                    operationMapper.mapFromMetadata(operationCreated.operation),
                                     operationCreated.nextTransactionSize
                             ))
                             .flatMap(res -> satelliteActions.endWithdrawal(pendingWithdrawal))
@@ -184,6 +168,7 @@ public class OperationActions {
                         .flatMap(Observable::from)
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
                         // TODO use batching
+                        .map(operationMapper::mapFromMetadata)
                         .concatMap(createOperation::saveOperation)
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)
@@ -224,19 +209,19 @@ public class OperationActions {
     // ---------------------------------------------------------------------------------------------
     // Private helpers
 
-    private Operation buildOperationFromPendingWithdrawal(PendingWithdrawal withdrawal) {
-        final MuunAddress address = createAddress.runNow().legacy;
+    private OperationWithMetadata buildOperationFromPendingWithdrawal(
+            PendingWithdrawal withdrawal) {
 
-        return Operation.createIncoming(
+        return operationMapper.mapWithMetadata(Operation.createIncoming(
                 userRepository.fetchOne().getCompatPublicProfile(),
                 withdrawal.hardwareWalletHid,
-                address.getAddress(),
-                address.getDerivationPath(),
+                withdrawal.receiverAddress,
+                withdrawal.receiverAddressPath,
                 withdrawal.amount,
                 withdrawal.fee,
                 withdrawal.description,
                 withdrawal.exchangeRateWindowHid
-        );
+        ));
     }
 
     /**

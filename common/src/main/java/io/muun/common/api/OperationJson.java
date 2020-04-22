@@ -68,8 +68,8 @@ public class OperationJson {
     @NotNull
     public Long exchangeRatesWindowId;
 
-    @NotNull
-    @Nullable // to null or not to null, that's the question
+    @Nullable // required for older clients, but not sent by newer
+    @Deprecated
     public String description;
 
     @NotNull
@@ -87,6 +87,16 @@ public class OperationJson {
 
     @Nullable
     public SubmarineSwapJson swap;
+
+    // ON-RELEASE: Set to apps that send the encrypted bundle
+    @Since(falconVersion = 100, apolloVersion = 100)
+    @Nullable // For retro compat, for new clients should be not null
+    public String senderMetadata;
+    
+    // ON-RELEASE: Set to apps that send the encrypted bundle
+    @Since(apolloVersion = 100)
+    @Nullable // This is set when using p2p only
+    public String receiverMetadata;
 
     /**
      * Json constructor.
@@ -114,7 +124,9 @@ public class OperationJson {
                          @Nullable String description,
                          OperationStatus status,
                          MuunZonedDateTime creationDate,
-                         @Nullable String swapUuid) {
+                         @Nullable String swapUuid,
+                         @Nullable String senderMetadata,
+                         @Nullable String receiverMetadata) {
 
         this.requestId = requestId;
         this.direction = direction;
@@ -134,6 +146,8 @@ public class OperationJson {
         this.status = status;
         this.creationDate = creationDate;
         this.swapUuid = swapUuid;
+        this.senderMetadata = senderMetadata;
+        this.receiverMetadata = receiverMetadata;
     }
 
     /**
@@ -159,7 +173,9 @@ public class OperationJson {
                          OperationStatus status,
                          Transaction transaction,
                          MuunZonedDateTime creationDate,
-                         SubmarineSwapJson swap) {
+                         SubmarineSwapJson swap,
+                         @Nullable String senderMetadata,
+                         @Nullable String receiverMetadata) {
 
         this.id = id;
         this.requestId = requestId;
@@ -183,5 +199,7 @@ public class OperationJson {
         this.creationDate = creationDate;
         this.swapUuid = swap != null ? swap.swapUuid : null;
         this.swap = swap;
+        this.senderMetadata = senderMetadata;
+        this.receiverMetadata = receiverMetadata;
     }
 }

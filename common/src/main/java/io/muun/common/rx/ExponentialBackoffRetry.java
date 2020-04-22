@@ -13,6 +13,7 @@ public class ExponentialBackoffRetry implements
         Func1<Observable<? extends Throwable>, Observable<?>> {
 
     private final long baseInterval;
+    private TimeUnit timeUnit;
     private final int maxRetries;
     private final Class<? extends Throwable> retryErrorType;
 
@@ -25,7 +26,7 @@ public class ExponentialBackoffRetry implements
     /**
      * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
      *
-     * @param baseInterval   the initial delay magnitude
+     * @param baseInterval   the initial delay magnitude in seconds
      * @param maxRetries     the maximum amount of retries before failing
      * @param retryErrorType the error type that will trigger a retry
      */
@@ -33,8 +34,23 @@ public class ExponentialBackoffRetry implements
             long baseInterval,
             int maxRetries,
             Class<? extends Throwable> retryErrorType) {
+        this(baseInterval, TimeUnit.SECONDS, maxRetries, retryErrorType);
+    }
 
+    /**
+     * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
+     *
+     * @param baseInterval   the initial delay magnitude
+     * @param timeUnit       the time unit for inital delay magnitude
+     * @param maxRetries     the maximum amount of retries before failing
+     * @param retryErrorType the error type that will trigger a retry
+     */
+    public ExponentialBackoffRetry(long baseInterval,
+                                   TimeUnit timeUnit,
+                                   int maxRetries,
+                                   Class<? extends Throwable> retryErrorType) {
         this.baseInterval = baseInterval;
+        this.timeUnit = timeUnit;
         this.maxRetries = maxRetries;
         this.retryErrorType = retryErrorType;
     }
@@ -49,7 +65,7 @@ public class ExponentialBackoffRetry implements
 
             if (state.retryCount < maxRetries && shouldRetry(error)) {
                 state.retryCount++;
-                return Observable.timer(getDelayForRetry(state.retryCount), TimeUnit.SECONDS);
+                return Observable.timer(getDelayForRetry(state.retryCount), timeUnit);
 
             } else {
                 return Observable.error(error);

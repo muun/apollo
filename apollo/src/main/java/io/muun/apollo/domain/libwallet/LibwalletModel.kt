@@ -3,8 +3,6 @@ package io.muun.apollo.domain.libwallet
 import io.muun.common.crypto.hd.*
 import io.muun.common.utils.Encodings
 
-class TransactionInfo(val hash: String, val bytes: ByteArray)
-
 class Input(val input: MuunInput): libwallet.Input {
 
     override fun userSignature() =

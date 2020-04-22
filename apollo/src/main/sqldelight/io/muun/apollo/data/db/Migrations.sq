@@ -133,3 +133,11 @@ ADD COLUMN funding_muun_public_key TEXT DEFAULT NULL;
 migration_27_add_swap_funding_output_muun_public_key_path:
 ALTER TABLE submarine_swaps
 ADD COLUMN funding_muun_public_key_path TEXT DEFAULT NULL;
+
+migration_28_add_swap_debt_type:
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_output_debt_type TEXT NOT NULL DEFAULT 'NONE';
+
+migration_28_add_swap_debt_amount:
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_output_debt_amount_in_satoshis INTEGER NOT NULL DEFAULT 0;
