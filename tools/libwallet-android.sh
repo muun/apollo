@@ -7,6 +7,7 @@ if [[ ! -s "$1" ]]; then
 fi
 
 (cd "$repo_root/libwallet"; GO111MODULE=off go get)
+(cd $GOPATH/src/github.com/btcsuite/btcd && git checkout v0.20.1-beta)
 
 GO111MODULE=off gomobile bind -target=android -o "$libwallet" github.com/muun/muun/libwallet
 
