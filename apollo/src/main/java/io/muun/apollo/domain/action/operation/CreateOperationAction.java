@@ -11,7 +11,6 @@ import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.external.NotificationService;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.rx.ObservableFn;
-import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
 import timber.log.Timber;
@@ -20,7 +19,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CreateOperationAction extends BaseAsyncAction2<Operation, NextTransactionSize, Void> {
+public class CreateOperationAction
+        extends BaseAsyncAction2<Operation, NextTransactionSize, Operation> {
 
     private final TransactionSizeRepository transactionSizeRepository;
     private final OperationDao operationDao;
@@ -47,17 +47,20 @@ public class CreateOperationAction extends BaseAsyncAction2<Operation, NextTrans
     }
 
     @Override
-    public Observable<Void> action(Operation operation, NextTransactionSize nextTransactionSize) {
+    public Observable<Operation> action(Operation operation,
+                                        NextTransactionSize nextTransactionSize) {
+
         return saveOperation(operation)
-                .doOnNext(savedOperation -> {
+                .map(savedOperation -> {
                     Timber.d("Updating next transaction size estimation");
                     transactionSizeRepository.setTransactionSize(nextTransactionSize);
 
                     if (savedOperation.direction == OperationDirection.INCOMING) {
                         notificationService.showNewOperationNotification(savedOperation);
                     }
-                })
-                .map(RxHelper::toVoid);
+
+                    return savedOperation;
+                });
     }
 
     /**

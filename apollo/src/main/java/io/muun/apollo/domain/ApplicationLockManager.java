@@ -3,6 +3,7 @@ package io.muun.apollo.domain;
 
 import io.muun.apollo.data.os.authentication.PinManager;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
@@ -28,16 +29,19 @@ public class ApplicationLockManager {
 
     private final PinManager pinManager;
     private final SecureStorageProvider secureStorageProvider;
+    private final ChallengePublicKeySelector challengePublicKeySel;
 
     /**
      * Constructor.
      */
     @Inject
     public ApplicationLockManager(PinManager pinManager,
-                                  SecureStorageProvider secureStorageProvider) {
+                                  SecureStorageProvider secureStorageProvider,
+                                  ChallengePublicKeySelector challengePublicKeySel1) {
 
         this.pinManager = pinManager;
         this.secureStorageProvider = secureStorageProvider;
+        this.challengePublicKeySel = challengePublicKeySel1;
     }
 
     public synchronized boolean isLockConfigured() {
@@ -59,7 +63,9 @@ public class ApplicationLockManager {
         if (verified) {
             unsetLock();
             resetRemainingAttempts();
-        } else {
+
+        } else if (challengePublicKeySel.existsAnyType()) {
+            // NOTE: this won't count failures for unrecoverable users.
             decrementRemainingAttempts();
         }
 

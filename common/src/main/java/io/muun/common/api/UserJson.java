@@ -20,6 +20,7 @@ public class UserJson {
     public String email;
 
     public boolean isEmailVerified;
+    public boolean hasExportedKeys;
 
     public PublicProfileJson publicProfile;
     public PhoneNumberJson phoneNumber;
@@ -49,6 +50,7 @@ public class UserJson {
     public UserJson(Long id,
                     @Nullable String email,
                     boolean isEmailVerified,
+                    boolean hasExportedKeys,
                     PublicProfileJson publicProfile,
                     PhoneNumberJson phoneNumber,
                     CurrencyUnit primaryCurrency,
@@ -60,6 +62,7 @@ public class UserJson {
         this.id = id;
         this.email = email;
         this.isEmailVerified = isEmailVerified;
+        this.hasExportedKeys = hasExportedKeys;
         this.publicProfile = publicProfile;
         this.phoneNumber = phoneNumber;
         this.primaryCurrency = primaryCurrency;

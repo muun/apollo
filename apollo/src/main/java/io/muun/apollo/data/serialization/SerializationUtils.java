@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
@@ -100,10 +101,10 @@ public final class SerializationUtils {
     /**
      * Deserialize a ZonedDateTime.
      */
-    @NotNull
-    public static ZonedDateTime deserializeDate(@NotNull String dateString) {
+    @Nullable
+    public static ZonedDateTime deserializeDate(@Nullable String dateString) {
 
-        return DateUtils.fromIsoString(dateString);
+        return dateString == null ? null : DateUtils.fromIsoString(dateString);
     }
 
     /**

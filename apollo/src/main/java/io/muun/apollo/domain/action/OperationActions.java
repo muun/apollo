@@ -198,14 +198,6 @@ public class OperationActions {
         return operationDao.fetchById(operationId);
     }
 
-    /**
-     * Fetch the (extended) operation list form the database.
-     */
-    public Observable<List<Operation>> fetchOperations() {
-
-        return operationDao.fetchAll();
-    }
-
     // ---------------------------------------------------------------------------------------------
     // Private helpers
 

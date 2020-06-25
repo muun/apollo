@@ -126,6 +126,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_USED(
             2018, StatusCode.CLIENT_FAILURE, "Email already used"
     ),
+    EMAIL_ALREADY_SET_UP(
+            2061, StatusCode.CLIENT_FAILURE, "User already verified an email"
+    ),
     INVALID_FEEDBACK_LENGTH(
             2050, StatusCode.CLIENT_FAILURE, "Invalid feedback content length"
     ),

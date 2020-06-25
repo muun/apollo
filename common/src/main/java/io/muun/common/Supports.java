@@ -52,10 +52,9 @@ public class Supports {
         int FALCON = NOT_SUPPORTED;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface UserDebt {
         int APOLLO = 63;
-        int FALCON = NOT_SUPPORTED;
+        int FALCON = 42;
     }
 
     // ON-RELEASE: check that these versions are right

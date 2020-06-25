@@ -11,14 +11,20 @@ import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
+import io.muun.common.api.ClientJson;
+import io.muun.common.api.ClientTypeJson;
+import io.muun.common.api.CreateFirstSessionJson;
+import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.HardwareWalletJson;
 import io.muun.common.api.OperationJson;
+import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.SignupJson;
+import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.hd.PublicKey;
@@ -136,6 +142,69 @@ public class ApiObjectsMapper {
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
                 mapChallengeSetup(passwordChallengeSetup)
+        );
+    }
+
+    /**
+     * Map client information.
+     */
+    public ClientJson mapClient(String buildType, int version) {
+        return new ClientJson(ClientTypeJson.APOLLO, buildType, version);
+    }
+
+    /**
+     * Map a CreateFirstSession object.
+     */
+    public CreateFirstSessionJson mapCreateFirstSession(String buildType,
+                                                        int version,
+                                                        String gcmToken,
+                                                        PublicKey basePublicKey,
+                                                        ChallengeSetup anonChallengeSetup,
+                                                        CurrencyUnit primaryCurrency) {
+
+        return new CreateFirstSessionJson(
+                mapClient(buildType, version),
+                gcmToken,
+                primaryCurrency,
+                mapPublicKey(basePublicKey),
+                mapChallengeSetup(anonChallengeSetup)
+        );
+    }
+
+    /**
+     * Map a CreateFirstSession object.
+     */
+    public CreateLoginSessionJson mapCreateLoginSession(String buildType,
+                                                        int version,
+                                                        String gcmToken,
+                                                        String email) {
+
+        return new CreateLoginSessionJson(
+                mapClient(buildType, version),
+                gcmToken,
+                email
+        );
+    }
+
+    /**
+     * Create a StartEmailSetup API object.
+     */
+    public StartEmailSetupJson mapStartEmailSetup(String email, ChallengeSignature chSig) {
+
+        return new StartEmailSetupJson(
+                email,
+                mapChallengeSignature(chSig)
+        );
+    }
+
+    /**
+     * Create a PasswordSetup.
+     */
+    public PasswordSetupJson mapPasswordSetup(ChallengeSignature chSig, ChallengeSetup chSetup) {
+
+        return new PasswordSetupJson(
+                mapChallengeSignature(chSig),
+                mapChallengeSetup(chSetup)
         );
     }
 

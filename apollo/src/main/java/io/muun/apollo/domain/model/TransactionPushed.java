@@ -12,11 +12,17 @@ public class TransactionPushed {
     @NotNull
     public final NextTransactionSize nextTransactionSize;
 
+    @NotNull
+    public final OperationWithMetadata operation;
+
     /**
      * Constructor.
      */
-    public TransactionPushed(@Nullable String hex, NextTransactionSize nextTransactionSize) {
+    public TransactionPushed(@Nullable String hex,
+                             NextTransactionSize nextTransactionSize,
+                             OperationWithMetadata operation) {
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
+        this.operation = operation;
     }
 }

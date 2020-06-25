@@ -20,6 +20,8 @@ import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
+import java.util.NoSuchElementException;
+
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -43,6 +45,8 @@ public class KeysRepository extends BaseRepository {
 
     private static final String KEY_MAX_WATCHING_EXTERNAL_ADDRESS_INDEX =
             "key_max_watching_external_address_index";
+
+    private static final String KEY_ANON_SECRET = "anon_secret";
 
     // Reactive preferences:
     private final Preference<String> basePrivateKeyPathPreference;
@@ -171,6 +175,14 @@ public class KeysRepository extends BaseRepository {
                 });
     }
 
+    public Observable<Void> storeAnonSecret(String anonSecret) {
+        return secureStorageProvider.putAsync(KEY_ANON_SECRET, anonSecret.getBytes());
+    }
+
+    public Observable<String> getAnonSecret() {
+        return secureStorageProvider.getAsync(KEY_ANON_SECRET).map(String::new);
+    }
+
     private Observable<Void> storeEncryptedBasePrivateKey(@NotNull PrivateKey basePrivateKey) {
         // We want to keep the flow on an Observable<View> which has `doOnNext` transformations.
         // In order to do that we are always returning a result, so that onNext is called on
@@ -207,9 +219,12 @@ public class KeysRepository extends BaseRepository {
 
     private long getWalletBirthdaySinceGenesis() {
 
-        final ZonedDateTime createdAt = userRepository.fetchOne().createdAt;
+        final ZonedDateTime createdAt = userRepository.fetchOneOptional()
+                .map(it -> it.createdAt)
+                .orElse(null);
+
         if (createdAt == null) {
-            return 0xFFFF;
+            return 0xFFFF; // a placeholder, only for the user key. Not ideal, not necessary.
         }
 
         final long creationTimestamp = createdAt.toEpochSecond();
@@ -222,7 +237,10 @@ public class KeysRepository extends BaseRepository {
                 .map(String::new);
     }
 
-    private Observable<ChallengePublicKey> getChallengePublicKey(ChallengeType type) {
+    /**
+     * Obtain from secure storage the ChallengePublicKey for a ChallengeType.
+     */
+    public Observable<ChallengePublicKey> getChallengePublicKey(ChallengeType type) {
 
         return secureStorageProvider
                 .getAsync(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
@@ -250,6 +268,10 @@ public class KeysRepository extends BaseRepository {
     public boolean hasMigratedChallengeKeys() {
         return getChallengePublicKey(ChallengeType.PASSWORD)
                 .compose(ObservableFn.onTypedErrorResumeNext(
+                        NoSuchElementException.class, // clause added for UU users without PASSWORD
+                        error -> Observable.just(false)
+                ))
+                .compose(ObservableFn.onTypedErrorResumeNext(
                         MissingMigrationError.class,
                         error -> Observable.just(false)
                 ))
@@ -258,7 +280,10 @@ public class KeysRepository extends BaseRepository {
                 .first();
     }
 
-    private boolean hasChallengePublicKey(ChallengeType type) {
+    /**
+     * Return true if the public key for a ChallengeType is present in storage.
+     */
+    public boolean hasChallengePublicKey(ChallengeType type) {
         return secureStorageProvider.has(KEY_CHALLENGE_PUBLIC_KEY + type.toString());
     }
 

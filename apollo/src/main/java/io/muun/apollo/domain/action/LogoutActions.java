@@ -15,9 +15,14 @@ import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
+import io.muun.apollo.domain.selector.LogoutOptionsSelector;
+import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
 import io.muun.apollo.external.NotificationService;
+import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
+import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
 import java.util.Arrays;
@@ -45,6 +50,8 @@ public class LogoutActions {
 
     private final ApplicationLockManager lockManager;
 
+    private final LogoutOptionsSelector logoutOptionsSel;
+
     private final List<BaseRepository> repositoriesToClear;
     private final List<String> thirdPartyPreferencesToClear;
 
@@ -60,6 +67,7 @@ public class LogoutActions {
                          NotificationService notificationService,
                          ContactActions contactActions,
                          ApplicationLockManager lockManager,
+                         LogoutOptionsSelector logoutOptionsSel,
                          AuthRepository authRepository,
                          ExchangeRateWindowRepository exchangeRateWindowRepository,
                          KeysRepository keysRepository,
@@ -78,6 +86,7 @@ public class LogoutActions {
         this.lockManager = lockManager;
         this.contactActions = contactActions;
         this.notificationService = notificationService;
+        this.logoutOptionsSel = logoutOptionsSel;
 
         this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
 
@@ -95,10 +104,58 @@ public class LogoutActions {
     }
 
     /**
-     * Wipes all user associated data from the app.
+     * Wipes all user associated data from the app (recoverable only).
      */
-    public void logout() {
+    public void destroyRecoverableWallet() {
+        final LogoutOptions logoutOptions = logoutOptionsSel.get();
 
+        if (!logoutOptions.canDestroyWallet()) {
+            Timber.e(new UnrecoverableUserLogoutError());
+            return; // should never happen, but if a bug causes this NEVER delete storage
+        }
+
+        destroyWallet();
+    }
+
+    /**
+     * Wipe all user associated data from the app (unrecoverable only).
+     */
+    public void dangerouslyDestroyUnrecoverableWallet() {
+        final LogoutOptions logoutOptions = logoutOptionsSel.get();
+        Preconditions.checkState(logoutOptions.canDestroyWallet()); // just checking
+
+        destroyWallet();
+    }
+
+    /**
+     * Wipe all user associated data from the app.
+     * As the name suggests, this method performs no checks and dangerously destroy all user data in
+     * a final and unrecoverable way. It is public for the only use of clearing data between
+     * UiTests and MUST NOT be used otherwise.
+     */
+    @VisibleForTesting
+    public void uncheckedDestroyWalletForUiTests() {
+        Preconditions.checkArgument(isTesting());
+        destroyWallet();
+    }
+
+    /**
+     * This is a, yes pretty hacky, but also VERY convenient and EFFECTIVE way of distinguishing if
+     * app is running normally or if its being runned by an instrumention test (aka ui test). The
+     * basic idea is that we search for a class that would only be present in a test classpath.
+     * Should NEVER be used for application business logic, rather we can make use of it to assert
+     * some stuff that may only/never execute when on a ui test.
+     */
+    private boolean isTesting() {
+        try {
+            Class.forName("io.muun.apollo.utils.AutoFlows");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    private void destroyWallet() {
         taskScheduler.unscheduleAllTasks();
 
         asyncActionStore.resetAllExceptLogout();

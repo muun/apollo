@@ -64,12 +64,14 @@ public enum OperationStatus {
     /**
      * For a submarine swap Operation, negotiating the channel open with the remote peer.
      */
+    @Deprecated
     SWAP_OPENING_CHANNEL,
 
     /**
      * For a submarine swap Operation, waiting for a channel to be open in order to start
      * routing the payment.
      */
+    @Deprecated
     SWAP_WAITING_CHANNEL,
 
     /**

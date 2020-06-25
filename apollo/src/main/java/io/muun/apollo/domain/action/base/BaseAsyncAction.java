@@ -30,16 +30,6 @@ public class BaseAsyncAction<ReturnT> {
     }
 
     /**
-     * Execute a blocking observable in the context of this async action.
-     */
-    protected ReturnT runNow(Observable<ReturnT> action) {
-        return getResult()
-                .doOnSubscribe(() -> run(action))
-                .toBlocking()
-                .first();
-    }
-
-    /**
      * Execute an observable in the context of this async action.
      */
     protected synchronized void run(Observable<ReturnT> action) {

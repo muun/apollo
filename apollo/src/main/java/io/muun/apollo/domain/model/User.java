@@ -15,16 +15,18 @@ public class User {
     public final Long hid;
 
     @NotNull
-    public final Optional<String> email;
-    public final boolean isEmailVerified;
+    public Optional<String> email;
+    public boolean isEmailVerified;
 
-    public final Optional<UserPhoneNumber> phoneNumber;
-    public final Optional<UserProfile> profile;
+    public Optional<UserPhoneNumber> phoneNumber;
+    public Optional<UserProfile> profile;
 
-    public final CurrencyUnit primaryCurrency;
+    public CurrencyUnit primaryCurrency;
 
-    public final boolean hasRecoveryCode;
+    public boolean hasRecoveryCode;
+    public boolean hasPassword;
     public final boolean hasP2PEnabled;
+    public boolean hasExportedKeys;
 
     @Nullable
     @Since(apolloVersion = 46)
@@ -40,7 +42,9 @@ public class User {
                 Optional<UserProfile> profile,
                 @NotNull CurrencyUnit primaryCurrency,
                 boolean hasRecoveryCode,
+                boolean hasPassword,
                 boolean hasP2PEnabled,
+                boolean hasExportedKeys,
                 ZonedDateTime createdAt) {
 
         this.hid = hid;
@@ -53,7 +57,9 @@ public class User {
         this.primaryCurrency = primaryCurrency;
 
         this.hasRecoveryCode = hasRecoveryCode;
+        this.hasPassword = hasPassword;
         this.hasP2PEnabled = hasP2PEnabled;
+        this.hasExportedKeys = hasExportedKeys;
 
         this.createdAt = createdAt;
     }
@@ -72,5 +78,32 @@ public class User {
                         profile.getPictureUrl()
                 ))
                 .orElse(null);
+    }
+
+    public boolean isRecoverable() {
+        return hasPassword || hasRecoveryCode;
+    }
+
+    /**
+     * Get the support ID string for this user, provided it can be computed with the data available
+     * at this version / for this user.
+     */
+    public Optional<String> getSupportId() {
+        if (createdAt == null) {
+            return Optional.empty(); // missing? it wasn't added until a later version
+        }
+
+        // Epoch timestamp as numeric string:
+        final String ts = "" + createdAt.toEpochSecond();
+        final int tsLen = ts.length();
+
+        // Last 2 groups of 4 characters each:
+        final String group1 = ts.substring(tsLen - 8, tsLen - 4);
+        final String group2 = ts.substring(tsLen - 4, tsLen);
+
+        // Joined by a dash:
+        final String supportId = group1 + "-" + group2;
+
+        return Optional.of(supportId);
     }
 }

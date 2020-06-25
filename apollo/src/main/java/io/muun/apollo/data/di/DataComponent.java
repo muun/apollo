@@ -16,7 +16,6 @@ import io.muun.apollo.data.net.NetworkInfoProvider;
 import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.os.ContactsProvider;
-import io.muun.apollo.data.os.ForegroundActivityTracker;
 import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.secure_storage.KeyStoreProvider;
@@ -98,8 +97,6 @@ public interface DataComponent extends ActionComponent {
     KeyStoreProvider keyStoreProvider();
 
     SecureStorageProvider secureStorageProvider();
-
-    ForegroundActivityTracker foregroundActivityTracker();
 
     LogoutActions logoutActions();
 

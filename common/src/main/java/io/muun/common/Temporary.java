@@ -8,4 +8,5 @@ public class Temporary {
 
     public static final boolean enableCrashlyticsForDebug = true;
 
+    public static final int FAKE_SIGNUP_STEP_NUMBER = 1;
 }

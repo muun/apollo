@@ -88,6 +88,12 @@ class PaymentContext(
     }
 
     /**
+     * Return the minimum acceptable fee rate, obtained from the lowest recommended value.
+     */
+    fun getMinimumFeeRate() =
+        feeWindow.targetedFees.values.min()!! // assume vector is not empty (ie min can't be null)
+
+    /**
      * Assumes feeOptions is a SortedMap sorted in ascending order, and has at least one item.
      */
     fun getRandomFee(): FeeOption {

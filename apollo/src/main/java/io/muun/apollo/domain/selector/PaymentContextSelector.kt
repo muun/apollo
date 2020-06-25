@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 
 class PaymentContextSelector @Inject constructor(
-    private val userRepository: UserRepository,
+    private val userSel: UserSelector,
     private val feeWindowRepository: FeeWindowRepository,
     private val exchangeRateWindowRepository: ExchangeRateWindowRepository,
     private val transactionSizeRepository: TransactionSizeRepository,
@@ -20,7 +20,7 @@ class PaymentContextSelector @Inject constructor(
 ) {
 
     fun watch(operationUri: OperationUri? = null) = Observable.combineLatest(
-        userRepository.fetch(),
+        userSel.watch(),
         exchangeRateWindowRepository.fetch(),
         feeWindowRepository.fetch(),
         watchtNextTransactionSize(operationUri),

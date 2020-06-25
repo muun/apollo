@@ -145,7 +145,7 @@ public class ValidationHelpers {
             return false;
         }
 
-        if (challengeSetup.encryptedPrivateKey == null) {
+        if (challengeSetup.type.encryptsPrivateKey && challengeSetup.encryptedPrivateKey == null) {
             return false;
         }
 

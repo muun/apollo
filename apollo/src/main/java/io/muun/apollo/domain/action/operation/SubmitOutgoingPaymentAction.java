@@ -105,10 +105,14 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
 
                             return houstonClient
                                     .pushTransaction(transactionHex, houstonOp.getHid())
-                                    .flatMap(txPushed -> createOperation.action(
-                                            mergedOperation, txPushed.nextTransactionSize
-                                    ))
-                                    .map(aVoid -> mergedOperation);
+                                    .flatMap(txPushed -> {
+                                        // Maybe Houston updated the operation status:
+                                        mergedOperation.status = txPushed.operation.getStatus();
+
+                                        return createOperation.action(
+                                                mergedOperation, txPushed.nextTransactionSize
+                                        );
+                                    });
                         }));
     }
 

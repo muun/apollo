@@ -5,6 +5,7 @@ import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.HardwareWallet;
@@ -25,6 +26,7 @@ import io.muun.common.Optional;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.CommonModelObjectsMapper;
+import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.FeeWindowJson;
 import io.muun.common.api.HardwareWalletJson;
@@ -54,7 +56,6 @@ import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 
@@ -68,17 +69,22 @@ import javax.validation.constraints.NotNull;
 
 @Singleton
 public class ModelObjectsMapper extends CommonModelObjectsMapper {
-
-    private final ObjectMapper jsonMapper;
-
     /**
      * Constructor.
      */
     @Inject
-    public ModelObjectsMapper(NetworkParameters networkParameters,
-                              ObjectMapper jsonMapper) {
+    public ModelObjectsMapper(NetworkParameters networkParameters) {
         super(networkParameters);
-        this.jsonMapper = jsonMapper;
+    }
+
+    /**
+     * Create a CreateFirstSession.
+     */
+    public CreateFirstSessionOk mapCreateFirstSessionOk(CreateFirstSessionOkJson json) {
+        return new CreateFirstSessionOk(
+                mapUser(json.user),
+                mapPublicKey(json.cosigningPublicKey)
+        );
     }
 
     /**
@@ -113,7 +119,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 maybeProfile,
                 apiUser.primaryCurrency,
                 apiUser.hasRecoveryCodeChallengeKey,
+                apiUser.hasPasswordChallengeKey,
                 apiUser.hasP2PEnabled,
+                apiUser.hasExportedKeys,
                 ((ApolloZonedDateTime) apiUser.createdAt).dateTime
         );
     }
@@ -267,7 +275,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
 
         return new TransactionPushed(
                 txPushed.hex,
-                mapNextTransactionSize(txPushed.nextTransactionSize)
+                mapNextTransactionSize(txPushed.nextTransactionSize),
+                mapOperation(txPushed.updatedOperation)
         );
     }
 

@@ -5,6 +5,7 @@ import io.muun.apollo.domain.errors.AmountTooSmallError;
 import io.muun.apollo.domain.errors.CountryNotSupportedError;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
 import io.muun.apollo.domain.errors.EmailAlreadyUsedError;
+import io.muun.apollo.domain.errors.EmailNotRegisteredError;
 import io.muun.apollo.domain.errors.ExchangeRateWindowTooOldError;
 import io.muun.apollo.domain.errors.ExpiredSatelliteSession;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
@@ -108,6 +109,9 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
                         case EMAIL_ALREADY_USED:
                             return new EmailAlreadyUsedError();
+
+                        case EMAIL_NOT_REGISTERED:
+                            return new EmailNotRegisteredError();
 
                         case INSUFFICIENT_CLIENT_FUNDS:
                             return new InsufficientFundsError();

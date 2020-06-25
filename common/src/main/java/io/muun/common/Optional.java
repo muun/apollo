@@ -185,7 +185,7 @@ public final class Optional<ValueT> {
      * similar to {@code get()}, but explicitly communicates that this Optional wasn't
      * checked for presence before, whereas {@code get()} should be used when presence is known.
      */
-    public <X extends Throwable> ValueT orElseThrow() throws IllegalStateException {
+    public ValueT orElseThrow() throws IllegalStateException {
         return orElseThrow(IllegalStateException::new);
     }
 

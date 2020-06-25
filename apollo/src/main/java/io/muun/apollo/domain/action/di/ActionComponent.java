@@ -13,6 +13,8 @@ import io.muun.apollo.domain.action.SyncActions;
 import io.muun.apollo.domain.action.UpdateFcmTokenAction;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.keys.CreateChallengeSetupAction;
+import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
 import io.muun.apollo.domain.action.operation.ResolveBitcoinUriAction;
@@ -23,10 +25,14 @@ import io.muun.apollo.domain.action.operation.SubmitOutgoingPaymentAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
-import io.muun.apollo.domain.action.session.CreateSessionAction;
+import io.muun.apollo.domain.action.session.CreateFirstSessionAction;
+import io.muun.apollo.domain.action.session.CreateLoginSessionAction;
+import io.muun.apollo.domain.action.session.GetFcmTokenAction;
 import io.muun.apollo.domain.action.session.LogInAction;
-import io.muun.apollo.domain.action.session.SignUpAction;
+import io.muun.apollo.domain.action.session.SetUpPasswordAction;
+import io.muun.apollo.domain.action.session.StartEmailSetupAction;
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
+import io.muun.apollo.domain.action.user.ReportKeysExportedAction;
 import io.muun.apollo.domain.action.user.SendEncryptedKeysEmailAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 
@@ -82,13 +88,25 @@ public interface ActionComponent {
 
     SendEncryptedKeysEmailAction sendEncryptedKeysEmailAction();
 
-    CreateSessionAction createSessionAction();
-    
-    SignUpAction signUpAction();
-
     LogInAction logInAction();
 
     SyncApplicationDataAction syncApplicationDataAction();
 
     UpdateFcmTokenAction updateFcmTokenAction();
+
+    GetFcmTokenAction getFcmTokenAction();
+
+    StoreChallengeKeyAction storeChallengeKeyAction();
+
+    CreateChallengeSetupAction createChallengeSetupAction();
+
+    CreateFirstSessionAction createFirstSessionAction();
+
+    StartEmailSetupAction startEmailSetupAction();
+
+    SetUpPasswordAction setupPasswordAction();
+
+    CreateLoginSessionAction createLoginSessionAction();
+
+    ReportKeysExportedAction reportKeysExportedAction();
 }

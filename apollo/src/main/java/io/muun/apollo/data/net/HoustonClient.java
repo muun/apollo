@@ -11,6 +11,7 @@ import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.NoPaymentRouteException;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
@@ -25,26 +26,27 @@ import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
-import io.muun.common.api.ClientTypeJson;
+import io.muun.common.api.CreateFirstSessionJson;
+import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.DiffJson;
+import io.muun.common.api.EmptyJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
+import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.SendEncryptedKeysJson;
-import io.muun.common.api.SessionJson;
 import io.muun.common.api.SetupChallengeResponse;
-import io.muun.common.api.SignupJson;
+import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.error.ErrorCode;
 import io.muun.common.api.houston.HoustonService;
-import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
@@ -68,7 +70,6 @@ import rx.Observable;
 
 import java.util.List;
 
-import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
@@ -97,23 +98,66 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
-     * Creates a session.
+     * Creates a session for a first-time unrecoverable user.
      */
-    public Observable<CreateSessionOk> createSession(@NotNull String email,
-                                                     @NotNull String buildType,
-                                                     @Nonnegative int version,
-                                                     @NotNull String gcmRegistrationToken) {
+    public Observable<CreateFirstSessionOk> createFirstSession(String buildType,
+                                                               int version,
+                                                               String gcmRegistrationToken,
+                                                               PublicKey basePublicKey,
+                                                               ChallengeSetup anonChallengeSetup,
+                                                               CurrencyUnit primaryCurrency) {
 
-        final SessionJson session = new SessionJson(
-                email.trim(),
+        final CreateFirstSessionJson params = apiMapper.mapCreateFirstSession(
                 buildType,
                 version,
                 gcmRegistrationToken,
-                ClientTypeJson.APOLLO
+                basePublicKey,
+                anonChallengeSetup, primaryCurrency
         );
 
-        return getService().createSession(session)
+        return getService().createFirstSession(params)
+                .map(modelMapper::mapCreateFirstSessionOk);
+    }
+
+    /**
+     * Creates a session to log into an existing user.
+     */
+    public Observable<CreateSessionOk> createLoginSession(String buildType,
+                                                          int version,
+                                                          String gcmRegistrationToken,
+                                                          String email) {
+
+        final CreateLoginSessionJson params = apiMapper.mapCreateLoginSession(
+                buildType,
+                version,
+                gcmRegistrationToken,
+                email
+        );
+
+        return getService().createLoginSession(params)
                 .map(modelMapper::mapCreateSessionOk);
+    }
+
+    /**
+     * Start the email setup process.
+     */
+    public Observable<Void> startEmailSetup(String email, ChallengeSignature anonChallengeSig) {
+
+        final StartEmailSetupJson params =
+                apiMapper.mapStartEmailSetup(email, anonChallengeSig);
+
+        return getService().startEmailSetup(params);
+    }
+
+    /**
+     * Run the password setup.
+     */
+    public Observable<Void> setUpPassword(ChallengeSignature chSig, ChallengeSetup chSetup) {
+
+        final PasswordSetupJson params =
+                apiMapper.mapPasswordSetup(chSig, chSetup);
+
+        return getService().setUpPassword(params);
     }
 
     public Observable<UserPhoneNumber> createPhone(PhoneNumber phoneNumber) {
@@ -140,34 +184,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<User> createProfile(UserProfile userProfile) {
         return getService().createProfile(apiMapper.mapUserProfile(userProfile))
                 .map(modelMapper::mapUser);
-    }
-
-    /**
-     * Sign-ups an user.
-     */
-    public Observable<PublicKey> signup(String encryptedRootPrivateKey,
-                                        CurrencyUnit primaryCurrency,
-                                        PublicKey basePublicKey,
-                                        ChallengePublicKey passwordSecretPublicKey,
-                                        byte[] passwordSecretSalt) {
-
-        final ChallengeSetup passwordChallengeSetup = new ChallengeSetup(
-                ChallengeType.PASSWORD,
-                passwordSecretPublicKey,
-                passwordSecretSalt,
-                encryptedRootPrivateKey,
-                ChallengeType.getVersion(ChallengeType.PASSWORD)
-        );
-
-        final SignupJson signup = apiMapper.mapSignup(
-                primaryCurrency,
-                basePublicKey,
-                passwordChallengeSetup
-        );
-
-        return getService()
-                .signup(signup)
-                .map(signupOkJson -> modelMapper.mapPublicKey(signupOkJson.cosigningPublicKey));
     }
 
     /**
@@ -214,21 +230,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<Void> confirmNotificationsDeliveryUntil(long notificationId) {
 
         return getService().confirmNotificationsDeliveryUntil(notificationId);
-    }
-
-    /**
-     * Create a beam session authorized to send notification to this device.
-     */
-    public Observable<String> createReceivingSession(String satelliteSessionUuid) {
-
-        return getService().createReceivingSession(satelliteSessionUuid);
-    }
-
-    /**
-     * Expire a beam session authorized to send notifications to this device.
-     */
-    public Observable<Void> expireReceivingSession(String sessionUuid) {
-        return getService().expireReceivingSession(sessionUuid);
     }
 
     /**
@@ -569,5 +570,12 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService()
                 .fetchChallengeKeyUpdateMigration()
                 .map(modelMapper::mapChalengeKeyUpdateMigration);
+    }
+
+    /**
+     * Tell Houston we have exported our keys.
+     */
+    public Observable<Void> reportKeysExported() {
+        return getService().reportKeysExported(new EmptyJson());
     }
 }

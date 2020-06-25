@@ -88,13 +88,11 @@ public class OperationJson {
     @Nullable
     public SubmarineSwapJson swap;
 
-    // ON-RELEASE: Set to apps that send the encrypted bundle
-    @Since(falconVersion = 100, apolloVersion = 100)
+    @Since(apolloVersion = 63, falconVersion = 42)
     @Nullable // For retro compat, for new clients should be not null
     public String senderMetadata;
     
-    // ON-RELEASE: Set to apps that send the encrypted bundle
-    @Since(apolloVersion = 100)
+    @Since(apolloVersion = 63)
     @Nullable // This is set when using p2p only
     public String receiverMetadata;
 

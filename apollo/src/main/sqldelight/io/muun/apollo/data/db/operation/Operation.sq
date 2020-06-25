@@ -68,3 +68,19 @@ LEFT JOIN public_profiles AS receiver_profiles ON receiver_hid = receiver_profil
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
 ORDER BY operations.id DESC
 LIMIT 1;
+
+selectUnsettled:
+SELECT operations.*, sender_profile.*, receiver_profile.*, swap.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
+LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
+WHERE operations.status NOT IN (
+    'SWAP_PAYED',
+    'SWAP_FAILED',
+    'SWAP_EXPIRED',
+    'FAILED',
+    'DROPPED',
+    'SETTLED'
+)
+ORDER BY creation_date DESC;

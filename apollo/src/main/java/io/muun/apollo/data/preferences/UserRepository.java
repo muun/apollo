@@ -2,7 +2,6 @@ package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.serialization.SerializationUtils;
-import io.muun.apollo.domain.errors.NullCurrencyBugError;
 import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
@@ -11,46 +10,29 @@ import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.model.PhoneNumber;
+import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.net.Uri;
 import com.f2prateek.rx.preferences.Preference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;
 import timber.log.Timber;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.money.CurrencyUnit;
+import javax.inject.Singleton;
 
+@Singleton
 public class UserRepository extends BaseRepository {
 
-    private static final String KEY_HID = "hid";
-
-    private static final String KEY_FIRST_NAME = "first_name";
-
-    private static final String KEY_LAST_NAME = "last_name";
-
-    private static final String KEY_PHONE_NUMBER = "phone_number";
-
-    private static final String KEY_PHONE_NUMBER_VERIFIED = "phone_number_verified";
-
-    private static final String KEY_PROFILE_PICTURE_URL = "profile_picture_url";
+    private static final String KEY_USER = "user";
 
     private static final String KEY_LAST_COPIED_ADDRESS = "key_last_copied_address";
 
-    private static final String PRIMARY_CURRENCY_KEY = "primary_currency_key";
-
     private static final String PENDING_PROFILE_PICTURE_URI_KEY = "pending_profile_picture_uri_key";
-
-    private static final String EMAIL_VERIFIED_KEY = "email_verified_key";
-
-    private static final String EMAIL_KEY = "email";
-
-    private static final String HAS_RECOVERY_CODE_KEY = "has_recovery_code";
-
-    private static final String HAS_P2P_ENABLED_KEY = "has_p2p_enabled";
-
-    private static final String CREATED_AT_KEY = "created_at";
 
     private static final String PASSWORD_CHANGE_AUTHORIZED_UUID = "password_change_authorized_uuid";
 
@@ -66,33 +48,9 @@ public class UserRepository extends BaseRepository {
 
     private static final String DISPLAY_SATS = "use_sats_as_currency";
 
-    private final Preference<Long> hidPreference;
-
-    private final Preference<String> firstNamePreference;
-
-    private final Preference<String> lastNamePreference;
-
-    private final Preference<String> phoneNumberPreference;
-
-    private final Preference<Boolean> phoneNumberVerifiedPreference;
-
-    private final Preference<String> profilePictureUrlPreference;
-
     private final Preference<String> lastCopiedAddress;
 
-    private final Preference<String> primaryCurrencyPreference;
-
     private final Preference<String> pendingProfilePictureUriPreference;
-
-    private final Preference<String> emailPreference;
-
-    private final Preference<Boolean> isEmailVerifiedPreference;
-
-    private final Preference<Boolean> hasRecoveryCodePreference;
-
-    private final Preference<Boolean> hasP2PEnabledPreference;
-
-    private final Preference<String> createdAtPreference;
 
     private final Preference<String> passwordChangeAuthorizedUuidPreference;
 
@@ -108,6 +66,8 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<CurrencyDisplayMode> displaySatsPreference;
 
+    private final Preference<StoredUserJson> userPreference;
+
     /**
      * Creates a user preference repository.
      */
@@ -115,33 +75,14 @@ public class UserRepository extends BaseRepository {
     public UserRepository(Context context) {
         super(context);
 
-        hidPreference = rxSharedPreferences.getLong(KEY_HID);
-        firstNamePreference = rxSharedPreferences.getString(KEY_FIRST_NAME);
-        lastNamePreference = rxSharedPreferences.getString(KEY_LAST_NAME);
-        phoneNumberPreference = rxSharedPreferences.getString(KEY_PHONE_NUMBER);
-
-        phoneNumberVerifiedPreference = rxSharedPreferences.getBoolean(
-                KEY_PHONE_NUMBER_VERIFIED,
-                false
-        );
-
-        profilePictureUrlPreference = rxSharedPreferences.getString(KEY_PROFILE_PICTURE_URL);
-        primaryCurrencyPreference = rxSharedPreferences.getString(PRIMARY_CURRENCY_KEY);
+        userPreference = rxSharedPreferences
+                .getObject(KEY_USER, new JsonPreferenceAdapter<>(StoredUserJson.class));
 
         lastCopiedAddress = rxSharedPreferences.getString(KEY_LAST_COPIED_ADDRESS);
 
         pendingProfilePictureUriPreference = rxSharedPreferences.getString(
                 PENDING_PROFILE_PICTURE_URI_KEY
         );
-
-        emailPreference = rxSharedPreferences.getString(EMAIL_KEY);
-
-        isEmailVerifiedPreference = rxSharedPreferences.getBoolean(EMAIL_VERIFIED_KEY, false);
-
-        hasRecoveryCodePreference = rxSharedPreferences.getBoolean(HAS_RECOVERY_CODE_KEY, false);
-        hasP2PEnabledPreference = rxSharedPreferences.getBoolean(HAS_P2P_ENABLED_KEY, false);
-
-        createdAtPreference = rxSharedPreferences.getString(CREATED_AT_KEY);
 
         passwordChangeAuthorizedUuidPreference = rxSharedPreferences.getString(
                 PASSWORD_CHANGE_AUTHORIZED_UUID
@@ -182,114 +123,81 @@ public class UserRepository extends BaseRepository {
     /**
      * Stores the user.
      */
-    public void store(User user) {
-        hidPreference.set(user.hid);
-
-        emailPreference.set(user.email.orElse(null));
-        isEmailVerifiedPreference.set(user.isEmailVerified);
-
-        storePhoneNumber(user.phoneNumber.orElse(null));
-        storeProfile(user.profile.orElse(null));
-
-        primaryCurrencyPreference.set(
-                SerializationUtils.serializeCurrencyUnit(user.primaryCurrency)
-        );
-
-        hasRecoveryCodePreference.set(user.hasRecoveryCode);
-        hasP2PEnabledPreference.set(user.hasP2PEnabled);
-
-        createdAtPreference.set(SerializationUtils.serializeDate(user.createdAt));
+    public synchronized void store(User user) {
+        userPreference.set(StoredUserJson.fromUser(user));
     }
 
     /**
-     * Fetches the user.
+     * Fetches the user, throws NoSuchElementException if not present.
      */
     public Observable<User> fetch() {
-        return Observable.combineLatest(
-                hidPreference.asObservable(),
-                emailPreference.asObservable().map(Optional::ofNullable),
-                isEmailVerifiedPreference.asObservable(),
-                fetchPhoneNumber(),
-                fetchProfile(),
-                fetchPrimaryCurrency(),
-                hasRecoveryCodePreference.asObservable(),
-                hasP2PEnabledPreference.asObservable(),
-                createdAtPreference.asObservable()
-                        .map(s -> s == null ? null : SerializationUtils.deserializeDate(s)),
-                User::new
+        return fetchOptional().map(Optional::get);
+    }
+
+    /**
+     * Fetches the user, throws NPE if not present.
+     */
+    public Observable<Optional<User>> fetchOptional() {
+        return userPreference.asObservable()
+                .map(storedUser -> {
+                    if (storedUser != null) {
+                        return Optional.of(storedUser.toUser());
+                    } else {
+                        return Optional.empty();
+                    }
+                });
+    }
+
+    public Optional<User> fetchOneOptional() {
+        return fetchOptional().toBlocking().first();
+    }
+
+    /**
+     * Execute the migration that ends the multi-preference hell.
+     */
+    public void migrateCthulhuToJsonPreference() {
+        final StoredUserJson value = new StoredUserJson(
+                sharedPreferences.getLong("hid", -1L),
+                sharedPreferences.getString("email", null),
+                sharedPreferences.getString("created_at", null),
+                sharedPreferences.getString("phone_number", null),
+                sharedPreferences.getBoolean("phone_number_verified", false),
+                sharedPreferences.getString("first_name", null),
+                sharedPreferences.getString("last_name", null),
+                sharedPreferences.getString("profile_picture_url", null),
+                sharedPreferences.getBoolean("email_verified_key", false),
+                sharedPreferences.getBoolean("has_recovery_code", false),
+                true, // all users had passwords before this feature
+                sharedPreferences.getBoolean("has_p2p_enabled", false),
+                false, // non-existent at migration time. This is a good default
+                sharedPreferences.getString("primary_currency_key", "USD")
         );
+
+        userPreference.set(value);
     }
 
     public User fetchOne() {
         return fetch().toBlocking().first();
     }
 
-    private Observable<Optional<UserProfile>> fetchProfile() {
-        // NOTE: this uses the previous storage model of Apollo to keep retro-compatibility.
-        return Observable.combineLatest(
-                firstNamePreference.asObservable(),
-                lastNamePreference.asObservable(),
-                profilePictureUrlPreference.asObservable(),
-
-                (firstName, lastName, profilePicture) -> {
-                    if (firstName == null) {
-                        return Optional.empty();
-
-                    } else {
-                        return Optional.of(new UserProfile(firstName, lastName, profilePicture));
-                    }
-                }
-        );
-    }
-
     /**
      * Stores a user Profile.
      */
-    public void storeProfile(@Nullable UserProfile profile) {
-        if (profile == null) {
-            firstNamePreference.delete();
-            lastNamePreference.delete();
-            profilePictureUrlPreference.delete();
+    public synchronized void storeProfile(@Nullable UserProfile profile) {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
 
-        } else {
-            firstNamePreference.set(profile.getFirstName());
-            lastNamePreference.set(profile.getLastName());
-            profilePictureUrlPreference.set(profile.getPictureUrl());
-        }
-    }
-
-    private Observable<Optional<UserPhoneNumber>> fetchPhoneNumber() {
-        // NOTE: this uses the previous storage model of Apollo to keep retro-compatibility.
-        return Observable.combineLatest(
-                phoneNumberPreference.asObservable(),
-                phoneNumberVerifiedPreference.asObservable(),
-
-                (phoneNumber, isVerified) -> {
-                    if (phoneNumber == null) {
-                        return Optional.empty();
-
-                    } else {
-                        return Optional.of(new UserPhoneNumber(phoneNumber, isVerified));
-                    }
-                }
-        );
+        value.setProfileFrom(profile);
+        userPreference.set(value);
     }
 
     /**
      * Stores a user PhoneNumber.
      */
-    public void storePhoneNumber(@Nullable UserPhoneNumber phoneNumber) {
-        if (phoneNumber != null) {
-            phoneNumberPreference.set(phoneNumber.toE164String());
-            phoneNumberVerifiedPreference.set(phoneNumber.isVerified());
+    public synchronized void storePhoneNumber(@Nullable UserPhoneNumber phoneNumber) {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
 
-        } else {
-            phoneNumberPreference.delete();
-        }
-    }
-
-    private Observable<CurrencyUnit> fetchPrimaryCurrency() {
-        return getPrimaryCurrencyCatchingBug();
+        value.setPhoneNumberFrom(phoneNumber);
+        userPreference.set(value);
     }
 
     /**
@@ -328,28 +236,42 @@ public class UserRepository extends BaseRepository {
         lastCopiedAddress.set(address);
     }
 
+    /**
+     * Store the fact that the user has verified their email.
+     */
     public void storeEmailVerified() {
-        isEmailVerifiedPreference.set(true);
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
+
+        value.isEmailVerified = true;
+        userPreference.set(value);
     }
 
     /**
      * Set whether the user has a recovery code available.
      */
-    public void storeHasRecoveryCode(boolean value) {
-        hasRecoveryCodePreference.set(value);
+    public void storeHasRecoveryCode(boolean hasRecoveryCode) {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
 
-        if (value) {
+        value.hasRecoveryCode = hasRecoveryCode;
+        userPreference.set(value);
+
+        if (hasRecoveryCode) {
             // This shouldn't be necessary, but instinct tells me to put it here:
             recoveryCodeSetupInProcessPreference.set(false);
         }
     }
 
+    /**
+     * Watch whether the user has a recovery code set up.
+     */
     public Observable<Boolean> watchHasRecoveryCode() {
-        return hasRecoveryCodePreference.asObservable();
+        return userPreference.asObservable()
+                .map(Preconditions::checkNotNull)
+                .map(it -> it.hasRecoveryCode);
     }
 
     public boolean hasRecoveryCode() {
-        return hasRecoveryCodePreference.get();
+        return watchHasRecoveryCode().toBlocking().first();
     }
 
     /**
@@ -374,19 +296,6 @@ public class UserRepository extends BaseRepository {
 
     public Observable<ContactsPermissionState> watchContactsPermissionState() {
         return conctactsPermissionStatePreference.asObservable();
-    }
-
-    private Observable<CurrencyUnit> getPrimaryCurrencyCatchingBug() {
-        return primaryCurrencyPreference.asObservable()
-            .map(code -> {
-                if (code == null) {
-                    Timber.e(new NullCurrencyBugError());
-                    code = "USD";
-                }
-
-                return code;
-            })
-            .map(SerializationUtils::deserializeCurrencyUnit);
     }
 
     public void storeFcmToken(String token) {
@@ -463,5 +372,134 @@ public class UserRepository extends BaseRepository {
 
     public void setCurrencyDisplayMode(CurrencyDisplayMode value) {
         displaySatsPreference.set(value);
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class StoredUserJson {
+        public long hid;
+        public String email;
+        public String createdAt;
+
+        public String phoneNumber;
+        public boolean isPhoneNumberVerified;
+
+        public String firstName;
+        public String lastName;
+        public String profilePictureUrl;
+
+        public boolean isEmailVerified;
+        public boolean hasRecoveryCode;
+        public boolean hasPassword;
+        public boolean hasP2PEnabled;
+        public boolean hasExportedKeys;
+
+        public String currency;
+
+        static StoredUserJson fromUser(User user) {
+            return new StoredUserJson(
+                    user.hid,
+                    user.email.orElse(null),
+                    SerializationUtils.serializeDate(user.createdAt),
+                    user.phoneNumber.map(PhoneNumber::toE164String).orElse(null),
+                    user.phoneNumber.map(UserPhoneNumber::isVerified).orElse(false),
+                    user.profile.map(UserProfile::getFirstName).orElse(null),
+                    user.profile.map(UserProfile::getLastName).orElse(null),
+                    user.profile.map(UserProfile::getPictureUrl).orElse(null),
+                    user.isEmailVerified,
+                    user.hasRecoveryCode,
+                    user.hasPassword,
+                    user.hasP2PEnabled,
+                    user.hasExportedKeys,
+                    SerializationUtils.serializeCurrencyUnit(user.primaryCurrency)
+            );
+        }
+
+        /**
+         * Json constructor.
+         */
+        public StoredUserJson() {
+        }
+
+        /**
+         * Manual constructor.
+         */
+        public StoredUserJson(long hid,
+                              String email,
+                              String createdAt,
+                              String phoneNumber,
+                              boolean isPhoneNumberVerified,
+                              String firstName,
+                              String lastName,
+                              String profilePictureUrl,
+                              boolean isEmailVerified,
+                              boolean hasRecoveryCode,
+                              boolean hasPassword,
+                              boolean hasP2PEnabled,
+                              boolean hasExportedKeys,
+                              String currency) {
+
+            this.hid = hid;
+            this.email = email;
+            this.createdAt = createdAt;
+            this.phoneNumber = phoneNumber;
+            this.isPhoneNumberVerified = isPhoneNumberVerified;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.profilePictureUrl = profilePictureUrl;
+            this.isEmailVerified = isEmailVerified;
+            this.hasRecoveryCode = hasRecoveryCode;
+            this.hasPassword = hasPassword;
+            this.hasP2PEnabled = hasP2PEnabled;
+            this.hasExportedKeys = hasExportedKeys;
+            this.currency = currency;
+        }
+
+        User toUser() {
+            return new User(
+                    hid,
+                    Optional.ofNullable(email),
+                    isEmailVerified,
+
+                    phoneNumber != null
+                            ? Optional.of(new UserPhoneNumber(phoneNumber, isPhoneNumberVerified))
+                            : Optional.empty(),
+
+                    firstName != null
+                            ? Optional.of(new UserProfile(firstName, lastName, profilePictureUrl))
+                            : Optional.empty(),
+
+                    SerializationUtils.deserializeCurrencyUnit(currency != null ? currency : "USD"),
+
+                    hasRecoveryCode,
+                    hasPassword,
+                    hasP2PEnabled,
+                    hasExportedKeys,
+
+                    SerializationUtils.deserializeDate(createdAt)
+            );
+        }
+
+        void setProfileFrom(@Nullable UserProfile newValue) {
+            if (newValue != null) {
+                firstName = newValue.getFirstName();
+                lastName = newValue.getLastName();
+                profilePictureUrl = newValue.getPictureUrl();
+            } else {
+                firstName = null;
+                lastName = null;
+                profilePictureUrl = null;
+            }
+        }
+
+        void setPhoneNumberFrom(@Nullable UserPhoneNumber newValue) {
+            if (newValue != null) {
+                phoneNumber = newValue.toE164String();
+                isPhoneNumberVerified = newValue.isVerified();
+            } else {
+                phoneNumber = null;
+                isPhoneNumberVerified = false;
+            }
+        }
     }
 }

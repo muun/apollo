@@ -1,6 +1,7 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.domain.errors.SecureStorageError;
+import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
 
@@ -83,7 +84,12 @@ public class SecureStorageProvider {
      * Return `true` if the key exists in secure storage.
      */
     public boolean has(String key) {
-        return keyStore.hasKey(key) && preferences.hasKey(key);
+        final boolean hasKeyInPreferences = preferences.hasKey(key);
+        final boolean hasKeyInKeystore = keyStore.hasKey(key);
+
+        Preconditions.checkState(hasKeyInPreferences == hasKeyInKeystore);
+
+        return hasKeyInPreferences;
     }
 
     /**

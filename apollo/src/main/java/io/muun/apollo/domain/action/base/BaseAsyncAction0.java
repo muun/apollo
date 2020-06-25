@@ -10,7 +10,7 @@ public abstract class BaseAsyncAction0<R> extends BaseAsyncAction<R> {
         super.run(action());
     }
 
-    public R runNow() {
-        return super.runNow(action());
+    public R actionNow() {
+        return action().toBlocking().first();
     }
 }

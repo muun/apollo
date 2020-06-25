@@ -8,6 +8,8 @@ import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.keys.CreateChallengeSetupAction;
+import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.FeedbackCategory;
@@ -17,9 +19,7 @@ import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.crypto.ChallengePrivateKey;
-import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
-import io.muun.common.crypto.hd.KeyCrypter;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.SessionStatus;
 import io.muun.common.model.VerificationType;
@@ -30,7 +30,6 @@ import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.RandomGenerator;
 
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import rx.Observable;
@@ -38,7 +37,6 @@ import rx.Observable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.money.CurrencyUnit;
-
 
 @Singleton
 public class UserActions {
@@ -54,6 +52,8 @@ public class UserActions {
     private final ContactActions contactActions;
 
     private final UpdateProfilePictureAction updateProfilePictureAction;
+    private final CreateChallengeSetupAction createChallengeSetup;
+    private final StoreChallengeKeyAction storeChallengeKey;
 
     public final AsyncAction1<PhoneNumber, UserPhoneNumber> createPhoneAction;
     public final AsyncAction1<VerificationType, Void> resendVerificationCodeAction;
@@ -81,7 +81,9 @@ public class UserActions {
                        AuthRepository authRepository,
                        HoustonClient houstonClient,
                        ContactActions contactActions,
-                       UpdateProfilePictureAction updateProfilePictureAction) {
+                       UpdateProfilePictureAction updateProfilePictureAction,
+                       CreateChallengeSetupAction createChallengeSetup,
+                       StoreChallengeKeyAction storeChallengeKey) {
 
         this.userRepository = userRepository;
         this.keysRepository = keysRepository;
@@ -94,6 +96,8 @@ public class UserActions {
 
         this.createPhoneAction = asyncActionStore
             .get("user/createPhone", this::createPhone);
+        this.createChallengeSetup = createChallengeSetup;
+        this.storeChallengeKey = storeChallengeKey;
 
         this.resendVerificationCodeAction = asyncActionStore
             .get("user/resendCode", houstonClient::resendVerificationCode);
@@ -121,14 +125,6 @@ public class UserActions {
             .get("user/submitFeedbackAction", this::submitFeedback);
 
         this.notifyLogoutAction = asyncActionStore.get(NOTIFY_LOGOUT_ACTION, this::notifyLogout);
-    }
-
-    public User fetchOneUser() {
-        return userRepository.fetchOne();
-    }
-
-    public Observable<User> fetchUser() {
-        return userRepository.fetch();
     }
 
     public void setPendingProfilePicture(@Nullable Uri uri) {
@@ -227,62 +223,22 @@ public class UserActions {
      * new password, and a process' identifying uuid.
      */
     private Observable<Void> finishPasswordChange(String uuid, String password) {
-        return buildChallengeSetup(ChallengeType.PASSWORD, password)
+        return createChallengeSetup.action(ChallengeType.PASSWORD, password)
                 .flatMap(setupChallenge ->
                         houstonClient.finishPasswordChange(uuid, setupChallenge),
                         Pair::new
                 )
-                .doOnNext(pair -> {
-                    final ChallengeSetup challengeSetup = pair.first;
+                .flatMap(pair -> {
+                    final ChallengeSetup chSetup = pair.first;
                     final SetupChallengeResponse setupChallengeResponse = pair.second;
 
                     if (setupChallengeResponse.muunKey !=  null) {
                         keysRepository.storeEncryptedMuunPrivateKey(setupChallengeResponse.muunKey);
                     }
 
-                    storeChallengeKey(ChallengeType.PASSWORD, challengeSetup.publicKey);
+                    return storeChallengeKey.action(ChallengeType.PASSWORD, chSetup.publicKey);
                 })
                 .map(RxHelper::toVoid);
-    }
-
-    /**
-     * Build a ChallengeSetup of specified ChallengeType using userInput.
-     *
-     * @see ChallengeSetup
-     * @see ChallengeType
-     */
-    @NonNull
-    public Observable<ChallengeSetup> buildChallengeSetup(ChallengeType challengeType,
-                                                          String userInput) {
-        final byte[] salt = generateSaltForChallengeKey();
-
-        final ChallengePublicKey publicKey = ChallengePrivateKey.fromUserInput(userInput, salt)
-                .getChallengePublicKey();
-
-        final Observable<String> afterEncryptingPrivateKey = keysRepository
-                .getBasePrivateKey()
-                .map(key -> new KeyCrypter().encrypt(key, userInput));
-
-        return afterEncryptingPrivateKey.map(encryptedPrivateKey -> new ChallengeSetup(
-            challengeType,
-            publicKey,
-            salt,
-            encryptedPrivateKey,
-            ChallengeType.getVersion(challengeType)
-        ));
-    }
-
-    /**
-     * Store a Challenge PublicKey, and if it's the RecoveryCode Challenge PublicKey, update
-     * preferences accordingly.
-     */
-    public void storeChallengeKey(ChallengeType challengeType, ChallengePublicKey publicKey) {
-
-        if (challengeType.equals(ChallengeType.RECOVERY_CODE)) {
-            userRepository.storeHasRecoveryCode(true);
-        }
-
-        keysRepository.storePublicChallengeKey(publicKey, challengeType);
     }
 
     public byte[] generateSaltForChallengeKey() {

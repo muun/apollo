@@ -67,4 +67,8 @@ public class OperationDao extends HoustonIdDao<Operation> {
     public Observable<Operation> fetchLatest() {
         return fetchOneOrFail(OperationEntity.FACTORY.selectLatest());
     }
+
+    public Observable<List<Operation>> fetchUnsettled() {
+        return fetchList(OperationEntity.FACTORY.selectUnsettled());
+    }
 }

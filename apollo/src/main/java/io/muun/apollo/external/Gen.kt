@@ -109,23 +109,27 @@ object Gen {
             hid: Long = houstonId(),
             email: String = email(),
             isEmailVerified: Boolean = bool(),
+            hasExportedKeys: Boolean = bool(),
             phoneNumber: Optional<UserPhoneNumber> = maybe(Gen::userPhoneNumber),
             profile: Optional<UserProfile> = maybe(Gen::userProfile),
             primaryCurrency: CurrencyUnit = currencyUnit(),
             hasRecoveryCode: Boolean = bool(),
+            hasPassword: Boolean = bool(),
             hasP2PEnabled: Boolean = bool(),
             createdAt: ZonedDateTime = pastDate()
 
     ) = User(
-            hid,
-            Optional.ofNullable(email),
-            isEmailVerified,
-            phoneNumber,
-            profile,
-            primaryCurrency,
-            hasRecoveryCode,
-            hasP2PEnabled,
-            createdAt
+        hid,
+        Optional.ofNullable(email),
+        isEmailVerified,
+        phoneNumber,
+        profile,
+        primaryCurrency,
+        hasRecoveryCode,
+        hasPassword,
+        hasP2PEnabled,
+        hasExportedKeys,
+        createdAt
     )
 
     /**

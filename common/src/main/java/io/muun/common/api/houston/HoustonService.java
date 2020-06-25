@@ -7,8 +7,12 @@ import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
 import io.muun.common.api.Contact;
+import io.muun.common.api.CreateFirstSessionJson;
+import io.muun.common.api.CreateFirstSessionOkJson;
+import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.DiffJson;
+import io.muun.common.api.EmptyJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.HardwareWalletJson;
@@ -20,6 +24,7 @@ import io.muun.common.api.KeySet;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
+import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PendingChallengeUpdateJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PhoneNumberJson;
@@ -28,10 +33,8 @@ import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.RealTimeData;
 import io.muun.common.api.SendEncryptedKeysJson;
-import io.muun.common.api.SessionJson;
 import io.muun.common.api.SetupChallengeResponse;
-import io.muun.common.api.SignupJson;
-import io.muun.common.api.SignupOkJson;
+import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.TransactionPushedJson;
@@ -64,8 +67,17 @@ public interface HoustonService {
     // ---------------------------------------------------------------------------------------------
     // Authentication and Sessions:
 
-    @POST("sessions")
-    Observable<CreateSessionOkJson> createSession(@Body SessionJson session);
+    @POST("sessions-v2/first")
+    Observable<CreateFirstSessionOkJson> createFirstSession(@Body CreateFirstSessionJson session);
+
+    @POST("sessions-v2/login")
+    Observable<CreateSessionOkJson> createLoginSession(@Body CreateLoginSessionJson session);
+
+    @POST("sessions-v2/email/start")
+    Observable<Void> startEmailSetup(@Body StartEmailSetupJson startEmailSetup);
+
+    @POST("sessions-v2/password")
+    Observable<Void> setUpPassword(@Body PasswordSetupJson passwordSetup);
 
     @POST("sessions/current/login")
     Observable<KeySet> login(@Body ChallengeSignatureJson challengeSignature);
@@ -75,9 +87,6 @@ public interface HoustonService {
 
     @POST("sessions/logout")
     Observable<Void> notifyLogout();
-
-    @POST("sign-up")
-    Observable<SignupOkJson> signup(@Body SignupJson signupObject);
 
     @PUT("sessions/current/gcm-token")
     Observable<Void> updateFcmToken(@Body String gcmToken);
@@ -123,6 +132,9 @@ public interface HoustonService {
     Observable<ExternalAddressesRecord> updateExternalAddressesRecord(
             @Body ExternalAddressesRecord externalAddressesRecord
     );
+
+    @POST("user/keys/exported")
+    Observable<Void> reportKeysExported(@Body EmptyJson futureParams);
 
     @Multipart
     @PUT("user/profile/picture")

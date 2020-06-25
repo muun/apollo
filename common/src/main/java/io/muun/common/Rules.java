@@ -32,6 +32,9 @@ public class Rules {
     /** The maximum fee rate for an operation, in satoshis per weight unit. */
     public static final double OP_MAXIMUM_FEE_RATE = 999d / VBYTE_TO_WEIGHT_UNIT_RATIO;
 
+    /** Added fee rate when the min fee is above 1 sat/vbyte. */
+    public static final double OP_MIN_FEE_DELTA = 0.1d / VBYTE_TO_WEIGHT_UNIT_RATIO;
+
     public static double toSatsPerVbyte(double feeRateInSatsPerWeight) {
         return feeRateInSatsPerWeight * VBYTE_TO_WEIGHT_UNIT_RATIO;
     }

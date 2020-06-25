@@ -7,6 +7,8 @@ import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.keys.CreateChallengeSetupAction;
+import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
 import io.muun.common.Optional;
@@ -31,9 +33,10 @@ public class SigninActions {
 
     private final HoustonClient houstonClient;
 
-    private final UserActions userActions;
-
     public final AsyncAction2<ChallengeType, String, SetupChallengeResponse> updateChallengeSetup;
+
+    private final CreateChallengeSetupAction createChallengeSetup;
+    private final StoreChallengeKeyAction storeChallengeKey;
 
     /**
      * Constructor.
@@ -43,17 +46,20 @@ public class SigninActions {
                          AuthRepository authRepository,
                          UserRepository userRepository,
                          HoustonClient houstonClient,
-                         UserActions userActions,
-                         KeysRepository keysRepository) {
+                         KeysRepository keysRepository,
+                         CreateChallengeSetupAction createChallengeSetup,
+                         StoreChallengeKeyAction storeChallengeKey) {
 
         this.authRepository = authRepository;
         this.houstonClient = houstonClient;
         this.userRepository = userRepository;
-        this.userActions = userActions;
         this.keysRepository = keysRepository;
 
         this.updateChallengeSetup =
                 asyncActionStore.get("challenge/update", this::setupChallenge);
+
+        this.createChallengeSetup = createChallengeSetup;
+        this.storeChallengeKey = storeChallengeKey;
     }
 
     /**
@@ -92,13 +98,11 @@ public class SigninActions {
     public Observable<SetupChallengeResponse> setupChallenge(ChallengeType challengeType,
                                                              String userInput) {
 
-        return userActions.buildChallengeSetup(challengeType, userInput)
+        return createChallengeSetup.action(challengeType, userInput)
                 .flatMap(houstonClient::setupChallenge, Pair::new)
-                .doOnNext(pair -> userActions.storeChallengeKey(
-                        challengeType,
-                        pair.first.publicKey
-                ))
                 .doOnNext(pair -> {
+                    storeChallengeKey.actionNow(pair.first.type, pair.first.publicKey);
+
                     if (pair.second.muunKey != null) {
                         keysRepository.storeEncryptedMuunPrivateKey(pair.second.muunKey);
                     }
@@ -108,10 +112,6 @@ public class SigninActions {
                     }
                 })
                 .map(pair -> pair.second);
-    }
-
-    public boolean hasRecoveryCode() {
-        return userRepository.hasRecoveryCode();
     }
 
     public Optional<SignupDraft> fetchSignupDraft() {

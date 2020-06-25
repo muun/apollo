@@ -290,7 +290,7 @@ public class Operation extends HoustonIdModel {
                 confirmations,
                 hash,
                 description,
-                status,
+                other.status,
                 creationDate,
                 exchangeRateWindowHid,
                 swap

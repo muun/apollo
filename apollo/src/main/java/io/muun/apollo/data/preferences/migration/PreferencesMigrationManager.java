@@ -70,7 +70,10 @@ public class PreferencesMigrationManager {
             this::clearSignupDraft,
 
             // apr 2020, Apollo 64 rolls out user debt and 0 sat fees low amount  ln payments
-            this::initExpectedDebt
+            this::initExpectedDebt,
+
+            // may 2020, Apollo 67 uses JsonPreference for User instead of field-level preferences
+            this::moveUserToJsonPreference
     };
 
     /**
@@ -121,7 +124,7 @@ public class PreferencesMigrationManager {
     }
 
     private void logout() {
-        logoutActions.logout();
+        logoutActions.destroyRecoverableWallet();
     }
 
     /**
@@ -193,5 +196,9 @@ public class PreferencesMigrationManager {
         }
 
         transactionSizeRepository.initExpectedDebt();
+    }
+
+    private void moveUserToJsonPreference() {
+        userRepository.migrateCthulhuToJsonPreference();
     }
 }

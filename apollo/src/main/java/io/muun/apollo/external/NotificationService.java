@@ -17,6 +17,12 @@ public interface NotificationService {
     void showNewContactNotification(@NotNull Contact contact);
 
     /**
+     * Show a notification for a failed operation.
+     */
+    void showOperationFailedNotification(long opId);
+
+
+    /**
      * Cancel all previously shown notifications.
      */
     void cancelAllNotifications();

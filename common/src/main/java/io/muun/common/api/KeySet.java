@@ -23,7 +23,7 @@ public class KeySet {
     public String muunKey; // This is the encryptedMuunKey
 
     @Nullable
-    @Deprecated(atApolloVersion = 46) // ON-RELEASE check that this version is the correct one
+    @Deprecated(atApolloVersion = 46)
     public Map<String, byte[]> challengePublicKeys;
 
     @Since(apolloVersion = 40)

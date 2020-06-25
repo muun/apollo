@@ -8,9 +8,9 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.apollo.domain.model.UserPhoneNumber;
@@ -128,6 +128,7 @@ public class ContactActions {
         phoneContactsAutoSyncSub = contactsProvider
                 .watchContactChanges()
                 .debounce(2, TimeUnit.SECONDS) // changes instantly trigger more than one event
+                .onBackpressureBuffer(10)
                 .concatMap(uselessUriAndroidPlease -> {
                     Timber.d("[Contacts] Watch triggered sync");
 

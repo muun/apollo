@@ -20,6 +20,7 @@ public class HeaderUtils {
     public static final String SESSION_STATUS = "X-Session-Status";
     public static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String DEFAULT_LANGUAGE_VALUE = "en";
+    public static final String REQUEST_ID = "X-Request-Id";
 
     /**
      * Returns a token from a "Bearer token" header, or empty if malformed or absent.

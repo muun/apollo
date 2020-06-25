@@ -138,10 +138,17 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         val collectAmountInSatoshis = payReq.swap.fundingOutput.debtAmountInSatoshis
         val amountInSatoshis = outputAmountInSatoshis - collectAmountInSatoshis
 
-        check(amountInSatoshis == originalAmountInSatoshis
-            + payReq.swap.fees.lightningInSats
-            + payReq.swap.fees.sweepInSats
-        )
+        val expectedAmountInSat = originalAmountInSatoshis +
+            payReq.swap.fees.lightningInSats +
+            payReq.swap.fees.sweepInSats
+
+        check(amountInSatoshis == expectedAmountInSat) {
+            "Check failed.\n" +
+                "amountInSatoshis=$amountInSatoshis\n" +
+                "originalAmountInSatoshis=$originalAmountInSatoshis\n" +
+                "lightningInSats=${payReq.swap.fees.lightningInSats}\n" +
+                "sweepInSats=${payReq.swap.fees.sweepInSats}\n"
+        }
 
         // For COLLECT swaps, outputAmountInSatoshis includes collectAmount so check must be
         // performed against utxoBalance

@@ -6,6 +6,7 @@ import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.action.keys.DecryptRootPrivateKeyAction
+import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError
 import io.muun.apollo.domain.errors.PasswordIntegrityError
 import io.muun.apollo.domain.utils.replaceTypedError
@@ -27,9 +28,9 @@ import javax.inject.Singleton
 class LogInAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val signinActions: SigninActions,
-    private val userActions: UserActions,
     private val keysRepository: KeysRepository,
-    private val decryptRootPrivateKey: DecryptRootPrivateKeyAction
+    private val decryptRootPrivateKey: DecryptRootPrivateKeyAction,
+    private val storeChallengeKey: StoreChallengeKeyAction
 
 ): BaseAsyncAction2<ChallengeType, String, Void>() {
 
@@ -93,7 +94,7 @@ class LogInAction @Inject constructor(
                     Encodings.hexToBytes(challengeKey.salt)
                 )
 
-                userActions.storeChallengeKey(challengeKey.type, publicKey)
+                storeChallengeKey.actionNow(challengeKey.type, publicKey)
             }
         }
 
