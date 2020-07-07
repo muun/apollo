@@ -5,6 +5,7 @@ import io.muun.common.utils.MathUtils;
 
 import rx.Observable;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 import java.util.concurrent.TimeUnit;
 
@@ -65,7 +66,10 @@ public class ExponentialBackoffRetry implements
 
             if (state.retryCount < maxRetries && shouldRetry(error)) {
                 state.retryCount++;
-                return Observable.timer(getDelayForRetry(state.retryCount), timeUnit);
+                return Observable.timer(
+                        getDelayForRetry(state.retryCount),
+                        timeUnit,
+                        Schedulers.trampoline());
 
             } else {
                 return Observable.error(error);

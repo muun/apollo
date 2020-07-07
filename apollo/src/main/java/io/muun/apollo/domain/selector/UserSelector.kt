@@ -19,4 +19,10 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
 
     fun getOptional() =
         watchOptional().toBlocking().first()
+
+    fun getFcmToken() =
+        watchFcmToken().toBlocking().first()
+
+    fun watchFcmToken() =
+        userRepository.watchFcmToken()
 }

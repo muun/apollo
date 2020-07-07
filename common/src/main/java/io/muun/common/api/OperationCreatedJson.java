@@ -17,6 +17,14 @@ public class OperationCreatedJson {
     @Nullable // null if the Operation was already fully signed
     public PartiallySignedTransactionJson partiallySignedTransaction;
 
+
+    /**
+     * Deprecated. This remains from the time when utxos were "locked" after 'newOperation'. Since
+     * the utxo set "changed" back then, returning the NTS in the response was necessary. Since
+     * this is no longer true now (utxo is updated and NTS returned after pushTransaction), this
+     * property in this response is irrelevant. We only keeping for retro-compat with older clients.
+     */
+    @Deprecated
     @NotNull
     public NextTransactionSizeJson nextTransactionSize;
 

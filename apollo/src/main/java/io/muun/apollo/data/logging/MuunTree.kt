@@ -60,11 +60,7 @@ class MuunTree: Timber.DebugTree() {
      * Send the error to the system logs.
      */
     private fun sendToLogcat(report: CrashReport) {
-        Log.e(
-            report.tag,
-            "${report.message} ${report.metadata}",
-            report.error
-        )
+        Log.e(report.tag, "${report.message} ${report.metadata}", report.error)
     }
 
     /**

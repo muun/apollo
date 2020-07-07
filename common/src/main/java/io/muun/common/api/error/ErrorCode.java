@@ -474,6 +474,18 @@ public enum ErrorCode {
     NON_REPLACING_OUTPUT(
             10007, StatusCode.CLIENT_FAILURE, "The selected output has no replacement proof"
     ),
+    INVALID_OWNER(
+            10008, StatusCode.CLIENT_FAILURE, "Invalid debt operation owner"
+    ),
+    ILLEGAL_ADDRESS_EXPIRY(
+            10009, StatusCode.CLIENT_FAILURE, "Address is non-expirable or already resolved"
+    ),
+    DEFAULT_COLLISION(
+            10010, StatusCode.CLIENT_FAILURE, "Different default amounts for the same transaction"
+    ),
+    DEFAULT_TOO_LATE(
+            10011, StatusCode.CLIENT_FAILURE, "Defaulting after the transaction already settled"
+    ),
 
     // server errors
     JSON_GENERATION_EXCEPTION(

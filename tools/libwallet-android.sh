@@ -8,8 +8,9 @@ fi
 
 (cd "$repo_root/libwallet"; GO111MODULE=off go get)
 
-# Hack for bad btcd version
-(cd $GOPATH/src/github.com/btcsuite/btcd && git checkout v0.20.1-beta)
+(cd $GOPATH/src/github.com/btcsuite/btcd && git checkout v0.20.1-beta > /dev/null)
+(cd $GOPATH/src/github.com/lightninglabs/gozmq && git checkout d20a764486bf > /dev/null)
+(cd $GOPATH/src/github.com/lightninglabs/neutrino && git checkout v0.11.0 > /dev/null)
 
 GO111MODULE=off gomobile bind -target=android -o "$libwallet" github.com/muun/muun/libwallet
 

@@ -1,5 +1,6 @@
 package io.muun.apollo.data.logging
 
+import android.util.Log
 import java.io.Serializable
 
 
@@ -8,4 +9,8 @@ data class CrashReport(
     val message: String,
     val error: Throwable,
     val metadata: Map<String, Serializable>
-)
+) {
+
+    fun print() =
+        "Tag:$tag\nMessage:$message\nError:${Log.getStackTraceString(error)}\nMetadata:$metadata"
+}

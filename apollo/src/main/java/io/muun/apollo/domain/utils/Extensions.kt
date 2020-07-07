@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import io.muun.common.Optional
 import io.muun.common.rx.ObservableFn
 import io.muun.common.rx.RxHelper
+import io.muun.common.utils.Encodings
 import io.muun.common.utils.ExceptionUtils
+import io.muun.common.utils.Hashes
 import rx.Completable
 import rx.Observable
 

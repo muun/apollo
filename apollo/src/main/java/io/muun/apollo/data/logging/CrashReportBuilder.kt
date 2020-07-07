@@ -29,6 +29,12 @@ object CrashReportBuilder {
     /**
      * Build a CrashReport by extracting relevant metadata and summarizing messages and traces.
      */
+    fun build(origError: Throwable?): CrashReport =
+        build(null, origError?.message, origError)
+
+    /**
+     * Build a CrashReport by extracting relevant metadata and summarizing messages and traces.
+     */
     fun build(tag: String?, origMessage: String?, origError: Throwable?): CrashReport {
         // Prepare the message:
         var message = origMessage ?: ""

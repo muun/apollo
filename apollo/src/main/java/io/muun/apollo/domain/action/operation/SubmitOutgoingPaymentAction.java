@@ -29,11 +29,11 @@ import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
 import libwallet.Transaction;
-import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 @Singleton
 public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<

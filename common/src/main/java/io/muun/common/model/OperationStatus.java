@@ -1,8 +1,5 @@
 package io.muun.common.model;
 
-import io.muun.common.api.TransactionStatusJson;
-import io.muun.common.exception.MissingCaseError;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -98,36 +95,6 @@ public enum OperationStatus {
     @JsonCreator
     public static OperationStatus fromValue(String value) {
         return OperationStatus.valueOf(value.toUpperCase());
-    }
-
-    /**
-     * Get the operation status for a transaction with a certain status.
-     */
-    public static OperationStatus fromTransactionStatus(TransactionStatusJson status) {
-
-        switch (status) {
-
-            case BROADCASTED:
-                return OperationStatus.BROADCASTED;
-
-            case CONFIRMED:
-                return OperationStatus.CONFIRMED;
-
-            case SETTLED:
-                return OperationStatus.SETTLED;
-
-            case DROPPED:
-                return OperationStatus.DROPPED;
-
-            case FAILED:
-                return OperationStatus.FAILED;
-
-            case CREATED:
-                throw new IllegalStateException("Illegal transaction state: " + status);
-
-            default:
-                throw new MissingCaseError(status);
-        }
     }
 
     @JsonValue

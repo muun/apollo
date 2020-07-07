@@ -11,7 +11,7 @@ jar {
     exclude 'lib/x86_64/freebsd/libscrypt.so'
     exclude 'lib/x86_64/linux/libscrypt.so'
 
-    archiveName "_lib_${project.name}.jar"
+    archiveFileName = "_lib_${project.name}.jar"
 }
 
 dependencies {
@@ -44,7 +44,7 @@ dependencies {
     implementation 'org.javamoney:moneta-bp:1.1'
 
     // phone utils
-    api 'com.googlecode.libphonenumber:libphonenumber:8.10.5'
+    api 'com.googlecode.libphonenumber:libphonenumber:8.12.6'
 
     // java 8 and 9 backports optimized for android
     api "com.jakewharton.threetenabp:threetenabp:$global_threetenabp_version"

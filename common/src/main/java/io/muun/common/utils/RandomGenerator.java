@@ -29,8 +29,18 @@ public final class RandomGenerator {
         return bytes;
     }
 
+    /**
+     * Returns a pseudo-random, uniformly distributed UUID.
+     */
     public static String getRandomUuid() {
         return UUID.randomUUID().toString();
+    }
+
+    /**
+     * Returns a pseudo-random, uniformly distributed output of sha-256, hex-encoded.
+     */
+    public static String getSha256() {
+        return Encodings.bytesToHex(Hashes.sha256(getBytes(10)));
     }
 
     /**
