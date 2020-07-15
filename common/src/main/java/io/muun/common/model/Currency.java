@@ -14,6 +14,7 @@ import javax.money.UnknownCurrencyException;
  */
 public class Currency {
 
+
     public static final Map<String, Currency> CURRENCIES;
 
     static {
@@ -49,6 +50,7 @@ public class Currency {
         CURRENCIES.put("CNY", new Currency("CNY", "¥", "Chinese Yuan"));
         CURRENCIES.put("COP", new Currency("COP", "$", "Colombian Peso"));
         CURRENCIES.put("CRC", new Currency("CRC", "₡", "Costa Rican Colón"));
+        CURRENCIES.put("CUP", new Currency("CUP", "$", "Cuban Peso"));
         CURRENCIES.put("CVE", new Currency("CVE", "$", "Cape Verdean Escudo"));
         CURRENCIES.put("CZK", new Currency("CZK", "Kč", "Czech Koruna"));
         CURRENCIES.put("DJF", new Currency("DJF", "Fdj", "Djiboutian Franc"));
@@ -170,6 +172,10 @@ public class Currency {
         CURRENCIES.put("ZWL", new Currency("ZWL", "Z$", "Zimbabwean Dollar"));
     }
 
+    public static final Currency BTC = CURRENCIES.get("BTC");   // Our beloved currency :)
+    public static final Currency USD = CURRENCIES.get("USD");   // Our default currency :|
+    public static final Currency DEFAULT = USD;
+
     /**
      * Return a supported CurrencyUnit that matches the currency code.
      */
@@ -190,7 +196,7 @@ public class Currency {
      * Returns the currency metadata for the given code, if known.
      */
     public static Optional<Currency> getInfo(String currencyCode) {
-        return Optional.of(CURRENCIES.get(currencyCode));
+        return Optional.ofNullable(CURRENCIES.get(currencyCode));
     }
 
     private final String code;

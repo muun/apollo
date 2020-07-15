@@ -1,8 +1,9 @@
 package io.muun.apollo.data.preferences;
 
+import io.muun.apollo.data.preferences.rx.RxSharedPreferences;
+
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.f2prateek.rx.preferences.RxSharedPreferences;
 
 public abstract class BaseRepository {
 

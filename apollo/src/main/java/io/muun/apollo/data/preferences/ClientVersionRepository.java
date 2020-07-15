@@ -1,9 +1,9 @@
 package io.muun.apollo.data.preferences;
 
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.common.Optional;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import rx.Observable;
 
 import javax.inject.Inject;

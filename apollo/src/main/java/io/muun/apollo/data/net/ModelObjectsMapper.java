@@ -342,9 +342,16 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     @NotNull
     private SizeForAmount mapSizeForAmount(@NotNull SizeForAmountJson sizeForAmount) {
 
+        final String[] split = sizeForAmount.outpoint.split(":");
+        Preconditions.checkArgument(split.length == 2);
+        final String txId = split[0];
+        final int index = Integer.parseInt(split[1]);
+
         return new SizeForAmount(
                 sizeForAmount.amountInSatoshis,
-                sizeForAmount.sizeInBytes.intValue()
+                sizeForAmount.sizeInBytes.intValue(),
+                txId,
+                index
         );
     }
 

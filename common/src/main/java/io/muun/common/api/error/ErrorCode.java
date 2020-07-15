@@ -402,6 +402,11 @@ public enum ErrorCode {
     INVALID_DEBT_STATE_OWNER(
             8117, StatusCode.CLIENT_FAILURE, "The debt owner is invalid"
     ),
+    CONFLICTING_INVOICE(
+            8118,
+            StatusCode.CLIENT_FAILURE,
+            "The invoice is already registered with conflicting information"
+    ),
 
     // exchangehub errors
     MISSING_INVOICE_AMOUNT(
@@ -485,6 +490,9 @@ public enum ErrorCode {
     ),
     DEFAULT_TOO_LATE(
             10011, StatusCode.CLIENT_FAILURE, "Defaulting after the transaction already settled"
+    ),
+    ILLEGAL_OPERATION(
+            10012, StatusCode.CLIENT_FAILURE, "Illegal debt operation creation request"
     ),
 
     // server errors

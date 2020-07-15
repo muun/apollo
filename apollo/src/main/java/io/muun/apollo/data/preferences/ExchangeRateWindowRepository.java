@@ -1,10 +1,10 @@
 package io.muun.apollo.data.preferences;
 
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import rx.Observable;
 
 import javax.inject.Inject;

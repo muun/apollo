@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
@@ -15,7 +16,6 @@ import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.net.Uri;
-import com.f2prateek.rx.preferences.Preference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;

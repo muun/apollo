@@ -15,6 +15,9 @@ public class SizeForAmountJson {
     @NotNull
     public Long sizeInBytes;
 
+    @NotNull
+    public String outpoint;
+
     /**
      * Json constructor.
      */
@@ -24,8 +27,9 @@ public class SizeForAmountJson {
     /**
      * Houston constructor.
      */
-    public SizeForAmountJson(Long amountInSatoshis, Long sizeInBytes) {
+    public SizeForAmountJson(Long amountInSatoshis, Long sizeInBytes, String outpoint) {
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
+        this.outpoint = outpoint;
     }
 }

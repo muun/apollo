@@ -5,13 +5,19 @@ public class SizeForAmount {
 
     public long amountInSatoshis;
     public int sizeInBytes;
+    public String outpoint;
 
     /**
      * Manual constructor.
      */
-    public SizeForAmount(long amountInSatoshis, int sizeInBytes) {
+    public SizeForAmount(long amountInSatoshis,
+                         int sizeInBytes,
+                         String transactionHash,
+                         int index) {
+
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
+        this.outpoint = transactionHash + ":" + index;
     }
 
     /**
