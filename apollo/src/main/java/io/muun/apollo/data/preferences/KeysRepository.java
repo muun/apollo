@@ -2,7 +2,6 @@ package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
-import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -14,6 +13,7 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
+import com.f2prateek.rx.preferences.Preference;
 import org.bitcoinj.core.NetworkParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.threeten.bp.ZonedDateTime;

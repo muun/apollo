@@ -56,12 +56,11 @@ object CrashReportBuilder {
             else -> error
         }
 
-        error = summarize(error)
-
-        // Prepare the metadata:
+        // Prepare the metadata: (needs to happen BEFORE summarization bc we reassign the variable)
         val metadata = extractMetadata(error)
-
         metadata["recentRequests"] = LoggingRequestTracker.getRecentRequests().toString()
+
+        error = summarize(error)
 
         // Done!
         return CrashReport(tag ?: "Apollo", message, error, metadata)

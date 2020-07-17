@@ -22,9 +22,6 @@ public class UserJson {
     public boolean isEmailVerified;
     public boolean hasExportedKeys;
 
-    @Nullable
-    public MuunZonedDateTime emergencyKitLastExportedAt;
-
     public PublicProfileJson publicProfile;
     public PhoneNumberJson phoneNumber;
 
@@ -54,7 +51,6 @@ public class UserJson {
                     @Nullable String email,
                     boolean isEmailVerified,
                     boolean hasExportedKeys,
-                    @Nullable MuunZonedDateTime emergencyKitLastExportedAt,
                     PublicProfileJson publicProfile,
                     PhoneNumberJson phoneNumber,
                     CurrencyUnit primaryCurrency,
@@ -67,7 +63,6 @@ public class UserJson {
         this.email = email;
         this.isEmailVerified = isEmailVerified;
         this.hasExportedKeys = hasExportedKeys;
-        this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
         this.publicProfile = publicProfile;
         this.phoneNumber = phoneNumber;
         this.primaryCurrency = primaryCurrency;

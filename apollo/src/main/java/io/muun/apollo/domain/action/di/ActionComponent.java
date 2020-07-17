@@ -13,6 +13,7 @@ import io.muun.apollo.domain.action.SyncActions;
 import io.muun.apollo.domain.action.UpdateFcmTokenAction;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.debug.ForceCrashReportAction;
 import io.muun.apollo.domain.action.keys.CreateChallengeSetupAction;
 import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
@@ -109,4 +110,6 @@ public interface ActionComponent {
     CreateLoginSessionAction createLoginSessionAction();
 
     ReportKeysExportedAction reportKeysExportedAction();
+
+    ForceCrashReportAction forceCrashReportAction();
 }

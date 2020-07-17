@@ -157,9 +157,9 @@ object Gen {
      */
     fun sizeProgression(vararg entries: Pair<Long, Int>) =
         if (entries.isNotEmpty()) {
-            entries.map { (amount, size) -> SizeForAmount(amount, size, "1", 0) }
+            entries.map { (amount, size) -> SizeForAmount(amount, size) }
         } else {
-            listOf(SizeForAmount(10000, 240, "1", 0))
+            listOf(SizeForAmount(10000, 240))
         }
 
     /**

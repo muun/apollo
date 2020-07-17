@@ -1,23 +1,21 @@
 package io.muun.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SizeForAmount {
 
     public long amountInSatoshis;
     public int sizeInBytes;
-    public String outpoint;
 
     /**
      * Manual constructor.
      */
-    public SizeForAmount(long amountInSatoshis,
-                         int sizeInBytes,
-                         String transactionHash,
-                         int index) {
-
+    public SizeForAmount(long amountInSatoshis, int sizeInBytes) {
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
-        this.outpoint = transactionHash + ":" + index;
     }
 
     /**
