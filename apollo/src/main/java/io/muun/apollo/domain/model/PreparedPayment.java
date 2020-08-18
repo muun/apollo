@@ -16,6 +16,8 @@ public class PreparedPayment {
     @NotNull
     public final Long rateWindowHid;
 
+    public final NextTransactionSize nextTransactionSize;
+
     /**
      * Manual constructor.
      */
@@ -23,12 +25,14 @@ public class PreparedPayment {
             BitcoinAmount amount,
             BitcoinAmount fee,
             String description,
-            Long rateWindowHid) {
+            Long rateWindowHid,
+            NextTransactionSize nextTransactionSize) {
 
         this.amount = amount;
         this.fee = fee;
         this.description = description;
         this.rateWindowHid = rateWindowHid;
+        this.nextTransactionSize = nextTransactionSize;
     }
 
 

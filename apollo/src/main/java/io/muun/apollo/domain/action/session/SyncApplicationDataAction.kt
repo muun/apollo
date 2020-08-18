@@ -6,7 +6,6 @@ import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.HardwareWalletActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
-import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.action.base.BaseAsyncAction3
 import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction

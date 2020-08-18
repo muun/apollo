@@ -143,7 +143,7 @@ public class BaseDao<ModelT extends PersistentModel> {
     protected Observable<ModelT> fetchOneOrFail(@NotNull SqlDelightQuery query) {
 
         final ElementNotFoundException elementNotFoundException = new ElementNotFoundException(
-                "Expected unique result for query not found. Statement: " + query.toString()
+                query.getSql()
         );
 
         final io.reactivex.Observable<ModelT> v2Observable = briteDb
@@ -258,5 +258,11 @@ public class BaseDao<ModelT extends PersistentModel> {
 
     protected void executeDelete(SqlDelightStatement compiledStatement) {
         briteDb.executeUpdateDelete(compiledStatement.getTable(), compiledStatement);
+    }
+
+    protected void enhanceError(Throwable error, String... args) {
+        if (error instanceof ElementNotFoundException) {
+            ((ElementNotFoundException) error).setArgs(args);
+        }
     }
 }

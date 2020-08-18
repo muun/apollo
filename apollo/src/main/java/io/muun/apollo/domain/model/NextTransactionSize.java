@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import timber.log.Timber;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -93,5 +94,47 @@ public class NextTransactionSize {
         }
 
         return this;
+    }
+
+    /**
+     * Migration to init outpoints for pre-existing NTSs.
+     */
+    public NextTransactionSize initOutpoints() {
+
+        final List<SizeForAmount> newSizeProgression = new ArrayList<>();
+        for (SizeForAmount sizeForAmount : sizeProgression) {
+            newSizeProgression.add(sizeForAmount.initOutpoint());
+        }
+
+        this.sizeProgression = newSizeProgression;
+
+        return this;
+    }
+
+    /**
+     * Extract complete list of outpoints, sorted as used in sizeProgression (aka as we use it for
+     * our fee computations).
+     */
+    public List<String> extractOutpoints() {
+        final ArrayList<String> outpoints = new ArrayList<>();
+
+        for (SizeForAmount sizeForAmount : sizeProgression) {
+
+            if ("uninitialized".equals(sizeForAmount.outpoint) || sizeForAmount.outpoint == null) {
+                continue;
+            }
+
+            outpoints.add(sizeForAmount.outpoint);
+        }
+
+        // outpoints will be empty for "uninitialized" nts and HWs withdrawals, though the latter
+        // should never happen
+        Preconditions.checkArgument(
+                outpoints.size() == sizeProgression.size() || outpoints.isEmpty()
+        );
+
+        // Houston expects the outpoint list (new clients) or null (old clients or "uninitialized"
+        // clients, aka NTS not yet re-fetched)
+        return outpoints.isEmpty() ? null : outpoints;
     }
 }

@@ -17,7 +17,7 @@ type Invoice struct {
 	PaymentHash     []byte
 	Expiry          int64
 	Description     string
-	Sats		    int64
+	Sats            int64
 }
 
 const lightningScheme = "lightning:"
@@ -78,6 +78,6 @@ func ParseInvoice(rawInput string, network *Network) (*Invoice, error) {
 		PaymentHash:     parsedInvoice.PaymentHash[:],
 		Expiry:          parsedInvoice.Timestamp.Unix() + int64(parsedInvoice.Expiry().Seconds()),
 		Description:     description,
-		Sats:			 sats,
+		Sats:            sats,
 	}, nil
 }

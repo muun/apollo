@@ -3,7 +3,6 @@ package libwallet
 import (
 	"bytes"
 	"encoding/hex"
-	fmt "fmt"
 	"testing"
 
 	"github.com/btcsuite/btcd/txscript"
@@ -121,7 +120,7 @@ func (i *inputSubmarineSwapV2) ServerSignature() []byte {
 	return i.serverSignature
 }
 
-func TestPartillySignedTransaction_SignV1(t *testing.T) {
+func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 	const (
 		hexTx    = "0100000001706bcabdcdcfd519bdb4534f8ace9f8a3cd614e7b00f074cce0a58913eadfffb0100000000ffffffff022cf46905000000001976a914072b22dfb34153d4e084dce8c6655430d37f12d088aca4de8b00000000001976a914fded0987447ef3273cde87bf8b65a11d1fd9caca88ac00000000"
 		hexTxOut = "fbffad3e91580ace4c070fb0e714d63c8a9fce8a4f53b4bd19d5cfcdbdca6b70"
@@ -446,18 +445,10 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 	verifyInput(t, signedTx, hexTx2, txIndex2, 0)
 }
 
-func TestBlo(t *testing.T) {
-	hexBlob := "2103285ec73aa7b8e86a37a2919c3cba5da7862d64523c16c1868fbbdde0e5c7b5e57c21028b7c740b590012eaffef072675baaa95aee39508fd049ed1cd698ee26ce33f02ac637c76a914477f2112346a2b3a5969001d322f13e1a96da7bb876375677cac6867029000b275ad76a914a5d78a66701ac212735adeb31112c948b7b9ed7e88ac68"
-	data, _ := hex.DecodeString(hexBlob)
-
-	str, _ := txscript.DisasmString(data)
-	fmt.Println(str)
-}
-
 func TestPartiallySignedTransaction_Verify(t *testing.T) {
 
 	const (
-		hexTx1            = "0100000002a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffffdf39591fa749826f87a3d7e5fd5f0468d338c3d81dd3b2c953534b0210f98c560000000000ffffffff02a8d6c20400000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c787000e2707000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
+		hexTx1 = "0100000002a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffffdf39591fa749826f87a3d7e5fd5f0468d338c3d81dd3b2c953534b0210f98c560000000000ffffffff02a8d6c20400000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c787000e2707000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
 
 		txIndex1          = 1
 		txAmount1         = 100000000
@@ -473,11 +464,11 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		txAddress2        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
 		txAddressVersion2 = addressV4
 
-		changeAddress1    = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
-		changePath1       = "m/schema:1'/recovery:1'/change:0/1"
-		changeVersion1    = addressV4
+		changeAddress1 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath1    = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion1 = addressV4
 
-		hexTx2            = "01000000010ead2fa0d6866d0414aba97fd8f1b242fdc3d4c8e7771e40969402319b6e876b0000000000ffffffff02922988040000000017a914d1ac5d61107d2bef187d1aef5cfd3536f4fd5dbe87d6b2050100000000220020bac6de765432ee16e10ce268341062f8f5a417b15a7f6ee8fe903e6d7470f0f700000000"
+		hexTx2 = "01000000010ead2fa0d6866d0414aba97fd8f1b242fdc3d4c8e7771e40969402319b6e876b0000000000ffffffff02922988040000000017a914d1ac5d61107d2bef187d1aef5cfd3536f4fd5dbe87d6b2050100000000220020bac6de765432ee16e10ce268341062f8f5a417b15a7f6ee8fe903e6d7470f0f700000000"
 
 		txIndex3          = 0
 		txAmount3         = 93266680
@@ -486,12 +477,12 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		txAddress3        = "bcrt1q9yzsghvmmn7wv3esylrvn3c469s4ce4thk7qmxdly4tzk4f8vvjsqv0crh"
 		txAddressVersion3 = addressV4
 
-		changeAddress2    = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
-		changePath2       = "m/schema:1'/recovery:1'/change:0/1"
-		changeVersion2    = addressV4
+		changeAddress2 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath2    = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion2 = addressV4
 
-		encodedUserKey    = "tpubDAKxNPypXDF3GNCpXFUh6sCdxz7DY9eKMgFxYBgyRSiYWXrBLgdtkPuMbQQzrsYLVyPPSHmNcduLRRd9TSMaYrGLryp8KNkkYBm6eka1Bem"
-		encodedMuunKey    = "tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8"
+		encodedUserKey = "tpubDAKxNPypXDF3GNCpXFUh6sCdxz7DY9eKMgFxYBgyRSiYWXrBLgdtkPuMbQQzrsYLVyPPSHmNcduLRRd9TSMaYrGLryp8KNkkYBm6eka1Bem"
+		encodedMuunKey = "tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8"
 
 		basePath = "m/schema:1'/recovery:1'"
 	)
@@ -540,7 +531,7 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		{
 			name: "2 inputs, one change",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
@@ -554,7 +545,7 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		{
 			name: "lied about destination amount",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
@@ -563,13 +554,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         122200,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about change",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
@@ -578,13 +569,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         122200,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about destination",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "2N2giv9tsN3pV7Rkm89SReRBgdqKNBESVBk",
@@ -593,13 +584,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         122200,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about fee",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
@@ -608,13 +599,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         12200,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "wasnt expecting change",
 			fields: fields{
-				tx: parseTx(hexTx1),
+				tx:     parseTx(hexTx1),
 				inputs: []Input{&firstInput, &secondInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
@@ -623,13 +614,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         122200,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lying change",
 			fields: fields{
-				tx: parseTx(hexTx2),
+				tx:     parseTx(hexTx2),
 				inputs: []Input{&thirdInput},
 				Expectations: &SigningExpectations{
 					destination: "bcrt1qhtrduaj5xthpdcgvuf5rgyrzlr66g9a3tflka687jqlx6ars7rms0flpmy",
@@ -638,7 +629,7 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 					fee:         83600,
 				},
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
+			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 	}
@@ -650,7 +641,7 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 				Expectations: tt.fields.Expectations,
 			}
 			err := p.Verify(tt.args.userPublicKey, tt.args.muunPublickKey)
-			t.Logf("test %v returnedd %v", tt.name, err)
+			t.Logf("test %v returned %v", tt.name, err)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Verify() error = %v, wantErr %v", err, tt.wantErr)
 			}

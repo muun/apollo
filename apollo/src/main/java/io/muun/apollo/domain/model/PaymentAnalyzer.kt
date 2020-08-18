@@ -35,6 +35,8 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
         } else if (payReq.swap != null) {
             // Case 2: this is a SubmarineSwap, it has separate rules
+            // E.g it can't takeFeeFromAmount since that would change the amount and we only
+            // support ln invoices with (a fixed) amount
             analyzeSubmarineSwap()
 
         } else if (payReq.takeFeeFromAmount) {
@@ -115,7 +117,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
         // When lending, the outputAmount and sweepFee fields given by Swapper must be ignored:
         val totalInSatoshis = originalAmountInSatoshis + payReq.swap.fees.lightningInSats
-        var swapFees = SubmarineSwapFees(lightningInSats = payReq.swap.fees.lightningInSats)
+        val swapFees = SubmarineSwapFees(lightningInSats = payReq.swap.fees.lightningInSats)
 
         val canPayLightningFee = (totalInSatoshis <= totalBalanceInSatoshis)
 

@@ -11,9 +11,6 @@ import javax.inject.Inject;
 
 public class AuthHeaderInterceptor extends BaseInterceptor {
 
-    private static final String HEADER_NAME = "Authorization";
-
-
     private final AuthRepository authRepository;
 
     @Inject
@@ -29,7 +26,7 @@ public class AuthHeaderInterceptor extends BaseInterceptor {
 
         if (serverJwt != null) {
             return request.newBuilder()
-                    .addHeader(HEADER_NAME, "Bearer " + serverJwt)
+                    .addHeader(HeaderUtils.AUTHORIZATION, "Bearer " + serverJwt)
                     .build();
 
         } else {
@@ -40,15 +37,23 @@ public class AuthHeaderInterceptor extends BaseInterceptor {
     @Override
     protected Response processResponse(Response response) {
         // Save the token in the response header if one is found:
-        final String authHeaderValue = response.header(HEADER_NAME);
+        final String authHeaderValue = response.header(HeaderUtils.AUTHORIZATION);
 
         HeaderUtils.getBearerTokenFromHeader(authHeaderValue)
                 .ifPresent(authRepository::storeServerJwt);
 
-        final String sessionStatusHeaderValue = response.header(HeaderUtils.SESSION_STATUS);
+        // We need a reliable way (across all envs: local, CI, prd, etc...) to identify the logout
+        // requests. We could inject HoustonConfig and build the entire URL (minus port)
+        // or... we can do this :)
+        final String url = response.request().url().url().toString();
+        final boolean isLogout = url.endsWith("sessions/logout");
 
-        HeaderUtils.getSessionStatusFromHeader(sessionStatusHeaderValue)
-                .ifPresent(authRepository::storeSessionStatus);
+        if (!isLogout) {
+            final String sessionStatusHeaderValue = response.header(HeaderUtils.SESSION_STATUS);
+
+            HeaderUtils.getSessionStatusFromHeader(sessionStatusHeaderValue)
+                    .ifPresent(authRepository::storeSessionStatus);
+        }
 
         return response;
     }

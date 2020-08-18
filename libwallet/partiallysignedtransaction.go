@@ -32,11 +32,6 @@ type MuunAddress interface {
 	Address() string
 }
 
-// TODO: Change name
-type RedeemableAddress interface {
-	RedeemScript() []byte
-}
-
 type Outpoint interface {
 	TxId() []byte
 	Index() int

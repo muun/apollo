@@ -28,6 +28,16 @@ public class FeeWindowJson {
     @NotNull
     public SortedMap<Integer, Double> targetedFees = new TreeMap<>();
 
+    @NotNull
+    public Integer fastConfTarget;
+
+    @NotNull
+    public Integer mediumConfTarget;
+
+    @NotNull
+    public Integer slowConfTarget;
+
+
     /**
      * Json constructor.
      */
@@ -40,11 +50,17 @@ public class FeeWindowJson {
     public FeeWindowJson(long id,
                          MuunZonedDateTime fetchDate,
                          long feeInSatoshisPerByte,
-                         SortedMap<Integer, Double> targetedFees) {
+                         SortedMap<Integer, Double> targetedFees,
+                         Integer fastConfTarget,
+                         Integer mediumConfTarget,
+                         Integer slowConfTarget) {
 
         this.id = id;
         this.fetchDate = fetchDate;
         this.feeInSatoshisPerByte = feeInSatoshisPerByte;
         this.targetedFees = targetedFees;
+        this.fastConfTarget = fastConfTarget;
+        this.mediumConfTarget = mediumConfTarget;
+        this.slowConfTarget = slowConfTarget;
     }
 }

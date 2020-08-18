@@ -1,13 +1,17 @@
 package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.os.TelephonyInfoProvider;
+import io.muun.apollo.domain.errors.MissingCurrencyError;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 
 import androidx.annotation.VisibleForTesting;
 import org.hibernate.validator.constraints.NotEmpty;
+import timber.log.Timber;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -16,6 +20,7 @@ import javax.inject.Singleton;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryException;
+import javax.money.UnknownCurrencyException;
 
 
 @Singleton
@@ -52,10 +57,13 @@ public class CurrencyActions {
         final Set<CurrencyUnit> currencies = new HashSet<>();
 
         final Locale[] availableLocales = Locale.getAvailableLocales();
+        final List<Locale> regionLocales = new ArrayList<>();
 
         for (Locale locale : availableLocales) {
 
             if (locale.getCountry().equalsIgnoreCase(countryCode)) {
+
+                regionLocales.add(locale);
 
                 final Optional<CurrencyUnit> currency = getCurrencyForLocale(locale);
 
@@ -66,7 +74,21 @@ public class CurrencyActions {
         }
 
         if (currencies.isEmpty()) {
-            throw new UnsupportedOperationException("No currencies for country code");
+
+            if (regionLocales.isEmpty()) {  // Should never happen
+                Timber.e(new IllegalStateException("No locales found for country:" + countryCode));
+
+            } else {
+                Timber.e(
+                        new MissingCurrencyError(
+                                new UnknownCurrencyException(regionLocales.get(0)),
+                                regionLocales
+                        )
+                );
+            }
+
+            // SAFE because we should always have support for our default currency
+            currencies.add(Currency.getUnit(Currency.DEFAULT.getCode()).get());
         }
 
         return currencies;

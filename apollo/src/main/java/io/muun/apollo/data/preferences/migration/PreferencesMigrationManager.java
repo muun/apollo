@@ -73,7 +73,14 @@ public class PreferencesMigrationManager {
             this::initExpectedDebt,
 
             // may 2020, Apollo 67 uses JsonPreference for User instead of field-level preferences
-            this::moveUserToJsonPreference
+            this::moveUserToJsonPreference,
+
+            // jul 2020, Apollo 70 starts using dynamic fee targets
+            this::initDynamicFeeTargets,
+
+            // jul 2020, Apollo 70 starts prioritizing confirmed utxos in utxo selection
+            this::initNtsOutpoints
+
     };
 
     /**
@@ -153,7 +160,10 @@ public class PreferencesMigrationManager {
         final FeeWindow feeWindow = new FeeWindow(
                 prefs.getLong("houston_id", 0),
                 SerializationUtils.deserializeDate(prefs.getString(keyFetchDate, "")),
-                Collections.singletonMap(1, (double) prefs.getLong(feeFeeInSatoshisPerByte, 0))
+                Collections.singletonMap(1, (double) prefs.getLong(feeFeeInSatoshisPerByte, 0)),
+                1,  // The only fee target known after migration
+                1,  // The only fee target known after migration
+                1   // The only fee target known after migration
         );
 
         feeWindowRepository.store(feeWindow);
@@ -186,19 +196,18 @@ public class PreferencesMigrationManager {
     }
 
     private void initExpectedDebt() {
-        final SharedPreferences prefs = context
-                .getSharedPreferences("transaction_size", Context.MODE_PRIVATE);
-
-        final boolean hasNts = prefs.contains("transaction_size");
-
-        if (!hasNts) {
-            return;
-        }
-
         transactionSizeRepository.initExpectedDebt();
     }
 
     private void moveUserToJsonPreference() {
         userRepository.migrateCthulhuToJsonPreference();
+    }
+
+    private void initDynamicFeeTargets() {
+        feeWindowRepository.initDynamicFeeTargets();
+    }
+
+    private void initNtsOutpoints() {
+        transactionSizeRepository.initNtsOutpoints();
     }
 }

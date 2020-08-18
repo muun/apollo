@@ -1,7 +1,9 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.domain.errors.NullCreationDateBugError;
 import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
@@ -14,8 +16,8 @@ import io.muun.common.model.PhoneNumber;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
-import com.f2prateek.rx.preferences.Preference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;
@@ -76,7 +78,7 @@ public class UserRepository extends BaseRepository {
         super(context);
 
         userPreference = rxSharedPreferences
-                .getObject(KEY_USER, new JsonPreferenceAdapter<>(StoredUserJson.class));
+                .getObject(KEY_USER, new UserPreferenceDebugAdapter());
 
         lastCopiedAddress = rxSharedPreferences.getString(KEY_LAST_COPIED_ADDRESS);
 
@@ -156,8 +158,15 @@ public class UserRepository extends BaseRepository {
      * Execute the migration that ends the multi-preference hell.
      */
     public void migrateCthulhuToJsonPreference() {
+        final long hid = sharedPreferences.getLong("hid", -1L);
+
+        if (hid == -1L) {
+            Timber.e(new NullCreationDateBugError());
+            return; // This Should Not Happen (tm), report the problem and avoid corrupting storage
+        }
+
         final StoredUserJson value = new StoredUserJson(
-                sharedPreferences.getLong("hid", -1L),
+                hid,
                 sharedPreferences.getString("email", null),
                 sharedPreferences.getString("created_at", null),
                 sharedPreferences.getString("phone_number", null),
@@ -170,6 +179,7 @@ public class UserRepository extends BaseRepository {
                 true, // all users had passwords before this feature
                 sharedPreferences.getBoolean("has_p2p_enabled", false),
                 false, // non-existent at migration time. This is a good default
+                null, // non-existent at migration time
                 sharedPreferences.getString("primary_currency_key", "USD")
         );
 
@@ -377,6 +387,15 @@ public class UserRepository extends BaseRepository {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class StoredUserJson {
+        // WAIT
+        // WARNING
+        // CAREFUL
+        // READ THIS, I MEAN IT:
+
+        // We forgot to exclude this class from Proguard rules. This means that the order of
+        // declaration of this attributes is important -- until we remove this class from proguard
+        // and migrate the preference to a non-minified JSON this class is APPEND-ONLY.
+
         public long hid;
         public String email;
         public String createdAt;
@@ -396,11 +415,13 @@ public class UserRepository extends BaseRepository {
 
         public String currency;
 
+        public String emergencyKitLastExportedAt;
+
         static StoredUserJson fromUser(User user) {
             return new StoredUserJson(
                     user.hid,
                     user.email.orElse(null),
-                    SerializationUtils.serializeDate(user.createdAt),
+                    user.createdAt.map(SerializationUtils::serializeDate).orElse(null),
                     user.phoneNumber.map(PhoneNumber::toE164String).orElse(null),
                     user.phoneNumber.map(UserPhoneNumber::isVerified).orElse(false),
                     user.profile.map(UserProfile::getFirstName).orElse(null),
@@ -411,6 +432,9 @@ public class UserRepository extends BaseRepository {
                     user.hasPassword,
                     user.hasP2PEnabled,
                     user.hasExportedKeys,
+                    user.emergencyKitLastExportedAt
+                            .map(SerializationUtils::serializeDate)
+                            .orElse(null),
                     SerializationUtils.serializeCurrencyUnit(user.primaryCurrency)
             );
         }
@@ -437,6 +461,7 @@ public class UserRepository extends BaseRepository {
                               boolean hasPassword,
                               boolean hasP2PEnabled,
                               boolean hasExportedKeys,
+                              String emergencyKitLastExportedAt,
                               String currency) {
 
             this.hid = hid;
@@ -452,6 +477,7 @@ public class UserRepository extends BaseRepository {
             this.hasPassword = hasPassword;
             this.hasP2PEnabled = hasP2PEnabled;
             this.hasExportedKeys = hasExportedKeys;
+            this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
             this.currency = currency;
         }
 
@@ -476,7 +502,10 @@ public class UserRepository extends BaseRepository {
                     hasP2PEnabled,
                     hasExportedKeys,
 
-                    SerializationUtils.deserializeDate(createdAt)
+                    Optional.ofNullable(emergencyKitLastExportedAt)
+                            .map(SerializationUtils::deserializeDate),
+
+                    Optional.ofNullable(createdAt).map(SerializationUtils::deserializeDate)
             );
         }
 
@@ -500,6 +529,33 @@ public class UserRepository extends BaseRepository {
                 phoneNumber = null;
                 isPhoneNumberVerified = false;
             }
+        }
+    }
+
+    private static class UserPreferenceDebugAdapter extends JsonPreferenceAdapter<StoredUserJson> {
+
+        public UserPreferenceDebugAdapter() {
+            super(StoredUserJson.class);
+        }
+
+        @Override
+        public StoredUserJson get(String key, SharedPreferences preferences) {
+            final StoredUserJson storedUser = super.get(key, preferences);
+
+            if (storedUser.createdAt == null) {
+                Timber.e(new NullCreationDateBugError());
+            }
+
+            return storedUser;
+        }
+
+        @Override
+        public void set(String key, StoredUserJson value, SharedPreferences.Editor editor) {
+            if (value.createdAt == null) {
+                Timber.e(new NullCreationDateBugError());
+            }
+
+            super.set(key, value, editor);
         }
     }
 }

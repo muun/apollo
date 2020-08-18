@@ -28,6 +28,19 @@ func TestNewChallengePrivateKey(t *testing.T) {
 	}
 }
 
+func TestChallengeKeySignSha(t *testing.T) {
+	input := randomBytes(32)
+	salt := randomBytes(32)
+	challengePrivKey := NewChallengePrivateKey(input, salt)
+
+	payload := []byte("foobar")
+	_, err := challengePrivKey.SignSha(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TODO(federicobond): assert that signature verifies
+}
+
 func TestChallengeKeyCrypto(t *testing.T) {
 
 	const birthday = 376

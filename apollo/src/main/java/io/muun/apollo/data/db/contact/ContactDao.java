@@ -50,6 +50,7 @@ public class ContactDao extends HoustonIdDao<Contact> {
      * Fetches a single contact by its Houston id.
      */
     public Observable<Contact> fetchByHid(long contactHid) {
-        return fetchOneOrFail(ContactEntity.FACTORY.selectByHid(contactHid));
+        return fetchOneOrFail(ContactEntity.FACTORY.selectByHid(contactHid))
+                .doOnError(error -> enhanceError(error, String.valueOf(contactHid)));
     }
 }

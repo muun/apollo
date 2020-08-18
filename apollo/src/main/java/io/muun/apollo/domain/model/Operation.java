@@ -28,10 +28,7 @@ public class Operation extends HoustonIdModel {
                                            @Nullable Long hardwareWalletHid,
                                            String address,
                                            String addressDerivationPath,
-                                           BitcoinAmount amount,
-                                           BitcoinAmount fee,
-                                           String description,
-                                           long exchangeRateWindowHid) {
+                                           PreparedPayment preparedPayment) {
         return new Operation(
                 null,
                 NO_HID,
@@ -44,14 +41,14 @@ public class Operation extends HoustonIdModel {
                 address,
                 addressDerivationPath,
                 hardwareWalletHid,
-                amount,
-                fee,
+                preparedPayment.amount,
+                preparedPayment.fee,
                 0L,
                 NO_HASH,
-                description,
+                preparedPayment.description,
                 OperationStatus.CREATED,
                 ZonedDateTime.now(),
-                exchangeRateWindowHid,
+                preparedPayment.rateWindowHid,
                 null
         );
     }
@@ -60,10 +57,7 @@ public class Operation extends HoustonIdModel {
      * Create a new Submarine Swap Operation.
      */
     public static Operation createSwap(@Nullable PublicProfile myProfile,
-                                       BitcoinAmount amount,
-                                       BitcoinAmount fee,
-                                       String description,
-                                       long exchangeRateWindowHid,
+                                       PreparedPayment preparedPayment,
                                        SubmarineSwap swap) {
         return new Operation(
                 null,
@@ -77,14 +71,14 @@ public class Operation extends HoustonIdModel {
                 swap.getFundingOutput().getOutputAddress(),
                 null,
                 null,
-                amount,
-                fee,
+                preparedPayment.amount,
+                preparedPayment.fee,
                 0L,
                 NO_HASH,
-                description,
+                preparedPayment.description,
                 OperationStatus.CREATED,
                 DateUtils.now(),
-                exchangeRateWindowHid,
+                preparedPayment.rateWindowHid,
                 swap
         );
     }

@@ -5,12 +5,8 @@ import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.model.User
 import io.muun.apollo.domain.utils.toVoid
-import io.muun.common.crypto.ChallengePrivateKey
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.ChallengeType
-import io.muun.common.crypto.hd.KeyCrypter
-import io.muun.common.model.challenge.ChallengeSetup
-import io.muun.common.utils.RandomGenerator
 import rx.Observable
 import javax.inject.Inject
 

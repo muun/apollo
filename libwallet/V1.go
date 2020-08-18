@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateAddressV1 returns a P2PKH MuunAddress from a publicKey for using in TransactionSchameV1
+// CreateAddressV1 returns a P2PKH MuunAddress from a publicKey for use in TransactionSchemeV1
 func CreateAddressV1(publicKey *HDPublicKey) (MuunAddress, error) {
 	pubkey, err := btcutil.NewAddressPubKey(publicKey.Raw(), publicKey.Network.network)
 	if err != nil {

@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.action.address
 
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
+import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.common.Rules
 import io.muun.common.crypto.MuunAddressGroup
 import io.muun.common.crypto.hd.Schema

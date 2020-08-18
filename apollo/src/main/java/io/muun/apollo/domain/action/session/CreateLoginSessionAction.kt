@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
-import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.external.Globals
 import io.muun.common.model.CreateSessionOk

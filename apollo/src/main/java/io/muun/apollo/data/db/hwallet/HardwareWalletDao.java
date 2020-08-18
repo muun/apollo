@@ -30,7 +30,8 @@ public class HardwareWalletDao extends HoustonIdDao<HardwareWallet> {
      * Fetches a single HardwareWallet by its Houston id.
      */
     public Observable<HardwareWallet> fetchByHid(long hid) {
-        return fetchOneOrFail(HardwareWalletEntity.FACTORY.selectByHid(hid));
+        return fetchOneOrFail(HardwareWalletEntity.FACTORY.selectByHid(hid))
+                .doOnError(error -> enhanceError(error, String.valueOf(hid)));
     }
 
     /**

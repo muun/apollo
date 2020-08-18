@@ -1,6 +1,10 @@
 package io.muun.apollo.domain.libwallet
 
-import io.muun.common.crypto.hd.*
+import io.muun.common.crypto.hd.MuunAddress
+import io.muun.common.crypto.hd.MuunInput
+import io.muun.common.crypto.hd.MuunInputSubmarineSwapV101
+import io.muun.common.crypto.hd.MuunInputSubmarineSwapV102
+import io.muun.common.crypto.hd.MuunOutput
 import io.muun.common.utils.Encodings
 
 class Input(val input: MuunInput): libwallet.Input {

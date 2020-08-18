@@ -26,10 +26,10 @@ func NewChallengePublicKeyFromSerialized(serializedKey []byte) (*ChallengePublic
 func (k *ChallengePublicKey) EncryptKey(privKey *HDPrivateKey, recoveryCodeSalt []byte, birthday int) (string, error) {
 
 	const (
-		chainCodeStart = 13
+		chainCodeStart  = 13
 		chainCodeLength = 32
-		privKeyStart = 46
-		privKeyLength = 32
+		privKeyStart    = 46
+		privKeyLength   = 32
 	)
 
 	rawHDKey := base58.Decode(privKey.String())

@@ -2,6 +2,7 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
@@ -17,6 +18,7 @@ import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
+import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.SubmarineSwap;
@@ -29,7 +31,7 @@ import io.muun.common.Optional;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.DiffJson;
-import io.muun.common.api.EmptyJson;
+import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
@@ -66,6 +68,7 @@ import android.content.Context;
 import android.net.Uri;
 import okhttp3.MediaType;
 import org.bitcoinj.core.NetworkParameters;
+import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 
 import java.util.List;
@@ -202,10 +205,12 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
-     * Login with compatibility, no-challenge method.
+     * Notify houston of a client logout. Not a critical request, in fact its just so Houston
+     * can now IN ADVANCE of a session expiration (otherwise will have to wait until a new create
+     * session to invalidate old ones). So, its a fire and forget call.
      */
-    public Observable<Void> notifyLogout() {
-        return getService().notifyLogout();
+    public Observable<Void> notifyLogout(String authHeader) {
+        return getService().notifyLogout(authHeader);
     }
 
     /**
@@ -324,6 +329,16 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Report a successful emergency kit export.
+     */
+    public Observable<Void> reportEmergencyKitExported(ZonedDateTime createdAt, String vCode) {
+        final ApolloZonedDateTime createdAtJson = ApolloZonedDateTime.of(createdAt);
+
+        return getService()
+                .reportEmergencyKitExported(new ExportEmergencyKitJson(createdAtJson, vCode));
+    }
+
+    /**
      * Send a feedback message.
      */
     public Observable<Void> submitFeedback(String feedbackContent) {
@@ -371,9 +386,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * Sends a new operation to houston, that will return it with more data, including a transaction
      * draft.
      */
-    public Observable<OperationCreated> newOperation(OperationWithMetadata operation) {
+    public Observable<OperationCreated> newOperation(OperationWithMetadata operation,
+                                                     PreparedPayment prepPayment) {
+        final List<String> outpoints = prepPayment.nextTransactionSize.extractOutpoints();
         return getService()
-                .newOperation(apiMapper.mapOperation(operation))
+                .newOperation(apiMapper.mapOperation(operation, outpoints))
                 .map(modelMapper::mapOperationCreated);
     }
 
@@ -423,7 +440,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                                                                List<Long> inputAmounts) {
 
         final HardwareWalletWithdrawalJson withdrawal = new HardwareWalletWithdrawalJson(
-                apiMapper.mapOperation(operation),
+                apiMapper.mapWithdrawalOperation(operation),
                 new RawTransaction(signedTransaction),
                 inputAmounts
         );
@@ -570,12 +587,5 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService()
                 .fetchChallengeKeyUpdateMigration()
                 .map(modelMapper::mapChalengeKeyUpdateMigration);
-    }
-
-    /**
-     * Tell Houston we have exported our keys.
-     */
-    public Observable<Void> reportKeysExported() {
-        return getService().reportKeysExported(new EmptyJson());
     }
 }

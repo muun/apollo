@@ -1,8 +1,17 @@
 package io.muun.apollo.data.db.base;
 
-public class ElementNotFoundException extends Exception {
+import io.muun.apollo.domain.errors.MuunError;
 
-    public ElementNotFoundException(String message) {
-        super(message);
+import android.text.TextUtils;
+
+public class ElementNotFoundException extends MuunError {
+
+    public ElementNotFoundException(String querySql) {
+        super("Expected unique result for query not found. Statement: " + querySql);
+        this.getMetadata().put("query", querySql);
+    }
+
+    public void setArgs(String... args) {
+        this.getMetadata().put("args", TextUtils.join(",", args));
     }
 }

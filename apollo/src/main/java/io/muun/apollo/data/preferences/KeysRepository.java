@@ -2,6 +2,7 @@ package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -13,7 +14,6 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import org.bitcoinj.core.NetworkParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.threeten.bp.ZonedDateTime;
@@ -48,6 +48,8 @@ public class KeysRepository extends BaseRepository {
 
     private static final String KEY_ANON_SECRET = "anon_secret";
 
+    private static final String KEY_EK_ACTIVATION_CODE = "ek_activation_code";
+
     // Reactive preferences:
     private final Preference<String> basePrivateKeyPathPreference;
 
@@ -56,6 +58,8 @@ public class KeysRepository extends BaseRepository {
 
     private final Preference<Integer> maxUsedExternalAddressIndexPreference;
     private final Preference<Integer> maxWatchingExternalAddressIndexPreference;
+
+    private final Preference<String> emergencyKitVerificationCode;
 
     // Dependencies:
     private final NetworkParameters networkParameters;
@@ -98,6 +102,9 @@ public class KeysRepository extends BaseRepository {
                 KEY_BASE_MUUN_PUBLIC_KEY,
                 PublicKeyPreferenceAdapter.INSTANCE
         );
+
+        emergencyKitVerificationCode = rxSharedPreferences
+                .getString(KEY_EK_ACTIVATION_CODE);
     }
 
     /**
@@ -217,10 +224,18 @@ public class KeysRepository extends BaseRepository {
                 });
     }
 
+    public void storeEmergencyKitVerificationCode(String verificationCode) {
+        emergencyKitVerificationCode.set(verificationCode);
+    }
+
+    public Observable<String> watchEmergencyKitVerificationCode() {
+        return emergencyKitVerificationCode.asObservable();
+    }
+
     private long getWalletBirthdaySinceGenesis() {
 
         final ZonedDateTime createdAt = userRepository.fetchOneOptional()
-                .map(it -> it.createdAt)
+                .flatMap(it -> it.createdAt)
                 .orElse(null);
 
         if (createdAt == null) {

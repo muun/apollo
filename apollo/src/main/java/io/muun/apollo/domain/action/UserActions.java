@@ -4,7 +4,6 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
@@ -69,7 +68,7 @@ public class UserActions {
 
     public final AsyncAction2<FeedbackCategory, String, Void> submitFeedbackAction;
 
-    public final AsyncAction0<Void> notifyLogoutAction;
+    public final AsyncAction1<String, Void> notifyLogoutAction;
 
     /**
      * Constructor.
@@ -308,8 +307,8 @@ public class UserActions {
         }
     }
 
-    private Observable<Void> notifyLogout() {
-        return houstonClient.notifyLogout();
+    private Observable<Void> notifyLogout(String jwtToken) {
+        return houstonClient.notifyLogout("Bearer " + jwtToken);
     }
 
     /**

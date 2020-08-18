@@ -71,4 +71,6 @@ public abstract class UserFacingErrorMessages {
     public abstract String fcmTokenNotAvailable();
 
     public abstract String emptyField(EmptyFieldError.Field field);
+
+    public abstract String emergencyKitVerification();
 }

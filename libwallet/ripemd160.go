@@ -1,7 +1,7 @@
 package libwallet
 
 import (
-	hash "golang.org/x/crypto/ripemd160"  //lint:ignore SA1019 using deprecated hash function for compatibility
+	hash "golang.org/x/crypto/ripemd160" //lint:ignore SA1019 using deprecated hash function for compatibility
 )
 
 func ripemd160(data []byte) []byte {

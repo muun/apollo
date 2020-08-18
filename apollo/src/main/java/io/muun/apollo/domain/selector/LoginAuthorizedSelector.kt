@@ -3,7 +3,6 @@ package io.muun.apollo.domain.selector
 import io.muun.apollo.data.preferences.AuthRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.common.model.SessionStatus
-import rx.Observable
 import javax.inject.Inject
 
 

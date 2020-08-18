@@ -3,25 +3,43 @@ package io.muun.common.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.validation.constraints.NotNull;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SizeForAmount {
 
     public long amountInSatoshis;
+
     public int sizeInBytes;
+
+    @NotNull // Except for HWs withdrawals
+    public String outpoint;
 
     /**
      * Manual constructor.
      */
-    public SizeForAmount(long amountInSatoshis, int sizeInBytes) {
+    public SizeForAmount(long amountInSatoshis, int sizeInBytes, String txHash, int index) {
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
+        this.outpoint = txHash + ":" + index;
     }
 
     /**
      * Json constructor.
      */
     public SizeForAmount() {
+    }
+
+    /**
+     * Migration to init outpoints for pre-existing sizeForAmounts. Will be properly initialized
+     * after first NTS refresh (e.g first newOperation, incoming operation, or any operationUpdate).
+     */
+    public SizeForAmount initOutpoint() {
+        if (outpoint == null) {
+            outpoint = "uninitialized";
+        }
+        return this;
     }
 
     @Override

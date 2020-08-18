@@ -12,7 +12,7 @@ import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.DiffJson;
-import io.muun.common.api.EmptyJson;
+import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.HardwareWalletJson;
@@ -48,6 +48,7 @@ import okhttp3.RequestBody;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
@@ -86,7 +87,7 @@ public interface HoustonService {
     Observable<KeySet> loginCompatWithoutChallenge();
 
     @POST("sessions/logout")
-    Observable<Void> notifyLogout();
+    Observable<Void> notifyLogout(@Header("Authorization") String authHeader);
 
     @PUT("sessions/current/gcm-token")
     Observable<Void> updateFcmToken(@Body String gcmToken);
@@ -133,9 +134,6 @@ public interface HoustonService {
             @Body ExternalAddressesRecord externalAddressesRecord
     );
 
-    @POST("user/keys/exported")
-    Observable<Void> reportKeysExported(@Body EmptyJson futureParams);
-
     @Multipart
     @PUT("user/profile/picture")
     Observable<PublicProfileJson> uploadProfilePicture(@Part("picture") RequestBody file);
@@ -173,6 +171,9 @@ public interface HoustonService {
 
     @POST("user/export-keys")
     Observable<Void> sendExportKeysEmail(@Body SendEncryptedKeysJson json);
+
+    @POST("user/emergency-kit/exported")
+    Observable<Void> reportEmergencyKitExported(@Body ExportEmergencyKitJson json);
 
     // ---------------------------------------------------------------------------------------------
     // Contacts:

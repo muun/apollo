@@ -3,7 +3,6 @@ package io.muun.apollo.domain.action.session
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.SigninActions
-import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.action.keys.DecryptRootPrivateKeyAction
 import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction
@@ -74,7 +73,6 @@ class LogInAction @Inject constructor(
             }
             .toVoid()
 
-
     private fun signChallenge(challenge: Challenge, userInput: String): ChallengeSignature {
         val signatureBytes = ChallengePrivateKey
             .fromUserInput(userInput, challenge.salt)
@@ -82,7 +80,6 @@ class LogInAction @Inject constructor(
 
         return ChallengeSignature(challenge.type, signatureBytes)
     }
-
 
     private fun decryptStoreKeySet(keySet: KeySet, userInput: String): Observable<Void> {
 

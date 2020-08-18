@@ -10,6 +10,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
+// CreateAddressV4 returns a P2WSH MuunAddress from a user HD-pubkey and a Muun co-signing HD-pubkey.
 func CreateAddressV4(userKey, muunKey *HDPublicKey) (MuunAddress, error) {
 
 	witnessScript, err := createWitnessScriptV4(userKey, muunKey)

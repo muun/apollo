@@ -9,7 +9,7 @@ class SecurityCenter(private val user: User) {
         } else if (!user.hasRecoveryCode) {
             return SecurityLevel.EMAIL_PASSWORD
 
-        } else if (!user.hasExportedKeys) {
+        } else if (!user.emergencyKitLastExportedAt.isPresent) {
             return SecurityLevel.RECOVERY_CODE
         }
 

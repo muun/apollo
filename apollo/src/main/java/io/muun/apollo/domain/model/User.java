@@ -26,11 +26,15 @@ public class User {
     public boolean hasRecoveryCode;
     public boolean hasPassword;
     public final boolean hasP2PEnabled;
+
+    @Deprecated
     public boolean hasExportedKeys;
 
-    @Nullable
+    @Since(apolloVersion = 72)
+    public Optional<ZonedDateTime> emergencyKitLastExportedAt;
+
     @Since(apolloVersion = 46)
-    public ZonedDateTime createdAt;
+    public Optional<ZonedDateTime> createdAt;
 
     /**
      * Constructor.
@@ -45,7 +49,8 @@ public class User {
                 boolean hasPassword,
                 boolean hasP2PEnabled,
                 boolean hasExportedKeys,
-                ZonedDateTime createdAt) {
+                Optional<ZonedDateTime> emergencyKitLastExportedAt,
+                Optional<ZonedDateTime> createdAt) {
 
         this.hid = hid;
 
@@ -60,6 +65,7 @@ public class User {
         this.hasPassword = hasPassword;
         this.hasP2PEnabled = hasP2PEnabled;
         this.hasExportedKeys = hasExportedKeys;
+        this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
 
         this.createdAt = createdAt;
     }
@@ -84,17 +90,21 @@ public class User {
         return hasPassword || hasRecoveryCode;
     }
 
+    public boolean hasExportedEmergencyKit() {
+        return emergencyKitLastExportedAt.isPresent();
+    }
+
     /**
      * Get the support ID string for this user, provided it can be computed with the data available
      * at this version / for this user.
      */
     public Optional<String> getSupportId() {
-        if (createdAt == null) {
+        if (!createdAt.isPresent()) {
             return Optional.empty(); // missing? it wasn't added until a later version
         }
 
         // Epoch timestamp as numeric string:
-        final String ts = "" + createdAt.toEpochSecond();
+        final String ts = "" + createdAt.get().toEpochSecond();
         final int tsLen = ts.length();
 
         // Last 2 groups of 4 characters each:

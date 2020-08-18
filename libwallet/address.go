@@ -9,8 +9,8 @@ import (
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcutil"
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 // These constants are here for clients usage.
@@ -217,16 +217,16 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 
 	address, err := getAddressFromScript(payDetails.Outputs[0].Script, network)
 	if err != nil {
-		errors.Wrapf(err, "Failed to get address")
+		return nil, errors.Wrapf(err, "Failed to get address")
 	}
 
 	return &MuunPaymentURI{
 		Address:      address,
-		Message:      *payDetails.Memo,
-		Amount:       strconv.FormatUint(*payDetails.Outputs[0].Amount, 10),
+		Message:      payDetails.Memo,
+		Amount:       strconv.FormatUint(payDetails.Outputs[0].Amount, 10),
 		BIP70Url:     url,
-		CreationTime: strconv.FormatUint(*payDetails.Time, 10),
-		ExpiresTime:  strconv.FormatUint(*payDetails.Expires, 10),
+		CreationTime: strconv.FormatUint(payDetails.Time, 10),
+		ExpiresTime:  strconv.FormatUint(payDetails.Expires, 10),
 	}, nil
 }
 

@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
-import io.muun.apollo.data.net.ApiObjectsMapper;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -65,7 +64,6 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                        HoustonClient houstonClient,
                                        ContactActions contactActions,
                                        HardwareWalletActions hardwareWalletActions,
-                                       ApiObjectsMapper apiObjectsMapper,
                                        OperationMetadataMapper operationMetadataMapper) {
 
         this.createOperation = createOperation;
@@ -91,7 +89,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                 buildOperationWithMetadata(payReq, operation);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
-                .flatMap(baseUserPrivateKey -> houstonClient.newOperation(operationWithMetadata)
+                .flatMap(baseUserPrivateKey -> newOperation(operationWithMetadata, prepPayment)
                         .flatMap(operationCreated -> {
                             final Operation houstonOp =
                                     operationMapper.mapFromMetadata(operationCreated.operation);
@@ -114,6 +112,11 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                                         );
                                     });
                         }));
+    }
+
+    private Observable<OperationCreated> newOperation(OperationWithMetadata operationWithMetadata,
+                                                      PreparedPayment prepPayment) {
+        return houstonClient.newOperation(operationWithMetadata, prepPayment);
     }
 
     private OperationWithMetadata buildOperationWithMetadata(final PaymentRequest payReq,
@@ -195,10 +198,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                 null,
                 receiverAddress.getAddress(),
                 receiverAddress.getDerivationPath(),
-                prepPayment.amount,
-                prepPayment.fee,
-                prepPayment.description,
-                prepPayment.rateWindowHid
+                prepPayment
         );
     }
 
@@ -209,10 +209,7 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                 null,
                 address,
                 null,
-                prepPayment.amount,
-                prepPayment.fee,
-                prepPayment.description,
-                prepPayment.rateWindowHid
+                prepPayment
         );
     }
 
@@ -228,21 +225,14 @@ public class SubmitOutgoingPaymentAction extends BaseAsyncAction2<
                 hw.getHid(),
                 nextAddress.getAddress(),
                 nextAddress.getDerivationPath(),
-                prepPayment.amount,
-                prepPayment.fee,
-                prepPayment.description,
-                prepPayment.rateWindowHid
+                prepPayment
         );
     }
 
-    private Operation buildOperationToLnInvoice(SubmarineSwap swap,
-                                                PreparedPayment prepPayment) {
+    private Operation buildOperationToLnInvoice(SubmarineSwap swap, PreparedPayment prepPayment) {
         return Operation.createSwap(
                 userRepository.fetchOne().getCompatPublicProfile(),
-                prepPayment.amount,
-                prepPayment.fee,
-                prepPayment.description,
-                prepPayment.rateWindowHid,
+                prepPayment,
                 swap
         );
     }

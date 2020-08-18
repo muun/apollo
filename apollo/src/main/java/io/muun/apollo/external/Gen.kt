@@ -1,6 +1,16 @@
 package io.muun.apollo.external
 
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.FeeWindow
+import io.muun.apollo.domain.model.NextTransactionSize
+import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.SubmarineSwap
+import io.muun.apollo.domain.model.SubmarineSwapFees
+import io.muun.apollo.domain.model.SubmarineSwapFundingOutput
+import io.muun.apollo.domain.model.SubmarineSwapReceiver
+import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.UserPhoneNumber
+import io.muun.apollo.domain.model.UserProfile
 import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.exception.MissingCaseError
@@ -22,6 +32,7 @@ object Gen {
     private val CHARSET_ALPHA_LOWER = ('a'..'z')
     private val CHARSET_ALPHA = ('A'..'Z').union(CHARSET_ALPHA_LOWER)
     private val CHARSET_NUM = ('0'..'9')
+    private val CHARSET_HEX = CHARSET_NUM.plus('A'..'F')
 
     /**
      * Get an alphabetic string of random length within a range.
@@ -47,6 +58,16 @@ object Gen {
      * Get a numeric string of exact length.
      */
     fun numeric(length: Int) = concatGen(length) { CHARSET_NUM.random() }
+
+    /**
+     * Get a hex string of random length within a range.
+     */
+    fun hex(min: Int, max: Int) = concatGen(min, max) { CHARSET_HEX.random() }
+
+    /**
+     * Get a hex string of exact length.
+     */
+    fun hex(length: Int) = concatGen(length) { CHARSET_HEX.random() }
 
     /**
      * Get a Houston ID.
@@ -116,7 +137,8 @@ object Gen {
             hasRecoveryCode: Boolean = bool(),
             hasPassword: Boolean = bool(),
             hasP2PEnabled: Boolean = bool(),
-            createdAt: ZonedDateTime = pastDate()
+            emergencyKitLastExportedAt: ZonedDateTime? = pastDate(),
+            createdAt: ZonedDateTime? = pastDate()
 
     ) = User(
         hid,
@@ -129,7 +151,8 @@ object Gen {
         hasPassword,
         hasP2PEnabled,
         hasExportedKeys,
-        createdAt
+        Optional.ofNullable(emergencyKitLastExportedAt),
+        Optional.ofNullable(createdAt)
     )
 
     /**
@@ -139,7 +162,10 @@ object Gen {
         FeeWindow(
             1,
             ZonedDateTime.now(),
-            if (feeRates.isNotEmpty()) mapOf(*feeRates) else mapOf(1 to double(), 5 to double(), 9 to double())
+            if (feeRates.isNotEmpty()) mapOf(*feeRates) else mapOf(1 to double(), 5 to double(), 9 to double()),
+            1,
+            5,
+            9
         )
 
     /**
@@ -153,20 +179,32 @@ object Gen {
         )
 
     /**
+     * Get a SizeForAmount.
+     */
+    fun sizeForAmount(pair: Pair<Long, Int>) =
+        SizeForAmount(pair.first, pair.second, transactionHash(), 0)
+
+    /**
      * Get a size progression for the next transaction size.
      */
-    fun sizeProgression(vararg entries: Pair<Long, Int>) =
-        if (entries.isNotEmpty()) {
-            entries.map { (amount, size) -> SizeForAmount(amount, size) }
+    fun sizeProgression(vararg entries: SizeForAmount) =
+        if (entries.isEmpty()) {
+            listOf(sizeForAmount(10000L to 240))
         } else {
-            listOf(SizeForAmount(10000, 240))
+            listOf(*entries)
         }
 
     /**
      * Get a NextTransactionSize vector.
      */
-    fun nextTransactionSize(vararg entries: Pair<Long, Int>, expectedDebtInSat: Long = 0) =
+    fun nextTransactionSize(vararg entries: SizeForAmount, expectedDebtInSat: Long = 0) =
         NextTransactionSize(sizeProgression(*entries), 1, expectedDebtInSat)
+
+    /**
+     * Get a Transaction Hash.
+     */
+    fun transactionHash() =
+        hex(64)
 
     /**
      * Get an address.

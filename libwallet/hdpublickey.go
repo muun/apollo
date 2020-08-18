@@ -20,7 +20,7 @@ type HDPublicKey struct {
 // If the parsed key is private, it returns an error
 func NewHDPublicKeyFromString(str, path string, network *Network) (*HDPublicKey, error) {
 
-	key, _, err := keyFromString(str)
+	key, err := hdkeychain.NewKeyFromString(str)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (p *HDPublicKey) String() string {
 // index should be uint32 but for java compat we use int64
 func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 
-	if (index & hdkeychain.HardenedKeyStart != 0) {
+	if index&hdkeychain.HardenedKeyStart != 0 {
 		return nil, errors.Errorf("can't derive a hardened pub key (index %v)", index)
 	}
 

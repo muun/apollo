@@ -1,11 +1,10 @@
 package libwallet
 
 import (
-	"github.com/go-errors/errors"
+	"github.com/pkg/errors"
 )
 
 type SubmarineSwap interface {
-	SwapUuid() string
 	Invoice() string
 	Receiver() SubmarineSwapReceiver
 	FundingOutput() SubmarineSwapFundingOutput

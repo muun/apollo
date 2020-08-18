@@ -122,7 +122,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 apiUser.hasPasswordChallengeKey,
                 apiUser.hasP2PEnabled,
                 apiUser.hasExportedKeys,
-                ((ApolloZonedDateTime) apiUser.createdAt).dateTime
+                Optional.ofNullable(apiUser.emergencyKitLastExportedAt).map(this::mapZonedDateTime),
+                Optional.ofNullable(apiUser.createdAt).map(this::mapZonedDateTime)
         );
     }
 
@@ -289,7 +290,10 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         return new FeeWindow(
                 window.id,
                 mapZonedDateTime(window.fetchDate),
-                window.targetedFees
+                window.targetedFees,
+                window.fastConfTarget,
+                window.mediumConfTarget,
+                window.slowConfTarget
         );
     }
 
@@ -341,10 +345,13 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     @NotNull
     private SizeForAmount mapSizeForAmount(@NotNull SizeForAmountJson sizeForAmount) {
-
+        final String[] outpoint = sizeForAmount.outpoint.split(":");
+        Preconditions.checkArgument(outpoint.length == 2);
         return new SizeForAmount(
                 sizeForAmount.amountInSatoshis,
-                sizeForAmount.sizeInBytes.intValue()
+                sizeForAmount.sizeInBytes.intValue(),
+                outpoint[0],
+                Integer.parseInt(outpoint[1])
         );
     }
 
@@ -438,5 +445,4 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 json.newEncrytpedMuunKey
         );
     }
-
 }

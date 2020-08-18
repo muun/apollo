@@ -30,6 +30,7 @@ func NewChallengePrivateKey(input, salt []byte) *ChallengePrivateKey {
 	return &ChallengePrivateKey{key: priv}
 }
 
+// SignSha computes the SHA-256 digest of the given payload and signs it.
 func (k *ChallengePrivateKey) SignSha(payload []byte) ([]byte, error) {
 
 	hash := sha256.Sum256(payload)

@@ -25,6 +25,8 @@ public class MuunAddress {
     public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
     public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
 
+    public static final int VERSION_INCOMING_SWAP = 201;
+
     /**
      * Return the TransactionScheme version used in new Addresses by default.
      */

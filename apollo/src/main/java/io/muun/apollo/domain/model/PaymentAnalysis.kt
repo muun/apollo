@@ -3,7 +3,6 @@ package io.muun.apollo.domain.model
 import io.muun.common.Rules
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions.checkNonNegative
-import io.muun.common.utils.Preconditions.checkPositive
 
 /**
  * The result of analyzing a PaymentRequest, performing validation and currency conversions.

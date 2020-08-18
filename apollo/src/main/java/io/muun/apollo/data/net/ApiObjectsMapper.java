@@ -33,6 +33,7 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.Encodings;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -96,10 +97,19 @@ public class ApiObjectsMapper {
     }
 
     /**
+     * Create an API operation for a HW Withdrawal.
+     */
+    @NotNull
+    public OperationJson mapWithdrawalOperation(@NotNull OperationWithMetadata operation) {
+        return mapOperation(operation, null);
+    }
+
+    /**
      * Create an API operation.
      */
     @NotNull
-    public OperationJson mapOperation(@NotNull OperationWithMetadata operation) {
+    public OperationJson mapOperation(@NotNull OperationWithMetadata operation,
+                                      List<String> outpoints) {
 
         final Long outputAmountInSatoshis = operation.getSwap() != null
                 ? operation.getSwap().getFundingOutput().getOutputAmountInSatoshis()
@@ -127,7 +137,8 @@ public class ApiObjectsMapper {
                 ApolloZonedDateTime.of(operation.getCreationDate()),
                 operation.getSwap() != null ? operation.getSwap().houstonUuid : null,
                 operation.getSenderMetadata(),
-                operation.getReceiverMetadata()
+                operation.getReceiverMetadata(),
+                outpoints
         );
     }
 

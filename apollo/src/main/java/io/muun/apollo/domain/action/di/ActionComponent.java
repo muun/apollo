@@ -14,6 +14,9 @@ import io.muun.apollo.domain.action.UpdateFcmTokenAction;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction;
+import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction;
+import io.muun.apollo.domain.action.ek.ReportEmergencyKitExportedAction;
+import io.muun.apollo.domain.action.ek.VerifyEmergencyKitAction;
 import io.muun.apollo.domain.action.keys.CreateChallengeSetupAction;
 import io.muun.apollo.domain.action.keys.StoreChallengeKeyAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
@@ -33,7 +36,6 @@ import io.muun.apollo.domain.action.session.LogInAction;
 import io.muun.apollo.domain.action.session.SetUpPasswordAction;
 import io.muun.apollo.domain.action.session.StartEmailSetupAction;
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
-import io.muun.apollo.domain.action.user.ReportKeysExportedAction;
 import io.muun.apollo.domain.action.user.SendEncryptedKeysEmailAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 
@@ -109,7 +111,11 @@ public interface ActionComponent {
 
     CreateLoginSessionAction createLoginSessionAction();
 
-    ReportKeysExportedAction reportKeysExportedAction();
+    ReportEmergencyKitExportedAction reportKeysExportedAction();
 
     ForceCrashReportAction forceCrashReportAction();
+
+    RenderEmergencyKitAction renderEmergencyKitAction();
+
+    VerifyEmergencyKitAction verifyEmergencyKitAction();
 }

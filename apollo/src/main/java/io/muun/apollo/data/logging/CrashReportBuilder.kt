@@ -6,6 +6,7 @@ import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.errors.WrappedErrorMessage
 import io.muun.common.exception.HttpException
 import java.io.PrintWriter
+import java.io.Serializable
 import java.io.StringWriter
 import javax.money.UnknownCurrencyException
 
@@ -77,9 +78,19 @@ object CrashReportBuilder {
     private fun captureStackTrace(error: Throwable) =
         StringWriter().apply { error.printStackTrace(PrintWriter(this)) }.toString()
 
-    /** Extract a metadata map from the error (or an empty map for unknown error classes). */
-    private fun extractMetadata(error: Throwable?) =
-        if (error is MuunError) error.metadata.toMutableMap() else mutableMapOf()
+    /**
+     * Extract a metadata map from the error (or an empty map for unknown error classes).
+     * Search up the "cause" hierarchy and attach the metadata from every MuunError we find.
+     */
+    private fun extractMetadata(error: Throwable?): MutableMap<String, Serializable> {
+        val metadata = if (error is MuunError) error.extractMetadata() else mutableMapOf()
+
+        if (error?.cause != null) {
+            metadata.putAll(extractMetadata(error.cause))
+        }
+
+        return metadata
+    }
 
     /** Remove the Stack trace from the message, if present */
     private fun removeRedundantStackTrace(timberMessage: String?, error: Throwable) =

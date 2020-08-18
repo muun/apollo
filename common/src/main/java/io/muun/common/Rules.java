@@ -1,5 +1,7 @@
 package io.muun.common;
 
+import io.muun.common.utils.Deprecated;
+
 public class Rules {
 
     /** The size of the address derivation window watched in advance. */
@@ -13,7 +15,17 @@ public class Rules {
 
     /**
      * The confirmation target (in blocks) for fee options displayed in clients.
+     *
+     * @Deprecated
+     *     New clients now use dynamic fee targets based on Houston and Fee Estimator logic.
+     *     We are keeping these for historic reasons and because Houston will default to them if
+     *     Fee Estimator is unresponsive. Also, during client side migration dynamic fee targets are
+     *     initially set to these values.
      */
+    @Deprecated(
+            atApolloVersion = Supports.DynamicFeeTargets.APOLLO,
+            atFalconVersion = Supports.DynamicFeeTargets.FALCON
+    )
     public static final int CONF_TARGET_FAST = 1;
     public static final int CONF_TARGET_MID = 43;
     public static final int CONF_TARGET_SLOW = 90;

@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.debug
 
 import com.crashlytics.android.Crashlytics
-import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.external.Globals
 import rx.Observable

@@ -9,10 +9,6 @@ type Network struct {
 	network *chaincfg.Params
 }
 
-func newNetwork(params *chaincfg.Params) *Network {
-	return &Network{network: params}
-}
-
 // Mainnet returns an instance of the Bitcoin Main Network
 func Mainnet() *Network {
 	return &Network{network: &chaincfg.MainNetParams}

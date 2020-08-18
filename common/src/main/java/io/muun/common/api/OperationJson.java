@@ -8,6 +8,8 @@ import io.muun.common.utils.Since;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -96,6 +98,9 @@ public class OperationJson {
     @Nullable // This is set when using p2p only
     public String receiverMetadata;
 
+    @Nullable // For old clients, and HW withdrawals.
+    public List<String> outpoints;  // The complete utxoSet, sorted as used for fee computation
+
     /**
      * Json constructor.
      */
@@ -124,7 +129,8 @@ public class OperationJson {
                          MuunZonedDateTime creationDate,
                          @Nullable String swapUuid,
                          @Nullable String senderMetadata,
-                         @Nullable String receiverMetadata) {
+                         @Nullable String receiverMetadata,
+                         @Nullable List<String> outpoints) {
 
         this.requestId = requestId;
         this.direction = direction;
@@ -146,6 +152,7 @@ public class OperationJson {
         this.swapUuid = swapUuid;
         this.senderMetadata = senderMetadata;
         this.receiverMetadata = receiverMetadata;
+        this.outpoints = outpoints;
     }
 
     /**

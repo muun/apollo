@@ -54,18 +54,21 @@ public class OperationDao extends HoustonIdDao<Operation> {
      * Fetches a single operation by its id.
      */
     public Observable<Operation> fetchById(long operationId) {
-        return fetchOneOrFail(OperationEntity.FACTORY.selectById(operationId));
+        return fetchOneOrFail(OperationEntity.FACTORY.selectById(operationId))
+                .doOnError(error -> enhanceError(error, String.valueOf(operationId)));
     }
 
     /**
      * Fetches a single operation by its Houston id.
      */
     public Observable<Operation> fetchByHid(long operationHid) {
-        return fetchOneOrFail(OperationEntity.FACTORY.selectByHid(operationHid));
+        return fetchOneOrFail(OperationEntity.FACTORY.selectByHid(operationHid))
+                .doOnError(error -> enhanceError(error, String.valueOf(operationHid)));
     }
 
     public Observable<Operation> fetchLatest() {
-        return fetchOneOrFail(OperationEntity.FACTORY.selectLatest());
+        return fetchOneOrFail(OperationEntity.FACTORY.selectLatest())
+                .doOnError(error -> enhanceError(error, "null (latest)"));
     }
 
     public Observable<List<Operation>> fetchUnsettled() {

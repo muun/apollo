@@ -3,7 +3,6 @@ package io.muun.apollo.domain.selector
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
-import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentContext

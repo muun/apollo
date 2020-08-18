@@ -1,14 +1,16 @@
 package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.utils.FeeCalculator
+import io.muun.common.bitcoinj.BlockHelpers
 import io.muun.common.model.ExchangeRateProvider
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
 import org.javamoney.moneta.Money
-import java.util.*
+import timber.log.Timber
 import javax.money.CurrencyUnit
 import javax.money.Monetary
 import javax.money.MonetaryAmount
+import kotlin.math.max
 
 /**
  * The contextual information required to analyze and process a PaymentRequest.
@@ -21,7 +23,7 @@ class PaymentContext(
 ) {
 
     companion object {
-        private const val AVG_MS_PER_BLOCK = 10 * (60 * 1000)
+
 
         // NOTE: this is a hack to ensure all operation-related screens share a preset payment
         // context. Ideally, NewOperation would be an Activity with Fragments sharing this.
@@ -37,17 +39,25 @@ class PaymentContext(
     val utxoBalance = nextTransactionSize.utxoBalance
 
     /** The recommended fee rates for the user to pick */
-    private val feeOptions = feeWindow.targetedFees.mapValues { (confTarget, satoshisPerByte) ->
-        val feeCalculator = FeeCalculator(satoshisPerByte, nextTransactionSize)
+    private val feeOptions by lazy {
+        feeWindow.targetedFees
+            .mapValues { (confTarget, satoshisPerByte) ->
+                val feeCalculator = FeeCalculator(satoshisPerByte, nextTransactionSize)
 
-        FeeOption(
-            satoshisPerByte = satoshisPerByte,
-            confirmationTarget = confTarget,
-            minTimeMs = estimateMinTimeMs(confTarget),
-            maxTimeMs = estimateMaxTimeMs(confTarget),
-            feeCalculator = feeCalculator
-        )
-    }.toSortedMap()
+                FeeOption(
+                    satoshisPerByte = satoshisPerByte,
+                    confirmationTarget = confTarget,
+                    feeCalculator = feeCalculator
+                )
+            }
+            .toSortedMap()
+    }
+
+    val fastFeeOption = closestFeeOptionFasterThan(feeWindow.fastConfTarget)
+
+    val mediumFeeOption = closestFeeOptionFasterThan(feeWindow.mediumConfTarget)
+
+    val slowFeeOption = closestFeeOptionFasterThan(feeWindow.slowConfTarget)
 
     /**
      * Get the fee option with the minimum available fee rate that will hit a given confirmation
@@ -57,7 +67,7 @@ class PaymentContext(
      * fee(rate) will be.
      * Assumes feeOptions is a SortedMap sorted in ascending order, and has at least one item.
      */
-    fun closestFeeOptionFasterThan(confirmationTarget: Int): FeeOption {
+    private fun closestFeeOptionFasterThan(confirmationTarget: Int): FeeOption {
         Preconditions.checkPositive(confirmationTarget)
 
         for (closestTarget in confirmationTarget downTo 1) {
@@ -94,14 +104,6 @@ class PaymentContext(
         feeWindow.targetedFees.values.min()!! // assume vector is not empty (ie min can't be null)
 
     /**
-     * Assumes feeOptions is a SortedMap sorted in ascending order, and has at least one item.
-     */
-    fun getRandomFee(): FeeOption {
-        var maxConfirmationTarget = feeOptions[feeOptions.lastKey()]!!.confirmationTarget
-        return closestFeeOptionFasterThan(Random().nextInt(maxConfirmationTarget + 1))
-    }
-
-    /**
      * Examine a PaymentRequest, and return a PaymentAnalysis.
      */
     fun analyze(payReq: PaymentRequest): PaymentAnalysis {
@@ -124,7 +126,8 @@ class PaymentContext(
             analysis.amount,
             analysis.fee,
             analysis.payReq.description,
-            analysis.rateWindow.windowHid
+            analysis.rateWindow.windowHid,
+            nextTransactionSize
         )
     }
 
@@ -172,10 +175,4 @@ class PaymentContext(
             convert(amountInSatoshis, inputCurrency),
             convert(amountInSatoshis, user.primaryCurrency)
         )
-
-    private fun estimateMinTimeMs(confTarget: Int) =
-        confTarget.toLong() * AVG_MS_PER_BLOCK / 2
-
-    private fun estimateMaxTimeMs(confTarget: Int) =
-        confTarget.toLong() * AVG_MS_PER_BLOCK * 2
 }

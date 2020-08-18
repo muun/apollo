@@ -1,15 +1,12 @@
 package io.muun.apollo.data.preferences.adapter;
 
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
 
 import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
-import com.f2prateek.rx.preferences.Preference;
 
 public class JsonPreferenceAdapter<T> implements Preference.Adapter<T> {
-
-    public static final JsonPreferenceAdapter<Object> GENERIC =
-            new JsonPreferenceAdapter<>(Object.class);
 
     private final Class<T> valueClass;
 

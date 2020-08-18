@@ -1,9 +1,9 @@
 package io.muun.apollo.data.preferences.adapter;
 
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.common.crypto.hd.PublicKey;
 
 import android.content.SharedPreferences;
-import com.f2prateek.rx.preferences.Preference;
 
 import javax.annotation.Nullable;
 

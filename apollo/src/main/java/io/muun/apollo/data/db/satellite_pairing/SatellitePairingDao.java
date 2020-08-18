@@ -40,7 +40,8 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
      * Fetches the currently in use pairing from the db.
      */
     public Observable<SatellitePairing> fetchPairingInUse() {
-        return fetchOneOrFail(SatellitePairingEntity.FACTORY.selectPairingInUse());
+        return fetchOneOrFail(SatellitePairingEntity.FACTORY.selectPairingInUse())
+                .doOnError(error -> enhanceError(error, "null (in use)"));
     }
 
     /**
@@ -79,7 +80,7 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
     public Observable<SatellitePairing> fetchBySatelliteSession(String satelliteSessionUuid) {
         return fetchOneOrFail(
                 SatellitePairingEntity.FACTORY.selectBySatelliteSessionUuid(satelliteSessionUuid)
-        );
+        ).doOnError(error -> enhanceError(error, satelliteSessionUuid));
     }
 
     /**
@@ -88,7 +89,7 @@ public class SatellitePairingDao extends BaseDao<SatellitePairing> {
     public Observable<SatellitePairing> fetchByApolloSession(String apolloSessionUuid) {
         return fetchOneOrFail(
                 SatellitePairingEntity.FACTORY.selectByApolloSessionUuid(apolloSessionUuid)
-        );
+        ).doOnError(error -> enhanceError(error, apolloSessionUuid));
     }
 
     /**

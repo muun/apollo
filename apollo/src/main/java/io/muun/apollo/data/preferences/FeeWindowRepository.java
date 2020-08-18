@@ -1,10 +1,10 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.domain.model.FeeWindow;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 
@@ -21,6 +21,9 @@ public class FeeWindowRepository extends BaseRepository {
         public Long houstonId;
         public ZonedDateTime fetchDate;
         public SortedMap<Integer, Double> targetedFees;
+        public int fastConfTarget;
+        public int mediumConfTarget;
+        public int slowConfTarget;
 
         public StoredFeeWindow() {
         }
@@ -29,10 +32,20 @@ public class FeeWindowRepository extends BaseRepository {
             this.houstonId = feeWindow.houstonId;
             this.fetchDate = feeWindow.fetchDate;
             this.targetedFees = feeWindow.targetedFees;
+            this.fastConfTarget = feeWindow.fastConfTarget;
+            this.mediumConfTarget = feeWindow.mediumConfTarget;
+            this.slowConfTarget = feeWindow.slowConfTarget;
         }
 
         FeeWindow toFeeWindow() {
-            return new FeeWindow(houstonId, fetchDate, targetedFees);
+            return new FeeWindow(
+                    houstonId,
+                    fetchDate,
+                    targetedFees,
+                    fastConfTarget,
+                    mediumConfTarget,
+                    slowConfTarget
+            );
         }
     }
 
@@ -69,7 +82,13 @@ public class FeeWindowRepository extends BaseRepository {
      * Fetch an observable instance of the latest expected fee.
      */
     public Observable<FeeWindow> fetch() {
-        return feeWindowPreference.asObservable().map(StoredFeeWindow::toFeeWindow);
+        return feeWindowPreference.asObservable().map(storedFeeWindow -> {
+            if (storedFeeWindow != null) {
+                return storedFeeWindow.toFeeWindow();
+            } else {
+                return null;
+            }
+        });
     }
 
     public FeeWindow fetchOne() {
@@ -81,5 +100,17 @@ public class FeeWindowRepository extends BaseRepository {
      */
     public void store(FeeWindow feeWindow) {
         feeWindowPreference.set(new StoredFeeWindow(feeWindow));
+    }
+
+    /**
+     * Migration to init dynamic fee targets.
+     */
+    public void initDynamicFeeTargets() {
+        final FeeWindow feeWindow = fetchOne();
+
+        if (feeWindow != null) {
+            final FeeWindow migratedFeeWindow = feeWindow.initDynamicFeeTargets();
+            store(migratedFeeWindow);
+        }
     }
 }

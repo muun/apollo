@@ -46,7 +46,8 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
      * Fetches a single public profile by its Houston id.
      */
     public Observable<PublicProfile> fetchByHid(long contactHid) {
-        return fetchOneOrFail(PublicProfileEntity.FACTORY.selectByHid(contactHid));
+        return fetchOneOrFail(PublicProfileEntity.FACTORY.selectByHid(contactHid))
+                .doOnError(error -> enhanceError(error, String.valueOf(contactHid)));
     }
 
     /**

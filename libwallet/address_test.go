@@ -2,9 +2,13 @@ package libwallet
 
 import (
 	"encoding/hex"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -217,7 +221,7 @@ func TestGetPaymentURI(t *testing.T) {
 
 func Test_normalizeAddress(t *testing.T) {
 	type args struct {
-		rawAddress string
+		rawAddress   string
 		targetScheme string
 	}
 	tests := []struct {
@@ -228,7 +232,7 @@ func Test_normalizeAddress(t *testing.T) {
 		{
 			name: "normalAddress",
 			args: args{
-				rawAddress: address,
+				rawAddress:   address,
 				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
@@ -236,7 +240,7 @@ func Test_normalizeAddress(t *testing.T) {
 		{
 			name: "bitcoinAddress",
 			args: args{
-				rawAddress: bitcoinScheme + address,
+				rawAddress:   bitcoinScheme + address,
 				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
@@ -244,7 +248,7 @@ func Test_normalizeAddress(t *testing.T) {
 		{
 			name: "muunAddress",
 			args: args{
-				rawAddress: muunScheme + address,
+				rawAddress:   muunScheme + address,
 				targetScheme: bitcoinScheme,
 			},
 			want: bitcoinScheme + address,
@@ -252,7 +256,7 @@ func Test_normalizeAddress(t *testing.T) {
 		{
 			name: "muun to lightning",
 			args: args{
-				rawAddress: muunScheme + address,
+				rawAddress:   muunScheme + address,
 				targetScheme: lightningScheme,
 			},
 			want: lightningScheme + address,
@@ -264,5 +268,54 @@ func Test_normalizeAddress(t *testing.T) {
 				t.Errorf("buildUriFromString() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestDoPaymentRequestCall(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/payment-request/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/bitcoin-paymentrequest" {
+			t.Fatal("expected Accept header to be application/bitcoin-paymentrequest")
+		}
+
+		script, _ := hex.DecodeString("76a9146efcf883b4b6f9997be9a0600f6c095fe2bd2d9288ac")
+
+		serializedPaymentDetails, _ := proto.Marshal(&PaymentDetails{
+			Network: "test",
+			Outputs: []*Output{
+				&Output{
+					Script: script,
+					Amount: 2500,
+				},
+			},
+			Time:         100000,
+			Expires:      102000,
+			Memo:         "Hello World",
+			PaymentUrl:   "http://localhost:8000/pay",
+			MerchantData: []byte(""),
+		})
+		payReq, _ := proto.Marshal(&PaymentRequest{SerializedPaymentDetails: serializedPaymentDetails})
+
+		w.Write(payReq)
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	url := server.URL + "/payment-request/"
+	paymentURI, err := DoPaymentRequestCall(url, Testnet())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := &MuunPaymentURI{
+		Address:      "mqdofsXHpePPGBFXuwwypAqCcXi48Xhb2f",
+		Message:      "Hello World",
+		Amount:       "2500",
+		BIP70Url:     url,
+		CreationTime: "100000",
+		ExpiresTime:  "102000",
+	}
+	if !reflect.DeepEqual(paymentURI, expected) {
+		t.Fatalf("decoded URI struct does not match expected, %+v != %+v", paymentURI, expected)
 	}
 }

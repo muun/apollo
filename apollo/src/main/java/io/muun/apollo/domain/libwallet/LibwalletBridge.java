@@ -3,11 +3,13 @@ package io.muun.apollo.domain.libwallet;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.errors.AddressDerivationError;
 import io.muun.apollo.domain.libwallet.errors.InvoiceParsingError;
+import io.muun.apollo.domain.libwallet.errors.LibwalletEmergencyKitError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletVerificationError;
 import io.muun.apollo.domain.libwallet.errors.PayloadDecryptError;
 import io.muun.apollo.domain.libwallet.errors.PayloadEncryptError;
 import io.muun.apollo.domain.model.BitcoinUriContent;
+import io.muun.apollo.domain.model.GeneratedEmergencyKit;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.external.Globals;
@@ -26,6 +28,9 @@ import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
+import libwallet.Config;
+import libwallet.EKInput;
+import libwallet.EKOutput;
 import libwallet.HDPrivateKey;
 import libwallet.HDPublicKey;
 import libwallet.Invoice;
@@ -41,7 +46,44 @@ import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 import timber.log.Timber;
 
+import java.util.Locale;
+
 public class LibwalletBridge {
+
+    /**
+     * Initialize libwallet.
+     */
+    public static void init(String dataDir) {
+        final Config config = new Config();
+        config.setDataDir(dataDir);
+
+        Libwallet.init(config);
+    }
+
+    /**
+     * Generate an Emergency Kit containing the provided information.
+     */
+    public static GeneratedEmergencyKit generateEmergencyKit(String userKey,
+                                                             String muunKey,
+                                                             Locale locale) {
+
+        final EKInput ekInput = new EKInput();
+        ekInput.setFirstEncryptedKey(userKey);
+        ekInput.setSecondEncryptedKey(muunKey);
+
+        try {
+            final EKOutput ekOutput = Libwallet
+                    .generateTranslatedEmergencyKitHTML(ekInput, locale.getLanguage());
+
+            return new GeneratedEmergencyKit(
+                    ekOutput.getHTML(),
+                    ekOutput.getVerificationCode()
+            );
+
+        } catch (Exception e) {
+            throw new LibwalletEmergencyKitError(e);
+        }
+    }
 
     /**
      * Sign a partially signed transaction.

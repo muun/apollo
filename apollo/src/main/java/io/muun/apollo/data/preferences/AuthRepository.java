@@ -1,12 +1,12 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.common.Optional;
 import io.muun.common.model.SessionStatus;
 import io.muun.common.utils.Encodings;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import rx.Completable;
 import rx.Observable;
 

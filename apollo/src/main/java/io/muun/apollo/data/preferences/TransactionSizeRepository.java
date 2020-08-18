@@ -1,12 +1,12 @@
 package io.muun.apollo.data.preferences;
 
 
+import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
-import com.f2prateek.rx.preferences.Preference;
 import rx.Observable;
 
 import javax.annotation.Nullable;
@@ -55,7 +55,7 @@ public class TransactionSizeRepository extends BaseRepository {
      * Replace the stored NextTransactionSize.
      */
     public void setTransactionSize(NextTransactionSize transactionSize) {
-        transactionSizePreference.set(
+        transactionSizePreference.setNow(
                 SerializationUtils.serializeJson(NextTransactionSize.class, transactionSize)
         );
     }
@@ -64,10 +64,33 @@ public class TransactionSizeRepository extends BaseRepository {
      * Migration to init expected debt for pre-existing NTSs.
      */
     public void initExpectedDebt() {
+        final boolean hasNts = sharedPreferences.contains(KEY_TRANSACTION_SIZE);
+
+        if (!hasNts) {
+            return;
+        }
+
         final NextTransactionSize nts = getNextTransactionSize();
 
         Preconditions.checkNotNull(nts);
 
         setTransactionSize(nts.initExpectedDebt());
+    }
+
+    /**
+     * Migration to init outpoints for pre-existing NTSs.
+     */
+    public void initNtsOutpoints() {
+        final boolean hasNts = sharedPreferences.contains(KEY_TRANSACTION_SIZE);
+
+        if (!hasNts) {
+            return;
+        }
+
+        final NextTransactionSize nts = getNextTransactionSize();
+
+        Preconditions.checkNotNull(nts);
+
+        setTransactionSize(nts.initOutpoints());
     }
 }
