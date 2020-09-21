@@ -14,10 +14,6 @@ The app follows the [clean](https://fernandocejas.com/2014/09/03/architecting-an
 
 There's also a pure java **common** module with code shared all over. This repository contains all but the presentation layer.
 
-### Java
-
-This project can be built using java 1.8. Some compilation problems may arise if you are using a newer jdk.
-
 ### LibWallet
 
 Setup
