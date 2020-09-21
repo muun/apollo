@@ -11,7 +11,6 @@ import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.utils.StringUtils;
 import io.muun.common.utils.BitcoinUtils;
 
-import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -21,17 +20,14 @@ import javax.money.MonetaryAmount;
 @Singleton
 public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, PaymentRequest> {
 
-    private final NetworkParameters networkParameters;
     private final FeeWindowRepository feeWindowRepository;
 
     /**
      * Resolves a Bitcoin URI, using BIP-72 or BIP-21 as appropriate.
      */
     @Inject
-    public ResolveBitcoinUriAction(NetworkParameters networkParameters,
-                                   FeeWindowRepository feeWindowRepository) {
+    public ResolveBitcoinUriAction(FeeWindowRepository feeWindowRepository) {
 
-        this.networkParameters = networkParameters;
         this.feeWindowRepository = feeWindowRepository;
     }
 
