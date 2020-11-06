@@ -25,11 +25,18 @@ class MissingCurrencyError(
         metadata["size(CurrencyProviderSpi[])"] = services.size
         metadata["CurrencyProviderSpi[]"] = services.toTypedArray().contentToString()
 
-        for (spi in services) {
-            metadata["Present in ${spi.javaClass.canonicalName}"] = spi.isCurrencyAvailable(query)
+        // Null check to avoid NPE inside isCurrencyAvailable for certain providers
+        if (cause.currencyCode != null) {
+            for (spi in services) {
+                val canonicalName = spi.javaClass.canonicalName
+                metadata["Present in $canonicalName"] = spi.isCurrencyAvailable(query)
+            }
+
         }
 
-        metadata["unsupportedCurrencies"] = getUnsupportedCurrencies(cause).joinToString(",")
+        metadata["cause.currencyCode"] = cause.currencyCode ?: "null"
+
+        metadata["unsupportedCurrencies"] = getUnsupportedCurrencies(this).joinToString(",")
         metadata["regionLocales"] = regionLocales.joinToString(",")
     }
 }

@@ -2,8 +2,7 @@ package io.muun.apollo.data.fs
 
 import android.content.Context
 import androidx.core.content.FileProvider
-import io.muun.apollo.external.Globals
-import io.muun.apollo.lib.BuildConfig
+import io.muun.apollo.data.external.Globals
 import java.io.File
 import javax.inject.Inject
 

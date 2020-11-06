@@ -5,10 +5,11 @@ import (
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/btcsuite/btcutil"
 	"github.com/pkg/errors"
 )
 
-func signNativeSegwitInput(input Input, index int, tx *wire.MsgTx, privateKey *HDPrivateKey, witnessScript []byte) ([]byte, error) {
+func signNativeSegwitInput(index int, tx *wire.MsgTx, privateKey *HDPrivateKey, witnessScript []byte, amount btcutil.Amount) ([]byte, error) {
 
 	privKey, err := privateKey.key.ECPrivKey()
 	if err != nil {
@@ -16,7 +17,7 @@ func signNativeSegwitInput(input Input, index int, tx *wire.MsgTx, privateKey *H
 	}
 
 	sigHashes := txscript.NewTxSigHashes(tx)
-	sig, err := txscript.RawTxInWitnessSignature(tx, sigHashes, index, input.OutPoint().Amount(), witnessScript, txscript.SigHashAll, privKey)
+	sig, err := txscript.RawTxInWitnessSignature(tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to sign V4 input")
 	}
@@ -34,8 +35,8 @@ func createNonNativeSegwitRedeemScript(witnessScript []byte) ([]byte, error) {
 	return builder.Script()
 }
 
-func signNonNativeSegwitInput(input Input, index int, tx *wire.MsgTx, privateKey *HDPrivateKey,
-	redeemScript, witnessScript []byte) ([]byte, error) {
+func signNonNativeSegwitInput(index int, tx *wire.MsgTx, privateKey *HDPrivateKey,
+	redeemScript, witnessScript []byte, amount btcutil.Amount) ([]byte, error) {
 
 	txInput := tx.TxIn[index]
 
@@ -53,7 +54,8 @@ func signNonNativeSegwitInput(input Input, index int, tx *wire.MsgTx, privateKey
 	}
 
 	sigHashes := txscript.NewTxSigHashes(tx)
-	sig, err := txscript.RawTxInWitnessSignature(tx, sigHashes, index, input.OutPoint().Amount(), witnessScript, txscript.SigHashAll, privKey)
+	sig, err := txscript.RawTxInWitnessSignature(
+		tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to sign V3 input")
 	}

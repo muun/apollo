@@ -2,11 +2,11 @@ package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUpdated;
-import io.muun.apollo.external.NotificationService;
 import io.muun.common.model.OperationStatus;
 
 import rx.Observable;

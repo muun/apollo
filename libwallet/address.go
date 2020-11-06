@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/muun/libwallet/addresses"
+
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcutil"
 	"github.com/pkg/errors"
@@ -15,61 +17,9 @@ import (
 
 // These constants are here for clients usage.
 const (
-	AddressVersionSwapsV1 = 101
-	AddressVersionSwapsV2 = 102
+	AddressVersionSwapsV1 = addresses.SubmarineSwapV1
+	AddressVersionSwapsV2 = addresses.SubmarineSwapV2
 )
-
-type AddressVersion int
-
-const (
-	addressV1              AddressVersion = 1
-	addressV2              AddressVersion = 2
-	addressV3              AddressVersion = 3
-	addressV4              AddressVersion = 4
-	addressSubmarineSwapV1 AddressVersion = AddressVersionSwapsV1
-	addressSubmarineSwapV2 AddressVersion = AddressVersionSwapsV2
-)
-
-type muunAddress struct {
-	version        AddressVersion
-	derivationPath string
-	address        string
-}
-
-func newMuunAddress(version AddressVersion, userPublicKey, muunPublicKey *HDPublicKey) (MuunAddress, error) {
-	if userPublicKey.Path != muunPublicKey.Path {
-		return nil, errors.Errorf("paths must match for address generation (%v != %v)", userPublicKey.Path, muunPublicKey.Path)
-	}
-
-	switch version {
-	case addressV1:
-		return CreateAddressV1(userPublicKey)
-	case addressV2:
-		return CreateAddressV2(userPublicKey, muunPublicKey)
-	case addressV3:
-		return CreateAddressV3(userPublicKey, muunPublicKey)
-	case addressV4:
-		return CreateAddressV4(userPublicKey, muunPublicKey)
-	case addressSubmarineSwapV1:
-		return nil, errors.Errorf("can't manually create a submarine swap v1 address")
-	case addressSubmarineSwapV2:
-		return nil, errors.Errorf("can't manually create a submarine swap v2 address")
-	}
-
-	return nil, errors.Errorf("unknown version %v", version)
-}
-
-func (a *muunAddress) Version() int {
-	return int(a.version)
-}
-
-func (a *muunAddress) DerivationPath() string {
-	return a.derivationPath
-}
-
-func (a *muunAddress) Address() string {
-	return a.address
-}
 
 // MuunPaymentURI is muun's uri struct
 type MuunPaymentURI struct {

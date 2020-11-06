@@ -1,36 +1,61 @@
 package io.muun.apollo.domain.selector
 
+import io.muun.common.model.OperationStatus
 import rx.Observable
 import javax.inject.Inject
 
 class LogoutOptionsSelector @Inject constructor(
-    val userSel: UserSelector,
-    val paymentContextSel: PaymentContextSelector,
-    val operationSel: OperationSelector
+    private val userSel: UserSelector,
+    private val paymentContextSel: PaymentContextSelector,
+    private val operationSel: OperationSelector
 ) {
 
     class LogoutOptions(
-        val isRecoverable: Boolean,
-        val hasBalance: Boolean,
-        val hasUnsetteledOps: Boolean
+        private val isRecoverable: Boolean,
+        private val hasBalance: Boolean,
+        private val hasUnsettledOps: Boolean,
+        private val hasPendingIncomingSwaps: Boolean
     ) {
 
-        fun canDestroyWallet() =
-            isRecoverable || (!hasBalance && !hasUnsetteledOps)
+        fun isBlocked(): Boolean {
+            if (isRecoverable) {
+                return hasPendingIncomingSwaps
+            } else {
+                return hasBalance || hasUnsettledOps
+            }
+        }
+
+        fun wouldDeleteWallet(): Boolean {
+            return !isRecoverable
+        }
+
+        @Deprecated("use isBlocked instead")
+        fun canDeleteWallet(): Boolean {
+            return isRecoverable || (!hasBalance && !hasUnsettledOps)
+        }
     }
 
-    fun watch() =
+    fun watch(): Observable<LogoutOptions> =
         Observable
             .combineLatest(
                 userSel.watch(),
                 paymentContextSel.watch().map { it.userBalance > 0 },
-                operationSel.watchUnsettled().map { it.isNotEmpty() },
-                { user, balance, hasUnsettled ->
-                    LogoutOptions(user.isRecoverable, balance, hasUnsettled)
-                }
-            )
+                operationSel.watchUnsettled()
+            ) { user, balance, unsettledOps ->
+                val hasPendingIncomingSwap = unsettledOps
+                        .filter { it.incomingSwap != null }
+                        .filter { it.status == OperationStatus.BROADCASTED }
+                        .isNotEmpty()
 
-    fun get() =
+                LogoutOptions(
+                        user.isRecoverable,
+                        balance,
+                        unsettledOps.isNotEmpty(),
+                        hasPendingIncomingSwap
+                )
+            }
+
+    fun get(): LogoutOptions =
         watch().toBlocking().first()
 
 }

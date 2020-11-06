@@ -6,7 +6,6 @@ import io.muun.apollo.domain.model.Contact;
 import rx.Observable;
 
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

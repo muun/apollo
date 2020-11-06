@@ -1,7 +1,7 @@
 package io.muun.apollo.data.logging
 
 import android.util.Log
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 
 class MuunTree: Timber.DebugTree() {
@@ -51,8 +51,13 @@ class MuunTree: Timber.DebugTree() {
         }
 
         if (LoggingContext.sendToCrashlytics) {
-            if (error != null) Crashlytics.logException(error)
-            Crashlytics.logException(crashReportingError)
+
+            val crashlytics = FirebaseCrashlytics.getInstance()
+
+            if (error != null) {
+                crashlytics.recordException(error)
+            }
+            crashlytics.recordException(crashReportingError)
         }
     }
 
@@ -67,13 +72,15 @@ class MuunTree: Timber.DebugTree() {
      * Send the error to Crashlytics, attaching metadata as key-values with their SDK.
      */
     private fun sendToCrashlytics(report: CrashReport) {
-        Crashlytics.setString("tag", report.tag)
-        Crashlytics.setString("message", report.message)
+        val crashlytics = FirebaseCrashlytics.getInstance()
+
+        crashlytics.setCustomKey("tag", report.tag)
+        crashlytics.setCustomKey("message", report.message)
 
         for (entry in report.metadata.entries) {
-            Crashlytics.setString(entry.key, entry.value.toString())
+            crashlytics.setCustomKey(entry.key, entry.value.toString())
         }
 
-        Crashlytics.logException(report.error)
+        crashlytics.recordException(report.error)
     }
 }

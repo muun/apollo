@@ -6,6 +6,7 @@ import io.muun.common.utils.Since;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,6 +25,12 @@ public class RealTimeData {
     )
     public int currentBlockchainHeight;
 
+    @Since(
+            apolloVersion = Supports.IncomingSwaps.APOLLO,
+            falconVersion = Supports.IncomingSwaps.FALCON
+    )
+    public List<ForwardingPolicyJson> forwardingPolicies;
+
     /**
      * Json constructor.
      */
@@ -35,9 +42,11 @@ public class RealTimeData {
      */
     public RealTimeData(FeeWindowJson feeWindow,
                         ExchangeRateWindow exchangeRateWindow,
-                        int currentBlockchainHeight) {
+                        int currentBlockchainHeight,
+                        List<ForwardingPolicyJson> forwardingPolicies) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
         this.currentBlockchainHeight = currentBlockchainHeight;
+        this.forwardingPolicies = forwardingPolicies;
     }
 }

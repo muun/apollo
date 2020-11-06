@@ -8,7 +8,7 @@ import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap
 import io.muun.common.model.DebtType
 import io.muun.common.utils.Deprecated
 
-class SubmarineSwapFundingOutput constructor(
+data class SubmarineSwapFundingOutput (
     val outputAddress: String,
     val outputAmountInSatoshis: Long,
     val debtType: DebtType,
@@ -45,15 +45,23 @@ class SubmarineSwapFundingOutput constructor(
             debtAmountInSatoshis
         )
 
+    /**
+     * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
+     */
+    fun withOutputAmount(newAmountInSat: Long): SubmarineSwapFundingOutput =
+        copy(outputAmountInSatoshis = newAmountInSat + debtAmountInSatoshis)
+
     companion object {
 
         fun fromJson(output: SubmarineSwapFundingOutputJson): SubmarineSwapFundingOutput {
             return SubmarineSwapFundingOutput(
                 output.outputAddress,
-                output.outputAmountInSatoshis,
+                // FIXME: When implementing amount-less invoices turns this optional
+                output.outputAmountInSatoshis!!,
                 output.debtType,
                 output.debtAmountInSats ?: 0,
-                output.confirmationsNeeded,
+                // FIXME: When implementing amount-less invoices turns this optional
+                output.confirmationsNeeded!!,
                 output.userLockTime,
                 MuunAddress.fromJson(output.userRefundAddress),
                 output.serverPaymentHashInHex,

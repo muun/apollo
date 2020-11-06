@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.Arrays;
-
 import javax.crypto.SecretKey;
 import javax.validation.constraints.NotNull;
 
@@ -28,13 +27,18 @@ public class ChallengePrivateKey {
 
     private final byte[] salt;
 
+    private final int version;
+
     /**
      * Constructor.
      */
-    private ChallengePrivateKey(ECKey key, byte[] salt) {
+    private ChallengePrivateKey(ECKey key, byte[] salt, int version) {
+
+        Preconditions.checkArgument(salt.length == 8);
 
         this.key = key;
         this.salt = salt;
+        this.version = version;
     }
 
     /**
@@ -48,7 +52,7 @@ public class ChallengePrivateKey {
     }
 
     public ChallengePublicKey getChallengePublicKey() {
-        return new ChallengePublicKey(key.getPubKey(), salt);
+        return new ChallengePublicKey(key.getPubKey(), salt, version);
     }
 
     /**
@@ -77,7 +81,7 @@ public class ChallengePrivateKey {
     /**
      * Constructs a password private key from a password.
      */
-    public static ChallengePrivateKey fromUserInput(String text, byte[] salt) {
+    public static ChallengePrivateKey fromUserInput(String text, byte[] salt, int version) {
 
         final byte[] inputBytes = Encodings.stringToBytes(text);
         final byte[] inputSecret = Hashes.scrypt256(inputBytes, salt);
@@ -86,7 +90,7 @@ public class ChallengePrivateKey {
 
         final ECKey ecKey = ECKey.fromPrivate(point);
 
-        return new ChallengePrivateKey(ecKey, salt);
+        return new ChallengePrivateKey(ecKey, salt, version);
     }
 
     /**

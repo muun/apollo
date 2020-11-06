@@ -12,7 +12,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

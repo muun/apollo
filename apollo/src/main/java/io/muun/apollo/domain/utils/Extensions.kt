@@ -2,12 +2,13 @@ package io.muun.apollo.domain.utils
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import io.muun.apollo.domain.errors.UnknownCurrencyForLocaleError
+import io.muun.apollo.data.logging.CrashReport
+import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.model.Currency
 import io.muun.common.rx.ObservableFn
 import io.muun.common.rx.RxHelper
 import rx.Observable
-import timber.log.Timber
+import java.io.Serializable
 import java.util.*
 import javax.money.Monetary
 import javax.money.MonetaryException
@@ -15,13 +16,13 @@ import javax.money.MonetaryException
 fun <T> Observable<T>.toVoid(): Observable<Void> =
     map(RxHelper::toVoid)
 
-fun <T, E: Throwable> Observable<T>.replaceTypedError(cls: Class<E>, f: (E) -> Throwable) =
+fun <T, E : Throwable> Observable<T>.replaceTypedError(cls: Class<E>, f: (E) -> Throwable) =
     compose(ObservableFn.replaceTypedError(cls, f))
 
-fun <T, E: Throwable> Observable<T>.onTypedErrorResumeNext(cls: Class<E>, f: (E) -> Observable<T>) =
+fun <T, E : Throwable> Observable<T>.onTypedErrorResumeNext(cls: Class<E>, f: (E) -> Observable<T>) =
     compose(ObservableFn.onTypedErrorResumeNext(cls, f))
 
-fun <T, E: Throwable> Observable<T>.onTypedErrorReturn(cls: Class<E>, f: (E) -> T) =
+fun <T, E : Throwable> Observable<T>.onTypedErrorReturn(cls: Class<E>, f: (E) -> T) =
     compose(ObservableFn.onTypedErrorReturn(cls, f))
 
 fun <T> Observable<T>.flatDoOnNext(f: (T) -> Observable<Void>) =
@@ -41,12 +42,25 @@ fun Fragment.applyArgs(f: Bundle.() -> Unit) =
 /**
  * Return the list of currencies reported by the device (based on the list of available locales
  * of the device). For debugging purposes only, it is used in our custom error report.
- * We receive the root cause error just in case we need to report an unknown currency error, to be
- * able to attach it. As this is only used as part of an error handling, it is guaranteed to exist.
+ * We receive the root cause crashReport just in case we need to report an unknown currency error,
+ * to be able to attach it. As this is only used as part of an error handling, it is guaranteed
+ * to exist.
  */
-fun getUnsupportedCurrencies(cause: Throwable): Array<String> {
+fun getUnsupportedCurrencies(report: CrashReport): Array<String> =
+    getUnsupportedCurrencies(report.metadata)
+
+fun getUnsupportedCurrencies(error: MuunError): Array<String> =
+    getUnsupportedCurrencies(error.metadata)
+
+/**
+ * Return the list of currencies reported by the device (based on the list of available locales
+ * of the device). For debugging purposes only, it is used in our custom error report.
+ * We also attach metadata to a map received as an in-out parameter.
+ */
+private fun getUnsupportedCurrencies(metadata: MutableMap<String, Serializable>): Array<String> {
     val availableLocales = Locale.getAvailableLocales()
     val unsupportedCurrencies: MutableSet<String> = HashSet()
+    val unsupportedLocales: MutableSet<Locale> = HashSet() //For which we have no supported Currency
 
     for (i in availableLocales.indices) {
 
@@ -59,9 +73,11 @@ fun getUnsupportedCurrencies(cause: Throwable): Array<String> {
             }
 
         } catch (e: MonetaryException) {
-            Timber.e(UnknownCurrencyForLocaleError(locale, cause))
+            unsupportedLocales.add(locale)
         }
     }
+
+    metadata["unsupportedLocales"] = unsupportedLocales.toTypedArray().joinToString(",")
 
     return unsupportedCurrencies.toTypedArray()
 }

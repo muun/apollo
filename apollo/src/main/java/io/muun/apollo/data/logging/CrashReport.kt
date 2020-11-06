@@ -8,7 +8,7 @@ data class CrashReport(
     val tag: String,
     val message: String,
     val error: Throwable,
-    val metadata: Map<String, Serializable>
+    val metadata: MutableMap<String, Serializable>
 ) {
 
     fun print() =

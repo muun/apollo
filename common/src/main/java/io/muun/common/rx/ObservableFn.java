@@ -83,6 +83,45 @@ public final class ObservableFn {
         );
     }
 
+    /**
+     * If the error emitted by the observable is of type {ErrorT}, it gets replaced by the error
+     * returned when calling replacer with the original error.
+     * Like replaceTypedError, but without walking the causal chain of `error`, looking for an
+     * instance of `errorClass`.
+     */
+    public static <T, ErrorT extends Throwable> Transformer<T, T> replaceTypedErrorExact(
+            final Class<ErrorT> errorClass,
+            final Func1<ErrorT, Throwable> replacer) {
+
+        return onTypedErrorExactResumeNext(
+                errorClass,
+                error -> Observable.error(replacer.call(error))
+        );
+    }
+
+    /**
+     * Like onErrorResumeNext, but only for errors of a specific type.
+     * Like onTypedErrorResumeNext, but without walking the causal chain of `error`, looking for an
+     * instance of `errorClass`.
+     */
+    public static <T, ErrorT extends Throwable> Transformer<T, T> onTypedErrorExactResumeNext(
+            final Class<ErrorT> errorClass,
+            final Func1<ErrorT, Observable<T>> resumeFunction) {
+
+        return observable -> observable.onErrorResumeNext(
+
+                (Func1<Throwable, Observable<? extends T>>) error -> {
+
+                    if (errorClass.isInstance(error)) {
+                        return resumeFunction.call(errorClass.cast(error));
+
+                    } else {
+                        return Observable.error(error);
+                    }
+                }
+        );
+    }
+
     public static <T, ErrorT extends Throwable> Transformer<T, T> onTypedErrorReturn(
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, T> produceFunction) {

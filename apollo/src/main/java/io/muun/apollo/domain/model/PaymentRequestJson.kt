@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility
 import io.muun.apollo.domain.model.PaymentRequest.Type
 import io.muun.common.api.Contact
-import io.muun.common.api.HardwareWalletJson
 import io.muun.common.api.SubmarineSwapJson
 import javax.money.MonetaryAmount
 
@@ -14,7 +13,6 @@ data class PaymentRequestJson(var type: Type? = null,
                               var description: String? = null,
                               var contact: Contact? = null,
                               var address: String? = null,
-                              var hardwareWallet: HardwareWalletJson? = null,
                               var invoice: String? = null,
                               var swap: SubmarineSwapJson? = null,
                               var feeInSatoshisPerByte: Double = 0.0, // workaround Kotlin+Jackson

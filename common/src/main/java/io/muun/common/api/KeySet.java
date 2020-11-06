@@ -9,7 +9,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

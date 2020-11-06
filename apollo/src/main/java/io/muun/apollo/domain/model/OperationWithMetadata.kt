@@ -24,8 +24,6 @@ data class OperationWithMetadata(
         @NotNull
         val receiverIsExternal: Boolean? = null,
 
-        val hardwareWalletHid: Long? = null,
-
         val receiverAddress: String? = null,
 
         val receiverAddressDerivationPath: String? = null,
@@ -58,5 +56,7 @@ data class OperationWithMetadata(
 
         val receiverMetadata: String?,
 
-        val senderMetadata: String?
+        val senderMetadata: String?,
+
+        val incomingSwap: IncomingSwap? = null
 )

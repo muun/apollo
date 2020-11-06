@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 

@@ -25,7 +25,6 @@ public class Operation extends HoustonIdModel {
      */
     public static Operation createOutgoing(@Nullable PublicProfile myProfile,
                                            @Nullable PublicProfile receiverProfile,
-                                           @Nullable Long hardwareWalletHid,
                                            String address,
                                            String addressDerivationPath,
                                            PreparedPayment preparedPayment) {
@@ -40,7 +39,6 @@ public class Operation extends HoustonIdModel {
                 receiverProfile == null,
                 address,
                 addressDerivationPath,
-                hardwareWalletHid,
                 preparedPayment.amount,
                 preparedPayment.fee,
                 0L,
@@ -49,6 +47,7 @@ public class Operation extends HoustonIdModel {
                 OperationStatus.CREATED,
                 ZonedDateTime.now(),
                 preparedPayment.rateWindowHid,
+                null,
                 null
         );
     }
@@ -70,7 +69,6 @@ public class Operation extends HoustonIdModel {
                 true,
                 swap.getFundingOutput().getOutputAddress(),
                 null,
-                null,
                 preparedPayment.amount,
                 preparedPayment.fee,
                 0L,
@@ -79,42 +77,7 @@ public class Operation extends HoustonIdModel {
                 OperationStatus.CREATED,
                 DateUtils.now(),
                 preparedPayment.rateWindowHid,
-                swap
-        );
-    }
-
-    /**
-     * Create a new incoming operation. Useful for withdrawals.
-     */
-    public static Operation createIncoming(PublicProfile myProfile,
-                                           @Nullable Long hardwareWalletHid,
-                                           String myAddress,
-                                           String myAddressDerivationPath,
-                                           BitcoinAmount amount,
-                                           BitcoinAmount fee,
-                                           String description,
-                                           long exchangeRateWindowHid) {
-
-        return new Operation(
-                null,
-                NO_HID,
-                OperationDirection.INCOMING,
-                true,
-                null,
-                true,
-                myProfile,
-                myProfile == null,
-                myAddress,
-                myAddressDerivationPath,
-                hardwareWalletHid,
-                amount,
-                fee,
-                0L,
-                NO_HASH,
-                description,
-                OperationStatus.CREATED,
-                DateUtils.now(),
-                exchangeRateWindowHid,
+                swap,
                 null
         );
     }
@@ -136,9 +99,6 @@ public class Operation extends HoustonIdModel {
 
     @NotNull
     public Boolean receiverIsExternal;
-
-    @Nullable
-    public final Long hardwareWalletHid;
 
     @Nullable
     public String receiverAddress;
@@ -176,6 +136,9 @@ public class Operation extends HoustonIdModel {
     @Nullable
     public final SubmarineSwap swap;
 
+    @Nullable
+    public final IncomingSwap incomingSwap;
+
     /**
      * Constructor.
      */
@@ -190,7 +153,6 @@ public class Operation extends HoustonIdModel {
             @NotNull Boolean receiverIsExternal,
             @Nullable String receiverAddress,
             @Nullable String receiverAddressDerivationPath,
-            @Nullable Long hardwareWalletHid,
             @NotNull BitcoinAmount amount,
             @NotNull BitcoinAmount fee,
             @NotNull Long confirmations,
@@ -199,7 +161,8 @@ public class Operation extends HoustonIdModel {
             @NotNull OperationStatus status,
             @NotNull ZonedDateTime creationDate,
             @NotNull Long exchangeRateWindowHid,
-            @Nullable SubmarineSwap swap) {
+            @Nullable SubmarineSwap swap,
+            @Nullable IncomingSwap incomingSwap) {
 
         super(id, hid);
         this.direction = direction;
@@ -208,7 +171,6 @@ public class Operation extends HoustonIdModel {
         this.senderIsExternal = senderIsExternal;
         this.receiverProfile = receiverProfile;
         this.receiverIsExternal = receiverIsExternal;
-        this.hardwareWalletHid = hardwareWalletHid;
         this.receiverAddress = receiverAddress;
         this.receiverAddressDerivationPath = receiverAddressDerivationPath;
         this.amount = amount;
@@ -220,6 +182,7 @@ public class Operation extends HoustonIdModel {
         this.creationDate = creationDate;
         this.exchangeRateWindowHid = exchangeRateWindowHid;
         this.swap = swap;
+        this.incomingSwap = incomingSwap;
     }
 
     /**
@@ -278,7 +241,6 @@ public class Operation extends HoustonIdModel {
                 other.receiverIsExternal,
                 other.receiverAddress,
                 other.receiverAddressDerivationPath,
-                hardwareWalletHid,
                 amount,
                 fee,
                 confirmations,
@@ -287,7 +249,8 @@ public class Operation extends HoustonIdModel {
                 other.status,
                 creationDate,
                 exchangeRateWindowHid,
-                swap
+                swap,
+                incomingSwap
         );
     }
 }

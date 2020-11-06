@@ -119,9 +119,7 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
 
         long expectedOutputAmount = invoice.getAmountInSat()
                 + swap.getFees().getSweepInSats()
-                + swap.getFees().getLightningInSats()
-                + swap.getFees().getChannelOpenInSats()
-                + swap.getFees().getChannelCloseInSats(); // I hate you, outputAmountInSatoshis.
+                + swap.getFees().getLightningInSats();
 
         if (swap.isCollect()) {
             expectedOutputAmount += swap.getFundingOutput().getDebtAmountInSatoshis();

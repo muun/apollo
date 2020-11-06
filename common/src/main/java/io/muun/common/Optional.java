@@ -4,7 +4,6 @@ import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 
 import java.util.NoSuchElementException;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 

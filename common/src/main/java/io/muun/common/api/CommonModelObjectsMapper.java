@@ -47,7 +47,7 @@ public class CommonModelObjectsMapper {
         return new Challenge(
                 challengeJson.type,
                 Encodings.hexToBytes(challengeJson.challenge),
-                Encodings.hexToBytes(challengeJson.salt)
+                challengeJson.salt == null ? null : Encodings.hexToBytes(challengeJson.salt)
         );
     }
 
@@ -56,7 +56,8 @@ public class CommonModelObjectsMapper {
      */
     public ChallengePublicKey mapChallengePublicKey(
             String challengePublicKeyHex,
-            String challengeSaltHex) {
+            String challengeSaltHex,
+            int version) {
 
         if (challengePublicKeyHex == null || challengeSaltHex == null) {
             return null;
@@ -64,7 +65,8 @@ public class CommonModelObjectsMapper {
 
         return new ChallengePublicKey(
                 Encodings.hexToBytes(challengePublicKeyHex),
-                Encodings.hexToBytes(challengeSaltHex)
+                Encodings.hexToBytes(challengeSaltHex),
+                version
         );
     }
 
@@ -78,7 +80,11 @@ public class CommonModelObjectsMapper {
 
         return new ChallengeSetup(
                 challengeSetupJson.type,
-                mapChallengePublicKey(challengeSetupJson.publicKey, challengeSetupJson.salt),
+                mapChallengePublicKey(
+                        challengeSetupJson.publicKey,
+                        challengeSetupJson.salt,
+                        challengeSetupJson.version
+                ),
                 Encodings.hexToBytes(challengeSetupJson.salt),
                 challengeSetupJson.encryptedPrivateKey,
                 challengeSetupJson.version

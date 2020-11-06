@@ -3,7 +3,6 @@ package io.muun.common.utils;
 import org.javamoney.moneta.Money;
 
 import java.math.BigInteger;
-
 import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 

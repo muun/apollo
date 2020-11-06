@@ -7,6 +7,7 @@ import io.muun.common.utils.Deprecated;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -26,23 +27,24 @@ public class SubmarineSwapJson {
     @NotNull
     public SubmarineSwapFundingOutputJson fundingOutput;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     @Deprecated(atApolloVersion = Supports.PreOpenChannel.APOLLO,
             atFalconVersion = Supports.PreOpenChannel.FALCON)
     public Long sweepFeeInSatoshis;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     @Deprecated(atApolloVersion = Supports.PreOpenChannel.APOLLO,
             atFalconVersion = Supports.PreOpenChannel.FALCON)
     public Long lightningFeeInSatoshis;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     public SubmarineSwapFeesJson fees;
 
     @NotNull
     public MuunZonedDateTime expiresAt;
 
     @NotNull
+    @Deprecated(atApolloVersion = 76)
     public Boolean willPreOpenChannel;
 
     @Nullable
@@ -51,6 +53,12 @@ public class SubmarineSwapJson {
     @Nullable
     public String preimageInHex;
 
+    @Nullable // Present if the invoice didn't have an amount
+    public List<SubmarineSwapBestRouteFeesJson> bestRouteFees;
+
+    @Nullable // Present if the invoice didn't have an amount
+    public SubmarineSwapFundingOutputPoliciesJson fundingOutputPolicies;
+
     /**
      * Json constructor.
      */
@@ -58,7 +66,7 @@ public class SubmarineSwapJson {
     }
 
     /**
-     * Manual constructor.
+     * Apollo constructor.
      */
     public SubmarineSwapJson(String swapUuid,
                              String invoice,
@@ -66,9 +74,38 @@ public class SubmarineSwapJson {
                              SubmarineSwapFundingOutputJson fundingOutput,
                              SubmarineSwapFeesJson fees,
                              MuunZonedDateTime expiresAt,
-                             Boolean willPreOpenChannel,
                              @Nullable MuunZonedDateTime payedAt,
                              @Nullable String preimageInHex) {
+        this(
+                swapUuid,
+                invoice,
+                receiver,
+                fundingOutput,
+                fees,
+                expiresAt,
+                false,
+                payedAt,
+                preimageInHex,
+                null,
+                null
+        );
+    }
+
+    /**
+     * Manual constructor.
+     */
+    public SubmarineSwapJson(
+            String swapUuid,
+            String invoice,
+            SubmarineSwapReceiverJson receiver,
+            SubmarineSwapFundingOutputJson fundingOutput,
+            @Nullable SubmarineSwapFeesJson fees,
+            MuunZonedDateTime expiresAt,
+            Boolean willPreOpenChannel,
+            @Nullable MuunZonedDateTime payedAt,
+            @Nullable String preimageInHex,
+            @Nullable List<SubmarineSwapBestRouteFeesJson> bestRouteFees,
+            @Nullable SubmarineSwapFundingOutputPoliciesJson fundingOutputPolicies) {
 
         this.swapUuid = swapUuid;
         this.invoice = invoice;
@@ -81,10 +118,15 @@ public class SubmarineSwapJson {
         this.preimageInHex = preimageInHex;
 
         // Compatibility:
-        this.lightningFeeInSatoshis = fees.lightningInSats
-                + fees.channelOpenInSats
-                + fees.channelCloseInSats;
+        if (fees != null) {
+            this.lightningFeeInSatoshis = fees.lightningInSats
+                    + fees.channelOpenInSats
+                    + fees.channelCloseInSats;
 
-        this.sweepFeeInSatoshis = fees.sweepInSats;
+            this.sweepFeeInSatoshis = fees.sweepInSats;
+        }
+
+        this.bestRouteFees = bestRouteFees;
+        this.fundingOutputPolicies = fundingOutputPolicies;
     }
 }

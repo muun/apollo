@@ -16,11 +16,11 @@ class MigrateChallengeKeysAction @Inject constructor(
 
 ): BaseAsyncAction0<Void>() {
 
-    override fun action() =
+    override fun action(): Observable<Void> =
         if (! keysRepository.hasMigratedChallengeKeys())
             executeMigration()
         else
-            Observable.just<Void>(null)
+            Observable.just(null)
 
     private fun executeMigration() =
         houstonClient.fetchChallengeKeyMigrationData()

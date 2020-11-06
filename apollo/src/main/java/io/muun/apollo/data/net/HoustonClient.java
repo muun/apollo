@@ -3,6 +3,7 @@ package io.muun.apollo.data.net;
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
+import io.muun.apollo.domain.errors.CyclicalSwapError;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
@@ -10,10 +11,10 @@ import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
 import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.NoPaymentRouteException;
+import io.muun.apollo.domain.errors.UnreachableNodeException;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
-import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
@@ -30,20 +31,20 @@ import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
+import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
-import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
+import io.muun.common.api.LinkActionJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.SendEncryptedKeysJson;
 import io.muun.common.api.SetupChallengeResponse;
-import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
@@ -52,9 +53,9 @@ import io.muun.common.api.houston.HoustonService;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
-import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.model.CreateSessionOk;
+import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.VerificationType;
@@ -72,7 +73,6 @@ import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
@@ -107,7 +107,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                                                                int version,
                                                                String gcmRegistrationToken,
                                                                PublicKey basePublicKey,
-                                                               ChallengeSetup anonChallengeSetup,
                                                                CurrencyUnit primaryCurrency) {
 
         final CreateFirstSessionJson params = apiMapper.mapCreateFirstSession(
@@ -115,7 +114,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 version,
                 gcmRegistrationToken,
                 basePublicKey,
-                anonChallengeSetup, primaryCurrency
+                primaryCurrency
         );
 
         return getService().createFirstSession(params)
@@ -126,13 +125,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * Creates a session to log into an existing user.
      */
     public Observable<CreateSessionOk> createLoginSession(String buildType,
-                                                          int version,
+                                                          int clientVersion,
                                                           String gcmRegistrationToken,
                                                           String email) {
 
         final CreateLoginSessionJson params = apiMapper.mapCreateLoginSession(
                 buildType,
-                version,
+                clientVersion,
                 gcmRegistrationToken,
                 email
         );
@@ -142,14 +141,60 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Creates a session to log into an existing user, using "RC only" flow.
+     */
+    public Observable<Challenge> createRcLoginSession(String buildType,
+                                                      int clientVersion,
+                                                      String gcmToken,
+                                                      String rcChallengePublicKeyHex) {
+
+        final CreateRcLoginSessionJson session = apiMapper.mapCreateRcLoginSession(
+                buildType,
+                clientVersion,
+                gcmToken,
+                rcChallengePublicKeyHex
+        );
+
+        return getService().createRecoveryCodeLoginSession(session)
+                .map(modelMapper::mapChallenge);
+    }
+
+    /**
+     * Login by sending a challenge signature, signed with the RC.
+     * Note: If user has email setup, email auth will be required to finish login.
+     */
+    public Observable<CreateSessionRcOk> loginWithRecoveryCode(ChallengeSignature challengeSig) {
+
+        return getService().loginWithRecoveryCode(apiMapper.mapChallengeSignature(challengeSig))
+                .map(modelMapper::mapCreateSessionRcOk);
+    }
+
+    /**
+     * Use an external authorize link (received by email) to finish RC login.
+     */
+    public Observable<Void> authorizeLoginWithRecoveryCode(String uuid) {
+        return getService().authorizeLoginWithRecoveryCode(new LinkActionJson(uuid));
+    }
+
+    /**
+     * Finish Login with Recovery Code (after email auth) by fetching KeySet.
+     */
+    public Observable<KeySet> fetchKeyset() {
+        return getService().getKeySet();
+    }
+
+    /**
      * Start the email setup process.
      */
     public Observable<Void> startEmailSetup(String email, ChallengeSignature anonChallengeSig) {
+        return getService().startEmailSetup(apiMapper.mapStartEmailSetup(email, anonChallengeSig));
+    }
 
-        final StartEmailSetupJson params =
-                apiMapper.mapStartEmailSetup(email, anonChallengeSig);
-
-        return getService().startEmailSetup(params);
+    /**
+     * Use an external verify link (received by email).
+     */
+    public Observable<Void> useVerifyLink(String uuid) {
+        return getService().useVerifyLink(new LinkActionJson(uuid));
     }
 
     /**
@@ -169,7 +214,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     public Observable<Void> resendVerificationCode(@NotNull VerificationType verificationType) {
-        return getService().resendVerificationCode(verificationType).map(RxHelper::toVoid);
+        return getService().resendVerificationCode(verificationType);
     }
 
     /**
@@ -187,6 +232,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<User> createProfile(UserProfile userProfile) {
         return getService().createProfile(apiMapper.mapUserProfile(userProfile))
                 .map(modelMapper::mapUser);
+    }
+
+    /**
+     * Use an external authorize link (received by email).
+     */
+    public Observable<Void> useAuthorizeLink(String uuid) {
+        return getService().useAuthorizeLink(new LinkActionJson(uuid));
     }
 
     /**
@@ -232,9 +284,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Confirm the delivery of all the notifications up to a given id.
      */
-    public Observable<Void> confirmNotificationsDeliveryUntil(long notificationId) {
+    public Observable<Void> confirmNotificationsDeliveryUntil(
+            final long notificationId,
+            final String deviceModel,
+            final String osVersion,
+            final String appStatus) {
 
-        return getService().confirmNotificationsDeliveryUntil(notificationId);
+        return getService().confirmNotificationsDeliveryUntil(
+                notificationId, deviceModel, osVersion, appStatus
+        );
     }
 
     /**
@@ -397,8 +455,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Pushes a raw transaction to Houston.
      *
-     * @param txHex The bitcoinj's transaction.
-     * @param operationHid   The houston operation id.
+     * @param txHex        The bitcoinj's transaction.
+     * @param operationHid The houston operation id.
      */
     public Observable<TransactionPushed> pushTransaction(@Nullable String txHex,
                                                          long operationHid) {
@@ -433,25 +491,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
-     * Submit a new signed withdrawal operation.
-     */
-    public Observable<OperationCreated> newWithdrawalOperation(OperationWithMetadata operation,
-                                                               String signedTransaction,
-                                                               List<Long> inputAmounts) {
-
-        final HardwareWalletWithdrawalJson withdrawal = new HardwareWalletWithdrawalJson(
-                apiMapper.mapWithdrawalOperation(operation),
-                new RawTransaction(signedTransaction),
-                inputAmounts
-        );
-
-        return getService()
-                .newWithdrawalOperation(withdrawal)
-                .map(modelMapper::mapOperationCreated);
-
-    }
-
-    /**
      * Request a new Submarine Swap.
      */
     public Observable<SubmarineSwap> createSubmarineSwap(SubmarineSwapRequest request,
@@ -473,6 +512,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                         e -> new InvoiceAlreadyUsedException(request.invoice, e)
                 ))
                 .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.UNREACHABLE_NODE,
+                        e -> new UnreachableNodeException(request.invoice, e)
+                ))
+                .compose(ObservableFn.replaceHttpException(
                         ErrorCode.NO_PAYMENT_ROUTE,
                         e -> new NoPaymentRouteException(request.invoice, e)
                 ))
@@ -483,6 +526,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 .compose(ObservableFn.replaceHttpException(
                         ErrorCode.INVOICE_EXPIRES_TOO_SOON,
                         e -> new InvoiceExpiresTooSoonException(request.invoice, e)
+                ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.CYCLICAL_SWAP,
+                        e -> new CyclicalSwapError(request.invoice, e)
                 ))
                 .doOnNext(submarineSwapJson -> {
                     final boolean isValid = TransactionSchemeSubmarineSwapV2.validateSwap(
@@ -535,49 +582,21 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Use an external confirm (change password) link (received by email).
+     */
+    public Observable<Void> useConfirmLink(String uuid) {
+        return getService().useConfirmLink(new LinkActionJson(uuid));
+    }
+
+    /**
      * Start a password change (which involves email authorization and a new challenge setup).
+     * Note: Ignoring SetupChallengeResponse (and by extension MuunKey attr) as we no longer
+     * encrypt Muun Key with password, so the encrypted MuunKey does not change on password change.
      */
-    public Observable<SetupChallengeResponse> finishPasswordChange(String uuid,
-                                                                   ChallengeSetup challengeSetup) {
+    public Observable<Void> finishPasswordChange(String uuid, ChallengeSetup challengeSetup) {
         return getService()
-                .finishPasswordChange(apiMapper.mapChallengeUpdate(uuid, challengeSetup));
-    }
-
-    /**
-     * Create or update an existing HardwareWallet.
-     */
-    public Observable<HardwareWallet> createOrUpdateHardwareWallet(HardwareWallet wallet) {
-        return getService()
-                .createOrUpdateHardwareWallet(apiMapper.mapHardwareWallet(wallet))
-                .map(modelMapper::mapHardwareWallet);
-    }
-
-    /**
-     * Unpair (aka remove) a HardwareWallet.
-     */
-    public Observable<HardwareWallet> unpairHardwareWallet(HardwareWallet wallet) {
-        return getService()
-                .unpairHardwareWallet(wallet.getHid())
-                .map(modelMapper::mapHardwareWallet);
-    }
-
-    /**
-     * Fetch HardwareWallets from Houston.
-     */
-    public Observable<List<HardwareWallet>> fetchHardwareWallets() {
-        return getService().fetchHardwareWallets()
-                .flatMap(Observable::from)
-                .map(modelMapper::mapHardwareWallet)
-                .toList();
-    }
-
-    /**
-     * Fetch a HardwareWallet state.
-     */
-    public Observable<HardwareWalletState> fetchHardwareWalletState(HardwareWallet wallet) {
-        return getService()
-                .fetchHardwareWalletState(wallet.getHid())
-                .map(modelMapper::mapHardwareWalletState);
+                .finishPasswordChange(apiMapper.mapChallengeUpdate(uuid, challengeSetup))
+                .map(RxHelper::toVoid);
     }
 
     /**

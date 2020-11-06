@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

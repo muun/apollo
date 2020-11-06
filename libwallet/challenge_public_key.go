@@ -48,6 +48,11 @@ func (k *ChallengePublicKey) EncryptKey(privKey *HDPrivateKey, recoveryCodeSalt 
 	birthdayBytes := make([]byte, 2)
 	binary.BigEndian.PutUint16(birthdayBytes, uint16(birthday))
 
+	if len(recoveryCodeSalt) == 0 {
+		// Fill the salt with zeros to maintain the encrypted keys format
+		recoveryCodeSalt = make([]byte, 8)
+	}
+
 	result := make([]byte, 0, 1+2+serializedPublicKeyLength+len(ciphertext)+len(recoveryCodeSalt))
 	buf := bytes.NewBuffer(result)
 	buf.WriteByte(2)

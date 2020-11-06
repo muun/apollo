@@ -321,6 +321,148 @@ public class DbMigrationManager {
     private static final String MIGRATION_26_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_SUBMARINE_SWAPS =
             "INSERT INTO submarine_swaps SELECT * FROM tmp_submarine_swaps";
 
+    private static final String MIGRATION_29_CREATE_OPERATIONS_TABLE = ""
+            + "CREATE TABLE operations (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    hid INTEGER NOT NULL UNIQUE,\n"
+            + "    direction TEXT NOT NULL,\n"
+            + "    is_external INTEGER NOT NULL,\n"
+            + "    sender_hid INTEGER REFERENCES public_profiles(hid),\n"
+            + "    sender_is_external INTEGER NOT NULL,\n"
+            + "    receiver_hid INTEGER REFERENCES public_profiles(hid),\n"
+            + "    receiver_is_external INTEGER NOT NULL,\n"
+            + "    receiver_address TEXT,\n"
+            + "    receiver_address_derivation_path TEXT,\n"
+            + "    amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    amount_in_input_currency TEXT NOT NULL,\n"
+            + "    amount_in_primary_currency TEXT NOT NULL,\n"
+            + "    fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    fee_in_input_currency TEXT NOT NULL,\n"
+            + "    fee_in_primary_currency TEXT NOT NULL,\n"
+            + "    confirmations INTEGER NOT NULL,\n"
+            + "    hash TEXT,\n"
+            + "    description TEXT,\n"
+            + "    status TEXT NOT NULL,\n"
+            + "    creation_date TEXT NOT NULL,\n"
+            + "    exchange_rate_window_hid INTEGER NOT NULL,\n"
+            + "    submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid)\n"
+            + ")";
+
+    private static final String MIGRATION_29_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_OPERATIONS =
+            "INSERT INTO operations SELECT"
+                    + " id,"
+                    + " hid,"
+                    + " direction,"
+                    + " is_external,"
+                    + " sender_hid,"
+                    + " sender_is_external,"
+                    + " receiver_hid,"
+                    + " receiver_is_external,"
+                    + " receiver_address, receiver_address_derivation_path,"
+                    + " amount_in_satoshis,"
+                    + " amount_in_input_currency,"
+                    + " amount_in_primary_currency,"
+                    + " fee_in_satoshis,"
+                    + " fee_in_input_currency,"
+                    + " fee_in_primary_currency,"
+                    + " confirmations,"
+                    + " hash,"
+                    + " description,"
+                    + " status,"
+                    + " creation_date,"
+                    + " exchange_rate_window_hid,"
+                    + " submarine_swap_houston_uuid"
+                    + " FROM tmp_operations";
+
+    private static final String MIGRATION_32_CREATE_SUBMARINE_SWAPS_TABLE = ""
+            + "CREATE TABLE submarine_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    invoice TEXT NOT NULL,\n"
+            + "    receiver_alias TEXT,\n"
+            + "    receiver_network_addresses TEXT NOT NULL,\n"
+            + "    receiver_public_key TEXT NOT NULL,\n"
+            + "    funding_output_address TEXT NOT NULL,\n"
+            + "    funding_output_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    funding_confirmations_needed INTEGER NOT NULL,\n"
+            + "    funding_user_lock_time INTEGER,\n"
+            + "    funding_user_refund_address TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_path TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_version INTEGER NOT NULL,\n"
+            + "    funding_server_payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    funding_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    sweep_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    lightning_fee_in_satoshis INTEGER NOT NULL,\n"
+            + "    expires_at TEXT NOT NULL,\n"
+            + "    payed_at TEXT,\n"
+            + "    preimage_in_hex TEXT,\n"
+            + "    funding_script_version INTEGER NOT NULL,\n"
+            + "    funding_expiration_in_blocks INTEGER,\n"
+            + "    funding_user_public_key TEXT,\n"
+            + "    funding_user_public_key_path TEXT,\n"
+            + "    funding_muun_public_key TEXT,\n"
+            + "    funding_muun_public_key_path TEXT,\n"
+            + "    funding_output_debt_type TEXT NOT NULL,\n"
+            + "    funding_output_debt_amount_in_satoshis INTEGER NOT NULL\n"
+            + ")";
+
+    private static final String MIGRATION_32_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_SUBMARINE_SWAPS =
+            "INSERT INTO submarine_swaps SELECT"
+                    + "    id,\n"
+                    + "    houston_uuid,\n"
+                    + "    invoice,\n"
+                    + "    receiver_alias,\n"
+                    + "    receiver_network_addresses,\n"
+                    + "    receiver_public_key,\n"
+                    + "    funding_output_address,\n"
+                    + "    funding_output_amount_in_satoshis,\n"
+                    + "    funding_confirmations_needed,\n"
+                    + "    funding_user_lock_time INTEGER,\n"
+                    + "    funding_user_refund_address,\n"
+                    + "    funding_user_refund_address_path,\n"
+                    + "    funding_user_refund_address_version,\n"
+                    + "    funding_server_payment_hash_in_hex,\n"
+                    + "    funding_server_public_key_in_hex,\n"
+                    + "    sweep_fee_in_satoshis,\n"
+                    + "    lightning_fee_in_satoshis,\n"
+                    + "    expires_at,\n"
+                    + "    payed_at,\n"
+                    + "    preimage_in_hex,\n"
+                    + "    funding_script_version ,\n"
+                    + "    funding_expiration_in_blocks,\n"
+                    + "    funding_user_public_key,\n"
+                    + "    funding_user_public_key_path,\n"
+                    + "    funding_muun_public_key,\n"
+                    + "    funding_muun_public_key_path,\n"
+                    + "    funding_output_debt_type,\n"
+                    + "    funding_output_debt_amount_in_satoshis\n"
+                    + "FROM tmp_submarine_swaps";
+
+    private static final String MIGRATION_33_CREATE_INCOMING_SWAP_HTLCS_TABLE = ""
+            + "CREATE TABLE incoming_swap_htlcs (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    expiration_height INTEGER NOT NULL,\n"
+            + "    payment_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    fulfillment_fee_subsidy_in_satoshis INTEGER NOT NULL,\n"
+            + "    lent_in_satoshis INTEGER NOT NULL,\n"
+            + "    swap_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    fulfillment_tx_in_hex TEXT,\n"
+            + "    address TEXT NOT NULL,\n"
+            + "    output_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    htlc_tx_in_hex TEXT NOT NULL\n"
+            + ")";
+
+    private static final String MIGRATION_33_CREATE_INCOMING_SWAPS_TABLE = ""
+            + "CREATE TABLE incoming_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    sphinx_packet_in_hex TEXT,\n"
+            + "    incoming_swap_htlc_houston_uuid TEXT \n"
+            + "    REFERENCES incoming_swap_htlcs(houston_uuid)\n"
+            + ")";
+
     /**
      * Constructor. Here go all the database migrations.
      *
@@ -466,6 +608,45 @@ public class DbMigrationManager {
 
         add(28, MigrationsModel.MIGRATION_28_ADD_SWAP_DEBT_TYPE,
                 MigrationsModel.MIGRATION_28_ADD_SWAP_DEBT_AMOUNT);
+
+        // We want to delete hws foreign key in operations table but we can't drop column...
+        // Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+        //
+        //  1. Rename your table to a temporary name.
+        //  2. Create a table exactly as the original one, except for the column in question.
+        //  3. Insert all the rows from the temporary table to the new one.
+        //  4. Delete the temporary table.
+
+        add(29,
+                MigrationsModel.MIGRATION_29_MOVE_OPERATIONS_TO_A_TEMPORARY_TABLE,
+                MIGRATION_29_CREATE_OPERATIONS_TABLE,
+                MIGRATION_29_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_OPERATIONS,
+                MigrationsModel.MIGRATION_29_DROP_TEMPORARY_TABLE
+        );
+
+        add(30, MigrationsModel.MIGRATION_30_DROP_HARDWARE_WALLETS_TABLE);
+        add(31, MigrationsModel.MIGRATION_31_DROP_SATELLITE_PAIRINGS_TABLE);
+
+        // We want to drop topup columns in swaps table but we can't drop column...
+        // Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+        //
+        //  1. Rename your table to a temporary name.
+        //  2. Create a table exactly as the original one, except for the column in question.
+        //  3. Insert all the rows from the temporary table to the new one.
+        //  4. Delete the temporary table.
+
+        add(32,
+                MigrationsModel.MIGRATION_32_MOVE_SUBMARINE_SWAPS_TO_A_TEMPORARY_TABLE,
+                MIGRATION_32_CREATE_SUBMARINE_SWAPS_TABLE,
+                MIGRATION_32_COPY_ROWS_FROM_TEMPORARY_TABLE_INTO_SUBMARINE_SWAPS,
+                MigrationsModel.MIGRATION_32_DROP_TEMPORARY_TABLE
+        );
+
+        add(33,
+                MIGRATION_33_CREATE_INCOMING_SWAP_HTLCS_TABLE,
+                MIGRATION_33_CREATE_INCOMING_SWAPS_TABLE,
+                MigrationsModel.MIGRATION_33_OPERATIONS_REFERENCE_INCOMING_SWAPS
+        );
     }
 
     /**

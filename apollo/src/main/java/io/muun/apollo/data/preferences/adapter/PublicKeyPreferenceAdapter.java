@@ -4,6 +4,7 @@ import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.common.crypto.hd.PublicKey;
 
 import android.content.SharedPreferences;
+import androidx.annotation.NonNull;
 
 import javax.annotation.Nullable;
 
@@ -13,7 +14,7 @@ public class PublicKeyPreferenceAdapter implements Preference.Adapter<PublicKey>
 
     @Override
     @Nullable
-    public PublicKey get(String prefName, SharedPreferences prefs) {
+    public PublicKey get(@NonNull String prefName, @NonNull SharedPreferences prefs) {
         final String base58 = prefs.getString(getBase58Key(prefName), null);
         final String path = prefs.getString(getPathKey(prefName), null);
 
@@ -25,7 +26,10 @@ public class PublicKeyPreferenceAdapter implements Preference.Adapter<PublicKey>
     }
 
     @Override
-    public void set(String prefName, PublicKey value, SharedPreferences.Editor editor) {
+    public void set(@NonNull String prefName,
+                    @NonNull PublicKey value,
+                    @NonNull SharedPreferences.Editor editor) {
+
         final String base58 = value.serializeBase58();
         final String path = value.getAbsoluteDerivationPath();
 

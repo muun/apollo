@@ -7,6 +7,7 @@ import (
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/muun/libwallet/addresses"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 
 type input struct {
 	outpoint        outpoint
-	address         muunAddress
+	address         MuunAddress
 	userSignature   []byte
 	muunSignature   []byte
 	submarineSwapV1 inputSubmarineSwapV1
@@ -27,7 +28,7 @@ func (i *input) OutPoint() Outpoint {
 }
 
 func (i *input) Address() MuunAddress {
-	return &i.address
+	return i.address
 }
 
 func (i *input) UserSignature() []byte {
@@ -44,6 +45,10 @@ func (i *input) SubmarineSwapV1() InputSubmarineSwapV1 {
 
 func (i *input) SubmarineSwapV2() InputSubmarineSwapV2 {
 	return &i.submarineSwapV2
+}
+
+func (i *input) IncomingSwap() InputIncomingSwap {
+	return nil
 }
 
 type outpoint struct {
@@ -138,12 +143,13 @@ func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 	inputs := []Input{
 		&input{
 			outpoint: outpoint{index: txIndex, amount: txAmount, txId: txOut1},
-			address:  muunAddress{address: originAddress, derivationPath: addressPath, version: addressV1},
+			address:  addresses.New(addresses.V1, addressPath, originAddress),
 		},
 	}
 
-	partial, _ := NewPartiallySignedTransaction(hexTx)
-	partial.inputs = inputs
+	inputList := &InputList{inputs: inputs}
+	rawTx, _ := hex.DecodeString(hexTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
 
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
 	// We dont need to use the muunKey in V1
@@ -154,7 +160,7 @@ func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 	}
 
 	signedTx := wire.NewMsgTx(0)
-	signedTx.BtcDecode(bytes.NewBuffer(signedRawTx.Bytes), 0, wire.WitnessEncoding)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx, txIndex, 0)
 
@@ -208,24 +214,25 @@ func TestPartiallySignedTransaction_SignV2(t *testing.T) {
 	inputs := []Input{
 		&input{
 			outpoint:      outpoint{index: txIndex1, amount: txAmount1, txId: txOut1},
-			address:       muunAddress{address: originAddress, derivationPath: addressPath, version: 2},
+			address:       addresses.New(addresses.V2, addressPath, originAddress),
 			muunSignature: muunSig1},
 		&input{
 			outpoint:      outpoint{index: txIndex2, amount: txAmount2, txId: txOut2},
-			address:       muunAddress{address: originAddress, derivationPath: addressPath, version: 2},
+			address:       addresses.New(addresses.V2, addressPath, originAddress),
 			muunSignature: muunSig2},
 		&input{
 			outpoint:      outpoint{index: txIndex3, amount: txAmount3, txId: txOut3},
-			address:       muunAddress{address: originAddress, derivationPath: addressPath, version: 2},
+			address:       addresses.New(addresses.V2, addressPath, originAddress),
 			muunSignature: muunSig3},
 		&input{
 			outpoint:      outpoint{index: txIndex4, amount: txAmount4, txId: txOut4},
-			address:       muunAddress{address: originAddress, derivationPath: addressPath, version: 2},
+			address:       addresses.New(addresses.V2, addressPath, originAddress),
 			muunSignature: muunSig4},
 	}
 
-	partial, _ := NewPartiallySignedTransaction(hexTx)
-	partial.inputs = inputs
+	inputList := &InputList{inputs: inputs}
+	rawTx, _ := hex.DecodeString(hexTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -236,7 +243,7 @@ func TestPartiallySignedTransaction_SignV2(t *testing.T) {
 	}
 
 	signedTx := wire.NewMsgTx(0)
-	signedTx.BtcDecode(bytes.NewBuffer(signedRawTx.Bytes), 0, wire.WitnessEncoding)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx1, txIndex1, 0)
 	verifyInput(t, signedTx, hexTx2, txIndex2, 0)
@@ -268,12 +275,13 @@ func TestPartiallySignedTransaction_SignV3(t *testing.T) {
 	inputs := []Input{
 		&input{
 			outpoint:      outpoint{index: txIndex1, amount: txAmount1, txId: txOut1},
-			address:       muunAddress{address: originAddress, derivationPath: addressPath, version: addressV3},
+			address:       addresses.New(addresses.V3, addressPath, originAddress),
 			muunSignature: muunSig1},
 	}
 
-	partial, _ := NewPartiallySignedTransaction(hexTx)
-	partial.inputs = inputs
+	inputList := &InputList{inputs: inputs}
+	rawTx, _ := hex.DecodeString(hexTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -284,7 +292,7 @@ func TestPartiallySignedTransaction_SignV3(t *testing.T) {
 	}
 
 	signedTx := wire.NewMsgTx(0)
-	signedTx.BtcDecode(bytes.NewBuffer(signedRawTx.Bytes), 0, wire.WitnessEncoding)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx1, txIndex1, 0)
 }
@@ -326,12 +334,12 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
 	inputs := []Input{
 		&input{
 			outpoint:      outpoint{index: txIndex1, amount: txAmount1, txId: txOut1},
-			address:       muunAddress{address: txAddress1, derivationPath: txAddressPath1, version: addressV3},
+			address:       addresses.New(addresses.V3, txAddressPath1, txAddress1),
 			muunSignature: muunSig1,
 		},
 		&input{
 			outpoint: outpoint{index: txIndex2, amount: txAmount2, txId: txOut2},
-			address:  muunAddress{address: txAddress2, derivationPath: txAddressPath2, version: addressSubmarineSwapV1},
+			address:  addresses.New(addresses.SubmarineSwapV1, txAddressPath2, txAddress2),
 			submarineSwapV1: inputSubmarineSwapV1{
 				refundAddress:   txRefundAddress2,
 				paymentHash256:  paymentHash2,
@@ -341,8 +349,9 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
 		},
 	}
 
-	partial, _ := NewPartiallySignedTransaction(hexTx)
-	partial.inputs = inputs
+	inputList := &InputList{inputs: inputs}
+	rawTx, _ := hex.DecodeString(hexTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -353,13 +362,14 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
 	}
 
 	signedTx := wire.NewMsgTx(0)
-	signedTx.BtcDecode(bytes.NewBuffer(signedRawTx.Bytes), 0, wire.WitnessEncoding)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx1, txIndex1, 0)
 	verifyInput(t, signedTx, hexTx2, txIndex2, 1)
 }
 
 func verifyInput(t *testing.T, signedTx *wire.MsgTx, hexPrevTx string, prevIndex, index int) {
+	t.Helper()
 
 	// Uncomment the next block if you need to see what the script engine outputs
 	txscript.DisableLog()
@@ -370,7 +380,7 @@ func verifyInput(t *testing.T, signedTx *wire.MsgTx, hexPrevTx string, prevIndex
 	prevTx := wire.NewMsgTx(0)
 
 	rawPrevTx, _ := hex.DecodeString(hexPrevTx)
-	prevTx.BtcDecode(bytes.NewBuffer(rawPrevTx), 0, wire.WitnessEncoding)
+	prevTx.Deserialize(bytes.NewReader(rawPrevTx))
 
 	flags := txscript.ScriptBip16 | txscript.ScriptVerifyDERSignatures |
 		txscript.ScriptStrictMultiSig | txscript.ScriptDiscourageUpgradableNops |
@@ -418,7 +428,7 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 	inputs := []Input{
 		&input{
 			outpoint: outpoint{index: txIndex2, amount: txAmount2, txId: txOut2},
-			address:  muunAddress{address: txAddress2, derivationPath: txAddressPath2, version: addressSubmarineSwapV2},
+			address:  addresses.New(addresses.SubmarineSwapV2, txAddressPath2, txAddress2),
 			submarineSwapV2: inputSubmarineSwapV2{
 				paymentHash256:      paymentHash2,
 				serverPublicKey:     serverPubKey2,
@@ -430,8 +440,9 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 		},
 	}
 
-	partial, _ := NewPartiallySignedTransaction(hexTx)
-	partial.inputs = inputs
+	inputList := &InputList{inputs: inputs}
+	rawTx, _ := hex.DecodeString(hexTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -440,7 +451,7 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 	}
 
 	signedTx := wire.NewMsgTx(0)
-	signedTx.BtcDecode(bytes.NewBuffer(signedRawTx.Bytes), 0, wire.WitnessEncoding)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx2, txIndex2, 0)
 }
@@ -455,18 +466,18 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		txIdHex1          = "ae57aa2bc55298cc79459db058a91a45bc4a5cd57c9a988ce4de31b64ac01ca5"
 		txAddressPath1    = "m/schema:1'/recovery:1'/external:1/0"
 		txAddress1        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
-		txAddressVersion1 = addressV4
+		txAddressVersion1 = addresses.V4
 
 		txIndex2          = 0
 		txAmount2         = 100000000
 		txIdHex2          = "568cf910024b5353c9b2d31dd8c338d368045ffde5d7a3876f8249a71f5939df"
 		txAddressPath2    = "m/schema:1'/recovery:1'/external:1/0"
 		txAddress2        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
-		txAddressVersion2 = addressV4
+		txAddressVersion2 = addresses.V4
 
 		changeAddress1 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
 		changePath1    = "m/schema:1'/recovery:1'/change:0/1"
-		changeVersion1 = addressV4
+		changeVersion1 = addresses.V4
 
 		hexTx2 = "01000000010ead2fa0d6866d0414aba97fd8f1b242fdc3d4c8e7771e40969402319b6e876b0000000000ffffffff02922988040000000017a914d1ac5d61107d2bef187d1aef5cfd3536f4fd5dbe87d6b2050100000000220020bac6de765432ee16e10ce268341062f8f5a417b15a7f6ee8fe903e6d7470f0f700000000"
 
@@ -475,11 +486,13 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		txIdHex3          = "6b876e9b31029496401e77e7c8d4c3fd42b2f1d87fa9ab14046d86d6a02fad0e"
 		txAddressPath3    = "m/schema:1'/recovery:1'/change:0/8"
 		txAddress3        = "bcrt1q9yzsghvmmn7wv3esylrvn3c469s4ce4thk7qmxdly4tzk4f8vvjsqv0crh"
-		txAddressVersion3 = addressV4
+		txAddressVersion3 = addresses.V4
+
+		hexTx4 = "0100000002a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffffdf39591fa749826f87a3d7e5fd5f0468d338c3d81dd3b2c953534b0210f98c560000000000ffffffff01000e2707000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
 
 		changeAddress2 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
 		changePath2    = "m/schema:1'/recovery:1'/change:0/1"
-		changeVersion2 = addressV4
+		changeVersion2 = addresses.V4
 
 		encodedUserKey = "tpubDAKxNPypXDF3GNCpXFUh6sCdxz7DY9eKMgFxYBgyRSiYWXrBLgdtkPuMbQQzrsYLVyPPSHmNcduLRRd9TSMaYrGLryp8KNkkYBm6eka1Bem"
 		encodedMuunKey = "tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8"
@@ -502,25 +515,29 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		Regtest())
 
 	type fields struct {
-		tx           *wire.MsgTx
-		inputs       []Input
-		Expectations *SigningExpectations
+		tx     string
+		inputs []Input
 	}
 	type args struct {
+		expectations   *SigningExpectations
 		userPublicKey  *HDPublicKey
 		muunPublickKey *HDPublicKey
 	}
 	firstInput := input{
 		outpoint: outpoint{index: txIndex1, amount: txAmount1, txId: txId1},
-		address:  muunAddress{address: txAddress1, derivationPath: txAddressPath1, version: txAddressVersion1},
+		address:  addresses.New(txAddressVersion1, txAddressPath1, txAddress1),
 	}
 	secondInput := input{
 		outpoint: outpoint{index: txIndex2, amount: txAmount2, txId: txId2},
-		address:  muunAddress{address: txAddress2, derivationPath: txAddressPath2, version: txAddressVersion2},
+		address:  addresses.New(txAddressVersion2, txAddressPath2, txAddress2),
+	}
+	secondInputGeneratingDust := input{
+		outpoint: outpoint{index: txIndex2, amount: 120000000 - txAmount1 + 122200 + 100 /* dust */, txId: txId2},
+		address:  addresses.New(txAddressVersion2, txAddressPath2, txAddress2),
 	}
 	thirdInput := input{
 		outpoint: outpoint{index: txIndex3, amount: txAmount3, txId: txId3},
-		address:  muunAddress{address: txAddress3, derivationPath: txAddressPath3, version: txAddressVersion3},
+		address:  addresses.New(txAddressVersion3, txAddressPath3, txAddress3),
 	}
 	tests := []struct {
 		name    string
@@ -531,130 +548,160 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		{
 			name: "2 inputs, one change",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
 					amount:      120000000,
-					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					change:      addresses.New(changeVersion1, changePath1, changeAddress1),
 					fee:         122200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args: args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 		},
 		{
 			name: "lied about destination amount",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
 					amount:      110000000,
-					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					change:      addresses.New(changeVersion1, changePath1, changeAddress1),
 					fee:         122200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about change",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
 					amount:      120000000,
-					change:      &muunAddress{address: changeAddress1, derivationPath: basePath + "/123", version: changeVersion1},
+					change:      addresses.New(changeVersion1, basePath+"/123", changeAddress1),
 					fee:         122200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about destination",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "2N2giv9tsN3pV7Rkm89SReRBgdqKNBESVBk",
 					amount:      120000000,
-					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					change:      addresses.New(changeVersion1, changePath1, changeAddress1),
 					fee:         122200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lied about fee",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
 					amount:      120000000,
-					change:      &muunAddress{address: changeAddress1, derivationPath: changePath1, version: changeVersion1},
+					change:      addresses.New(changeVersion1, changePath1, changeAddress1),
 					fee:         12200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "wasnt expecting change",
 			fields: fields{
-				tx:     parseTx(hexTx1),
+				tx:     hexTx1,
 				inputs: []Input{&firstInput, &secondInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
 					amount:      120000000,
 					change:      nil,
 					fee:         122200,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
 		},
 		{
 			name: "lying change",
 			fields: fields{
-				tx:     parseTx(hexTx2),
+				tx:     hexTx2,
 				inputs: []Input{&thirdInput},
-				Expectations: &SigningExpectations{
+			},
+			args: args{
+				expectations: &SigningExpectations{
 					destination: "bcrt1qhtrduaj5xthpdcgvuf5rgyrzlr66g9a3tflka687jqlx6ars7rms0flpmy",
 					amount:      17150678,
-					change:      &muunAddress{address: changeAddress2, derivationPath: changePath2, version: changeVersion2},
+					change:      addresses.New(changeVersion2, changePath2, changeAddress2),
 					fee:         83600,
 				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
 			},
-			args:    args{userPublicKey: userPublicKey, muunPublickKey: muunPublicKey},
 			wantErr: true,
+		},
+		{
+			name: "inputs generating dust",
+			fields: fields{
+				tx:     hexTx4,
+				inputs: []Input{&firstInput, &secondInputGeneratingDust},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      120000000,
+					change:      nil,
+					fee:         122200,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &PartiallySignedTransaction{
-				tx:           tt.fields.tx,
-				inputs:       tt.fields.inputs,
-				Expectations: tt.fields.Expectations,
+			inputList := &InputList{inputs: tt.fields.inputs}
+			rawTx, _ := hex.DecodeString(tt.fields.tx)
+			p, err := NewPartiallySignedTransaction(inputList, rawTx)
+			if err != nil {
+				panic(err)
 			}
-			err := p.Verify(tt.args.userPublicKey, tt.args.muunPublickKey)
+			err = p.Verify(tt.args.expectations, tt.args.userPublicKey, tt.args.muunPublickKey)
 			t.Logf("test %v returned %v", tt.name, err)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Verify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
-}
-
-func parseTx(hexTx string) *wire.MsgTx {
-
-	rawTx, _ := hex.DecodeString(hexTx)
-
-	tx := wire.NewMsgTx(0)
-	tx.BtcDecode(bytes.NewBuffer(rawTx), 0, wire.WitnessEncoding)
-
-	return tx
 }

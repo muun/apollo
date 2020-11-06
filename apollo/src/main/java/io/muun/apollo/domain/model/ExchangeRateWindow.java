@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
 public class ExchangeRateWindow {

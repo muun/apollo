@@ -10,17 +10,17 @@ import io.muun.common.api.Contact;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateLoginSessionJson;
+import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.CreateSessionOkJson;
+import io.muun.common.api.CreateSessionRcOkJson;
 import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
-import io.muun.common.api.HardwareWalletJson;
-import io.muun.common.api.HardwareWalletStateJson;
-import io.muun.common.api.HardwareWalletWithdrawalJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
+import io.muun.common.api.LinkActionJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
@@ -41,12 +41,10 @@ import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
-import io.muun.common.api.beam.notification.NotificationRequestJson;
 import io.muun.common.model.VerificationType;
 
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
-import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -59,7 +57,6 @@ import retrofit2.http.Query;
 import rx.Observable;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 
@@ -77,8 +74,14 @@ public interface HoustonService {
     @POST("sessions-v2/email/start")
     Observable<Void> startEmailSetup(@Body StartEmailSetupJson startEmailSetup);
 
+    @POST("sessions-v2/email/finish")
+    Observable<Void> useVerifyLink(@Body LinkActionJson linkActionJson);
+
     @POST("sessions-v2/password")
     Observable<Void> setUpPassword(@Body PasswordSetupJson passwordSetup);
+
+    @POST("sessions/current/authorize")
+    Observable<Void> useAuthorizeLink(@Body LinkActionJson linkActionJson);
 
     @POST("sessions/current/login")
     Observable<KeySet> login(@Body ChallengeSignatureJson challengeSignature);
@@ -97,25 +100,34 @@ public interface HoustonService {
             @Query("after") @Nullable Long notificationId);
 
     @PUT("sessions/notifications/confirm")
-    Observable<Void> confirmNotificationsDeliveryUntil(@Query("until") Long notificationId);
-
-    @POST("sessions/notifications/receiving_sessions/{satelliteSessionUuid}")
-    Observable<String> createReceivingSession(
-            @Path("satelliteSessionUuid") String satelliteSessionUuid
+    Observable<Void> confirmNotificationsDeliveryUntil(
+            @Query("until") Long notificationId,
+            @Query("deviceModel") String deviceModel,
+            @Query("osVersion") String osVersion,
+            @Query("appStatus") String appStatus
     );
-
-    @POST("sessions/notifications/sending_sessions/{sessionUuid}/notifications")
-    Observable<String> sendSatelliteNotification(@Path("sessionUuid") String sessionUuid,
-                                                 @Body NotificationRequestJson notification);
-
-    @DELETE("sessions/notifications/receiving_sessions/{sessionUuid}")
-    Observable<Void> expireReceivingSession(@Path("sessionUuid") String sessionUuid);
 
     @GET("user/challenge")
     Observable<ChallengeJson> requestChallenge(@Query("type") String challengeType);
 
     @POST("user/challenge/setup")
     Observable<SetupChallengeResponse> setupChallenge(@Body ChallengeSetupJson challengeSetupJson);
+
+    // ---------------------------------------------------------------------------------------------
+    // Recovery Code Only Login:
+
+    @POST("sessions-v2/recovery-code/start")
+    Observable<ChallengeJson> createRecoveryCodeLoginSession(@Body CreateRcLoginSessionJson body);
+
+    @POST("sessions-v2/recovery-code/finish")
+    Observable<CreateSessionRcOkJson> loginWithRecoveryCode(@Body ChallengeSignatureJson signature);
+
+    @POST("sessions-v2/recovery-code/authorize")
+    Observable<Void> authorizeLoginWithRecoveryCode(@Body LinkActionJson linkActionJson);
+
+    @GET("sessions-v2/current/key-set")
+    Observable<KeySet> getKeySet();
+
 
     // ---------------------------------------------------------------------------------------------
     // User and Profile:
@@ -148,6 +160,9 @@ public interface HoustonService {
     Observable<PendingChallengeUpdateJson> beginPasswordChange(
             @Body ChallengeSignatureJson challengeSignatureJson
     );
+
+    @POST("user/password/authorize")
+    Observable<Void> useConfirmLink(@Body LinkActionJson linkActionJson);
 
     @POST("user/password/finish")
     Observable<SetupChallengeResponse> finishPasswordChange(
@@ -210,28 +225,8 @@ public interface HoustonService {
     @GET("operations/next-transaction-size")
     Observable<NextTransactionSizeJson> fetchNextTransactionSize();
 
-    @POST("operations/withdrawal")
-    Observable<OperationCreatedJson> newWithdrawalOperation(
-            @Body HardwareWalletWithdrawalJson withdrawal
-    );
-
     @POST("operations/sswap/create")
     Observable<SubmarineSwapJson> createSubmarineSwap(@Body SubmarineSwapRequestJson data);
-
-    // ---------------------------------------------------------------------------------------------
-    // Hardware wallets:
-    @POST("devices")
-    Observable<HardwareWalletJson> createOrUpdateHardwareWallet(@Body HardwareWalletJson wallet);
-
-    @DELETE("devices/{hardwareWalletId}")
-    Observable<HardwareWalletJson> unpairHardwareWallet(@Path("hardwareWalletId") Long hwId);
-
-    @GET("devices")
-    Observable<List<HardwareWalletJson>> fetchHardwareWallets();
-
-    @GET("devices/draft")
-    Observable<HardwareWalletStateJson> fetchHardwareWalletState(
-            @Query("id") long hardwareWalletId);
 
     // ---------------------------------------------------------------------------------------------
     // Other endpoints:

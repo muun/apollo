@@ -1,5 +1,6 @@
 package io.muun.apollo.data.net.base;
 
+import io.muun.apollo.data.logging.LoggingRequestTracker;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.AmountTooSmallError;
 import io.muun.apollo.domain.errors.CountryNotSupportedError;
@@ -7,15 +8,17 @@ import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
 import io.muun.apollo.domain.errors.EmailAlreadyUsedError;
 import io.muun.apollo.domain.errors.EmailNotRegisteredError;
 import io.muun.apollo.domain.errors.ExchangeRateWindowTooOldError;
-import io.muun.apollo.domain.errors.ExpiredSatelliteSession;
+import io.muun.apollo.domain.errors.ExpiredActionLinkError;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
 import io.muun.apollo.domain.errors.ExpiredVerificationCodeError;
-import io.muun.apollo.domain.errors.HardwareWalletAlreadyOwnedError;
 import io.muun.apollo.domain.errors.IncorrectPasswordError;
 import io.muun.apollo.domain.errors.InsufficientFundsError;
+import io.muun.apollo.domain.errors.InvalidActionLinkError;
 import io.muun.apollo.domain.errors.InvalidAddressError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
+import io.muun.apollo.domain.errors.InvalidJsonError;
 import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
+import io.muun.apollo.domain.errors.InvalidRecoveryCodeV2Error;
 import io.muun.apollo.domain.errors.InvalidVerificationCodeError;
 import io.muun.apollo.domain.errors.PhoneNumberAlreadyUsedError;
 import io.muun.apollo.domain.errors.RevokedVerificationCodeError;
@@ -23,9 +26,11 @@ import io.muun.apollo.domain.errors.TooManyWrongVerificationCodesError;
 import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
 import io.muun.common.exception.HttpException;
+import io.muun.common.net.HeaderUtils;
 import io.muun.common.rx.ObservableFn;
 
 import androidx.annotation.NonNull;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.CallAdapter;
@@ -39,7 +44,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.validation.constraints.NotNull;
 
 public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
@@ -48,6 +52,7 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
     private static final long CALL_TIMEOUT_SECONDS = 60;
 
     private static final Transformer HTTP_EXCEPTION_TRANSFORMER;
+    private static final Transformer JSON_DESERIALIZATION_TRANSFORMER;
     private static final Transformer IO_EXCEPTION_TRANSFORMER;
     private static final Transformer SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER;
 
@@ -57,6 +62,14 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 retrofit2.HttpException.class,
                 error -> {
                     final Error apiError = deserializeApiError(error).orElse(null);
+
+                    final String idempotencyKey = error.response().raw().request()
+                            .header(HeaderUtils.IDEMPOTENCY_KEY);
+
+                    if (idempotencyKey != null) {
+                        LoggingRequestTracker.INSTANCE
+                                .reportRecentErrorResponse(idempotencyKey, apiError);
+                    }
 
                     if (apiError != null && error.code() < 500) {
                         // We managed to parse a valid APIError that corresponds to a client-side
@@ -71,7 +84,17 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 }
         );
 
-        IO_EXCEPTION_TRANSFORMER = ObservableFn.replaceTypedError(
+        // Jackson's Json deserialization errors are all IOExceptions, but don't want to retry
+        // since they won't succeed unless we fix the (code) problem. Also, let's throw a specific
+        // error so we can handle it separately.
+        JSON_DESERIALIZATION_TRANSFORMER = ObservableFn.replaceTypedError(
+                JsonProcessingException.class,
+                InvalidJsonError::new
+        );
+
+        // Use replaceTypedErrorExact to avoid replacing Jackson errors (subclasses of IOException)
+        // TODO find a better way to deal with this?
+        IO_EXCEPTION_TRANSFORMER = ObservableFn.replaceTypedErrorExact(
                 IOException.class,
                 NetworkException::new
         );
@@ -128,14 +151,17 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                         case AMOUNT_SMALLER_THAN_DUST:
                             return new AmountTooSmallError(-1); // symbolic, this shouldn't happen
 
-                        case HARDWARE_WALLET_ALREADY_OWNED:
-                            return new HardwareWalletAlreadyOwnedError();
-
-                        case EXPIRED_SATELLITE_SESSION:
-                            return new ExpiredSatelliteSession();
-
                         case EXCHANGE_RATE_WINDOW_TOO_OLD:
                             return new ExchangeRateWindowTooOldError();
+
+                        case EMAIL_LINK_EXPIRED:
+                            return new ExpiredActionLinkError();
+
+                        case EMAIL_LINK_INVALID:
+                            return new InvalidActionLinkError();
+
+                        case RECOVERY_CODE_V2_NOT_SET_UP:
+                            return new InvalidRecoveryCodeV2Error();
 
                         default:
                             return error;
@@ -229,11 +255,17 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 ))
                 .compose(HTTP_EXCEPTION_TRANSFORMER)
                 .compose(SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER)
+                .compose(JSON_DESERIALIZATION_TRANSFORMER)
                 .compose(IO_EXCEPTION_TRANSFORMER)
                 .compose(retryTransformer)
-                .compose(attachUrlTransformer);
+                .compose(attachUrlTransformer)
+                .doOnNext(ignored -> reportSuccessResponse(idempotencyKey));
 
         return getResponseObservable(result);
+    }
+
+    private void reportSuccessResponse(String idempotencyKey) {
+        LoggingRequestTracker.INSTANCE.reportRecentSuccessResponse(idempotencyKey);
     }
 
     @SuppressWarnings("unchecked")

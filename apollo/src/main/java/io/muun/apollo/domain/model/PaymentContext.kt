@@ -1,16 +1,13 @@
 package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.utils.FeeCalculator
-import io.muun.common.bitcoinj.BlockHelpers
 import io.muun.common.model.ExchangeRateProvider
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
 import org.javamoney.moneta.Money
-import timber.log.Timber
 import javax.money.CurrencyUnit
 import javax.money.Monetary
 import javax.money.MonetaryAmount
-import kotlin.math.max
 
 /**
  * The contextual information required to analyze and process a PaymentRequest.
@@ -113,6 +110,28 @@ class PaymentContext(
     }
 
     /**
+     * Modify PaymentRequest amount, to perform slightly different analysis. For certain
+     * PaymentRequest this can be a little cumbersome (swaps and Collect swaps) or don't make sense
+     * (amount fixed).
+     */
+    fun analyzeUseAllFunds(payReq: PaymentRequest): PaymentAnalysis {
+
+        val allFunds: MonetaryAmount = convert(userBalance, payReq.amount!!.currency)
+
+        // TODO UseAllFunds shouldn't need amount, take userBalance from payCtx
+        var simulatedUseAllFundsPayReq = payReq
+            .withAmount(allFunds)
+            .withTakeFeeFromAmount(true)
+
+        if (payReq.swap != null) {
+           simulatedUseAllFundsPayReq = simulatedUseAllFundsPayReq
+               .withSwapAmount(userBalance)
+        }
+
+        return analyze(simulatedUseAllFundsPayReq)
+    }
+
+    /**
      * Take a valid PaymentRequest (verify using `analyze`), and create a PreparedPayment.
      */
     fun prepare(payReq: PaymentRequest): PreparedPayment {
@@ -150,22 +169,11 @@ class PaymentContext(
         Money.of(amountInSatoshis, "BTC").scaleByPowerOfTen(-BitcoinUtils.BITCOIN_PRECISION)
 
     /**
-     * Convert a MonetaryAmount to BTC.
-     */
-    fun convertToBitcoin(amount: MonetaryAmount) =
-        convert(amount, Monetary.getCurrency("BTC"));
-
-    /**
      * Convert a MonetaryAmount to another currency.
      */
     fun convert(amount: MonetaryAmount, targetUnit: CurrencyUnit) =
         amount.with(rateProvider.getCurrencyConversion(targetUnit))
 
-    /**
-     * Convert a MonetaryAmount to the user's primary currency.
-     */
-    fun convertToPrimary(amount: MonetaryAmount) =
-        amount.with(rateProvider.getCurrencyConversion(user.primaryCurrency))
     /**
      * Convert satoshis to a complex BitcoinAmount.
      */

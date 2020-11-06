@@ -8,7 +8,6 @@ import com.squareup.sqlbrite3.BriteDatabase;
 import rx.Observable;
 
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

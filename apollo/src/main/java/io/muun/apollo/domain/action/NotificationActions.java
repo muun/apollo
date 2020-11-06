@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.action;
 
 
+import io.muun.apollo.data.external.AppStandbyBucketProvider;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.NotificationRepository;
@@ -12,6 +13,7 @@ import io.muun.apollo.domain.errors.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
 
+import android.os.Build;
 import androidx.annotation.Nullable;
 import rx.BackpressureOverflow;
 import rx.Completable;
@@ -24,7 +26,6 @@ import rx.subjects.PublishSubject;
 import timber.log.Timber;
 
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -52,6 +53,8 @@ public class NotificationActions {
 
     public final AsyncAction0<Void> pullNotificationsAction;
 
+    private AppStandbyBucketProvider appStandbyBucketProvider;
+
     /**
      * Constructor.
      */
@@ -60,12 +63,14 @@ public class NotificationActions {
                                HoustonClient houstonClient,
                                AsyncActionStore asyncActionStore,
                                ExecutionTransformerFactory transformerFactory,
-                               NotificationProcessor notificationProcessor) {
+                               NotificationProcessor notificationProcessor,
+                               AppStandbyBucketProvider appStandbyBucketProvider) {
 
         this.notificationRepository = notificationRepository;
         this.houstonClient = houstonClient;
         this.transformerFactory = transformerFactory;
         this.notificationProcessor = notificationProcessor;
+        this.appStandbyBucketProvider = appStandbyBucketProvider;
 
         reportQueue = PublishSubject.create();
 
@@ -127,7 +132,14 @@ public class NotificationActions {
                         final long lastIdAfter = notificationRepository.getLastProcessedId();
 
                         if (lastIdAfter > lastIdBefore) {
-                            return houstonClient.confirmNotificationsDeliveryUntil(lastIdAfter);
+
+                            return houstonClient.confirmNotificationsDeliveryUntil(
+                                    lastIdAfter,
+                                    Build.MODEL,
+                                    String.valueOf(Build.VERSION.SDK_INT),
+                                    appStandbyBucketProvider.current().toString()
+                            );
+
                         } else {
                             return Observable.just(null);
                         }
@@ -227,6 +239,7 @@ public class NotificationActions {
     private <T> Transformer<T, Void> forEach(Func1<T, Completable> createTask) {
         return (items) -> items
                 .map(createTask)
+                .onBackpressureBuffer(200)
                 .concatMap(task -> task
                         .doOnError(Timber::e)
                         .onErrorComplete() // skip the error

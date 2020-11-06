@@ -1,7 +1,8 @@
 package libwallet
 
 import (
-	"github.com/pkg/errors"
+	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/swaps"
 )
 
 type SubmarineSwap interface {
@@ -38,13 +39,46 @@ type SubmarineSwapFundingOutput interface {
 }
 
 func ValidateSubmarineSwap(rawInvoice string, userPublicKey *HDPublicKey, muunPublicKey *HDPublicKey, swap SubmarineSwap, originalExpirationInBlocks int64, network *Network) error {
-
-	switch AddressVersion(swap.FundingOutput().ScriptVersion()) {
-	case addressSubmarineSwapV1:
-		return ValidateSubmarineSwapV1(rawInvoice, userPublicKey, muunPublicKey, swap, network)
-	case addressSubmarineSwapV2:
-		return ValidateSubmarineSwapV2(rawInvoice, userPublicKey, muunPublicKey, swap, originalExpirationInBlocks, network)
+	data := swaps.SubmarineSwap{
+		Invoice: swap.Invoice(),
+		Receiver: swaps.SubmarineSwapReceiver{
+			Alias:     swap.Receiver().Alias(),
+			PublicKey: swap.Receiver().PublicKey(),
+		},
+		FundingOutput: createSwapFundingOutput(swap.FundingOutput()),
+		PreimageInHex: swap.PreimageInHex(),
 	}
+	return data.Validate(
+		rawInvoice,
+		&swaps.KeyDescriptor{Key: &userPublicKey.key, Path: userPublicKey.Path},
+		&swaps.KeyDescriptor{Key: &muunPublicKey.key, Path: muunPublicKey.Path},
+		originalExpirationInBlocks,
+		network.network,
+	)
+}
 
-	return errors.Errorf("unknown swap version %v", swap.FundingOutput().ScriptVersion())
+func createSwapFundingOutput(output SubmarineSwapFundingOutput) swaps.SubmarineSwapFundingOutput {
+	out := swaps.SubmarineSwapFundingOutput{
+		ScriptVersion:          output.ScriptVersion(),
+		OutputAddress:          output.OutputAddress(),
+		OutputAmount:           output.OutputAmount(),
+		ConfirmationsNeeded:    output.ConfirmationsNeeded(),
+		ServerPaymentHashInHex: output.ServerPaymentHashInHex(),
+		ServerPublicKeyInHex:   output.ServerPublicKeyInHex(),
+		UserLockTime:           output.UserLockTime(),
+	}
+	switch out.ScriptVersion {
+	case AddressVersionSwapsV1:
+		out.UserRefundAddress = addresses.New(
+			output.UserRefundAddress().Version(),
+			output.UserRefundAddress().DerivationPath(),
+			output.UserRefundAddress().Address(),
+		)
+	case AddressVersionSwapsV2:
+		out.ExpirationInBlocks = output.ExpirationInBlocks()
+		out.UserPublicKey = &output.UserPublicKey().key
+		out.MuunPublicKey = &output.MuunPublicKey().key
+		out.KeyPath = output.UserPublicKey().Path
+	}
+	return out
 }

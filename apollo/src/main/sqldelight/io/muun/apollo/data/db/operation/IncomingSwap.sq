@@ -1,0 +1,16 @@
+CREATE TABLE incoming_swaps (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    payment_hash_in_hex TEXT NOT NULL,
+    sphinx_packet_in_hex TEXT,
+    incoming_swap_htlc_houston_uuid TEXT REFERENCES incoming_swap_htlcs(houston_uuid)
+);
+
+insertIncomingSwap:
+INSERT OR REPLACE INTO incoming_swaps
+VALUES (?, ?, ?, ?, ?);
+
+selectAll:
+SELECT swap.*, htlc.*
+FROM incoming_swaps AS swap
+LEFT JOIN incoming_swap_htlcs AS htlc ON swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid;

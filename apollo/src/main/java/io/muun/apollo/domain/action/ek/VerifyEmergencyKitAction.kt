@@ -15,7 +15,7 @@ class VerifyEmergencyKitAction @Inject constructor(
     /**
      * Verify a given EK verification code matches expectations.
      */
-    override fun action(verificationCode: String) =
+    override fun action(verificationCode: String): Observable<Boolean> =
         Observable.defer {
             keysRepository
                 .watchEmergencyKitVerificationCode()

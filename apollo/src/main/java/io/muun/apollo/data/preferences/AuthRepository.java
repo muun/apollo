@@ -7,7 +7,6 @@ import io.muun.common.model.SessionStatus;
 import io.muun.common.utils.Encodings;
 
 import android.content.Context;
-import rx.Completable;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -68,17 +67,6 @@ public class AuthRepository extends BaseRepository {
         sessionStatusPreference.set(sessionStatus);
     }
 
-    /**
-     * Wait for the authorized email notification.
-     */
-    public Completable awaitAuthorizedByEmail() {
-        return sessionStatusPreference.asObservable()
-                .filter(signInStatus -> signInStatus != null
-                        && signInStatus.hasPermisionFor(SessionStatus.AUTHORIZED_BY_EMAIL))
-                .first()
-                .toCompletable();
-    }
-
     @Override
     public void clear() {
         super.clear();
@@ -96,7 +84,6 @@ public class AuthRepository extends BaseRepository {
         return sessionStatusPreference.asObservable()
                 .map(Optional::ofNullable);
     }
-
 
     /**
      * One-time method utility for preference migration.

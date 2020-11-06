@@ -1,9 +1,9 @@
 package io.muun.apollo.data.net.base.interceptor;
 
 
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.net.base.BaseInterceptor;
 import io.muun.apollo.data.preferences.ClientVersionRepository;
-import io.muun.apollo.external.Globals;
 import io.muun.common.api.ClientTypeJson;
 import io.muun.common.net.HeaderUtils;
 

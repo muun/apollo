@@ -9,7 +9,6 @@ import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 
 import java.util.SortedMap;
-
 import javax.inject.Inject;
 
 public class FeeWindowRepository extends BaseRepository {
@@ -18,6 +17,15 @@ public class FeeWindowRepository extends BaseRepository {
      * Like FeeWindow, but JSON-serializable.
      */
     private static class StoredFeeWindow {
+        // WAIT
+        // WARNING
+        // CAREFUL
+        // READ THIS, I MEAN IT:
+
+        // We forgot to exclude this class from Proguard rules. This means that the order of
+        // declaration of this attributes is important -- until we remove this class from proguard
+        // and migrate the preference to a non-minified JSON this class is APPEND-ONLY.
+
         public Long houstonId;
         public ZonedDateTime fetchDate;
         public SortedMap<Integer, Double> targetedFees;

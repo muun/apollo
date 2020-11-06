@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.action.debug
 
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.external.Globals
 import rx.Observable
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,10 +23,10 @@ class ForceCrashReportAction @Inject constructor(): BaseAsyncAction1<String, Voi
     /**
      * Forcibly send a crash report to Crashlytics, for testing purposes.
      */
-    override fun action(origin: String) =
+    override fun action(origin: String): Observable<Void> =
         Observable.defer {
             Timber.e(ForcedTimberErrorCall(origin))
-            Crashlytics.logException(ForcedCrashlyticsCall(origin))
+            FirebaseCrashlytics.getInstance().recordException(ForcedCrashlyticsCall(origin))
             throw ForcedBackgroundException(origin)
 
             Observable.just<Void>(null)

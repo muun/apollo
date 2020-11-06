@@ -7,7 +7,6 @@ import io.muun.common.model.OperationStatus;
 import rx.Observable;
 
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

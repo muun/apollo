@@ -4,6 +4,7 @@ import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.phone_contact.PhoneContactDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ContactsProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
@@ -14,7 +15,6 @@ import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.external.NotificationService;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
@@ -36,7 +36,6 @@ import timber.log.Timber;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
@@ -109,6 +108,7 @@ public class ContactActions {
                         .flatMap(Observable::from)
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
                         // TODO use batching
+                        .onBackpressureBuffer(200)
                         .concatMap(this::createOrUpdateContact)
                         .lastOrDefault(null)
         );
@@ -128,7 +128,7 @@ public class ContactActions {
         phoneContactsAutoSyncSub = contactsProvider
                 .watchContactChanges()
                 .debounce(2, TimeUnit.SECONDS) // changes instantly trigger more than one event
-                .onBackpressureBuffer(10)
+                .onBackpressureBuffer(200)
                 .concatMap(uselessUriAndroidPlease -> {
                     Timber.d("[Contacts] Watch triggered sync");
 

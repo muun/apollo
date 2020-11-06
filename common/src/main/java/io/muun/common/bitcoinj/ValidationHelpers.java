@@ -18,7 +18,6 @@ import org.bitcoinj.crypto.DeterministicKey;
 
 import java.util.UUID;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
 
 public class ValidationHelpers {
@@ -156,7 +155,7 @@ public class ValidationHelpers {
         try {
             final byte[] publicKey = Encodings.hexToBytes(challengeSetup.publicKey);
             final byte[] salt = Encodings.hexToBytes(challengeSetup.salt);
-            new ChallengePublicKey(publicKey, salt);
+            new ChallengePublicKey(publicKey, salt, challengeSetup.version);
 
             return true;
 

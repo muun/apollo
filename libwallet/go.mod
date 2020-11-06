@@ -6,7 +6,8 @@ require (
 	github.com/btcsuite/btcd v0.20.1-beta.0.20200515232429-9f0179fd2c46
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/golang/protobuf v1.4.2
-	github.com/jinzhu/gorm v1.9.15
+	github.com/jinzhu/gorm v1.9.16
+	github.com/lightningnetwork/lightning-onion v1.0.1
 	github.com/lightningnetwork/lnd v0.10.4-beta
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/pkg/errors v0.9.1

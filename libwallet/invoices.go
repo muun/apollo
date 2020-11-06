@@ -1,6 +1,7 @@
 package libwallet
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
@@ -9,10 +10,15 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/txscript"
+	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/lightningnetwork/lnd/netann"
 	"github.com/lightningnetwork/lnd/zpay32"
+	"github.com/pkg/errors"
+
+	"github.com/muun/libwallet/hdpath"
 	"github.com/muun/libwallet/walletdb"
 )
 
@@ -29,40 +35,50 @@ const (
 type InvoiceSecrets struct {
 	preimage      []byte
 	paymentSecret []byte
+	keyPath       string
 	PaymentHash   []byte
-	KeyPath       string
-	IdentityKey   string
-	HtlcKeyPair   *KeyPair
-	ShortChanId   uint64
-}
-
-// KeyPair defines a pair of cosigning keys. One for the user and the other for
-// Muun.
-type KeyPair struct {
-	UserKey string
-	MuunKey string
+	IdentityKey   *HDPublicKey
+	UserHtlcKey   *HDPublicKey
+	MuunHtlcKey   *HDPublicKey
+	ShortChanId   int64
 }
 
 // RouteHints is a struct returned by the remote server containing the data
 // necessary for constructing an invoice locally.
 type RouteHints struct {
 	Pubkey                    string
-	FeeBaseMsat               uint64
-	FeeProportionalMillionths uint64
-	CltvExpiryDelta           uint32
+	FeeBaseMsat               int64
+	FeeProportionalMillionths int64
+	CltvExpiryDelta           int32
 }
 
 // InvoiceOptions defines additional options that can be configured when
 // creating a new invoice.
 type InvoiceOptions struct {
 	Description string
-	AmountSat   uint64
+	AmountSat   int64
+}
+
+// InvoiceSecretsList is a wrapper around an InvoiceSecrets slice to be
+// able to pass through the gomobile bridge.
+type InvoiceSecretsList struct {
+	secrets []*InvoiceSecrets
+}
+
+// Length returns the number of secrets in the list.
+func (l *InvoiceSecretsList) Length() int {
+	return len(l.secrets)
+}
+
+// Get returns the secret at the given index.
+func (l *InvoiceSecretsList) Get(i int) *InvoiceSecrets {
+	return l.secrets[i]
 }
 
 // GenerateInvoiceSecrets returns a slice of new secrets to register with
 // the remote server. Once registered, those invoices should be stored with
 // the PersistInvoiceSecrets method.
-func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) ([]*InvoiceSecrets, error) {
+func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) (*InvoiceSecretsList, error) {
 
 	var secrets []*InvoiceSecrets
 
@@ -70,6 +86,7 @@ func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) ([]*InvoiceSecrets, e
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	unused, err := db.CountUnusedInvoices()
 	if err != nil {
@@ -77,7 +94,7 @@ func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) ([]*InvoiceSecrets, e
 	}
 
 	if unused >= MaxUnusedSecrets {
-		return make([]*InvoiceSecrets, 0), nil
+		return &InvoiceSecretsList{make([]*InvoiceSecrets, 0)}, nil
 	}
 
 	num := MaxUnusedSecrets - unused
@@ -92,28 +109,24 @@ func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) ([]*InvoiceSecrets, e
 		l1 := binary.LittleEndian.Uint32(levels[:4]) & 0x7FFFFFFF
 		l2 := binary.LittleEndian.Uint32(levels[4:]) & 0x7FFFFFFF
 
-		keyPath := fmt.Sprintf("m/0'/0'/invoices:4/%d/%d", l1, l2)
+		keyPath := hdpath.MustParse("m/schema:1'/recovery:1'/invoices:4").Child(l1).Child(l2)
 
-		identityKeyPath := fmt.Sprintf("%s/%d", keyPath, identityKeyChildIndex)
+		identityKeyPath := keyPath.Child(identityKeyChildIndex)
 
-		identityKey, err := userKey.DeriveTo(identityKeyPath)
+		identityKey, err := userKey.DeriveTo(identityKeyPath.String())
 		if err != nil {
 			return nil, err
 		}
 
-		htlcKeyPath := fmt.Sprintf("%s/%d", keyPath, htlcKeyChildIndex)
+		htlcKeyPath := keyPath.Child(htlcKeyChildIndex)
 
-		userHtlcKey, err := userKey.DeriveTo(htlcKeyPath)
+		userHtlcKey, err := userKey.DeriveTo(htlcKeyPath.String())
 		if err != nil {
 			return nil, err
 		}
-		muunHtlcKey, err := muunKey.DeriveTo(htlcKeyPath)
+		muunHtlcKey, err := muunKey.DeriveTo(htlcKeyPath.String())
 		if err != nil {
 			return nil, err
-		}
-		htlcKeyPair := &KeyPair{
-			UserKey: hex.EncodeToString(userHtlcKey.Raw()),
-			MuunKey: hex.EncodeToString(muunHtlcKey.Raw()),
 		}
 
 		shortChanId := binary.LittleEndian.Uint64(randomBytes(8)) | (1 << 63)
@@ -121,36 +134,37 @@ func GenerateInvoiceSecrets(userKey, muunKey *HDPublicKey) ([]*InvoiceSecrets, e
 		secrets = append(secrets, &InvoiceSecrets{
 			preimage:      preimage,
 			paymentSecret: paymentSecret,
+			keyPath:       keyPath.String(),
 			PaymentHash:   paymentHash,
-			KeyPath:       keyPath,
-			IdentityKey:   hex.EncodeToString(identityKey.Raw()),
-			HtlcKeyPair:   htlcKeyPair,
-			ShortChanId:   shortChanId,
+			IdentityKey:   identityKey,
+			UserHtlcKey:   userHtlcKey,
+			MuunHtlcKey:   muunHtlcKey,
+			ShortChanId:   int64(shortChanId),
 		})
 	}
 
 	// TODO: cleanup used secrets
 
-	return secrets, nil
+	return &InvoiceSecretsList{secrets}, nil
 }
 
 // PersistInvoiceSecrets stores secrets registered with the remote server
 // in the device local database. These secrets can be used to craft new
 // Lightning invoices.
-func PersistInvoiceSecrets(invoiceSecrets []*InvoiceSecrets) error {
+func PersistInvoiceSecrets(list *InvoiceSecretsList) error {
 	db, err := openDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	for _, s := range invoiceSecrets {
+	for _, s := range list.secrets {
 		db.CreateInvoice(&walletdb.Invoice{
 			Preimage:      s.preimage,
 			PaymentHash:   s.PaymentHash,
 			PaymentSecret: s.paymentSecret,
-			KeyPath:       s.KeyPath,
-			ShortChanId:   s.ShortChanId,
+			KeyPath:       s.keyPath,
+			ShortChanId:   uint64(s.ShortChanId),
 			State:         walletdb.InvoiceStateRegistered,
 		})
 	}
@@ -199,6 +213,10 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	iopts = append(iopts, zpay32.CLTVExpiry(144)) // ~1 day
 	iopts = append(iopts, zpay32.Expiry(1*time.Hour))
 
+	var paymentAddr [32]byte
+	copy(paymentAddr[:], dbInvoice.PaymentSecret)
+	iopts = append(iopts, zpay32.PaymentAddr(paymentAddr))
+
 	if opts.Description != "" {
 		iopts = append(iopts, zpay32.Description(opts.Description))
 	} else {
@@ -219,8 +237,8 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	}
 
 	// recreate the client identity privkey
-	identityKeyPath := fmt.Sprintf("%s/%d", dbInvoice.KeyPath, identityKeyChildIndex)
-	identityHDKey, err := userKey.DeriveTo(identityKeyPath)
+	identityKeyPath := hdpath.MustParse(dbInvoice.KeyPath).Child(identityKeyChildIndex)
+	identityHDKey, err := userKey.DeriveTo(identityKeyPath.String())
 	if err != nil {
 		return "", err
 	}
@@ -250,6 +268,66 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	return bech32, nil
 }
 
+type IncomingSwap struct {
+	FulfillmentTx       []byte
+	MuunSignature       []byte
+	Sphinx              []byte
+	PaymentHash         []byte
+	BlockHeight         int64 // unused
+	HtlcTx              []byte
+	OutputVersion       int    // unused
+	OutputPath          string // unused
+	SwapServerPublicKey string
+	MerkleTree          []byte // unused
+	HtlcExpiration      int64
+	HtlcBlock           []byte // unused
+	ConfirmationTarget  int64  // to validate fee rate, unused for now
+}
+
+func (s *IncomingSwap) VerifyAndFulfill(userKey *HDPrivateKey, muunKey *HDPublicKey, net *Network) ([]byte, error) {
+	// Validate the fullfillment tx proposed by Muun.
+	tx := wire.MsgTx{}
+	err := tx.DeserializeNoWitness(bytes.NewReader(s.FulfillmentTx))
+	if err != nil {
+		return nil, fmt.Errorf("could not deserialize fulfillment tx: %w", err)
+	}
+	if len(tx.TxIn) != 1 {
+		return nil, fmt.Errorf("expected fulfillment tx to have exactly 1 input, found %d", len(tx.TxIn))
+	}
+	if len(tx.TxOut) != 1 {
+		return nil, fmt.Errorf("expected fulfillment tx to have exactly 1 output, found %d", len(tx.TxOut))
+	}
+
+	swapServerPublicKey, err := hex.DecodeString(s.SwapServerPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Sign the htlc input (there is only one, at index 0)
+	coin := coinIncomingSwap{
+		Network:             net.network,
+		MuunSignature:       s.MuunSignature,
+		Sphinx:              s.Sphinx,
+		HtlcTx:              s.HtlcTx,
+		PaymentHash256:      s.PaymentHash,
+		SwapServerPublicKey: swapServerPublicKey,
+		ExpirationHeight:    s.HtlcExpiration,
+		VerifyOutputAmount:  true,
+	}
+	err = coin.SignInput(0, &tx, userKey, muunKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Serialize and return the signed fulfillment tx
+	var buf bytes.Buffer
+	err = tx.Serialize(&buf)
+	if err != nil {
+		return nil, fmt.Errorf("could not serialize fulfillment tx: %w", err)
+	}
+	return buf.Bytes(), nil
+}
+
 func openDB() (*walletdb.DB, error) {
 	return walletdb.Open(path.Join(cfg.DataDir, "wallet.db"))
 }
@@ -260,4 +338,19 @@ func parsePubKey(s string) (*btcec.PublicKey, error) {
 		return nil, err
 	}
 	return btcec.ParsePubKey(bytes, btcec.S256())
+}
+
+func verifyTxWitnessSignature(tx *wire.MsgTx, sigHashes *txscript.TxSigHashes, outputIndex int, amount int64, script []byte, sig []byte, signKey *btcec.PublicKey) error {
+	sigHash, err := txscript.CalcWitnessSigHash(script, sigHashes, txscript.SigHashAll, tx, outputIndex, amount)
+	if err != nil {
+		return err
+	}
+	signature, err := btcec.ParseDERSignature(sig, btcec.S256())
+	if err != nil {
+		return err
+	}
+	if !signature.Verify(sigHash, signKey) {
+		return errors.New("signature does not verify")
+	}
+	return nil
 }

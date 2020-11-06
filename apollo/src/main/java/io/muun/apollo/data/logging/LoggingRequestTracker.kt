@@ -1,5 +1,6 @@
 package io.muun.apollo.data.logging
 
+import io.muun.common.api.error.Error
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
@@ -60,9 +61,17 @@ object LoggingRequestTracker {
     }
 
     @Synchronized
-    fun reportRecentResponse(key: IdempotencyKey, status: Int) {
+    fun reportRecentErrorResponse(key: String, error: Error?) {
         lastEndpoints[key]?.let {
-            it.status = status
+            it.status = error?.errorCode?.code ?: 500
+            it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
+        }
+    }
+
+    @Synchronized
+    fun reportRecentSuccessResponse(key: IdempotencyKey) {
+        lastEndpoints[key]?.let {
+            it.status = 200
             it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
         }
     }

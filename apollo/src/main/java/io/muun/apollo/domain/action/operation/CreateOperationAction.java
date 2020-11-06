@@ -1,14 +1,16 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.base.ElementNotFoundException;
+import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao;
+import io.muun.apollo.data.db.incoming_swap.IncomingSwapHtlcDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction2;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
-import io.muun.apollo.external.NotificationService;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.rx.ObservableFn;
 
@@ -26,6 +28,8 @@ public class CreateOperationAction
     private final OperationDao operationDao;
     private final PublicProfileDao publicProfileDao;
     private final SubmarineSwapDao submarineSwapDao;
+    private final IncomingSwapDao incomingSwapDao;
+    private final IncomingSwapHtlcDao incomingSwapHtlcDao;
 
     private final NotificationService notificationService;
 
@@ -33,17 +37,21 @@ public class CreateOperationAction
      * Create a new Operation in the local database, and update the transaction size vector.
      */
     @Inject
-    public CreateOperationAction(TransactionSizeRepository transactionSizeRepository,
-                                 OperationDao operationDao,
-                                 PublicProfileDao publicProfileDao,
-                                 SubmarineSwapDao submarineSwapDao,
-                                 NotificationService notificationService) {
+    public CreateOperationAction(final TransactionSizeRepository transactionSizeRepository,
+                                 final OperationDao operationDao,
+                                 final PublicProfileDao publicProfileDao,
+                                 final SubmarineSwapDao submarineSwapDao,
+                                 final NotificationService notificationService,
+                                 final IncomingSwapDao incomingSwapDao,
+                                 final IncomingSwapHtlcDao incomingSwapHtlcDao) {
 
         this.transactionSizeRepository = transactionSizeRepository;
         this.operationDao = operationDao;
         this.publicProfileDao = publicProfileDao;
         this.submarineSwapDao = submarineSwapDao;
         this.notificationService = notificationService;
+        this.incomingSwapDao = incomingSwapDao;
+        this.incomingSwapHtlcDao = incomingSwapHtlcDao;
     }
 
     @Override
@@ -89,6 +97,16 @@ public class CreateOperationAction
                             if (operation.swap != null) {
                                 chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
                                         submarineSwapDao.store(operation.swap)
+                                ));
+                            }
+
+                            if (operation.incomingSwap != null) {
+                                chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
+                                        incomingSwapHtlcDao.store(operation.incomingSwap.getHtlc())
+                                ));
+
+                                chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
+                                        incomingSwapDao.store(operation.incomingSwap)
                                 ));
                             }
 

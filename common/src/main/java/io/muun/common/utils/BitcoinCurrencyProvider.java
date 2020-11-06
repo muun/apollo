@@ -5,7 +5,6 @@ import org.javamoney.moneta.CurrencyUnitBuilder;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.annotation.Priority;
 import javax.money.CurrencyQuery;
 import javax.money.CurrencyUnit;

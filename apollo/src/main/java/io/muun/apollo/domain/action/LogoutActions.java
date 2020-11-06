@@ -2,11 +2,13 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.BaseRepository;
 import io.muun.apollo.data.preferences.ClientVersionRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
+import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.NotificationRepository;
@@ -18,7 +20,6 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
-import io.muun.apollo.external.NotificationService;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
@@ -27,7 +28,6 @@ import timber.log.Timber;
 
 import java.util.Arrays;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -55,6 +55,8 @@ public class LogoutActions {
     private final List<BaseRepository> repositoriesToClear;
     private final List<String> thirdPartyPreferencesToClear;
 
+    private final FcmTokenRepository fcmTokenRepository;
+
     /**
      * Constructor.
      */
@@ -76,7 +78,8 @@ public class LogoutActions {
                          FeeWindowRepository feeWindowRepository,
                          ClientVersionRepository clientVersionRepository,
                          NotificationRepository notificationRepository,
-                         TransactionSizeRepository transactionSizeRepository) {
+                         TransactionSizeRepository transactionSizeRepository,
+                         FcmTokenRepository fcmTokenRepository) {
 
         this.context = context;
         this.asyncActionStore = asyncActionStore;
@@ -101,6 +104,8 @@ public class LogoutActions {
                 notificationRepository,
                 transactionSizeRepository
         );
+
+        this.fcmTokenRepository = fcmTokenRepository;
     }
 
     /**
@@ -109,7 +114,7 @@ public class LogoutActions {
     public void destroyRecoverableWallet() {
         final LogoutOptions logoutOptions = logoutOptionsSel.get();
 
-        if (!logoutOptions.canDestroyWallet()) {
+        if (logoutOptions.wouldDeleteWallet()) {
             Timber.e(new UnrecoverableUserLogoutError());
             return; // should never happen, but if a bug causes this NEVER delete storage
         }
@@ -122,7 +127,7 @@ public class LogoutActions {
      */
     public void dangerouslyDestroyUnrecoverableWallet() {
         final LogoutOptions logoutOptions = logoutOptionsSel.get();
-        Preconditions.checkState(logoutOptions.canDestroyWallet()); // just checking
+        Preconditions.checkState(!logoutOptions.isBlocked()); // just checking
 
         destroyWallet();
     }
@@ -161,7 +166,7 @@ public class LogoutActions {
         asyncActionStore.resetAllExceptLogout();
         secureStorageProvider.wipe();
 
-        clearAllRepositories();
+        clearRepositoriesForLogout();
         contactActions.stopWatchingContacts();
         daoManager.delete();
 
@@ -172,18 +177,34 @@ public class LogoutActions {
 
     /**
      * Destroy all data in non-encrypted repositories.
+     * Warning: this method is supposed to be used solely in PreferencesMigrationManager, since we
+     * shouldn't be needing any "full wipe preference migration" anymore, this method is left just
+     * for the sake of completeness.
      */
     public void clearAllRepositories() {
+        clearRepositoriesForLogout();
+        clearRepository(fcmTokenRepository);
+    }
+
+    /**
+     * Destroy all data in non-encrypted repositories that should be cleared upon logout. We avoid
+     * clearing some repositories on logout (e.g FcmTokenRepository).
+     */
+    private void clearRepositoriesForLogout() {
         for (BaseRepository repository : repositoriesToClear) {
-            try {
-                repository.clear();
-            } catch (Exception e) {
-                Timber.e(e);
-            }
+            clearRepository(repository);
         }
 
         for (String fileName : thirdPartyPreferencesToClear) {
             context.getSharedPreferences(fileName, Context.MODE_PRIVATE).edit().clear().apply();
+        }
+    }
+
+    private void clearRepository(BaseRepository repository) {
+        try {
+            repository.clear();
+        } catch (Exception e) {
+            Timber.e(e);
         }
     }
 

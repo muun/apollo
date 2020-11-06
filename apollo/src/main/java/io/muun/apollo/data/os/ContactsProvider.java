@@ -21,7 +21,6 @@ import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 

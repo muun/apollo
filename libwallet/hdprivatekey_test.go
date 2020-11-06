@@ -1,6 +1,7 @@
 package libwallet
 
 import (
+	"crypto/sha256"
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec"
@@ -286,7 +287,8 @@ func TestHDPrivateKeySign(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ok := sig.Verify(data, pubKey); !ok {
+	hash := sha256.Sum256(data)
+	if ok := sig.Verify(hash[:], pubKey); !ok {
 		t.Fatal(err)
 	}
 }

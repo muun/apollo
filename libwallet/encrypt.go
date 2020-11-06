@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
 	"io"
 	"math"
 	"math/big"
+
+	"github.com/muun/libwallet/aescbc"
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
@@ -326,7 +329,7 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 	serializedPubkey := pubEph.SerializeCompressed()
 	iv := serializedPubkey[len(serializedPubkey)-aes.BlockSize:]
 
-	ciphertext, err := encryptAesCbcNoPadding(paddedSerializeBigInt(aesKeySize, sharedSecret), iv, plaintext)
+	ciphertext, err := aescbc.EncryptNoPadding(paddedSerializeBigInt(aescbc.KeySize, sharedSecret), iv, plaintext)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "encryptWithPubKey: encrypt failed")
 	}
@@ -354,7 +357,7 @@ func generateSharedEncryptionSecretForAES(pubKey *btcec.PublicKey) (*btcec.Publi
 		return nil, nil, err
 	}
 
-	hash := sha256.Sum256(paddedSerializeBigInt(aesKeySize, sharedSecret))
+	hash := sha256.Sum256(paddedSerializeBigInt(aescbc.KeySize, sharedSecret))
 	return privEph, hash[:], nil
 }
 
@@ -369,7 +372,7 @@ func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext 
 
 	iv := rawPubEph[len(rawPubEph)-aes.BlockSize:]
 
-	plaintext, err := decryptAesCbcNoPadding(paddedSerializeBigInt(aesKeySize, sharedSecret), iv, ciphertext)
+	plaintext, err := aescbc.DecryptNoPadding(paddedSerializeBigInt(aescbc.KeySize, sharedSecret), iv, ciphertext)
 	if err != nil {
 		return nil, errors.Wrapf(err, "decryptWithPrivKey: failed to decrypt")
 	}
@@ -395,6 +398,16 @@ func recoverSharedEncryptionSecretForAES(privKey *btcec.PrivateKey, rawPubEph []
 		return nil, err
 	}
 
-	hash := sha256.Sum256(paddedSerializeBigInt(aesKeySize, sharedSecret))
+	hash := sha256.Sum256(paddedSerializeBigInt(aescbc.KeySize, sharedSecret))
 	return hash[:], nil
+}
+
+func randomBytes(count int) []byte {
+	buf := make([]byte, count)
+	_, err := rand.Read(buf)
+	if err != nil {
+		panic("couldn't read random bytes")
+	}
+
+	return buf
 }

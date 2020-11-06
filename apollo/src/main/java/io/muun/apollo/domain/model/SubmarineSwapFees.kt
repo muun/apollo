@@ -3,31 +3,15 @@ package io.muun.apollo.domain.model
 import io.muun.common.api.SubmarineSwapFeesJson
 
 
-class SubmarineSwapFees(
-    val lightningInSats: Long = 0,
-    val sweepInSats: Long = 0,
-    val channelOpenInSats: Long = 0,
-    val channelCloseInSats: Long = 0
-) {
+class SubmarineSwapFees(val lightningInSats: Long = 0, val sweepInSats: Long = 0) {
 
-    val total =
-        lightningInSats + sweepInSats + channelOpenInSats + channelCloseInSats
+    val total = lightningInSats + sweepInSats
 
     fun toJson() =
-        SubmarineSwapFeesJson(
-            lightningInSats,
-            sweepInSats,
-            channelOpenInSats,
-            channelCloseInSats
-        )
+        SubmarineSwapFeesJson(lightningInSats, sweepInSats)
 
     companion object {
         fun fromJson(json: SubmarineSwapFeesJson) =
-            SubmarineSwapFees(
-                json.lightningInSats,
-                json.sweepInSats,
-                json.channelOpenInSats,
-                json.channelCloseInSats
-            )
+            SubmarineSwapFees(json.lightningInSats, json.sweepInSats)
     }
 }

@@ -10,18 +10,18 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.Schema;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import org.bitcoinj.core.NetworkParameters;
-import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
 import java.util.NoSuchElementException;
-
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -33,11 +33,13 @@ public class KeysRepository extends BaseRepository {
     // Storage-level keys:
     private static final String KEY_BASE_PRIVATE_KEY_PATH = "xpriv_path";
     private static final String KEY_BASE_58_PRIVATE_KEY = "key_base_58_private_key";
-    private static final String KEY_ENCRYPTED_PRIVATE_MUUN_KEY = "key_encrypted_private_muun_key";
-    private static final String KEY_CHALLENGE_PUBLIC_KEY = "key_challenge_public_key_";
-    private static final String KEY_ENCRYPTED_PRIVATE_APOLLO_KEY =
-            "key_encrypted_private_apollo_key";
     private static final String KEY_BASE_PUBLIC_KEY = "base_public_key";
+
+    private static final String KEY_CHALLENGE_PUBLIC_KEY = "key_challenge_public_key_";
+
+    private static final String KEY_ENCRYPTED_PRIVATE_USER_KEY = "key_encrypted_private_apollo_key";
+    private static final String KEY_ENCRYPTED_PRIVATE_MUUN_KEY = "key_encrypted_private_muun_key";
+
     private static final String KEY_BASE_MUUN_PUBLIC_KEY = "base_muun_public_key";
 
     private static final String KEY_MAX_USED_EXTERNAL_ADDRESS_INDEX =
@@ -45,8 +47,6 @@ public class KeysRepository extends BaseRepository {
 
     private static final String KEY_MAX_WATCHING_EXTERNAL_ADDRESS_INDEX =
             "key_max_watching_external_address_index";
-
-    private static final String KEY_ANON_SECRET = "anon_secret";
 
     private static final String KEY_EK_ACTIVATION_CODE = "ek_activation_code";
 
@@ -169,7 +169,12 @@ public class KeysRepository extends BaseRepository {
     /**
      * Saves the base private key from which all are derived.
      */
-    public Observable<Void> storeBasePrivateKey(@NotNull PrivateKey basePrivateKey) {
+    public Observable<Void> storeBasePrivateKey(@NotNull PrivateKey privateKey) {
+        // The private key can be rooted at different derivation paths depending on
+        // when it was generated. Older apps rooted them at m. The now expected path is
+        // Schema#getBasePath, so we derive to it to ensure consistency for older keys.
+        final PrivateKey basePrivateKey = privateKey.deriveFromAbsolutePath(Schema.getBasePath());
+
         final byte[] base58 = basePrivateKey.serializeBase58().getBytes();
 
         return secureStorageProvider.putAsync(KEY_BASE_58_PRIVATE_KEY, base58)
@@ -180,14 +185,6 @@ public class KeysRepository extends BaseRepository {
                     basePublicKeyPreference.set(basePrivateKey.getPublicKey());
                     maxUsedExternalAddressIndexPreference.set(-1); // set a default
                 });
-    }
-
-    public Observable<Void> storeAnonSecret(String anonSecret) {
-        return secureStorageProvider.putAsync(KEY_ANON_SECRET, anonSecret.getBytes());
-    }
-
-    public Observable<String> getAnonSecret() {
-        return secureStorageProvider.getAsync(KEY_ANON_SECRET).map(String::new);
     }
 
     private Observable<Void> storeEncryptedBasePrivateKey(@NotNull PrivateKey basePrivateKey) {
@@ -218,7 +215,7 @@ public class KeysRepository extends BaseRepository {
                     Timber.d("Storing encrypted Apollo private key in secure storage.");
 
                     return secureStorageProvider.putAsync(
-                            KEY_ENCRYPTED_PRIVATE_APOLLO_KEY,
+                            KEY_ENCRYPTED_PRIVATE_USER_KEY,
                             encryptedKey.getBytes()
                     );
                 });
@@ -248,7 +245,7 @@ public class KeysRepository extends BaseRepository {
     }
 
     public Observable<String> getEncryptedBasePrivateKey() {
-        return secureStorageProvider.getAsync(KEY_ENCRYPTED_PRIVATE_APOLLO_KEY)
+        return secureStorageProvider.getAsync(KEY_ENCRYPTED_PRIVATE_USER_KEY)
                 .map(String::new);
     }
 
@@ -259,21 +256,22 @@ public class KeysRepository extends BaseRepository {
 
         return secureStorageProvider
                 .getAsync(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
-                .map(publicKeySerialization -> {
-                    final int length = ChallengePublicKey.PUBLIC_KEY_LENGTH;
-                    final byte[] publicKey = ByteUtils.subArray(publicKeySerialization, 0, length);
-                    final byte[] salt = ByteUtils.subArray(publicKeySerialization, length);
+                .map(serialization -> {
+
+                    final ChallengePublicKey challengePublicKey = ChallengePublicKey.deserialize(
+                            serialization
+                    );
 
                     // NOTE:
                     // Old Apollo versions did not store the challenge key salt. Modern Apollo
                     // versions concatenate the salt to the public key bytes (see the store method
                     // below). We use the length of the stored key to determine whether the salt
                     // is present (the subArray will be empty if not):
-                    if (salt.length == 0) {
+                    if (Objects.requireNonNull(challengePublicKey.getSalt()).length == 0) {
                         throw new MissingMigrationError("ChallengePublicKey salt");
                     }
 
-                    return new ChallengePublicKey(publicKey, salt);
+                    return challengePublicKey;
                 });
     }
 
@@ -338,7 +336,7 @@ public class KeysRepository extends BaseRepository {
 
         secureStorageProvider.put(
                 KEY_CHALLENGE_PUBLIC_KEY + type.toString(),
-                ByteUtils.concatenate(publicKey.toBytes(), publicKey.getSalt())
+                publicKey.serialize()
         );
 
         // Update the encrypted Apollo private key when some challenge key changes.
@@ -366,7 +364,31 @@ public class KeysRepository extends BaseRepository {
             return;
         }
 
-        storePublicChallengeKey(new ChallengePublicKey(publicKey, salt), type);
+        storePublicChallengeKey(ChallengePublicKey.buildLegacy(publicKey, salt), type);
+    }
+
+    /**
+     * Add version to an existing challenge key. Assumes that it has salt (e.g was created with one
+     * or was correctly migrated, see method above).
+     *
+     * <p>This is compat method and should not be used for anything else.</p>
+     */
+    public void addChallengePublicKeyVersionMigration(final ChallengeType type) {
+
+        final byte[] legacyPublicKeySerialization = secureStorageProvider
+                .get(KEY_CHALLENGE_PUBLIC_KEY + type.toString());
+
+        // If serialization doesn't have salt, it means the salt migration has not run yet. Skip
+        // this for now and let salt migration take care of it, when it runs.
+        if (legacyPublicKeySerialization.length != ChallengePublicKey.PUBLIC_KEY_LENGTH + 8) {
+            return;
+        }
+
+        final ChallengePublicKey challengePublicKey = ChallengePublicKey.deserializeLegacy(
+                legacyPublicKeySerialization
+        );
+
+        storePublicChallengeKey(challengePublicKey, type);
     }
 
     @Override

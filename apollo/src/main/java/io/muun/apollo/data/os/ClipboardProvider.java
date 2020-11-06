@@ -8,7 +8,6 @@ import android.content.Context;
 import rx.Observable;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
 
 public class ClipboardProvider {

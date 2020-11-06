@@ -1,67 +1,51 @@
 package libwallet
 
 import (
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcutil"
+	"github.com/muun/libwallet/addresses"
 	"github.com/pkg/errors"
 
 	"github.com/btcsuite/btcd/wire"
 )
 
 func CreateAddressV2(userKey, muunKey *HDPublicKey) (MuunAddress, error) {
-
-	script, err := createRedeemScriptV2(userKey, muunKey)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate redeem script v2")
-	}
-
-	address, err := btcutil.NewAddressScriptHash(script, userKey.Network.network)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate multisig address")
-	}
-
-	return &muunAddress{
-		address:        address.String(),
-		version:        addressV2,
-		derivationPath: userKey.Path,
-	}, nil
+	// TODO: check both paths match?
+	return addresses.CreateAddressV2(&userKey.key, &muunKey.key, userKey.Path, userKey.Network.network)
 }
 
-func createRedeemScriptV2(userKey, muunKey *HDPublicKey) ([]byte, error) {
-
-	userAddress, err := btcutil.NewAddressPubKey(userKey.Raw(), userKey.Network.network)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate address for user")
-	}
-
-	muunAddress, err := btcutil.NewAddressPubKey(muunKey.Raw(), muunKey.Network.network)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate address for muun")
-	}
-
-	return txscript.MultiSigScript([]*btcutil.AddressPubKey{
-		userAddress,
-		muunAddress,
-	}, 2)
+type coinV2 struct {
+	Network       *chaincfg.Params
+	OutPoint      wire.OutPoint
+	KeyPath       string
+	MuunSignature []byte
 }
 
-func addUserSignatureInputV2(input Input, index int, tx *wire.MsgTx, privateKey *HDPrivateKey,
-	muunKey *HDPublicKey) (*wire.TxIn, error) {
+func (c *coinV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
+	userKey, err := userKey.DeriveTo(c.KeyPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to derive user key")
+	}
 
-	if len(input.MuunSignature()) == 0 {
-		return nil, errors.Errorf("muun signature must be present")
+	muunKey, err = muunKey.DeriveTo(c.KeyPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to derive muun key")
+	}
+
+	if len(c.MuunSignature) == 0 {
+		return errors.Errorf("muun signature must be present")
 	}
 
 	txInput := tx.TxIn[index]
 
-	redeemScript, err := createRedeemScriptV2(privateKey.PublicKey(), muunKey)
+	redeemScript, err := createRedeemScriptV2(userKey.PublicKey(), muunKey)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to build reedem script for signing")
+		return errors.Wrapf(err, "failed to build reedem script for signing")
 	}
 
-	sig, err := signInputV2(input, index, tx, privateKey.PublicKey(), muunKey, privateKey)
+	sig, err := c.signature(index, tx, userKey.PublicKey(), muunKey, userKey)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// This is a standard 2 of 2 multisig script
@@ -71,19 +55,39 @@ func addUserSignatureInputV2(input Input, index int, tx *wire.MsgTx, privateKey 
 	builder := txscript.NewScriptBuilder()
 	builder.AddInt64(0)
 	builder.AddData(sig)
-	builder.AddData(input.MuunSignature())
+	builder.AddData(c.MuunSignature)
 	builder.AddData(redeemScript)
 	script, err := builder.Script()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate signing script")
+		return errors.Wrapf(err, "failed to generate signing script")
 	}
 
 	txInput.SignatureScript = script
 
-	return txInput, nil
+	return nil
 }
 
-func signInputV2(input Input, index int, tx *wire.MsgTx, userKey, muunKey *HDPublicKey,
+func (c *coinV2) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error {
+
+	derivedUserKey, err := userKey.DeriveTo(c.KeyPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to derive user key")
+	}
+
+	derivedMuunKey, err := muunKey.DeriveTo(c.KeyPath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to derive muun key")
+	}
+
+	muunSignature, err := c.signature(index, tx, derivedUserKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)
+	if err != nil {
+		return err
+	}
+	c.MuunSignature = muunSignature
+	return c.SignInput(index, tx, userKey, muunKey.PublicKey())
+}
+
+func (c *coinV2) signature(index int, tx *wire.MsgTx, userKey, muunKey *HDPublicKey,
 	signingKey *HDPrivateKey) ([]byte, error) {
 
 	redeemScript, err := createRedeemScriptV2(userKey, muunKey)
@@ -102,4 +106,8 @@ func signInputV2(input Input, index int, tx *wire.MsgTx, userKey, muunKey *HDPub
 	}
 
 	return sig, nil
+}
+
+func createRedeemScriptV2(userKey, muunKey *HDPublicKey) ([]byte, error) {
+	return addresses.CreateRedeemScriptV2(&userKey.key, &muunKey.key, userKey.Network.network)
 }

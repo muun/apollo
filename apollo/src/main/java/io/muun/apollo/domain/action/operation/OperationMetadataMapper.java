@@ -53,7 +53,6 @@ public class OperationMetadataMapper {
                 operation.getReceiverIsExternal(),
                 operation.getReceiverAddress(),
                 operation.getReceiverAddressDerivationPath(),
-                operation.getHardwareWalletHid(),
                 operation.getAmount(),
                 operation.getFee(),
                 operation.getConfirmations(),
@@ -62,7 +61,8 @@ public class OperationMetadataMapper {
                 operation.getStatus(),
                 operation.getCreationDate(),
                 operation.getExchangeRateWindowHid(),
-                operation.getSwap()
+                operation.getSwap(),
+                operation.getIncomingSwap()
         );
     }
 
@@ -175,7 +175,6 @@ public class OperationMetadataMapper {
                 operation.senderIsExternal,
                 operation.receiverProfile,
                 operation.receiverIsExternal,
-                operation.hardwareWalletHid,
                 operation.receiverAddress,
                 operation.receiverAddressDerivationPath,
                 null,
@@ -189,7 +188,8 @@ public class OperationMetadataMapper {
                 operation.exchangeRateWindowHid,
                 operation.swap,
                 receiverMetadata,
-                senderMetadata
+                senderMetadata,
+                operation.incomingSwap
         );
     }
 

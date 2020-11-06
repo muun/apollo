@@ -1,6 +1,8 @@
 package io.muun.common.utils;
 
+import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.exception.ParsingException;
+import io.muun.common.model.BtcAmount;
 import io.muun.common.utils.internal.Bech32;
 
 import com.google.common.primitives.Bytes;
@@ -377,6 +379,108 @@ public class LnInvoice {
         );
     }
 
+    /**
+     * Encode an invoice intended for incoming swap test suite.
+     */
+    public static String encodeForTest(final NetworkParameters networkParameters,
+                                       final PrivateKey identityKey,
+                                       final byte[] paymentHash,
+                                       final BtcAmount amount,
+                                       final int finalCltvDelta,
+                                       final String description,
+                                       final byte[] publicNodeKey,
+                                       final long shortChannelId,
+                                       final int feeBaseMsat,
+                                       final int feeProportionalMillionths,
+                                       final short ctlvExpiryDelta) {
+
+        final String header = "ln" + getHeader(networkParameters) + amount.toSats() * 10 + "n";
+
+        byte[] packedBytes = {};
+        packedBytes = ByteArray.concat(
+                packedBytes,
+                packInt((int) ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond())
+        );
+
+        packedBytes = addTaggedField(packedBytes, 'p', packBits(paymentHash));
+        packedBytes = addTaggedField(
+                packedBytes, 'd', packBits(description.getBytes(StandardCharsets.UTF_8))
+        );
+        packedBytes = addTaggedField(packedBytes, 'c', packInt(finalCltvDelta));
+        packedBytes = addTaggedField(packedBytes, 'r', packBits(buildRouteHintBytes(
+                publicNodeKey,
+                shortChannelId,
+                feeBaseMsat,
+                feeProportionalMillionths,
+                ctlvExpiryDelta
+        )));
+
+        packedBytes = appendSignature(identityKey, header, packedBytes);
+
+        return Bech32.encode(header, packedBytes);
+    }
+
+    private static byte[] appendSignature(final PrivateKey identityKey,
+                                          final String header,
+                                          byte[] packedBytes) {
+        // Sign the data
+        final Sha256Hash hashToSign;
+        hashToSign = Sha256Hash.of(
+                ByteArray.concat(header.getBytes(StandardCharsets.UTF_8), packedBytes)
+        );
+
+        final ECKey key = identityKey.getDeterministicKey().decompress();
+        final ECKey.ECDSASignature sig = key.sign(hashToSign);
+        final byte recoveryId = key.findRecoveryId(hashToSign, sig);
+
+        final byte[] signatureBytes = new byte[32 + 32 + 1];
+        System.arraycopy(Encodings.bigIntegerToBytes(sig.r, 32), 0, signatureBytes, 0, 32);
+        System.arraycopy(Encodings.bigIntegerToBytes(sig.s, 32), 0, signatureBytes, 32, 32);
+        signatureBytes[signatureBytes.length - 1] = recoveryId;
+
+        return Bytes.concat(packedBytes, packBits(signatureBytes));
+    }
+
+    private static byte[] buildRouteHintBytes(final byte[] publicNodeKey,
+                                              final long shortChannelId,
+                                              final int feeBaseMsat,
+                                              final int feeProportionalMillionths,
+                                              final short finalCltvDelta) {
+
+        final byte[] result = new byte[publicNodeKey.length + 8 + 4 + 4 + 2];
+        System.arraycopy(publicNodeKey, 0, result, 0, 33);
+        System.arraycopy(longToBytes(shortChannelId), 0, result, 33, 8);
+        System.arraycopy(intToBytes(feeBaseMsat), 0, result, 41, 4);
+        System.arraycopy(intToBytes(feeProportionalMillionths), 0, result, 44, 4);
+        System.arraycopy(shortToBytes(finalCltvDelta), 0, result, 48, 2);
+        return result;
+    }
+
+    private static byte[] addTaggedField(final byte[] existing,
+                                         final char type,
+                                         final byte[] packedBytes) {
+
+        byte key = -1;
+        for (final Map.Entry<Integer, Tag> tagEntry : TAGGED_FIELDS.entrySet()) {
+
+            if (tagEntry.getValue().name.charAt(0) == type) {
+                key = tagEntry.getKey().byteValue();
+            }
+        }
+
+        if (key == -1) {
+            throw new IllegalArgumentException();
+        }
+
+        return ByteArray.concat(
+                ByteArray.concat(existing, new byte[] {key}),
+                ByteArray.concat(
+                        packLength(packedBytes.length),
+                        packedBytes
+                )
+        );
+    }
+
     private static String recover(byte[] signature, int recoveryFlag, byte[] hashBytes) {
 
         final BigInteger r = new BigInteger(1, ByteArray.slice(signature, 0, 32));
@@ -446,6 +550,13 @@ public class LnInvoice {
     }
 
     /**
+     * Convert from a regular array of bytes to a bech32 5-bit word array.
+     */
+    private static byte[] packBits(byte[] bytes) {
+        return convertBits(Bytes.asList(bytes), 8, 5, true, false);
+    }
+
+    /**
      * Perform a conversion of the bytes in data:
      * - first, translate the values in each byte to fromBits, most significant bit first
      * - then, re-arrange those bits into groups of toBits bits.
@@ -498,6 +609,27 @@ public class LnInvoice {
         }
     }
 
+    private static byte[] packInt(final int value) {
+        final int maxValue = (1 << 5) - 1;
+        return new byte[] {
+                (byte) ((value >> 30) & maxValue),
+                (byte) ((value >> 25) & maxValue),
+                (byte) ((value >> 20) & maxValue),
+                (byte) ((value >> 15) & maxValue),
+                (byte) ((value >> 10) & maxValue),
+                (byte) ((value >> 5) & maxValue),
+                (byte) (value & maxValue)
+        };
+    }
+
+    private static byte[] packLength(final int value) {
+        final int maxValue = (1 << 5) - 1;
+        return new byte[] {
+                (byte) ((value >> 5) & maxValue),
+                (byte) (value & maxValue)
+        };
+    }
+
     /**
      * Convert bech32 encoded array of bytes to big endian long.
      *
@@ -511,6 +643,18 @@ public class LnInvoice {
         }
 
         return ret;
+    }
+
+    private static byte[] shortToBytes(final short value) {
+        return Encodings.bigIntegerToBytes(BigInteger.valueOf(value), 2);
+    }
+
+    private static byte[] intToBytes(final int value) {
+        return Encodings.bigIntegerToBytes(BigInteger.valueOf(value), 4);
+    }
+
+    private static byte[] longToBytes(final long value) {
+        return Encodings.bigIntegerToBytes(BigInteger.valueOf(value), 8);
     }
 
     private static Amount buildAmount(String amount, String multiplier) {

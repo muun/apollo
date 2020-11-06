@@ -1,6 +1,7 @@
 package walletdb
 
 import (
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -103,6 +104,18 @@ func (d *DB) CountUnusedInvoices() (int, error) {
 	return count, nil
 }
 
+func (d *DB) FindByPaymentHash(hash []byte) (*Invoice, error) {
+	var invoice Invoice
+	if res := d.db.Where(&Invoice{PaymentHash: hash}).First(&invoice); res.Error != nil {
+		return nil, res.Error
+	}
+	invoice.ShortChanId = invoice.ShortChanId | (1 << 63)
+	return &invoice, nil
+}
+
 func (d *DB) Close() {
-	d.db.Close()
+	err := d.db.Close()
+	if err != nil {
+		log.Printf("error closing the db: %v", err)
+	}
 }

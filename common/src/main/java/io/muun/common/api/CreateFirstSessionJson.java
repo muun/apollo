@@ -1,9 +1,13 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
+import io.muun.common.utils.Deprecated;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
 
@@ -23,7 +27,12 @@ public class CreateFirstSessionJson {
     @NotNull
     public PublicKeyJson basePublicKey;
 
-    @NotNull
+    @SuppressWarnings("indentation") // That final ) is staying there, so quit bitching linter
+    @Deprecated(
+            atApolloVersion = Supports.ChallengeUserKey.APOLLO,
+            atFalconVersion = Supports.ChallengeUserKey.FALCON
+    )
+    @Nullable // Mandatory for old clients
     public ChallengeSetupJson anonChallengeSetup;
 
 
@@ -40,7 +49,7 @@ public class CreateFirstSessionJson {
                                   String gcmToken,
                                   CurrencyUnit primaryCurrency,
                                   PublicKeyJson basePublicKey,
-                                  ChallengeSetupJson anonChallengeSetup) {
+                                  @Nullable ChallengeSetupJson anonChallengeSetup) {
         this.client = client;
         this.gcmToken = gcmToken;
         this.primaryCurrency = primaryCurrency;

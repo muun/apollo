@@ -3,12 +3,14 @@ package io.muun.common.crypto.tx;
 import io.muun.common.api.MuunInputJson;
 import io.muun.common.api.PartiallySignedTransactionJson;
 import io.muun.common.crypto.hd.MuunInput;
+import io.muun.common.crypto.hd.MuunInputIncomingSwap;
 import io.muun.common.crypto.hd.MuunInputSubmarineSwapV101;
 import io.muun.common.crypto.hd.MuunInputSubmarineSwapV102;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.crypto.hd.Signature;
+import io.muun.common.crypto.schemes.TransactionSchemeIncomingSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV1;
@@ -27,7 +29,6 @@ import rx.functions.Func3;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import static io.muun.common.utils.Preconditions.checkNotNull;
@@ -68,22 +69,6 @@ public class PartiallySignedTransaction {
     public PartiallySignedTransaction(Transaction transaction, List<MuunInput> inputs) {
         this.transaction = transaction;
         this.inputs = inputs;
-
-        long maxLockTime = 0;
-        for (int i = 0; i < inputs.size(); i++) {
-            final MuunInput muunInput = inputs.get(i);
-
-            final long lockTime = muunInput.getLockTime();
-
-            if (lockTime > 0) {
-                maxLockTime = Math.max(maxLockTime, lockTime);
-                transaction.getInput(i).setSequenceNumber(0xFFFF_FFFF - 1);
-            }
-        }
-
-        if (maxLockTime > 0) {
-            transaction.setLockTime(maxLockTime);
-        }
     }
 
     public Transaction getTransaction() {
@@ -126,6 +111,10 @@ public class PartiallySignedTransaction {
                     addUserSignatureSubmarineSwap102(i, baseUserPrivateKey);
                     break;
 
+                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
+                    addUserSignatureIncomingSwap(i, baseUserPrivateKey, baseMuunPublicKey);
+                    break;
+
                 default:
                     throw new MissingCaseError(version, "ADDRESS_VERSION");
             }
@@ -159,6 +148,10 @@ public class PartiallySignedTransaction {
                 case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
                     break; // Houston doesn't sign this. Swap server will, when sweeping.
 
+                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
+                    addMuunSignatureIncomingSwap(i, baseUserPublicKey, baseMuunPrivateKey);
+                    break;
+
                 default:
                     throw new MissingCaseError(version, "ADDRESS_VERSION");
             }
@@ -180,6 +173,7 @@ public class PartiallySignedTransaction {
                 case TransactionSchemeV3.ADDRESS_VERSION:
                 case TransactionSchemeV4.ADDRESS_VERSION:
                 case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
+                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
                     break; // The swap server doesn't sign this
 
                 case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
@@ -491,6 +485,68 @@ public class PartiallySignedTransaction {
                 .value();
 
         swap.setSwapServerSignature(signature);
+    }
+
+    private void addUserSignatureIncomingSwap(final int inputIndex,
+                                              final PrivateKey baseUserPrivateKey,
+                                              final PublicKey baseMuunPublicKey) {
+
+        final MuunInput input = inputs.get(inputIndex);
+        final String derivationPath = input.getDerivationPath();
+
+        Preconditions.checkNotNull(input.getMuunSignature()); // always sign after the houston does.
+
+        final PublicKey muunPublicKey = baseMuunPublicKey.deriveFromAbsolutePath(derivationPath);
+        final PrivateKey userPrivateKey = baseUserPrivateKey.deriveFromAbsolutePath(derivationPath);
+
+        // Add the user's signature to the PartiallySignedTransaction:
+        final MuunInputIncomingSwap incomingSwap = input.getIncomingSwap();
+        final byte[]  witnessScript = TransactionSchemeIncomingSwap.createWitnessScript(
+                incomingSwap.getPaymentHash256(),
+                userPrivateKey.getPublicKey().getPublicKeyBytes(),
+                muunPublicKey.getPublicKeyBytes(),
+                incomingSwap.getSwapServerPublicKey(),
+                incomingSwap.getExpirationHeight()
+        );
+        final byte[] dataToSign = TransactionSchemeIncomingSwap.createDataToSignInput(
+                transaction,
+                inputIndex,
+                input.getPrevOut().getAmount(),
+                witnessScript
+        );
+
+        input.setUserSignature(userPrivateKey.signTransactionHash(dataToSign));
+    }
+
+    private void addMuunSignatureIncomingSwap(final int inputIndex,
+                                              final PublicKey baseUserPublicKey,
+                                              final PrivateKey baseMuunPrivateKey) {
+
+        final MuunInput input = inputs.get(inputIndex);
+        final String derivationPath = input.getDerivationPath();
+
+        Preconditions.checkNull(input.getUserSignature()); // always sign before the user does.
+
+        final PrivateKey muunPrivateKey = baseMuunPrivateKey.deriveFromAbsolutePath(derivationPath);
+        final PublicKey userPublicKey = baseUserPublicKey.deriveFromAbsolutePath(derivationPath);
+
+        // Add the user's signature to the PartiallySignedTransaction:
+        final MuunInputIncomingSwap incomingSwap = input.getIncomingSwap();
+        final byte[]  witnessScript = TransactionSchemeIncomingSwap.createWitnessScript(
+                incomingSwap.getPaymentHash256(),
+                userPublicKey.getPublicKeyBytes(),
+                muunPrivateKey.getPublicKey().getPublicKeyBytes(),
+                incomingSwap.getSwapServerPublicKey(),
+                incomingSwap.getExpirationHeight()
+        );
+        final byte[] dataToSign = TransactionSchemeIncomingSwap.createDataToSignInput(
+                transaction,
+                inputIndex,
+                input.getPrevOut().getAmount(),
+                witnessScript
+        );
+
+        input.setMuunSignature(muunPrivateKey.signTransactionHash(dataToSign));
     }
 
     /**

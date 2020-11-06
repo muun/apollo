@@ -2,6 +2,7 @@ package io.muun.common.utils;
 
 import com.lambdaworks.crypto.SCrypt;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -9,7 +10,6 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import javax.annotation.Nonnegative;
 import javax.validation.constraints.NotNull;
 
@@ -57,6 +57,27 @@ public final class Hashes {
         hmac.init(new KeyParameter(key));
         hmac.reset();
         hmac.update(message, offset, length);
+        hmac.doFinal(bytes, 0);
+
+        return bytes;
+    }
+
+    /**
+     * Compute the HMAC-SHA256 authentication code of the given message.
+     *
+     * @param key The secret key.
+     * @param message The array containing the bytes to authenticate.
+     * @return the keyed-hash message authentication code.
+     */
+    @NotNull
+    public static byte[] hmacSha256(@NotNull byte[] message, @NotNull byte[] key) {
+        final byte[] bytes = new byte[32];
+
+        final HMac hmac = new HMac(new SHA256Digest());
+
+        hmac.init(new KeyParameter(key));
+        hmac.reset();
+        hmac.update(message, 0, message.length);
         hmac.doFinal(bytes, 0);
 
         return bytes;

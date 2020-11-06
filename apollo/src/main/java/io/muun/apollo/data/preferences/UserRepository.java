@@ -3,11 +3,8 @@ package io.muun.apollo.data.preferences;
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
-import io.muun.apollo.domain.errors.NullCreationDateBugError;
-import io.muun.apollo.domain.errors.SignupDraftFormatError;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
-import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
 import io.muun.apollo.domain.model.UserProfile;
@@ -18,10 +15,10 @@ import io.muun.common.utils.Preconditions;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import androidx.annotation.NonNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;
-import timber.log.Timber;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -40,15 +37,15 @@ public class UserRepository extends BaseRepository {
 
     private static final String CONTACTS_PERMISSION_STATE_KEY = "contacts_permission_state_key";
 
-    private static final String FCM_TOKEN_KEY = "fcm_token_key";
-
     private static final String INITIAL_SYNC_COMPLETED_KEY = "initial_sync_completed_key";
-
-    private static final String SIGNUP_DRAFT = "signup_draft";
 
     private static final String RC_SETUP_IN_PROCESS = "rc_setup_in_process";
 
     private static final String DISPLAY_SATS = "use_sats_as_currency";
+
+    private static final String PENDING_EMAIL_LINK = "pending_email_link";
+
+    private static final String EMAIL_SETUP_SKIPPED_KEY = "email_setup_skipped_key";
 
     private final Preference<String> lastCopiedAddress;
 
@@ -58,17 +55,18 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<ContactsPermissionState> conctactsPermissionStatePreference;
 
-    private final Preference<String> fcmTokenPreference;
-
     private final Preference<Boolean> initialSyncCompletedPreference;
-
-    private final Preference<SignupDraft> signupDraftPreference;
 
     private final Preference<Boolean> recoveryCodeSetupInProcessPreference;
 
     private final Preference<CurrencyDisplayMode> displaySatsPreference;
 
     private final Preference<StoredUserJson> userPreference;
+
+    private final Preference<String> pendingEmailLinkPreference;
+
+    // Only meaningful until 1st RecoveryMethod is setup. Afterward, user tracks its RecoveryMethods
+    private final Preference<Boolean> emailSetupSkippedPreference;
 
     /**
      * Creates a user preference repository.
@@ -96,16 +94,9 @@ public class UserRepository extends BaseRepository {
                 ContactsPermissionState.class
         );
 
-        fcmTokenPreference = rxSharedPreferences.getString(FCM_TOKEN_KEY);
-
         initialSyncCompletedPreference = rxSharedPreferences.getBoolean(
                 INITIAL_SYNC_COMPLETED_KEY,
                 false
-        );
-
-        signupDraftPreference = rxSharedPreferences.getObject(
-                SIGNUP_DRAFT,
-                new JsonPreferenceAdapter<>(SignupDraft.class)
         );
 
         recoveryCodeSetupInProcessPreference = rxSharedPreferences.getBoolean(RC_SETUP_IN_PROCESS);
@@ -114,6 +105,14 @@ public class UserRepository extends BaseRepository {
                 DISPLAY_SATS,
                 CurrencyDisplayMode.BTC,
                 CurrencyDisplayMode.class
+        );
+
+        // Non-nullable default to assure non-nullability of values
+        pendingEmailLinkPreference = rxSharedPreferences.getString(PENDING_EMAIL_LINK, "default");
+
+        emailSetupSkippedPreference = rxSharedPreferences.getBoolean(
+                EMAIL_SETUP_SKIPPED_KEY,
+                false
         );
     }
 
@@ -127,6 +126,10 @@ public class UserRepository extends BaseRepository {
      */
     public synchronized void store(User user) {
         userPreference.set(StoredUserJson.fromUser(user));
+
+        if (user.hasPassword) {
+            emailSetupSkippedPreference.set(false);
+        }
     }
 
     /**
@@ -161,8 +164,7 @@ public class UserRepository extends BaseRepository {
         final long hid = sharedPreferences.getLong("hid", -1L);
 
         if (hid == -1L) {
-            Timber.e(new NullCreationDateBugError());
-            return; // This Should Not Happen (tm), report the problem and avoid corrupting storage
+            return; // If no logged in user, then avoid setting any preferences.
         }
 
         final StoredUserJson value = new StoredUserJson(
@@ -257,34 +259,6 @@ public class UserRepository extends BaseRepository {
     }
 
     /**
-     * Set whether the user has a recovery code available.
-     */
-    public void storeHasRecoveryCode(boolean hasRecoveryCode) {
-        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
-
-        value.hasRecoveryCode = hasRecoveryCode;
-        userPreference.set(value);
-
-        if (hasRecoveryCode) {
-            // This shouldn't be necessary, but instinct tells me to put it here:
-            recoveryCodeSetupInProcessPreference.set(false);
-        }
-    }
-
-    /**
-     * Watch whether the user has a recovery code set up.
-     */
-    public Observable<Boolean> watchHasRecoveryCode() {
-        return userPreference.asObservable()
-                .map(Preconditions::checkNotNull)
-                .map(it -> it.hasRecoveryCode);
-    }
-
-    public boolean hasRecoveryCode() {
-        return watchHasRecoveryCode().toBlocking().first();
-    }
-
-    /**
      * Wait for the authorized email notification.
      */
     public Observable<String> awaitForAuthorizedPasswordChange() {
@@ -308,15 +282,6 @@ public class UserRepository extends BaseRepository {
         return conctactsPermissionStatePreference.asObservable();
     }
 
-    public void storeFcmToken(String token) {
-        Timber.d("FCM: Updating token in auth repository");
-        fcmTokenPreference.set(token);
-    }
-
-    public Observable<String> watchFcmToken() {
-        return fcmTokenPreference.asObservable();
-    }
-
     public void storeInitialSyncCompleted() {
         initialSyncCompletedPreference.set(true);
     }
@@ -325,51 +290,8 @@ public class UserRepository extends BaseRepository {
         return initialSyncCompletedPreference.get();
     }
 
-    /**
-     * Save an ongoing signup process.
-     */
-    public void storeSignupDraft(SignupDraft draft) {
-        if (draft != null) {
-            signupDraftPreference.set(draft);
-
-        } else {
-            signupDraftPreference.delete();
-        }
-    }
-
-    /**
-     * Recover an ongoing signup process.
-     */
-    public Optional<SignupDraft> fetchSignupDraft() {
-        if (hasSignupDraft()) {
-            try {
-                return Optional.ofNullable(signupDraftPreference.get());
-
-            } catch (IllegalArgumentException ex) {
-                // SignupDraft may have changed, and this is an old format. Discard it:
-                final String rawValue = sharedPreferences.getString(SIGNUP_DRAFT, null);
-                Timber.e(new SignupDraftFormatError(rawValue));
-
-                signupDraftPreference.delete();
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Returns true if there's an ongoing signup process.
-     */
-    private boolean hasSignupDraft() {
-        return signupDraftPreference.isSet();
-    }
-
     public void setRecoveryCodeSetupInProcess(boolean isInProcess) {
         recoveryCodeSetupInProcessPreference.set(isInProcess);
-    }
-
-    public Observable<Boolean> watchRecoveryCodeSetupInProcess() {
-        return recoveryCodeSetupInProcessPreference.asObservable();
     }
 
     public CurrencyDisplayMode getCurrencyDisplayMode() {
@@ -382,6 +304,22 @@ public class UserRepository extends BaseRepository {
 
     public void setCurrencyDisplayMode(CurrencyDisplayMode value) {
         displaySatsPreference.set(value);
+    }
+
+    public void setPendingEmailLink(String emailLink) {
+        pendingEmailLinkPreference.set(emailLink);
+    }
+
+    public String getPendingEmailLink() {
+        return pendingEmailLinkPreference.get();
+    }
+
+    public void setEmailSetupSkipped() {
+        emailSetupSkippedPreference.set(true);
+    }
+
+    public boolean getEmailSetupSkipped() {
+        return Preconditions.checkNotNull(emailSetupSkippedPreference.get());
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -539,22 +477,14 @@ public class UserRepository extends BaseRepository {
         }
 
         @Override
-        public StoredUserJson get(String key, SharedPreferences preferences) {
-            final StoredUserJson storedUser = super.get(key, preferences);
-
-            if (storedUser.createdAt == null) {
-                Timber.e(new NullCreationDateBugError());
-            }
-
-            return storedUser;
+        public StoredUserJson get(@NonNull String key, @NonNull SharedPreferences preferences) {
+            return super.get(key, preferences);
         }
 
         @Override
-        public void set(String key, StoredUserJson value, SharedPreferences.Editor editor) {
-            if (value.createdAt == null) {
-                Timber.e(new NullCreationDateBugError());
-            }
-
+        public void set(@NonNull String key,
+                        @NonNull StoredUserJson value,
+                        @NonNull SharedPreferences.Editor editor) {
             super.set(key, value, editor);
         }
     }

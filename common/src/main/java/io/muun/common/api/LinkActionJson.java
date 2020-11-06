@@ -12,4 +12,16 @@ public class LinkActionJson {
     @NotNull
     public String uuid;
 
+    /**
+     * JSON constructor.
+     */
+    public LinkActionJson() {
+    }
+
+    /**
+     * Code constructor.
+     */
+    public LinkActionJson(String uuid) {
+        this.uuid = uuid;
+    }
 }

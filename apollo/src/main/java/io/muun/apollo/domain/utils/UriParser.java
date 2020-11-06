@@ -36,6 +36,10 @@ public class UriParser {
         return path;
     }
 
+    public String getPathWithSlash() {
+        return "/" + path; // I prefer this explicit method over having callers guessing
+    }
+
     /**
      * Get the first value for a given query parameter name.
      */

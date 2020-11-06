@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.libwallet;
 
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.errors.AddressDerivationError;
 import io.muun.apollo.domain.libwallet.errors.InvoiceParsingError;
@@ -12,7 +13,6 @@ import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.GeneratedEmergencyKit;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
-import io.muun.apollo.external.Globals;
 import io.muun.common.Optional;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.MuunInput;
@@ -46,6 +46,7 @@ import org.threeten.bp.ZoneId;
 import org.threeten.bp.ZonedDateTime;
 import timber.log.Timber;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 public class LibwalletBridge {
@@ -73,7 +74,7 @@ public class LibwalletBridge {
 
         try {
             final EKOutput ekOutput = Libwallet
-                    .generateTranslatedEmergencyKitHTML(ekInput, locale.getLanguage());
+                    .generateEmergencyKitHTML(ekInput, locale.getLanguage());
 
             return new GeneratedEmergencyKit(
                     ekOutput.getHTML(),
@@ -82,6 +83,17 @@ public class LibwalletBridge {
 
         } catch (Exception e) {
             throw new LibwalletEmergencyKitError(e);
+        }
+    }
+
+    /**
+     * Sign a message. Use for challenge signing.
+     */
+    public static byte[] sign(byte[] message, PrivateKey userKey, NetworkParameters params) {
+        try {
+            return toLibwalletModel(userKey, params).sign(message);
+        } catch (Exception e) {
+            throw new LibwalletSigningError(Arrays.toString(message),e);
         }
     }
 
@@ -99,13 +111,13 @@ public class LibwalletBridge {
         final HDPrivateKey userKey = toLibwalletModel(userPrivateKey, network);
         final HDPublicKey muunKey = toLibwalletModel(muunPublicKey, network);
 
-        final String hexTx = Encodings.bytesToHex(unsignedTx);
-        final libwallet.PartiallySignedTransaction libwalletPst =
-                new libwallet.PartiallySignedTransaction(hexTx);
-
+        final libwallet.InputList inputList = new libwallet.InputList();
         for (final MuunInput input: pst.getInputs()) {
-            libwalletPst.addInput(new Input(input));
+            inputList.add(new Input(input));
         }
+
+        final libwallet.PartiallySignedTransaction libwalletPst =
+                new libwallet.PartiallySignedTransaction(inputList, unsignedTx);
 
         // Attempt client-side verification (log-only for now):
         // We have some cases that aren't considered in libwallet yet, so keep this advisory
@@ -114,6 +126,7 @@ public class LibwalletBridge {
         try {
             return libwalletPst.sign(userKey, muunKey);
         } catch (Exception e) {
+            final String hexTx = Encodings.bytesToHex(unsignedTx);
             throw new LibwalletSigningError(hexTx, e);
         }
     }
@@ -308,7 +321,6 @@ public class LibwalletBridge {
         }
     }
 
-
     private static BitcoinUriContent fromLibwalletModel(MuunPaymentURI muunPaymentUri) {
         if (muunPaymentUri == null) {
             return null;
@@ -409,8 +421,7 @@ public class LibwalletBridge {
                     userCraftedOp.fee.inSatoshis
             );
 
-            libwalletPst.setExpectations(expectations);
-            libwalletPst.verify(userPublicKey, muunPublicKey);
+            libwalletPst.verify(expectations, userPublicKey, muunPublicKey);
 
         } catch (Throwable error) {
             Timber.e(new LibwalletVerificationError(error));

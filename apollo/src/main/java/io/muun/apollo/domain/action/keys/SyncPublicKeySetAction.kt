@@ -17,7 +17,7 @@ class SyncPublicKeySetAction @Inject constructor(
     /**
      * Sync the external address indexes with Houston.
      */
-    override fun action() =
+    override fun action(): Observable<Void> =
         Observable.defer {
             houstonClient
                 .updatePublicKeySet(keysRepository.basePublicKey)

@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -226,6 +225,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Parse URI params.
+     *
      * @param params              The network parameters or null
      * @param nameValuePairTokens The tokens representing the name value pairs (assumed to be
      *                            separated by '=' e.g. 'amount=0.2')
@@ -330,6 +331,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Get the amount if any.
+     *
      * @return The amount name encoded using a pure integer value based at
      *     10,000,000 units is 1 BTC. May be null if no amount is specified
      */
@@ -338,6 +341,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Get the label if any.
+     *
      * @return The label from the URI.
      */
     public String getLabel() {
@@ -345,6 +350,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Get the messafe, if any.
+     *
      * @return The message from the URI.
      */
     public String getMessage() {
@@ -352,6 +359,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Get the BIP70 payment request url, if any.
+     *
      * @return The URL where a payment request (as specified in BIP 70) may be fetched.
      */
     public final String getPaymentRequestUrl() {
@@ -379,6 +388,8 @@ public class BitcoinUri {
     }
 
     /**
+     * Get a specific parameter by name.
+     *
      * @param name The name of the parameter.
      * @return The parameter value, or null if not present
      */

@@ -8,7 +8,9 @@ import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
-import io.muun.apollo.domain.model.HardwareWallet;
+import io.muun.apollo.domain.model.ForwardingPolicy;
+import io.muun.apollo.domain.model.IncomingSwap;
+import io.muun.apollo.domain.model.IncomingSwapHtlc;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.domain.model.OperationCreated;
@@ -28,10 +30,10 @@ import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.CommonModelObjectsMapper;
 import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateSessionOkJson;
+import io.muun.common.api.CreateSessionRcOkJson;
 import io.muun.common.api.FeeWindowJson;
-import io.muun.common.api.HardwareWalletJson;
-import io.muun.common.api.HardwareWalletOutputJson;
-import io.muun.common.api.HardwareWalletStateJson;
+import io.muun.common.api.ForwardingPolicyJson;
+import io.muun.common.api.IncomingSwapJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
@@ -44,15 +46,14 @@ import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
-import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyPair;
-import io.muun.common.crypto.hwallet.HardwareWalletState;
 import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.CreateSessionOk;
+import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.SizeForAmount;
-import io.muun.common.utils.CollectionUtils;
+import io.muun.common.model.UtxoStatus;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
@@ -60,7 +61,7 @@ import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -218,7 +219,6 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.receiverProfile != null
                         ? mapPublicProfile(operation.receiverProfile) : null,
                 operation.receiverIsExternal,
-                operation.hardwareWalletHid,
                 operation.receiverAddress,
                 operation.receiverAddressDerivationPath,
                 null,
@@ -232,7 +232,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.exchangeRatesWindowId,
                 operation.swap != null ? mapSubmarineSwap(operation.swap) : null,
                 operation.receiverMetadata,
-                operation.senderMetadata
+                operation.senderMetadata,
+                operation.incomingSwap != null ? mapIncomingSwap(operation.incomingSwap) : null
         );
     }
 
@@ -242,6 +243,31 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     @NotNull
     public SubmarineSwap mapSubmarineSwap(SubmarineSwapJson swap) {
         return SubmarineSwap.Companion.fromJson(swap);
+    }
+
+    @NotNull
+    public IncomingSwap mapIncomingSwap(@NotNull final IncomingSwapJson swap) {
+
+        return new IncomingSwap(
+                null,
+                swap.uuid,
+                Encodings.hexToBytes(swap.paymentHashHex),
+                new IncomingSwapHtlc(
+                        null,
+                        swap.htlc.uuid,
+                        swap.htlc.expirationHeight,
+                        swap.htlc.paymentAmountInSats,
+                        swap.htlc.fulfillmentFeeSubsidyInSats,
+                        swap.htlc.lentInSats,
+                        Encodings.hexToBytes(swap.htlc.swapServerPublicKeyHex),
+                        swap.htlc.fulfillmentTxHex != null
+                                ? Encodings.hexToBytes(swap.htlc.fulfillmentTxHex) : null,
+                        swap.htlc.address,
+                        swap.htlc.outputAmountInSatoshis,
+                        Encodings.hexToBytes(swap.htlc.htlcTxHex)
+                ),
+                swap.sphinxPacketHex != null ? Encodings.hexToBytes(swap.sphinxPacketHex) : null
+        );
     }
 
     /**
@@ -305,8 +331,25 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         return new RealTimeData(
                 mapFeeWindow(realTimeData.feeWindow),
                 mapExchangeRateWindow(realTimeData.exchangeRateWindow),
-                realTimeData.currentBlockchainHeight
+                realTimeData.currentBlockchainHeight,
+                mapForwadingPolicies(realTimeData.forwardingPolicies)
         );
+    }
+
+    private List<ForwardingPolicy> mapForwadingPolicies(
+            final List<ForwardingPolicyJson> forwardingPolicies) {
+
+        final List<ForwardingPolicy> result = new ArrayList<>();
+        for (final ForwardingPolicyJson json : forwardingPolicies) {
+            result.add(new ForwardingPolicy(
+                    Encodings.hexToBytes(json.identityKeyHex),
+                    json.feeBaseMsat,
+                    json.feeProportionalMillionths,
+                    json.cltvExpiryDelta
+            ));
+        }
+
+        return result;
     }
 
     /**
@@ -345,13 +388,12 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     @NotNull
     private SizeForAmount mapSizeForAmount(@NotNull SizeForAmountJson sizeForAmount) {
-        final String[] outpoint = sizeForAmount.outpoint.split(":");
-        Preconditions.checkArgument(outpoint.length == 2);
         return new SizeForAmount(
                 sizeForAmount.amountInSatoshis,
                 sizeForAmount.sizeInBytes.intValue(),
-                outpoint[0],
-                Integer.parseInt(outpoint[1])
+                sizeForAmount.outpoint,
+                UtxoStatus.fromJson(sizeForAmount.status),
+                sizeForAmount.deltaInWeightUnits
         );
     }
 
@@ -384,48 +426,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         );
     }
 
-    /**
-     * Create a HardwareWallet.
-     */
-    public HardwareWallet mapHardwareWallet(HardwareWalletJson json) {
-        // NOTE: despite safeguards, `id` and `createdAt` are always non-null coming from Houston.
-        return new HardwareWallet(
-                null,
-                json.id,
-                json.brand,
-                json.model,
-                json.label,
-                mapPublicKey(json.publicKey),
-                mapZonedDateTime(json.createdAt),
-                mapZonedDateTime(json.lastPairedAt),
-                json.isPaired
-        );
-    }
-
-    /**
-     * Create an HardwareWalletOutput.
-     */
-    private HardwareWalletOutput mapHardwareWalletOutput(HardwareWalletOutputJson json) {
-        return new HardwareWalletOutput(
-                json.txId,
-                json.index,
-                json.amount,
-                mapPublicKey(json.publicKeyJson),
-                json.rawPreviousTransaction
-        );
-    }
-
-    /**
-     * Create an HardwareWalletStateJson.
-     */
-    public HardwareWalletState mapHardwareWalletState(HardwareWalletStateJson json) {
-
-        return new HardwareWalletState(
-                CollectionUtils.mapList(json.sortedUtxos, this::mapHardwareWalletOutput),
-                CollectionUtils.mapList(json.sizeForAmount, this::mapSizeForAmount),
-                mapHardwareWalletAddress(json.changeAddress),
-                mapHardwareWalletAddress(json.nextAddress)
-         );
+    public CreateSessionRcOk mapCreateSessionRcOk(CreateSessionRcOkJson json) {
+        return new CreateSessionRcOk(json.keySet, json.hasEmailSetup, json.obfuscatedEmail);
     }
 
     /**

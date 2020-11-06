@@ -26,6 +26,9 @@ public class MuunInput {
     @Nullable
     private MuunInputSubmarineSwapV102 submarineSwapV102; // submarine swap V102 refund inputs only
 
+    @Nullable
+    private MuunInputIncomingSwap incomingSwap; // for incoming swap inputs only
+
     /**
      * Build from a json-serializable representation.
      */
@@ -41,7 +44,8 @@ public class MuunInput {
                 ),
                 json.submarineSwapV102 == null ? null : MuunInputSubmarineSwapV102.fromJson(
                         json.submarineSwapV102
-                )
+                ),
+                json.incomingSwap == null ? null : MuunInputIncomingSwap.fromJson(json.incomingSwap)
         );
     }
 
@@ -61,7 +65,8 @@ public class MuunInput {
                      @Nullable Signature userSignature,
                      @Nullable Signature muunSignature,
                      @Nullable MuunInputSubmarineSwapV101 submarineSwap,
-                     @Nullable MuunInputSubmarineSwapV102 submarineSwapV102) {
+                     @Nullable MuunInputSubmarineSwapV102 submarineSwapV102,
+                     @Nullable MuunInputIncomingSwap incomingSwap) {
 
         this.prevOut = prevOut;
         this.address = address;
@@ -69,6 +74,7 @@ public class MuunInput {
         this.muunSignature = muunSignature;
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
+        this.incomingSwap = incomingSwap;
     }
 
     public MuunOutput getPrevOut() {
@@ -123,6 +129,15 @@ public class MuunInput {
         this.submarineSwapV102 = submarineSwapV102;
     }
 
+    @Nullable
+    public MuunInputIncomingSwap getIncomingSwap() {
+        return incomingSwap;
+    }
+
+    public void setIncomingSwap(@Nullable MuunInputIncomingSwap incomingSwap) {
+        this.incomingSwap = incomingSwap;
+    }
+
     /**
      * Convert to a json-serializable representation.
      */
@@ -134,7 +149,8 @@ public class MuunInput {
                 userSignature == null ? null : userSignature.toJson(),
                 muunSignature == null ? null : muunSignature.toJson(),
                 submarineSwap == null ? null : submarineSwap.toJson(),
-                submarineSwapV102 == null ? null : submarineSwapV102.toJson()
+                submarineSwapV102 == null ? null : submarineSwapV102.toJson(),
+                incomingSwap == null ? null : incomingSwap.toJson()
         );
     }
 

@@ -1,9 +1,12 @@
 package io.muun.apollo.data.db.operation;
 
 import io.muun.apollo.data.db.base.BaseEntity;
+import io.muun.apollo.data.db.incoming_swap.IncomingSwapEntity;
+import io.muun.apollo.data.db.incoming_swap.IncomingSwapHtlcEntity;
 import io.muun.apollo.data.db.public_profile.PublicProfileEntity;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapEntity;
 import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwap;
@@ -42,7 +45,9 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
     public abstract static class CompleteOperation implements OperationModel.SelectAllModel<
             OperationEntity,
             PublicProfileEntity,
-            SubmarineSwapEntity> {
+            SubmarineSwapEntity,
+            IncomingSwapEntity,
+            IncomingSwapHtlcEntity> {
     }
 
     /**
@@ -80,8 +85,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 operation.status,
                 operation.creationDate,
                 operation.exchangeRateWindowHid,
-                operation.hardwareWalletHid,
-                operation.swap == null ? null : operation.swap.houstonUuid
+                operation.swap == null ? null : operation.swap.houstonUuid,
+                operation.incomingSwap == null ? null : operation.incomingSwap.houstonUuid
         );
 
         return insertStatement;
@@ -95,7 +100,9 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
         final CompleteOperation entity = FACTORY.selectAllMapper(
                 AutoValue_OperationEntity_CompleteOperation::new,
                 PublicProfileEntity.FACTORY,
-                SubmarineSwapEntity.FACTORY
+                SubmarineSwapEntity.FACTORY,
+                IncomingSwapEntity.FACTORY,
+                IncomingSwapHtlcEntity.FACTORY
         ).map(cursor);
 
         return new Operation(
@@ -109,7 +116,6 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().receiver_is_external(),
                 entity.operations().receiver_address(),
                 entity.operations().receiver_address_derivation_path(),
-                entity.operations().hardware_wallet_hid(),
                 new BitcoinAmount(
                         entity.operations().amount_in_satoshis(),
                         entity.operations().amount_in_input_currency(),
@@ -126,7 +132,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().status(),
                 entity.operations().creation_date(),
                 entity.operations().exchange_rate_window_hid(),
-                getSwap(entity.swap())
+                getSwap(entity.swap()),
+                getIncomingSwap(entity.incoming_swap(), entity.htlc())
         );
     }
 
@@ -138,5 +145,11 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
     @Nullable
     private static SubmarineSwap getSwap(SubmarineSwapEntity swap) {
         return swap == null ? null : SubmarineSwapEntity.getSubmarineSwap(swap);
+    }
+
+    @Nullable
+    private static IncomingSwap getIncomingSwap(final IncomingSwapEntity swap,
+                                                final IncomingSwapHtlcEntity htlc) {
+        return swap == null ? null : IncomingSwapEntity.getIncomingSwap(swap, htlc);
     }
 }

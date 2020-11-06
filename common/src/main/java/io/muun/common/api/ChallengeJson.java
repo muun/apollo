@@ -5,6 +5,7 @@ import io.muun.common.crypto.ChallengeType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,7 +18,7 @@ public class ChallengeJson {
     @NotNull
     public String challenge;
 
-    @NotNull
+    @Nullable // For challengeType USER_KEY. NotNull for all the rest.
     public String salt;
 
     /**
@@ -27,9 +28,19 @@ public class ChallengeJson {
     }
 
     /**
-     * Constructor.
+     * Constructor for salt-less ChallengeTypes (e.g USER_KEY).
      */
-    public ChallengeJson(ChallengeType type, String challenge, String salt) {
+    public ChallengeJson(ChallengeType type, String challenge) {
+        this.type = type;
+        this.challenge = challenge;
+    }
+
+    /**
+     * Constructor for ChallengeTypes with salt.
+     */
+    public ChallengeJson(ChallengeType type,
+                         String challenge,
+                         @SuppressWarnings("NullableProblems") @NotNull String salt) {
         this.type = type;
         this.challenge = challenge;
         this.salt = salt;

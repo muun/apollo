@@ -16,7 +16,6 @@ public class PasswordSetupJson {
     @NotNull
     public ChallengeSetupJson challengeSetup;
 
-
     /**
      * Json constructor.
      */

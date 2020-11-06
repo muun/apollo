@@ -21,7 +21,6 @@ import timber.log.Timber;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import javax.validation.constraints.NotNull;
 
 // TODO: make insert/delete/update/store return values non-observable
@@ -234,6 +233,7 @@ public class BaseDao<ModelT extends PersistentModel> {
             final BriteDatabase.Transaction transaction = newTransaction();
 
             return Observable.from(elements)
+                    .onBackpressureBuffer(200)
                     .concatMap(this::store)
                     .toList()
                     .doOnNext(ignored -> {

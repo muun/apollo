@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 
+	"github.com/muun/libwallet/addresses"
+
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
@@ -54,6 +58,14 @@ type InputSubmarineSwapV2 interface {
 	ServerSignature() []byte
 }
 
+type InputIncomingSwap interface {
+	Sphinx() []byte
+	HtlcTx() []byte
+	PaymentHash256() []byte
+	SwapServerPublicKey() string
+	ExpirationHeight() int64
+}
+
 type Input interface {
 	OutPoint() Outpoint
 	Address() MuunAddress
@@ -61,12 +73,12 @@ type Input interface {
 	MuunSignature() []byte
 	SubmarineSwapV1() InputSubmarineSwapV1
 	SubmarineSwapV2() InputSubmarineSwapV2
+	IncomingSwap() InputIncomingSwap
 }
 
 type PartiallySignedTransaction struct {
-	tx           *wire.MsgTx
-	inputs       []Input
-	Expectations *SigningExpectations
+	tx     *wire.MsgTx
+	inputs []Input
 }
 
 type Transaction struct {
@@ -74,121 +86,87 @@ type Transaction struct {
 	Bytes []byte
 }
 
-func NewPartiallySignedTransaction(hexTx string) (*PartiallySignedTransaction, error) {
+const dustThreshold = 546
 
-	rawTx, err := hex.DecodeString(hexTx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to decode hex tx")
-	}
+type InputList struct {
+	inputs []Input
+}
+
+func (l *InputList) Add(input Input) {
+	l.inputs = append(l.inputs, input)
+}
+
+func (l *InputList) Inputs() []Input {
+	return l.inputs
+}
+
+func NewPartiallySignedTransaction(inputs *InputList, rawTx []byte) (*PartiallySignedTransaction, error) {
 
 	tx := wire.NewMsgTx(0)
-	err = tx.BtcDecode(bytes.NewBuffer(rawTx), 0, wire.WitnessEncoding)
+	err := tx.Deserialize(bytes.NewReader(rawTx))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to decode tx")
 	}
 
-	return &PartiallySignedTransaction{tx: tx, inputs: []Input{}}, nil
+	return &PartiallySignedTransaction{tx: tx, inputs: inputs.Inputs()}, nil
 }
 
-func (p *PartiallySignedTransaction) AddInput(input Input) {
-	p.inputs = append(p.inputs, input)
-}
-
-func (p *PartiallySignedTransaction) Sign(key *HDPrivateKey, muunKey *HDPublicKey) (*Transaction, error) {
-
-	for i, input := range p.inputs {
-
-		derivedKey, err := key.DeriveTo(input.Address().DerivationPath())
+func (p *PartiallySignedTransaction) coins(net *Network) ([]coin, error) {
+	var coins []coin
+	for _, input := range p.inputs {
+		coin, err := createCoin(input, net)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to derive user key")
+			return nil, err
 		}
-
-		derivedMuunKey, err := muunKey.DeriveTo(input.Address().DerivationPath())
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to derive muun key")
-		}
-
-		var txIn *wire.TxIn
-
-		switch AddressVersion(input.Address().Version()) {
-		case addressV1:
-			txIn, err = addUserSignatureInputV1(input, i, p.tx, derivedKey)
-		case addressV2:
-			txIn, err = addUserSignatureInputV2(input, i, p.tx, derivedKey, derivedMuunKey)
-		case addressV3:
-			txIn, err = addUserSignatureInputV3(input, i, p.tx, derivedKey, derivedMuunKey)
-		case addressV4:
-			txIn, err = addUserSignatureInputV4(input, i, p.tx, derivedKey, derivedMuunKey)
-		case addressSubmarineSwapV1:
-			txIn, err = addUserSignatureInputSubmarineSwapV1(input, i, p.tx, derivedKey, derivedMuunKey)
-		case addressSubmarineSwapV2:
-			txIn, err = addUserSignatureInputSubmarineSwapV2(input, i, p.tx, derivedKey, derivedMuunKey)
-		default:
-			return nil, errors.Errorf("cant sign transaction of version %v", input.Address().Version())
-		}
-
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to sign input using version %v", input.Address().Version())
-		}
-
-		p.tx.TxIn[i] = txIn
+		coins = append(coins, coin)
 	}
+	return coins, nil
+}
 
-	var writer bytes.Buffer
-	err := p.tx.BtcEncode(&writer, 0, wire.WitnessEncoding)
+func (p *PartiallySignedTransaction) Sign(userKey *HDPrivateKey, muunKey *HDPublicKey) (*Transaction, error) {
+
+	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to encode tx")
+		return nil, errors.Wrapf(err, "could not convert input data to coin")
 	}
 
-	return &Transaction{
-		Hash:  p.tx.TxHash().String(),
-		Bytes: writer.Bytes(),
-	}, nil
+	for i, coin := range coins {
+		err = coin.SignInput(i, p.tx, userKey, muunKey)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to sign input")
+		}
+	}
+
+	return newTransaction(p.tx)
 
 }
 
-func (p *PartiallySignedTransaction) MuunSignatureForInput(index int, userKey *HDPublicKey,
-	muunKey *HDPrivateKey) ([]byte, error) {
+func (p *PartiallySignedTransaction) FullySign(userKey, muunKey *HDPrivateKey) (*Transaction, error) {
 
-	input := p.inputs[index]
-
-	derivedUserKey, err := userKey.DeriveTo(input.Address().DerivationPath())
+	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to derive user key")
+		return nil, errors.Wrapf(err, "could not convert input data to coin")
 	}
 
-	derivedMuunKey, err := muunKey.DeriveTo(input.Address().DerivationPath())
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to derive muun key")
+	for i, coin := range coins {
+		err = coin.FullySignInput(i, p.tx, userKey, muunKey)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to sign input")
+		}
 	}
 
-	switch AddressVersion(input.Address().Version()) {
-	case addressV1:
-		return []byte{}, nil
-	case addressV2:
-		return signInputV2(input, index, p.tx, derivedUserKey, derivedMuunKey.PublicKey(), derivedMuunKey)
-	case addressV3:
-		return signInputV3(input, index, p.tx, derivedUserKey, derivedMuunKey.PublicKey(), derivedMuunKey)
-	case addressV4:
-		return signInputV4(input, index, p.tx, derivedUserKey, derivedMuunKey.PublicKey(), derivedMuunKey)
-	case addressSubmarineSwapV1:
-		return nil, errors.New("cant sign arbitrary submarine swap v1 inputs")
-	case addressSubmarineSwapV2:
-		return nil, errors.New("cant sign arbitrary submarine swap v2 inputs")
-	}
-
-	return nil, errors.New("unknown address scheme")
+	return newTransaction(p.tx)
 }
 
-func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPublickKey *HDPublicKey) error {
+func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, userPublicKey *HDPublicKey, muunPublickKey *HDPublicKey) error {
 
 	// TODO: We don't have enough information (yet) to check the inputs are actually ours and they exist.
 
-	network := userPublicKey.Network.network
+	network := userPublicKey.Network
 
 	// We expect TX to be frugal in their ouputs: one to the destination and an optional change.
 	// If we were to receive more than that, we consider it invalid.
-	if p.Expectations.change != nil {
+	if expectations.change != nil {
 		if len(p.tx.TxOut) != 2 {
 			return errors.Errorf("expected destination and change outputs but found %v", len(p.tx.TxOut))
 		}
@@ -198,36 +176,26 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 		}
 	}
 
-	addressToScript := func(address string) ([]byte, error) {
-		parsedAddress, err := btcutil.DecodeAddress(address, network)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse address %v", address)
-		}
-		script, err := txscript.PayToAddrScript(parsedAddress)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to generate script for address %v", address)
-		}
-
-		return script, nil
-	}
-
-	toScript, err := addressToScript(p.Expectations.destination)
+	// Build output script corresponding to the destination address.
+	toScript, err := addressToScript(expectations.destination, network)
 	if err != nil {
 		return err
 	}
 
-	expectedAmount := p.Expectations.amount
-	expectedFee := p.Expectations.fee
-	expectedChange := p.Expectations.change
+	expectedAmount := expectations.amount
+	expectedFee := expectations.fee
+	expectedChange := expectations.change
 
+	// Build output script corresponding to the change address.
 	var changeScript []byte
 	if expectedChange != nil {
-		changeScript, err = addressToScript(p.Expectations.change.Address())
+		changeScript, err = addressToScript(expectations.change.Address(), network)
 		if err != nil {
 			return err
 		}
 	}
 
+	// Find destination and change outputs using the script we just built.
 	var toOutput, changeOutput *wire.TxOut
 	for _, output := range p.tx.TxOut {
 		if bytes.Equal(output.PkScript, toScript) {
@@ -237,16 +205,18 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 		}
 	}
 
+	// Fail if not destination output was found in the TX.
 	if toOutput == nil {
 		return errors.Errorf("destination output is not present")
 	}
 
+	// Verify destination output value matches expected amount
 	if toOutput.Value != expectedAmount {
 		return errors.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
 	}
 
 	/*
-		NOT CHECKED: outputs smaller than DUST.
+		NOT CHECKED: outputs smaller than dustThreshold.
 		We removed this check, which could be exploited by the crafter to invalidate the transaction. Since failing the
 		integrity check ourselves would have the same effect (preventing us from signing) it doesn't make much sense.
 	*/
@@ -264,13 +234,13 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 		they should be rare, only a handful of users ever used v1 and v2 addresses.
 	*/
 
-	var expectedChangeAmount int64
+	// Verify change output is spendable by the wallet.
 	if expectedChange != nil {
 		if changeOutput == nil {
 			return errors.Errorf("Change is not present")
 		}
 
-		expectedChangeAmount = actualTotal - expectedAmount - expectedFee
+		expectedChangeAmount := actualTotal - expectedAmount - expectedFee
 		if changeOutput.Value != expectedChangeAmount {
 			return errors.Errorf("Change amount is mismatched. found %v expected %v",
 				changeOutput.Value, expectedChangeAmount)
@@ -288,7 +258,13 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 				expectedChange.DerivationPath())
 		}
 
-		expectedChangeAddress, err := newMuunAddress(AddressVersion(expectedChange.Version()), derivedUserKey, derivedMuunKey)
+		expectedChangeAddress, err := addresses.Create(
+			expectedChange.Version(),
+			&derivedUserKey.key,
+			&derivedMuunKey.key,
+			expectedChange.DerivationPath(),
+			network.network,
+		)
 		if err != nil {
 			return errors.Wrapf(err, "failed to build the change address with version %v",
 				expectedChange.Version())
@@ -298,11 +274,17 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 			return errors.Errorf("mismatched change address. found %v, expected %v",
 				expectedChange.Address(), expectedChangeAddress.Address())
 		}
-	}
 
-	actualFee := actualTotal - expectedAmount - expectedChangeAmount
-	if actualFee != expectedFee {
-		return errors.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
+		actualFee := actualTotal - expectedAmount - expectedChangeAmount
+		if actualFee != expectedFee {
+			return errors.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
+		}
+
+	} else {
+		actualFee := actualTotal - expectedAmount
+		if actualFee >= expectedFee+dustThreshold {
+			return errors.Errorf("change output is too big to be burned as fee")
+		}
 	}
 
 	/*
@@ -313,4 +295,135 @@ func (p *PartiallySignedTransaction) Verify(userPublicKey *HDPublicKey, muunPubl
 	*/
 
 	return nil
+}
+
+func addressToScript(address string, network *Network) ([]byte, error) {
+	parsedAddress, err := btcutil.DecodeAddress(address, network.network)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse address %v", address)
+	}
+	script, err := txscript.PayToAddrScript(parsedAddress)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to generate script for address %v", address)
+	}
+	return script, nil
+}
+
+func newTransaction(tx *wire.MsgTx) (*Transaction, error) {
+	var buf bytes.Buffer
+	err := tx.Serialize(&buf)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to encode tx")
+	}
+
+	return &Transaction{
+		Hash:  tx.TxHash().String(),
+		Bytes: buf.Bytes(),
+	}, nil
+}
+
+type coin interface {
+	// TODO: these two methods can be collapsed into a single one once we move
+	// it to a submodule and use *hdkeychain.ExtendedKey's for the arguments.
+	SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error
+	FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error
+}
+
+func createCoin(input Input, network *Network) (coin, error) {
+	txID, err := chainhash.NewHash(input.OutPoint().TxId())
+	if err != nil {
+		return nil, err
+	}
+	outPoint := wire.OutPoint{
+		Hash:  *txID,
+		Index: uint32(input.OutPoint().Index()),
+	}
+	keyPath := input.Address().DerivationPath()
+	amount := btcutil.Amount(input.OutPoint().Amount())
+
+	version := input.Address().Version()
+
+	switch version {
+	case addresses.V1:
+		return &coinV1{
+			Network:  network.network,
+			OutPoint: outPoint,
+			KeyPath:  keyPath,
+		}, nil
+	case addresses.V2:
+		return &coinV2{
+			Network:       network.network,
+			OutPoint:      outPoint,
+			KeyPath:       keyPath,
+			MuunSignature: input.MuunSignature(),
+		}, nil
+	case addresses.V3:
+		return &coinV3{
+			Network:       network.network,
+			OutPoint:      outPoint,
+			KeyPath:       keyPath,
+			Amount:        amount,
+			MuunSignature: input.MuunSignature(),
+		}, nil
+	case addresses.V4:
+		return &coinV4{
+			Network:       network.network,
+			OutPoint:      outPoint,
+			KeyPath:       keyPath,
+			Amount:        amount,
+			MuunSignature: input.MuunSignature(),
+		}, nil
+	case addresses.SubmarineSwapV1:
+		swap := input.SubmarineSwapV1()
+		if swap == nil {
+			return nil, errors.New("submarine swap data is nil for swap input")
+		}
+		return &coinSubmarineSwapV1{
+			Network:         network.network,
+			OutPoint:        outPoint,
+			KeyPath:         keyPath,
+			Amount:          amount,
+			RefundAddress:   swap.RefundAddress(),
+			PaymentHash256:  swap.PaymentHash256(),
+			ServerPublicKey: swap.ServerPublicKey(),
+			LockTime:        swap.LockTime(),
+		}, nil
+	case addresses.SubmarineSwapV2:
+		swap := input.SubmarineSwapV2()
+		if swap == nil {
+			return nil, errors.New("submarine swap data is nil for swap input")
+		}
+		return &coinSubmarineSwapV2{
+			Network:             network.network,
+			OutPoint:            outPoint,
+			KeyPath:             keyPath,
+			Amount:              amount,
+			PaymentHash256:      swap.PaymentHash256(),
+			UserPublicKey:       swap.UserPublicKey(),
+			MuunPublicKey:       swap.MuunPublicKey(),
+			ServerPublicKey:     swap.ServerPublicKey(),
+			BlocksForExpiration: swap.BlocksForExpiration(),
+			ServerSignature:     swap.ServerSignature(),
+		}, nil
+	case addresses.IncomingSwap:
+		swap := input.IncomingSwap()
+		if swap == nil {
+			return nil, errors.New("incoming swap data is nil for incoming swap input")
+		}
+		swapServerPublicKey, err := hex.DecodeString(swap.SwapServerPublicKey())
+		if err != nil {
+			return nil, err
+		}
+		return &coinIncomingSwap{
+			Network:             network.network,
+			MuunSignature:       input.MuunSignature(),
+			Sphinx:              swap.Sphinx(),
+			HtlcTx:              swap.HtlcTx(),
+			PaymentHash256:      swap.PaymentHash256(),
+			SwapServerPublicKey: swapServerPublicKey,
+			ExpirationHeight:    swap.ExpirationHeight(),
+		}, nil
+	default:
+		return nil, errors.Errorf("can't create coin from input version %v", version)
+	}
 }

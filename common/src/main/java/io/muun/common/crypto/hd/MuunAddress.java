@@ -2,6 +2,7 @@ package io.muun.common.crypto.hd;
 
 
 import io.muun.common.api.MuunAddressJson;
+import io.muun.common.crypto.schemes.TransactionSchemeIncomingSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.crypto.schemes.TransactionSchemeV1;
@@ -75,6 +76,7 @@ public class MuunAddress {
 
             case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
             case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
+            case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
                 throw new IllegalArgumentException("These addresses shouldn't be built manually");
 
             default:

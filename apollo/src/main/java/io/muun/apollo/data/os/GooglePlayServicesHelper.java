@@ -6,7 +6,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import rx.functions.Action1;
 
-import javax.validation.constraints.NotNull;
+import javax.inject.Inject;
 
 public class GooglePlayServicesHelper {
 
@@ -16,12 +16,19 @@ public class GooglePlayServicesHelper {
 
     private final GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
 
+    private final Context context;
+
+    @Inject
+    public GooglePlayServicesHelper(Context context) {
+        this.context = context;
+    }
+
     /**
      * Check if Google Play Services is installed on the device.
      *
      * @return the result code, which will be AVAILABLE if successful.
      */
-    public int isAvailable(@NotNull Context context) {
+    public int isAvailable() {
         return apiAvailability.isGooglePlayServicesAvailable(context);
     }
 

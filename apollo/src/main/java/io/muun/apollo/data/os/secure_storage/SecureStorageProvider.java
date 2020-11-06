@@ -6,7 +6,6 @@ import io.muun.common.utils.Preconditions;
 import rx.Observable;
 
 import java.util.NoSuchElementException;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

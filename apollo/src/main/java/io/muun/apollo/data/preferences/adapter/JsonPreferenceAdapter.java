@@ -4,7 +4,7 @@ import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.serialization.SerializationUtils;
 
 import android.content.SharedPreferences;
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 public class JsonPreferenceAdapter<T> implements Preference.Adapter<T> {
 
@@ -15,7 +15,7 @@ public class JsonPreferenceAdapter<T> implements Preference.Adapter<T> {
     }
 
     @Override
-    public T get(String key, SharedPreferences preferences) {
+    public T get(@NonNull String key, @NonNull SharedPreferences preferences) {
         final String json = preferences.getString(key, null);
 
         if (json == null) {
@@ -26,12 +26,7 @@ public class JsonPreferenceAdapter<T> implements Preference.Adapter<T> {
     }
 
     @Override
-    public void set(String key, @Nullable T value, SharedPreferences.Editor editor) {
-        if (value == null) {
-            editor.remove(key);
-            return;
-        }
-
-        editor.putString(key, SerializationUtils.serializeJson(valueClass, value));
+    public void set(@NonNull String k, @NonNull T v, @NonNull SharedPreferences.Editor editor) {
+        editor.putString(k, SerializationUtils.serializeJson(valueClass, v));
     }
 }

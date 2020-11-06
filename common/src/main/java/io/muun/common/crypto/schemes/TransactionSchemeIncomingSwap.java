@@ -40,6 +40,7 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_SIZE;
 public class TransactionSchemeIncomingSwap {
 
     public static final int ADDRESS_VERSION = MuunAddress.VERSION_INCOMING_SWAP;
+    public static final int PREIMAGE_STACK_INDEX = 0;
 
     /**
      * Create an address.
@@ -102,7 +103,7 @@ public class TransactionSchemeIncomingSwap {
         );
 
         final TransactionWitness witness = new TransactionWitness(4);
-        witness.setPush(0, preimage);
+        witness.setPush(PREIMAGE_STACK_INDEX, preimage);
         witness.setPush(1, userSignature.getBytes());
         witness.setPush(2, muunSignature.getBytes());
         witness.setPush(3, witnessScript);
@@ -117,8 +118,8 @@ public class TransactionSchemeIncomingSwap {
                                                                 byte[] witnessScript) {
 
         final TransactionWitness witness = new TransactionWitness(4);
-        witness.setPush(0, swapServerPubKey.getPublicKeyBytes());
-        witness.setPush(1, swapServerSignature.getBytes());
+        witness.setPush(0, swapServerSignature.getBytes());
+        witness.setPush(1, swapServerPubKey.getPublicKeyBytes());
         witness.setPush(2, new byte[0]);
         witness.setPush(3, witnessScript);
         return witness;
@@ -131,7 +132,7 @@ public class TransactionSchemeIncomingSwap {
                                              byte[] userPublicKey,
                                              byte[] muunPublicKey,
                                              byte[] swapServerPublicKey,
-                                             int expirationHeight) {
+                                             long expirationHeight) {
 
         Preconditions.checkArgument(
                 swapPaymentHash256.length == 32, "payment hash to be 32 bytes"
@@ -188,9 +189,9 @@ public class TransactionSchemeIncomingSwap {
                     .data(userPublicKey)
                     .op(OP_CHECKSIGVERIFY)
 
-                    // Check the third stack item is 20 bytes long
+                    // Check the third stack item is 32 bytes long
                     .op(OP_SIZE)
-                    .number(20)
+                    .number(32)
                     .op(OP_EQUALVERIFY)
 
                     // Check the third stack item hashes to the given payment hash

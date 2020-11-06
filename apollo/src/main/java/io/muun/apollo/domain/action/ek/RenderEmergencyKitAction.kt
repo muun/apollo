@@ -17,7 +17,7 @@ class RenderEmergencyKitAction @Inject constructor(
     /**
      * Prepare the emergency kit for export, and render the HTML.
      */
-    override fun action() =
+    override fun action(): Observable<String> =
         Observable.defer {
             watchKeys().first().map { renderSave(it.first, it.second) }
         }
@@ -32,7 +32,8 @@ class RenderEmergencyKitAction @Inject constructor(
     private fun watchKeys() =
         Observable.zip(
             keysRepository.encryptedBasePrivateKey,
-            keysRepository.encryptedMuunPrivateKey,
-            { userKey, muunKey -> Pair(userKey, muunKey) }
-        )
+            keysRepository.encryptedMuunPrivateKey
+        ) { userKey, muunKey ->
+            Pair(userKey, muunKey)
+        }
 }

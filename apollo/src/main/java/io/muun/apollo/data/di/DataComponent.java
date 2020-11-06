@@ -1,7 +1,7 @@
 package io.muun.apollo.data.di;
 
 import io.muun.apollo.data.async.gcm.GcmMessageListenerService;
-import io.muun.apollo.data.async.tasks.PeriodicTaskService;
+import io.muun.apollo.data.async.tasks.PeriodicTaskWorkerFactory;
 import io.muun.apollo.data.async.tasks.TaskDispatcher;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
@@ -9,7 +9,7 @@ import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.phone_contact.PhoneContactDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
-import io.muun.apollo.data.db.satellite_pairing.SatellitePairingDao;
+import io.muun.apollo.data.external.HoustonConfig;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.net.NetworkInfoProvider;
@@ -23,13 +23,14 @@ import io.muun.apollo.data.os.secure_storage.SecureStoragePreferences;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
+import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.action.di.ActionComponent;
-import io.muun.apollo.external.HoustonConfig;
 
 import android.content.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +45,7 @@ public interface DataComponent extends ActionComponent {
 
     void inject(GcmMessageListenerService service);
 
-    void inject(PeriodicTaskService service);
+    void inject(PeriodicTaskWorkerFactory workerFactory);
 
     // Exposed to dependent components
 
@@ -58,9 +59,11 @@ public interface DataComponent extends ActionComponent {
 
     AuthRepository authRepository();
 
-    KeysRepository keyPairRepository();
+    KeysRepository keysRepository();
 
     UserRepository userRepository();
+
+    FcmTokenRepository fcmTokenRepository();
 
     ContactDao contactDao();
 
@@ -102,7 +105,7 @@ public interface DataComponent extends ActionComponent {
 
     ApplicationLockManager applicationLockManager();
 
-    SatellitePairingDao satellitePairingDao();
+    SignupDraftManager signupDraftManager();
 
     ObjectMapper objectMapper();
 

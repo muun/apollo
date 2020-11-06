@@ -6,16 +6,18 @@ import io.muun.common.utils.Hashes;
 import io.muun.common.utils.Preconditions;
 import io.muun.common.utils.RandomGenerator;
 
+import com.google.common.primitives.Bytes;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.SignatureDecodeException;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.spec.ECGenParameterSpec;
-
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 
@@ -30,16 +32,53 @@ public class ChallengePublicKey {
     @Nullable // nullable until migration is complete
     private final byte[] salt;
 
+    private final int version;
+
+    /**
+     * Legacy Constructor, used only for compat/migration code.
+     */
+    public static ChallengePublicKey buildLegacy(byte[] publicKey, @Nullable byte[] salt) {
+        return new ChallengePublicKey(publicKey, salt, 1); // Thank god they were all at v1
+    }
+
+    /**
+     * Deserialize a legacy ChallengePublicKey serialization, used only for compat/migration code.
+     */
+    public static ChallengePublicKey deserializeLegacy(byte[] publicKeySerialization) {
+        final int length = ChallengePublicKey.PUBLIC_KEY_LENGTH;
+        final byte[] publicKey = ByteUtils.subArray(publicKeySerialization, 0, length);
+        final byte[] salt = ByteUtils.subArray(publicKeySerialization, length);
+
+        // Init ChallengePublicKey version to 1, the version the keys had prior to the migration
+        return new ChallengePublicKey(publicKey, salt, 1);
+    }
+
+    /**
+     * Deserialize challenge public key.
+     */
+    @Nonnull
+    public static ChallengePublicKey deserialize(byte[] serialization) {
+        final int length = ChallengePublicKey.PUBLIC_KEY_LENGTH;
+        final int version = serialization[0] & 0xFF; // can't use Byte.toUnsignedInt
+        final byte[] publicKey = ByteUtils.subArray(serialization, 1, 1 + length);
+        final byte[] salt = ByteUtils.subArray(serialization, 1 + length);
+
+        return new ChallengePublicKey(publicKey, salt, version);
+    }
+
     /**
      * Constructor.
      */
-    public ChallengePublicKey(byte[] publicKey, @Nullable byte[] salt) {
+    public ChallengePublicKey(byte[] publicKey, @Nullable byte[] salt, int version) {
+
+        Preconditions.checkArgument(salt == null || salt.length == 8);
 
         // check that the public key is a valid point on the secp256k1 curve
         ECKey.CURVE.getCurve().decodePoint(publicKey);
 
         this.key = publicKey;
         this.salt = salt;
+        this.version = version;
     }
 
     /**
@@ -57,8 +96,16 @@ public class ChallengePublicKey {
     }
 
     /**
-     * Serialize public key.
+     * Serialize challenge public key.
      */
+    public byte[] serialize() {
+
+        final byte[] version = new byte[]{ (byte) this.version };
+        final byte[][] parts = new byte[][] { version, key, salt};
+
+        return Bytes.concat(parts);
+    }
+
     public byte[] toBytes() {
         return key;
     }
@@ -66,6 +113,10 @@ public class ChallengePublicKey {
     @Nullable
     public byte[] getSalt() {
         return salt;
+    }
+
+    public int getVersion() {
+        return version;
     }
 
     /**

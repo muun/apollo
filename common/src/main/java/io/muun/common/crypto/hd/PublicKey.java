@@ -9,10 +9,12 @@ import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
+import io.muun.common.utils.Hashes;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.SignatureDecodeException;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDDerivationException;
 import org.bitcoinj.params.MainNetParams;
@@ -21,7 +23,6 @@ import org.bitcoinj.params.TestNet3Params;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -177,6 +178,20 @@ public class PublicKey extends BaseKey {
 
     public int getLastLevelIndex() {
         return deterministicKey.getChildNumber().num();
+    }
+
+    /**
+     * Verify a signed data with the public key. Use to verify challenge signature. Emulates
+     * ChallengePublicKey#verify().
+     */
+    public boolean verify(byte[] data, byte[] signature) {
+        final byte[] hash = Hashes.sha256(data);
+
+        try {
+            return deterministicKey.verify(hash, signature);
+        } catch (SignatureDecodeException e) {
+            return false;
+        }
     }
 
     /**

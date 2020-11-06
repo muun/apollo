@@ -13,7 +13,6 @@ class SubmarineSwap (id: Long?,
                     val fundingOutput: SubmarineSwapFundingOutput,
                     val fees: SubmarineSwapFees,
                     val expiresAt: ZonedDateTime,
-                    val willPreOpenChannel: Boolean,
                     var payedAt: ZonedDateTime?,         // may not be payed yet
                     var preimageInHex: String?) : HoustonUuidModel(id, houstonUuid) {
 
@@ -31,10 +30,25 @@ class SubmarineSwap (id: Long?,
                     fundingOutput.toJson(),
                     fees.toJson(),
                     ApolloZonedDateTime.of(expiresAt),
-                    willPreOpenChannel,
                     ApolloZonedDateTime.fromNullable(payedAt),
                     preimageInHex
             )
+
+    /**
+     * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
+     */
+    fun withAmount(newAmountInSat: Long): SubmarineSwap =
+        SubmarineSwap(
+            id,
+            houstonUuid,
+            invoice,
+            receiver,
+            fundingOutput.withOutputAmount(newAmountInSat + fees.total),
+            fees,
+            expiresAt,
+            payedAt,
+            preimageInHex
+        )
 
     companion object {
 
@@ -48,9 +62,9 @@ class SubmarineSwap (id: Long?,
                     swap.invoice,
                     SubmarineSwapReceiver.fromJson(swap.receiver),
                     SubmarineSwapFundingOutput.fromJson(swap.fundingOutput),
-                    SubmarineSwapFees.fromJson(swap.fees),
+                    // FIXME: When implementing amount-less invoices turns this optional
+                    SubmarineSwapFees.fromJson(swap.fees!!),
                     ApolloZonedDateTime.fromMuunZonedDateTime(swap.expiresAt)!!.dateTime,
-                    swap.willPreOpenChannel,
                     ApolloZonedDateTime.fromMuunZonedDateTime(swap.payedAt)?.dateTime,
                     swap.preimageInHex
             )

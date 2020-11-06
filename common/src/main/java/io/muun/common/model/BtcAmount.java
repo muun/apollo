@@ -67,6 +67,10 @@ public class BtcAmount {
         return milliSats <= other.milliSats;
     }
 
+    public boolean isZero() {
+        return milliSats == 0;
+    }
+
     public BtcAmount max(@NotNull BtcAmount other) {
         return BtcAmount.fromMilliSats(Math.max(milliSats, other.milliSats));
     }

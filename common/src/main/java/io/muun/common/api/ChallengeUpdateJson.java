@@ -15,7 +15,8 @@ public class ChallengeUpdateJson {
     @NotNull
     public ChallengeSetupJson challengeSetup;
 
-    public ChallengeUpdateJson() { }
+    public ChallengeUpdateJson() {
+    }
 
     /**
      * Constructor.

@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.model;
 
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.utils.UriBuilder;
 import io.muun.apollo.domain.utils.UriParser;
-import io.muun.apollo.external.Globals;
 import io.muun.common.Optional;
 import io.muun.common.bitcoinj.BitcoinUri;
 import io.muun.common.bitcoinj.ValidationHelpers;
@@ -26,8 +26,6 @@ public class OperationUri {
 
     public static final String MUUN_HOST_CONTACT = "contacts";
     public static final String MUUN_HOST_EXTERNAL = "external";
-    public static final String MUUN_HOST_DEPOSIT = "deposit";
-    public static final String MUUN_HOST_WITHDRAW = "withdraw";
 
     public static final String MUUN_AMOUNT = "amount";
     public static final String MUUN_CURRENCY = "currency";
@@ -193,20 +191,6 @@ public class OperationUri {
         return fromMuunEntityId(MUUN_HOST_CONTACT, contactHid);
     }
 
-    /**
-     * Create an OperationUri from a HardwareWallet ID, to make a deposit.
-     */
-    public static OperationUri depositFromHardwareWalletHid(long hardwareWalletHid) {
-        return fromMuunEntityId(MUUN_HOST_DEPOSIT, hardwareWalletHid);
-    }
-
-    /**
-     * Create an OperationUri from a HardwareWallet ID, to make a deposit.
-     */
-    public static OperationUri withdrawFromHardwareWalletHid(long hardwareWalletHid) {
-        return fromMuunEntityId(MUUN_HOST_WITHDRAW, hardwareWalletHid);
-    }
-
     private static OperationUri fromMuunEntityId(String host, long id) {
         final String content = new UriBuilder()
                 .setScheme(MUUN_SCHEME)
@@ -272,24 +256,8 @@ public class OperationUri {
         return getScheme().equals(BITCOIN_SCHEME);
     }
 
-    public boolean isDeposit() {
-        return getHost().equals(MUUN_HOST_DEPOSIT);
-    }
-
-    public boolean isWithdrawal() {
-        return getHost().equals(MUUN_HOST_WITHDRAW);
-    }
-
     public boolean isLn() {
         return getScheme().equals(LN_SCHEME);
-    }
-
-    /**
-     * Get the HardwareWallet Houston id contained in this URI, if included.
-     */
-    public long getHardwareWalletHid() {
-        Preconditions.checkArgument(isWithdrawal() || isDeposit());
-        return Long.parseLong(getPath());
     }
 
     public long getContactHid() {

@@ -10,10 +10,12 @@ import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.crypto.tx.TransactionHelpers;
 import io.muun.common.utils.Encodings;
+import io.muun.common.utils.Hashes;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.bitcoinj.core.Context;
+import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.crypto.DeterministicKey;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import javax.validation.constraints.NotNull;
 
 public class PrivateKey extends BaseKey {
@@ -220,6 +221,18 @@ public class PrivateKey extends BaseKey {
     }
 
     /**
+     * Sign a given data with the private key. Use to sign challenge signature. Emulates
+     * ChallengePrivateKey#verify().
+     */
+    @VisibleForTesting // For itests. Apollo uses Libwallet to do this.
+    public byte[] sign(byte[] data) {
+        final byte[] hash = Hashes.sha256(data);
+        final ECKey.ECDSASignature signature = deterministicKey.sign(Sha256Hash.wrap(hash));
+
+        return signature.encodeToDER();
+    }
+
+    /**
      * Compute the Bitcoin signature of a transaction hash.
      */
     public Signature signTransactionHash(byte[] txHash) {
@@ -329,7 +342,7 @@ public class PrivateKey extends BaseKey {
     }
 
     /**
-     * @return chain code from a `DeterministicKey`.
+     * Get the chain code.
      */
     public byte[] getChainCode() {
         return deterministicKey.getChainCode();

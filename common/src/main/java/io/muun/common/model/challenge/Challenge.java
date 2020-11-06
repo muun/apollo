@@ -3,6 +3,7 @@ package io.muun.common.model.challenge;
 
 import io.muun.common.crypto.ChallengeType;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 public class Challenge {
@@ -13,13 +14,13 @@ public class Challenge {
     @NotNull
     public byte[] challenge;
 
-    @NotNull
+    @Nullable
     public byte[] salt;
 
     /**
      * Constructor.
      */
-    public Challenge(ChallengeType type, byte[] challenge, byte[] salt) {
+    public Challenge(ChallengeType type, byte[] challenge, @Nullable byte[] salt) {
         this.type = type;
         this.challenge = challenge;
         this.salt = salt;

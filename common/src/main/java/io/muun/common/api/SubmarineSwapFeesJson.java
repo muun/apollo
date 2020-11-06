@@ -1,8 +1,11 @@
 package io.muun.common.api;
 
+import io.muun.common.utils.Deprecated;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,11 +18,13 @@ public class SubmarineSwapFeesJson {
     @NotNull
     public Long sweepInSats;
 
-    @NotNull
-    public Long channelOpenInSats = 0L;
+    @Deprecated(atApolloVersion = 76)
+    @Nullable   // Since HWs deprecation, this can be null
+    public Long channelOpenInSats;
 
-    @NotNull
-    public Long channelCloseInSats = 0L;
+    @Deprecated(atApolloVersion = 76)
+    @Nullable   // Since HWs deprecation, this can be null
+    public Long channelCloseInSats;
 
     /**
      * Json constructor.
@@ -27,9 +32,17 @@ public class SubmarineSwapFeesJson {
     public SubmarineSwapFeesJson() {
     }
 
+    /**
+     * Apollo Constructor.
+     */
+    public SubmarineSwapFeesJson(long lightningInSats, long sweepInSats) {
+
+        this.lightningInSats = lightningInSats;
+        this.sweepInSats = sweepInSats;
+    }
 
     /**
-     * Constructor.
+     * Houston Constructor.
      */
     public SubmarineSwapFeesJson(long lightningInSats,
                                  long sweepInSats,

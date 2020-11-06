@@ -2,6 +2,7 @@ package io.muun.apollo.domain.libwallet
 
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.crypto.hd.MuunInput
+import io.muun.common.crypto.hd.MuunInputIncomingSwap
 import io.muun.common.crypto.hd.MuunInputSubmarineSwapV101
 import io.muun.common.crypto.hd.MuunInputSubmarineSwapV102
 import io.muun.common.crypto.hd.MuunOutput
@@ -26,6 +27,9 @@ class Input(val input: MuunInput): libwallet.Input {
 
     override fun submarineSwapV2() =
             input.submarineSwapV102?.let { SubmarineSwapV2(it) }
+
+    override fun incomingSwap() =
+            input.incomingSwap?.let { IncomingSwap(it) }
 }
 
 class Address(val address: MuunAddress): libwallet.MuunAddress {
@@ -88,4 +92,22 @@ class SubmarineSwapV2(val swap: MuunInputSubmarineSwapV102): libwallet.InputSubm
 
     override fun serverSignature() =
             swap.swapServerSignature?.bytes ?: ByteArray(0)
+}
+
+class IncomingSwap(val swap: MuunInputIncomingSwap): libwallet.InputIncomingSwap {
+
+    override fun htlcTx() =
+            swap.htlcTx
+
+    override fun paymentHash256() =
+            swap.paymentHash256
+
+    override fun swapServerPublicKey() =
+            Encodings.bytesToHex(swap.swapServerPublicKey)
+
+    override fun sphinx() =
+            swap.sphinx
+
+    override fun expirationHeight() =
+            swap.expirationHeight
 }

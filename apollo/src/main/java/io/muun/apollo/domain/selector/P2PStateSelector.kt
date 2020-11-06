@@ -14,15 +14,16 @@ class P2PStateSelector @Inject constructor(
     private val userRepository: UserRepository
 ) {
 
-    fun watch() = Observable
-        .combineLatest(
-            userRepository.fetch(),
-            userRepository.watchContactsPermissionState(),
-            contactActions.initialSyncPhoneContactsAction.state, // TODO: move to own action
-            contactDao.fetchAll(),
-            ::P2PState
-        )
+    fun watch(): Observable<P2PState> =
+        Observable
+            .combineLatest(
+                userRepository.fetch(),
+                userRepository.watchContactsPermissionState(),
+                contactActions.initialSyncPhoneContactsAction.state, // TODO: move to own action
+                contactDao.fetchAll(),
+                ::P2PState
+            )
 
-    fun get() =
+    fun get(): P2PState =
         watch().toBlocking().first()
 }

@@ -1,13 +1,17 @@
 package io.muun.apollo.data.preferences.migration;
 
 import io.muun.apollo.data.preferences.AuthRepository;
+import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
+import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.model.FeeWindow;
+import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.SessionStatus;
 
 import android.content.Context;
@@ -15,7 +19,6 @@ import android.content.SharedPreferences;
 import timber.log.Timber;
 
 import java.util.Collections;
-
 import javax.inject.Inject;
 
 /**
@@ -35,6 +38,12 @@ public class PreferencesMigrationManager {
     private final FeeWindowRepository feeWindowRepository;
 
     private final TransactionSizeRepository transactionSizeRepository;
+
+    private final FcmTokenRepository fcmTokenRepository;
+
+    private final KeysRepository keysRepository;
+
+    private final SignupDraftManager signupDraftManager;
 
     /**
      * An array of migrations, in the order that they must be run.
@@ -79,8 +88,17 @@ public class PreferencesMigrationManager {
             this::initDynamicFeeTargets,
 
             // jul 2020, Apollo 70 starts prioritizing confirmed utxos in utxo selection
-            this::initNtsOutpoints
+            this::initNtsOutpoints,
 
+            // sept 2020, Apollo 76 moves FcmToken to its own repository (not cleared on logout)
+            this::moveFcmTokenToOwnRepository,
+
+            // sept 2020, Apollo 76 adds ChallengePublicKey version (needed for RC only login,
+            // part of the email less recovery feature)
+            this::addChallengePublicKeyVersion,
+
+            // Oct 2020, Apollo 76 moves SignupDraft to secureStorage to better secure RC only login
+            this::moveSignupDraftToSecureStorage
     };
 
     /**
@@ -93,7 +111,10 @@ public class PreferencesMigrationManager {
                                        UserRepository userRepository,
                                        LogoutActions logoutActions,
                                        FeeWindowRepository feeWindowRepository,
-                                       TransactionSizeRepository transactionSizeRepository) {
+                                       TransactionSizeRepository transactionSizeRepository,
+                                       FcmTokenRepository fcmTokenRepository,
+                                       KeysRepository keysRepository,
+                                       SignupDraftManager signupDraftManager) {
         this.context = context;
 
         this.schemaVersionRepository = schemaVersionRepository;
@@ -104,6 +125,9 @@ public class PreferencesMigrationManager {
 
         this.logoutActions = logoutActions;
         this.transactionSizeRepository = transactionSizeRepository;
+        this.fcmTokenRepository = fcmTokenRepository;
+        this.keysRepository = keysRepository;
+        this.signupDraftManager = signupDraftManager;
     }
 
     /**
@@ -138,7 +162,7 @@ public class PreferencesMigrationManager {
      * Destroys information for SignupDraft.
      */
     private void clearSignupDraft() {
-        userRepository.storeSignupDraft(null);
+        signupDraftManager.legacyClear();
     }
 
     private void moveJwtKeyToSecureStorage() {
@@ -209,5 +233,35 @@ public class PreferencesMigrationManager {
 
     private void initNtsOutpoints() {
         transactionSizeRepository.initNtsOutpoints();
+    }
+
+    private void moveFcmTokenToOwnRepository() {
+        final SharedPreferences userRepositoryPrefs = context
+                .getSharedPreferences("user", Context.MODE_PRIVATE);
+
+        final boolean hasFcmToken = userRepositoryPrefs.contains("fcm_token_key");
+
+        if (hasFcmToken) {
+
+            final String fcmToken = userRepositoryPrefs.getString("fcm_token_key", null);
+            fcmTokenRepository.storeFcmToken(fcmToken);
+
+            userRepositoryPrefs.edit().remove("fcm_token_key").apply();
+        }
+    }
+
+    private void addChallengePublicKeyVersion() {
+
+        if (keysRepository.hasChallengePublicKey(ChallengeType.PASSWORD)) {
+            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.PASSWORD);
+        }
+
+        if (keysRepository.hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
+            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.RECOVERY_CODE);
+        }
+    }
+
+    private void moveSignupDraftToSecureStorage() {
+        signupDraftManager.moveSignupDraftToSecureStorage();
     }
 }

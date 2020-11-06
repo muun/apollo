@@ -66,9 +66,6 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 swap.getExpiresAt(),
                 swap.getPayedAt(),
                 swap.getPreimageInHex(),
-                swap.getWillPreOpenChannel(),
-                swap.getFees().getChannelOpenInSats(),
-                swap.getFees().getChannelCloseInSats(),
                 fundingOutput.getScriptVersion(),
                 expirationInBlocks != null ? Long.valueOf(expirationInBlocks) : null,
                 userPublicKey != null ? userPublicKey.serializeBase58() : null,
@@ -129,12 +126,9 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 ),
                 new SubmarineSwapFees(
                         entity.lightning_fee_in_satoshis(),
-                        entity.sweep_fee_in_satoshis(),
-                        entity.channel_open_fee_in_satoshis(),
-                        entity.channel_close_fee_in_satoshis()
+                        entity.sweep_fee_in_satoshis()
                 ),
                 entity.expires_at(),
-                entity.will_pre_open_channel(),
                 entity.payed_at(),
                 entity.preimage_in_hex()
         );

@@ -91,9 +91,6 @@ public class BaseAsyncAction<ReturnT> {
         return getState()
                 .filter(state -> {
                     switch (state.getKind()) {
-                        case EMPTY:
-                        case LOADING:
-                            return false;
                         case VALUE:
                             return true;
                         case ERROR:

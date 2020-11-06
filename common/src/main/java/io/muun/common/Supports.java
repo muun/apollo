@@ -63,21 +63,30 @@ public class Supports {
         int FALCON = NOT_SUPPORTED;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface DynamicFeeTargets {
-        int APOLLO = NOT_SUPPORTED;
+        int APOLLO = 75;
         int FALCON = 48;
     }
 
     // ON-RELEASE: check that these versions are right
     public interface IncomingSwaps {
         int APOLLO = NOT_SUPPORTED;
-        int FALCON = NOT_SUPPORTED;
+        int FALCON = 53;
+    }
+
+    public interface SortUtxosByFinality {
+        int APOLLO = 75;
+        int FALCON = 48;
+    }
+
+    public interface ChallengeUserKey {
+        int APOLLO = 100;
+        int FALCON = 52;
     }
 
     // ON-RELEASE: check that these versions are right
-    public interface SortUtxosByFinality {
+    public interface InvoicesWithoutAmount {
         int APOLLO = NOT_SUPPORTED;
-        int FALCON = 48;
+        int FALCON = 53;
     }
 }

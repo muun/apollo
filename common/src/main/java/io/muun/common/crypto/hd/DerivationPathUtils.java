@@ -5,7 +5,6 @@ import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
 import javax.validation.constraints.NotNull;
 
 /**

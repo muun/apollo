@@ -141,3 +141,27 @@ ADD COLUMN funding_output_debt_type TEXT NOT NULL DEFAULT 'NONE';
 migration_28_add_swap_debt_amount:
 ALTER TABLE submarine_swaps
 ADD COLUMN funding_output_debt_amount_in_satoshis INTEGER NOT NULL DEFAULT 0;
+
+migration_29_move_operations_to_a_temporary_table:
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+migration_29_drop_temporary_table:
+DROP TABLE tmp_operations;
+
+migration_30_drop_hardware_wallets_table:
+DROP TABLE hardware_wallets;
+
+migration_31_drop_satellite_pairings_table:
+DROP TABLE satellite_pairings;
+
+migration_32_move_submarine_swaps_to_a_temporary_table:
+ALTER TABLE submarine_swaps
+RENAME TO tmp_submarine_swaps;
+
+migration_32_drop_temporary_table:
+DROP TABLE  tmp_submarine_swaps;
+
+migration_33_operations_reference_incoming_swaps:
+ALTER TABLE operations
+ADD COLUMN incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid);

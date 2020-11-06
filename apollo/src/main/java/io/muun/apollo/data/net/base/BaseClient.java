@@ -1,5 +1,7 @@
 package io.muun.apollo.data.net.base;
 
+import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.data.external.HoustonConfig;
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor;
 import io.muun.apollo.data.net.base.interceptor.IdempotencyKeyInterceptor;
 import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor;
@@ -7,8 +9,6 @@ import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor;
 import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
-import io.muun.apollo.external.Globals;
-import io.muun.apollo.external.HoustonConfig;
 import io.muun.common.Optional;
 
 import com.facebook.stetho.okhttp3.StethoInterceptor;
@@ -21,7 +21,6 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
@@ -114,21 +113,19 @@ public class BaseClient<ServiceT> {
                 .addInterceptor(authHeaderInterceptor)
                 .addInterceptor(idempotencyKeyInterceptor);
 
-        if (!isReleaseBuild()) {
+        if (!Globals.isReleaseBuild()) {
             final HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor()
                     .setLevel(HttpLoggingInterceptor.Level.BODY);
 
             builder.addInterceptor(loggingInterceptor);
         }
 
-        if (!isReleaseBuild() && config.getBoolean("net.interceptors.stetho")) {
+        if (!Globals.isReleaseBuild() && config.getBoolean("net.interceptors.stetho")) {
             builder.addNetworkInterceptor(new StethoInterceptor());
         }
 
         return builder.build();
     }
 
-    private boolean isReleaseBuild() {
-        return Globals.INSTANCE.getBuildType().equals("release");
-    }
+
 }

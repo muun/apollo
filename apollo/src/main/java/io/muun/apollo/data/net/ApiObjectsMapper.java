@@ -2,12 +2,12 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.model.BitcoinAmount;
-import io.muun.apollo.domain.model.HardwareWallet;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.api.BitcoinAmountJson;
+import io.muun.common.api.ChallengeKeyJson;
 import io.muun.common.api.ChallengeSetupJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
@@ -15,18 +15,18 @@ import io.muun.common.api.ClientJson;
 import io.muun.common.api.ClientTypeJson;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
+import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
-import io.muun.common.api.HardwareWalletJson;
 import io.muun.common.api.OperationJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
-import io.muun.common.api.SignupJson;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.UserProfileJson;
+import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.challenge.ChallengeSetup;
@@ -35,7 +35,6 @@ import io.muun.common.utils.Encodings;
 
 import java.util.List;
 import java.util.UUID;
-
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
@@ -97,14 +96,6 @@ public class ApiObjectsMapper {
     }
 
     /**
-     * Create an API operation for a HW Withdrawal.
-     */
-    @NotNull
-    public OperationJson mapWithdrawalOperation(@NotNull OperationWithMetadata operation) {
-        return mapOperation(operation, null);
-    }
-
-    /**
      * Create an API operation.
      */
     @NotNull
@@ -127,7 +118,6 @@ public class ApiObjectsMapper {
                 operation.getReceiverIsExternal(),
                 operation.getReceiverAddress(),
                 operation.getReceiverAddressDerivationPath(),
-                operation.getHardwareWalletHid(),
                 mapBitcoinAmount(operation.getAmount()),
                 mapBitcoinAmount(operation.getFee()),
                 outputAmountInSatoshis,
@@ -138,21 +128,8 @@ public class ApiObjectsMapper {
                 operation.getSwap() != null ? operation.getSwap().houstonUuid : null,
                 operation.getSenderMetadata(),
                 operation.getReceiverMetadata(),
-                outpoints
-        );
-    }
-
-    /**
-     * Create an API Signup.
-     */
-    public SignupJson mapSignup(CurrencyUnit primaryCurrency,
-                                PublicKey basePublicKey,
-                                ChallengeSetup passwordChallengeSetup) {
-
-        return new SignupJson(
-                primaryCurrency,
-                mapPublicKey(basePublicKey),
-                mapChallengeSetup(passwordChallengeSetup)
+                outpoints,
+                false // TODO: Set it to proper value.
         );
     }
 
@@ -170,7 +147,6 @@ public class ApiObjectsMapper {
                                                         int version,
                                                         String gcmToken,
                                                         PublicKey basePublicKey,
-                                                        ChallengeSetup anonChallengeSetup,
                                                         CurrencyUnit primaryCurrency) {
 
         return new CreateFirstSessionJson(
@@ -178,22 +154,41 @@ public class ApiObjectsMapper {
                 gcmToken,
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
-                mapChallengeSetup(anonChallengeSetup)
+                null // No longer needed
         );
     }
 
     /**
-     * Map a CreateFirstSession object.
+     * Map a CreateLoginSession object.
      */
     public CreateLoginSessionJson mapCreateLoginSession(String buildType,
-                                                        int version,
+                                                        int clientVersion,
                                                         String gcmToken,
                                                         String email) {
 
         return new CreateLoginSessionJson(
-                mapClient(buildType, version),
+                mapClient(buildType, clientVersion),
                 gcmToken,
                 email
+        );
+    }
+
+    /**
+     * Map a CreateRcLoginSession object.
+     */
+    public CreateRcLoginSessionJson mapCreateRcLoginSession(String buildType,
+                                                            int clientVersion,
+                                                            String gcmToken,
+                                                            String rcChallengePublicKeyHex) {
+
+        return new CreateRcLoginSessionJson(
+                mapClient(buildType, clientVersion),
+                gcmToken,
+                new ChallengeKeyJson(
+                        ChallengeType.RECOVERY_CODE,
+                        rcChallengePublicKeyHex,
+                        2
+                )
         );
     }
 
@@ -275,22 +270,6 @@ public class ApiObjectsMapper {
      */
     public FeedbackJson mapFeedback(String content) {
         return new FeedbackJson(content);
-    }
-
-    /**
-     * Create a HardwareWallet.
-     */
-    public HardwareWalletJson mapHardwareWallet(HardwareWallet wallet) {
-        return new HardwareWalletJson(
-                wallet.getHid(),
-                wallet.getBrand(),
-                wallet.getModel(),
-                wallet.getLabel(),
-                mapPublicKey(wallet.getBasePublicKey()),
-                ApolloZonedDateTime.of(wallet.getCreatedAt()),
-                ApolloZonedDateTime.of(wallet.getLastPairedAt()),
-                wallet.isPaired()
-        );
     }
 
     /**

@@ -1,50 +1,56 @@
 package libwallet
 
 import (
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
+	"github.com/muun/libwallet/addresses"
 	"github.com/pkg/errors"
 )
 
 // CreateAddressV1 returns a P2PKH MuunAddress from a publicKey for use in TransactionSchemeV1
 func CreateAddressV1(publicKey *HDPublicKey) (MuunAddress, error) {
-	pubkey, err := btcutil.NewAddressPubKey(publicKey.Raw(), publicKey.Network.network)
-	if err != nil {
-		return nil, err
-	}
-
-	pubkeyHash := pubkey.AddressPubKeyHash()
-	address := pubkeyHash.String()
-
-	return &muunAddress{address: address, version: addressV1, derivationPath: publicKey.Path}, nil
+	return addresses.CreateAddressV1(&publicKey.key, publicKey.Path, publicKey.Network.network)
 }
 
-func addUserSignatureInputV1(input Input, index int, tx *wire.MsgTx, privateKey *HDPrivateKey) (*wire.TxIn, error) {
+type coinV1 struct {
+	Network  *chaincfg.Params
+	OutPoint wire.OutPoint
+	KeyPath  string
+}
 
-	txInput := tx.TxIn[index]
-
-	sig, err := signInputV1(input, index, tx, privateKey)
+func (c *coinV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, _ *HDPublicKey) error {
+	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to sign V1 input")
+		return errors.Wrapf(err, "failed to derive user key")
+	}
+
+	sig, err := c.signature(index, tx, userKey)
+	if err != nil {
+		return errors.Wrapf(err, "failed to sign V1 input")
 	}
 
 	builder := txscript.NewScriptBuilder()
 	builder.AddData(sig)
-	builder.AddData(privateKey.PublicKey().Raw())
+	builder.AddData(userKey.PublicKey().Raw())
 	script, err := builder.Script()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate signing script")
+		return errors.Wrapf(err, "failed to generate signing script")
 	}
 
+	txInput := tx.TxIn[index]
 	txInput.SignatureScript = script
-
-	return txInput, nil
+	return nil
 }
 
-func createRedeemScriptV1(publicKey *HDPublicKey) ([]byte, error) {
+func (c *coinV1) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error {
+	return c.SignInput(index, tx, userKey, nil)
+}
 
-	userAddress, err := btcutil.NewAddressPubKey(publicKey.Raw(), publicKey.Network.network)
+func (c *coinV1) createRedeemScript(publicKey *HDPublicKey) ([]byte, error) {
+
+	userAddress, err := btcutil.NewAddressPubKey(publicKey.Raw(), c.Network)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate address for user")
 	}
@@ -52,14 +58,14 @@ func createRedeemScriptV1(publicKey *HDPublicKey) ([]byte, error) {
 	return txscript.PayToAddrScript(userAddress.AddressPubKeyHash())
 }
 
-func signInputV1(input Input, index int, tx *wire.MsgTx, privateKey *HDPrivateKey) ([]byte, error) {
+func (c *coinV1) signature(index int, tx *wire.MsgTx, userKey *HDPrivateKey) ([]byte, error) {
 
-	redeemScript, err := createRedeemScriptV1(privateKey.PublicKey())
+	redeemScript, err := c.createRedeemScript(userKey.PublicKey())
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to build reedem script for signing")
 	}
 
-	privKey, err := privateKey.key.ECPrivKey()
+	privKey, err := userKey.key.ECPrivKey()
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to produce EC priv key for signing")
 	}

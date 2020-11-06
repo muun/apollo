@@ -16,13 +16,25 @@ public class SizeForAmount {
     @NotNull // Except for HWs withdrawals
     public String outpoint;
 
+    @NotNull
+    public UtxoStatus status;
+
+    public int deltaInWeightUnits;
+
     /**
      * Manual constructor.
      */
-    public SizeForAmount(long amountInSatoshis, int sizeInBytes, String txHash, int index) {
+    public SizeForAmount(long amountInSatoshis,
+                         int sizeInBytes,
+                         String outpoint,
+                         UtxoStatus status,
+                         int deltaInWeightUnits) {
+
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
-        this.outpoint = txHash + ":" + index;
+        this.outpoint = outpoint;
+        this.status = status;
+        this.deltaInWeightUnits = deltaInWeightUnits;
     }
 
     /**

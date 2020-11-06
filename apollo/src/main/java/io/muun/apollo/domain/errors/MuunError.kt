@@ -1,8 +1,6 @@
 package io.muun.apollo.domain.errors
 
 import java.io.Serializable
-import java.util.*
-import kotlin.collections.HashMap
 
 open class MuunError: RuntimeException {
 

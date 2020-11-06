@@ -4,7 +4,6 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.common.utils.Encodings;
 
 import java.util.Arrays;
-
 import javax.inject.Inject;
 
 public class PinManager {

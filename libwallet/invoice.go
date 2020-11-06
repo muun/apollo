@@ -1,7 +1,7 @@
 package libwallet
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	"github.com/lightningnetwork/lnd/zpay32"
 	"github.com/pkg/errors"

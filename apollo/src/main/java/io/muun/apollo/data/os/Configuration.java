@@ -6,7 +6,6 @@ import android.content.res.Resources;
 
 import java.io.IOException;
 import java.util.Properties;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

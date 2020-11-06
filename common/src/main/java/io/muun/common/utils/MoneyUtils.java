@@ -5,7 +5,7 @@ import javax.money.MonetaryAmount;
 public class MoneyUtils {
 
     /**
-     * @return true if the two amounts have the same number and same currency, false otherwise.
+     * Check two monetary amounts are equal (amount and currency match).
      */
     public static boolean equals(MonetaryAmount m1, MonetaryAmount m2) {
 

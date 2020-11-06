@@ -1,15 +1,15 @@
 package io.muun.apollo.data.async.gcm;
 
 import io.muun.apollo.data.db.DaoManager;
+import io.muun.apollo.data.external.DataComponentProvider;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.NotificationActions;
-import io.muun.apollo.domain.action.UpdateFcmTokenAction;
+import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction;
 import io.muun.apollo.domain.errors.FcmMessageProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
-import io.muun.apollo.external.DataComponentProvider;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 
 import com.google.firebase.messaging.FirebaseMessagingService;

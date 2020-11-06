@@ -1,11 +1,7 @@
 package libwallet
 
 import (
-	"crypto/rand"
-	"io"
-	"time"
-
-	"github.com/pkg/errors"
+	"github.com/muun/libwallet/emergencykit"
 )
 
 // EKInput input struct to fill the PDF
@@ -20,49 +16,17 @@ type EKOutput struct {
 	VerificationCode string
 }
 
-// GenerateEmergencyKitHTML returns the html as a string along with the verification code
-func GenerateEmergencyKitHTML(ekParams *EKInput) (*EKOutput, error) {
-	return GenerateTranslatedEmergencyKitHTML(ekParams, "en")
-}
-
-// GenerateTranslatedEmergencyKitHTML returns the translated html as a string along with the verification code
-func GenerateTranslatedEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, error) {
-	verificationCode := getRandomVerificationCode()
-	currentDate := time.Now()
-
-	data := EKTemplateData{
+// GenerateEmergencyKitHTML returns the translated html as a string along with the verification code
+func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, error) {
+	out, err := emergencykit.GenerateHTML(&emergencykit.Input{
 		FirstEncryptedKey:  ekParams.FirstEncryptedKey,
 		SecondEncryptedKey: ekParams.SecondEncryptedKey,
-		VerificationCode:   verificationCode,
-		// Careful: do not change these format values. See the doc more info: https://golang.org/pkg/time/#pkg-constants
-		CurrentDate: currentDate.Format("2006/01/02"), // Format date to YYYY/MM/DD
-	}
-
-	html, err := getEmergencyKitHTML(&data, language)
+	}, language)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to obtain rendered HTML")
+		return nil, err
 	}
-
 	return &EKOutput{
-		html,
-		verificationCode,
+		HTML:             out.HTML,
+		VerificationCode: out.VerificationCode,
 	}, nil
-}
-
-func getRandomVerificationCode() string {
-	const length = 6
-
-	charset := [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
-	result := make([]byte, length)
-
-	n, err := io.ReadAtLeast(rand.Reader, result, length)
-	if n != length {
-		panic(err)
-	}
-
-	for i := 0; i < len(result); i++ {
-		result[i] = charset[int(result[i])%len(charset)]
-	}
-
-	return string(result)
 }

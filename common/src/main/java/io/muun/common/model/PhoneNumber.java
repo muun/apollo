@@ -7,7 +7,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import java.io.Serializable;
-
 import javax.annotation.Nullable;
 
 public class PhoneNumber implements Serializable {

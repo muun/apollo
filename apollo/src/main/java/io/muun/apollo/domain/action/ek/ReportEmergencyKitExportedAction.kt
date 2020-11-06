@@ -5,7 +5,6 @@ import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.common.Optional
-import io.muun.common.dates.MuunZonedDateTime
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import rx.Observable
@@ -23,7 +22,7 @@ class ReportEmergencyKitExportedAction @Inject constructor(
     /**
      * Tell Houston we have exported our keys.
      */
-    override fun action() =
+    override fun action(): Observable<Void> =
         Observable.defer {
             val user = userRepository.fetchOne()
             val now = ZonedDateTime.now(ZoneOffset.UTC)

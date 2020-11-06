@@ -19,9 +19,6 @@ CREATE TABLE submarine_swaps (
     expires_at TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
     payed_at TEXT AS org.threeten.bp.ZonedDateTime,
     preimage_in_hex TEXT,
-    will_pre_open_channel INTEGER AS Boolean NOT NULL,
-    channel_open_fee_in_satoshis INTEGER NOT NULL,
-    channel_close_fee_in_satoshis INTEGER NOT NULL,
     funding_script_version INTEGER NOT NULL,
     funding_expiration_in_blocks INTEGER,
     funding_user_public_key TEXT,
@@ -34,7 +31,7 @@ CREATE TABLE submarine_swaps (
 
 insertSwap:
 INSERT OR REPLACE INTO submarine_swaps
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAll:
 SELECT *

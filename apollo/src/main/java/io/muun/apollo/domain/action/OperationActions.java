@@ -6,25 +6,17 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.action.address.CreateAddressAction;
-import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
-import io.muun.apollo.domain.model.OperationWithMetadata;
-import io.muun.apollo.domain.model.PendingWithdrawal;
 import io.muun.common.Optional;
-import io.muun.common.crypto.hd.HardwareWalletOutput;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
 import timber.log.Timber;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,9 +26,6 @@ import javax.inject.Singleton;
 public class OperationActions {
 
     private final CreateOperationAction createOperation;
-    private final CreateAddressAction createAddress;
-    private final HardwareWalletActions hardwareWalletActions;
-    private final SatelliteActions satelliteActions;
 
     private final OperationDao operationDao;
 
@@ -46,7 +35,6 @@ public class OperationActions {
     private final HoustonClient houstonClient;
     private final ClipboardProvider clipboardProvider;
 
-    public final AsyncAction2<String, String, Void> submitSignedWithdrawalAction;
     private final OperationMetadataMapper operationMapper;
 
 
@@ -55,9 +43,6 @@ public class OperationActions {
      */
     @Inject
     public OperationActions(CreateOperationAction createOperation,
-                            CreateAddressAction createAddress,
-                            HardwareWalletActions hardwareWalletActions,
-                            SatelliteActions satelliteActions,
                             OperationDao operationDao,
                             UserRepository userRepository,
                             TransactionSizeRepository transactionSizeRepository,
@@ -67,9 +52,6 @@ public class OperationActions {
                             OperationMetadataMapper operationMapper) {
 
         this.createOperation = createOperation;
-        this.createAddress = createAddress;
-        this.hardwareWalletActions = hardwareWalletActions;
-        this.satelliteActions = satelliteActions;
 
         this.operationDao = operationDao;
 
@@ -79,8 +61,6 @@ public class OperationActions {
         this.houstonClient = houstonClient;
         this.clipboardProvider = clipboardProvider;
 
-        this.submitSignedWithdrawalAction = asyncActionStore
-                .get("operation/submit-signed-withdrawal", this::submitSignedWithdrawal);
         this.operationMapper = operationMapper;
     }
 
@@ -110,51 +90,12 @@ public class OperationActions {
         clipboardProvider.copy("Transaction ID", transactionId);
     }
 
-    private Observable<Void> submitSignedWithdrawal(String uuid, String signedTransaction) {
-        return satelliteActions.watchPendingWithdrawal()
-                .first()
-                .flatMap(maybePendingWithdrawal -> {
-                    Timber.d("[Operations] Submitting signed withdrawal");
+    public void copyNetworkFeeToClipboard(String fee) {
+        clipboardProvider.copy("Network fee", fee);
+    }
 
-                    if (!maybePendingWithdrawal.isPresent()) {
-                        Timber.d("[Operations] No pending withdrawal present, ignoring");
-                        return Observable.just(null);
-                    }
-
-                    final PendingWithdrawal pendingWithdrawal = maybePendingWithdrawal.get();
-
-                    if (!pendingWithdrawal.uuid.equals(uuid)) {
-                        Timber.d("[Operations] Signed withdrawal with wrong UUID, ignoring");
-                        return Observable.just(null);
-                    }
-
-                    pendingWithdrawal.signedSerializedTransaction = signedTransaction;
-
-                    final List<HardwareWalletOutput> spentOutputs = hardwareWalletActions
-                            .buildWithdrawal(pendingWithdrawal)
-                            .getInputs();
-
-                    final List<Long> inputAmounts = new ArrayList<>();
-                    for (HardwareWalletOutput spentOutput : spentOutputs) {
-                        inputAmounts.add(spentOutput.getAmount());
-                    }
-
-                    return houstonClient
-                            .newWithdrawalOperation(
-                                    buildOperationFromPendingWithdrawal(pendingWithdrawal),
-                                    signedTransaction,
-                                    inputAmounts
-                            )
-                            .flatMap(operationCreated -> createOperation.action(
-                                    operationMapper.mapFromMetadata(operationCreated.operation),
-                                    operationCreated.nextTransactionSize
-                            ))
-                            .flatMap(res -> satelliteActions.endWithdrawal(pendingWithdrawal))
-                            .doOnError(error -> {
-                                Timber.d("[Operations] Error submitting signed withdrawal");
-                                // TODO notify Satellite about this failure.
-                            });
-                });
+    public void copyAmountToClipboard(String amount) {
+        clipboardProvider.copy("Amount", amount);
     }
 
     /**
@@ -169,6 +110,7 @@ public class OperationActions {
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
                         // TODO use batching
                         .map(operationMapper::mapFromMetadata)
+                        .onBackpressureBuffer(200)
                         .concatMap(createOperation::saveOperation)
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)
@@ -200,21 +142,6 @@ public class OperationActions {
 
     // ---------------------------------------------------------------------------------------------
     // Private helpers
-
-    private OperationWithMetadata buildOperationFromPendingWithdrawal(
-            PendingWithdrawal withdrawal) {
-
-        return operationMapper.mapWithMetadata(Operation.createIncoming(
-                userRepository.fetchOne().getCompatPublicProfile(),
-                withdrawal.hardwareWalletHid,
-                withdrawal.receiverAddress,
-                withdrawal.receiverAddressPath,
-                withdrawal.amount,
-                withdrawal.fee,
-                withdrawal.description,
-                withdrawal.exchangeRateWindowHid
-        ));
-    }
 
     /**
      * Return the stored NextTransactionSize if available and up-to-date.

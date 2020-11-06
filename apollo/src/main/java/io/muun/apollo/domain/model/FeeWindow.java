@@ -9,7 +9,6 @@ import org.threeten.bp.ZonedDateTime;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import javax.validation.constraints.NotNull;
 
 public class FeeWindow {

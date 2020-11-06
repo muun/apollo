@@ -16,7 +16,6 @@ public class StartEmailSetupJson {
     @NotNull
     public ChallengeSignatureJson challengeSignature;
 
-
     /**
      * Json constructor.
      */

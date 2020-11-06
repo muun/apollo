@@ -1,9 +1,10 @@
 package libwallet
 
 import (
-	"fmt"
+	"crypto/sha256"
 	"strings"
 
+	"github.com/muun/libwallet/hdpath"
 	"github.com/pkg/errors"
 
 	"github.com/btcsuite/btcutil/hdkeychain"
@@ -72,21 +73,19 @@ func (p *HDPrivateKey) String() string {
 // DerivedAt derives a new child priv key, which may be hardened
 // index should be uint32 but for java compat we use int64
 func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, error) {
-
-	path := fmt.Sprintf("%v/%v", p.Path, index)
-
 	var modifier uint32
 	if hardened {
 		modifier = hdkeychain.HardenedKeyStart
-		path = path + hardenedSymbol
 	}
+
+	path := hdpath.MustParse(p.Path).Child(uint32(index) | modifier)
 
 	child, err := p.key.Child(uint32(index) | modifier)
 	if err != nil {
 		return nil, err
 	}
 
-	return &HDPrivateKey{key: *child, Network: p.Network, Path: path}, nil
+	return &HDPrivateKey{key: *child, Network: p.Network, Path: path.String()}, nil
 }
 
 func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
@@ -95,20 +94,20 @@ func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 		return nil, errors.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
 	}
 
-	firstPath, err := parseDerivationPath(p.Path)
+	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", p.Path)
 	}
 
-	secondPath, err := parseDerivationPath(path)
+	secondPath, err := hdpath.Parse(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", path)
 	}
 
-	indexes := secondPath.indexes[len(firstPath.indexes):]
+	indexes := secondPath.IndexesFrom(firstPath)
 	derivedKey := p
 	for depth, index := range indexes {
-		derivedKey, err = derivedKey.DerivedAt(int64(index.i), index.hardened)
+		derivedKey, err = derivedKey.DerivedAt(int64(index.Index), index.Hardened)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to derive key at path %v on depth %v", path, depth)
 		}
@@ -127,7 +126,8 @@ func (p *HDPrivateKey) Sign(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	sig, err := signingKey.Sign(data)
+	hash := sha256.Sum256(data)
+	sig, err := signingKey.Sign(hash[:])
 	if err != nil {
 		return nil, err
 	}

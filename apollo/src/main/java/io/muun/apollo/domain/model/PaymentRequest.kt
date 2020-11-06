@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.model
 
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.libwallet.LibwalletBridge
-import io.muun.apollo.external.Globals
 import io.muun.common.utils.Preconditions
 import javax.money.MonetaryAmount
 
@@ -11,7 +11,6 @@ data class PaymentRequest (val type: Type,
                            val description: String? = null,
                            val contact: Contact? = null,
                            val address: String? = null,
-                           val hardwareWallet: HardwareWallet? = null,
                            val invoice: Invoice? = null,
                            val swap: SubmarineSwap? = null,
                            val feeInSatoshisPerByte: Double,
@@ -20,9 +19,7 @@ data class PaymentRequest (val type: Type,
     enum class Type {
         TO_CONTACT,
         TO_ADDRESS,
-        TO_LN_INVOICE,
-        TO_HARDWARE_WALLET,
-        FROM_HARDWARE_WALLET
+        TO_LN_INVOICE
     }
 
     /**
@@ -39,8 +36,18 @@ data class PaymentRequest (val type: Type,
         )
     }
 
+    /**
+     * Warning: this change may leave the PayReq in an inconsistent state (specially for swaps).
+     * Use it with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
+     */
     fun withAmount(newAmount: MonetaryAmount) =
         copy(amount = newAmount)
+
+    /**
+     * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
+     */
+    fun withSwapAmount(newAmountInSat: Long) =
+        copy(swap = swap?.withAmount(newAmountInSat))
 
     fun withFeeRate(newFeeInSatoshisPerByte: Double) =
         copy(feeInSatoshisPerByte = newFeeInSatoshisPerByte)
@@ -55,7 +62,6 @@ data class PaymentRequest (val type: Type,
                     description,
                     contact?.toJson(),
                     address,
-                    hardwareWallet?.toJson(),
                     invoice?.original,
                     swap?.toJson(),
                     feeInSatoshisPerByte,
@@ -73,7 +79,6 @@ data class PaymentRequest (val type: Type,
                         payReqJson.description,
                         Contact.fromJson(payReqJson.contact),
                         payReqJson.address,
-                        HardwareWallet.fromJson(payReqJson.hardwareWallet),
                         payReqJson.invoice?.let {
                             LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, it)
                         },
@@ -114,42 +119,6 @@ data class PaymentRequest (val type: Type,
                 amount = amount,
                 description = description,
                 address = address,
-                feeInSatoshisPerByte = feeInSatoshisPerByte
-            )
-        }
-
-        /** Create a PaymentRequest to send money to an address. */
-        @JvmStatic
-        fun toHardwareWallet(hardwareWallet: HardwareWallet,
-                             amount: MonetaryAmount,
-                             description: String,
-                             feeInSatoshisPerByte: Double): PaymentRequest {
-
-            Preconditions.checkNotNull(hardwareWallet)
-
-            return PaymentRequest(
-                Type.TO_HARDWARE_WALLET,
-                amount = amount,
-                description = description,
-                hardwareWallet = hardwareWallet,
-                feeInSatoshisPerByte = feeInSatoshisPerByte
-            )
-        }
-
-        /** Create a PaymentRequest to receive money from a hardware wallet. */
-        @JvmStatic
-        fun fromHardwareWallet(hardwareWallet: HardwareWallet,
-                               amount: MonetaryAmount,
-                               description: String,
-                               feeInSatoshisPerByte: Double): PaymentRequest {
-
-            Preconditions.checkNotNull(hardwareWallet)
-
-            return PaymentRequest(
-                Type.FROM_HARDWARE_WALLET,
-                amount = amount,
-                description = description,
-                hardwareWallet = hardwareWallet,
                 feeInSatoshisPerByte = feeInSatoshisPerByte
             )
         }

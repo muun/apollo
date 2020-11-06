@@ -30,7 +30,8 @@ public class ChallengeSetupJson {
     @NotNull
     public int version;
 
-    public ChallengeSetupJson() { }
+    public ChallengeSetupJson() {
+    }
 
     /**
      * Constructor.

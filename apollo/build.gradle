@@ -10,8 +10,6 @@ buildscript {
 }
 
 repositories {
-    google()
-    maven { url 'https://maven.fabric.io/public' }  // Needed for crashlytics dependency
     flatDir {
         dirs "${project.projectDir}/libs"
     }
@@ -67,10 +65,23 @@ android {
         htmlReport true
         lintConfig file("${project.rootDir}/linters/android-lint/config.xml")
     }
+
+    testOptions {
+        // https://www.veskoiliev.com/running-android-unit-instrumentation-tests-from-the-console/
+        unitTests.all {
+            testLogging {
+                outputs.upToDateWhen {false}
+                events "passed", "failed", "standardError"
+                showCauses true
+                showExceptions true
+            }
+        }
+    }
 }
 
 ext {
     version_retrofit = '2.3.0'
+    version_workmanager = '2.4.0'
 }
 
 task libwallet(type: Exec) {
@@ -113,8 +124,8 @@ dependencies {
     implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
 
     // Dependency injection:
-    api 'com.google.dagger:dagger:2.11'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
+    api 'com.google.dagger:dagger:2.27'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.27'
 
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
 
@@ -126,14 +137,16 @@ dependencies {
     api 'org.zalando:jackson-datatype-money:0.12.0'
 
     // Firebase:
-    api 'com.google.firebase:firebase-core:16.0.6'
     api 'com.google.firebase:firebase-messaging:17.3.4'
-    api 'com.firebase:firebase-jobdispatcher:0.8.5'
+
+    // WorkManager: (see https://github.com/muun/muun/issues/5895)
+    // Guide: https://developer.android.com/topic/libraries/architecture/workmanager/migrating-fb
+    api "androidx.work:work-runtime:$version_workmanager" // api as needs to be init at app.OnCreate
 
     // Debugging:
-    api('com.crashlytics.sdk.android:crashlytics:2.10.1') {
-        transitive = true
-    }
+    api('com.google.firebase:firebase-crashlytics:17.2.1')
+    // Analytics: Enhance Crashlytics experience (real time crash-free users + breadcrumbs)
+    api 'com.google.firebase:firebase-analytics:17.5.0'
 
     api 'com.facebook.stetho:stetho:1.5.0'
     api 'com.facebook.stetho:stetho-okhttp3:1.5.0'

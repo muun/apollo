@@ -7,7 +7,6 @@ import io.muun.common.utils.Preconditions;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 

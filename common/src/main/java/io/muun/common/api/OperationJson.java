@@ -3,13 +3,13 @@ package io.muun.common.api;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Deprecated;
 import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -50,6 +50,7 @@ public class OperationJson {
     @Nullable
     public String receiverAddressDerivationPath;
 
+    @Deprecated(atApolloVersion = 76)
     @Nullable
     public Long hardwareWalletHid;
 
@@ -101,6 +102,12 @@ public class OperationJson {
     @Nullable // For old clients, and HW withdrawals.
     public List<String> outpoints;  // The complete utxoSet, sorted as used for fee computation
 
+    @Nullable
+    public Boolean markItAsReplaceableByFee;
+
+    @Nullable
+    public IncomingSwapJson incomingSwap;
+
     /**
      * Json constructor.
      */
@@ -109,6 +116,7 @@ public class OperationJson {
 
     /**
      * Apollo constructor.
+     * TODO: used by Houston tests too...
      */
     public OperationJson(String requestId,
                          OperationDirection direction,
@@ -119,7 +127,6 @@ public class OperationJson {
                          Boolean receiverIsExternal,
                          @Nullable String receiverAddress,
                          @Nullable String receiverAddressDerivationPath,
-                         @Nullable Long hardwareWalletHid,
                          BitcoinAmountJson amount,
                          BitcoinAmountJson fee,
                          Long outputAmountInSatoshis,
@@ -130,7 +137,8 @@ public class OperationJson {
                          @Nullable String swapUuid,
                          @Nullable String senderMetadata,
                          @Nullable String receiverMetadata,
-                         @Nullable List<String> outpoints) {
+                         @Nullable List<String> outpoints,
+                         @Nullable Boolean markItAsReplaceableByFee) {
 
         this.requestId = requestId;
         this.direction = direction;
@@ -141,7 +149,6 @@ public class OperationJson {
         this.receiverIsExternal = receiverIsExternal;
         this.receiverAddress = receiverAddress;
         this.receiverAddressDerivationPath = receiverAddressDerivationPath;
-        this.hardwareWalletHid = hardwareWalletHid;
         this.amount = amount;
         this.fee = fee;
         this.outputAmountInSatoshis = outputAmountInSatoshis;
@@ -153,6 +160,7 @@ public class OperationJson {
         this.senderMetadata = senderMetadata;
         this.receiverMetadata = receiverMetadata;
         this.outpoints = outpoints;
+        this.markItAsReplaceableByFee = markItAsReplaceableByFee;
     }
 
     /**
@@ -176,9 +184,10 @@ public class OperationJson {
                          Long exchangeRatesWindowId,
                          @Nullable String description,
                          OperationStatus status,
-                         Transaction transaction,
+                         @Nullable Transaction transaction,
                          MuunZonedDateTime creationDate,
                          SubmarineSwapJson swap,
+                         IncomingSwapJson incomingSwap,
                          @Nullable String senderMetadata,
                          @Nullable String receiverMetadata) {
 
@@ -204,6 +213,7 @@ public class OperationJson {
         this.creationDate = creationDate;
         this.swapUuid = swap != null ? swap.swapUuid : null;
         this.swap = swap;
+        this.incomingSwap = incomingSwap;
         this.senderMetadata = senderMetadata;
         this.receiverMetadata = receiverMetadata;
     }

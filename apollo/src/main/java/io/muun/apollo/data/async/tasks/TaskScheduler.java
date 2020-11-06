@@ -1,22 +1,17 @@
 package io.muun.apollo.data.async.tasks;
 
 import android.content.Context;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.firebase.jobdispatcher.Constraint;
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
-import com.firebase.jobdispatcher.Job;
-import com.firebase.jobdispatcher.Lifetime;
-import com.firebase.jobdispatcher.RetryStrategy;
-import com.firebase.jobdispatcher.Trigger;
+import androidx.work.BackoffPolicy;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import org.threeten.bp.Duration;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.Nonnegative;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,6 +27,7 @@ import javax.validation.constraints.NotNull;
 @Singleton
 public class TaskScheduler {
 
+    // WorkManager imposes a min interval of 15 min (consider it when reducing these for testing)
     private static final int PULL_NOTIFICATIONS_PERIOD = (int) Duration.ofHours(3).getSeconds();
     private static final int FALLBACK_SYNC_PERIOD = (int) Duration.ofHours(6).getSeconds();
     private static final int INTEGRITY_CHECK_PERIOD = (int) Duration.ofDays(1).getSeconds();
@@ -47,53 +43,41 @@ public class TaskScheduler {
         this.context = context;
     }
 
-    private void scheduleDelayedPeriodicTask(@NotNull String type, @Nonnegative int periodLength) {
-        Observable
-                .fromCallable(() -> {
-                    schedulePeriodicTaskLater(type, periodLength);
-                    return null;
-                })
-                .delay(5, TimeUnit.SECONDS) // see below
-                .subscribeOn(Schedulers.computation()) // TODO pick a better scheduler?
-                .subscribe();
-    }
-
     /**
-     * Schedule an async network-bound periodic task that will run every {periodLength} seconds. If
-     * the task fails (ie. throws), it won't be retried.
+     * Schedule an async network-bound periodic task that will run every {repeatIntervalInSecs}.
      */
-    private void schedulePeriodicTaskLater(@NotNull String type, @Nonnegative int periodLength) {
-        // NOTE: this delay is a potential fix for a frequent IntegrityCheck failure, occuring
+    private void scheduleDelayedPeriodicTask(@NotNull String type,
+                                             @Nonnegative int repeatIntervalInSecs) {
+
+        // NOTE: this delay is a potential fix for a frequent IntegrityCheck failure, occurring
         // after opening the app from a notification. I think the problem is that the task is
         // executed on opening the app, before the balance is updated, and the check fails. Somehow.
         // I'm testing this hypothesis, really, the bug is hard to reproduce.
-        final Bundle data = new Bundle();
+        // TODO with WorkManager this could now be solved via chaining of dependent tasks/workers
 
-        data.putString(PeriodicTaskService.TASK_TYPE_KEY, type);
-
-        final FirebaseJobDispatcher dispatcher = getDispatcher();
-
-
-        final Job task = dispatcher.newJobBuilder()
-                .setService(PeriodicTaskService.class)
-                .setTag(type)
-                .setLifetime(Lifetime.FOREVER)
-                .setReplaceCurrent(true)
-                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                .setConstraints(Constraint.ON_ANY_NETWORK)
-                .setRecurring(true)
-                .setTrigger(Trigger.executionWindow(periodLength, periodLength))
-                .setExtras(data)
+        final Data input = new Data.Builder()
+                .putString(PeriodicTaskWorker.TASK_TYPE_KEY, type)
                 .build();
 
-        dispatcher.schedule(task);
-        Timber.d("Scheduled a periodic task of type %s", type);
-    }
+        final Constraints constraints = new Constraints.Builder()
+                // The Worker needs Network connectivity
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
 
-    @NonNull
-    private FirebaseJobDispatcher getDispatcher() {
-        final GooglePlayDriver googlePlayDriver = new GooglePlayDriver(context);
-        return new FirebaseJobDispatcher(googlePlayDriver);
+        // WorkManager’s jobs are always persisted across device reboot automatically.
+        // Expected schedule is: [30s, 60s, 120s, 240s, ..., 18000s] (capped at 5 hours)
+        final PeriodicWorkRequest workRequest = new PeriodicWorkRequest
+                .Builder(PeriodicTaskWorker.class, repeatIntervalInSecs, TimeUnit.SECONDS)
+                .setInputData(input)
+                .setConstraints(constraints)
+                .setInitialDelay(5, TimeUnit.SECONDS)   // See above
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+                .build();
+
+        getWorkManager()
+                .enqueueUniquePeriodicWork(type, ExistingPeriodicWorkPolicy.REPLACE, workRequest);
+
+        Timber.d("Scheduled a periodic task of type %s", type);
     }
 
     /**
@@ -120,6 +104,10 @@ public class TaskScheduler {
      * Cancel all future executions of scheduled tasks.
      */
     public void unscheduleAllTasks() {
-        getDispatcher().cancelAll();
+        getWorkManager().cancelAllWork();
+    }
+
+    private WorkManager getWorkManager() {
+        return WorkManager.getInstance(context);
     }
 }

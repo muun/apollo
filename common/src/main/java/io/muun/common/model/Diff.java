@@ -2,7 +2,6 @@ package io.muun.common.model;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.validation.constraints.NotNull;
 
 

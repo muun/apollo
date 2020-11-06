@@ -26,12 +26,6 @@ class PaymentAnalysis(
     /** The fee charged by the LN nodes in the route to pay an invoice */
     val lightningFee: BitcoinAmount?,
 
-    /** The fee required to pre-open a channel for a lightning payment */
-    val channelOpenFee: BitcoinAmount?,
-
-    /** The fee required to close a pre-opened channel for a lightning payment */
-    val channelCloseFee: BitcoinAmount?,
-
     /** The transaction fee for the PaymentRequest, null if `canPayWithoutFee` is false. */
     val fee: BitcoinAmount?,
 

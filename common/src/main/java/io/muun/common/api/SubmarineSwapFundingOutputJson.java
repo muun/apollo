@@ -15,10 +15,10 @@ public class SubmarineSwapFundingOutputJson {
     @NotNull
     public String outputAddress;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     public Long outputAmountInSatoshis;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     public Integer confirmationsNeeded;
 
     @Nullable

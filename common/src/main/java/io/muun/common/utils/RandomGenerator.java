@@ -20,8 +20,9 @@ public final class RandomGenerator {
     }
 
     /**
+     * Generate the requested amount of cryptographically secure random bytes.
+     *
      * @param amount The length of the byte array to be generated.
-     * @return Array of cryptographically secure random bytes.
      */
     public static byte[] getBytes(int amount) {
         final byte[] bytes = new byte[amount];

@@ -11,6 +11,11 @@ public enum ChallengeType {
     ANON(false),
 
     /**
+     * Fake challenge key type used to sign/verify challenges with the user's private/public key.
+     */
+    USER_KEY(false),
+
+    /**
      * User-provided password public key will be used to sign Challenge.
      */
     PASSWORD(true),
@@ -22,7 +27,10 @@ public enum ChallengeType {
 
     private static final int ANON_CHALLENGE_VERSION = 1;
     private static final int PASSWORD_CHALLENGE_VERSION = 1;
-    private static final int RECOVERY_CODE_CHALLENGE_VERSION = 1;
+
+    // Version 2 was added during the email-less recovery feature, apollo build version >= 76
+    // Version 1 is deprecated and only used in older clients
+    private static final int RECOVERY_CODE_CHALLENGE_VERSION = 2;
 
     /**
      * Whether this challenge is used to access and encrypt/decrypt a PrivateKey.
@@ -32,7 +40,6 @@ public enum ChallengeType {
     ChallengeType(boolean encryptsPrivateKey) {
         this.encryptsPrivateKey = encryptsPrivateKey;
     }
-
 
     /**
      * Get the current version of a challenge type.

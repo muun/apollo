@@ -63,6 +63,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     }
 
     private fun analyzeFeeFromAmount(): PaymentAnalysis {
+        // TODO UseAllFunds shouldn't need amount, take userBalance from payCtx
         val totalInSatoshis = originalAmountInSatoshis
 
         val feeInSatoshis = feeCalculator
@@ -145,11 +146,11 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             payReq.swap.fees.sweepInSats
 
         check(amountInSatoshis == expectedAmountInSat) {
-            "Check failed.\n" +
-                "amountInSatoshis=$amountInSatoshis\n" +
-                "originalAmountInSatoshis=$originalAmountInSatoshis\n" +
-                "lightningInSats=${payReq.swap.fees.lightningInSats}\n" +
-                "sweepInSats=${payReq.swap.fees.sweepInSats}\n"
+            "Check failed." +
+                "(amountInSatoshis=$amountInSatoshis;" +
+                "originalAmountInSatoshis=$originalAmountInSatoshis;" +
+                "lightningInSats=${payReq.swap.fees.lightningInSats};" +
+                "sweepInSats=${payReq.swap.fees.sweepInSats})"
         }
 
         // For COLLECT swaps, outputAmountInSatoshis includes collectAmount so check must be
@@ -185,6 +186,18 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         checkNotNull(payReq.swap)
 
         val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
+
+        val expectedAmountInSat = originalAmountInSatoshis +
+            payReq.swap.fees.lightningInSats +
+            payReq.swap.fees.sweepInSats
+
+        check(outputAmountInSatoshis == expectedAmountInSat) {
+            "Check failed." +
+                "(outputAmountInSatoshis=$outputAmountInSatoshis;" +
+                "originalAmountInSatoshis=$originalAmountInSatoshis;" +
+                "lightningInSats=${payReq.swap.fees.lightningInSats};" +
+                "sweepInSats=${payReq.swap.fees.sweepInSats})"
+        }
 
         if (outputAmountInSatoshis > totalBalanceInSatoshis) {
             // Unlike other cases, this can happen because we calculate fee for the total output
@@ -228,8 +241,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             outputAmount = convertToBitcoinAmount(outputAmountInSatoshis ?: amountInSatoshis),
             sweepFee = convertToNullableBitcoinAmount(swapFees?.sweepInSats),
             lightningFee = convertToNullableBitcoinAmount(swapFees?.lightningInSats),
-            channelOpenFee = convertToNullableBitcoinAmount(swapFees?.channelOpenInSats),
-            channelCloseFee = convertToNullableBitcoinAmount(swapFees?.channelCloseInSats),
             fee = convertToNullableBitcoinAmount(feeInSatoshis),
             total = convertToNullableBitcoinAmount(totalInSatoshis),
 

@@ -1,9 +1,10 @@
 package io.muun.apollo.domain.action.session
 
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.external.Globals
+import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.common.model.CreateSessionOk
 import rx.Observable
 import javax.inject.Inject
@@ -17,7 +18,7 @@ class CreateLoginSessionAction @Inject constructor(
 
 ): BaseAsyncAction1<String, CreateSessionOk>() {
 
-    override fun action(email: String) =
+    override fun action(email: String): Observable<CreateSessionOk> =
         Observable.defer { createSession(email) }
 
     /**
@@ -25,11 +26,11 @@ class CreateLoginSessionAction @Inject constructor(
      */
     private fun createSession(@NotNull email: String) =
         getFcmToken.action()
-            .flatMap {
+            .flatMap { fcmToken ->
                 houstonClient.createLoginSession(
                     Globals.INSTANCE.oldBuildType,
                     Globals.INSTANCE.versionCode,
-                    it,
+                    fcmToken,
                     email
                 )
             }

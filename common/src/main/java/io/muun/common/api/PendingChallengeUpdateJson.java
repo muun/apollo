@@ -17,7 +17,8 @@ public class PendingChallengeUpdateJson {
     @NotNull
     public ChallengeType type;
 
-    public PendingChallengeUpdateJson() { }
+    public PendingChallengeUpdateJson() {
+    }
 
     /**
      * Constructor.

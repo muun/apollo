@@ -22,7 +22,7 @@ class CreateAddressAction @Inject constructor(
     /**
      * Sync the external address indexes with Houston.
      */
-    override fun action() =
+    override fun action(): Observable<MuunAddressGroup> =
         Observable.defer {
             val addresses = createMuunAddressGroup()
             syncExternalAddressIndexes.run() // we don't wait

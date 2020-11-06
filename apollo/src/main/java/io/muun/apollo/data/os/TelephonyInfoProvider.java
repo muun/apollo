@@ -6,7 +6,6 @@ import android.content.Context;
 import android.telephony.TelephonyManager;
 
 import java.util.Locale;
-
 import javax.inject.Inject;
 
 public class TelephonyInfoProvider {

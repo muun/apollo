@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.model;
 
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.domain.errors.DebtNegativeError;
 import io.muun.apollo.domain.errors.NullExpectedDebtBugError;
 import io.muun.common.Supports;
 import io.muun.common.model.SizeForAmount;
@@ -13,7 +14,6 @@ import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -77,6 +77,12 @@ public class NextTransactionSize {
             expectedDebtInSat = 0L;
         }
 
+        if (expectedDebtInSat < 0) {
+            // We can't allow negative debt
+            Timber.e(new DebtNegativeError(this));
+            expectedDebtInSat = 0L;
+        }
+
         return expectedDebtInSat;
     }
 
@@ -127,8 +133,7 @@ public class NextTransactionSize {
             outpoints.add(sizeForAmount.outpoint);
         }
 
-        // outpoints will be empty for "uninitialized" nts and HWs withdrawals, though the latter
-        // should never happen
+        // outpoints will be empty for "uninitialized" nts
         Preconditions.checkArgument(
                 outpoints.size() == sizeProgression.size() || outpoints.isEmpty()
         );

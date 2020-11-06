@@ -26,11 +26,15 @@ public class NewOperationMessage extends AbstractMessage {
     @Override
     public String toLog() {
         final Transaction tx = operation.transaction;
-        return String.format(
-                "New tx '%s' with %s confirmations",
-                tx.hash,
-                tx.confirmations
-        );
+        if (operation.transaction != null) {
+            return String.format(
+                    "New tx '%s' with %s confirmations",
+                    tx.hash,
+                    tx.confirmations
+            );
+        }
+
+        return "New operation with null transaction";
     }
 
     /**

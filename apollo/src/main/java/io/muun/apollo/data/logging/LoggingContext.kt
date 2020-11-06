@@ -1,6 +1,7 @@
 package io.muun.apollo.data.logging
 
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+
 
 object LoggingContext {
 
@@ -11,11 +12,11 @@ object LoggingContext {
     var sendToLogcat = false // default for production
 
     @JvmStatic
-    fun configure(email: String?, userId: String?) {
-        Crashlytics.setUserIdentifier(userId)
-        Crashlytics.setUserName(email)
+    fun configure(email: String?, userId: String) {
+        val crashlytics = FirebaseCrashlytics.getInstance()
+        crashlytics.setUserId(userId)
+        crashlytics.setCustomKey("email", email ?: "unknown")
 
         // TODO: use setUserEmail, and grab Houston session UUID to attach it
     }
-
 }

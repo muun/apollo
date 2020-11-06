@@ -17,11 +17,10 @@ import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.SessionStatus;
 
-import android.util.Log;
-import com.crashlytics.android.Crashlytics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -131,8 +130,7 @@ public class IntegrityActions {
                 error = new IntegrityError(message);
             }
 
-            Log.e("Integrity", "Check failed", error);
-            Crashlytics.logException(error);
+            Timber.e("Integrity", "Check failed", error);
         }
 
         return Observable.just(null);
