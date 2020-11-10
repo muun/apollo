@@ -252,12 +252,17 @@ public class PreferencesMigrationManager {
 
     private void addChallengePublicKeyVersion() {
 
-        if (keysRepository.hasChallengePublicKey(ChallengeType.PASSWORD)) {
-            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.PASSWORD);
-        }
-
+        // RC ChallengePublicKey migrations ALWAYS needs to happen BEFORE Password
+        // ChallengePublicKey migration. A change in ANY one of our ChallengePublicKeys results in
+        // us re-encrypting the our base private key with our RC ChallengePublicKey (so if it hasn't
+        // been migrated first, problem may arise).
+        // Note: we shouldn't re-encrypt our basePrivateKey on a Password ChallengePublicKey change.
         if (keysRepository.hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
             keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.RECOVERY_CODE);
+        }
+
+        if (keysRepository.hasChallengePublicKey(ChallengeType.PASSWORD)) {
+            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.PASSWORD);
         }
     }
 

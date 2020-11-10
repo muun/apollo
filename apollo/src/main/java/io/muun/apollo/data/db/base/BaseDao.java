@@ -220,30 +220,6 @@ public class BaseDao<ModelT extends PersistentModel> {
                 .onErrorResumeNext(this::wrapError);
     }
 
-    /**
-     * Stores a list of entities in the database, returning a single-element observable of list with
-     * the saved entities.
-     *
-     * @return A deferred observable with a list of elements that have id.
-     */
-    public Observable<List<ModelT>> storeList(@NotNull List<ModelT> elements) {
-
-        return Observable.defer(() -> {
-
-            final BriteDatabase.Transaction transaction = newTransaction();
-
-            return Observable.from(elements)
-                    .onBackpressureBuffer(200)
-                    .concatMap(this::store)
-                    .toList()
-                    .doOnNext(ignored -> {
-                        transaction.markSuccessful();
-                        transaction.close();
-                    })
-                    .doOnError(error -> transaction.close());
-        }).onErrorResumeNext(this::wrapError);
-    }
-
     protected <T> Observable<T> wrapError(Throwable error) {
         return Observable.error(new DatabaseError("Error on " + getClass().getSimpleName(), error));
     }

@@ -108,7 +108,6 @@ public class ContactActions {
                         .flatMap(Observable::from)
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
                         // TODO use batching
-                        .onBackpressureBuffer(200)
                         .concatMap(this::createOrUpdateContact)
                         .lastOrDefault(null)
         );

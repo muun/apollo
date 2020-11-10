@@ -110,7 +110,6 @@ public class OperationActions {
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
                         // TODO use batching
                         .map(operationMapper::mapFromMetadata)
-                        .onBackpressureBuffer(200)
                         .concatMap(createOperation::saveOperation)
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)

@@ -71,7 +71,7 @@ public class ChallengePublicKey {
      */
     public ChallengePublicKey(byte[] publicKey, @Nullable byte[] salt, int version) {
 
-        Preconditions.checkArgument(salt == null || salt.length == 8);
+        Preconditions.checkArgument(salt == null || salt.length == 0 || salt.length == 8);
 
         // check that the public key is a valid point on the secp256k1 curve
         ECKey.CURVE.getCurve().decodePoint(publicKey);
