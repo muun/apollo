@@ -129,6 +129,9 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis,
             swapFees = swapFees,
             canPayWithoutFee = (originalAmountInSatoshis <= totalBalanceInSatoshis),
+            // For swaps, fee is fixed. We choose a sensible conf target and that's it. There's no
+            // changing the selectedFee, and that's why minimumFee doesn't really make
+            // sense for swaps. It'll always be equal to selectedFee.
             canPayWithMinimumFee = canPayLightningFee,
             canPayWithSelectedFee = canPayLightningFee
         )
@@ -165,9 +168,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         val feeInSatoshis = feeCalculator.calculateForCollect(outputAmountInSatoshis)
         val totalInSatoshis = outputAmountInSatoshis + feeInSatoshis
 
-        val minimumFeeInSatoshis = minimumFeeCalculator.calculateForCollect(outputAmountInSatoshis)
-        val minimumTotalInSatoshis = outputAmountInSatoshis + minimumFeeInSatoshis
-
         val totalForDisplayInSatoshis = amountInSatoshis + feeInSatoshis
 
         return createAnalysis(
@@ -177,7 +177,10 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             outputAmountInSatoshis = outputAmountInSatoshis,
             swapFees = payReq.swap.fees,
             canPayWithoutFee = true,
-            canPayWithMinimumFee = (minimumTotalInSatoshis <= totalUtxoBalanceInSatoshis),
+            // For swaps, fee is fixed. We choose a sensible conf target and that's it. There's no
+            // changing the selectedFee, and that's why minimumFee doesn't really make
+            // sense for swaps. It'll always be equal to selectedFee.
+            canPayWithMinimumFee = (totalInSatoshis <= totalUtxoBalanceInSatoshis),
             canPayWithSelectedFee = (totalInSatoshis <= totalUtxoBalanceInSatoshis)
         )
     }
@@ -209,9 +212,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         val feeInSatoshis = feeCalculator.calculate(outputAmountInSatoshis)
         val totalInSatoshis = outputAmountInSatoshis + feeInSatoshis
 
-        val minimumFeeInSatoshis = minimumFeeCalculator.calculate(outputAmountInSatoshis)
-        val minimumTotalInSatoshis = outputAmountInSatoshis + minimumFeeInSatoshis
-
         return createAnalysis(
             amountInSatoshis = originalAmountInSatoshis,
             feeInSatoshis =  feeInSatoshis,
@@ -219,7 +219,10 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             outputAmountInSatoshis = outputAmountInSatoshis,
             swapFees = payReq.swap.fees,
             canPayWithoutFee = true,
-            canPayWithMinimumFee = (minimumTotalInSatoshis <= totalBalanceInSatoshis),
+            // For swaps, fee is fixed. We choose a sensible conf target and that's it. There's no
+            // changing the selectedFee, and that's why minimumFee doesn't really make
+            // sense for swaps. It'll always be equal to selectedFee.
+            canPayWithMinimumFee = (totalInSatoshis <= totalBalanceInSatoshis),
             canPayWithSelectedFee = (totalInSatoshis <= totalBalanceInSatoshis)
         )
     }
