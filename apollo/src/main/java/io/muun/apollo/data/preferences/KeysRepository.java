@@ -258,6 +258,14 @@ public class KeysRepository extends BaseRepository {
                 .getAsync(KEY_CHALLENGE_PUBLIC_KEY + type.toString())
                 .map(serialization -> {
 
+                    // Latest ChallengePublicKey.deserialize() assumes pub key serialization has
+                    // salt (and pub key version). If the length of the pub key serialization
+                    // doesn't include the salt, it means the salt migration hasn't run. We need
+                    // that to run to properly migrated ChallengePublicKey to have salt and version.
+                    if (serialization.length == ChallengePublicKey.PUBLIC_KEY_LENGTH) {
+                        throw new MissingMigrationError("ChallengePublicKey salt");
+                    }
+
                     final ChallengePublicKey challengePublicKey = ChallengePublicKey.deserialize(
                             serialization
                     );
@@ -280,6 +288,7 @@ public class KeysRepository extends BaseRepository {
      */
     public boolean hasMigratedChallengeKeys() {
         return getChallengePublicKey(ChallengeType.PASSWORD)
+                .map(key -> true)
                 .compose(ObservableFn.onTypedErrorResumeNext(
                         NoSuchElementException.class, // clause added for UU users without PASSWORD
                         error -> Observable.just(false)
@@ -288,7 +297,6 @@ public class KeysRepository extends BaseRepository {
                         MissingMigrationError.class,
                         error -> Observable.just(false)
                 ))
-                .map(key -> true)
                 .toBlocking()
                 .first();
     }
