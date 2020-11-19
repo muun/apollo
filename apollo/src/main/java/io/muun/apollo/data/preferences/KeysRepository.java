@@ -290,8 +290,8 @@ public class KeysRepository extends BaseRepository {
         return getChallengePublicKey(ChallengeType.PASSWORD)
                 .map(key -> true)
                 .compose(ObservableFn.onTypedErrorResumeNext(
-                        NoSuchElementException.class, // clause added for UU users without PASSWORD
-                        error -> Observable.just(false)
+                        NoSuchElementException.class,
+                        error -> Observable.just(true) // nothing to migrate if the user is UU
                 ))
                 .compose(ObservableFn.onTypedErrorResumeNext(
                         MissingMigrationError.class,
