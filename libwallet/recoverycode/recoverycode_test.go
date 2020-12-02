@@ -63,7 +63,7 @@ func TestConvertToKey(t *testing.T) {
 		{
 			desc:     "legacy recovery code",
 			input:    "R52Q-48Z3-25JR-S5JB-5SUS-HXHJ-RCMM-8YUA",
-			expected: "8c0699a16e9c4950caa7b166d268bdd341ebab39ac6c90f3e3d6fc596b776d29",
+			expected: "ade3fe99c608fd04484bce1ccf2889a5096f68f4b6b459e7f9ee9f0ada0a2782",
 		},
 		{
 			desc:     "version 2 recovery code",
@@ -73,7 +73,7 @@ func TestConvertToKey(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.desc, func(t *testing.T) {
-			key, err := ConvertToKey(tt.input, "muun:rc")
+			key, err := ConvertToKey(tt.input, "FFFFFFFF")
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

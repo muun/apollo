@@ -1,6 +1,5 @@
 apply plugin: 'idea'
 apply plugin: 'java-library'
-apply plugin: 'kotlin'
 
 targetCompatibility = '1.8'
 sourceCompatibility = '1.8'

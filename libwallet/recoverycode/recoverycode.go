@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	fmt "fmt"
 	"strings"
@@ -89,9 +90,14 @@ func ConvertToKey(code, salt string) (*btcec.PrivateKey, error) {
 
 	switch version {
 	case 1:
+		saltBytes, err := hex.DecodeString(salt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode salt: %w", err)
+		}
+
 		input, err = scrypt.Key(
 			[]byte(code),
-			[]byte(salt),
+			saltBytes,
 			kdfIterations,
 			kdfBlockSize,
 			kdfParallelizationFactor,
