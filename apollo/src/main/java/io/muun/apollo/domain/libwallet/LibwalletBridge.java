@@ -65,12 +65,18 @@ public class LibwalletBridge {
      * Generate an Emergency Kit containing the provided information.
      */
     public static GeneratedEmergencyKit generateEmergencyKit(String userKey,
+                                                             String userFingerprint,
                                                              String muunKey,
+                                                             String muunFingerprint,
                                                              Locale locale) {
 
         final EKInput ekInput = new EKInput();
+
         ekInput.setFirstEncryptedKey(userKey);
+        ekInput.setFirstFingerprint(userFingerprint);
+
         ekInput.setSecondEncryptedKey(muunKey);
+        ekInput.setSecondFingerprint(muunFingerprint);
 
         try {
             final EKOutput ekOutput = Libwallet
@@ -78,7 +84,8 @@ public class LibwalletBridge {
 
             return new GeneratedEmergencyKit(
                     ekOutput.getHTML(),
-                    ekOutput.getVerificationCode()
+                    ekOutput.getVerificationCode(),
+                    ekOutput.getMetadata()
             );
 
         } catch (Exception e) {
@@ -196,13 +203,13 @@ public class LibwalletBridge {
     /**
      * Decode a LN Invoice.
      */
-    public static io.muun.apollo.domain.libwallet.Invoice
+    public static io.muun.apollo.domain.libwallet.DecodedInvoice
             decodeInvoice(NetworkParameters params, String bech32Invoice) {
 
         final Invoice invoice = parseInvoice(params, bech32Invoice);
-        return new io.muun.apollo.domain.libwallet.Invoice(
+        return new io.muun.apollo.domain.libwallet.DecodedInvoice(
                 bech32Invoice,
-                invoice.getSats(),
+                invoice.getSats() != 0 ? invoice.getSats() : null,
                 invoice.getDescription(),
                 ZonedDateTime.ofInstant(Instant.ofEpochSecond(invoice.getExpiry()), ZoneId.of("Z")),
                 Encodings.bytesToHex(invoice.getDestination())
@@ -356,7 +363,11 @@ public class LibwalletBridge {
         );
     }
 
-    private static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
+    static PublicKey fromLibwalletModel(final HDPublicKey pubKey) {
+        return PublicKey.deserializeFromBase58(pubKey.getPath(), pubKey.string());
+    }
+
+    static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
         return new HDPublicKey(
                 pubKey.serializeBase58(),
                 pubKey.getAbsoluteDerivationPath(),
@@ -364,7 +375,7 @@ public class LibwalletBridge {
         );
     }
 
-    private static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
+    static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
         return new HDPrivateKey(
                 privKey.serializeBase58(),
                 privKey.getAbsoluteDerivationPath(),
@@ -388,7 +399,7 @@ public class LibwalletBridge {
         };
     }
 
-    private static Network toLibwalletModel(NetworkParameters networkParameters) {
+    static Network toLibwalletModel(NetworkParameters networkParameters) {
         if (NetworkParameters.ID_MAINNET.equals(networkParameters.getId())) {
             return Libwallet.mainnet();
 

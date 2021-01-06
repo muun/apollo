@@ -1,16 +1,20 @@
 package io.muun.common.crypto.schemes;
 
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.hd.Signature;
 import io.muun.common.crypto.tx.TransactionHelpers;
 import io.muun.common.utils.Hashes;
+import io.muun.common.utils.Preconditions;
 
 import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
+
+import javax.annotation.Nullable;
 
 import static org.bitcoinj.script.ScriptOpCodes.OP_CHECKMULTISIG;
 import static org.bitcoinj.script.ScriptOpCodes.OP_EQUAL;
@@ -21,20 +25,30 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_HASH160;
  * Uses standard Pay-to-Script-Hash multisig 2-of-2 scripts for inputs and outputs. The first key
  * belongs to the User receiving money, the second to Houston.
  */
-public class TransactionSchemeV2 {
+public class TransactionSchemeV2 implements TransactionScheme {
 
     public static final int ADDRESS_VERSION = MuunAddress.VERSION_COSIGNED_P2SH;
+
+    TransactionSchemeV2() {
+    }
+
+    @Override
+    public int getVersion() {
+        return ADDRESS_VERSION;
+    }
 
     /**
      * Create an address.
      */
-    public static MuunAddress createAddress(PublicKeyPair publicKeyPair, NetworkParameters params) {
-        final Script redeemScript = createRedeemScript(publicKeyPair);
-        final byte[] addressHash160 = getScriptHash(redeemScript);
+    @Override
+    public MuunAddress createAddress(PublicKeyTriple publicKeyTriple, NetworkParameters params) {
+
+        final byte[] redeemScript = createRedeemScript(publicKeyTriple);
+        final byte[] addressHash160 = Hashes.sha256Ripemd160(redeemScript);
 
         return new MuunAddress(
                 ADDRESS_VERSION,
-                publicKeyPair.getAbsoluteDerivationPath(),
+                publicKeyTriple.getAbsoluteDerivationPath(),
                 LegacyAddress.fromScriptHash(params, addressHash160).toString()
         );
     }
@@ -42,57 +56,81 @@ public class TransactionSchemeV2 {
     /**
      * Create an input script.
      */
-    public static Script createInputScript(PublicKeyPair publicKeyPair,
-                                           Signature userSignature,
-                                           Signature muunSignature) {
+    @Override
+    public Script createInputScript(
+            PublicKeyTriple publicKeyTriple,
+            Signature userSignature,
+            Signature muunSignature,
+            @Nullable Signature swapServerSignature) {
 
-        final Script redeemScript = createRedeemScript(publicKeyPair);
+        Preconditions.checkNotNull(userSignature);
+        Preconditions.checkNotNull(muunSignature);
+
+        final byte[] redeemScript = createRedeemScript(publicKeyTriple);
 
         return new ScriptBuilder()
                 .smallNum(0) // if this OP_0 confuses you, ask somebody. Funny stories guaranteed.
                 .data(userSignature.getBytes())
                 .data(muunSignature.getBytes())
-                .data(redeemScript.getProgram())
+                .data(redeemScript)
                 .build();
     }
 
     /**
-     * Create an output script, given the user address.
+     * Create an output script.
      */
-    public static Script createOutputScript(MuunAddress userAddress) {
+    @Override
+    public Script createOutputScript(MuunAddress address) {
+
         return new ScriptBuilder()
                 .op(OP_HASH160)
-                .data(userAddress.getHash())
+                .data(address.getHash())
                 .op(OP_EQUAL)
                 .build();
+    }
+
+    /**
+     * Create a witness.
+     */
+    @Override
+    public TransactionWitness createWitness(
+            PublicKeyTriple publicKeyTriple,
+            @Nullable Signature userSignature,
+            @Nullable Signature muunSignature,
+            @Nullable Signature swapServerSignature) {
+
+        return TransactionWitness.EMPTY;
     }
 
     /**
      * Create the hash of a simplified form of a Transaction, ready to be signed, for a specific
      * input index.
      */
-    public static byte[] createDataToSignInput(Transaction transaction,
-                                               int inputIndex,
-                                               PublicKeyPair publicKeyPair) {
+    @Override
+    public byte[] createDataToSignInput(
+            Transaction transaction,
+            int inputIndex,
+            long amountInSat,
+            PublicKeyTriple publicKeyTriple) {
+
+        final byte[] redeemScript = createRedeemScript(publicKeyTriple);
 
         return TransactionHelpers.getDataToSign(
                 transaction,
                 inputIndex,
-                createRedeemScript(publicKeyPair)
+                new Script(redeemScript)
         );
     }
 
-    private static Script createRedeemScript(PublicKeyPair publicKeyPair) {
+    private byte[] createRedeemScript(PublicKeyTriple publicKeyTriple) {
+
         return new ScriptBuilder()
                 .smallNum(2) // required signatures
-                .data(publicKeyPair.getUserPublicKey().getPublicKeyBytes())
-                .data(publicKeyPair.getMuunPublicKey().getPublicKeyBytes())
+                .data(publicKeyTriple.getUserPublicKey().getPublicKeyBytes())
+                .data(publicKeyTriple.getMuunPublicKey().getPublicKeyBytes())
                 .smallNum(2) // total signatures
                 .op(OP_CHECKMULTISIG)
-                .build();
-    }
-
-    private static byte[] getScriptHash(Script script) {
-        return Hashes.sha256Ripemd160(script.getProgram());
+                .build()
+                .getProgram();
     }
 }

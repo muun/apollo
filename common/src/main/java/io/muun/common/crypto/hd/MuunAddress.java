@@ -2,14 +2,7 @@ package io.muun.common.crypto.hd;
 
 
 import io.muun.common.api.MuunAddressJson;
-import io.muun.common.crypto.schemes.TransactionSchemeIncomingSwap;
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV1;
-import io.muun.common.crypto.schemes.TransactionSchemeV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV3;
-import io.muun.common.crypto.schemes.TransactionSchemeV4;
-import io.muun.common.exception.MissingCaseError;
+import io.muun.common.crypto.schemes.TransactionScheme;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.NetworkParameters;
@@ -22,6 +15,8 @@ public class MuunAddress {
     public static final int VERSION_COSIGNED_P2SH = 2;
     public static final int VERSION_COSIGNED_P2SH_P2WSH = 3;
     public static final int VERSION_COSIGNED_P2WSH = 4;
+    public static final int VERSION_FUNDING_P2SH_P2WSH = 5; // reserved
+    public static final int VERSION_FUNDING_P2WSH = 6;
 
     public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
     public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
@@ -58,30 +53,12 @@ public class MuunAddress {
      * Create MuunAddress from a pair of PublicKeys.
      */
     public static MuunAddress create(Integer addressVersion,
-                                     PublicKeyPair publicKeyPair,
+                                     PublicKeyTriple publicKeyTriple,
                                      NetworkParameters params) {
 
-        switch (addressVersion) {
-            case TransactionSchemeV1.ADDRESS_VERSION:
-                return TransactionSchemeV1.createAddress(publicKeyPair.getUserPublicKey());
-
-            case TransactionSchemeV2.ADDRESS_VERSION:
-                return TransactionSchemeV2.createAddress(publicKeyPair, params);
-
-            case TransactionSchemeV3.ADDRESS_VERSION:
-                return TransactionSchemeV3.createAddress(publicKeyPair, params);
-
-            case TransactionSchemeV4.ADDRESS_VERSION:
-                return TransactionSchemeV4.createAddress(publicKeyPair, params);
-
-            case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
-            case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
-            case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
-                throw new IllegalArgumentException("These addresses shouldn't be built manually");
-
-            default:
-                throw new MissingCaseError(addressVersion, "ADDRESS_VERSION");
-        }
+        return TransactionScheme.get(addressVersion)
+                .orElseThrow(() -> new IllegalArgumentException("this address can't be built"))
+                .createAddress(publicKeyTriple, params);
     }
 
     /**
@@ -124,7 +101,6 @@ public class MuunAddress {
      * testnet and regtest addresses. Leaving the code commented in case someone in the future fixes
      * or tries to fix this.
      */
-    @Deprecated
     //public NetworkParameters getNetwork() {
     //    return toBitcoinJ().getParameters();
     //}

@@ -27,7 +27,7 @@ public class DerivationPathUtils {
     private static final Pattern PATH_REGEX = Pattern.compile(PATH_PATTERN);
 
     /**
-     * Translates an (augmented) path no a canonical one.
+     * Translates an (augmented) path to a canonical one.
      */
     @NotNull
     public static String translateToCanonicalPath(@NotNull String path) {
@@ -99,6 +99,13 @@ public class DerivationPathUtils {
         }
 
         return childNumbers;
+    }
+
+    /**
+     * Checks if a path is valid.
+     */
+    public static boolean isValidPath(@NotNull String path) {
+        return PATH_REGEX.matcher(path).matches();
     }
 
 }

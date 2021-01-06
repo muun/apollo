@@ -1,6 +1,5 @@
 package io.muun.apollo.data.logging
 
-
 private val IGNORE_RX_OPERATORS = setOf("unsafeCreate", "unsafeSubscribe", "subscribe")
 
 
@@ -14,7 +13,7 @@ private val IGNORE_RX_OPERATORS = setOf("unsafeCreate", "unsafeSubscribe", "subs
  * @param includeAny a list of package names that are always relevant.
  * @param excludeAll a list of package names that are never relevant.
  */
-class TraceTransformer(val includeAny: List<String>, val excludeAll: List<String>)  {
+class TraceTransformer(val excludeAll: List<String>)  {
 
     /** Take a Trace and filter, summarize and transform it into a better trace. */
     fun transform(original: Trace): Trace {
@@ -101,9 +100,8 @@ class TraceTransformer(val includeAny: List<String>, val excludeAll: List<String
             false
 
     private fun isApplicationLine(traceLine: TraceLine) =
-        includeAny.any { traceLine.className.startsWith(it) }
-            && !excludeAll.any { traceLine.className.startsWith(it) }
-            && traceLine.lineNumber > 0
+        !excludeAll.any { traceLine.className.startsWith(it) }
+        && traceLine.lineNumber > 0
 
     private fun createRelevantLineFromAssemblySection(section: TraceSection): TraceLine? {
         // Assembly sections usually contain one relevant piece of information, followed by a lot

@@ -2,14 +2,14 @@ CREATE TABLE incoming_swap_htlcs (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     houston_uuid TEXT NOT NULL UNIQUE,
     expiration_height INTEGER NOT NULL,
-    payment_amount_in_satoshis INTEGER NOT NULL,
     fulfillment_fee_subsidy_in_satoshis INTEGER NOT NULL,
     lent_in_satoshis INTEGER NOT NULL,
     swap_server_public_key_in_hex TEXT NOT NULL,
     fulfillment_tx_in_hex TEXT,
     address TEXT NOT NULL,
     output_amount_in_satoshis INTEGER NOT NULL,
-    htlc_tx_in_hex TEXT NOT NULL
+    htlc_tx_in_hex TEXT NOT NULL,
+    incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid)
 );
 
 insertIncomingSwapHtlc:

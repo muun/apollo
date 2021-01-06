@@ -12,6 +12,7 @@ import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.utils.Hashes;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.SignatureDecodeException;
@@ -27,6 +28,8 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 public class PublicKey extends BaseKey {
+
+    private static final int FINGERPRINT_LENGTH_IN_BYTES = 4;
 
     @NotNull
     private final String absoluteDerivationPath;
@@ -148,6 +151,13 @@ public class PublicKey extends BaseKey {
         return deterministicKey.getPubKey();
     }
 
+    /**
+     * Returns the BIP-32 fingerprint of this key (not the parent key).
+     */
+    public byte[] getFingerprint() {
+        return Arrays.copyOfRange(deterministicKey.getIdentifier(), 0, FINGERPRINT_LENGTH_IN_BYTES);
+    }
+
     @NotNull
     public NetworkParameters getNetworkParameters() {
         return networkParameters;
@@ -178,6 +188,23 @@ public class PublicKey extends BaseKey {
 
     public int getLastLevelIndex() {
         return deterministicKey.getChildNumber().num();
+    }
+
+    /**
+     * Return a PublicKey with the same key material, but without derivation path information.
+     */
+    public PublicKey asRootPublicKey() {
+        final ImmutableList<org.bitcoinj.crypto.ChildNumber> emptyPath = ImmutableList.of();
+
+        final DeterministicKey rootDeterministicKey = new DeterministicKey(
+                emptyPath,
+                deterministicKey.getChainCode(),
+                deterministicKey.getPubKeyPoint(),
+                null,
+                null
+        );
+
+        return new PublicKey("m", rootDeterministicKey, networkParameters);
     }
 
     /**

@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import org.threeten.bp.ZonedDateTime;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.money.MonetaryAmount;
 import javax.validation.constraints.NotNull;
 
@@ -19,6 +21,12 @@ public class Operation extends HoustonIdModel {
     @VisibleForTesting
     public static final long NO_HID = -1;
     private static final String NO_HASH = null;
+
+    public static final List<OperationStatus> PENDING_STATUS = Arrays.asList(
+            OperationStatus.CREATED, OperationStatus.SIGNING, OperationStatus.SIGNED,
+            OperationStatus.BROADCASTED, OperationStatus.SWAP_PENDING, OperationStatus.SWAP_ROUTING,
+            OperationStatus.SWAP_OPENING_CHANNEL, OperationStatus.SWAP_WAITING_CHANNEL
+    );
 
     /**
      * Create a new Operation, with default values for Houston-generated fields.
@@ -48,7 +56,8 @@ public class Operation extends HoustonIdModel {
                 ZonedDateTime.now(),
                 preparedPayment.rateWindowHid,
                 null,
-                null
+                null,
+                false // will be defined and updated by Houston
         );
     }
 
@@ -78,7 +87,8 @@ public class Operation extends HoustonIdModel {
                 DateUtils.now(),
                 preparedPayment.rateWindowHid,
                 swap,
-                null
+                null,
+                false // will be defined and updated by Houston
         );
     }
 
@@ -139,6 +149,9 @@ public class Operation extends HoustonIdModel {
     @Nullable
     public final IncomingSwap incomingSwap;
 
+    @NotNull
+    public final Boolean isRbf;
+
     /**
      * Constructor.
      */
@@ -162,7 +175,8 @@ public class Operation extends HoustonIdModel {
             @NotNull ZonedDateTime creationDate,
             @NotNull Long exchangeRateWindowHid,
             @Nullable SubmarineSwap swap,
-            @Nullable IncomingSwap incomingSwap) {
+            @Nullable IncomingSwap incomingSwap,
+            @NotNull Boolean isRbf) {
 
         super(id, hid);
         this.direction = direction;
@@ -183,6 +197,8 @@ public class Operation extends HoustonIdModel {
         this.exchangeRateWindowHid = exchangeRateWindowHid;
         this.swap = swap;
         this.incomingSwap = incomingSwap;
+        this.isRbf = isRbf;
+
     }
 
     /**
@@ -192,9 +208,56 @@ public class Operation extends HoustonIdModel {
         return direction == OperationDirection.CYCLICAL;
     }
 
-    public boolean isFailed() {
+    /**
+     * Whether this operation was received by the current User.
+     */
+    public boolean isIncoming() {
+        return direction == OperationDirection.INCOMING;
+    }
 
-        return status.equals(OperationStatus.DROPPED) || status.equals(OperationStatus.FAILED);
+    /**
+     * Whether this operation was sent by the current User.
+     */
+    public boolean isOutgoing() {
+        return direction == OperationDirection.OUTGOING;
+    }
+
+    /**
+     * Whether this operation is considered pending for UI purposes.
+     */
+    public boolean isPending() {
+        return PENDING_STATUS.contains(status);
+    }
+
+    /**
+     * Whether this operation is considered completed for UI purposes.
+     */
+    public boolean isCompleted() {
+        switch (status) {
+            case CONFIRMED:
+            case SETTLED:
+            case SWAP_PAYED:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Whether this operation is considered failed for UI purposes.
+     */
+    public boolean isFailed() {
+        switch (status) {
+            case DROPPED:
+            case FAILED:
+            case SWAP_FAILED:
+            case SWAP_EXPIRED:
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     public boolean isLendingSwap() {
@@ -250,7 +313,8 @@ public class Operation extends HoustonIdModel {
                 creationDate,
                 exchangeRateWindowHid,
                 swap,
-                incomingSwap
+                incomingSwap,
+                isRbf
         );
     }
 }

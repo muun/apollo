@@ -35,6 +35,7 @@ import javax.validation.constraints.NotNull;
 public class PrivateKey extends BaseKey {
 
     private static final int PRIVATE_KEY_LENGTH_IN_BYTES = 32;
+    private static final int FINGERPRINT_LENGTH_IN_BYTES = 4;
 
     @NotNull
     private final String absoluteDerivationPath;
@@ -305,6 +306,13 @@ public class PrivateKey extends BaseKey {
 
     public DeterministicKey getDeterministicKey() {
         return deterministicKey;
+    }
+
+    /**
+     * Returns the BIP-32 fingerprint of this key (not the parent key).
+     */
+    public byte[] getFingerprint() {
+        return Arrays.copyOfRange(deterministicKey.getIdentifier(), 0, FINGERPRINT_LENGTH_IN_BYTES);
     }
 
     @Override

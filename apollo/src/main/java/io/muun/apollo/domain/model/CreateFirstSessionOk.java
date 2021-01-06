@@ -6,12 +6,16 @@ public class CreateFirstSessionOk {
 
     public User user;
     public PublicKey cosigningPublicKey;
+    public PublicKey swapServerPublicKey;
 
     /**
      * Constructor.
      */
-    public CreateFirstSessionOk(User user, PublicKey cosigningPublicKey) {
+    public CreateFirstSessionOk(User user,
+                                PublicKey cosigningPublicKey,
+                                PublicKey swapServerPublicKey) {
         this.user = user;
         this.cosigningPublicKey = cosigningPublicKey;
+        this.swapServerPublicKey = swapServerPublicKey;
     }
 }

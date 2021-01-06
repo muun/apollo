@@ -163,6 +163,19 @@ public class BaseDao<ModelT extends PersistentModel> {
     }
 
     /**
+     * Runs the statement which will emit the only expected result, re-emitting when it changes. If
+     * no element is found, an empty Optional is returned.
+     */
+    protected Observable<Optional<ModelT>> fetchMaybeOne(@NotNull SqlDelightQuery query) {
+
+        final io.reactivex.Observable<Optional<ModelT>> v2Observable = briteDb
+                .createQuery(query.getTables(), query)
+                .mapToOneOrDefault(getCursorOptionalFunction(), Optional.empty());
+
+        return RxJavaInterop.toV1Observable(v2Observable, BackpressureStrategy.ERROR);
+    }
+
+    /**
      * Somewhat convoluted hack to avoid QueryObseravle#mapToOneOrDefault's "defaultValue can't be
      * null" restriction AND our inability to use QueryObseravle#mapToOptional version (requires
      * Android's version > 24).
@@ -240,5 +253,16 @@ public class BaseDao<ModelT extends PersistentModel> {
         if (error instanceof ElementNotFoundException) {
             ((ElementNotFoundException) error).setArgs(args);
         }
+    }
+
+    protected Observable<Long> executeCount(final SqlDelightQuery query) {
+        final io.reactivex.Observable<Long> observable =
+                briteDb.createQuery(query.getTables(), query)
+                        .mapToOneOrDefault(cursor -> cursor.getLong(0), 0L)
+                        .onErrorResumeNext(error -> {
+                            return RxJavaInterop.toV2Observable(wrapError(error));
+                        });
+
+        return RxJavaInterop.toV1Observable(observable, BackpressureStrategy.ERROR);
     }
 }

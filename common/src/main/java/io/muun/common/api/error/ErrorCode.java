@@ -212,7 +212,7 @@ public enum ErrorCode {
             2062, StatusCode.CLIENT_FAILURE, "Recovery code v2 is not set up"
     ),
     INCOMING_SWAP_ALREADY_FULFILLED(
-            2080, StatusCode.CLIENT_FAILURE, "The incoming swap is already fulfilled"
+            2074, StatusCode.CLIENT_FAILURE, "The incoming swap is already fulfilled"
     ),
 
     // error responses
@@ -270,7 +270,7 @@ public enum ErrorCode {
             2073, StatusCode.CLIENT_FAILURE, "Satellite session has expired"
     ),
     TRANSACTION_NOT_RBF(
-            2074, StatusCode.CLIENT_FAILURE, "Transaction is not RBF"
+            2080, StatusCode.CLIENT_FAILURE, "Transaction is not RBF"
     ),
     INVALID_REPLACEMENT(
             2075, StatusCode.CLIENT_FAILURE, "Transaction doesn't follow the replacing rules"
@@ -286,6 +286,9 @@ public enum ErrorCode {
     ),
     INVALID_STATUS_FOR_REPLACEMENT(
             2079, StatusCode.CLIENT_FAILURE, "Invalid status for replacement"
+    ),
+    MIN_FEE_RATE_INCREMENT_NOT_FOUND(
+            2081, StatusCode.SERVER_FAILURE, "Didn't found any min fee rate increment"
     ),
 
     // unexpected errors
@@ -454,6 +457,9 @@ public enum ErrorCode {
     AMOUNTLESS_INVOICES_NOT_SUPPORTED(
             8124, StatusCode.CLIENT_FAILURE, "Amount less invoices not supported"
     ),
+    INVALID_DERIVATION_PATH(
+            2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
+    ),
 
     // exchangehub errors
     MISSING_INVOICE_AMOUNT(
@@ -540,6 +546,9 @@ public enum ErrorCode {
     ),
     ILLEGAL_OPERATION(
             10012, StatusCode.CLIENT_FAILURE, "Illegal debt operation creation request"
+    ),
+    OPERATION_COLLISION(
+            10013, StatusCode.CLIENT_FAILURE, "Different operation amounts for the same factors"
     ),
 
     // server errors

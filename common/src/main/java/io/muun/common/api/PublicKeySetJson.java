@@ -17,6 +17,9 @@ public class PublicKeySetJson {
     public PublicKeyJson baseCosigningPublicKey;
 
     @Nullable
+    public PublicKeyJson baseSwapServerPublicKey;
+
+    @Nullable
     public ExternalAddressesRecord externalPublicKeyIndices;
 
     /**
@@ -47,9 +50,11 @@ public class PublicKeySetJson {
      */
     public PublicKeySetJson(PublicKeyJson basePublicKey,
                             PublicKeyJson baseCosigningPublicKey,
+                            PublicKeyJson baseSwapServerPublicKey,
                             ExternalAddressesRecord externalPublicKeyIndices) {
         this.basePublicKey = basePublicKey;
         this.baseCosigningPublicKey = baseCosigningPublicKey;
+        this.baseSwapServerPublicKey = baseSwapServerPublicKey;
         this.externalPublicKeyIndices = externalPublicKeyIndices;
     }
 }

@@ -1,18 +1,21 @@
 package io.muun.common.crypto.schemes;
 
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.hd.Signature;
 import io.muun.common.crypto.tx.TransactionHelpers;
+import io.muun.common.utils.Hashes;
+import io.muun.common.utils.Preconditions;
 
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.SegwitAddress;
-import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
+
+import javax.annotation.Nullable;
 
 import static org.bitcoinj.script.ScriptOpCodes.OP_CHECKMULTISIG;
 
@@ -21,40 +24,56 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_CHECKMULTISIG;
  * Uses standard Pay-to-Witness-Script-Hash multisig 2-of-2 scripts for
  * inputs and outputs. The first key belongs to the User receiving money, the second to Houston.
  */
-public class TransactionSchemeV4 {
+public class TransactionSchemeV4 implements TransactionScheme {
 
     public static final int ADDRESS_VERSION = MuunAddress.VERSION_COSIGNED_P2WSH;
+
+    TransactionSchemeV4() {
+    }
+
+    @Override
+    public int getVersion() {
+        return ADDRESS_VERSION;
+    }
 
     /**
      * Create an address.
      */
-    public static MuunAddress createAddress(PublicKeyPair publicKeyPair, NetworkParameters params) {
-        final Script witnessScript = createWitnessScript(publicKeyPair);
-        final byte[] witnessScriptHash = Sha256Hash.hash(witnessScript.getProgram());
+    @Override
+    public MuunAddress createAddress(PublicKeyTriple publicKeyTriple, NetworkParameters params) {
+
+        final byte[] witnessScript = createWitnessScript(publicKeyTriple);
+        final byte[] witnessScriptHash = Hashes.sha256(witnessScript);
         final SegwitAddress address = SegwitAddress.fromHash(params, witnessScriptHash);
 
         return new MuunAddress(
                 ADDRESS_VERSION,
-                publicKeyPair.getAbsoluteDerivationPath(),
+                publicKeyTriple.getAbsoluteDerivationPath(),
                 address.toBech32()
         );
     }
 
     /**
-     * Create the (empty) input script.
+     * Create an input script.
      */
-    public static Script createInputScript(PublicKeyPair publicKeyPair) {
+    @Override
+    public Script createInputScript(
+            PublicKeyTriple publicKeyTriple,
+            @Nullable Signature userSignature,
+            @Nullable Signature muunSignature,
+            @Nullable Signature swapServerSignature) {
+
         return ScriptBuilder.createEmpty();
     }
 
     /**
-     * Create an output script, given the user address.
+     * Create an output script.
      */
-    public static Script createOutputScript(MuunAddress userAddress) {
-        return createOutputScript(userAddress.getHash());
-    }
+    @Override
+    public Script createOutputScript(MuunAddress address) {
 
-    private static Script createOutputScript(byte[] scriptHash256) {
+        final byte[] scriptHash256 = address.getHash();
+
         return new ScriptBuilder()
                 .smallNum(0)
                 .data(scriptHash256)
@@ -62,51 +81,59 @@ public class TransactionSchemeV4 {
     }
 
     /**
-     * Create the hash of a simplified form of a Transaction, ready to be signed, for a specific
-     * input index.
+     * Create a witness.
      */
-    public static byte[] createDataToSignInput(Transaction transaction,
-                                               int inputIndex,
-                                               long amount,
-                                               PublicKeyPair publicKeyPair) {
+    @Override
+    public TransactionWitness createWitness(
+            PublicKeyTriple publicKeyTriple,
+            Signature userSignature,
+            Signature muunSignature,
+            @Nullable Signature swapServerSignature) {
 
-        return TransactionHelpers.getSegwitDataToSign(
-                transaction,
-                inputIndex,
-                createWitnessScript(publicKeyPair),
-                Coin.valueOf(amount)
-        );
-    }
+        Preconditions.checkNotNull(userSignature);
+        Preconditions.checkNotNull(muunSignature);
 
-    /**
-     * Create the witness structure, according to our signing scheme.
-     * Namely, Pay-to-Script-Hash-of-Pay-to-Witness-Script-Hash multisig 2-of-2.
-     */
-    public static TransactionWitness createWitness(PublicKeyPair publicKeyPair,
-                                                   Signature userSignature,
-                                                   Signature cosignerSignature) {
+        final byte[] witnessScript = createWitnessScript(publicKeyTriple);
 
-        final Script witnessScript = createWitnessScript(publicKeyPair);
-
-        // This correlates to TransactionSchemeV2 inputScript
         final TransactionWitness witness = new TransactionWitness(4);
         witness.setPush(0, new byte[0]);
         witness.setPush(1, userSignature.getBytes());
-        witness.setPush(2, cosignerSignature.getBytes());
-        witness.setPush(3, witnessScript.getProgram());
+        witness.setPush(2, muunSignature.getBytes());
+        witness.setPush(3, witnessScript);
 
         return witness;
     }
 
-    private static Script createWitnessScript(PublicKeyPair publicKeyPair) {
-        // This correlates to TransactionSchemeV2 redeemScript
+    /**
+     * Create the hash of a simplified form of a Transaction, ready to be signed, for a specific
+     * input index.
+     */
+    @Override
+    public byte[] createDataToSignInput(
+            Transaction transaction,
+            int inputIndex,
+            long amountInSat,
+            PublicKeyTriple publicKeyTriple) {
+
+        final byte[] witnessScript = createWitnessScript(publicKeyTriple);
+
+        return TransactionHelpers.getSegwitDataToSign(
+                transaction,
+                inputIndex,
+                new Script(witnessScript),
+                Coin.valueOf(amountInSat)
+        );
+    }
+
+    private byte[] createWitnessScript(PublicKeyTriple publicKeyTriple) {
+
         return new ScriptBuilder()
                 .smallNum(2) // required signatures
-                .data(publicKeyPair.getUserPublicKey().getPublicKeyBytes())
-                .data(publicKeyPair.getMuunPublicKey().getPublicKeyBytes())
+                .data(publicKeyTriple.getUserPublicKey().getPublicKeyBytes())
+                .data(publicKeyTriple.getMuunPublicKey().getPublicKeyBytes())
                 .smallNum(2) // total signatures
                 .op(OP_CHECKMULTISIG)
-                .build();
+                .build()
+                .getProgram();
     }
 }
-

@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
+import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.BaseRepository;
@@ -57,6 +58,8 @@ public class LogoutActions {
 
     private final FcmTokenRepository fcmTokenRepository;
 
+    private final LibwalletDataDirectory libwalletDataDirectory;
+
     /**
      * Constructor.
      */
@@ -79,7 +82,8 @@ public class LogoutActions {
                          ClientVersionRepository clientVersionRepository,
                          NotificationRepository notificationRepository,
                          TransactionSizeRepository transactionSizeRepository,
-                         FcmTokenRepository fcmTokenRepository) {
+                         FcmTokenRepository fcmTokenRepository,
+                         LibwalletDataDirectory libwalletDataDirectory) {
 
         this.context = context;
         this.asyncActionStore = asyncActionStore;
@@ -106,6 +110,8 @@ public class LogoutActions {
         );
 
         this.fcmTokenRepository = fcmTokenRepository;
+        this.libwalletDataDirectory = libwalletDataDirectory;
+
     }
 
     /**
@@ -173,6 +179,7 @@ public class LogoutActions {
         lockManager.cancelAutoSetLocked();
 
         notificationService.cancelAllNotifications();
+        libwalletDataDirectory.reset();
     }
 
     /**

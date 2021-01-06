@@ -2,7 +2,9 @@ package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.utils.FeeCalculator
 import io.muun.common.Rules
+import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils.DUST_IN_SATOSHIS
+import io.muun.common.utils.Preconditions
 import kotlin.math.max
 
 class PaymentAnalyzer(private val payCtx: PaymentContext,
@@ -13,7 +15,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     private val nextTransactionSize = payCtx.nextTransactionSize
 
     // Set up fee calculators:
-    private val feeCalculator = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
     private val minimumFeeCalculator = FeeCalculator(Rules.OP_MINIMUM_FEE_RATE, nextTransactionSize)
 
     // Obtain balances:
@@ -63,10 +64,12 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     }
 
     private fun analyzeFeeFromAmount(): PaymentAnalysis {
+        checkNotNull(payReq.feeInSatoshisPerByte)
+
         // TODO UseAllFunds shouldn't need amount, take userBalance from payCtx
         val totalInSatoshis = originalAmountInSatoshis
 
-        val feeInSatoshis = feeCalculator
+        val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
             .calculate(totalInSatoshis, takeFeeFromAmount = true)
 
         val minimumFeeInSats = minimumFeeCalculator
@@ -83,7 +86,10 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     }
 
     private fun analyzeFeeFromRemainingBalance(): PaymentAnalysis {
-        val feeInSatoshis = feeCalculator.calculate(originalAmountInSatoshis)
+        checkNotNull(payReq.feeInSatoshisPerByte)
+
+        val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
+                .calculate(originalAmountInSatoshis)
         val totalInSatoshis = originalAmountInSatoshis + feeInSatoshis
 
         val minimumFeeInSatoshis = minimumFeeCalculator.calculate(originalAmountInSatoshis)
@@ -102,33 +108,177 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
     private fun analyzeSubmarineSwap(): PaymentAnalysis {
         checkNotNull(payReq.swap)
 
-        return if (payReq.swap.isLend()) {
-            analyzeLendSubmarineSwap()
+        if (payReq.swap.bestRouteFees == null) {
 
-        } else if (payReq.swap.isCollect()) {
-            analyzeCollectSubmarineSwap()
+            // Handle fixed amount invoices
+            return analyzeFixedAmountSubmarineSwap(payReq)
 
         } else {
-            analyzeNonDebtSubmarineSwap()
+            // Handle AmountLess invoices
+
+            // Amount has been chosen by user, check that we have the corresponding optional fields
+            // set for computing the fee.
+            checkNotNull(payReq.swap.bestRouteFees)
+            checkNotNull(payReq.swap.fundingOutputPolicies)
+
+            // As users can enter newOp screen with 0 balance, we need to check for amount == 0
+            // because of our rule (if balance == amount then useAllFunds = true)
+            if (!payReq.takeFeeFromAmount || payReq.amount!!.isZero) {
+                // Great amount is fixed! The user selected a specific amount
+
+                // Compute off-chain fees
+                val params = payReq.swap.getParamsForAmount(originalAmountInSatoshis, false)
+                val outputAmountInSatoshis = params.outputAmountFor(originalAmountInSatoshis)
+
+                val swap = payReq.swap.withParams(params, outputAmountInSatoshis)
+                return analyzeFixedAmountSubmarineSwap(payReq.withSwap(swap))
+
+            } else {
+
+                // Let's play in Extra Hard mode! Analyze AmountLess Invoice with TFFA
+                return analyzeTffaAmountLessInvoiceSwap()
+            }
         }
     }
 
-    private fun analyzeLendSubmarineSwap(): PaymentAnalysis {
+    private fun analyzeTffaAmountLessInvoiceSwap(): PaymentAnalysis {
+        checkNotNull(payReq.swap)
+        checkNotNull(payReq.swap.bestRouteFees)
+        checkNotNull(payReq.swap.fundingOutputPolicies)
+
+        var (feeInSats, offchainAmountInSats, params, feeRate) = computeTffaParamsFor(payReq.swap, 0)
+
+        // If we don't qualify for 0-conf, redo the computation with 1-conf
+        if (params.confirmationsNeeded == 1) {
+
+            val (newFee, newOffChainAmount, newParams, newFeeRate) = computeTffaParamsFor(payReq.swap, 1)
+            feeInSats = newFee
+            offchainAmountInSats = newOffChainAmount
+            params = newParams
+            feeRate = newFeeRate
+        }
+
+        Preconditions.checkState(params.debtType != DebtType.LEND)
+
+        // Subtract the on and off-chain fees
+        val updatedAmountInSats = offchainAmountInSats
+        // This assumes that debt amount is either 0 or positive and a collect
+        val outputAmountInSatoshis =
+            offchainAmountInSats + params.offchainFeeInSats + params.debtAmountInSats
+
+        if (updatedAmountInSats < 0) {
+            // AKA analizeCannotPay + the data (estimates) we know so far
+            return createAnalysis(
+                amountInSatoshis = originalAmountInSatoshis,
+                feeInSatoshis = feeInSats,
+                totalInSatoshis = null,
+                outputAmountInSatoshis = outputAmountInSatoshis,
+                swapFees = SubmarineSwapFees(
+                    params.routingFeeInSats,
+                    params.sweepFeeInSats
+                ),
+                canPayWithoutFee = false,
+                canPayWithSelectedFee = false,
+                canPayWithMinimumFee = false
+            )
+        }
+        val updatedPayReq = payReq
+                .withFeeRate(feeRate)
+                .withSwap(payReq.swap.withParams(params, outputAmountInSatoshis))
+
+        return createAnalysis(
+            updatedPayReq = updatedPayReq,
+            amountInSatoshis = updatedAmountInSats,
+            feeInSatoshis = feeInSats,
+            totalInSatoshis = originalAmountInSatoshis,
+            outputAmountInSatoshis = outputAmountInSatoshis,
+            swapFees = SubmarineSwapFees(
+                params.routingFeeInSats,
+                params.sweepFeeInSats
+            ),
+            canPayWithoutFee = true,
+            // For swaps, fee is fixed. We choose a sensible conf target and that's it.
+            // There's no changing the selectedFee, and that's why minimumFee doesn't really
+            // make sense for swaps. It'll always be equal to selectedFee.
+            canPayWithMinimumFee = true,
+            canPayWithSelectedFee = true
+        )
+    }
+
+    private fun computeTffaParamsFor(swap: SubmarineSwap, confTarget: Int): SwapAnalysisParams {
+
+        check(payReq.takeFeeFromAmount)
+
+        val feeRate = payCtx.feeWindow.getSwapFeeRate(confTarget)
+        val feeCalculator = FeeCalculator(feeRate, nextTransactionSize)
+
+        // Compute tha on-chain fee. As its TFFA, we want to calculate the fee for the total balance
+        val spentAmount =
+            totalBalanceInSatoshis + (swap.fundingOutputPolicies?.potentialCollectInSat ?: 0)
+        val feeInSatoshis = feeCalculator.calculateForCollect(
+            spentAmount, takeFeeFromAmount = true
+        )
+        val outputAmountInSatoshis = spentAmount - feeInSatoshis
+
+        // Get a first approximation (by excess) of the off-chain fee which we will later refine
+        var params = swap.getParamsForAmount(outputAmountInSatoshis, true)
+        Preconditions.checkState(params.debtType != DebtType.LEND)
+
+        // Find the point at which the off-chain amount (displayed to the user) plus the off-chain
+        // fee equals our output amount
+        var offchainAmountInSatoshis =
+                outputAmountInSatoshis - params.offchainFeeInSats - params.debtAmountInSats
+
+        while (true) {
+            params = swap.getParamsForAmount(offchainAmountInSatoshis, true)
+
+            // TODO the > scenario is tricky (will break). Let's throw non fatal, track occurrences
+            if (offchainAmountInSatoshis + params.debtAmountInSats
+                    + params.offchainFeeInSats >= outputAmountInSatoshis) {
+                break
+            }
+
+            offchainAmountInSatoshis += 1
+        }
+
+        return SwapAnalysisParams(feeInSatoshis, offchainAmountInSatoshis, params, feeRate)
+    }
+
+    private fun analyzeFixedAmountSubmarineSwap(payReq: PaymentRequest): PaymentAnalysis {
         checkNotNull(payReq.swap)
 
+        val newPayReq = payReq.withFeeRate(payCtx.feeWindow.getFeeRate(payReq.swap))
+
+        return if (payReq.swap.isLend()) {
+            analyzeLendSubmarineSwap(newPayReq)
+
+        } else if (payReq.swap.isCollect()) {
+            analyzeCollectSubmarineSwap(newPayReq)
+
+        } else {
+            analyzeNonDebtSubmarineSwap(newPayReq)
+        }
+    }
+
+    private fun analyzeLendSubmarineSwap(payReq: PaymentRequest): PaymentAnalysis {
+        checkNotNull(payReq.swap)
+        checkNotNull(payReq.swap.fees)
+
         // When lending, the outputAmount and sweepFee fields given by Swapper must be ignored:
-        val totalInSatoshis = originalAmountInSatoshis + payReq.swap.fees.lightningInSats
+        val amountInSatoshis = originalAmountInSatoshis
+        val totalInSatoshis = amountInSatoshis + payReq.swap.fees.lightningInSats
         val swapFees = SubmarineSwapFees(lightningInSats = payReq.swap.fees.lightningInSats)
 
         val canPayLightningFee = (totalInSatoshis <= totalBalanceInSatoshis)
 
         return createAnalysis(
-            amountInSatoshis = originalAmountInSatoshis,
+            updatedPayReq = payReq,
+            amountInSatoshis = amountInSatoshis,
             feeInSatoshis = 0, // no actual transaction
             totalInSatoshis = if (canPayLightningFee) totalInSatoshis else null,
             outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis,
             swapFees = swapFees,
-            canPayWithoutFee = (originalAmountInSatoshis <= totalBalanceInSatoshis),
+            canPayWithoutFee = (amountInSatoshis <= totalBalanceInSatoshis) && amountInSatoshis > 0,
             // For swaps, fee is fixed. We choose a sensible conf target and that's it. There's no
             // changing the selectedFee, and that's why minimumFee doesn't really make
             // sense for swaps. It'll always be equal to selectedFee.
@@ -137,8 +287,12 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         )
     }
 
-    private fun analyzeCollectSubmarineSwap(): PaymentAnalysis {
+    private fun analyzeCollectSubmarineSwap(payReq: PaymentRequest): PaymentAnalysis {
         checkNotNull(payReq.swap)
+        checkNotNull(payReq.swap.fees)
+        checkNotNull(payReq.swap.fundingOutput.outputAmountInSatoshis)
+        checkNotNull(payReq.swap.fundingOutput.debtAmountInSatoshis)
+        checkNotNull(payReq.feeInSatoshisPerByte)
 
         val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
         val collectAmountInSatoshis = payReq.swap.fundingOutput.debtAmountInSatoshis
@@ -165,14 +319,19 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             return analyzeCannotPay()
         }
 
-        val feeInSatoshis = feeCalculator.calculateForCollect(outputAmountInSatoshis)
+        val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
+                .calculateForCollect(outputAmountInSatoshis)
         val totalInSatoshis = outputAmountInSatoshis + feeInSatoshis
 
         val totalForDisplayInSatoshis = amountInSatoshis + feeInSatoshis
 
+        val canPay = totalInSatoshis <= totalUtxoBalanceInSatoshis
+            && totalForDisplayInSatoshis <= totalBalanceInSatoshis
+
         return createAnalysis(
+            updatedPayReq = payReq,
             amountInSatoshis = originalAmountInSatoshis,
-            feeInSatoshis =  feeInSatoshis,
+            feeInSatoshis = feeInSatoshis,
             totalInSatoshis = totalForDisplayInSatoshis,
             outputAmountInSatoshis = outputAmountInSatoshis,
             swapFees = payReq.swap.fees,
@@ -180,13 +339,17 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             // For swaps, fee is fixed. We choose a sensible conf target and that's it. There's no
             // changing the selectedFee, and that's why minimumFee doesn't really make
             // sense for swaps. It'll always be equal to selectedFee.
-            canPayWithMinimumFee = (totalInSatoshis <= totalUtxoBalanceInSatoshis),
-            canPayWithSelectedFee = (totalInSatoshis <= totalUtxoBalanceInSatoshis)
+            canPayWithMinimumFee = canPay,
+            canPayWithSelectedFee = canPay
         )
     }
 
-    private fun analyzeNonDebtSubmarineSwap(): PaymentAnalysis {
+    private fun analyzeNonDebtSubmarineSwap(payReq: PaymentRequest): PaymentAnalysis {
         checkNotNull(payReq.swap)
+        checkNotNull(payReq.swap.fees)
+        checkNotNull(payReq.swap.fundingOutput.outputAmountInSatoshis)
+        checkNotNull(payReq.swap.fundingOutput.debtAmountInSatoshis)
+        checkNotNull(payReq.feeInSatoshisPerByte)
 
         val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
 
@@ -209,12 +372,14 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             return analyzeCannotPay()
         }
 
-        val feeInSatoshis = feeCalculator.calculate(outputAmountInSatoshis)
+        val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
+                .calculateForCollect(outputAmountInSatoshis)
         val totalInSatoshis = outputAmountInSatoshis + feeInSatoshis
 
         return createAnalysis(
+            updatedPayReq = payReq,
             amountInSatoshis = originalAmountInSatoshis,
-            feeInSatoshis =  feeInSatoshis,
+            feeInSatoshis = feeInSatoshis,
             totalInSatoshis = totalInSatoshis,
             outputAmountInSatoshis = outputAmountInSatoshis,
             swapFees = payReq.swap.fees,
@@ -227,7 +392,8 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         )
     }
 
-    private fun createAnalysis(amountInSatoshis: Long,
+    private fun createAnalysis(updatedPayReq: PaymentRequest? = null,
+                               amountInSatoshis: Long,
                                feeInSatoshis: Long?,
                                totalInSatoshis: Long?,
                                outputAmountInSatoshis: Long? = null, // swap only
@@ -237,7 +403,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                                canPayWithMinimumFee: Boolean): PaymentAnalysis {
 
         return PaymentAnalysis(
-            payReq,
+            updatedPayReq ?: payReq,
             totalBalance = convertToBitcoinAmount(totalBalanceInSatoshis),
 
             amount = convertToBitcoinAmount(amountInSatoshis),

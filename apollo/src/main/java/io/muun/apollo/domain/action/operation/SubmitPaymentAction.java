@@ -6,7 +6,7 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.ContactActions;
-import io.muun.apollo.domain.action.base.BaseAsyncAction2;
+import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.Operation;
@@ -31,8 +31,7 @@ import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
 @Singleton
-public class SubmitPaymentAction extends BaseAsyncAction2<
-        PaymentRequest,
+public class SubmitPaymentAction extends BaseAsyncAction1<
         PreparedPayment,
         Operation> {
 
@@ -70,16 +69,15 @@ public class SubmitPaymentAction extends BaseAsyncAction2<
     }
 
     @Override
-    public Observable<Operation> action(PaymentRequest payReq, PreparedPayment prepPayment) {
-        return Observable.defer(() -> submitPayment(payReq, prepPayment));
+    public Observable<Operation> action(PreparedPayment prepPayment) {
+        return Observable.defer(() -> submitPayment(prepPayment));
     }
 
-    private Observable<Operation> submitPayment(PaymentRequest payReq,
-                                                PreparedPayment prepPayment) {
+    private Observable<Operation> submitPayment(PreparedPayment prepPayment) {
 
-        final Operation operation = buildOperation(payReq, prepPayment);
+        final Operation operation = buildOperation(prepPayment);
         final OperationWithMetadata operationWithMetadata =
-                buildOperationWithMetadata(payReq, operation);
+                buildOperationWithMetadata(prepPayment.payReq, operation);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
                 .flatMap(baseUserPrivateKey -> newOperation(operationWithMetadata, prepPayment)
@@ -161,7 +159,9 @@ public class SubmitPaymentAction extends BaseAsyncAction2<
      * Build an Operation.
      */
     @VisibleForTesting
-    public Operation buildOperation(PaymentRequest payReq, PreparedPayment prepPayment) {
+    public Operation buildOperation(PreparedPayment prepPayment) {
+
+        final PaymentRequest payReq = prepPayment.payReq;
 
         switch (payReq.getType()) {
             case TO_CONTACT:

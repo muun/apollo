@@ -1,7 +1,5 @@
 package io.muun.apollo.domain.errors
 
-import io.muun.apollo.data.external.UserFacingErrorMessages
 
-
-class EmergencyKitVerificationError:
-    UserFacingError(UserFacingErrorMessages.INSTANCE.emergencyKitVerification())
+open class EmergencyKitVerificationError(message: String):
+    UserFacingError(message)

@@ -3,12 +3,13 @@ package io.muun.apollo.domain.action.operation;
 import io.muun.apollo.data.db.base.ElementNotFoundException;
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao;
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapHtlcDao;
+import io.muun.apollo.data.db.incoming_swap.IncomingSwapHtlcDb;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
-import io.muun.apollo.domain.action.base.BaseAsyncAction2;
+import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.common.model.OperationDirection;
@@ -21,8 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CreateOperationAction
-        extends BaseAsyncAction2<Operation, NextTransactionSize, Operation> {
+public class CreateOperationAction {
 
     private final TransactionSizeRepository transactionSizeRepository;
     private final OperationDao operationDao;
@@ -54,7 +54,6 @@ public class CreateOperationAction
         this.incomingSwapHtlcDao = incomingSwapHtlcDao;
     }
 
-    @Override
     public Observable<Operation> action(Operation operation,
                                         NextTransactionSize nextTransactionSize) {
 
@@ -100,14 +99,20 @@ public class CreateOperationAction
                                 ));
                             }
 
-                            if (operation.incomingSwap != null) {
+                            final IncomingSwap incomingSwap = operation.incomingSwap;
+                            if (incomingSwap != null) {
                                 chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
-                                        incomingSwapHtlcDao.store(operation.incomingSwap.getHtlc())
+                                        incomingSwapDao.store(incomingSwap)
                                 ));
 
-                                chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
-                                        incomingSwapDao.store(operation.incomingSwap)
-                                ));
+                                if (incomingSwap.getHtlc() != null) {
+                                    chain = chain.compose(ObservableFn.flatDoOnNext(ignored ->
+                                            incomingSwapHtlcDao.store(new IncomingSwapHtlcDb(
+                                                    incomingSwap.houstonUuid,
+                                                    incomingSwap.getHtlc()
+                                            ))
+                                    ));
+                                }
                             }
 
                             chain = chain.flatMap(operationDao::store);

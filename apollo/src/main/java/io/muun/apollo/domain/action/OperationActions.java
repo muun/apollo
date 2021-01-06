@@ -65,11 +65,11 @@ public class OperationActions {
     }
 
     /**
-     * Copy an external address to the system clipboard.
+     * Copy an external address or LN invoice to the system clipboard.
      */
-    public void copyAddressToClipboard(String address) {
-        clipboardProvider.copy("Bitcoin address", address);
-        userRepository.setLastCopiedAddress(address);
+    public void copyQrContentToClipboard(String qrContent) {
+        clipboardProvider.copy("Bitcoin address/Ln invoice", qrContent);
+        userRepository.setLastCopiedAddress(qrContent);
     }
 
     /**

@@ -72,7 +72,7 @@ public class SubmarineSwapJson {
                              String invoice,
                              SubmarineSwapReceiverJson receiver,
                              SubmarineSwapFundingOutputJson fundingOutput,
-                             SubmarineSwapFeesJson fees,
+                             @Nullable SubmarineSwapFeesJson fees,
                              MuunZonedDateTime expiresAt,
                              @Nullable MuunZonedDateTime payedAt,
                              @Nullable String preimageInHex) {

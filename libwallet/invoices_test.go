@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/lightningnetwork/lnd/record"
+	"github.com/lightningnetwork/lnd/tlv"
 
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
@@ -147,9 +149,13 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 
 	// stub
 	swapServerPublicKey := randomBytes(32)
-	paymentHash := secrets.Get(0).PaymentHash
 
-	htlcKeyPath := hdpath.MustParse(secrets.Get(0).keyPath).Child(htlcKeyChildIndex)
+	invoice := secrets.Get(0)
+	paymentHash := invoice.PaymentHash
+	amt := int64(10000)
+	lockTime := int64(1000)
+
+	htlcKeyPath := hdpath.MustParse(invoice.keyPath).Child(htlcKeyChildIndex)
 	userHtlcKey, err := userKey.DeriveTo(htlcKeyPath.String())
 	if err != nil {
 		panic(err)
@@ -163,7 +169,7 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 		userHtlcKey.PublicKey().Raw(),
 		muunHtlcKey.PublicKey().Raw(),
 		swapServerPublicKey,
-		1000, // TODO: we should validate this later
+		lockTime,
 		paymentHash,
 	)
 	if err != nil {
@@ -194,10 +200,10 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 	})
 	htlcTx.AddTxOut(&wire.TxOut{
 		PkScript: pkScript,
-		Value:    10000,
+		Value:    amt,
 	})
 
-	nodePublicKey, err := secrets.Get(0).IdentityKey.key.ECPubKey()
+	nodePublicKey, err := invoice.IdentityKey.key.ECPubKey()
 	if err != nil {
 		panic(err)
 	}
@@ -215,7 +221,7 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 
 	fulfillmentTx.AddTxOut(&wire.TxOut{
 		PkScript: addr.ScriptAddress(),
-		Value:    10000,
+		Value:    amt,
 	})
 
 	muunSignKey, err := muunHtlcKey.key.ECPrivKey()
@@ -228,7 +234,7 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 		fulfillmentTx,
 		sigHashes,
 		0,
-		10000,
+		amt,
 		htlcScript,
 		txscript.SigHashAll,
 		muunSignKey,
@@ -240,7 +246,7 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 	swap := &IncomingSwap{
 		FulfillmentTx:       serializeTx(fulfillmentTx),
 		MuunSignature:       muunSignature,
-		Sphinx:              createSphinxPacket(nodePublicKey, paymentHash),
+		Sphinx:              createSphinxPacket(nodePublicKey, paymentHash, invoice.paymentSecret, amt, lockTime),
 		PaymentHash:         paymentHash,
 		BlockHeight:         123456,
 		HtlcTx:              serializeTx(htlcTx),
@@ -248,7 +254,7 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 		OutputPath:          outputPath,
 		SwapServerPublicKey: hex.EncodeToString(swapServerPublicKey),
 		MerkleTree:          nil,
-		HtlcExpiration:      1000,
+		HtlcExpiration:      lockTime,
 		HtlcBlock:           nil,
 		ConfirmationTarget:  1,
 	}
@@ -256,6 +262,157 @@ func TestVerifyAndFulfillHtlc(t *testing.T) {
 	signedTxBytes, err := swap.VerifyAndFulfill(userKey, muunKey.PublicKey(), network)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	signedTx := wire.NewMsgTx(2)
+	signedTx.Deserialize(bytes.NewReader(signedTxBytes))
+
+	verifyInput(t, signedTx, hex.EncodeToString(swap.HtlcTx), 0, 0)
+}
+
+func TestVerifyAndFulfillHtlcWithCollect(t *testing.T) {
+	setup()
+
+	network := Regtest()
+
+	userKey, _ := NewHDPrivateKey(randomBytes(32), network)
+	userKey.Path = "m/schema:1'/recovery:1'"
+	muunKey, _ := NewHDPrivateKey(randomBytes(32), network)
+	muunKey.Path = "m/schema:1'/recovery:1'"
+
+	secrets, err := GenerateInvoiceSecrets(userKey.PublicKey(), muunKey.PublicKey())
+	if err != nil {
+		panic(err)
+	}
+	err = PersistInvoiceSecrets(secrets)
+	if err != nil {
+		panic(err)
+	}
+
+	// stub
+	swapServerPublicKey := randomBytes(32)
+
+	invoiceSecrets := secrets.Get(0)
+	paymentHash := invoiceSecrets.PaymentHash
+	amt := int64(10000)
+	lockTime := int64(1000)
+	collected := int64(1000)
+	outputAmount := amt - collected
+
+	htlcKeyPath := hdpath.MustParse(invoiceSecrets.keyPath).Child(htlcKeyChildIndex)
+	userHtlcKey, err := userKey.DeriveTo(htlcKeyPath.String())
+	if err != nil {
+		panic(err)
+	}
+	muunHtlcKey, err := muunKey.DeriveTo(htlcKeyPath.String())
+	if err != nil {
+		panic(err)
+	}
+
+	htlcScript, err := createHtlcScript(
+		userHtlcKey.PublicKey().Raw(),
+		muunHtlcKey.PublicKey().Raw(),
+		swapServerPublicKey,
+		lockTime,
+		paymentHash,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	witnessHash := sha256.Sum256(htlcScript)
+	address, err := btcutil.NewAddressWitnessScriptHash(witnessHash[:], Regtest().network)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pkScript, err := txscript.PayToAddrScript(address)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	prevOutHash, err := chainhash.NewHash(randomBytes(32))
+	if err != nil {
+		panic(err)
+	}
+
+	htlcTx := wire.NewMsgTx(1)
+	htlcTx.AddTxIn(&wire.TxIn{
+		PreviousOutPoint: wire.OutPoint{
+			Hash: *prevOutHash,
+		},
+	})
+	htlcTx.AddTxOut(&wire.TxOut{
+		PkScript: pkScript,
+		Value:    amt,
+	})
+
+	nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+	if err != nil {
+		panic(err)
+	}
+
+	fulfillmentTx := wire.NewMsgTx(1)
+	fulfillmentTx.AddTxIn(&wire.TxIn{
+		PreviousOutPoint: wire.OutPoint{
+			Hash:  htlcTx.TxHash(),
+			Index: 0,
+		},
+	})
+
+	outputPath := "m/schema:1'/recovery:1'/34/56"
+	addr := newAddressAt(userKey, muunKey, outputPath, network)
+
+	fulfillmentTx.AddTxOut(&wire.TxOut{
+		PkScript: addr.ScriptAddress(),
+		Value:    outputAmount,
+	})
+
+	muunSignKey, err := muunHtlcKey.key.ECPrivKey()
+	if err != nil {
+		panic(err)
+	}
+
+	sigHashes := txscript.NewTxSigHashes(fulfillmentTx)
+	muunSignature, err := txscript.RawTxInWitnessSignature(
+		fulfillmentTx,
+		sigHashes,
+		0,
+		amt,
+		htlcScript,
+		txscript.SigHashAll,
+		muunSignKey,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	swap := &IncomingSwap{
+		FulfillmentTx:       serializeTx(fulfillmentTx),
+		MuunSignature:       muunSignature,
+		Sphinx:              createSphinxPacket(nodePublicKey, paymentHash, invoiceSecrets.paymentSecret, amt, lockTime),
+		PaymentHash:         paymentHash,
+		BlockHeight:         123456,
+		HtlcTx:              serializeTx(htlcTx),
+		OutputVersion:       4,
+		OutputPath:          outputPath,
+		SwapServerPublicKey: hex.EncodeToString(swapServerPublicKey),
+		MerkleTree:          nil,
+		HtlcExpiration:      lockTime,
+		HtlcBlock:           nil,
+		ConfirmationTarget:  1,
+		CollectInSats:       collected,
+	}
+
+	signedTxBytes, err := swap.VerifyAndFulfill(userKey, muunKey.PublicKey(), network)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	swap.CollectInSats = 0
+	_, err = swap.VerifyAndFulfill(userKey, muunKey.PublicKey(), network)
+	if err == nil {
+		t.Fatal("expected 0 collect to fail")
 	}
 
 	signedTx := wire.NewMsgTx(2)
@@ -284,13 +441,23 @@ func newAddressAt(userKey, muunKey *HDPrivateKey, keyPath string, network *Netwo
 	return addr
 }
 
-func createSphinxPacket(nodePublicKey *btcec.PublicKey, paymentHash []byte) []byte {
+func createSphinxPacket(nodePublicKey *btcec.PublicKey, paymentHash, paymentSecret []byte, amt, lockTime int64) []byte {
 	var paymentPath sphinx.PaymentPath
 	paymentPath[0].NodePub = *nodePublicKey
 
-	hopData := sphinx.HopData{}
-	eob := make([]byte, 0)
-	hopPayload, err := sphinx.NewHopPayload(&hopData, eob)
+	var secret [32]byte
+	copy(secret[:], paymentSecret)
+	uintAmount := uint64(amt * 1000) // msat are expected
+	uintLocktime := uint32(lockTime)
+	tlvRecords := []tlv.Record{
+		record.NewAmtToFwdRecord(&uintAmount),
+		record.NewLockTimeRecord(&uintLocktime),
+		record.NewMPP(lnwire.MilliSatoshi(uintAmount), secret).Record(),
+	}
+
+	b := &bytes.Buffer{}
+	tlv.MustNewStream(tlvRecords...).Encode(b)
+	hopPayload, err := sphinx.NewHopPayload(nil, b.Bytes())
 	if err != nil {
 		panic(err)
 	}

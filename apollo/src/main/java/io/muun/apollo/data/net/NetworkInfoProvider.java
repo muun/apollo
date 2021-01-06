@@ -81,7 +81,7 @@ public class NetworkInfoProvider {
         return receiver != null;
     }
 
-    private Optional<NetworkInfo> getCurrentNetworkInfo() {
+    public Optional<NetworkInfo> getCurrentNetworkInfo() {
         return Optional.ofNullable(connectivityManager.getActiveNetworkInfo());
     }
 

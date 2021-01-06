@@ -1,5 +1,7 @@
 package io.muun.apollo.data.di;
 
+import io.muun.apollo.data.apis.DriveAuthenticator;
+import io.muun.apollo.data.apis.DriveUploader;
 import io.muun.apollo.data.async.gcm.GcmMessageListenerService;
 import io.muun.apollo.data.async.tasks.PeriodicTaskWorkerFactory;
 import io.muun.apollo.data.async.tasks.TaskDispatcher;
@@ -112,4 +114,8 @@ public interface DataComponent extends ActionComponent {
     HoustonConfig houstonConfig();
 
     ModelObjectsMapper modelObjectsMapper();
+
+    DriveAuthenticator driveAuthenticator();
+
+    DriveUploader driveUploader();
 }

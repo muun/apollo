@@ -72,7 +72,7 @@ public class JobExecutor implements Executor {
 
     private String getExtraLogginData(ThreadPoolExecutor executor) {
         return String.format(
-                "\nTaskCount:%s\nCompletedCount:%s\nActiveCount:%s\nPoolSize:%s\nWorkQueueSize:%s",
+                ". TaskCount:%s. CompletedCount:%s. ActiveCount:%s. PoolSize:%s. WorkQueueSize:%s",
                 executor.getTaskCount(),
                 executor.getCompletedTaskCount(),
                 executor.getActiveCount(),

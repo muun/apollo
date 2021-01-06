@@ -24,6 +24,8 @@ public class MuunInputIncomingSwap {
 
     private final long expirationHeight;
 
+    private final long collectInSats;
+
     /**
      * Convert from JSON to model.
      */
@@ -33,8 +35,8 @@ public class MuunInputIncomingSwap {
                 Encodings.hexToBytes(json.htlcTxHex),
                 Encodings.hexToBytes(json.swapServerPublicKeyHex),
                 Encodings.hexToBytes(json.paymentHash256Hex),
-                json.expirationHeight
-        );
+                json.expirationHeight,
+                json.collectInSats);
     }
 
     /**
@@ -44,12 +46,14 @@ public class MuunInputIncomingSwap {
                                  byte[] htlcTx,
                                  byte[] swapServerPublicKey,
                                  byte[] paymentHash256,
-                                 final long expirationHeight) {
+                                 final long expirationHeight,
+                                 final long collectInSats) {
         this.sphinx = sphinx;
         this.htlcTx = htlcTx;
         this.swapServerPublicKey = swapServerPublicKey;
         this.paymentHash256 = paymentHash256;
         this.expirationHeight = expirationHeight;
+        this.collectInSats = collectInSats;
     }
 
     public byte[] getSphinx() {
@@ -72,6 +76,10 @@ public class MuunInputIncomingSwap {
         return expirationHeight;
     }
 
+    public long getCollectInSats() {
+        return collectInSats;
+    }
+
     /**
      * Convert to JSON.
      */
@@ -81,7 +89,8 @@ public class MuunInputIncomingSwap {
                 htlcTx,
                 swapServerPublicKey,
                 paymentHash256,
-                expirationHeight
+                expirationHeight,
+                collectInSats
         );
     }
 }

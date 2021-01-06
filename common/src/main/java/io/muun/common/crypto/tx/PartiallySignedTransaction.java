@@ -8,15 +8,12 @@ import io.muun.common.crypto.hd.MuunInputSubmarineSwapV101;
 import io.muun.common.crypto.hd.MuunInputSubmarineSwapV102;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.hd.Signature;
+import io.muun.common.crypto.schemes.TransactionScheme;
 import io.muun.common.crypto.schemes.TransactionSchemeIncomingSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap;
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV1;
-import io.muun.common.crypto.schemes.TransactionSchemeV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV3;
-import io.muun.common.crypto.schemes.TransactionSchemeV4;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.utils.Preconditions;
 
@@ -25,10 +22,10 @@ import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionWitness;
 import org.bitcoinj.script.Script;
 import rx.Single;
-import rx.functions.Func3;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import static io.muun.common.utils.Preconditions.checkNotNull;
@@ -82,41 +79,46 @@ public class PartiallySignedTransaction {
     /**
      * Create and attach the user's Signatures to this PartiallySignedTransaction.
      */
-    public void addUserSignatures(PrivateKey baseUserPrivateKey, PublicKey baseMuunPublicKey) {
-        for (int i = 0; i < inputs.size(); i++) {
-            final int version = inputs.get(i).getVersion();
+    public void addUserSignatures(
+            PrivateKey baseUserPrivateKey,
+            PublicKey baseMuunPublicKey,
+            PublicKey baseSwapServerPublicKey) {
 
-            switch (version) {
-                case TransactionSchemeV1.ADDRESS_VERSION:
-                    addUserSignatureV1(i, baseUserPrivateKey);
-                    break;
+        for (int index = 0; index < inputs.size(); index++) {
 
-                case TransactionSchemeV2.ADDRESS_VERSION:
-                    addUserSignatureV2(i, baseUserPrivateKey, baseMuunPublicKey);
-                    break;
+            final int version = inputs.get(index).getVersion();
 
-                case TransactionSchemeV3.ADDRESS_VERSION:
-                    addUserSignatureV3(i, baseUserPrivateKey, baseMuunPublicKey);
-                    break;
+            final TransactionScheme scheme = TransactionScheme.get(version).orElse(null);
 
-                case TransactionSchemeV4.ADDRESS_VERSION:
-                    addUserSignatureV4(i, baseUserPrivateKey, baseMuunPublicKey);
-                    break;
+            if (scheme != null) {
 
-                case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
-                    addUserSignatureSubmarineSwap101(i, baseUserPrivateKey);
-                    break;
+                addUserSignature(
+                        scheme,
+                        index,
+                        baseUserPrivateKey,
+                        baseMuunPublicKey,
+                        baseSwapServerPublicKey
+                );
 
-                case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
-                    addUserSignatureSubmarineSwap102(i, baseUserPrivateKey);
-                    break;
+            } else {
 
-                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
-                    addUserSignatureIncomingSwap(i, baseUserPrivateKey, baseMuunPublicKey);
-                    break;
+                switch (version) {
 
-                default:
-                    throw new MissingCaseError(version, "ADDRESS_VERSION");
+                    case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
+                        addUserSignatureSubmarineSwap101(index, baseUserPrivateKey);
+                        break;
+
+                    case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
+                        addUserSignatureSubmarineSwap102(index, baseUserPrivateKey);
+                        break;
+
+                    case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
+                        addUserSignatureIncomingSwap(index, baseUserPrivateKey, baseMuunPublicKey);
+                        break;
+
+                    default:
+                        throw new MissingCaseError(version, "ADDRESS_VERSION");
+                }
             }
         }
     }
@@ -124,36 +126,43 @@ public class PartiallySignedTransaction {
     /**
      * Create and attach Muun's Signatures to a PartiallySignedTransaction.
      */
-    public void addMuunSignatures(PublicKey baseUserPublicKey, PrivateKey baseMuunPrivateKey) {
-        for (int i = 0; i < inputs.size(); i++) {
-            final int version = inputs.get(i).getVersion();
+    public void addMuunSignatures(
+            PublicKey baseUserPublicKey,
+            PrivateKey baseMuunPrivateKey,
+            PublicKey baseSwapServerPublicKey) {
 
-            switch (version) {
-                case TransactionSchemeV1.ADDRESS_VERSION:
-                    break; // Houston doesn't sign V1 inputs
+        for (int index = 0; index < inputs.size(); index++) {
 
-                case TransactionSchemeV2.ADDRESS_VERSION:
-                    addMuunSignatureV2(i, baseUserPublicKey, baseMuunPrivateKey);
-                    break;
+            final int version = inputs.get(index).getVersion();
 
-                case TransactionSchemeV3.ADDRESS_VERSION:
-                    addMuunSignatureV3(i, baseUserPublicKey, baseMuunPrivateKey);
-                    break;
+            final TransactionScheme scheme = TransactionScheme.get(version).orElse(null);
 
-                case TransactionSchemeV4.ADDRESS_VERSION:
-                    addMuunSignatureV4(i, baseUserPublicKey, baseMuunPrivateKey);
-                    break;
+            if (scheme != null) {
 
-                case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
-                case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
-                    break; // Houston doesn't sign this. Swap server will, when sweeping.
+                if (scheme.needsMuunSignature()) {
+                    addMuunSignature(
+                            scheme,
+                            index,
+                            baseUserPublicKey,
+                            baseMuunPrivateKey,
+                            baseSwapServerPublicKey
+                    );
+                }
 
-                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
-                    addMuunSignatureIncomingSwap(i, baseUserPublicKey, baseMuunPrivateKey);
-                    break;
+            } else {
 
-                default:
-                    throw new MissingCaseError(version, "ADDRESS_VERSION");
+                switch (version) {
+                    case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
+                    case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
+                        break; // Houston doesn't sign this. Swap server will, when sweeping.
+
+                    case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
+                        addMuunSignatureIncomingSwap(index, baseUserPublicKey, baseMuunPrivateKey);
+                        break;
+
+                    default:
+                        throw new MissingCaseError(version, "ADDRESS_VERSION");
+                }
             }
         }
     }
@@ -161,240 +170,153 @@ public class PartiallySignedTransaction {
     /**
      * Create and attach the swap server signatures to a partially signed transaction.
      */
-    public void addSwapServerSignatures(Func3<String, String, Integer, Single<Signature>> signer) {
+    public void addSwapServerSignatures(Signer signer) {
 
-        for (int i = 0; i < inputs.size(); i++) {
+        for (int index = 0; index < inputs.size(); index++) {
 
-            final int version = inputs.get(i).getVersion();
+            final int version = inputs.get(index).getVersion();
 
-            switch (version) {
-                case TransactionSchemeV1.ADDRESS_VERSION:
-                case TransactionSchemeV2.ADDRESS_VERSION:
-                case TransactionSchemeV3.ADDRESS_VERSION:
-                case TransactionSchemeV4.ADDRESS_VERSION:
-                case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
-                case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
-                    break; // The swap server doesn't sign this
+            final TransactionScheme scheme = TransactionScheme.get(version).orElse(null);
 
-                case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
-                    addSwapServerSignatureSubmarineSwap102(i, signer);
-                    break;
+            if (scheme != null) {
 
-                default:
-                    throw new MissingCaseError(version, "ADDRESS_VERSION");
+                if (scheme.needsSwapServerSignature()) {
+                    addSwapServerSignature(
+                            scheme,
+                            index,
+                            signer
+                    );
+                }
+
+            } else {
+
+                switch (version) {
+                    case TransactionSchemeSubmarineSwap.ADDRESS_VERSION:
+                    case TransactionSchemeIncomingSwap.ADDRESS_VERSION:
+                        break; // The swap server doesn't sign this
+
+                    case TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION:
+                        addSwapServerSignatureSubmarineSwap102(index, signer);
+                        break;
+
+                    default:
+                        throw new MissingCaseError(version, "ADDRESS_VERSION");
+                }
             }
         }
     }
 
-    private void addUserSignatureV1(int inputIndex, PrivateKey baseUserKey) {
-        final MuunInput input = inputs.get(inputIndex);
-
-        final PrivateKey userPrivateKey = baseUserKey
-                .deriveFromAbsolutePath(input.getDerivationPath());
-
-        final byte[] dataToSign = TransactionSchemeV1.createDataToSignInput(
-                transaction,
-                inputIndex,
-                userPrivateKey.getPublicKey()
-        );
-
-        input.setUserSignature(userPrivateKey.signTransactionHash(dataToSign));
-
-        final Script signedScript = TransactionSchemeV1.createInputScript(
-                userPrivateKey.getPublicKey(),
-                input.getUserSignature()
-        );
-
-        transaction.getInput(inputIndex).setScriptSig(signedScript);
-    }
-
-    private void addUserSignatureV2(int inputIndex,
-                                    PrivateKey baseUserPrivateKey,
-                                    PublicKey baseMuunPublicKey) {
+    private void addUserSignature(
+            TransactionScheme scheme,
+            int inputIndex,
+            PrivateKey baseUserPrivateKey,
+            PublicKey baseMuunPublicKey,
+            PublicKey baseSwapServerPublicKey) {
 
         final MuunInput input = inputs.get(inputIndex);
         final String derivationPath = input.getDerivationPath();
 
-        checkNotNull(input.getMuunSignature()); // never sign before Muun does.
+        // never sign before Muun does
+        if (scheme.needsMuunSignature()) {
+            checkNotNull(input.getMuunSignature());
+        }
+
+        // never sign before Muun does
+        if (scheme.needsSwapServerSignature()) {
+            checkNotNull(input.getSwapServerSignature());
+        }
 
         final PrivateKey userPrivateKey = baseUserPrivateKey.deriveFromAbsolutePath(derivationPath);
         final PublicKey muunPublicKey = baseMuunPublicKey.deriveFromAbsolutePath(derivationPath);
+        final PublicKey swapServerPublicKey = baseSwapServerPublicKey.deriveFromAbsolutePath(
+                derivationPath
+        );
 
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
+        final PublicKeyTriple publicKeyTriple = new PublicKeyTriple(
                 userPrivateKey.getPublicKey(),
-                muunPublicKey
+                muunPublicKey,
+                swapServerPublicKey
         );
 
-        final byte[] dataToSign = TransactionSchemeV2.createDataToSignInput(
-                transaction,
-                inputIndex,
-                publicKeyPair
-        );
-
-        input.setUserSignature(userPrivateKey.signTransactionHash(dataToSign));
-
-        final Script signedScript = TransactionSchemeV2.createInputScript(
-                publicKeyPair,
-                input.getUserSignature(),
-                input.getMuunSignature()
-        );
-
-        transaction.getInput(inputIndex).setScriptSig(signedScript);
-    }
-
-    private void addMuunSignatureV2(int inputIndex,
-                                    PublicKey baseUserPublicKey,
-                                    PrivateKey baseMuunPrivateKey) {
-
-        final MuunInput input = inputs.get(inputIndex);
-        final String derivationPath = input.getDerivationPath();
-
-        Preconditions.checkNull(input.getUserSignature()); // always sign before the user does.
-
-        final PrivateKey muunPrivateKey = baseMuunPrivateKey.deriveFromAbsolutePath(derivationPath);
-        final PublicKey userPublicKey = baseUserPublicKey.deriveFromAbsolutePath(derivationPath);
-
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
-                userPublicKey,
-                muunPrivateKey.getPublicKey()
-        );
-
-        // Add the user's signature to the PartiallySignedTransaction:
-        final byte[] dataToSign = TransactionSchemeV2.createDataToSignInput(
-                transaction,
-                inputIndex,
-                publicKeyPair
-        );
-
-        input.setMuunSignature(muunPrivateKey.signTransactionHash(dataToSign));
-    }
-
-    private void addUserSignatureV3(int inputIndex,
-                                    PrivateKey baseUserPrivateKey,
-                                    PublicKey baseMuunPublicKey) {
-
-        final MuunInput input = inputs.get(inputIndex);
-        final String derivationPath = input.getDerivationPath();
-
-        checkNotNull(input.getMuunSignature()); // never sign before Muun does.
-
-        final PrivateKey userPrivateKey = baseUserPrivateKey.deriveFromAbsolutePath(derivationPath);
-        final PublicKey muunPublicKey = baseMuunPublicKey.deriveFromAbsolutePath(derivationPath);
-
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
-                userPrivateKey.getPublicKey(),
-                muunPublicKey
-        );
-
-        final byte[] dataToSign = TransactionSchemeV3.createDataToSignInput(
+        final byte[] dataToSign = scheme.createDataToSignInput(
                 transaction,
                 inputIndex,
                 input.getPrevOut().getAmount(),
-                publicKeyPair
+                publicKeyTriple
         );
 
         input.setUserSignature(userPrivateKey.signTransactionHash(dataToSign));
 
-        final Script inputScript = TransactionSchemeV3.createInputScript(publicKeyPair);
+        final Script inputScript = scheme.createInputScript(
+                publicKeyTriple,
+                input.getUserSignature(),
+                input.getMuunSignature(),
+                input.getSwapServerSignature()
+        );
 
         transaction.getInput(inputIndex).setScriptSig(inputScript);
 
-        final TransactionWitness witness = TransactionSchemeV3.createWitness(
-                publicKeyPair,
+        final TransactionWitness witness = scheme.createWitness(
+                publicKeyTriple,
                 input.getUserSignature(),
-                input.getMuunSignature()
+                input.getMuunSignature(),
+                input.getSwapServerSignature()
         );
+
         transaction.getInput(inputIndex).setWitness(witness);
     }
 
-    private void addMuunSignatureV3(int inputIndex,
-                                    PublicKey baseUserPublicKey,
-                                    PrivateKey baseMuunPrivateKey) {
+    private void addMuunSignature(
+            TransactionScheme scheme,
+            int inputIndex,
+            PublicKey baseUserPublicKey,
+            PrivateKey baseMuunPrivateKey,
+            PublicKey baseSwapServerPublicKey) {
 
         final MuunInput input = inputs.get(inputIndex);
         final String derivationPath = input.getDerivationPath();
 
-        Preconditions.checkNull(input.getUserSignature()); // always sign before the user does.
+        // always sign before the user does
+        Preconditions.checkNull(input.getUserSignature());
 
         final PrivateKey muunPrivateKey = baseMuunPrivateKey.deriveFromAbsolutePath(derivationPath);
         final PublicKey userPublicKey = baseUserPublicKey.deriveFromAbsolutePath(derivationPath);
-
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
-                userPublicKey,
-                muunPrivateKey.getPublicKey()
+        final PublicKey swapServerPublicKey = baseSwapServerPublicKey.deriveFromAbsolutePath(
+                derivationPath
         );
 
-        // Add the user's signature to the PartiallySignedTransaction:
-        final byte[] dataToSign = TransactionSchemeV3.createDataToSignInput(
+        final PublicKeyTriple publicKeyTriple = new PublicKeyTriple(
+                userPublicKey,
+                muunPrivateKey.getPublicKey(),
+                swapServerPublicKey
+        );
+
+        final byte[] dataToSign = scheme.createDataToSignInput(
                 transaction,
                 inputIndex,
                 input.getPrevOut().getAmount(),
-                publicKeyPair
+                publicKeyTriple
         );
 
         input.setMuunSignature(muunPrivateKey.signTransactionHash(dataToSign));
     }
 
-    private void addUserSignatureV4(int inputIndex,
-                                    PrivateKey baseUserPrivateKey,
-                                    PublicKey baseMuunPublicKey) {
+    private void addSwapServerSignature(TransactionScheme scheme, int inputIndex, Signer signer) {
 
         final MuunInput input = inputs.get(inputIndex);
-        final String derivationPath = input.getDerivationPath();
 
-        checkNotNull(input.getMuunSignature()); // never sign before Muun does.
+        final String hexRawTransaction = TransactionHelpers.getHexRawTransaction(transaction);
 
-        final PrivateKey userPrivateKey = baseUserPrivateKey.deriveFromAbsolutePath(derivationPath);
-        final PublicKey muunPublicKey = baseMuunPublicKey.deriveFromAbsolutePath(derivationPath);
+        final Signature signature = signer.signSwapRefund(
+                null,
+                input.getVersion(),
+                hexRawTransaction,
+                inputIndex
+        )
+                .toBlocking()
+                .value();
 
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
-                userPrivateKey.getPublicKey(),
-                muunPublicKey
-        );
-
-        final byte[] dataToSign = TransactionSchemeV4.createDataToSignInput(
-                transaction,
-                inputIndex,
-                input.getPrevOut().getAmount(),
-                publicKeyPair
-        );
-
-        input.setUserSignature(userPrivateKey.signTransactionHash(dataToSign));
-
-        final TransactionWitness witness = TransactionSchemeV4.createWitness(
-                publicKeyPair,
-                input.getUserSignature(),
-                input.getMuunSignature()
-        );
-        transaction.getInput(inputIndex).setWitness(witness);
-    }
-
-    private void addMuunSignatureV4(int inputIndex,
-                                    PublicKey baseUserPublicKey,
-                                    PrivateKey baseMuunPrivateKey) {
-
-        final MuunInput input = inputs.get(inputIndex);
-        final String derivationPath = input.getDerivationPath();
-
-        Preconditions.checkNull(input.getUserSignature()); // always sign before the user does.
-
-        final PrivateKey muunPrivateKey = baseMuunPrivateKey.deriveFromAbsolutePath(derivationPath);
-        final PublicKey userPublicKey = baseUserPublicKey.deriveFromAbsolutePath(derivationPath);
-
-        final PublicKeyPair publicKeyPair = new PublicKeyPair(
-                userPublicKey,
-                muunPrivateKey.getPublicKey()
-        );
-
-        // Add the user's signature to the PartiallySignedTransaction:
-        final byte[] dataToSign = TransactionSchemeV4.createDataToSignInput(
-                transaction,
-                inputIndex,
-                input.getPrevOut().getAmount(),
-                publicKeyPair
-        );
-
-        input.setMuunSignature(muunPrivateKey.signTransactionHash(dataToSign));
+        input.setSwapServerSignature(signature);
     }
 
     private void addUserSignatureSubmarineSwap101(int inputIndex,
@@ -470,9 +392,7 @@ public class PartiallySignedTransaction {
         transaction.getInput(inputIndex).setWitness(witness);
     }
 
-    private void addSwapServerSignatureSubmarineSwap102(
-            int inputIndex,
-            Func3<String, String, Integer, Single<Signature>> signer) {
+    private void addSwapServerSignatureSubmarineSwap102(int inputIndex, Signer signer) {
 
         final MuunInput input = inputs.get(inputIndex);
 
@@ -480,7 +400,12 @@ public class PartiallySignedTransaction {
 
         final String hexRawTransaction = TransactionHelpers.getHexRawTransaction(transaction);
 
-        final Signature signature = signer.call(swap.getSwapUuid(), hexRawTransaction, inputIndex)
+        final Signature signature = signer.signSwapRefund(
+                swap.getSwapUuid(),
+                input.getVersion(),
+                hexRawTransaction,
+                inputIndex
+        )
                 .toBlocking()
                 .value();
 
@@ -562,6 +487,15 @@ public class PartiallySignedTransaction {
         return new PartiallySignedTransactionJson(
                 TransactionHelpers.getHexRawTransaction(transaction),
                 jsonInputs
+        );
+    }
+
+    public interface Signer {
+        Single<Signature> signSwapRefund(
+                @Nullable String swapUuid,
+                Integer scriptVersion,
+                String hexTransaction,
+                int inputIndex
         );
     }
 }

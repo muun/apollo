@@ -86,7 +86,15 @@ public class SecureStorageProvider {
         final boolean hasKeyInPreferences = preferences.hasKey(key);
         final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
-        Preconditions.checkState(hasKeyInPreferences == hasKeyInKeystore);
+        Preconditions.checkState(
+                hasKeyInPreferences == hasKeyInKeystore,
+                String.format(
+                        "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInPreferences =%s",
+                        key,
+                        hasKeyInPreferences,
+                        hasKeyInKeystore
+                )
+        );
 
         return hasKeyInPreferences;
     }

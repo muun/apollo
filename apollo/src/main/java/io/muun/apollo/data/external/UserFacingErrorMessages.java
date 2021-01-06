@@ -68,7 +68,9 @@ public abstract class UserFacingErrorMessages {
 
     public abstract String emptyField(EmptyFieldError.Field field);
 
-    public abstract String emergencyKitVerification();
+    public abstract String emergencyKitInvalidVerificationCode();
+    
+    public abstract String emergencyKitOldVerificationCode(String firstExpectedDigits);
 
     public abstract String invalidRcV2();
 }

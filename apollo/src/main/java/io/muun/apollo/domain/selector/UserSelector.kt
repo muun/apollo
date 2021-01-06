@@ -27,4 +27,11 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
 
     fun skipEmailSetup() =
         userRepository.setEmailSetupSkipped()
+
+    fun watchBalanceHidden(): Observable<Boolean> =
+        userRepository.watchBalanceHidden()
+
+    fun setBalanceHidden(hidden: Boolean) {
+        userRepository.setBalanceHidden(hidden)
+    }
 }

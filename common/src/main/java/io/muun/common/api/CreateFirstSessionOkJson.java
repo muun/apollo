@@ -13,6 +13,9 @@ public class CreateFirstSessionOkJson {
     public PublicKeyJson cosigningPublicKey;
 
     @NotNull
+    public PublicKeyJson swapServerPublicKey;
+
+    @NotNull
     public UserJson user;
 
     /**
@@ -25,9 +28,11 @@ public class CreateFirstSessionOkJson {
      * Manual constructor.
      */
     public CreateFirstSessionOkJson(UserJson user,
-                                    PublicKeyJson cosigningPublicKey) {
+                                    PublicKeyJson cosigningPublicKey,
+                                    PublicKeyJson swapServerPublicKey) {
 
         this.user = user;
         this.cosigningPublicKey = cosigningPublicKey;
+        this.swapServerPublicKey = swapServerPublicKey;
     }
 }

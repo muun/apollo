@@ -34,6 +34,12 @@ public class Supports {
         int FALCON = 36;
     }
 
+    // ON-RELEASE: check that these versions are right
+    public interface SubmarineSwapsV3 {
+        int APOLLO = NOT_SUPPORTED;
+        int FALCON = NOT_SUPPORTED;
+    }
+
     public interface TransactionSchemeV2 {
         int APOLLO = 13;
     }
@@ -68,9 +74,8 @@ public class Supports {
         int FALCON = 48;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface IncomingSwaps {
-        int APOLLO = NOT_SUPPORTED;
+        int APOLLO = 200;
         int FALCON = 53;
     }
 
@@ -84,9 +89,13 @@ public class Supports {
         int FALCON = 52;
     }
 
-    // ON-RELEASE: check that these versions are right
     public interface InvoicesWithoutAmount {
-        int APOLLO = NOT_SUPPORTED;
+        int APOLLO = 200;
         int FALCON = 53;
+    }
+
+    public interface Fingerprint {
+        int APOLLO = 200;
+        int FALCON = 200;
     }
 }

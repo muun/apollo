@@ -1,6 +1,5 @@
 package io.muun.apollo.data.os.secure_storage;
 
-import io.muun.common.crypto.Cryptography;
 import io.muun.common.crypto.CryptographyException;
 
 import android.annotation.TargetApi;
@@ -157,7 +156,7 @@ public class KeyStoreProvider {
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesCbcPkcs7PaddingUsingProviders(input, iv, key, true);
+            return CryptographyWrapper.aesCbcPkcs7PaddingUsingProviders(input, iv, key, true);
 
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
 
@@ -171,7 +170,7 @@ public class KeyStoreProvider {
         try {
             final SecretKey key = (SecretKey) keyStore.getKey(keyAlias, null);
 
-            return Cryptography.aesCbcPkcs7PaddingUsingProviders(input, iv, key, false);
+            return CryptographyWrapper.aesCbcPkcs7PaddingUsingProviders(input, iv, key, false);
 
         } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
 
@@ -221,7 +220,7 @@ public class KeyStoreProvider {
             final PrivateKeyEntry privateKeyEntry
                     = (PrivateKeyEntry) keyStore.getEntry(keyAlias, null);
 
-            return Cryptography.rsaEncrypt(inputData, privateKeyEntry);
+            return CryptographyWrapper.rsaEncrypt(inputData, privateKeyEntry);
 
         } catch (
                 KeyStoreException
@@ -242,7 +241,7 @@ public class KeyStoreProvider {
             privateKeyEntry = (PrivateKeyEntry) keyStore.getEntry(keyAlias,
                     null);
 
-            return Cryptography.rsaDecrypt(input, privateKeyEntry);
+            return CryptographyWrapper.rsaDecrypt(input, privateKeyEntry);
 
         } catch (
                 NoSuchAlgorithmException

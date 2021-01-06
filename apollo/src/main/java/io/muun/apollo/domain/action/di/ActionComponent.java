@@ -17,12 +17,16 @@ import io.muun.apollo.domain.action.challenge_keys.password_setup.SetUpPasswordA
 import io.muun.apollo.domain.action.challenge_keys.password_setup.StartEmailSetupAction;
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.SetUpRecoveryCodeAction;
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction;
+import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction;
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction;
 import io.muun.apollo.domain.action.ek.ReportEmergencyKitExportedAction;
+import io.muun.apollo.domain.action.ek.UploadToDriveAction;
 import io.muun.apollo.domain.action.ek.VerifyEmergencyKitAction;
 import io.muun.apollo.domain.action.fcm.ForceFetchFcmAction;
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction;
 import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction;
+import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction;
+import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction;
 import io.muun.apollo.domain.action.keys.DecryptAndStoreKeySetAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction;
@@ -131,4 +135,12 @@ public interface ActionComponent {
     UseMuunLinkAction useMuunLinkAction();
 
     EmailLinkAction emailLinkAction();
+
+    UploadToDriveAction uploadEmergencyKitAction();
+
+    RegisterInvoicesAction registerInvoicesAction();
+
+    GenerateInvoiceAction generateInvoiceAction();
+
+    AddEmergencyKitMetadataAction addEmergencyKitMetadata();
 }

@@ -58,5 +58,7 @@ data class OperationWithMetadata(
 
         val senderMetadata: String?,
 
-        val incomingSwap: IncomingSwap? = null
+        val incomingSwap: IncomingSwap? = null,
+
+        val isRbf: Boolean
 )

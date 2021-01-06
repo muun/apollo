@@ -19,12 +19,17 @@ import javax.inject.Singleton;
 @Singleton
 public class ApplicationLockManager {
 
+    public interface UnlockListener {
+        void onUnlock();
+    }
+
     private static final int MAX_ATTEMPTS = 3;
     private static final int AUTO_SET_LOCK_DELAY_SECONDS = 10;
     private static final String KEY_INCORRECT_ATTEMPTS = "pin_incorrect_attempts";
 
     private boolean isLocked;
     private Subscription autoSetTimer;
+    private UnlockListener unlockListener;
 
     private final PinManager pinManager;
     private final SecureStorageProvider secureStorageProvider;
@@ -119,6 +124,10 @@ public class ApplicationLockManager {
         return MAX_ATTEMPTS - fetchIncorrectAttempts();
     }
 
+    public void setUnlockListener(UnlockListener listener) {
+        unlockListener = listener;
+    }
+
     /**
      * Set the application lock. Note this is public, unlike `unsetLock()`.
      */
@@ -133,6 +142,10 @@ public class ApplicationLockManager {
     private synchronized void unsetLock() {
         this.isLocked = false;
         cancelAutoSetLocked();
+        if (unlockListener != null) {
+            unlockListener.onUnlock();
+            unlockListener = null;
+        }
     }
 
     private synchronized void decrementRemainingAttempts() {

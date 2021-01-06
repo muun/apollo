@@ -52,6 +52,7 @@ class CreateFirstSessionAction @Inject constructor(
             .doOnNext {
                 userRepository.store(it.user)
                 keysRepository.storeBaseMuunPublicKey(it.cosigningPublicKey)
+                keysRepository.storeSwapServerPublicKey(it.swapServerPublicKey)
 
                 LoggingContext.configure("unknown", it.user.hid.toString())
             }

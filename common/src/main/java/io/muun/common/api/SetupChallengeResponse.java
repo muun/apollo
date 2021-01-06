@@ -1,5 +1,8 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,10 +17,15 @@ public class SetupChallengeResponse {
     @JsonProperty("muunKey")
     public String muunKey;
 
+    @Nullable
+    @Since(apolloVersion = Supports.Fingerprint.APOLLO, falconVersion = Supports.Fingerprint.FALCON)
+    public String muunKeyFingerprint;
+
     public SetupChallengeResponse() {
     }
 
-    public SetupChallengeResponse(@Nullable String muunKey) {
+    public SetupChallengeResponse(@Nullable String muunKey, @Nullable String muunKeyFingerprint) {
         this.muunKey = muunKey;
+        this.muunKeyFingerprint = muunKeyFingerprint;
     }
 }

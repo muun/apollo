@@ -160,15 +160,26 @@ object Gen {
     /**
      * Get a FeeWindow.
      */
-    fun feeWindow(vararg feeRates: Pair<Int, Double>) =
-        FeeWindow(
-            1,
-            ZonedDateTime.now(),
-            if (feeRates.isNotEmpty()) mapOf(*feeRates) else mapOf(1 to double(), 5 to double(), 9 to double()),
-            1,
-            5,
-            9
+    fun feeWindow(vararg feeRates: Pair<Int, Double>): FeeWindow {
+        val targetedFees = if (feeRates.isNotEmpty())
+            mapOf(*feeRates)
+        else {
+            // Build an increasing fee rate map that starts at 1sat/vbyte (0.25 sats/WU)
+            val third = Random.nextDouble(0.25, 10.0)
+            val second = Random.nextDouble(third, 50.0)
+            val first = Random.nextDouble(second, 100.0)
+            mapOf(1 to first, 5 to second, 9 to third)
+        }
+
+        return FeeWindow(
+                1,
+                ZonedDateTime.now(),
+                targetedFees,
+                1,
+                5,
+                9
         )
+    }
 
     /**
      * Get an ExchangeRateWindow.

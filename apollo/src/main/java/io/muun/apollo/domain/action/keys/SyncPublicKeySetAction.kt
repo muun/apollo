@@ -22,7 +22,8 @@ class SyncPublicKeySetAction @Inject constructor(
             houstonClient
                 .updatePublicKeySet(keysRepository.basePublicKey)
                 .doOnNext {
-                    keysRepository.storeBaseMuunPublicKey(it.basePublicKeyPair.muunPublicKey)
+                    keysRepository.storeBaseMuunPublicKey(it.basePublicKeyTriple.muunPublicKey)
+                    keysRepository.storeSwapServerPublicKey(it.basePublicKeyTriple.swapServerPublicKey)
                     storeExternalIndexes(it.externalMaxUsedIndex, it.externalMaxWatchingIndex)
                 }
                 .toVoid()

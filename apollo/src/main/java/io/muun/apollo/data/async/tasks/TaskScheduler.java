@@ -94,6 +94,7 @@ public class TaskScheduler {
         scheduleDelayedPeriodicTask("syncPhoneContacts", FALLBACK_SYNC_PERIOD);
         scheduleDelayedPeriodicTask("syncRealTimeData", FALLBACK_SYNC_PERIOD);
         scheduleDelayedPeriodicTask("syncExternalAddressesIndexes", FALLBACK_SYNC_PERIOD);
+        scheduleDelayedPeriodicTask("registerInvoices", FALLBACK_SYNC_PERIOD);
 
         // Past bugs have introduced integrity errors that we had no way of detecting. This periodic
         // check with Houston takes care of that:

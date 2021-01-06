@@ -23,4 +23,25 @@ public class UserInvoiceJson {
 
     @NotNull
     public PublicKeyJson identityPubKey;
+
+    /**
+     * JSON constructor.
+     */
+    public UserInvoiceJson() {
+    }
+
+    /**
+     * Apollo constructor.
+     */
+    public UserInvoiceJson(final String paymentHashHex,
+                           final long shortChannelId,
+                           final PublicKeyJson userPublicKey,
+                           final PublicKeyJson muunPublicKey,
+                           final PublicKeyJson identityPubKey) {
+        this.paymentHashHex = paymentHashHex;
+        this.shortChannelId = shortChannelId;
+        this.userPublicKey = userPublicKey;
+        this.muunPublicKey = muunPublicKey;
+        this.identityPubKey = identityPubKey;
+    }
 }

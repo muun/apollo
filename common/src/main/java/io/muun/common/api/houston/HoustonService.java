@@ -17,8 +17,10 @@ import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
+import io.muun.common.api.IncomingSwapFulfillmentDataJson;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
+import io.muun.common.api.KeyFingerprintMigrationJson;
 import io.muun.common.api.KeySet;
 import io.muun.common.api.LinkActionJson;
 import io.muun.common.api.NextTransactionSizeJson;
@@ -38,9 +40,11 @@ import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.TransactionPushedJson;
+import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.model.UserPreferences;
 import io.muun.common.model.VerificationType;
 
 import okhttp3.RequestBody;
@@ -54,7 +58,9 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 import java.util.List;
 import javax.annotation.Nullable;
@@ -190,6 +196,9 @@ public interface HoustonService {
     @POST("user/emergency-kit/exported")
     Observable<Void> reportEmergencyKitExported(@Body ExportEmergencyKitJson json);
 
+    @PUT("user/preferences")
+    Completable updateUserPreferences(@Body UserPreferences userPreferences);
+
     // ---------------------------------------------------------------------------------------------
     // Contacts:
 
@@ -229,6 +238,21 @@ public interface HoustonService {
     Observable<SubmarineSwapJson> createSubmarineSwap(@Body SubmarineSwapRequestJson data);
 
     // ---------------------------------------------------------------------------------------------
+    // Incoming swaps:
+
+    @POST("incoming-swaps/invoices")
+    Completable registerInvoices(@Body List<UserInvoiceJson> invoices);
+
+    @POST("incoming-swaps/{incomingSwapUuid}/fulfillment")
+    Single<IncomingSwapFulfillmentDataJson> fetchFulfillmentData(
+            @Path("incomingSwapUuid") String incomingSwapUuid);
+
+    @PUT("incoming-swaps/{incomingSwapUuid}/fulfillment")
+    Completable pushFulfillmentTransaction(
+            @Path("incomingSwapUuid") String incomingSwapUuid,
+            @Body RawTransaction tx);
+
+    // ---------------------------------------------------------------------------------------------
     // Other endpoints:
 
     @POST("integrity/check")
@@ -239,4 +263,7 @@ public interface HoustonService {
 
     @GET("migrations/challenge-keys")
     Observable<ChallengeKeyUpdateMigrationJson> fetchChallengeKeyUpdateMigration();
+
+    @GET("migrations/fingerprints")
+    Observable<KeyFingerprintMigrationJson> fetchKeyFingerprintMigration();
 }

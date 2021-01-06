@@ -12,19 +12,19 @@ import javax.money.UnknownCurrencyException
 
 object CrashReportBuilder {
 
-    private val INCLUDE_ANY = listOf("io.muun")
-
     private val EXCLUDE_ALL = listOf(
         // Not an opinionated list. Built by observation.
         "io.muun.common.rx.ObservableFn",
         "io.muun.apollo.data.net.base.RxCallAdapterWrapper",
         "io.muun.apollo.data.net.base.-$\$Lambda\$RxCallAdapterWrapper",
         "io.muun.apollo.data.os.execution.ExecutionTransformerFactory",
-        "io.muun.apollo.domain.action.base.AsyncAction"
+        "io.muun.apollo.domain.action.base.AsyncAction",
+        "rx.internal",
+        "rx.observers"
     )
 
     private val parser = TraceParser()
-    private val transformer = TraceTransformer(INCLUDE_ANY, EXCLUDE_ALL)
+    private val transformer = TraceTransformer(EXCLUDE_ALL)
     private val builder = TraceErrorBuilder()
 
     /**
@@ -41,7 +41,7 @@ object CrashReportBuilder {
         var message = origMessage ?: ""
 
         if (origError != null) {
-            message = removeRedundantStackTrace(origMessage, origError) ?: ""
+            message = removeRedundantStackTrace(origMessage, origError)
         }
 
         // Prepare the error:

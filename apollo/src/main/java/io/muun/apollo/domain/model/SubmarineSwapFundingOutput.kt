@@ -10,10 +10,10 @@ import io.muun.common.utils.Deprecated
 
 data class SubmarineSwapFundingOutput (
     val outputAddress: String,
-    val outputAmountInSatoshis: Long,
-    val debtType: DebtType,
-    val debtAmountInSatoshis: Long,
-    val confirmationsNeeded: Int,
+    val outputAmountInSatoshis: Long?,
+    val debtType: DebtType?,
+    val debtAmountInSatoshis: Long?,
+    val confirmationsNeeded: Int?,
     val userLockTime: Int?,                 // for swaps v2 is null until funding tx confirmation
     @Deprecated(
         atApolloVersion = Supports.SubmarineSwapsV2.APOLLO,
@@ -49,19 +49,29 @@ data class SubmarineSwapFundingOutput (
      * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
      */
     fun withOutputAmount(newAmountInSat: Long): SubmarineSwapFundingOutput =
-        copy(outputAmountInSatoshis = newAmountInSat + debtAmountInSatoshis)
+        copy(outputAmountInSatoshis = newAmountInSat + debtAmountInSatoshis!!)
+
+    /**
+     * Return a cloned SubmarineSwapFundingOutput adding certain SubmarineSwapExecutionParameters.
+     * Used for AmountLess Invoice swaps.
+     */
+    fun withSwapParams(params: SubmarineSwapExecutionParameters, outputAmountInSats: Long) =
+        copy(
+            outputAmountInSatoshis = outputAmountInSats,
+            debtType = params.debtType,
+            debtAmountInSatoshis =  params.debtAmountInSats,
+            confirmationsNeeded = params.confirmationsNeeded
+        )
 
     companion object {
 
         fun fromJson(output: SubmarineSwapFundingOutputJson): SubmarineSwapFundingOutput {
             return SubmarineSwapFundingOutput(
                 output.outputAddress,
-                // FIXME: When implementing amount-less invoices turns this optional
-                output.outputAmountInSatoshis!!,
+                output.outputAmountInSatoshis,
                 output.debtType,
                 output.debtAmountInSats ?: 0,
-                // FIXME: When implementing amount-less invoices turns this optional
-                output.confirmationsNeeded!!,
+                output.confirmationsNeeded,
                 output.userLockTime,
                 MuunAddress.fromJson(output.userRefundAddress),
                 output.serverPaymentHashInHex,

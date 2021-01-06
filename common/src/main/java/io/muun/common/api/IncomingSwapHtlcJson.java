@@ -14,8 +14,6 @@ public class IncomingSwapHtlcJson {
 
     public long expirationHeight;
 
-    public long paymentAmountInSats;
-
     public long fulfillmentFeeSubsidyInSats;
 
     public long lentInSats;
@@ -45,7 +43,6 @@ public class IncomingSwapHtlcJson {
      */
     public IncomingSwapHtlcJson(final String uuid,
                                 final long expirationHeight,
-                                final long paymentAmountInSats,
                                 final long fulfillmentFeeSubsidyInSats,
                                 final long lentInSats,
                                 final String address,
@@ -55,7 +52,6 @@ public class IncomingSwapHtlcJson {
                                 final String swapServerPublicKeyHex) {
         this.uuid = uuid;
         this.expirationHeight = expirationHeight;
-        this.paymentAmountInSats = paymentAmountInSats;
         this.fulfillmentFeeSubsidyInSats = fulfillmentFeeSubsidyInSats;
         this.lentInSats = lentInSats;
         this.address = address;

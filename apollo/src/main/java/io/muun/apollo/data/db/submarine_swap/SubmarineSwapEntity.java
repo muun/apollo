@@ -42,8 +42,12 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
 
         final Integer userLockTime = fundingOutput.getUserLockTime();
         final Integer expirationInBlocks = fundingOutput.getExpirationInBlocks();
+        final Integer confirmationsNeeded = fundingOutput.getConfirmationsNeeded();
+
         final PublicKey userPublicKey = fundingOutput.getUserPublicKey();
         final PublicKey muunPublicKey = fundingOutput.getMuunPublicKey();
+
+        final SubmarineSwapFees fees = swap.getFees();
 
         insertStatement.bind(
                 swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
@@ -54,15 +58,15 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 receiver.getPublicKey(),
                 fundingOutput.getOutputAddress(),
                 fundingOutput.getOutputAmountInSatoshis(),
-                fundingOutput.getConfirmationsNeeded(),
+                confirmationsNeeded != null ? Long.valueOf(confirmationsNeeded) : null,
                 userLockTime != null ? Long.valueOf(userLockTime) : null,
                 userRefundAddress.getAddress(),
                 userRefundAddress.getDerivationPath(),
                 userRefundAddress.getVersion(),
                 fundingOutput.getServerPaymentHashInHex(),
                 fundingOutput.getServerPublicKeyInHex(),
-                swap.getFees().getSweepInSats(),
-                swap.getFees().getLightningInSats(),
+                fees != null ? fees.getSweepInSats() : null,
+                fees != null ? fees.getLightningInSats() : null,
                 swap.getExpiresAt(),
                 swap.getPayedAt(),
                 swap.getPreimageInHex(),
@@ -95,6 +99,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
     public static SubmarineSwap getSubmarineSwap(SubmarineSwapEntity entity) {
         final Long userLockTime = entity.funding_user_lock_time();
         final Long expirationInBlocks = entity.funding_expiration_in_blocks();
+        final Long confirmationsNeeded = entity.funding_confirmations_needed();
 
         return new SubmarineSwap(
                 entity.id(),
@@ -110,7 +115,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                         entity.funding_output_amount_in_satoshis(),
                         entity.funding_output_debt_type(),
                         entity.funding_output_debt_amount_in_satoshis(),
-                        (int) entity.funding_confirmations_needed(),
+                        confirmationsNeeded != null ? (int) confirmationsNeeded.longValue() : null,
                         userLockTime != null ? (int) userLockTime.longValue() : null,
                         new MuunAddress(
                                 (int) entity.funding_user_refund_address_version(),
@@ -124,13 +129,23 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                         getUserPublicKey(entity),
                         getMuunPublicKey(entity)
                 ),
-                new SubmarineSwapFees(
-                        entity.lightning_fee_in_satoshis(),
-                        entity.sweep_fee_in_satoshis()
-                ),
+                getFees(entity),
                 entity.expires_at(),
                 entity.payed_at(),
-                entity.preimage_in_hex()
+                entity.preimage_in_hex(),
+                null,
+                null
+        );
+    }
+
+    private static SubmarineSwapFees getFees(SubmarineSwapEntity entity) {
+        if (entity.lightning_fee_in_satoshis() == null) {
+            return null;
+        }
+
+        return new SubmarineSwapFees(
+                entity.lightning_fee_in_satoshis(),
+                entity.sweep_fee_in_satoshis()
         );
     }
 

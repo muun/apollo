@@ -4,7 +4,7 @@ import io.muun.common.api.MuunAddressJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.hd.Signature;
 import io.muun.common.crypto.tx.TransactionHelpers;
 import io.muun.common.utils.Encodings;
@@ -212,7 +212,7 @@ public class TransactionSchemeSubmarineSwap {
      */
     @Deprecated
     public static boolean validateSwap(String invoice,
-                                       PublicKeyPair userPublicKeyPair,
+                                       PublicKeyTriple userPublicKeyTriple,
                                        SubmarineSwapJson swapJson,
                                        NetworkParameters network) {
 
@@ -227,12 +227,12 @@ public class TransactionSchemeSubmarineSwap {
 
         // Check that the refund address belongs to the user
         final MuunAddressJson swapRefundAddress = swapJson.fundingOutput.userRefundAddress;
-        final PublicKeyPair derivedPublicKeyPair = userPublicKeyPair
+        final PublicKeyTriple derivedPublicKeyTriple = userPublicKeyTriple
                 .deriveFromAbsolutePath(swapRefundAddress.derivationPath);
 
         final MuunAddress derivedAddress = MuunAddress.create(
                 swapRefundAddress.version,
-                derivedPublicKeyPair,
+                derivedPublicKeyTriple,
                 network
         );
 

@@ -12,6 +12,9 @@ public class SignupOkJson {
     @NotNull
     public PublicKeyJson cosigningPublicKey;
 
+    @NotNull
+    public PublicKeyJson swapServerPublicKey;
+
     /**
      * Json constructor.
      */
@@ -21,7 +24,8 @@ public class SignupOkJson {
     /**
      * Manual constructor.
      */
-    public SignupOkJson(PublicKeyJson cosigningPublicKey) {
+    public SignupOkJson(PublicKeyJson cosigningPublicKey, PublicKeyJson swapServerPublicKey) {
         this.cosigningPublicKey = cosigningPublicKey;
+        this.swapServerPublicKey = swapServerPublicKey;
     }
 }

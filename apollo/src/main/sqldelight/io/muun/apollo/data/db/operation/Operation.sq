@@ -24,12 +24,13 @@ CREATE TABLE operations (
     creation_date TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
     exchange_rate_window_hid INTEGER NOT NULL,
     submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid),
-    incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid)
+    incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid),
+    is_rbf INTEGER AS Boolean NOT NULL
 );
 
 insertOperation:
 INSERT OR REPLACE INTO operations
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateStatus:
 UPDATE operations
@@ -42,8 +43,8 @@ FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
-LEFT JOIN incoming_swaps AS incoming_swap ON incoming_swap_houston_uuid = incoming_swap.houston_uuid
-LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
 ORDER BY creation_date DESC;
 
 selectById:
@@ -52,8 +53,8 @@ FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
-LEFT JOIN incoming_swaps AS incoming_swap ON incoming_swap_houston_uuid = incoming_swap.houston_uuid
-LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
 WHERE operations.id = ?;
 
 selectByHid:
@@ -62,8 +63,8 @@ FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
-LEFT JOIN incoming_swaps AS incoming_swap ON incoming_swap_houston_uuid = incoming_swap.houston_uuid
-LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
 WHERE operations.hid = ?;
 
 selectLatest:
@@ -72,8 +73,8 @@ FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
-LEFT JOIN incoming_swaps AS incoming_swap ON incoming_swap_houston_uuid = incoming_swap.houston_uuid
-LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
 ORDER BY operations.id DESC
 LIMIT 1;
 
@@ -83,8 +84,8 @@ FROM operations
 LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
 LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
 LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
-LEFT JOIN incoming_swaps AS incoming_swap ON incoming_swap_houston_uuid = incoming_swap.houston_uuid
-LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
 WHERE operations.status NOT IN (
     'SWAP_PAYED',
     'SWAP_FAILED',
@@ -94,3 +95,24 @@ WHERE operations.status NOT IN (
     'SETTLED'
 )
 ORDER BY creation_date DESC;
+
+selectByIncomingSwap:
+SELECT operations.*, sender_profile.*, receiver_profile.*, swap.*, incoming_swap.*, htlc.*
+FROM operations
+LEFT JOIN public_profiles AS sender_profile ON sender_hid = sender_profile.hid
+LEFT JOIN public_profiles AS receiver_profile ON receiver_hid = receiver_profile.hid
+LEFT JOIN submarine_swaps AS swap ON submarine_swap_houston_uuid = swap.houston_uuid
+LEFT JOIN incoming_swaps AS incoming_swap ON operations.incoming_swap_houston_uuid = incoming_swap.houston_uuid
+LEFT JOIN incoming_swap_htlcs AS htlc ON incoming_swap.houston_uuid = htlc.incoming_swap_houston_uuid
+WHERE
+operations.incoming_swap_houston_uuid = ?
+;
+
+countPendingOps:
+SELECT COUNT(*)
+FROM operations o
+WHERE
+    o.direction = ?
+    AND o.is_rbf = ?
+    AND o.status IN ?
+;

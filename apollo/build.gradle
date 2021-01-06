@@ -84,6 +84,12 @@ ext {
     version_workmanager = '2.4.0'
 }
 
+def libwalletSources = fileTree("${project.rootDir}/libwallet") {
+    include "**/*.go"
+    exclude ".build/**"
+    exclude "**/*_test.go"
+}
+
 task libwallet(type: Exec) {
     group = "build"
     description = "Build libwallet for Android bindings"
@@ -96,7 +102,7 @@ task libwallet(type: Exec) {
     inputs.property("aar", aar)
     inputs.property("script", script)
 
-    inputs.dir("${project.rootDir}/libwallet")
+    inputs.files(libwalletSources)
     inputs.file(script)
 
     outputs.file(aar)
@@ -163,6 +169,12 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava:$version_retrofit"
     implementation "com.squareup.retrofit2:converter-scalars:$version_retrofit"
     implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+
+    // Google APIs
+    implementation 'com.google.android.gms:play-services-auth:18.1.0'
+    implementation 'com.google.api-client:google-api-client-android:1.26.0'
+    implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
+    implementation 'com.google.http-client:google-http-client-gson:1.26.0'
 
     // Kotlin:
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"

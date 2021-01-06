@@ -1,5 +1,6 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
 import io.muun.common.utils.Deprecated;
 import io.muun.common.utils.Since;
 
@@ -22,6 +23,10 @@ public class KeySet {
     public String muunKey; // This is the encryptedMuunKey
 
     @Nullable
+    @Since(apolloVersion = Supports.Fingerprint.APOLLO, falconVersion = Supports.Fingerprint.FALCON)
+    public String muunKeyFingerprint;
+
+    @Nullable
     @Deprecated(atApolloVersion = 46)
     public Map<String, byte[]> challengePublicKeys;
 
@@ -40,11 +45,13 @@ public class KeySet {
      */
     public KeySet(String encryptedPrivateKey,
                   @Nullable String muunKey,
-                  @Nullable Map<String,byte[]> challengePublicKeys,
-                  @Nullable List<ChallengeKeyJson> challengeKeys
-    ) {
+                  @Nullable String muunKeyFingerprint,
+                  @Nullable Map<String, byte[]> challengePublicKeys,
+                  @Nullable List<ChallengeKeyJson> challengeKeys) {
+
         this.encryptedPrivateKey = encryptedPrivateKey;
         this.muunKey = muunKey;
+        this.muunKeyFingerprint = muunKeyFingerprint;
         this.challengePublicKeys = challengePublicKeys;
         this.challengeKeys = challengeKeys;
     }

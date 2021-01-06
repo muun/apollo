@@ -86,7 +86,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 operation.creationDate,
                 operation.exchangeRateWindowHid,
                 operation.swap == null ? null : operation.swap.houstonUuid,
-                operation.incomingSwap == null ? null : operation.incomingSwap.houstonUuid
+                operation.incomingSwap == null ? null : operation.incomingSwap.houstonUuid,
+                operation.isRbf
         );
 
         return insertStatement;
@@ -133,7 +134,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().creation_date(),
                 entity.operations().exchange_rate_window_hid(),
                 getSwap(entity.swap()),
-                getIncomingSwap(entity.incoming_swap(), entity.htlc())
+                getIncomingSwap(entity.incoming_swap(), entity.htlc()),
+                entity.operations().is_rbf()
         );
     }
 

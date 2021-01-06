@@ -98,7 +98,10 @@ public class PreferencesMigrationManager {
             this::addChallengePublicKeyVersion,
 
             // Oct 2020, Apollo 76 moves SignupDraft to secureStorage to better secure RC only login
-            this::moveSignupDraftToSecureStorage
+            this::moveSignupDraftToSecureStorage,
+
+            // Nov 2020, Apollo 77 now remembers many Emergency Kit verification codes
+            this::migrateToRecentEmergencyKitVerificationCodes
     };
 
     /**
@@ -268,5 +271,9 @@ public class PreferencesMigrationManager {
 
     private void moveSignupDraftToSecureStorage() {
         signupDraftManager.moveSignupDraftToSecureStorage();
+    }
+
+    private void migrateToRecentEmergencyKitVerificationCodes() {
+        keysRepository.migrateToRecentEmergencyKitVerificationCodes();
     }
 }

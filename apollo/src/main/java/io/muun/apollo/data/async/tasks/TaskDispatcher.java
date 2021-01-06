@@ -4,6 +4,7 @@ import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.address.SyncExternalAddressIndexesAction;
+import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.errors.PeriodicTaskOnMainThreadError;
 
@@ -30,13 +31,15 @@ public class TaskDispatcher {
                           NotificationActions notificationActions,
                           IntegrityActions integrityActions,
                           FetchRealTimeDataAction fetchRealTimeData,
-                          SyncExternalAddressIndexesAction syncExternalAddressIndexes) {
+                          SyncExternalAddressIndexesAction syncExternalAddressIndexes,
+                          RegisterInvoicesAction registerInvoices) {
 
         registerTaskType("pullNotifications", notificationActions::pullNotifications);
 
         registerTaskType("syncRealTimeData", fetchRealTimeData::action);
         registerTaskType("syncPhoneContacts", contactActions::syncPhoneContacts);
         registerTaskType("syncExternalAddressesIndexes", syncExternalAddressIndexes::action);
+        registerTaskType("registerInvoices", registerInvoices::action);
 
         registerTaskType("checkIntegrity", integrityActions::checkIntegrity);
     }

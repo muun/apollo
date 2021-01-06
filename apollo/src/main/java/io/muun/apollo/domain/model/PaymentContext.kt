@@ -142,11 +142,12 @@ class PaymentContext(
         checkNotNull(analysis.total)
 
         return PreparedPayment(
-            analysis.amount,
-            analysis.fee,
-            analysis.payReq.description,
-            analysis.rateWindow.windowHid,
-            nextTransactionSize
+                analysis.amount,
+                analysis.fee,
+                analysis.payReq.description,
+                analysis.rateWindow.windowHid,
+                nextTransactionSize,
+                analysis.payReq
         )
     }
 

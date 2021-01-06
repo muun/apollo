@@ -64,6 +64,7 @@ type InputIncomingSwap interface {
 	PaymentHash256() []byte
 	SwapServerPublicKey() string
 	ExpirationHeight() int64
+	CollectInSats() int64
 }
 
 type Input interface {
@@ -422,6 +423,7 @@ func createCoin(input Input, network *Network) (coin, error) {
 			PaymentHash256:      swap.PaymentHash256(),
 			SwapServerPublicKey: swapServerPublicKey,
 			ExpirationHeight:    swap.ExpirationHeight(),
+			Collect:             btcutil.Amount(swap.CollectInSats()),
 		}, nil
 	default:
 		return nil, errors.Errorf("can't create coin from input version %v", version)

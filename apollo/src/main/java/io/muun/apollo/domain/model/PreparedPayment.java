@@ -18,21 +18,25 @@ public class PreparedPayment {
 
     public final NextTransactionSize nextTransactionSize;
 
+    public final PaymentRequest payReq;
+
     /**
      * Manual constructor.
      */
     public PreparedPayment(
-            BitcoinAmount amount,
-            BitcoinAmount fee,
-            String description,
-            Long rateWindowHid,
-            NextTransactionSize nextTransactionSize) {
+            final BitcoinAmount amount,
+            final BitcoinAmount fee,
+            final String description,
+            final Long rateWindowHid,
+            final NextTransactionSize nextTransactionSize,
+            final PaymentRequest payReq) {
 
         this.amount = amount;
         this.fee = fee;
         this.description = description;
         this.rateWindowHid = rateWindowHid;
         this.nextTransactionSize = nextTransactionSize;
+        this.payReq = payReq;
     }
 
 

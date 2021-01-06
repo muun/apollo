@@ -1,8 +1,10 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
+import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -10,16 +12,20 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.hd.Schema;
 import io.muun.common.rx.ObservableFn;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
+import android.text.TextUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
+import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -39,8 +45,11 @@ public class KeysRepository extends BaseRepository {
 
     private static final String KEY_ENCRYPTED_PRIVATE_USER_KEY = "key_encrypted_private_apollo_key";
     private static final String KEY_ENCRYPTED_PRIVATE_MUUN_KEY = "key_encrypted_private_muun_key";
+    private static final String KEY_MUUN_KEY_FINGERPRINT = "fingerprint_muun_key";
+    private static final String KEY_USER_KEY_FINGERPRINT = "fingerprint_user_key";
 
     private static final String KEY_BASE_MUUN_PUBLIC_KEY = "base_muun_public_key";
+    private static final String KEY_BASE_SWAP_SERVER_PUBLIC_KEY = "base_swap_server_public_key";
 
     private static final String KEY_MAX_USED_EXTERNAL_ADDRESS_INDEX =
             "key_max_used_external_address_index";
@@ -48,18 +57,22 @@ public class KeysRepository extends BaseRepository {
     private static final String KEY_MAX_WATCHING_EXTERNAL_ADDRESS_INDEX =
             "key_max_watching_external_address_index";
 
-    private static final String KEY_EK_ACTIVATION_CODE = "ek_activation_code";
+    private static final String KEY_EK_RECENT_VERIFICATION_CODES = "ek_recent_verification_codes";
 
     // Reactive preferences:
     private final Preference<String> basePrivateKeyPathPreference;
 
     private final Preference<PublicKey> basePublicKeyPreference;
     private final Preference<PublicKey> baseMuunPublicKeyPreference;
+    private final Preference<PublicKey> baseSwapServerPublicKeyPreference;
+
+    private final Preference<String> muunKeyFingerprintPreference;
+    private final Preference<String> userKeyFingerprintPreference;
 
     private final Preference<Integer> maxUsedExternalAddressIndexPreference;
     private final Preference<Integer> maxWatchingExternalAddressIndexPreference;
 
-    private final Preference<String> emergencyKitVerificationCode;
+    private final Preference<StoredEkVerificationCodes> emergencyKitVerificationCodes;
 
     // Dependencies:
     private final NetworkParameters networkParameters;
@@ -103,8 +116,22 @@ public class KeysRepository extends BaseRepository {
                 PublicKeyPreferenceAdapter.INSTANCE
         );
 
-        emergencyKitVerificationCode = rxSharedPreferences
-                .getString(KEY_EK_ACTIVATION_CODE);
+        baseSwapServerPublicKeyPreference = rxSharedPreferences.getObject(
+                KEY_BASE_SWAP_SERVER_PUBLIC_KEY,
+                PublicKeyPreferenceAdapter.INSTANCE
+        );
+
+        emergencyKitVerificationCodes = rxSharedPreferences.getObject(
+                KEY_EK_RECENT_VERIFICATION_CODES,
+                new StoredEkVerificationCodes(),
+                new JsonPreferenceAdapter<>(StoredEkVerificationCodes.class)
+        );
+
+        muunKeyFingerprintPreference = rxSharedPreferences
+                .getString(KEY_MUUN_KEY_FINGERPRINT);
+
+        userKeyFingerprintPreference = rxSharedPreferences
+                .getString(KEY_USER_KEY_FINGERPRINT);
     }
 
     /**
@@ -150,8 +177,17 @@ public class KeysRepository extends BaseRepository {
     }
 
     /**
-     * Returns the base user-Muun public key pair.
+     * Returns the swap server public key for this user.
      */
+    public PublicKey getBaseSwapServerPublicKey() {
+        return baseSwapServerPublicKeyPreference.get();
+    }
+
+    /**
+     * Returns the base user-Muun public key pair.
+     * @deprecated use getBasePublicKeyTriple
+     */
+    @Deprecated
     public PublicKeyPair getBasePublicKeyPair() {
         return new PublicKeyPair(
                 getBasePublicKey(),
@@ -160,10 +196,28 @@ public class KeysRepository extends BaseRepository {
     }
 
     /**
+     * Returns the base user-Muun-swapServer public key triple.
+     */
+    public PublicKeyTriple getBasePublicKeyTriple() {
+        return new PublicKeyTriple(
+                getBasePublicKey(),
+                getBaseMuunPublicKey(),
+                getBaseSwapServerPublicKey()
+        );
+    }
+
+    /**
      * Save the base Muun cosigning public key.
      */
     public void storeBaseMuunPublicKey(@NotNull PublicKey publicKey) {
         baseMuunPublicKeyPreference.set(publicKey);
+    }
+
+    /**
+     * Save the base swap server key for this user.
+     */
+    public void storeSwapServerPublicKey(@NotNull PublicKey publicKey) {
+        baseSwapServerPublicKeyPreference.set(publicKey);
     }
 
     /**
@@ -188,10 +242,6 @@ public class KeysRepository extends BaseRepository {
     }
 
     private Observable<Void> storeEncryptedBasePrivateKey(@NotNull PrivateKey basePrivateKey) {
-        // We want to keep the flow on an Observable<View> which has `doOnNext` transformations.
-        // In order to do that we are always returning a result, so that onNext is called on
-        // the observable. `onErrorResumeNext(Observable.just(null))` keeps the flow on errors
-        // and the `return Observable.just(null)` on `flatMap` is just passing that that null.
 
         if (!hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
             // Without challenge keys, we can't store the exportable encrypted private key:
@@ -203,16 +253,13 @@ public class KeysRepository extends BaseRepository {
                     final long birthday = getWalletBirthdaySinceGenesis();
                     return challengePublicKey.encryptPrivateKey(basePrivateKey, birthday);
                 })
-                .onErrorResumeNext(error -> {
-                    Timber.e(error);
-                    return Observable.just(null);
-                })
                 .flatMap(encryptedKey -> {
-                    if (encryptedKey == null) {
-                        return Observable.just(null);
-                    }
+
+                    Preconditions.checkNotNull(encryptedKey);
 
                     Timber.d("Storing encrypted Apollo private key in secure storage.");
+
+                    storeUserKeyFingerprint(Encodings.bytesToHex(basePrivateKey.getFingerprint()));
 
                     return secureStorageProvider.putAsync(
                             KEY_ENCRYPTED_PRIVATE_USER_KEY,
@@ -222,11 +269,14 @@ public class KeysRepository extends BaseRepository {
     }
 
     public void storeEmergencyKitVerificationCode(String verificationCode) {
-        emergencyKitVerificationCode.set(verificationCode);
+        final StoredEkVerificationCodes storedCodes = emergencyKitVerificationCodes.get();
+        storedCodes.addNewest(verificationCode);
+
+        emergencyKitVerificationCodes.set(storedCodes);
     }
 
-    public Observable<String> watchEmergencyKitVerificationCode() {
-        return emergencyKitVerificationCode.asObservable();
+    public Observable<StoredEkVerificationCodes> watchEmergencyKitVerificationCodes() {
+        return emergencyKitVerificationCodes.asObservable();
     }
 
     private long getWalletBirthdaySinceGenesis() {
@@ -328,6 +378,22 @@ public class KeysRepository extends BaseRepository {
                 .map(String::new);
     }
 
+    public void storeMuunKeyFingerprint(String muunKeyFingerprint) {
+        muunKeyFingerprintPreference.set(muunKeyFingerprint);
+    }
+
+    public Observable<String> getMuunKeyFingerprint() {
+        return muunKeyFingerprintPreference.asObservable();
+    }
+
+    public void storeUserKeyFingerprint(String userKeyFingerprint) {
+        userKeyFingerprintPreference.set(userKeyFingerprint);
+    }
+
+    public Observable<String> getUserKeyFingerprint() {
+        return userKeyFingerprintPreference.asObservable();
+    }
+
     /**
      * Stores a public challenge key on secure storage.
      *
@@ -426,5 +492,23 @@ public class KeysRepository extends BaseRepository {
 
     public void setMaxWatchingExternalAddressIndex(Integer maxWatchingExternalAddressIndex) {
         this.maxWatchingExternalAddressIndexPreference.set(maxWatchingExternalAddressIndex);
+    }
+
+    /**
+     * Move the old, single-value Emergency Kit verification code preference to the "most recent"
+     * list format.
+     */
+    public void migrateToRecentEmergencyKitVerificationCodes() {
+        final String storedCode = sharedPreferences.getString("ek_activation_code", null);
+
+        final StoredEkVerificationCodes storedCodes;
+
+        if (TextUtils.isEmpty(storedCode)) {
+            storedCodes = new StoredEkVerificationCodes();
+        } else {
+            storedCodes = new StoredEkVerificationCodes(Collections.singletonList(storedCode));
+        }
+
+        emergencyKitVerificationCodes.set(storedCodes);
     }
 }

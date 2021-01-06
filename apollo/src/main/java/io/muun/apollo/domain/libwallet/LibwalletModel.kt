@@ -29,7 +29,7 @@ class Input(val input: MuunInput): libwallet.Input {
             input.submarineSwapV102?.let { SubmarineSwapV2(it) }
 
     override fun incomingSwap() =
-            input.incomingSwap?.let { IncomingSwap(it) }
+            input.incomingSwap?.let { InputIncomingSwap(it) }
 }
 
 class Address(val address: MuunAddress): libwallet.MuunAddress {
@@ -94,7 +94,7 @@ class SubmarineSwapV2(val swap: MuunInputSubmarineSwapV102): libwallet.InputSubm
             swap.swapServerSignature?.bytes ?: ByteArray(0)
 }
 
-class IncomingSwap(val swap: MuunInputIncomingSwap): libwallet.InputIncomingSwap {
+class InputIncomingSwap(val swap: MuunInputIncomingSwap): libwallet.InputIncomingSwap {
 
     override fun htlcTx() =
             swap.htlcTx
@@ -110,4 +110,7 @@ class IncomingSwap(val swap: MuunInputIncomingSwap): libwallet.InputIncomingSwap
 
     override fun expirationHeight() =
             swap.expirationHeight
+
+    override fun collectInSats() =
+            swap.collectInSats
 }

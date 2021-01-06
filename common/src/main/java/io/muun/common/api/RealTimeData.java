@@ -31,6 +31,9 @@ public class RealTimeData {
     )
     public List<ForwardingPolicyJson> forwardingPolicies;
 
+    @NotNull
+    public MinFeeRateIncrementToBumpJson minFeeRateIncrementToBumpJson;
+
     /**
      * Json constructor.
      */
@@ -43,10 +46,12 @@ public class RealTimeData {
     public RealTimeData(FeeWindowJson feeWindow,
                         ExchangeRateWindow exchangeRateWindow,
                         int currentBlockchainHeight,
-                        List<ForwardingPolicyJson> forwardingPolicies) {
+                        List<ForwardingPolicyJson> forwardingPolicies,
+                        MinFeeRateIncrementToBumpJson minFeeRateIncrementToBumpJson) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
         this.currentBlockchainHeight = currentBlockchainHeight;
         this.forwardingPolicies = forwardingPolicies;
+        this.minFeeRateIncrementToBumpJson = minFeeRateIncrementToBumpJson;
     }
 }

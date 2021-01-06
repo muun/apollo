@@ -62,7 +62,8 @@ public class OperationMetadataMapper {
                 operation.getCreationDate(),
                 operation.getExchangeRateWindowHid(),
                 operation.getSwap(),
-                operation.getIncomingSwap()
+                operation.getIncomingSwap(),
+                operation.isRbf()
         );
     }
 
@@ -189,7 +190,8 @@ public class OperationMetadataMapper {
                 operation.swap,
                 receiverMetadata,
                 senderMetadata,
-                operation.incomingSwap
+                operation.incomingSwap,
+                operation.isRbf
         );
     }
 

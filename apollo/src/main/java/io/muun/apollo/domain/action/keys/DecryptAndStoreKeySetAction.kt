@@ -8,6 +8,7 @@ import io.muun.common.api.KeySet
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.hd.KeyCrypter
 import io.muun.common.utils.Encodings
+import io.muun.common.utils.Preconditions
 import rx.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,7 +38,10 @@ class DecryptAndStoreKeySetAction @Inject constructor(
         }
 
         if (keySet.muunKey != null) {
-            keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey!!)
+            Preconditions.checkNotNull(keySet.muunKeyFingerprint)
+
+            keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey)
+            keysRepository.storeMuunKeyFingerprint(keySet.muunKeyFingerprint)
         }
 
         val userPrivateKey = KeyCrypter().decrypt(keySet.encryptedPrivateKey, userInput)

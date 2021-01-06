@@ -3,14 +3,16 @@ CREATE TABLE incoming_swaps (
     houston_uuid TEXT NOT NULL UNIQUE,
     payment_hash_in_hex TEXT NOT NULL,
     sphinx_packet_in_hex TEXT,
-    incoming_swap_htlc_houston_uuid TEXT REFERENCES incoming_swap_htlcs(houston_uuid)
+    collect_in_satoshis INTEGER NOT NULL,
+    payment_amount_in_satoshis INTEGER NOT NULL,
+    preimage_in_hex TEXT
 );
 
 insertIncomingSwap:
 INSERT OR REPLACE INTO incoming_swaps
-VALUES (?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 selectAll:
 SELECT swap.*, htlc.*
 FROM incoming_swaps AS swap
-LEFT JOIN incoming_swap_htlcs AS htlc ON swap.incoming_swap_htlc_houston_uuid = htlc.houston_uuid;
+LEFT JOIN incoming_swap_htlcs AS htlc ON htlc.incoming_swap_houston_uuid = swap.houston_uuid;

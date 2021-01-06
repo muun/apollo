@@ -23,6 +23,7 @@ import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
+import io.muun.apollo.domain.model.UserPreferences;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.BitcoinAmountJson;
@@ -33,6 +34,7 @@ import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.CreateSessionRcOkJson;
 import io.muun.common.api.FeeWindowJson;
 import io.muun.common.api.ForwardingPolicyJson;
+import io.muun.common.api.IncomingSwapHtlcJson;
 import io.muun.common.api.IncomingSwapJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
@@ -47,7 +49,7 @@ import io.muun.common.api.TransactionPushedJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.CreateSessionOk;
@@ -55,6 +57,7 @@ import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.SizeForAmount;
 import io.muun.common.model.UtxoStatus;
 import io.muun.common.utils.Encodings;
+import io.muun.common.utils.Pair;
 import io.muun.common.utils.Preconditions;
 
 import org.bitcoinj.core.NetworkParameters;
@@ -84,8 +87,13 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     public CreateFirstSessionOk mapCreateFirstSessionOk(CreateFirstSessionOkJson json) {
         return new CreateFirstSessionOk(
                 mapUser(json.user),
-                mapPublicKey(json.cosigningPublicKey)
+                mapPublicKey(json.cosigningPublicKey),
+                mapPublicKey(json.swapServerPublicKey)
         );
+    }
+
+    private UserPreferences mapUserPreferences(final io.muun.common.model.UserPreferences prefs) {
+        return UserPreferences.fromJson(prefs);
     }
 
     /**
@@ -233,7 +241,10 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.swap != null ? mapSubmarineSwap(operation.swap) : null,
                 operation.receiverMetadata,
                 operation.senderMetadata,
-                operation.incomingSwap != null ? mapIncomingSwap(operation.incomingSwap) : null
+                operation.incomingSwap != null ? mapIncomingSwap(operation.incomingSwap) : null,
+                // If transaction null, no biggie, isRbf will be defined & updated by Houston later
+                operation.transaction != null ? operation.transaction.isReplaceableByFee : false
+
         );
     }
 
@@ -252,21 +263,27 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 null,
                 swap.uuid,
                 Encodings.hexToBytes(swap.paymentHashHex),
-                new IncomingSwapHtlc(
-                        null,
-                        swap.htlc.uuid,
-                        swap.htlc.expirationHeight,
-                        swap.htlc.paymentAmountInSats,
-                        swap.htlc.fulfillmentFeeSubsidyInSats,
-                        swap.htlc.lentInSats,
-                        Encodings.hexToBytes(swap.htlc.swapServerPublicKeyHex),
-                        swap.htlc.fulfillmentTxHex != null
-                                ? Encodings.hexToBytes(swap.htlc.fulfillmentTxHex) : null,
-                        swap.htlc.address,
-                        swap.htlc.outputAmountInSatoshis,
-                        Encodings.hexToBytes(swap.htlc.htlcTxHex)
-                ),
-                swap.sphinxPacketHex != null ? Encodings.hexToBytes(swap.sphinxPacketHex) : null
+                swap.htlc != null ? mapIncomingSwapHtlc(swap.htlc) : null,
+                swap.sphinxPacketHex != null ? Encodings.hexToBytes(swap.sphinxPacketHex) : null,
+                swap.collectInSats,
+                swap.paymentAmountInSats,
+                swap.preimageHex != null ? Encodings.hexToBytes(swap.preimageHex) : null
+        );
+    }
+
+    private IncomingSwapHtlc mapIncomingSwapHtlc(final IncomingSwapHtlcJson htlc) {
+        return new IncomingSwapHtlc(
+                null,
+                htlc.uuid,
+                htlc.expirationHeight,
+                htlc.fulfillmentFeeSubsidyInSats,
+                htlc.lentInSats,
+                Encodings.hexToBytes(htlc.swapServerPublicKeyHex),
+                htlc.fulfillmentTxHex != null
+                        ? Encodings.hexToBytes(htlc.fulfillmentTxHex) : null,
+                htlc.address,
+                htlc.outputAmountInSatoshis,
+                Encodings.hexToBytes(htlc.htlcTxHex)
         );
     }
 
@@ -403,9 +420,10 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     @Nullable
     public PublicKeySet mapPublicKeySet(PublicKeySetJson publicKeySet) {
         return new PublicKeySet(
-                new PublicKeyPair(
+                new PublicKeyTriple(
                         mapPublicKey(publicKeySet.basePublicKey),
-                        mapPublicKey(publicKeySet.baseCosigningPublicKey)
+                        mapPublicKey(publicKeySet.baseCosigningPublicKey),
+                        mapPublicKey(publicKeySet.baseSwapServerPublicKey)
                 ),
                 publicKeySet.externalPublicKeyIndices.maxUsedIndex,
                 publicKeySet.externalPublicKeyIndices.maxWatchingIndex
@@ -445,6 +463,16 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 passwordKeySalt,
                 recoveryCodeKeySalt,
                 json.newEncrytpedMuunKey
+        );
+    }
+
+    /**
+     * Map a user and user prerences pair.
+     */
+    public Pair<User, UserPreferences> mapUserAndPreferences(final UserJson userJson) {
+        return Pair.of(
+                mapUser(userJson),
+                mapUserPreferences(userJson.preferences)
         );
     }
 }

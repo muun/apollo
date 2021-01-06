@@ -21,6 +21,9 @@ public class MuunInput {
     private Signature muunSignature; // co-signed inputs only
 
     @Nullable
+    private Signature swapServerSignature; // channel inputs only
+
+    @Nullable
     private MuunInputSubmarineSwapV101 submarineSwap; // submarine swap V101 refund inputs only
 
     @Nullable
@@ -39,6 +42,9 @@ public class MuunInput {
                 MuunAddress.fromJson(json.address),
                 json.userSignature == null ? null : Signature.fromJson(json.userSignature),
                 json.muunSignature == null ? null : Signature.fromJson(json.muunSignature),
+                json.swapServerSignature == null ? null : Signature.fromJson(
+                        json.swapServerSignature
+                ),
                 json.submarineSwap == null ? null : MuunInputSubmarineSwapV101.fromJson(
                         json.submarineSwap
                 ),
@@ -64,6 +70,7 @@ public class MuunInput {
                      MuunAddress address,
                      @Nullable Signature userSignature,
                      @Nullable Signature muunSignature,
+                     @Nullable Signature swapServerSignature,
                      @Nullable MuunInputSubmarineSwapV101 submarineSwap,
                      @Nullable MuunInputSubmarineSwapV102 submarineSwapV102,
                      @Nullable MuunInputIncomingSwap incomingSwap) {
@@ -72,6 +79,7 @@ public class MuunInput {
         this.address = address;
         this.userSignature = userSignature;
         this.muunSignature = muunSignature;
+        this.swapServerSignature = swapServerSignature;
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
         this.incomingSwap = incomingSwap;
@@ -103,12 +111,21 @@ public class MuunInput {
         return muunSignature;
     }
 
+    @Nullable
+    public Signature getSwapServerSignature() {
+        return swapServerSignature;
+    }
+
     public void setUserSignature(Signature userSignature) {
         this.userSignature = userSignature;
     }
 
     public void setMuunSignature(Signature muunSignature) {
         this.muunSignature = muunSignature;
+    }
+
+    public void setSwapServerSignature(Signature swapServerSignature) {
+        this.swapServerSignature = swapServerSignature;
     }
 
     @Nullable
@@ -148,6 +165,7 @@ public class MuunInput {
                 address.toJson(),
                 userSignature == null ? null : userSignature.toJson(),
                 muunSignature == null ? null : muunSignature.toJson(),
+                swapServerSignature == null ? null : swapServerSignature.toJson(),
                 submarineSwap == null ? null : submarineSwap.toJson(),
                 submarineSwapV102 == null ? null : submarineSwapV102.toJson(),
                 incomingSwap == null ? null : incomingSwap.toJson()

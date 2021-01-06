@@ -1,5 +1,8 @@
 package io.muun.apollo.data.di;
 
+import io.muun.apollo.data.apis.DriveAuthenticator;
+import io.muun.apollo.data.apis.DriveImpl;
+import io.muun.apollo.data.apis.DriveUploader;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao;
@@ -27,6 +30,8 @@ import rx.functions.Func1;
 import rx.functions.Func2;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Module
@@ -94,8 +99,8 @@ public class DataModule {
                 phoneContactDao,
                 publicProfileDao,
                 submarineSwapDao,
-                incomingSwapDao,
-                incomingSwapHtlcDao
+                incomingSwapHtlcDao,
+                incomingSwapDao
         );
     }
 
@@ -127,6 +132,15 @@ public class DataModule {
 
     @Provides
     @Singleton
+    @Named("notificationScheduler")
+    rx.Scheduler provideNotificationScheduler() {
+        return rx.schedulers.Schedulers.from(Executors.newSingleThreadScheduledExecutor(r ->
+                new Thread(r, "notifications")
+        ));
+    }
+
+    @Provides
+    @Singleton
     ObjectMapper provideObjectMapper() {
         return new ObjectMapper();
     }
@@ -135,6 +149,18 @@ public class DataModule {
     @Singleton
     HoustonConfig provideHoustonConfig() {
         return houstonConfig;
+    }
+
+    @Provides
+    @Singleton
+    DriveAuthenticator provideGoogleDriveAuthenticator(DriveImpl singletonImpl) {
+        return singletonImpl;
+    }
+
+    @Provides
+    @Singleton
+    DriveUploader provideGoogleDriveUploader(DriveImpl singletonImpl) {
+        return singletonImpl;
     }
 
     @Provides

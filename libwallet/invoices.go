@@ -268,6 +268,28 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	return bech32, nil
 }
 
+// ExposePreimage gives the preimage matching a payment hash if we have it
+func ExposePreimage(paymentHash []byte) ([]byte, error) {
+
+	if len(paymentHash) != 32 {
+		return nil, fmt.Errorf("ExposePreimage: received invalid hash len %v", len(paymentHash))
+	}
+
+	// Lookup invoice data matching this HTLC using the payment hash
+	db, err := openDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	secrets, err := db.FindByPaymentHash(paymentHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not find invoice data for payment hash: %w", err)
+	}
+
+	return secrets.Preimage, nil
+}
+
 type IncomingSwap struct {
 	FulfillmentTx       []byte
 	MuunSignature       []byte
@@ -282,6 +304,7 @@ type IncomingSwap struct {
 	HtlcExpiration      int64
 	HtlcBlock           []byte // unused
 	ConfirmationTarget  int64  // to validate fee rate, unused for now
+	CollectInSats       int64
 }
 
 func (s *IncomingSwap) VerifyAndFulfill(userKey *HDPrivateKey, muunKey *HDPublicKey, net *Network) ([]byte, error) {
@@ -313,6 +336,7 @@ func (s *IncomingSwap) VerifyAndFulfill(userKey *HDPrivateKey, muunKey *HDPublic
 		SwapServerPublicKey: swapServerPublicKey,
 		ExpirationHeight:    s.HtlcExpiration,
 		VerifyOutputAmount:  true,
+		Collect:             btcutil.Amount(s.CollectInSats),
 	}
 	err = coin.SignInput(0, &tx, userKey, muunKey)
 	if err != nil {

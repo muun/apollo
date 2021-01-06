@@ -47,6 +47,8 @@ public class UserRepository extends BaseRepository {
 
     private static final String EMAIL_SETUP_SKIPPED_KEY = "email_setup_skipped_key";
 
+    private static final String BALANCE_HIDDEN_KEY = "balance_hidden_key";
+
     private final Preference<String> lastCopiedAddress;
 
     private final Preference<String> pendingProfilePictureUriPreference;
@@ -67,6 +69,8 @@ public class UserRepository extends BaseRepository {
 
     // Only meaningful until 1st RecoveryMethod is setup. Afterward, user tracks its RecoveryMethods
     private final Preference<Boolean> emailSetupSkippedPreference;
+
+    private final Preference<Boolean> balanceHiddenPreference;
 
     /**
      * Creates a user preference repository.
@@ -112,6 +116,11 @@ public class UserRepository extends BaseRepository {
 
         emailSetupSkippedPreference = rxSharedPreferences.getBoolean(
                 EMAIL_SETUP_SKIPPED_KEY,
+                false
+        );
+
+        balanceHiddenPreference = rxSharedPreferences.getBoolean(
+                BALANCE_HIDDEN_KEY,
                 false
         );
     }
@@ -239,11 +248,17 @@ public class UserRepository extends BaseRepository {
         pendingProfilePictureUriPreference.set(uri.toString());
     }
 
+    /**
+     * Note: no longer necessary a bitcoin address, can be a Ln invoice.
+     */
     @Nullable
     public String getLastCopiedAddress() {
         return lastCopiedAddress.get();
     }
 
+    /**
+     * Note: no longer necessary a bitcoin address, can be a Ln invoice.
+     */
     public void setLastCopiedAddress(String address) {
         lastCopiedAddress.set(address);
     }
@@ -320,6 +335,14 @@ public class UserRepository extends BaseRepository {
 
     public boolean getEmailSetupSkipped() {
         return Preconditions.checkNotNull(emailSetupSkippedPreference.get());
+    }
+
+    public void setBalanceHidden(boolean hidden) {
+        balanceHiddenPreference.set(hidden);
+    }
+
+    public Observable<Boolean> watchBalanceHidden() {
+        return balanceHiddenPreference.asObservable();
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

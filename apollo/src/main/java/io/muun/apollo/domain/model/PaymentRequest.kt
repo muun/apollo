@@ -1,20 +1,20 @@
 package io.muun.apollo.domain.model
 
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.domain.libwallet.Invoice
+import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.common.utils.Preconditions
 import javax.money.MonetaryAmount
 
-data class PaymentRequest (val type: Type,
-                           val amount: MonetaryAmount? = null,
-                           val description: String? = null,
-                           val contact: Contact? = null,
-                           val address: String? = null,
-                           val invoice: Invoice? = null,
-                           val swap: SubmarineSwap? = null,
-                           val feeInSatoshisPerByte: Double,
-                           val takeFeeFromAmount: Boolean = false) {
+data class PaymentRequest(val type: Type,
+                          val amount: MonetaryAmount? = null,
+                          val description: String? = null,
+                          val contact: Contact? = null,
+                          val address: String? = null,
+                          val invoice: DecodedInvoice? = null,
+                          val swap: SubmarineSwap? = null,
+                          val feeInSatoshisPerByte: Double?, //initially null for AmountLess Invoice
+                          val takeFeeFromAmount: Boolean = false) {
 
     enum class Type {
         TO_CONTACT,
@@ -25,15 +25,8 @@ data class PaymentRequest (val type: Type,
     /**
      * Return a cloned PaymentRequest with a new amount and a new description.
      */
-    fun withChanges(newAmount: MonetaryAmount,
-                    newDesc: String,
-                    newFeeInSatoshisPerByte: Double): PaymentRequest {
-
-        return copy(
-            amount = newAmount,
-            description = newDesc,
-            feeInSatoshisPerByte = newFeeInSatoshisPerByte
-        )
+    fun withChanges(newAmount: MonetaryAmount, newDesc: String): PaymentRequest {
+        return copy(amount = newAmount, description = newDesc)
     }
 
     /**
@@ -55,37 +48,40 @@ data class PaymentRequest (val type: Type,
     fun withTakeFeeFromAmount(takeFeeFromAmount: Boolean) =
         copy(takeFeeFromAmount = takeFeeFromAmount)
 
+    fun withSwap(swap: SubmarineSwap) =
+        copy(swap = swap)
+
     fun toJson() =
-            PaymentRequestJson(
-                    type,
-                    amount,
-                    description,
-                    contact?.toJson(),
-                    address,
-                    invoice?.original,
-                    swap?.toJson(),
-                    feeInSatoshisPerByte,
-                    takeFeeFromAmount
-            )
+        PaymentRequestJson(
+            type,
+            amount,
+            description,
+            contact?.toJson(),
+            address,
+            invoice?.original,
+            swap?.toJson(),
+            feeInSatoshisPerByte,
+            takeFeeFromAmount
+        )
 
     companion object {
 
         /** Create from {@link PaymentRequestJson}*/
         @JvmStatic
         fun fromJson(payReqJson: PaymentRequestJson) =
-                PaymentRequest(
-                        payReqJson.type!!,
-                        payReqJson.amount,
-                        payReqJson.description,
-                        Contact.fromJson(payReqJson.contact),
-                        payReqJson.address,
-                        payReqJson.invoice?.let {
-                            LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, it)
-                        },
-                        SubmarineSwap.fromJson(payReqJson.swap),
-                        payReqJson.feeInSatoshisPerByte,
-                        payReqJson.takeFeeFromAmount
-                )
+            PaymentRequest(
+                payReqJson.type!!,
+                payReqJson.amount,
+                payReqJson.description,
+                Contact.fromJson(payReqJson.contact),
+                payReqJson.address,
+                payReqJson.invoice?.let {
+                    LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, it)
+                },
+                SubmarineSwap.fromJson(payReqJson.swap),
+                payReqJson.feeInSatoshisPerByte,
+                payReqJson.takeFeeFromAmount
+            )
 
         /** Create a PaymentRequest to send money to a contact. */
         @JvmStatic
@@ -125,11 +121,11 @@ data class PaymentRequest (val type: Type,
 
         /** Create a PaymentRequest to send money to an Invoice. */
         @JvmStatic
-        fun toLnInvoice(invoice: Invoice,
-                        amount: MonetaryAmount,
+        fun toLnInvoice(invoice: DecodedInvoice,
+                        amount: MonetaryAmount?,
                         description: String,
                         submarineSwap: SubmarineSwap,
-                        feeInSatoshisPerByte: Double): PaymentRequest {
+                        feeInSatoshisPerByte: Double?): PaymentRequest {
 
             Preconditions.checkNotNull(invoice)
 

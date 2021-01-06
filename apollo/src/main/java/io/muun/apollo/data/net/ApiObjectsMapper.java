@@ -1,7 +1,9 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
+import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
@@ -18,6 +20,7 @@ import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
+import io.muun.common.api.IncomingSwapFulfillmentDataJson;
 import io.muun.common.api.OperationJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneNumberJson;
@@ -25,6 +28,7 @@ import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
+import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
@@ -277,5 +281,32 @@ public class ApiObjectsMapper {
      */
     public SubmarineSwapRequestJson mapSubmarineSwapRequest(SubmarineSwapRequest request) {
         return new SubmarineSwapRequestJson(request.invoice, request.swapExpirationInBlocks);
+    }
+
+    /**
+     * Map an invoice.
+     */
+    public UserInvoiceJson mapUserInvoice(final Invoice.InvoiceSecret invoice) {
+        return new UserInvoiceJson(
+                Encodings.bytesToHex(invoice.getPaymentHash()),
+                invoice.getShortChannelId(),
+                mapPublicKey(invoice.getUserPublicKey()),
+                mapPublicKey(invoice.getMuunPublicKey()),
+                mapPublicKey(invoice.getIdentityKey())
+        );
+    }
+
+    /**
+     * Map fulfillment data.
+     */
+    public IncomingSwapFulfillmentData mapFulfillmentData(
+            final IncomingSwapFulfillmentDataJson json) {
+        
+        return new IncomingSwapFulfillmentData(
+                Encodings.hexToBytes(json.fulfillmentTxHex),
+                Encodings.hexToBytes(json.muunSignatureHex),
+                json.outputPath,
+                json.outputVersion
+        );
     }
 }

@@ -20,23 +20,25 @@ public abstract class IncomingSwapHtlcEntity implements IncomingSwapHtlcModel, B
     /**
      * Map from the model to the content values.
      */
-    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db, IncomingSwapHtlc htlc) {
+    public static SqlDelightStatement fromModel(SupportSQLiteDatabase db,
+                                                IncomingSwapHtlcDb model) {
 
         final InsertIncomingSwapHtlc insertStatement = new InsertIncomingSwapHtlc(db);
 
+        final IncomingSwapHtlc htlc = model.getHtlc();
         final byte[] fulfillmentTx = htlc.getFulfillmentTx();
         insertStatement.bind(
                 htlc.getId() == null ? BaseEntity.NULL_ID : htlc.getId(),
                 htlc.houstonUuid,
                 htlc.getExpirationHeight(),
-                htlc.getPaymentAmountInSats(),
                 htlc.getFulfillmentFeeSubsidyInSats(),
                 htlc.getLentInSats(),
                 Encodings.bytesToHex(htlc.getSwapServerPublicKey()),
                 fulfillmentTx != null ? Encodings.bytesToHex(fulfillmentTx) : null,
                 htlc.getAddress(),
                 htlc.getOutputAmountInSatoshis(),
-                Encodings.bytesToHex(htlc.getHtlcTx())
+                Encodings.bytesToHex(htlc.getHtlcTx()),
+                model.getSwapHoustonUuid()
         );
 
         return insertStatement;
@@ -45,10 +47,13 @@ public abstract class IncomingSwapHtlcEntity implements IncomingSwapHtlcModel, B
     /**
      * Map from the database cursor to the model.
      */
-    public static IncomingSwapHtlc toModel(Cursor cursor) {
+    public static IncomingSwapHtlcDb toModel(Cursor cursor) {
         final IncomingSwapHtlcEntity entity = FACTORY.selectAllMapper().map(cursor);
 
-        return getIncomingSwapHtlc(entity);
+        return new IncomingSwapHtlcDb(
+                entity.incoming_swap_houston_uuid(),
+                getIncomingSwapHtlc(entity)
+        );
     }
 
     /**
@@ -62,7 +67,6 @@ public abstract class IncomingSwapHtlcEntity implements IncomingSwapHtlcModel, B
                 entity.id(),
                 entity.houston_uuid(),
                 entity.expiration_height(),
-                entity.payment_amount_in_satoshis(),
                 entity.fulfillment_fee_subsidy_in_satoshis(),
                 entity.lent_in_satoshis(),
                 Encodings.hexToBytes(entity.swap_server_public_key_in_hex()),

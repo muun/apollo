@@ -24,6 +24,9 @@ public class MuunInputJson {
     public SignatureJson muunSignature;
 
     @Nullable
+    public SignatureJson swapServerSignature;
+
+    @Nullable
     public MuunInputSubmarineSwapV101Json submarineSwap;
 
     @Nullable
@@ -45,6 +48,7 @@ public class MuunInputJson {
                          MuunAddressJson address,
                          @Nullable SignatureJson userSignature,
                          @Nullable SignatureJson muunSignature,
+                         @Nullable SignatureJson swapServerSignature,
                          @Nullable MuunInputSubmarineSwapV101Json submarineSwap,
                          @Nullable MuunInputSubmarineSwapV102Json submarineSwapV102,
                          @Nullable MuunInputIncomingSwapJson incomingSwap) {
@@ -53,6 +57,7 @@ public class MuunInputJson {
         this.address = address;
         this.userSignature = userSignature;
         this.muunSignature = muunSignature;
+        this.swapServerSignature = swapServerSignature;
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
         this.incomingSwap = incomingSwap;

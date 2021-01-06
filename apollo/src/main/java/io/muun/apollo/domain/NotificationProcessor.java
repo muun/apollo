@@ -6,6 +6,7 @@ import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.action.incoming_swap.FulfillIncomingSwapAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
@@ -25,6 +26,7 @@ import io.muun.common.api.messages.AuthorizeRcSigninMessage;
 import io.muun.common.api.messages.AuthorizeSigninMessage;
 import io.muun.common.api.messages.ContactUpdateMessage;
 import io.muun.common.api.messages.EmailVerifiedMessage;
+import io.muun.common.api.messages.FulfillIncomingSwapMessage;
 import io.muun.common.api.messages.Message;
 import io.muun.common.api.messages.MessageOrigin;
 import io.muun.common.api.messages.MessageSpec;
@@ -53,6 +55,7 @@ public class NotificationProcessor {
 
     private final ModelObjectsMapper mapper;
     private final OperationMetadataMapper operationMapper;
+    private final FulfillIncomingSwapAction fulfillIncomingSwap;
 
     private final Map<String, NotificationHandler> handlers =
             new HashMap<>();
@@ -67,7 +70,8 @@ public class NotificationProcessor {
                                  UserActions userActions,
                                  SigninActions signinActions,
                                  ModelObjectsMapper mapper,
-                                 OperationMetadataMapper operationMapper) {
+                                 OperationMetadataMapper operationMapper,
+                                 FulfillIncomingSwapAction fulfillIncomingSwap) {
 
         this.updateOperation = updateOperation;
         this.createOperation = createOperation;
@@ -76,6 +80,7 @@ public class NotificationProcessor {
         this.signinActions = signinActions;
         this.mapper = mapper;
         this.operationMapper = operationMapper;
+        this.fulfillIncomingSwap = fulfillIncomingSwap;
 
 
         addHandler(NewContactMessage.SPEC, this::handleNewContact);
@@ -93,6 +98,8 @@ public class NotificationProcessor {
         addHandler(AuthorizeRcSigninMessage.SPEC, this::handleAuthorizedSignin);
 
         addHandler(AuthorizeChallengeUpdateMessage.SPEC, this::handleAuthChallengeUpdate);
+
+        addHandler(FulfillIncomingSwapMessage.SPEC, this::handleFulfillincomingSwap);
 
     }
 
@@ -155,9 +162,7 @@ public class NotificationProcessor {
         final NextTransactionSize nextTransactionSize = mapper
                 .mapNextTransactionSize(message.nextTransactionSize);
 
-        return createOperation
-                .action(operation, nextTransactionSize)
-                .toCompletable();
+        return createOperation.action(operation, nextTransactionSize).toCompletable();
     }
 
     private Completable handleOperationUpdate(NotificationJson notification) {
@@ -207,6 +212,15 @@ public class NotificationProcessor {
         }
 
         return Completable.complete();
+    }
+
+    private Completable handleFulfillincomingSwap(final NotificationJson notificationJson) {
+        final FulfillIncomingSwapMessage message = convert(
+                FulfillIncomingSwapMessage.class,
+                notificationJson.message
+        );
+
+        return fulfillIncomingSwap.action(message.uuid).toCompletable();
     }
 
     private void verifyPermissions(NotificationJson notification, MessageSpec spec) {

@@ -6,6 +6,7 @@ import (
 	"github.com/muun/libwallet/hdpath"
 	"github.com/pkg/errors"
 
+	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/hdkeychain"
 )
 
@@ -97,4 +98,18 @@ func (p *HDPublicKey) Raw() []byte {
 	}
 
 	return key.SerializeCompressed()
+}
+
+// Fingerprint returns the 4-byte fingerprint for this pubkey
+func (p *HDPublicKey) Fingerprint() []byte {
+
+	key, err := p.key.ECPubKey()
+	if err != nil {
+		panic("failed to extract pub key")
+	}
+
+	bytes := key.SerializeCompressed()
+	hash := btcutil.Hash160(bytes)
+
+	return hash[:4]
 }

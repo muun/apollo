@@ -165,3 +165,44 @@ DROP TABLE  tmp_submarine_swaps;
 migration_33_operations_reference_incoming_swaps:
 ALTER TABLE operations
 ADD COLUMN incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid);
+
+migration_34_incoming_swaps_debt_add_collect:
+ALTER TABLE incoming_swaps
+ADD COLUMN collect_in_satoshis INTEGER NOT NULL DEFAULT 0;
+
+migration_34_incoming_swaps_debt_add_payment_amount:
+ALTER TABLE incoming_swaps
+ADD COLUMN payment_amount_in_satoshis INTEGER NOT NULL DEFAULT 0;
+
+migration_34_reference_incoming_swap_from_htlc:
+ALTER TABLE incoming_swap_htlcs
+ADD COLUMN incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid);
+
+migration_34_drop_incoming_swaps:
+DROP TABLE incoming_swaps;
+
+migration_34_rename_tmp_to_incoming_swaps:
+ALTER TABLE tmp_incoming_swaps
+RENAME TO incoming_swaps;
+
+migration_34_drop_htlcs:
+DROP TABLE incoming_swap_htlcs;
+
+migration_34_rename_tmp_to_htlcs:
+ALTER TABLE tmp_incoming_swap_htlcs
+RENAME TO incoming_swap_htlcs;
+
+migration_35_drop_old_swaps_table:
+DROP TABLE submarine_swaps;
+
+migration_35_rename_temporary_table_to_new_swaps_table:
+ALTER TABLE tmp_submarine_swaps
+RENAME TO submarine_swaps;
+
+migrations_36_operations_add_is_rbf_column:
+ALTER TABLE operations
+ADD COLUMN is_rbf INTEGER NOT NULL DEFAULT 0;
+
+migrations_37_add_preimage_to_incoming_swaps:
+ALTER TABLE incoming_swaps
+ADD COLUMN preimage_in_hex TEXT;

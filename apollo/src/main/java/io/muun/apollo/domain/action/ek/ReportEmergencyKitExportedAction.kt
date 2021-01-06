@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.ek
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.action.base.BaseAsyncAction0
+import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.common.Optional
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
@@ -17,24 +17,27 @@ class ReportEmergencyKitExportedAction @Inject constructor(
     private val userRepository: UserRepository,
     private val keysRepository: KeysRepository
 
-): BaseAsyncAction0<Void>() {
+): BaseAsyncAction1<Boolean, Void>() {
 
     /**
      * Tell Houston we have exported our keys.
      */
-    override fun action(): Observable<Void> =
+    override fun action(verified: Boolean): Observable<Void> =
         Observable.defer {
             val user = userRepository.fetchOne()
             val now = ZonedDateTime.now(ZoneOffset.UTC)
 
-            // Store locally for immediate feedback:
-            user.emergencyKitLastExportedAt = Optional.of(now);
-            userRepository.store(user)
+            if (verified) {
+                // Store locally for immediate feedback:
+                user.emergencyKitLastExportedAt = Optional.of(now);
+                userRepository.store(user)
+            }
 
-            val verificationCode = keysRepository.watchEmergencyKitVerificationCode()
+            val verificationCode = keysRepository.watchEmergencyKitVerificationCodes()
+                .map { it.getNewest() }
                 .toBlocking()
                 .first()
 
-            houstonClient.reportEmergencyKitExported(now, verificationCode)
+            houstonClient.reportEmergencyKitExported(now, verified, verificationCode)
         }
 }

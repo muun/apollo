@@ -16,6 +16,8 @@ public class FeeWindow {
     // time before this fee estimation is considered too old to use
     private static final int EXPIRATION_TIME_MINUTES = 5;
 
+    private static final int SWAP_V2_CONF_TARGET = 250; // Approx 2 days
+
     @NotNull
     public final Long houstonId;
 
@@ -61,6 +63,27 @@ public class FeeWindow {
                 .now(fetchDate.getZone())
                 .minusMinutes(EXPIRATION_TIME_MINUTES)
                 .isBefore(fetchDate);
+    }
+
+    /**
+     * Get the appropriate fee rate for a given swap (depends on confirmations needed).
+     */
+    public double getFeeRate(SubmarineSwap swap) {
+        Preconditions.checkNotNull(swap);
+        Preconditions.checkNotNull(swap.getFundingOutput().getConfirmationsNeeded());
+        return getSwapFeeRate(swap.getFundingOutput().getConfirmationsNeeded());
+    }
+
+    /**
+     * Get the appropriate fee rate for a given swap (depends on confirmations needed). Useful
+     * method for when swap doesn't have a fixed amount (e.g AmountLessInvoices + use all funds).
+     */
+    public double getSwapFeeRate(int confirmationsNeeded) {
+        if (confirmationsNeeded == 0) {
+            return getMinimumFeeInSatoshisPerByte(SWAP_V2_CONF_TARGET);
+        }
+
+        return getFastestFeeInSatoshisPerByte();
     }
 
     /**

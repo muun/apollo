@@ -12,9 +12,11 @@ import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
 import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.NoPaymentRouteException;
 import io.muun.apollo.domain.errors.UnreachableNodeException;
+import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
+import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
@@ -27,6 +29,7 @@ import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.model.UserPhoneNumber;
+import io.muun.apollo.domain.model.UserPreferences;
 import io.muun.apollo.domain.model.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.CreateFirstSessionJson;
@@ -64,13 +67,16 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
+import io.muun.common.utils.Pair;
 
 import android.content.Context;
 import android.net.Uri;
 import okhttp3.MediaType;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
+import rx.Completable;
 import rx.Observable;
+import rx.Single;
 
 import java.util.List;
 import javax.annotation.Nullable;
@@ -298,10 +304,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Fetches the current user.
      */
-    public Observable<User> fetchUser() {
+    public Observable<Pair<User, UserPreferences>> fetchUser() {
         return getService()
                 .fetchUserInfo()
-                .map(modelMapper::mapUser);
+                .map(modelMapper::mapUserAndPreferences);
     }
 
     /**
@@ -389,11 +395,17 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Report a successful emergency kit export.
      */
-    public Observable<Void> reportEmergencyKitExported(ZonedDateTime createdAt, String vCode) {
-        final ApolloZonedDateTime createdAtJson = ApolloZonedDateTime.of(createdAt);
+    public Observable<Void> reportEmergencyKitExported(ZonedDateTime createdAt,
+                                                       boolean verified,
+                                                       String vCode) {
 
-        return getService()
-                .reportEmergencyKitExported(new ExportEmergencyKitJson(createdAtJson, vCode));
+        final ExportEmergencyKitJson body = new ExportEmergencyKitJson(
+                ApolloZonedDateTime.of(createdAt),
+                verified,
+                vCode
+        );
+
+        return getService().reportEmergencyKitExported(body);
     }
 
     /**
@@ -531,6 +543,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                         ErrorCode.CYCLICAL_SWAP,
                         e -> new CyclicalSwapError(request.invoice, e)
                 ))
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.AMOUNTLESS_INVOICES_NOT_SUPPORTED,
+                        e -> new InvoiceMissingAmountException(request.invoice, e)
+                ))
                 .doOnNext(submarineSwapJson -> {
                     final boolean isValid = TransactionSchemeSubmarineSwapV2.validateSwap(
                             request.invoice,
@@ -606,5 +622,50 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService()
                 .fetchChallengeKeyUpdateMigration()
                 .map(modelMapper::mapChalengeKeyUpdateMigration);
+    }
+
+    /**
+     * Fetch the Muun key fingerprint required for the related migration.
+     */
+    public Observable<String> fetchMuunKeyFingerprint() {
+        return getService()
+                .fetchKeyFingerprintMigration()
+                .map(it -> it.muunKeyFingerprint);
+    }
+
+    /**
+     * Register invoices for incoming swaps.
+     */
+    public Completable registerInvoices(final List<Invoice.InvoiceSecret> invoices) {
+        return Observable.from(invoices)
+                .map(apiMapper::mapUserInvoice)
+                .toList()
+                .toSingle()
+                .flatMapCompletable(i -> getService().registerInvoices(i));
+    }
+
+    /**
+     * Fetch fulfillment data for an incoming swap.
+     */
+    public Single<IncomingSwapFulfillmentData> fetchFulfillmentData(final String incomingSwap) {
+
+        return getService().fetchFulfillmentData(incomingSwap)
+                .map(apiMapper::mapFulfillmentData);
+    }
+
+    /**
+     * Push the fulfillment TX for an incoming swap.
+     */
+    public Completable pushFulfillmentTransaction(final String incomingSwap,
+                                                  final RawTransaction rawTransaction) {
+
+        return getService().pushFulfillmentTransaction(incomingSwap, rawTransaction);
+    }
+
+    /**
+     * Update user preferences.
+     */
+    public Completable updateUserPreferences(final UserPreferences prefs) {
+        return getService().updateUserPreferences(prefs.toJson());
     }
 }

@@ -52,10 +52,10 @@ public class SubmarineSwapFundingOutputJson {
     @NotNull
     public Integer scriptVersion;
 
-    @NotNull
+    @Nullable // Null if the invoice didn't have an amount
     public DebtType debtType;
 
-    @Nullable
+    @Nullable // Null if the invoice didn't have an amount
     public Long debtAmountInSats;
 
 
@@ -70,8 +70,8 @@ public class SubmarineSwapFundingOutputJson {
      */
     public SubmarineSwapFundingOutputJson(
             String outputAddress,
-            Long outputAmountInSatoshis,
-            Integer confirmationsNeeded,
+            @Nullable Long outputAmountInSatoshis,
+            @Nullable Integer confirmationsNeeded,
             @Nullable Integer userLockTime,
             @Nullable Integer expirationInBlocks,
             MuunAddressJson userRefundAddress,
@@ -80,7 +80,7 @@ public class SubmarineSwapFundingOutputJson {
             String serverPaymentHashInHex,
             String serverPublicKeyInHex,
             Integer scriptVersion,
-            DebtType debtType,
+            @Nullable DebtType debtType,
             @Nullable Long debtAmountInSats) {
 
         this.outputAddress = outputAddress;

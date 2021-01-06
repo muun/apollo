@@ -15,5 +15,5 @@ data class PaymentRequestJson(var type: Type? = null,
                               var address: String? = null,
                               var invoice: String? = null,
                               var swap: SubmarineSwapJson? = null,
-                              var feeInSatoshisPerByte: Double = 0.0, // workaround Kotlin+Jackson
+                              var feeInSatoshisPerByte: Double? = null,
                               var takeFeeFromAmount: Boolean = false)

@@ -6,16 +6,16 @@ CREATE TABLE submarine_swaps (
     receiver_network_addresses TEXT NOT NULL,
     receiver_public_key TEXT NOT NULL,
     funding_output_address TEXT NOT NULL,
-    funding_output_amount_in_satoshis INTEGER NOT NULL,
-    funding_confirmations_needed INTEGER NOT NULL,
+    funding_output_amount_in_satoshis INTEGER,
+    funding_confirmations_needed INTEGER,
     funding_user_lock_time INTEGER,
     funding_user_refund_address TEXT NOT NULL,
     funding_user_refund_address_path TEXT NOT NULL,
     funding_user_refund_address_version INTEGER NOT NULL,
     funding_server_payment_hash_in_hex TEXT NOT NULL,
     funding_server_public_key_in_hex TEXT NOT NULL,
-    sweep_fee_in_satoshis INTEGER NOT NULL,
-    lightning_fee_in_satoshis INTEGER NOT NULL,
+    sweep_fee_in_satoshis INTEGER,
+    lightning_fee_in_satoshis INTEGER,
     expires_at TEXT AS org.threeten.bp.ZonedDateTime NOT NULL,
     payed_at TEXT AS org.threeten.bp.ZonedDateTime,
     preimage_in_hex TEXT,
@@ -25,8 +25,8 @@ CREATE TABLE submarine_swaps (
     funding_user_public_key_path TEXT,
     funding_muun_public_key TEXT,
     funding_muun_public_key_path TEXT,
-    funding_output_debt_type TEXT as io.muun.common.model.DebtType NOT NULL,
-    funding_output_debt_amount_in_satoshis INTEGER NOT NULL
+    funding_output_debt_type TEXT as io.muun.common.model.DebtType,
+    funding_output_debt_amount_in_satoshis INTEGER
 );
 
 insertSwap:

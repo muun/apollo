@@ -3,7 +3,6 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.external.AppStandbyBucketProvider;
 import io.muun.apollo.data.net.HoustonClient;
-import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.NotificationRepository;
 import io.muun.apollo.domain.NotificationProcessor;
 import io.muun.apollo.domain.action.base.AsyncAction0;
@@ -19,6 +18,7 @@ import rx.BackpressureOverflow;
 import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
+import rx.Scheduler;
 import rx.Single;
 import rx.Subscription;
 import rx.functions.Func1;
@@ -27,6 +27,7 @@ import timber.log.Timber;
 
 import java.util.List;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton // important
@@ -41,8 +42,6 @@ public class NotificationActions {
     private final NotificationRepository notificationRepository;
     private final HoustonClient houstonClient;
 
-    private final ExecutionTransformerFactory transformerFactory;
-
     private final NotificationProcessor notificationProcessor;
 
     // NOTE: these 2 properties make this class stateful (and thus @Singleton). After moving the
@@ -50,6 +49,7 @@ public class NotificationActions {
     // action bag would be stateless.
     private final PublishSubject<NotificationReport> reportQueue;
     private Subscription reportQueueSub;
+    private final Scheduler scheduler;
 
     public final AsyncAction0<Void> pullNotificationsAction;
 
@@ -62,16 +62,15 @@ public class NotificationActions {
     public NotificationActions(NotificationRepository notificationRepository,
                                HoustonClient houstonClient,
                                AsyncActionStore asyncActionStore,
-                               ExecutionTransformerFactory transformerFactory,
                                NotificationProcessor notificationProcessor,
-                               AppStandbyBucketProvider appStandbyBucketProvider) {
+                               AppStandbyBucketProvider appStandbyBucketProvider,
+                               @Named("notificationScheduler") Scheduler notificationScheduler) {
 
         this.notificationRepository = notificationRepository;
         this.houstonClient = houstonClient;
-        this.transformerFactory = transformerFactory;
         this.notificationProcessor = notificationProcessor;
         this.appStandbyBucketProvider = appStandbyBucketProvider;
-
+        this.scheduler = notificationScheduler;
         reportQueue = PublishSubject.create();
 
         pullNotificationsAction = asyncActionStore
@@ -228,7 +227,7 @@ public class NotificationActions {
                         ),
                         BackpressureOverflow.ON_OVERFLOW_DROP_OLDEST
                 )
-                .observeOn(transformerFactory.getBackgroundScheduler())
+                .observeOn(scheduler)
                 .compose(forEach(this::processReport))
                 .subscribe();
     }

@@ -1,11 +1,14 @@
 package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.data.preferences.UserRepository
+import io.muun.apollo.domain.ApiMigrationsManager
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction3
+import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction
 import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
@@ -32,8 +35,10 @@ class SyncApplicationDataAction @Inject constructor(
     private val fetchNextTransactionSize: FetchNextTransactionSizeAction,
     private val fetchRealTimeData: FetchRealTimeDataAction,
     private val createFirstSession: CreateFirstSessionAction,
-    private val finishLoginWithRc: FinishLoginWithRcAction
-
+    private val finishLoginWithRc: FinishLoginWithRcAction,
+    private val registerInvoices: RegisterInvoicesAction,
+    private val apiMigrationsManager: ApiMigrationsManager,
+    private val userPreferencesRepository: UserPreferencesRepository
 ): BaseAsyncAction3<Boolean, Boolean, LoginWithRc?, Void>() {
 
     override fun action(isFirstSession: Boolean,
@@ -78,11 +83,16 @@ class SyncApplicationDataAction @Inject constructor(
             fetchNextTransactionSize.action(),
             fetchRealTimeData.action(),
             syncContacts,
+            Observable.fromCallable(apiMigrationsManager::reset),
             RxHelper::toVoid
         )
 
         // These must run after the ones before:
-        val step3 = operationActions.fetchReplaceOperations()
+        val step3 = Observable.zip(
+            operationActions.fetchReplaceOperations(),
+            registerInvoices.action(),
+            RxHelper::toVoid
+        )
 
         return Observable.concat(step0, step1, step2, step3)
             .lastOrDefault(null)
@@ -97,9 +107,12 @@ class SyncApplicationDataAction @Inject constructor(
             .toVoid()
     }
 
-
-    private fun fetchUserInfo(): Observable<User> =
+    private fun fetchUserInfo(): Observable<Unit> =
         houstonClient.fetchUser()
-            .doOnNext { userRepository.store(it) }
-            .doOnNext { signinActions.setupCrashlytics() }
+            .doOnNext {
+                userRepository.store(it.fst)
+                userPreferencesRepository.update(it.snd)
+                signinActions.setupCrashlytics()
+            }
+            .map { }
 }

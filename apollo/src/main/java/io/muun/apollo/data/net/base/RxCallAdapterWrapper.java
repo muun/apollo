@@ -22,6 +22,7 @@ import io.muun.apollo.domain.errors.InvalidRecoveryCodeV2Error;
 import io.muun.apollo.domain.errors.InvalidVerificationCodeError;
 import io.muun.apollo.domain.errors.PhoneNumberAlreadyUsedError;
 import io.muun.apollo.domain.errors.RevokedVerificationCodeError;
+import io.muun.apollo.domain.errors.TooManyRequestsError;
 import io.muun.apollo.domain.errors.TooManyWrongVerificationCodesError;
 import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
@@ -162,6 +163,9 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
                         case RECOVERY_CODE_V2_NOT_SET_UP:
                             return new InvalidRecoveryCodeV2Error();
+
+                        case HTTP_TOO_MANY_REQUESTS:
+                            return new TooManyRequestsError();
 
                         default:
                             return error;

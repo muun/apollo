@@ -15,6 +15,14 @@ type ChallengePrivateKey struct {
 	key *btcec.PrivateKey
 }
 
+type encryptedPrivateKey struct {
+	Version      uint8
+	Birthday     uint16
+	EphPublicKey []byte // 33-byte compressed public-key
+	CipherText   []byte // 64-byte encrypted text
+	Salt         []byte // (optional) 8-byte salt
+}
+
 type DecryptedPrivateKey struct {
 	Key      *HDPrivateKey
 	Birthday int
@@ -53,8 +61,32 @@ func (k *ChallengePrivateKey) PubKey() *ChallengePublicKey {
 }
 
 func (k *ChallengePrivateKey) DecryptKey(encryptedKey string, network *Network) (*DecryptedPrivateKey, error) {
+	decoded, err := decodeEncryptedPrivateKey(encryptedKey)
+	if err != nil {
+		return nil, err
+	}
 
-	reader := bytes.NewReader(base58.Decode(encryptedKey))
+	plaintext, err := decryptWithPrivKey(k.key, decoded.EphPublicKey, decoded.CipherText)
+	if err != nil {
+		return nil, err
+	}
+
+	rawPrivKey := plaintext[0:32]
+	rawChainCode := plaintext[32:]
+
+	privKey, err := NewHDPrivateKeyFromBytes(rawPrivKey, rawChainCode, network)
+	if err != nil {
+		return nil, errors.Wrapf(err, "decrypting key: failed to parse key")
+	}
+
+	return &DecryptedPrivateKey{
+		privKey,
+		int(decoded.Birthday),
+	}, nil
+}
+
+func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) {
+	reader := bytes.NewReader(base58.Decode(encodedKey))
 	version, err := reader.ReadByte()
 	if err != nil {
 		return nil, errors.Wrapf(err, "decrypting key")
@@ -89,21 +121,13 @@ func (k *ChallengePrivateKey) DecryptKey(encryptedKey string, network *Network) 
 		return nil, errors.Errorf("decrypting key: failed to read recoveryCodeSalt")
 	}
 
-	plaintext, err := decryptWithPrivKey(k.key, rawPubEph, ciphertext)
-	if err != nil {
-		return nil, err
+	result := &encryptedPrivateKey{
+		Version:      version,
+		Birthday:     birthday,
+		EphPublicKey: rawPubEph,
+		CipherText:   ciphertext,
+		Salt:         recoveryCodeSalt,
 	}
 
-	rawPrivKey := plaintext[0:32]
-	rawChainCode := plaintext[32:]
-
-	privKey, err := NewHDPrivateKeyFromBytes(rawPrivKey, rawChainCode, network)
-	if err != nil {
-		return nil, errors.Wrapf(err, "decrypting key: failed to parse key")
-	}
-
-	return &DecryptedPrivateKey{
-		privKey,
-		int(birthday),
-	}, nil
+	return result, nil
 }

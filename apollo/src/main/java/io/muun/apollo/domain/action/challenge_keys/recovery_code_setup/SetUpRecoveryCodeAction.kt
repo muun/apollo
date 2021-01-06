@@ -27,8 +27,10 @@ class SetUpRecoveryCodeAction @Inject constructor(
 
                 // MuunEncriptedKey is always returned after a successful RC challenge setup
                 Preconditions.checkNotNull(setupChallengeResponse.muunKey)
+                Preconditions.checkNotNull(setupChallengeResponse.muunKeyFingerprint)
 
                 keysRepository.storeEncryptedMuunPrivateKey(setupChallengeResponse.muunKey)
+                keysRepository.storeMuunKeyFingerprint(setupChallengeResponse.muunKeyFingerprint)
 
                 userRepository.setRecoveryCodeSetupInProcess(false)
             }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,10 +25,7 @@ public class Transaction {
     public Long feeInSat;
 
     @Nullable // Null if transaction is incoming or is not in the mempool.
-    public Long rbfAccumulatedDescendantFeeInSat;
-
-    @Nullable // Null if transaction is incoming or is not in the mempool.
-    public Double minFeeRateIncrementToBumpInSatsPerVbyte;
+    public Set<DescendantFeesJson> inMempoolDescendantFees; // excluding this one.
 
     @Nullable // Null if transaction is incoming.
     public List<SizeForAmountJson> spentOutputs;
@@ -46,17 +44,15 @@ public class Transaction {
                        Boolean isReplaceableByFee,
                        @Nullable Long sizeInVbytes,
                        @Nullable Long feeInSat,
-                       @Nullable Long rbfAccumulatedDescendantFeeInSat,
-                       @Nullable Double minFeeRateIncrementToBumpInSatsPerVbyte,
+                       @Nullable Set<DescendantFeesJson> inMempoolDescendantFees,
                        @Nullable List<SizeForAmountJson> spentOutputs) {
 
         this.hash = hash;
         this.confirmations = confirmations;
         this.isReplaceableByFee = isReplaceableByFee;
-        this.rbfAccumulatedDescendantFeeInSat = rbfAccumulatedDescendantFeeInSat;
+        this.inMempoolDescendantFees = inMempoolDescendantFees;
         this.feeInSat = feeInSat;
         this.sizeInVbytes = sizeInVbytes;
-        this.minFeeRateIncrementToBumpInSatsPerVbyte = minFeeRateIncrementToBumpInSatsPerVbyte;
         this.spentOutputs = spentOutputs;
     }
 }

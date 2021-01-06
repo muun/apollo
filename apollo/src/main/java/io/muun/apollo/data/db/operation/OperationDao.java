@@ -2,8 +2,14 @@ package io.muun.apollo.data.db.operation;
 
 import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.selector.UtxoSetStateSelector;
+import io.muun.common.Optional;
+import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Pair;
 
+import com.squareup.sqldelight.prerelease.SqlDelightQuery;
+import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import java.util.List;
@@ -70,7 +76,43 @@ public class OperationDao extends HoustonIdDao<Operation> {
                 .doOnError(error -> enhanceError(error, "null (latest)"));
     }
 
+    public Observable<Optional<Operation>> fetchMaybeLatest() {
+        return fetchMaybeOne(OperationEntity.FACTORY.selectLatest());
+    }
+
     public Observable<List<Operation>> fetchUnsettled() {
         return fetchList(OperationEntity.FACTORY.selectUnsettled());
     }
+
+    public Observable<Operation> fetchByIncomingSwapUuid(final String incomingSwap) {
+        return fetchOneOrFail(OperationEntity.FACTORY.selectByIncomingSwap(incomingSwap));
+    }
+
+    @NotNull
+    public Observable<UtxoSetStateSelector.UtxoSetState> watchUtxoSetState() {
+        final OperationStatus[] pendingStatus = Operation.PENDING_STATUS
+                .toArray(new OperationStatus[0]);
+
+        final SqlDelightQuery hasRbfQuery = OperationEntity.FACTORY.countPendingOps(
+                OperationDirection.INCOMING, true, pendingStatus
+        );
+        final SqlDelightQuery hasNonRbfQuery = OperationEntity.FACTORY.countPendingOps(
+                OperationDirection.INCOMING, false, pendingStatus
+        );
+
+        return Observable.zip(
+                executeCount(hasRbfQuery),
+                executeCount(hasNonRbfQuery),
+                Pair::of
+        ).map(pair -> {
+            if (pair.fst > 0) {
+                return UtxoSetStateSelector.UtxoSetState.RBF;
+            } else if (pair.snd > 0) {
+                return UtxoSetStateSelector.UtxoSetState.PENDING;
+            } else {
+                return UtxoSetStateSelector.UtxoSetState.CONFIRMED;
+            }
+        });
+    }
+
 }

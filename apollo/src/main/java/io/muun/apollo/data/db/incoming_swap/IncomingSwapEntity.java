@@ -34,13 +34,16 @@ public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntit
                 new IncomingSwapModel.InsertIncomingSwap(db);
 
         final byte[] sphinxPacket = swap.getSphinxPacket();
+        final byte[] preimage = swap.getPreimage();
 
         insertStatement.bind(
                 swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
                 swap.houstonUuid,
                 Encodings.bytesToHex(swap.getPaymentHash()),
                 sphinxPacket != null ? Encodings.bytesToHex(sphinxPacket) : null,
-                swap.getHtlc().houstonUuid
+                swap.getCollectInSats(),
+                swap.getPaymentAmountInSats(),
+                preimage != null ? Encodings.bytesToHex(preimage) : null
         );
 
         return insertStatement;
@@ -66,12 +69,16 @@ public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntit
                                                IncomingSwapHtlcEntity htlc) {
 
         final String sphinxPacketInHex = entity.sphinx_packet_in_hex();
+        final String preimageInHex = entity.preimage_in_hex();
         return new IncomingSwap(
                 entity.id(),
                 entity.houston_uuid(),
                 Encodings.hexToBytes(entity.payment_hash_in_hex()),
                 IncomingSwapHtlcEntity.getIncomingSwapHtlc(htlc),
-                sphinxPacketInHex != null ? Encodings.hexToBytes(sphinxPacketInHex) : null
+                sphinxPacketInHex != null ? Encodings.hexToBytes(sphinxPacketInHex) : null,
+                entity.collect_in_satoshis(),
+                entity.payment_amount_in_satoshis(),
+                preimageInHex != null ? Encodings.hexToBytes(preimageInHex) : null
         );
     }
 

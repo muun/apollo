@@ -463,6 +463,111 @@ public class DbMigrationManager {
             + "    REFERENCES incoming_swap_htlcs(houston_uuid)\n"
             + ")";
 
+    private static final String MIGRATION_34_INCOMING_SWAPS_MOVE_PAYMENT_AMOUNT = ""
+            + "UPDATE incoming_swaps "
+            + "SET payment_amount_in_satoshis = ("
+            + " SELECT payment_amount_in_satoshis"
+            + " FROM incoming_swap_htlcs"
+            + " WHERE "
+            + " incoming_swap_htlcs.houston_uuid = incoming_swaps.incoming_swap_htlc_houston_uuid"
+            + ")";
+
+    private static final String MIGRATION_34_POPULATE_HTLC_INCOMING_SWAP_REFERENCE = ""
+            + "UPDATE incoming_swap_htlcs "
+            + "SET incoming_swap_houston_uuid = ("
+            + " SELECT incoming_swaps.houston_uuid "
+            + " FROM incoming_swaps "
+            + " WHERE "
+            + " incoming_swap_htlcs.houston_uuid = incoming_swaps.incoming_swap_htlc_houston_uuid"
+            + ")";
+
+    private static final String MIGRATION_34_CREATE_TMP_HTLCS = ""
+            + "CREATE TABLE tmp_incoming_swap_htlcs (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    expiration_height INTEGER NOT NULL,\n"
+            + "    fulfillment_fee_subsidy_in_satoshis INTEGER NOT NULL,\n"
+            + "    lent_in_satoshis INTEGER NOT NULL,\n"
+            + "    swap_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    fulfillment_tx_in_hex TEXT,\n"
+            + "    address TEXT NOT NULL,\n"
+            + "    output_amount_in_satoshis INTEGER NOT NULL,\n"
+            + "    htlc_tx_in_hex TEXT NOT NULL,\n"
+            + "    incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid)\n"
+            + ");\n";
+
+    private static final String MIGRATION_34_POPULATE_TMP_HTLCS = ""
+            + "INSERT INTO tmp_incoming_swap_htlcs "
+            + "SELECT "
+            + "     id,"
+            + "     houston_uuid,"
+            + "     expiration_height,"
+            + "     fulfillment_fee_subsidy_in_satoshis,"
+            + "     lent_in_satoshis,"
+            + "     swap_server_public_key_in_hex,"
+            + "     fulfillment_tx_in_hex,"
+            + "     address,"
+            + "     output_amount_in_satoshis,"
+            + "     htlc_tx_in_hex,"
+            + "     incoming_swap_houston_uuid "
+            + "FROM incoming_swap_htlcs";
+
+    private static final String MIGRATION_34_CREATE_TMP_INCOMING_SWAPS = ""
+            + "CREATE TABLE tmp_incoming_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    sphinx_packet_in_hex TEXT,\n"
+            + "    collect_in_satoshis INTEGER NOT NULL,\n"
+            + "    payment_amount_in_satoshis INTEGER NOT NULL\n"
+            + ");\n";
+
+    private static final String MIGRATION_34_POPULATE_TMP_INCOMING_SWAPS = ""
+            + "INSERT INTO tmp_incoming_swaps "
+            + "SELECT "
+            + "     id,"
+            + "     houston_uuid,"
+            + "     payment_hash_in_hex,"
+            + "     sphinx_packet_in_hex,"
+            + "     collect_in_satoshis,"
+            + "     payment_amount_in_satoshis "
+            + "FROM incoming_swaps";
+
+    private static final String MIGRATION_35_CREATE_SWAPS_TABLE = ""
+            + "CREATE TABLE tmp_submarine_swaps (\n"
+            + "    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
+            + "    houston_uuid TEXT NOT NULL UNIQUE,\n"
+            + "    invoice TEXT NOT NULL,\n"
+            + "    receiver_alias TEXT,\n"
+            + "    receiver_network_addresses TEXT NOT NULL,\n"
+            + "    receiver_public_key TEXT NOT NULL,\n"
+            + "    funding_output_address TEXT NOT NULL,\n"
+            + "    funding_output_amount_in_satoshis INTEGER,\n"
+            + "    funding_confirmations_needed INTEGER,\n"
+            + "    funding_user_lock_time INTEGER,\n"
+            + "    funding_user_refund_address TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_path TEXT NOT NULL,\n"
+            + "    funding_user_refund_address_version INTEGER NOT NULL,\n"
+            + "    funding_server_payment_hash_in_hex TEXT NOT NULL,\n"
+            + "    funding_server_public_key_in_hex TEXT NOT NULL,\n"
+            + "    sweep_fee_in_satoshis INTEGER,\n"
+            + "    lightning_fee_in_satoshis INTEGER,\n"
+            + "    expires_at TEXT NOT NULL,\n"
+            + "    payed_at TEXT,\n"
+            + "    preimage_in_hex TEXT,\n"
+            + "    funding_script_version INTEGER NOT NULL,\n"
+            + "    funding_expiration_in_blocks INTEGER,\n"
+            + "    funding_user_public_key TEXT,\n"
+            + "    funding_user_public_key_path TEXT,\n"
+            + "    funding_muun_public_key TEXT,\n"
+            + "    funding_muun_public_key_path TEXT,\n"
+            + "    funding_output_debt_type TEXT,\n"
+            + "    funding_output_debt_amount_in_satoshis INTEGER\n"
+            + ")";
+    
+    private static final String MIGRATION_35_COPY_ROWS_FROM_OLD_TABLE_INTO_NEW_SWAPS_TABLE =
+            "INSERT INTO tmp_submarine_swaps SELECT * FROM submarine_swaps";
+
     /**
      * Constructor. Here go all the database migrations.
      *
@@ -647,6 +752,55 @@ public class DbMigrationManager {
                 MIGRATION_33_CREATE_INCOMING_SWAPS_TABLE,
                 MigrationsModel.MIGRATION_33_OPERATIONS_REFERENCE_INCOMING_SWAPS
         );
+
+        // We do *tons* of things here!
+        // 1. Add a collect_in_satoshis column to incoming_swaps
+        // 2. Invert the foreign key between incoming swaps and htlcs, making HTLCs point to swaps
+        // 3. Move the payment_amount_in_satoshis column out of HTLCs into swaps
+        //
+        // For that we need to:
+        // 1. Steps 1-3 create the new columns
+        // 2. Steps 4-5 move the values between tables with UPDATE queries
+        // 3. Steps 6-9 drop the old column from htlcs using the sqlite dance
+        // 4. Steps 10-13 drop the old column from incoming swaps using the sqlite dance
+
+        add(34,
+                MigrationsModel.MIGRATION_34_INCOMING_SWAPS_DEBT_ADD_COLLECT,
+                MigrationsModel.MIGRATION_34_INCOMING_SWAPS_DEBT_ADD_PAYMENT_AMOUNT,
+                MigrationsModel.MIGRATION_34_REFERENCE_INCOMING_SWAP_FROM_HTLC,
+                MIGRATION_34_INCOMING_SWAPS_MOVE_PAYMENT_AMOUNT,
+                MIGRATION_34_POPULATE_HTLC_INCOMING_SWAP_REFERENCE,
+                MIGRATION_34_CREATE_TMP_HTLCS,
+                MIGRATION_34_POPULATE_TMP_HTLCS,
+                MigrationsModel.MIGRATION_34_DROP_HTLCS,
+                MigrationsModel.MIGRATION_34_RENAME_TMP_TO_HTLCS,
+                MIGRATION_34_CREATE_TMP_INCOMING_SWAPS,
+                MIGRATION_34_POPULATE_TMP_INCOMING_SWAPS,
+                MigrationsModel.MIGRATION_34_DROP_INCOMING_SWAPS,
+                MigrationsModel.MIGRATION_34_RENAME_TMP_TO_INCOMING_SWAPS
+        );
+
+        // The famous Amount Less Invoices Migration (aka Invoices Without Amount)
+        // We need to change several previously NOT NULL columns that now become nullable
+        // Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+        // NOTE: we start doing this ALTER TABLE migrations THE RIGHT WAY. For more info see:
+        // https://www.sqlite.org/lang_altertable.html#otheralter
+        //
+        //  1. Create a temp table exactly as the original one, except for the columns in question.
+        //  2. Insert all the rows from old/original table into the new one.
+        //  3. Delete the old/original table.
+        //  4. Rename the new/temporary name into your old table.
+
+        add(35,
+                MIGRATION_35_CREATE_SWAPS_TABLE,
+                MIGRATION_35_COPY_ROWS_FROM_OLD_TABLE_INTO_NEW_SWAPS_TABLE,
+                MigrationsModel.MIGRATION_35_DROP_OLD_SWAPS_TABLE,
+                MigrationsModel.MIGRATION_35_RENAME_TEMPORARY_TABLE_TO_NEW_SWAPS_TABLE
+        );
+
+        add(36, MigrationsModel.MIGRATIONS_36_OPERATIONS_ADD_IS_RBF_COLUMN);
+
+        add(37, MigrationsModel.MIGRATIONS_37_ADD_PREIMAGE_TO_INCOMING_SWAPS);
     }
 
     /**

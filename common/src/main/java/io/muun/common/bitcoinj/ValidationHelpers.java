@@ -74,7 +74,7 @@ public class ValidationHelpers {
     }
 
     /**
-     * Check if a bip32 derivation path is valid.
+     * Check if a bip32 derivation path is valid. Does not match augmented HD paths aka call paths.
      */
     public static boolean isValidDerivationPath(String path) {
 

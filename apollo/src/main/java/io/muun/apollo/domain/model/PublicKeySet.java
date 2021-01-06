@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model;
 
 
-import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.hd.PublicKeyTriple;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 public class PublicKeySet {
 
     @NotNull
-    private final PublicKeyPair basePublicKeyPair;
+    private final PublicKeyTriple basePublicKeyTriple;
 
     @NotNull
     public Integer externalMaxUsedIndex;
@@ -20,17 +20,17 @@ public class PublicKeySet {
     /**
      * Constructor.
      */
-    public PublicKeySet(PublicKeyPair basePublicKeyPair,
+    public PublicKeySet(PublicKeyTriple basePublicKeyTriple,
                         Integer externalMaxUsedIndex,
                         Integer externalMaxWatchingIndex) {
 
-        this.basePublicKeyPair = basePublicKeyPair;
+        this.basePublicKeyTriple = basePublicKeyTriple;
         this.externalMaxUsedIndex = externalMaxUsedIndex;
         this.externalMaxWatchingIndex = externalMaxWatchingIndex;
     }
 
-    public PublicKeyPair getBasePublicKeyPair() {
-        return basePublicKeyPair;
+    public PublicKeyTriple getBasePublicKeyTriple() {
+        return basePublicKeyTriple;
     }
 
     public Integer getExternalMaxUsedIndex() {

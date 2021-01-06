@@ -1,3 +1,4 @@
 libwallet/.gitignore# binary
 libwallet
+.build
 

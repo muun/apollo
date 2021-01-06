@@ -1,5 +1,7 @@
 package io.muun.common.api;
 
+import io.muun.common.api.error.BroadcastErrorJson;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -19,6 +21,9 @@ public class TransactionPushedJson {
     @NotNull
     public OperationJson updatedOperation;
 
+    @Nullable // Null if the broadcast didn't failed.
+    public BroadcastErrorJson broadcastErrorCode;
+
     /**
      * Json constructor.
      */
@@ -31,10 +36,12 @@ public class TransactionPushedJson {
     public TransactionPushedJson(
             @Nullable String hex,
             NextTransactionSizeJson nextTransactionSize,
-            OperationJson operation) {
+            OperationJson operation,
+            @Nullable BroadcastErrorJson broadcastErrorCode) {
 
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
         this.updatedOperation = operation;
+        this.broadcastErrorCode = broadcastErrorCode;
     }
 }
