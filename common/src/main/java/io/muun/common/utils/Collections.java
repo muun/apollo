@@ -29,8 +29,11 @@ public final class Collections {
      */
     public static <T> Set<T> difference(Collection<? extends T> a, Collection<? extends T> b) {
 
+        // You might think we're allocating a wrapper set for nothing here BUT removeAll is
+        // accidentally quadratic if the 2nd collection is a) bigger b) can't run contains() in O(1)
+
         final Set<T> difference = new HashSet<>(a);
-        difference.removeAll(b);
+        difference.removeAll(new HashSet<>(b));
         return difference;
     }
 

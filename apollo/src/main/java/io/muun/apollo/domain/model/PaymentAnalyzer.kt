@@ -325,6 +325,9 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
         val totalForDisplayInSatoshis = amountInSatoshis + feeInSatoshis
 
+        // We need to ensure we can spend on chain and that we have enough UI visible balance too
+        // That is, the collect doesn't make us spend more than we really can and the amount + fee
+        // doesn't default any debt.
         val canPay = totalInSatoshis <= totalUtxoBalanceInSatoshis
             && totalForDisplayInSatoshis <= totalBalanceInSatoshis
 

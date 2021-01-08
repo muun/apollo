@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.net.ApiObjectsMapper;
 import io.muun.apollo.data.net.HoustonClient;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -38,6 +39,8 @@ public class IntegrityActions {
 
     private final ApiObjectsMapper apiObjectsMapper;
 
+    private final ExecutionTransformerFactory transformerFactory;
+
     /**
      * Construct this class.
      */
@@ -47,7 +50,8 @@ public class IntegrityActions {
                             AuthRepository authRepository,
                             UserRepository userRepository,
                             HoustonClient houstonClient,
-                            ApiObjectsMapper apiObjectsMapper) {
+                            ApiObjectsMapper apiObjectsMapper,
+                            ExecutionTransformerFactory transformerFactory) {
 
         this.operationActions = operationActions;
         this.keysRepository = keysRepository;
@@ -55,6 +59,7 @@ public class IntegrityActions {
         this.userRepository = userRepository;
         this.houstonClient = houstonClient;
         this.apiObjectsMapper = apiObjectsMapper;
+        this.transformerFactory = transformerFactory;
     }
 
     /**
@@ -105,7 +110,8 @@ public class IntegrityActions {
         final IntegrityCheck integrityCheck = new IntegrityCheck(publicKeySet, balanceInSatoshis);
 
         return houstonClient.checkIntegrity(integrityCheck)
-                .flatMap(status -> handleIntegrityStatus(integrityCheck, status));
+                .flatMap(status -> handleIntegrityStatus(integrityCheck, status))
+                .subscribeOn(transformerFactory.getBackgroundScheduler());
     }
 
     private Observable<Void> handleIntegrityStatus(IntegrityCheck integrityCheck,

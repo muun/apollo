@@ -64,13 +64,13 @@ class CryptographyWrapper {
             IOException {
 
         try {
-            return Cryptography.rsaEncrypt(input, privateKeyEntry);
+            return Cryptography.rsaDecrypt(input, privateKeyEntry);
         } catch (ProviderException error) {
 
             // As class docs states, for Android 10 we retry after a small delay, else we re-throw
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
                 smallDelay();
-                return Cryptography.rsaEncrypt(input, privateKeyEntry);
+                return Cryptography.rsaDecrypt(input, privateKeyEntry);
             } else {
                 throw error;
             }
