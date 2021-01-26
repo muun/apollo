@@ -33,7 +33,7 @@ open class UseMuunLinkAction @Inject constructor(
         }
 
         if (parser.pathWithSlash != emailLinkAction.getPending()) {
-            throw InvalidActionLinkError()
+            throw InvalidActionLinkError(linkUri)
         }
 
         val uuid = parser.getParam(LINK_PARAM_UUID)

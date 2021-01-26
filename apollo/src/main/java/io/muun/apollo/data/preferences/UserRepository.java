@@ -396,7 +396,7 @@ public class UserRepository extends BaseRepository {
                     user.emergencyKitLastExportedAt
                             .map(SerializationUtils::serializeDate)
                             .orElse(null),
-                    SerializationUtils.serializeCurrencyUnit(user.primaryCurrency)
+                    SerializationUtils.serializeCurrencyUnit(user.unsafeGetPrimaryCurrency())
             );
         }
 

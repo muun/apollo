@@ -182,6 +182,6 @@ class PaymentContext(
         BitcoinAmount(
             amountInSatoshis,
             convert(amountInSatoshis, inputCurrency),
-            convert(amountInSatoshis, user.primaryCurrency)
+            convert(amountInSatoshis, user.getPrimaryCurrency(exchangeRateWindow))
         )
 }

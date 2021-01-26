@@ -5,10 +5,12 @@ import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.selector.ExchangeRateSelector;
 
 import org.javamoney.moneta.Money;
 import rx.Observable;
@@ -24,6 +26,7 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
     private final UserRepository userRepository;
     private final ContactDao contactDao;
     private final FeeWindowRepository feeWindowRepository;
+    private final ExchangeRateSelector rateSelector;
 
     /**
      * Resolves a Muun URI, fetching User and/or Contact as needed.
@@ -31,11 +34,13 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
     @Inject
     public ResolveMuunUriAction(UserRepository userRepository,
                                 ContactDao contactDao,
-                                FeeWindowRepository feeWindowRepository) {
+                                FeeWindowRepository feeWindowRepository,
+                                ExchangeRateSelector rateSelector) {
 
         this.userRepository = userRepository;
         this.contactDao = contactDao;
         this.feeWindowRepository = feeWindowRepository;
+        this.rateSelector = rateSelector;
     }
 
     @Override
@@ -46,12 +51,13 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
     private PaymentRequest resolveMuunUri(OperationUri uri) {
         final User user = userRepository.fetchOne();
         final FeeWindow feeWindow = feeWindowRepository.fetchOne();
+        final ExchangeRateWindow rateWindow = rateSelector.getWindow();
 
         final String amountParam = uri.getParam(OperationUri.MUUN_AMOUNT)
                 .orElse("0");
 
         final String currencyParam = uri.getParam(OperationUri.MUUN_CURRENCY)
-                .orElse(user.primaryCurrency.getCurrencyCode());
+                .orElse(user.getPrimaryCurrency(rateWindow).getCurrencyCode());
 
         final String descriptionParam = uri.getParam(OperationUri.MUUN_DESCRIPTION)
                 .orElse("");

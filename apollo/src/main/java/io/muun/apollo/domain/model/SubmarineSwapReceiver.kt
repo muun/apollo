@@ -11,31 +11,28 @@ class SubmarineSwapReceiver(
         val serializedNetworkAddresses: String,
         val publicKey: String) {
 
-    val formattedDestination: String
-        get() = "$publicKey@$displayNetworkAddress"
-
-    val displayNetworkAddress: String
-        get() {
-            val networkAddresses = networkAddresses
-            return if (networkAddresses.isEmpty()) "" else networkAddresses[0]
+    val formattedDestination by lazy {
+        if (displayNetworkAddress.isNotBlank()) {
+            "$publicKey@$displayNetworkAddress"
+        } else {
+            publicKey
         }
+    }
+
+    val displayNetworkAddress by lazy {
+        if (networkAddresses.isEmpty()) "" else networkAddresses[0]
+    }
 
     /**
      * Get the list of network addresses, ie. the concatenation of "{host}:{port}". Might be empty!
      */
-    private val networkAddresses: List<String>
-        get() {
-
-            try {
-                return Arrays.asList(*JSON_MAPPER.readValue(
-                        serializedNetworkAddresses,
-                        Array<String>::class.java
-                ))
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
-
+    private val networkAddresses by lazy {
+        try {
+            listOf(*JSON_MAPPER.readValue(serializedNetworkAddresses, Array<String>::class.java))
+        } catch (e: IOException) {
+            throw RuntimeException(e)
         }
+    }
 
     fun toJson(): SubmarineSwapReceiverJson {
         return SubmarineSwapReceiverJson(

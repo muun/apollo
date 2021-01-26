@@ -136,7 +136,7 @@ public class IntegrityActions {
                 error = new IntegrityError(message);
             }
 
-            Timber.e("Integrity", "Check failed", error);
+            Timber.e(error);
         }
 
         return Observable.just(null);

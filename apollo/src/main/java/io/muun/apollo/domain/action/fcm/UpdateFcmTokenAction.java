@@ -39,10 +39,6 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
         this.notificationActions = notificationActions;
     }
 
-    /**
-     * @param token from firebase.
-     * @return an observable action.
-     */
     @Override
     public Observable<Void> action(String token) {
 
@@ -76,9 +72,6 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
         Timber.d("Updating FCM token");
 
         return houstonClient.updateFcmToken(token)
-                .compose(executionTransformerFactory.getAsyncExecutor())
-                .flatMap(ignore -> notificationActions.pullNotifications())
-                // TODO: replace this with generic mechanism for all async actions to log errors
-                .doOnError(error -> Timber.e(error, "Error while trying to refresh FCM token"));
+                .flatMap(ignore -> notificationActions.pullNotifications());
     }
 }

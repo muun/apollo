@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.model;
 
 import io.muun.common.Optional;
+import io.muun.common.model.Currency;
 import io.muun.common.utils.Since;
 
 import androidx.annotation.Nullable;
@@ -21,7 +22,7 @@ public class User {
     public Optional<UserPhoneNumber> phoneNumber;
     public Optional<UserProfile> profile;
 
-    public CurrencyUnit primaryCurrency;
+    private CurrencyUnit primaryCurrency;
 
     public boolean hasRecoveryCode;
     public boolean hasPassword;
@@ -92,6 +93,24 @@ public class User {
 
     public boolean hasExportedEmergencyKit() {
         return emergencyKitLastExportedAt.isPresent();
+    }
+
+    /**
+     * Get the user's primary currency, if exchange rate is available, BTC otherwise.
+     */
+    public CurrencyUnit getPrimaryCurrency(ExchangeRateWindow rateWindow) {
+        if (rateWindow.rates.containsKey(primaryCurrency.getCurrencyCode())) {
+            return primaryCurrency;
+        } else {
+            return Currency.getUnit("BTC").get();
+        }
+    }
+
+    /**
+     * Get the user's primary currency, whether or not an exchange rate is available. Careful.
+     */
+    public CurrencyUnit unsafeGetPrimaryCurrency() {
+        return primaryCurrency;
     }
 
     /**
