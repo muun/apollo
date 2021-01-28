@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General-purpose color scheme -->
+    <color name="muun_blue">#2474cd</color>
+    <color name="muun_blue_dark">#2064b3</color>
+    <color name="muun_blue_light">#ADD4FF</color>
+    <color name="muun_blue_lighter">#F2F7FC</color>
+    <color name="muun_blue_disabled">#D3E3F5</color>
+    <color name="muun_black">#1a2733</color>
+    <color name="muun_gray_dark">#57656f</color>
+    <color name="muun_gray_light">#cbced2</color>
+    <color name="muun_gray_lighter">#E5ECF4</color>
+    <color name="muun_gray_legacy">#f4f5f6</color>
+    <color name="muun_red">#cf4454</color>
+    <color name="muun_green">#1fcc7e</color>
+    <color name="muun_green_pale">#F7FCF9</color>
+    <color name="muun_white">#ffffff</color>
+    <color name="muun_white_almost">#eeeff0</color>
+
+    <!-- Special cases -->
+    <color name="operation_pending">#FAB931</color>
+    <color name="operation_failed">#E03738</color>
+    <color name="operation_completed">#4C9400</color>
+
+    <color name="operation_self">@color/muun_gray_dark</color>
+    <color name="operation_incoming">#4C9400</color>
+    <color name="operation_outgoing">@color/muun_gray_dark</color>
+
+    <!-- A3 = 64% alpha, according to https://gist.github.com/lopspower/03fb1cc0ac9f32ef38f4  -->
+    <color name="scanner_overlay">#a31a2733</color>
+    <color name="scanner_border">#57B9EA</color>
+
+    <color name="toolbar_back_arrow">@color/muun_gray_dark</color>
+
+    <color name="transparent_muun_white">#e6ffffff</color>
+
+    <color name="muun_blue_faded">#f4f8fd</color>
+    <color name="muun_blue_pale">#f8f8ff</color>
+    <color name="warning">#c58450</color>
+    <color name="error">#c14E57</color>
+
+    <color name="muun_button_primary_disabled_background">#d3e3f5</color>
+    <color name="security_center_card_skipped_background">
+        @color/muun_button_primary_disabled_background
+    </color>
+
+    <!-- Needed for ic_launcher adaptative icons -->
+    <color name="ic_launcher_background">#FFFFFF</color>
+
+    <!--  Notice Banner Colors -->
+    <color name="notice_banner_background">#FFFDEF</color>
+    <color name="notice_banner_border">#FFE296</color>
+    <color name="notice_banner_icon">#F49300</color>
+    <color name="notice_banner_rbf_bkg">#FFF8EF</color>
+
+    <!--  Notice Banner Colors -->
+    <color name="balance_clock_pending">#FFB800</color>
+    <color name="balance_clock_rbf">#EB7100</color>
+
+    <color name="new_home_tx_list_tooltip">#F7F9FE</color>
+    <color name="new_op_badge_light_blue">#F7FBFF</color>
+    <color name="new_op_badge_green">#218321</color>
+</resources>

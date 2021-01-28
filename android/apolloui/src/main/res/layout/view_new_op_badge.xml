@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_width="wrap_content"
+        tools:layout_gravity="center">
+
+    <TextView
+            android:id="@+id/badge_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-medium"
+            tools:text="-740287 SAT"
+            tools:background="@drawable/new_op_badge_blue_bkg"
+            tools:textColor="@color/muun_blue"
+            />
+</FrameLayout>

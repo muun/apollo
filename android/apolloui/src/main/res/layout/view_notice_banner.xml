@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:background="@drawable/notice_banner_background">
+
+    <ImageView
+            android:id="@+id/banner_icon"
+            android:layout_width="16dp"
+            android:layout_height="18dp"
+            android:layout_marginStart="12dp"
+            android:layout_centerVertical="true"
+            tools:src="@drawable/alert_badge"/>
+
+    <!--
+    Using TextView instead of HtmlTextView because we always want to handle click in entire
+    banner, instead of just simply clicks on an inlined link.
+    -->
+    <TextView
+            android:id="@+id/banner_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/banner_icon"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:lineSpacingExtra="5sp"
+            android:textSize="13sp"
+            android:textColor="@color/muun_gray_dark"
+            tools:text="This payment may take longer than most Lightning payments. Why?"/>
+
+</RelativeLayout>

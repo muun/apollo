@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/muun_white">
+
+    <ImageView
+            android:id="@+id/message_image"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="8dp"
+            tools:src="@drawable/error_badge"/>
+
+    <TextView
+            android:id="@+id/message_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:lineSpacingExtra="5sp"
+            android:textSize="13sp"
+            android:textColor="@color/muun_gray_dark"
+            tools:text="Fee is too low. This transaction might take a long time to confirm."/>
+
+</LinearLayout>

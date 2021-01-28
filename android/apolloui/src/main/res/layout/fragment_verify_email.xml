@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="@dimen/muun_screen_margin">
+
+        <TextView
+                android:id="@+id/verify_email_title"
+                style="@style/muun_text_h1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/verify_email_title" />
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+                android:id="@+id/verify_email_description"
+                style="@style/muun_text_body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/verify_email_subtitle" />
+
+        <View style="@style/expander" />
+
+        <ImageView
+                android:id="@+id/verify_email_icon"
+                android:layout_width="200dp"
+                android:layout_height="146dp"
+                android:contentDescription="@string/signup_email_verify"
+                android:src="@drawable/ic_envelope" />
+
+        <io.muun.apollo.presentation.ui.view.LoadingView
+                android:id="@+id/verify_email_loading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
+
+        <View style="@style/expander" />
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/open_email_client"
+            style="@style/muun_button_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/verify_email_action" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

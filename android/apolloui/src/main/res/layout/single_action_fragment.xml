@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:background="@color/muun_white">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/muun_screen_margin"
+            android:paddingRight="@dimen/muun_screen_margin"
+            android:orientation="vertical"
+            android:gravity="center">
+
+        <ImageView
+                android:id="@+id/single_action_image"
+                android:contentDescription="@null"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:src="@drawable/tick"
+                />
+
+        <TextView
+                android:id="@+id/single_action_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muun_black"
+                android:gravity="center"
+                android:textSize="24sp"
+                tools:text="Recovery code set up succesfully!"
+                />
+
+        <TextView
+                android:id="@+id/single_action_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/muun_gray_dark"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"
+                android:letterSpacing="0.03"
+                android:lineSpacingExtra="8sp"
+                android:visibility="gone"
+        />
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/single_action_action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Back to reality"
+            />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

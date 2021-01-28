@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <ImageView
+            android:id="@+id/muun_empty_screen_icon"
+            android:contentDescription="@null"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="28dp"
+            tools:src="@drawable/enable_p2p_empty_state"
+    />
+
+    <TextView
+            android:id="@+id/muun_empty_screen_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="8dp"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:textStyle="normal"
+            android:textColor="@color/muun_black"
+            android:gravity="center_horizontal"
+            tools:visibility="visible"
+            tools:text="@string/camera_permission_request_title"
+    />
+
+    <io.muun.apollo.presentation.ui.view.HtmlTextView
+            android:id="@+id/muun_empty_screen_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="28dp"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="@color/muun_gray_dark"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="8sp"
+            android:gravity="center_horizontal"
+            tools:text="Some long empty state description that wraps into  two lines."
+    />
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_floating"
+            android:id="@+id/muun_empty_screen_button"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/muun_button_compact_height"
+            android:elevation="3dp"
+            android:visibility="gone"
+            android:textAllCaps="true"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="2sp"
+            android:gravity="center_horizontal"
+            tools:visibility="visible"
+            tools:text="Action"
+    />
+
+</LinearLayout>

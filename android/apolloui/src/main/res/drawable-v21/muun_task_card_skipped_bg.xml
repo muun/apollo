@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+        android:color="?colorControlHighlight">
+
+    <item>
+
+    <shape android:shape="rectangle" >
+
+        <solid android:color="@color/muun_white" />
+        <stroke android:width="1dp" android:color="@color/security_center_card_skipped_background" />
+        <corners android:radius="@dimen/default_corner_radius" />
+    </shape>
+    </item>
+</ripple>

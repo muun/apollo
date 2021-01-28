@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "715290832363",
+    "firebase_url": "https://muun-staging.firebaseio.com",
+    "project_id": "muun-staging",
+    "storage_bucket": "muun-staging.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715290832363:android:14a1ecf4c2b9b7dc",
+        "android_client_info": {
+          "package_name": "io.muun.apollo.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "715290832363-dejboaqsiqg8vafp627k7942jje7nuck.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgWWKadqqZ79KLYoaU57cn4_pjZEPuJkc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

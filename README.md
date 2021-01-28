@@ -12,7 +12,7 @@ The app follows the [clean](https://fernandocejas.com/2014/09/03/architecting-an
 * **Domain:** contains the models and business logic (use cases in clean architecture lingo).
 * **Presentation:** contains the UI code.
 
-There's also a pure java **common** module with code shared all over. This repository contains all but the presentation layer.
+There's also a pure java **common** module with code shared all over.
 
 ### LibWallet
 
@@ -38,6 +38,10 @@ GO111MODULE=off go run golang.org/x/mobile/cmd/gomobile bind -target=android -o 
 * All the keystore and data handling happens in the **data** layer.
 * All the business logic that decides when to sign what happens in the **domain** layer.
 * The **presentation** layer only depends on the **domain** layer, it never references **data** directly.
+
+## Veryfing our builds
+
+Our builds are not reproducible yet! Stay tuned.
 
 ## Responsible Disclosure
 

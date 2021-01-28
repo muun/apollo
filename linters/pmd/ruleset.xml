@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+
+<ruleset name="Application Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Muun rules
+    </description>
+
+    <exclude-pattern>.*/R.java</exclude-pattern>
+
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="SwitchStmtsShouldHaveDefault" />
+        <exclude name="AvoidReassigningParameters" />
+        <exclude name="PositionLiteralsFirstInComparisons" />
+        <exclude name="UseVarargs" />
+
+        <exclude name="JUnitAssertionsShouldIncludeMessage" />
+        <exclude name="JUnitTestContainsTooManyAsserts" />
+        <exclude name="JUnit4TestShouldUseBeforeAnnotation" />
+        <exclude name="JUnit4TestShouldUseAfterAnnotation" />
+    </rule>
+
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="ConfusingTernary" />
+        <exclude name="UnnecessaryLocalBeforeReturn" />
+        <exclude name="EmptyMethodInAbstractClassShouldBeAbstract" />
+        <exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
+        <exclude name="TooManyStaticImports" />
+
+        <exclude name="ShortVariable" />
+        <exclude name="LongVariable" />
+        <exclude name="ShortMethodName" />
+        <exclude name="AbstractNaming" />
+        <exclude name="ShortClassName" />
+        <exclude name="GenericsNaming" />
+
+        <!-- TODO: disable just for 'for' looping variables -->
+        <exclude name="LocalVariableCouldBeFinal" />
+        <exclude name="MethodArgumentCouldBeFinal" />
+
+        <exclude name="PrematureDeclaration" />
+        <exclude name="OnlyOneReturn" />
+    </rule>
+
+    <rule ref="category/java/design.xml">
+        <exclude name="SimplifyBooleanReturns" />
+        <exclude name="AvoidDeeplyNestedIfStmts" />
+        <exclude name="SwitchDensity" />
+        <exclude name="SingularField" />
+        <exclude name="ExceptionAsFlowControl" />
+        <exclude name="AvoidThrowingRawExceptionTypes" />
+        <exclude name="AvoidThrowingNullPointerException" />
+        <exclude name="AvoidCatchingGenericException" />
+        <exclude name="LoosePackageCoupling" />
+        <exclude name="LawOfDemeter" />
+    </rule>
+
+    <rule ref="category/java/errorprone.xml">
+        <exclude name="ReturnEmptyArrayRatherThanNull" />
+        <exclude name="AvoidCatchingNPE" />
+        <exclude name="AvoidDuplicateLiterals" />
+        <!-- Fails with lombok generated setters/getters -->
+        <exclude name="BeanMembersShouldSerialize" />
+        <!-- Too many false positives -->
+        <exclude name="DataflowAnomalyAnalysis" />
+    </rule>
+
+    <rule ref="category/java/multithreading.xml">
+        <exclude name="AvoidSynchronizedAtMethodLevel" />
+    </rule>
+
+    <rule ref="category/java/performance.xml">
+        <exclude name="ConsecutiveAppendsShouldReuse" />
+        <exclude name="ConsecutiveLiteralAppends" />
+        <exclude name="InsufficientStringBufferDeclaration" />
+        <exclude name="InefficientEmptyStringCheck" />
+        <exclude name="AvoidInstantiatingObjectsInLoops" />
+        <exclude name="SimplifyStartsWith" />
+        <exclude name="AddEmptyString" />
+        <exclude name="RedundantFieldInitializer" />
+    </rule>
+
+    <rule ref="category/java/security.xml">
+    </rule>
+
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <properties>
+            <property name="allowCommentedBlocks" value="true" />
+        </properties>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml/AtLeastOneConstructor">
+        <properties>
+            <property name="ignoredAnnotations"
+                      value="lombok.Data | lombok.Value | lombok.Builder | lombok.NoArgsConstructor | lombok.RequiredArgsConstructor | lombok.AllArgsConstructorAtLeastOneConstructor | lombok.AllArgsConstructor" />
+        </properties>
+    </rule>
+
+</ruleset>

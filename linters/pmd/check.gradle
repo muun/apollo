@@ -1,0 +1,19 @@
+apply plugin: 'pmd'
+
+pmd {
+    ignoreFailures = true
+    ruleSetFiles = files("${project.rootDir}/linters/pmd/ruleset.xml")
+    ruleSets = []
+    incrementalAnalysis = true
+
+    sourceSets = [sourceSets.main]
+}
+
+tasks.withType(Pmd).configureEach { task ->
+    check.dependsOn task
+
+    reports {
+        xml.enabled = false
+        html.enabled = !xml.enabled
+    }
+}

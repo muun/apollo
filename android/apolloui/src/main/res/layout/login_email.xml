@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/muun_white">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/muun_screen_margin"
+                android:orientation="vertical">
+
+            <TextView
+                    android:layout_marginBottom="8dp"
+                    style="@style/explanation_title"
+                    android:text="@string/login_email_title" />
+
+            <TextView
+                    style="@style/explanation"
+                    android:id="@+id/enter_email_explanation"
+                    android:text="@string/login_email_explanation" />
+
+            <io.muun.apollo.presentation.ui.view.MuunTextInput
+                    android:id="@+id/enter_email_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:imeOptions="actionNext"
+                    android:fontFamily="sans-serif"
+                    android:inputType="textEmailAddress"
+                    android:hint="@string/login_email_input_hint"
+            />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_secondary"
+            android:id="@+id/enter_email_use_rc_only"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="@string/recover_with_recovery_code" />
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/enter_email_action"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="@string/login_email_action" />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

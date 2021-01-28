@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/muun_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/scanqr_drawer_title"
+                android:textAllCaps="true"
+                android:textColor="@color/muun_blue"
+                android:textStyle="bold" />
+
+        <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="lnbcrt100u1p0fvg0xpp5e9p9a8e5ymakjfvra0se50k7trmllr5fkz5jrj4s33xjl66ta2hsdqqcqzpgsp59r92h2s9lx8aqn899vwg8f5q8yleypxtv5avxnvuv3a9w2hj4srq9qy9qsq0e9vr9x0set7m8lt3y6egujz6d5qh0a75pjnaqpc5u49mqmmpywr78h5sz7gfq3cpnq7gt836fg9lpxy98yf527q0e5vu2m0gu7mkmgq3saqyu" />
+
+    </LinearLayout>
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginLeft="16dp"
+            android:src="@drawable/ic_clipboard_blue" />
+
+</LinearLayout>

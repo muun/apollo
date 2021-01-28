@@ -1,0 +1,18 @@
+apply plugin: 'checkstyle'
+
+checkstyle {
+    ignoreFailures = false
+    toolVersion = '8.36.2'
+    configFile = file("${rootProject.rootDir}/linters/checkstyle/config.xml")
+    configProperties = [ 'suppressionFile' : file("${rootProject.rootDir}/linters/checkstyle/suppressions.xml")]
+}
+
+check.dependsOn 'checkstyle'
+
+task checkstyle(type: Checkstyle) {
+    source 'src'
+    include '**/*.java'
+    exclude '**/gen/**'
+    classpath = files()
+}
+

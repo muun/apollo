@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/muun_screen_margin">
+
+            <ImageView
+                    android:id="@+id/signup_waiting_for_email_verify_email_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/signup_email_verify"
+                    android:src="@drawable/ic_envelope" />
+
+            <TextView
+                    android:id="@+id/signup_waiting_for_email_verification_title"
+                    style="@style/muun_text_h1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="@string/signup_email_verify" />
+
+            <TextView
+                    android:id="@+id/signup_waiting_for_email_verification_explanation"
+                    style="@style/muun_text_body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="@string/signup_email_verify_explanation" />
+
+            <io.muun.apollo.presentation.ui.view.LoadingView
+                    android:id="@+id/signup_waiting_for_email_verification_loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/signup_waiting_for_email_open_email_client"
+            style="@style/muun_button_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/email_verify_open_mail" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

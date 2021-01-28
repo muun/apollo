@@ -1,0 +1,20 @@
+apply plugin: 'com.github.spotbugs'
+
+spotbugs {
+    ignoreFailures = true
+    reportLevel = 'medium'
+    effort = 'max'
+
+    sourceSets = [sourceSets.main]
+}
+
+tasks.withType(SpotBugsTask).configureEach {
+    reports {
+        xml.enabled = false
+        html.enabled = !xml.enabled
+    }
+}
+
+dependencies {
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+}

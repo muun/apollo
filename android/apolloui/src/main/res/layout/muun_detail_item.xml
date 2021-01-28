@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                    android:id="@+id/operation_detail_item_icon_title"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/ic_clock"
+                    android:visibility="gone"
+                    />
+
+            <TextView
+                    android:id="@+id/operation_detail_item_text_title"
+                    style="@style/detail_item_header"
+                    android:layout_toEndOf="@id/operation_detail_item_icon_title"
+                    android:layout_centerVertical="true"
+                    tools:text="When"
+            />
+        </RelativeLayout>
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+                android:id="@+id/operation_detail_item_text_content"
+                style="@style/detail_item_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="11 Feb 2016 at 14.35"
+        />
+    </LinearLayout>
+
+    <FrameLayout
+            android:id="@+id/operation_detail_item_icon_frame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="34dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone">
+
+        <ImageView
+                android:id="@+id/operation_detail_item_icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                />
+    </FrameLayout>
+
+</LinearLayout>

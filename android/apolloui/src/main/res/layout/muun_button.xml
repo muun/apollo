@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    <!--
+        We want the ProgressBar to be rendered on top of the Button. Originally, element order
+        inside the Layout determined Z-order (last child was shown on top), but API 21 introduced
+        the axis translation attributes, which now have the last word.
+
+        For API 21+, we'll set `android:translationZ` to ensure the ProgressBar is rendered on top.
+        Older APIs rely on the ProgressBar being the last child in the Layout.
+    -->
+
+    <Button
+            android:id="@+id/muun_button_button"
+            android:translationZ="0dp"
+            android:minHeight="0dp"
+            style="@style/muun_button_internal"
+            tools:text="Action"
+            tools:background="@drawable/muun_button_primary_bg"
+            />
+    
+    <TextView
+            android:id="@+id/muun_button_cover"
+            style="@style/muun_button_internal_cover"
+            tools:text="Lost internet connection"
+            android:visibility="gone"
+            />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/muun_button_progress_bar"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerInParent="true"
+            android:translationZ="10dp"
+            android:visibility="gone"
+            style="?android:attr/progressBarStyleLarge"
+            />
+</RelativeLayout>

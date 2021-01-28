@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!--  Using SP units ON PURPOSE as we are kinda quickly implementing
+     the country flags feature. As we use unicode chars for flags and an
+     image for btc logo and default flag, this way we can correctly display
+     both no matter what font size and display resolution. -->
+    <ImageView
+            android:id="@+id/currency_item_logo"
+            android:layout_width="20sp"
+            android:layout_height="18sp"
+            android:layout_marginStart="1sp"
+            android:layout_marginBottom="2sp"
+            android:layout_marginTop="2sp"
+            android:layout_marginEnd="1sp"
+            tools:src="@drawable/btc_logo"
+            tools:visibility="visible"
+            />
+
+    <TextView
+            android:id="@+id/currency_item_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/currency_item_logo"
+            android:layout_marginRight="24dp"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="#223442"
+            android:lineSpacingExtra="0sp"
+            tools:text="🇦🇷 Argentinian Peso (ARS)" />
+
+    <ImageView
+            android:id="@+id/currency_item_selected_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_check_black_24_px"
+            android:contentDescription="@string/selected"
+    />
+
+</RelativeLayout>

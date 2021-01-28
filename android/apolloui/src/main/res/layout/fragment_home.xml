@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.NewOpBadge
+            android:id="@+id/new_op_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/home_widget_container"
+            android:layout_centerHorizontal="true"
+            />
+
+    <LinearLayout
+            android:id="@+id/home_widget_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:maxWidth="480dp"
+            android:orientation="vertical"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp">
+
+        <io.muun.apollo.presentation.ui.view.BalanceView
+                android:id="@+id/home_balance_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="46dp" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <!-- Wrapping LinearLayout needed as MuunButton can't handle layout_weight -->
+            <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                <io.muun.apollo.presentation.ui.view.MuunButton
+                        android:id="@+id/home_receive_button"
+                        style="@style/muun_button_primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/muun_button_floating_bg"
+                        android:text="@string/home_footer_action_receive" />
+
+            </LinearLayout>
+
+            <!-- Wrapping LinearLayout needed as MuunButton can't handle layout_weight -->
+            <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                <io.muun.apollo.presentation.ui.view.MuunButton
+                        android:id="@+id/home_send_button"
+                        style="@style/muun_button_primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/muun_button_floating_bg"
+                        android:text="@string/home_footer_action_send" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <io.muun.apollo.presentation.ui.view.MuunHomeCard
+                android:id="@+id/home_security_center_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="64dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <FrameLayout
+            android:id="@+id/chevron_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+
+            >
+
+        <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/chevron"
+                android:background="@drawable/muun_ripple_circle_bg"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                
+                />
+
+    </FrameLayout>
+
+</RelativeLayout>

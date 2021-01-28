@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.MuunEmptyScreen
+            android:id="@+id/contact_list_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            muun:icon="@drawable/enable_p2p_empty_state"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintRight_toLeftOf="parent"
+            muun:layout_constraintRight_toRightOf="parent"
+            muun:layout_constraintTop_toTopOf="parent"
+            muun:subtitle="@string/contact_list_empty" />
+
+    <io.muun.apollo.presentation.ui.view.FirstOnMuunView
+            android:id="@+id/contact_list_first_on_muun"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintRight_toLeftOf="parent"
+            muun:layout_constraintRight_toRightOf="parent"
+            tools:visibility="visible" />
+
+    <io.muun.apollo.presentation.ui.view.SimpleMessageView
+            android:id="@+id/contact_list_permission_denied_forever"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            muun:action="@string/home_contacts_permission_denied_forever_action"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintRight_toLeftOf="parent"
+            muun:layout_constraintRight_toRightOf="parent"
+            muun:layout_constraintTop_toTopOf="parent"
+            muun:subtitle="@string/home_contacts_permission_denied_forever_text" />
+
+    <io.muun.apollo.presentation.ui.view.LoadingView
+            android:id="@+id/contact_list_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintRight_toLeftOf="parent"
+            muun:layout_constraintRight_toRightOf="parent"
+            muun:layout_constraintTop_toTopOf="parent"
+            muun:title="@string/home_contacts_loading" />
+
+    <TextView
+            android:id="@+id/contact_list_recycler_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginLeft="16dp"
+            android:textSize="14sp"
+            android:textColor="@color/muun_gray_dark"
+            android:text="@string/contact_list_title"
+            android:visibility="gone"
+            muun:layout_constraintTop_toTopOf="parent"
+            muun:layout_constraintLeft_toLeftOf="parent"
+            muun:layout_constraintBottom_toTopOf="@id/contact_list_recycler" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/contact_list_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            muun:layout_behavior="@string/appbar_scrolling_view_behavior"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintLeft_toLeftOf="parent"
+            muun:layout_constraintRight_toRightOf="parent"
+            muun:layout_constraintTop_toBottomOf="@id/contact_list_recycler_title"
+            tools:listitem="@layout/home_contacts_item"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

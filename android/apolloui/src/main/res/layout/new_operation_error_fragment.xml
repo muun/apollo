@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/muun_white">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            tools:background="@color/muun_white">
+
+        <ImageView
+                android:contentDescription="@null"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_marginBottom="24dp"
+                android:src="@drawable/error"/>
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muun_black"
+                android:gravity="center"
+                android:textSize="24sp"
+                tools:text="Something went wrong!"/>
+
+        <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="22dp"
+                android:textColor="@color/muun_gray_dark"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"
+                android:letterSpacing="0.03"
+                android:lineSpacingExtra="8sp"
+                tools:text="Here you have a detailed explanation of why this happened"/>
+
+        <LinearLayout
+                android:id="@+id/insuffient_funds_extras"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+            <TextView
+                    style="@style/muun_new_op_error_extras_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/new_op_error_required_amount"/>
+
+            <TextView
+                    style="@style/muun_new_op_error_extras_body"
+                    android:id="@+id/insuffient_funds_extras_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    tools:text="12345.420006 BTC"/>
+
+            <TextView
+                    style="@style/muun_new_op_error_extras_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/new_op_error_total_balance"/>
+
+            <TextView
+                    style="@style/muun_new_op_error_extras_body"
+                    android:id="@+id/insuffient_funds_extras_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    android:textColor="@color/muun_red"
+                    tools:text="2345.104857 BTC"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/exit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/error_op_action"
+            tools:text="Take the red pill"
+            />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

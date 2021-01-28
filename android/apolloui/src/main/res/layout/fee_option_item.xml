@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/muun_item"
+        android:id="@+id/fee_option_item"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:background="@drawable/border">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/fee_option_title"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:textColor="@color/muun_black"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:lines="1"
+                    tools:text="Less than 30 min"
+                    />
+
+            <TextView
+                    android:id="@+id/fee_option_main_value"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/muun_black"
+                    tools:text="0.000014 BTC"
+                    android:textSize="16sp"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="sans-serif"
+            />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/fee_option_fee_rate"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:lines="1"
+                    tools:text="200 sat/byte"/>
+
+            <TextView
+                    android:id="@+id/fee_option_secondary_value"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="0"
+                    android:layout_marginStart="8dp"
+                    tools:text="(45.882.152,55 VEF)"
+                    android:textSize="14sp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif"
+                    android:ellipsize="end"
+                    android:lines="1"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

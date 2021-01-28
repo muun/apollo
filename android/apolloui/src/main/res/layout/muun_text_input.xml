@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:parentTag="android.widget.FrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:textSize="@dimen/muun_input_text_size"
+            android:layout_height="match_parent"
+            android:id="@+id/muun_text_input_layout"
+    >
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/muun_text_input_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muun_black"
+                android:imeOptions="flagNoExtractUi"
+                android:singleLine="true"
+        />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+            android:id="@+id/muun_helper_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/muun_gray_dark"
+    />
+</FrameLayout>
+
+

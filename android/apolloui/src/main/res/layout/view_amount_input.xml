@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+    >
+
+        <io.muun.apollo.presentation.ui.view.MuunEditText
+                android:id="@+id/muun_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:fontFamily="sans-serif-light"
+                android:textStyle="normal"
+                android:textColor="#caced2"
+                android:hint="0"
+                android:maxLength="18"
+                android:lineSpacingExtra="0sp"
+                android:background="@android:color/transparent"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:inputType="numberDecimal"
+                android:imeOptions="flagNoExtractUi"
+        />
+
+        <TextView
+                android:id="@+id/currency_code"
+                android:drawableRight="@drawable/ic_action_edit_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="4dp"
+                android:layout_gravity="bottom"
+                android:textSize="16sp"
+                android:textColor="@color/muun_gray_dark"
+                android:lineSpacingExtra="0sp"
+                tools:text="ARS"
+        />
+
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/muun_available_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="#57656f"
+            android:lineSpacingExtra="4sp"
+            android:gravity="center"
+            tools:text="Available: 12.349,11 ARS"
+    />
+
+</LinearLayout>

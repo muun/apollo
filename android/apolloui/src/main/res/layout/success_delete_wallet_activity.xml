@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/muun_white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:contentDescription="@null"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:visibility="visible"
+            android:src="@drawable/tick"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/muun_black"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:text="@string/delete_wallet_success_message"
+            android:layout_marginTop="16dp"
+            />
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+            android:id="@+id/success_delete_wallet_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/muun_gray_dark"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="8sp"
+            android:text="@string/delete_wallet_success_description"
+            />
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+        style="@style/muun_button_primary"
+        android:id="@+id/success_delete_wallet_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_wallet_success_action"
+        />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

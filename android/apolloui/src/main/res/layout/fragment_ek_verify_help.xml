@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/muun_screen_margin"
+            android:paddingRight="@dimen/muun_screen_margin"
+            android:paddingBottom="@dimen/muun_screen_margin">
+
+        <TextView
+                style="@style/help_screen_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ek_verify_help_title" />
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+                android:id="@+id/subtitle"
+                style="@style/help_screen_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ek_verify_help_body" />
+
+        <ImageView
+                style="@style/help_screen_image"
+                android:scaleType="centerInside"
+                android:layout_marginTop="32dp"
+                android:src="@drawable/ek_vcode_help"
+                />
+    </LinearLayout>
+</ScrollView>

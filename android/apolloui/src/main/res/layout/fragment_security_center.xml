@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="@dimen/muun_screen_margin"
+            android:orientation="vertical">
+
+        <io.muun.apollo.presentation.ui.view.MuunProgressBar
+                android:id="@+id/progress"
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+
+        <TextView
+                android:id="@+id/progress_bar_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="16sp"
+                android:textColor="@color/muun_black"
+                android:textStyle="bold"
+                tools:text="@string/sc_task_header_0" />
+
+        <LinearLayout
+                android:id="@+id/sc_success_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical">
+
+            <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/shield" />
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="@string/sc_task_header_3"
+                    android:textSize="16sp"
+                    android:textColor="@color/muun_black"
+                    android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/tag_email_skipped"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:minWidth="70dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="6dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:translationZ="1dp"
+                    android:text="@string/task_email_skipped"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/roboto_mono_medium"
+                    android:textColor="@color/muun_blue"
+                    android:gravity="center"
+                    android:background="@drawable/muun_task_card_skipped_tag"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunTaskCard
+                    android:id="@+id/task_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" />
+
+        </RelativeLayout>
+
+        <io.muun.apollo.presentation.ui.view.MuunTaskCard
+                android:id="@+id/task_recovery_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" />
+
+        <io.muun.apollo.presentation.ui.view.MuunTaskCard
+                android:id="@+id/task_export_keys"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" />
+
+        <TextView
+                android:id="@+id/button_export_keys_again"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:text="@string/task_export_keys_again"
+                android:textSize="14sp"
+                android:textColor="@color/muun_blue"
+                android:textStyle="bold"
+                android:background="@drawable/muun_bubble_button"
+                />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

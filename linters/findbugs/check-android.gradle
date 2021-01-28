@@ -1,0 +1,24 @@
+apply plugin: 'com.github.spotbugs'
+
+spotbugs {
+    ignoreFailures = true
+    reportLevel = 'medium'
+    effort = 'max'
+    excludeFilter = file("${project.rootDir}/linters/findbugs/excludes-android.xml")
+}
+
+tasks.withType(SpotBugsTask) {
+    dependsOn 'assembleDebug'
+    group = "verification"
+
+    classes = files("${project.buildDir}/intermediates/javac")
+
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+dependencies {
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+}

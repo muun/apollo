@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:gravity="center_horizontal">
+
+    <View style="@style/expander" />
+
+    <TextView
+            style="@style/muun_text_h1"
+            android:id="@+id/set_up_pin_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/muun_title_text_margin"
+            android:gravity="center"
+            tools:text="@string/choose_your_pin" />
+
+    <TextView
+            style="@style/muun_text_body"
+            android:id="@+id/set_up_pin_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="36dp"
+            android:paddingRight="36dp"
+            android:gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="@string/choose_your_pin" />
+
+    <io.muun.apollo.presentation.ui.view.MuunPinIndicator
+            android:id="@+id/pin_input_indicator"
+            android:layout_margin="@dimen/muun_title_text_margin"
+            android:padding="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/error_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"/>
+
+    <View style="@style/expander" />
+
+    <io.muun.apollo.presentation.ui.view.MuunNumericKeyboard
+            android:id="@+id/pin_input_keyboard"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+</LinearLayout>

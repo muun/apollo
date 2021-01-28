@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+    <TextView
+            android:id="@+id/simple_message_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="@color/muun_black"
+            android:gravity="center_horizontal"
+            tools:visibility="visible"
+            tools:text="Some title placeholder"
+    />
+
+    <io.muun.apollo.presentation.ui.view.HtmlTextView
+            android:id="@+id/simple_message_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="@color/muun_gray_dark"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="8sp"
+            android:gravity="center_horizontal"
+            tools:text="Some long empty state description that wraps into  two lines."
+    />
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_secondary"
+            android:id="@+id/simple_message_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:textAllCaps="true"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="2sp"
+            android:gravity="center_horizontal"
+            tools:visibility="visible"
+            tools:text="Action"
+    />
+
+</LinearLayout>

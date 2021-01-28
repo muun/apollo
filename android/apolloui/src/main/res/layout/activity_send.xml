@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        android:id="@+id/button_layout"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevated="true" />
+
+    <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:orientation="vertical"> <!-- focusable to avoid auto-focus on inputs -->
+
+            <io.muun.apollo.presentation.ui.view.MuunUriInput
+                    android:id="@+id/uri_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@color/muun_gray_light" />
+
+            <io.muun.apollo.presentation.ui.view.StatusMessage
+                    android:id="@+id/uri_error_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            <io.muun.apollo.presentation.ui.view.MuunUriPaster
+                    android:id="@+id/uri_paster"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            <!--
+            Height changes to wrap_content when list have contacts (e.g shows recyclerView).
+            See comment in SendActivity#setP2PState
+             -->
+            <io.muun.apollo.presentation.ui.view.MuunContactList
+                    android:id="@+id/contact_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/muun_white"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/confirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/send_confirm" />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

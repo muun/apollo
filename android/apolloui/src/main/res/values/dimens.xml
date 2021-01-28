@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General-purpose dimension scheme -->
+    <dimen name="muun_screen_margin">16dp</dimen>
+    <dimen name="muun_menu_offset">16dp</dimen>
+
+    <dimen name="muun_text_size_help">12sp</dimen>
+    <dimen name="muun_text_size_body">16sp</dimen>
+    <dimen name="muun_text_size_h1">20sp</dimen>
+    <dimen name="muun_text_size_h2">24sp</dimen>
+
+    <dimen name="muun_title_text_margin">8dp</dimen>
+
+    <dimen name="muun_input_text_size">@dimen/muun_text_size_body</dimen>
+
+    <dimen name="muun_button_internal_height">48dp</dimen>
+    <dimen name="muun_button_height_with_margin">74dp</dimen>
+    <dimen name="muun_button_compact_height">40dp</dimen>
+
+    <dimen name="muun_button_layout_gradient_height">16dp</dimen>
+    <dimen name="muun_button_layout_button_box_padding">16dp</dimen>
+    <dimen name="muun_button_layout_button_spacing">8dp</dimen>
+
+    <dimen name="dropshadow_height">5dp</dimen>
+
+    <!-- Special cases -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+
+    <dimen name="qr_code_size">274sp</dimen>
+
+    <dimen name="signup_explanation_margin">24dp</dimen>
+
+    <dimen name="default_corner_radius">4dp</dimen>
+    <dimen name="muun_welcome_dialog_corner_radius">8dp</dimen>
+
+    <!--  Calculated as: ?android/?android:actionBarSize + gradientHeight = 56dp + 10dp  -->
+    <dimen name="muun_header_plus_shadow_height">66dp</dimen>
+</resources>

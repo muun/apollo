@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <LinearLayout
+            style="@style/muun_item"
+            android:clickable="false"
+            android:focusable="false">
+
+        <ImageView
+                style="@style/muun_item_icon"
+                android:id="@+id/muun_action_item_picture"
+                tools:src="@drawable/profile"
+        />
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    style="@style/muun_item_title"
+                    android:layout_width="match_parent"
+                    android:id="@+id/muun_action_item_title"
+                    tools:text="Do something! Also wrap this title if it is too long for a line"
+            />
+
+            <TextView
+                    style="@style/muun_item_subtitle"
+                    android:layout_width="match_parent"
+                    android:id="@+id/muun_action_item_subtitle"
+                    tools:text="Because of the fun"
+            />
+        </LinearLayout>
+
+        <io.muun.apollo.presentation.ui.view.MuunIconButton
+                android:id="@+id/muun_action_item_action"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"
+                muun:icon="@drawable/ic_close"
+                muun:color="@color/muun_gray_dark"
+                tools:visibility="visible"
+        />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/muun_action_item_divider"
+        style="@style/divider"
+        android:layout_marginStart="82dp"
+        android:layout_marginEnd="0dp" />
+</LinearLayout>

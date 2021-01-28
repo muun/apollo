@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/muun_item"
+        android:id="@+id/fee_option_item"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:orientation="vertical"
+        android:paddingBottom="14dp"
+        android:background="@drawable/border_no_selection">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+            <io.muun.apollo.presentation.ui.view.MuunEditText
+                    android:id="@+id/fee_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-8dp"
+                    android:paddingBottom="9dp"
+                    android:paddingTop="0dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="4dp"
+                    android:textSize="16sp"
+                    android:singleLine="true"
+                    android:hint="0"
+                    android:maxLength="8"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
+                    tools:text="1000"/>
+
+            <TextView
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:lines="1"
+                    android:text="@string/sat_byte"/>
+
+            <TextView
+                    android:id="@+id/fee_main_value"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/muun_black"
+                    android:textSize="16sp"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="sans-serif"
+                    android:visibility="invisible"
+                    tools:visibility="visible"
+                    tools:text="0.000014 BTC"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/fee_estimated_time"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:lines="1"
+                    android:drawableStart="@drawable/clock"
+                    android:drawableTint="@color/muun_gray_dark"
+                    android:drawablePadding="5dp"
+                    android:visibility="invisible"
+                    tools:visibility="visible"
+                    tools:text="Less than 72 h"/>
+
+            <TextView
+                    android:id="@+id/fee_secondary_value"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="0"
+                    android:layout_marginStart="8dp"
+                    android:textSize="14sp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:maxLines="1"
+                    android:fontFamily="sans-serif"
+                    android:ellipsize="end"
+                    android:lines="1"
+                    android:visibility="invisible"
+                    tools:visibility="visible"
+                    tools:text="(45.882.152,55 VEF)"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.gridlayout.widget.GridLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="visible"
+        app:columnCount="3"
+        app:rowCount="4"
+>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_1"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_2"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_3"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_4"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_5"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_6"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_7"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_8"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_9"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              tools:textColor="#0fff"
+              android:text="\u00A0"/>
+
+    <TextView style="@style/numeric_keyboard_button"
+              app:layout_gravity="fill"
+              app:layout_columnWeight="1"
+              android:id="@+id/key_0"/>
+
+    <ImageView style="@style/numeric_keyboard_image_button"
+               app:layout_gravity="fill"
+               app:layout_columnWeight="1"
+               android:id="@+id/key_del"
+               android:src="@drawable/ic_backspace_black_24_px"
+               android:contentDescription="@string/backspace"
+    />
+</androidx.gridlayout.widget.GridLayout>

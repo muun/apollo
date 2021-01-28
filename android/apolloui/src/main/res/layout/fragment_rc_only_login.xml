@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/muun_screen_margin">
+
+            <TextView
+                    style="@style/explanation_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rc_only_login_recovery_code_explanation"
+                    android:textAlignment="center" />
+
+            <io.muun.apollo.presentation.ui.view.HtmlTextView
+                    android:id="@+id/rc_only_login_whats_this"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="32dp"
+                    android:gravity="center"
+                    android:text="@string/rc_only_login_whats_this"
+                    android:textAlignment="center"
+                    android:textColor="@color/muun_blue"
+                    android:textSize="16sp" />
+
+            <io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
+                    android:id="@+id/rc_only_login_recovery_code_box"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/rc_only_login_continue"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/rc_only_login_continue" />
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

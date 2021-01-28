@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MuunHeader">
+        <attr name="elevated" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="MuunActionItem">
+        <attr name="title" format="string" />
+        <attr name="subtitle" format="string" />
+        <attr name="picture" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="MuunDetailItem">
+        <attr name="description" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="MuunIconButton">
+        <attr name="label" format="string" />
+        <attr name="labelSize" format="dimension" />
+        <attr name="icon" format="reference" />
+        <attr name="iconSize" format="dimension" />
+        <attr name="color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="MuunEmptyScreen">
+        <attr name="action" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="MuunTextInput">
+        <attr name="helperText" format="string" />
+
+        <attr name="helperTextVisibility" format="enum">
+            <enum name="visible" value="0"/>
+            <enum name="visible_when_focused" value="1"/>
+            <enum name="gone" value="2"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="PassCodeView">
+        <attr name="digits" format="integer"/>
+        <attr name="filled_drawable" format="reference"/>
+        <attr name="empty_drawable" format="reference"/>
+        <attr name="digit_size" format="dimension"/>
+        <attr name="key_text_size" format="dimension"/>
+        <attr name="divider_visible" format="boolean"/>
+        <attr name="digit_spacing" format="dimension"/>
+        <attr name="digit_vertical_padding" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="MuunAmountInput">
+        <!-- from 0.0f to 1.0f -->
+        <attr name="textMaxWidthPercent" format="float"/>
+    </declare-styleable>
+</resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.MuunEmptyScreen
+            android:id="@+id/empty_screen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            muun:icon="@drawable/tx_empty"
+            muun:title="@string/home_operations_empty_title"
+            muun:subtitle="@string/home_operations_empty" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_operations_recycler_operation_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+
+</FrameLayout>

@@ -1,0 +1,19 @@
+apply plugin: 'pmd'
+
+pmd {
+    ignoreFailures = true
+    ruleSetFiles = files("${project.rootDir}/linters/pmd/ruleset.xml")
+    ruleSets = []
+}
+
+check.dependsOn "pmd"
+
+task pmd(type: Pmd) {
+    description = "Check Java style with PMD"
+    source = fileTree('src/main/java')
+
+    reports {
+        xml.enabled = false
+        html.enabled = !xml.enabled
+    }
+}

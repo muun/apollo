@@ -1,0 +1,1266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Manifest strings -->
+    <string name="verify_link_handler_label" translatable="false">Muun</string>
+    <string name="authorize_link_handler_label" translatable="false">Muun</string>
+    <string name="confirm_link_handler_label" translatable="false">Muun</string>
+
+    <!-- General-purpose strings -->
+    <string name="cancel">Cancel</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="retry">Retry</string>
+    <string name="abort">Abort</string>
+    <string name="available_balance">Balance</string>
+    <string name="selected">Selected</string>
+    <string name="why"><annotation link="why">Why?</annotation></string>
+    <string name="no_internet">Lost internet connection</string>
+    <string name="qr_code_image">QR Code Image</string> <!-- accesibility -->
+    <string name="backspace">Backspace</string> <!-- accesibility -->
+    <string name="long_date_format">%s at %s%s</string>
+    <string name="not_available">Not available</string>
+
+    <string name="overflow_menu_hint">Overflow</string>
+
+    <!-- FCM -->
+    <string name="google_play_services_not_available">
+        It seems Google Play Services is not available on this phone. Muun needs this to work
+        correctly. Please, install Google Play Services and try again.
+    </string>
+    <string name="fcm_token_not_available">
+        The Android notification service is not responding. Please try again.
+    </string>
+
+    <!-- New operation -->
+    <string name="new_operation_title">New payment</string>
+    <string name="operation_detail_title">Payment details</string>
+    <string name="showqr_title">Receive bitcoin</string>
+    <string name="scanqr_title">Send bitcoin</string>
+    <string name="scanqr_drawer_title">Use address in clipboard</string>
+    <string name="scanqr_drawer_no_address">Payment request from %s</string>
+    <string name="scanqr_drawer_no_address_no_host">Payment request from a merchant</string>
+    <string name="scanqr_drawer_ln_invoice_title">Use invoice in clipboard</string>
+
+    <string name="grant_camera_permission_button">Enable camera</string>
+
+    <string name="camera_permission_request_title">
+        Scan a bitcoin or
+        \n lightning QR code
+    </string>
+
+    <string name="camera_permission_request">
+        Enable your camera to scan QR codes with addresses or invoices
+    </string>
+
+    <string name="new_operation_to">To</string>
+    <string name="new_operation_to_hint">Enter a bitcoin address or invoice</string>
+    <string name="new_operation_dialog_full_address">Full address</string>
+    <string name="new_operation_note_hint">Write a note</string>
+    <string name="new_operation_total">Total</string>
+    <string name="new_operation_fee">Network fee</string>
+    <string name="new_operation_amount">Amount</string>
+    <string name="new_operation_use_all_funds">Use all funds</string>
+    <string name="new_operation_note">Note</string>
+    <string name="new_operation_confirm">Send</string>
+    <string name="new_operation_resolving">Loading payment details</string>
+    <string name="new_operation_receiving_node_data">Receiving node details</string>
+    <string name="new_operation_invoice_exp_prefix">This invoice will expire in</string>
+    <string name="new_operation_invoice_exp_weeks">%d weeks and %d days</string>
+    <string name="new_operation_invoice_exp_days">%d days and %d hours</string>
+    <string name="new_operation_invoice_exp_hours">%d hours and %d minutes</string>
+    <string name="new_operation_invoice_exp_minutes">%02d:%02d</string>
+    <string name="new_operation_invoice_exp_seconds">%02d:%02d</string>
+
+    <string name="confirm_amount">confirm amount</string>
+    <string name="confirm_note">confirm note</string>
+    <string name="title_new_operation">Send bitcoin</string>
+
+    <string name="new_operation_abort_alert_title">Cancel payment?</string>
+    <string name="new_operation_abort_alert_body">
+        You are about to cancel this payment and go back to the home screen
+    </string>
+
+    <string name="new_operation_swap_title">Pay via lightning</string>
+    <string name="new_operation_receiving_node_public_key">
+        <![CDATA[<b>Public keys:</b> %s]]>
+    </string>
+    <string name="new_operation_receiving_node_network_address">
+        <![CDATA[<b>Network address:</b> %s]]>
+    </string>
+    <string name="see_in_node_explorer">Open in node explorer</string>
+
+    <string name="new_op_1_conf_notice_banner">
+        This payment may take longer than most lightning payments.
+        <annotation link="link">Why?</annotation>
+    </string>
+    <string name="new_op_1_conf_notice_title">Why will this payment take longer?</string>
+    <string name="new_op_1_conf_notice_desc">
+        This lightning payment requires a confirmed on-chain transaction. It takes an average of
+        10 minutes to confirm.
+    </string>
+
+    <!-- Failed operation -->
+    <string name="error_op_insufficient_funds">You don\’t have enough funds</string>
+    <string name="error_op_insufficient_funds_desc">
+            You don\’t have enough funds to cover this payment and the network fee.
+    </string>
+
+    <string name="error_op_invoice_unreachable_node_title">This invoice can\'t be paid</string>
+    <string name="error_op_invoice_unreachable_node_desc">
+        This invoice was created by a private node that can\'t be reached. To reach it, the invoice
+        must include extra data (RouteHints). This issue can only be fixed by the invoice creator.
+    </string>
+
+    <string name="error_op_invoice_no_route_title">There is no available route</string>
+    <string name="error_op_invoice_no_route_desc">
+        There\'s no route with enough capacity to make this payment. Please, reach out to our
+        <annotation link="support">support team</annotation> and let us know what happened. We’ll
+        be happy to help.
+    </string> <!-- BUG: this link is not handled -->
+
+    <string name="error_op_invoice_will_expire_soon_title">
+        This payment needs a longer expiration time
+    </string>
+    <string name="error_op_invoice_will_expire_soon_desc">
+        This payment requires more remaining time before the invoice expires. Please create or
+        request a new invoice. We suggest an expiration time of 1 hour or more.
+    </string>
+
+    <string name="error_op_invoice_expired_title">This invoice has expired</string>
+    <string name="error_op_invoice_expired_desc">
+        This invoice expired before the payment was made. Please, create or request a new one.
+    </string>
+
+    <string name="error_op_invoice_used_title">This invoice has already been used</string>
+    <string name="error_op_invoice_used_desc">
+        This invoice has already been scanned or paid by another wallet. Please create or request
+        a new one.
+    </string>
+
+    <string name="error_op_invoice_invalid_amount_title">
+        This invoice is missing a valid amount
+    </string>
+    <string name="error_op_invoice_invalid_amount_desc">
+        Invoices must have an amount of at least 1 satoshi. Please, create or request a new one.
+    </string>
+
+    <string name="error_op_invoice_invalid_title">Unable to pay this invoice</string>
+    <string name="error_op_invoice_invalid_desc">Please try with another invoice</string>
+
+    <string name="error_op_exchange_rate_window_too_old_title">The bitcoin rates changed</string>
+    <string name="error_op_exchange_rate_window_too_old_desc">
+        Your payment was not completed because bitcoin exchange rates changed since you started.
+        Please start a new payment.
+    </string>
+
+    <string name="error_op_cyclical_swap_title">This invoice can\’t be paid</string>
+    <string name="error_op_cyclical_swap_desc">You can’t pay an invoice to yourself.</string>
+
+    <string name="error_op_generic">An unexpected error occurred</string>
+    <string name="error_op_generic_desc">
+        Something went wrong, but we don’t know what. Please, reach out to our
+        <annotation link="support">support team</annotation> and let us know what happened. We’ll
+        be happy to help.
+    </string> <!-- check if link works -->
+
+    <string name="error_op_amount_too_small_title">This payment is too small</string>
+    <string name="error_op_amount_too_small_desc">
+        The amount you are trying too send is too small. It must be greater than 546 satoshis.
+    </string>
+
+    <string name="error_op_invalid_address_title">This is not a BTC address</string>
+    <string name="error_op_invalid_address_desc">
+        This is not a BTC address or a lightning invoice. Double-check its source and make sure
+        the address is properly formatted.
+        \n
+        \nScanned text:
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_op_action">Go to home</string>
+
+    <!-- Operation detail -->
+    <string name="operation_detail_description">Description</string>
+    <string name="operation_detail_date">When</string>
+    <string name="operation_detail_amount">Amount</string>
+    <string name="operation_detail_confirmations">Confirmations</string>
+    <string name="operation_detail_fee">Network fee</string> <!-- default always overridden -->
+    <string name="operation_detail_address_incoming">Received in address</string>
+    <string name="operation_detail_address_outgoing">Sent to address</string>
+    <string name="operation_detail_txid">Transaction ID</string>
+    <string name="operation_detail_share_txid_title">Transaction ID</string>
+    <string name="operation_detail_invoice">Lightning invoice</string>
+    <string name="operation_detail_swap_hash">Payment hash</string>
+    <string name="operation_detail_swap_preimage">Payment preimage</string>
+    <string name="operation_detail_receiving_pubkey">Receiving node</string>
+    <string name="operation_detail_fee_incoming">Fee (from sender to miners)</string>
+    <string name="operation_detail_fee_outgoing">Fee paid to miners</string>
+
+    <string name="operation_swap_pending_0conf_desc">
+        Waiting for the recipient to accept the payment.
+    </string>
+    <string name="operation_swap_pending_desc">
+        This payment is waiting for an on-chain confirmation.
+    </string>
+    <string name="operation_swap_failed_desc">There was no available route for this payment. You
+        will get the refund in approximately %d hours (%d blocks).
+    </string>
+    <string name="operation_swap_expired_desc">
+        This payment failed. You received a refund.
+    </string>
+    <string name="operation_swap_pending_confirmations_explanation_title">Confirmation needed
+    </string>
+    <string name="operation_swap_pending_explanation_desc">This lightning payment involves an
+        on-chain transaction. To complete the payment, the transaction must be confirmed.
+    </string>
+    <string name="operation_detail_invoice_copied">Invoice copied to clipboard</string>
+    <string name="operation_detail_preimage_copied">Payment preimage copied to clipboard</string>
+    <string name="operation_detail_txid_copied">Transaction ID copied to clipboard</string>
+    <string name="operation_detail_amount_copied">Amount copied to clipboard</string>
+    <string name="operation_detail_fee_copied">Network fee copied to clipboard</string>
+    <string name="operation_detail_address_copied">Address copied to clipboard</string>
+
+    <!-- Operation history -->
+    <string name="home_operations_list_title">Transactions</string>
+    <string name="history_external_incoming_operation_description">From the bitcoin network</string>
+    <string name="history_external_incoming_swap_description">From the lightning network</string>
+    <string name="home_operations_empty">
+        Welcome! <annotation link="go_to_receive">Load your wallet</annotation> to make a
+        <annotation fontStyle="bold">bitcoin or lightning payment</annotation>
+    </string>
+    <string name="home_operations_empty_title">You don\'t have any transactions yet</string>
+    <string name="operation_sent_to_yourself">You paid yourself</string>
+    <string name="internal_incoming_operation">%s paid you</string>
+    <string name="internal_outgoing_operation">You paid %s</string>
+    <string name="external_incoming_operation">You were paid</string>
+    <string name="external_outgoing_operation">You paid</string>
+
+    <!-- Contacts -->
+    <string name="contact_list_empty">
+        <annotation link="go_to_p2p_setup">Enable contacts</annotation> to send money to your
+        friends using your phone number and contact list.
+    </string>
+    <!-- UI TESTING ONLY: Must match above clickable span  -->
+    <string name="contact_list_empty_clickable_span">Enable contacts</string>
+
+    <string name="contact_list_title">Contacts</string>
+
+    <!-- Notifications -->
+    <string name="notifications_new_contact">%s has just landed on Muun!</string>
+    <string name="notifications_amount_received">%s received</string>
+    <string name="notifications_amount_received_from">%s sent you %s</string>
+    <string name="notifications_op_failed_title">Your payment failed</string>
+    <string name="notifications_op_failed_content">Open your wallet to see the details</string>
+
+    <!-- Generic strings -->
+    <string name="slogan">Bitcoin and lightning wallet</string>
+    <string name="network_error_message">Can\'t connect to Muun\'s server</string>
+
+    <!-- Landing -->
+
+    <string name="signup_start">CREATE A NEW WALLET</string>
+    <string name="login_start">I ALREADY HAVE A WALLET</string>
+
+    <!-- Signup -->
+
+    <string name="signup_continue">Continue</string>
+    <string name="signup_title">Sign up</string> <!-- unused -->
+    <string name="login_title">Recover your wallet</string>
+
+    <!-- signup.phone_number -->
+
+    <string name="signup_phone_number_title">Verify your phone number</string>
+    <string name="signup_phone_number_explanation">
+        Enter your phone number and country to receive a verification code. Carrier rates may apply
+    </string>
+    <string name="signup_phone_number_why_this">Why this?</string>
+    <string name="signup_phone_number_why_this_title">Why are we asking for this?</string>
+    <string name="signup_phone_number_why_this_description">
+        Muun makes it easy to pay by using your phone number and contact list.
+        People who already know how to contact you by phone will be able to easily pay you with
+        Muun.
+    </string>
+    <string name="signup_phone_number_select_country">Select your country</string>
+
+    <string name="select_country">Select your country</string>
+
+    <string name="signup_phone_number_code_helper">Country</string>
+    <string name="signup_phone_number_phone_helper">Phone number</string>
+    <string name="signup_enter_number">Continue</string>
+
+    <!-- signup.email -->
+
+    <string name="signup_email_verify">Verify your email</string>
+    <string name="signup_email_authorize">Authorize wallet recovery</string>
+    <string name="signup_email_verify_explanation">
+        You will receive an authorization email at
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
+        Please click the link in the email to continue.
+    </string>
+    <string name="email_verify_open_mail">Open email app</string>
+
+    <!-- signup.verification -->
+
+    <string name="signup_verification_title">@string/signup_phone_number_title</string>
+    <string name="signup_verification_explanation">
+        You will receive a verification code via SMS
+    </string>
+    <string name="signup_verification_code_hint">6-digit code</string>
+    <string name="signup_verification_resend_countdown">This may take up to %d:%02d</string>
+    <string name="signup_verification_resend_message">Didn\'t get it?</string>
+    <string name="action_change_num">Wrong number?</string>
+    <string name="action_resend_sms">Resend SMS</string>
+    <string name="action_call_me">Call me</string>
+    <string name="signup_enter_code">Continue</string>
+
+    <string name="set_up_rc_step_count">%d of %d</string>
+
+    <!-- LoginEmailFragment -->
+    <string name="login_email_title">Enter your email</string>
+    <string name="login_email_explanation">
+        You chose it when you set up your wallet.
+    </string>
+    <string name="login_email_input_hint">Your email</string>
+    <string name="login_email_action">Continue</string>
+
+    <!-- signup.profile -->
+
+    <string name="signup_profile_title">Fill in your profile</string>
+    <string name="signup_profile_explanation">
+        Your full name and picture are only visible to your contacts
+    </string>
+    <string name="signup_profile_why_this">Who can see this?</string>
+    <string name="signup_profile_why_this_title">Who can see this information?</string>
+    <string name="signup_profile_why_this_explanation">Your full name and picture will be visible
+        only to people who already have your phone number in their contact list.
+    </string>
+    <string name="signup_create_profile">Create profile</string>
+
+    <string name="signup_profile_first_name_hint">First name</string>
+    <string name="signup_profile_last_name_hint">Last name</string>
+    <string name="field_first_name">First name</string>
+    <string name="field_last_name">Last name</string>
+    <string name="field_password">Password</string>
+
+    <!-- signup.unlock -->
+
+    <string name="signup_unlock_title">Enter your password</string>
+    <string name="signup_unlock_forgot">I forgot my password</string>
+    <string name="signup_unlock_continue">Continue</string>
+    <string name="signup_unlock_password_hint">Your password</string>
+    <string name="signup_unlock_password_reminder">
+        <![CDATA[<b>Reminder:</b> it had at least 8 characters. This was the only restriction.]]>
+    </string>
+    <string name="signup_unlock_password_abort_title">Cancel wallet recovery?</string>
+    <string name="signup_unlock_password_abort_msg">
+        You haven’t finished recovering your wallet. You can do this later.
+    </string>
+    <!-- signup.sync -->
+    <string name="signup_sync_creating">Creating your wallet</string>
+    <string name="signup_sync_loading">Recovering your wallet</string>
+
+    <!-- home -->
+    <string name="home_footer_action_send">Send</string>
+    <string name="home_footer_action_receive">Receive</string>
+    <string name="home_send_feedback_action_title">Help and feedback</string>
+
+    <!-- WelcomeToMuun -->
+    <string name="welcome_to_muun">You created a new wallet.\nWelcome to Muun!</string>
+    <string name="welcome_to_muun_cta">Let\'s go</string>
+
+    <!-- Send screen -->
+    <string name="send_header_title">Send bitcoin</string>
+    <string name="send_confirm">Continue</string>
+    <string name="send_uri_error_title">Invalid address or invoice</string>
+    <string name="send_uri_error_body"> This is not a bitcoin address or lightning invoice.</string>
+
+    <!-- QR scanner -->
+    <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
+
+    <!-- request_update -->
+
+    <string name="request_update_title">Update required</string>
+    <string name="request_update_subtitle">To continue using Muun, please update the app
+        to the latest version.
+    </string>
+    <string name="request_update_body">It will take just a few minutes</string>
+    <string name="request_update_action">Update</string>
+
+    <!-- request_restart -->
+    <string name="request_restart_title">Restart required</string>
+    <string name="request_restart_subtitle">To continue using Muun, please restart the app
+        and recover your wallet.
+    </string>
+    <string name="request_restart_body">New features and fixes are waiting!</string>
+    <string name="request_restart_action">Restart</string>
+
+    <!-- pin -->
+    <string name="pin_error_on_setup_cancel">"Please choose a PIN"</string> <!-- unused -->
+    <string name="navigation_back">back</string>
+    <string name="your_pin_did_not_match">PIN doesn\'t match</string>
+    <string name="choose_your_pin">Create your PIN</string>
+    <string name="choose_your_pin_description">Keep your wallet safe</string>
+    <string name="choose_your_pin_repeat_description">Enter it again to confirm</string>
+    <string name="confirm_your_pin">Confirm your PIN</string>
+    <string name="enter_your_pin">Enter your PIN</string>
+    <string name="pin_attempts_left_many">%d attempts left</string>
+    <string name="pin_attempts_left_one">1 attempt left</string>
+    <string name="pin_attempts_left_zero">No attempts left</string>
+
+    <!-- Setup Email & Password  -->
+
+    <string name="setup_password_step_counter">%s of %s</string>
+
+    <string name="setup_password_intro_title">Back up your wallet</string>
+    <string name="setup_password_intro_body">
+        Use your email and a password to conveniently recover your wallet if you change your phone
+        or reinstall Muun.
+    </string>
+    <string name="setup_password_intro_title_has_rc">Back up with password</string>
+    <string name="setup_password_intro_body_has_rc">
+        Use your email and a password to conveniently recover your wallet if you change your phone
+        or reinstall Muun.
+        \n\n
+        This enables multi-factor authentication, improving security when you use your Recovery
+        Code.
+    </string>
+    <string name="setup_password_intro_action">START</string>
+
+    <string name="setup_password_abort_title">Abort recovery setup?</string>
+    <string name="setup_password_abort_body">
+        Your password won\'t work unless you finish.
+    </string>
+
+    <string name="setup_password_skip_title">
+        Are you sure you don\'t want email recovery?
+    </string>
+    <string name="setup_password_skip_body">
+        You can come back later if you change your mind.
+    </string>
+    <string name="setup_password_skip_yes">I\'m sure</string>
+    <string name="setup_password_skip_no">Cancel</string>
+
+
+    <string name="create_email_title">Enter your email</string>
+    <string name="create_email_subtitle">
+        You will receive a verification link.
+        <annotation link="why">How will Muun use my email?</annotation>
+    </string>
+    <string name="create_email_input_hint">Your email</string>
+    <string name="create_email_skip">I don\'t want to use my email</string>
+    <string name="create_email_action">CONFIRM EMAIL</string>
+    <string name="create_email_how_dialog_title">How will Muun use my email?</string>
+    <string name="create_email_how_dialog_desc">
+        Muun will send you an email every time somebody tries to access your wallet, asking for
+        your authorization. This protects you from people (or computers) attempting to guess your
+        password.
+    </string>
+
+    <string name="create_password_title">Create your password</string>
+    <string name="create_password_subtitle">
+        Choose something memorable. If possible, avoid old passwords you\'re already using.
+    </string>
+    <string name="create_password_input_hint">Your password</string>
+    <string name="create_password_confirm_input_hint">Confirm your password</string>
+    <string name="create_password_input_helper">At least 8 characters long</string>
+    <string name="create_password_input_confirm_helper">Passwords must match</string> <!-- unuse -->
+    <string name="create_password_action">Continue</string>
+    <string name="create_email_help_link">
+        <annotation link="help">I need help</annotation>
+    </string>
+    <string name="create_email_help_content">
+        <annotation role="h1">Another wallet is already using this email</annotation>
+
+        <annotation role="p">
+            If you need help, please reach out to our
+            <annotation link="support">support team</annotation>
+            and let us know what happened. We’ll be happy to help.
+        </annotation> <!-- check link -->
+    </string>
+
+    <string name="verify_email_title">Verify your email</string>
+    <string name="verify_email_subtitle">
+        You will receive a verification email at
+        <annotation fontStyle="bold"><annotation arg="0">%s</annotation></annotation>.
+        Click the link in the email to continue.
+    </string>
+    <string name="verify_email_action">OPEN EMAIL APP</string>
+
+    <string name="setup_password_accept_title">Two things you must understand</string>
+    <string name="setup_password_accept_why">
+        <annotation link="why">Why can\'t Muun reset my password?</annotation>
+    </string> <!-- check if this fits -->
+    <string name="setup_password_accept_condition_1">
+        I understand I will need my password and access to my email to recover my wallet.
+    </string>
+    <string name="setup_password_accept_condition_2">
+        I understand that Muun can\'t reset my password if I forget it.
+    </string>
+    <string name="setup_password_accept_action">Finish</string>
+
+    <string name="setup_password_why_cant_reset_title">Why can\'t Muun reset my password?</string>
+    <string name="setup_password_why_cang_reset_desc">
+        Your password is used to encrypt your wallet backup, so nobody without the password can
+        access it — not even Muun. If you lose your original password, the backup is impossible
+        to decrypt and restore.
+    </string>
+
+    <string name="setup_password_success_title">Success!</string>
+    <string name="setup_password_success_body">
+        You backed up your wallet, and can now recover it using your email and password.
+    </string>
+    <string name="setup_password_success_action">EXCELLENT</string>
+
+    <!-- Setup Recovery Code -->
+    <string name="recovery_code_title">Setup Recovery Code</string>
+
+    <string name="priming_recovery_code_start">START</string>
+    <string name="priming_recovery_code_title">Create an alternative backup</string>
+    <string name="priming_recovery_code_desc">
+        Write down a code on paper to recover your wallet if you forget your password.
+    </string>
+    <string name="priming_recovery_code_email_skipped_title">Back up your wallet</string>
+    <string name="priming_recovery_code_email_skipped_desc">
+        Write down a code on paper to recover your wallet if you change your phone or reinstall
+        Muun.
+    </string>
+
+    <string name="recovery_code_explanation_title">Write down your Recovery Code</string>
+    <string name="recovery_code_explanation">
+        Use pen and paper. For security, don\'t save this on your phone or in the cloud.
+    </string>
+    <string name="recovery_code_continue">Continue</string>
+
+    <string name="recovery_code_verify_explanation_title">Confirm your Recovery Code</string>
+    <string name="recovery_code_verify_action">Continue</string>
+
+    <string name="recovery_code_verify_accept_explanation_title">
+        Two things you must understand
+    </string>
+    <string name="recovery_code_verify_accept_condition_1">
+        I understand I will need my Recovery Code if I forget my password.
+    </string>
+    <string name="recovery_code_verify_accept_condition_1_skipped_email">
+        I understand I will need my Recovery Code to recover my wallet.
+    </string>
+    <string name="recovery_code_verify_accept_condition_2">
+        I understand Muun doesn\'t keep a copy of my Recovery Code, and it can\'t be changed.
+    </string>
+    <string name="recovery_code_accept">FINISH</string>
+
+    <string name="recovery_code_success_message">Success!</string>
+    <string name="recovery_code_success_description">
+        You can now recover your wallet using your email and Recovery Code.
+    </string>
+    <string name="recovery_code_success_description_email_skipped">
+        You backed up your wallet, and can now recover it using your Recovery Code.
+    </string>
+    <string name="recovery_code_success_action">EXCELLENT</string>
+
+    <string name="recovery_code_missing_title">Recovery Code missing</string> <!-- unused? -->
+    <string name="recovery_code_missing_message">
+        To continue, you first need to set up your Recovery Code.
+    </string> <!-- unused? -->
+
+    <string name="recovery_code_missing_action">Set up Recovery Code</string>
+    <string name="recovery_code_error_invalid_character">
+        There\'s an invalid character in this code
+    </string>
+
+    <string name="recovery_code_abort_title">Abort Recovery Code setup?</string>
+    <string name="recovery_code_abort_body">
+        Your Recovery Code won\'t work unless you finish.
+    </string>
+
+    <!-- feedback -->
+    <string name="feedback_title">Help and feedback</string>
+    <string name="feedback_explanation">
+        Send us any ideas, comments or problems you have. We read them all!
+    </string>
+    <string name="feedback_input_hint">Feedback</string>
+    <string name="feedback_action">Send feedback</string>
+    <string name="feedback_success">Feedback sent</string>
+    <string name="anon_feedback_explanation">
+        If you have any ideas, comments or problems write us at
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="anon_feedback_explanation_support_id">
+        Please include this support code (<annotation arg="0">1111-1111</annotation>).
+    </string>
+    <string name="anon_feedback_open_email">Open email client</string>
+
+    <!-- other -->
+
+    <string name="operation_rbf">Cancelable</string>
+    <string name="operation_pending">Confirming</string>
+    <string name="operation_failed">Failed</string>
+    <string name="operation_completed">Completed</string>
+
+    <string name="copy">Copy</string>
+    <string name="share">Share</string>
+
+    <!-- Phone Number Screen defaults -->
+    <string name="default_country_code">US</string>
+    <string name="default_country_prefix_hint">+1</string>
+
+    <string name="signup_forgot_password_recovery_code_explanation">
+        Enter your Recovery Code
+    </string>
+
+    <!--Settings-->
+    <string name="settings_title_profile_hidden">Settings</string>
+    <string name="settings_header_recovery">Recovery</string>
+    <string name="settings_header_wallet_details">Wallet details</string>
+    <string name="settings_header_general">General</string>
+    <string name="settings_item_email">Email</string>
+    <string name="settings_item_phone">Phone number</string>
+    <string name="settings_item_primary_currency">Main currency</string>
+    <string name="settings_item_bitcoin_unit">Bitcoin unit</string>
+    <string name="settings_password">Change password</string>
+    <string name="settings_item_export_keys">Private keys backup</string> <!-- unused -->
+    <string name="settings_setup_recovery_code">Set up a Recovery Code</string>
+    <string name="settings_recovery_tool">Recovery Tool</string>
+    <string name="settings_version">Version %s</string>
+
+    <string name="settings_logout">Log out</string>
+    <string name="settings_logout_alert_title">Are you sure?</string>
+    <string name="settings_logout_alert_body">
+        You will need your password or Recovery Code to regain access.
+    </string>
+    <string name="settings_logout_alert_yes">Log out</string>
+    <string name="settings_logout_alert_no">Cancel</string>
+
+    <string name="settings_logout_explanation_title">
+        You can\'t log out at this moment
+    </string>
+    <string name="settings_logout_explanation_description">
+        Payments you received are pending confirmation.
+        Before logging out, wait for them to confirm.
+    </string>
+    <string name="settings_logout_explanation_action">OK</string>
+
+    <string name="settings_delete_wallet">Delete wallet</string>
+    <string name="settings_delete_wallet_alert_title">
+        Are you sure?
+    </string>
+    <string name="settings_delete_wallet_alert_body">
+        You will lose your transaction history.
+    </string>
+    <string name="settings_delete_wallet_alert_yes">Delete</string>
+    <string name="settings_delete_wallet_alert_no">Cancel</string>
+
+    <string name="delete_wallet_success_message">You deleted your wallet</string>
+    <string name="delete_wallet_success_description">
+        We\'re sorry to see you go! We would love to know why. Reach out to
+        our <annotation link="support">support team</annotation> and let us know.
+    </string>
+    <string name="delete_wallet_success_action">FINISH</string>
+
+    <string name="settings_delete_wallet_explanation_title">
+        You can\'t delete your wallet at this moment
+    </string>
+    <string name="settings_delete_wallet_explanation_description">
+        You need to empty your wallet. Make a payment using all your funds,
+        and try again when the transaction has 6 confirmations.
+    </string>
+    <string name="settings_delete_wallet_explanation_action">OK</string>
+
+    <string name="settings_edit_first_name">First name</string>
+    <string name="settings_edit_last_name">Last name</string>
+    <string name="edit_username_save">Save</string>
+    <string name="edit_username_title">Edit name</string>
+
+    <string name="select_primary_currency_title">Main currency</string>
+    <string name="search_currency_title">Search currency</string>
+    <string name="search_currency_hint">Search</string>
+    <string name="select_currency_most_popular_section_title">Most popular</string>
+    <string name="select_currency_all_section_title">Countries</string>
+
+    <string name="edit_password_explanation">
+        Your password is used for security.
+        \nTo change it, you need access to your email and your current password or Recovery Code.
+    </string>
+    <string name="edit_password_start">Start</string>
+
+    <string name="export_keys_intro_action">Create your Emergency Kit</string>
+    <string name="swipe_to_continue">Swipe to continue</string>
+
+    <string name="export_keys_intro_1_title">One document</string>
+    <string name="export_keys_intro_1_body">
+        Your Emergency Kit is a PDF document with information and instructions to independently
+        transfer your funds.
+    </string>
+
+    <string name="export_keys_intro_2_title">Stored online</string>
+    <string name="export_keys_intro_2_body">
+        Your private keys are securely encrypted with your Recovery Code, so you can save it
+        in the cloud.
+    </string>
+
+    <string name="export_keys_intro_3_title">Complete ownership</string>
+    <string name="export_keys_intro_3_body">
+        By combining the Emergency Kit and your Recovery Code, you will have total, undisputed
+        control over your funds.
+    </string>
+
+    <string name="export_keys_intro_why_encrypted_title"> <!--unused -->
+        Why are my Private Keys encrypted?
+    </string>
+    <string name="export_keys_intro_why_encrypted_body"> <!--unused -->
+        Your Private Keys are encrypted to give you better security. It prevents you from exposing
+        them on a piece of paper, and allows you to store them online safely.
+        \n
+        \nIn Muun, you can recover access to your wallet by clicking on an email and entering your
+        password. Private Keys are only expected to be used in edge cases where Muun is not able to
+        cooperate.
+        \n
+        \nFor that case, we have built an open-source tool that lets you decrypt and sweep your
+        keys.
+    </string>
+
+    <string name="export_keys_preparing">Preparing private keys</string>
+    <string name="export_keys_preparing_error_title">Something went wrong</string>
+    <string name="export_keys_preparing_error_desc">
+        An error occurred while preparing your private keys. Try again later.
+    </string>
+
+    <!--unused -->
+    <string name="recovery_tool_header">Recovery Tool</string>
+    <string name="recovery_tool_info_title">
+        Use the Recovery Tool to retrieve your money
+    </string>
+    <string name="recovery_tool_info_body">
+        In a scenario where Muun is unavailable, this is the way to reclaim all your money without
+        the collaboration of our servers.
+        \n\nUse your Private Keys, your Recovery Code and the Recovery Tool to retrieve your funds.
+        \n\nYou can find our Recovery Tool and the instructions for this process at
+    </string>
+
+    <!-- Security logout -->
+    <string name="security_logout_action">Recover your wallet</string>
+    <string name="security_logout_text">You were logged out</string>
+    <string name="security_logout_subtext">
+        As a security measure, you were logged out. Sign back in to continue.
+    </string>
+
+    <string name="edit_profile_pic">Edit profile picture</string>
+    <string name="action_pick_profile_pic_title">Choose a picture</string>
+    <string name="action_camera">Take a photo</string>
+    <string name="action_gallery">From gallery</string>
+    <string name="uploading_picture">Uploading picture</string>
+
+    <string name="enter_old_password_explanation_title">Enter your password</string>
+    <string name="enter_old_password_explanation">Verify you own this wallet.</string>
+    <string name="enter_old_password_hint">Current password</string>
+    <string name="use_recovery_code">Use Recovery Code</string>
+    <string name="enter_old_password_continue">Start</string>
+
+    <string name="enter_recovery_code_title">Enter your Recovery Code</string>
+    <string name="enter_recovery_code_continue">Continue</string>
+    <string name="use_password">Use password</string>
+
+    <string name="change_password_title">Enter your new password</string>
+    <string name="change_password_hint">New password</string>
+    <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_condition">
+        I understand that my previous password is no longer valid.
+    </string>
+    <string name="change_password_continue">Confirm new password</string>
+    <string name="change_password_abort_dialog_title">Abort password change?</string>
+    <string name="change_password_abort_dialog_message">
+        Your new password won\'t work unless you finish.
+    </string>
+    <string name="change_password_abort_dialog_yes">Abort</string>
+    <string name="change_password_abort_dialog_no">Cancel</string>
+    <string name="change_password_success_action">Excellent</string>
+    <string name="change_password_success_message">
+        Use your new password to recover your wallet.
+    </string>
+
+    <!-- Tools mock strings (to preview in layout design screen) -->
+    <string name="tools_mock_long_name">Super hiper mega Random name which happens to also be
+        extremely and utterly looong and includes a extra little last name :)
+    </string>
+
+    <!-- Sync Contacts - P2PSetup-->
+    <string name="sync_contacts_title">Allow access to your contacts</string>
+    <string name="sync_contacts_explanation">
+        The phone numbers of your contacts are never sent to Muun.
+    </string>
+    <string name="sync_contacts_how_it_works">How does this work?</string>
+    <string name="sync_contacts_image">Sync contacts image</string>
+    <string name="sync_contacts_button_text">Allow access</string>
+    <string name="sync_contacts_how_it_works_title">How does this work?</string>
+    <string name="sync_contacts_how_it_works_title_description">
+        Only the hashes of phone numbers are sent to Muun, but never the numbers themselves.
+        By matching these hashes, your friends using Muun will appear as contacts.
+    </string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">muun</string>
+
+    <string name="first_on_muun_image">First on muun image</string>
+    <string name="first_on_muun_description">
+        You don\’t have contacts using Muun yet. You\'ll find them here when they
+        enable their contacts.
+    </string>
+    <string name="home_contacts_loading">Scanning contacts</string>
+    <string name="home_contacts_permission_denied_forever_text">
+        Muun requires the Contacts permission in order to display your contacts, but it has been
+        permanently denied.
+        \n\n
+        Please go to the app settings menu, select
+        <annotation fontStyle="bold">Permissions</annotation>,
+        and enable <annotation fontStyle="bold">Contacts</annotation>.
+    </string>
+    <string name="home_contacts_permission_denied_forever_action">Go to settings</string>
+    <string name="select_currency_title">Change currency</string>
+
+    <!-- ERRORS -->
+    <string name="error_amount_too_small">The amount is too small</string>
+    <string name="error_network_error">Network error, try again later.</string> <!-- unused? -->
+    <string name="error_country_not_supported">
+        Sorry! Muun is not available in that country yet.
+    </string>
+    <string name="error_deprecated_client_version">
+        This version is too old. You need to update your Muun app.
+    </string>
+    <string name="error_email_already_used">Another wallet is already using this email</string>
+    <string name="error_email_not_registered">This email is not registered</string>
+    <string name="error_field_required">%s is required</string>
+    <string name="error_expired_session">
+        Your session has expired. Please contact
+        <annotation link="support">support@muun.com</annotation>.
+    </string> <!-- TODO link handling -->
+    <string name="error_verification_code_expired">
+        Your verification code has expired. We\'re sending you a new one
+    </string>
+    <string name="error_incorrect_password">Wrong password. Please try again.</string>
+    <string name="error_incorrect_recovery_code">Wrong Recovery Code. Please try again.</string>
+    <string name="error_insufficient_funds">Not enough funds</string>
+    <string name="error_invalid_address">
+        This bitcoin address or lightning invoice is invalid
+    </string>
+    <string name="error_invalid_email_address">Invalid email address</string>
+    <string name="error_invalid_operation_uri">
+        The provided payment details are invalid
+    </string> <!-- unused -->
+    <string name="error_invalid_payment_request">The payment link is invalid</string>
+    <string name="error_invalid_phone_number">Invalid phone number</string>
+    <string name="error_invalid_picture">The image could not be read</string>
+    <string name="error_invalid_verification_code">
+        Wrong verification code. Please try again.
+    </string>
+    <string name="error_password_too_short">Password is too short</string>
+    <string name="error_passwords_dont_match">Passwords don\'t match</string>
+    <string name="error_phone_number_already_used">
+        Another wallet is already using this phone number
+    </string> <!-- unused???? -->
+    <string name="error_recovery_code_verification">Wrong code. Please try again.</string>
+    <string name="error_revoked_verification_code">
+        This is an old verification code. Please try the last one you received
+    </string>
+    <string name="error_verification_code_limit_reached">
+        Too many failed attempts. You will receive a new code
+    </string>
+    <string name="error_no_valid_payment_details_provided">
+        The provided payment details are invalid
+    </string>
+    <string name="error_ln_invoice_not_supported"> <!-- unused -->
+        Sorry! This lightning invoice is not supported yet.
+    </string>
+    <string name="error_generic">An error occurred. Please try again</string>
+
+    <string name="error_dialog_let_us_know">Let us know</string>
+
+    <string name="error_send_report_dialog_title">An unexpected error occurred</string>
+    <string name="error_send_report_dialog_body">
+        Something went wrong but we don\'t know what. We created an error report that
+        we can use to help you. Please send it to
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="error_send_report_dialog_body_short">
+        We created an error report that we can use to help you. Please send it to
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="error_send_report_dialog_yes">Send report</string>
+    <string name="error_report_email_subject">Muun error report</string>
+    <string name="error_copy_report_dialog_title">There\'s no email app installed</string>
+    <string name="error_copy_report_dialog_body">
+        You can copy the error report and send it to us using another method.
+    </string>
+    <string name="error_copy_report_dialog_yes">Copy to clipboard</string>
+    <string name="error_no_email_client_installed">
+        There\'s no email app installed.
+    </string>
+    <string name="error_no_web_client_installed">
+        There\'s no web browser app installed.
+    </string>
+
+    <!-- Edit Fee -->
+    <string name="edit_fee_title">Edit network fee</string>
+    <string name="edit_fee_confirm">Confirm fee</string>
+    <string name="fee_options_message">Select a confirmation time</string>
+    <string name="fee_options_whats_this">What\'s this?</string>
+    <string name="fee_option_item_title">Less than</string>
+    <string name="fee_option_item_hs">%d h</string>
+    <string name="fee_option_item_mins">%d min</string>
+    <string name="fee_option_item_hs_mins">%d h %d min</string>
+    <string name="fee_option_item_fee_rate">%s sat/vbyte</string>
+    <string name="enter_fee_manually">Enter fee manually</string>
+    <string name="manual_fee_entered">Manually entered fee</string>
+    <string name="fee_options_whats_this_explanation_title">
+        Network fee and confirmation times
+    </string>
+    <string name="fee_options_whats_this_explanation_desc">
+        Muun calculates and suggests the optimal fee needed to confirm your transaction in less than
+        30 minutes.
+        \n\nA higher fee gives more priority to your transaction, while a transaction with a lower
+        fee may take hours to confirm.
+        \n\nOptimal fees rise when there is more activity on the network. If fees increase while
+        your transaction is still unconfirmed, it may take longer to get confirmed.
+    </string>
+    <string name="manual_fee_message">Enter a fee manually</string>
+    <string name="manual_fee_how_this_works">What\'s this?</string>
+    <string name="manual_fee_how_this_works_explanation_title">
+        Manual fee and confirmation times
+    </string>
+    <string name="manual_fee_how_this_works_explanation_desc">
+        Satoshis per virtual byte (sat/vbyte) is the unit to measure the priority of a transaction.
+        \n\nA higher fee gives more priority to your transaction, while a payment with a lower fee
+        may take several hours to confirm.
+        \n\nFees rise when there is more activity on the network. If fees increase while your
+        payment is still unconfirmed, it may take longer to get confirmed.
+    </string>
+    <string name="manual_fee_insufficient_funds_message">Not enough funds</string>
+    <string name="manual_fee_insufficient_funds_desc">Enter a lower fee.</string>
+    <string name="manual_fee_low_warning_message">Fee is too low</string>
+    <string name="manual_fee_low_warning_desc">
+        This transaction may take days to confirm.
+    </string>
+    <string name="manual_fee_too_high_message">Fee is too high</string>
+    <string name="manual_fee_too_high_desc">Enter a fee lower than %s sat/vbyte.</string>
+    <string name="sat_byte">sat/vbyte</string>
+    <string name="use_all_funds_warning_message">Notice</string>
+    <string name="use_all_funds_warning_desc">
+        Because you are using all your funds, the fee is deducted from the total amount you are
+        sending.
+    </string>
+    <string name="fee_options_use_all_funds_warning_desc">
+        Because you are using all your funds, changing the fee will modify the transaction amount.
+    </string>
+    <string name="manual_fee_high_traffic_error_message">Fee is too low</string>
+    <string name="manual_fee_high_traffic_error_desc">
+        The bitcoin network is experiencing unusually high traffic and rejecting transactions with
+        fee rates below %s sat/vbyte.
+    </string>
+    <string name="manual_fee_too_low_error_message">Fee is too low</string>
+    <string name="manual_fee_too_low_error_desc">Enter a fee higher than %s sat/vbyte.</string>
+    <string name="new_op_insufficient_funds_warn_message">Notice</string>
+    <string name="new_op_insufficient_funds_warn_desc">
+        Not enough funds to pay for the optimal network fee.
+        <annotation fontColor="muunBlue"> Select a network fee </annotation> to continue.
+    </string>
+    <string name="use_maximum_fee">Use maximum fee</string>
+    <string name="new_op_error_required_amount">Total (Amount + Minimum Fee)</string>
+    <string name="new_op_error_total_balance">Your balance</string>
+
+
+    <!-- show_qr aka RECEIVE -->
+    <string name="show_qr_copied">Copied to clipboard</string>
+    <string name="tab_bitcoin_address">Bitcoin</string>
+    <string name="tab_ln_invoice">Lightning</string>
+    <string name="legacy_address_info">Bitcoin legacy address</string>
+    <string name="your_bitcoin_address">Your bitcoin address</string>
+    <string name="your_compat_bitcoin_address">Your legacy address</string>
+    <string name="your_ln_invoice">Your lightning invoice</string>
+    <string name="show_qr_invoice_loading">Creating invoice</string> <!-- creating invoice async -->
+    <string name="show_qr_invoice_expiration">
+        <annotation arg="0">placeholder</annotation>.\n
+        <annotation link="createOther">Create a new one</annotation> <!-- a new one -->
+    </string>
+    <string name="show_qr_invoice_expired">
+        This invoice expired. Create a new one.
+    </string>
+    <string name="show_qr_invoice_create_other">Create invoice</string>
+
+    <string name="address_share_title">Send to...</string>
+    <string name="show_qr_switch_to_legacy_format">
+        Having trouble using this address?\n
+        <annotation link="legacy">Switch to legacy addresses</annotation>
+    </string>
+    <string name="show_qr_switch_to_segwit_format">
+        <annotation link="segwit">Switch to Segwit addresses</annotation>
+    </string>
+
+    <string name="bitcoin_address_help_content">
+        <annotation role="h1">Segwit and legacy addresses</annotation>
+
+        <annotation role="p">
+           Segwit and legacy are two different types of bitcoin addresses.
+        </annotation>
+
+        <annotation role="p">
+            Legacy addresses are more widely adopted but create larger transactions.
+            Using them will result in higher fees on your future transactions.
+        </annotation>
+
+        <annotation role="p">
+            To make your transactions more cost-effective, Muun displays Segwit addresses by
+            default. Some services haven\'t upgraded to Segwit yet. If you are having trouble using
+            a Segwit address, try a legacy address instead.
+        </annotation>
+    </string>
+
+    <string name="secure_storage_error">
+        Your phone\'s secure storage has been corrupted or compromised. For security reasons,
+        Muun has logged you out. Please contact
+        <annotation fontStyle="bold">support@muun.com</annotation> for help.
+    </string>
+
+    <string name="select_bitcoin_unit_title">Bitcoin unit</string>
+    <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
+    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
+
+    <!-- Security center -->
+    <string name="security_center_title">Security Center</string>
+    <string name="security_center_title_improve_your_security">Upgrade your security</string>
+    <string name="security_center_title_backup_your_wallet">Back up your wallet</string>
+    <string name="task_email_skipped">Skipped</string>
+    <string name="task_email_pending_title">Back up your wallet</string>
+    <string name="task_email_pending_body">
+        Create a recovery method in case you change your phone or reinstall Muun.
+    </string>
+
+    <string name="task_email_skipped_body">
+        Use your email and a password to recover your wallet.
+    </string>
+
+    <string name="task_email_done_title">You backed up your wallet</string>
+    <string name="task_email_done_body">
+        You can use
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        and your password to recover your wallet.
+    </string>
+
+    <string name="task_rc_title_pending">Create an alternative backup</string>
+    <string name="task_rc_title_done">You created an alternative backup</string>
+    <string name="task_rc_body_pending">
+        Write down a code on paper in case you forget your password.
+    </string>
+    <string name="task_rc_body_inactive">
+        Write down a code on paper for additional security.
+    </string>
+    <string name="task_rc_body_email_skipped">
+        Write down a code on paper to recover your wallet.
+    </string>
+    <string name="task_rc_body_done_email_skipped">
+        You can use the code you wrote down to recover your wallet.
+    </string>
+    <string name="task_rc_body_done">
+        You can use
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        and the code you wrote down to recover your wallet.
+    </string>
+
+    <string name="task_export_keys_pending_title">Create an Emergency Kit</string>
+    <string name="task_export_keys_pending_body">
+        Save the information you need to recover your money without using Muun.
+    </string>
+
+    <string name="task_export_keys_done_title">You created an Emergency Kit</string>
+    <string name="task_export_keys_done_body">
+        Follow the instructions in the kit you saved to recover your money without using Muun.
+    </string>
+
+    <string name="task_export_keys_done_title_old">You exported your keys</string>
+    <string name="task_export_keys_done_body_old">
+        You wrote down your Private Keys. Use them with your Recovery Code and the
+        <annotation link="recovery_tool">Recovery tool</annotation> to recover your funds without
+        using Muun.
+    </string>
+
+    <string name="task_export_keys_again">Create another Emergency Kit</string>
+
+    <string name="sc_task_header_0">Your wallet is not backed up</string>
+    <string name="sc_task_header_1">Your wallet has a basic backup</string>
+    <string name="sc_task_header_2">Your\'re one step away from a complete setup</string>
+    <string name="sc_task_header_3">You completed your setup</string>
+
+    <!-- Emergency Kit -->
+    <string name="ek_title">Emergency Kit</string>
+    <string name="ek_save_title">Save your Emergency Kit</string>
+    <string name="ek_save_explanation">
+        We recommend using cloud storage, to ensure your kit is never lost.
+        <annotation link="why">Is that safe?</annotation>
+    </string>
+    <string name="ek_save_cloud_drawer_title">
+        Is cloud storage safe?
+    </string>
+    <string name="ek_save_cloud_drawer_description">
+        <annotation role="p">Data inside your Emergency Kit is securely encrypted with your Recovery Code.
+        Without access to that code, the kit is harmless.</annotation>
+
+        Since your Recovery Code is written in paper, you can save your Emergency Kit in the cloud
+        without risk. It will be safe and available in the long term.
+    </string>
+
+    <string name="ek_save_drive_no_internet">
+        Can\'t use Drive: no internet connection
+    </string>
+    <string name="ek_verify_title">Verify your Emergency Kit</string>
+    <string name="ek_verify_explanation">
+        Enter the verification code located in the top-right corner of the document, just to ensure
+        everything went right.
+    </string>
+    <string name="ek_verify_hint">123456</string>
+    <string name="ek_verify_helper">6-digit code</string>
+    <string name="ek_verify_failed">Invalid verification code</string>
+    <string name="ek_verify_old">
+        This is an old code. Check your latest Emergency Kit\n(your code starts with %s)
+    </string>
+    <string name="ek_verify_need_help"><annotation link="help">Need help?</annotation></string>
+    <string name="ek_verify_help_title">Can’t find the verification code?</string>
+    <string name="ek_verify_help_body">The verification code is a
+        <annotation fontStyle="bold">6-digit number</annotation>, located at the top-right corner
+        of your Emergency Kit.
+    </string>
+    <string name="ek_verify_action">Verify code</string>
+    <string name="ek_verify_help_save">
+        If you can’t find your Emergency Kit, <annotation link="">save it again.</annotation>
+    </string>
+    <string name="ek_cloud_verify_title">Verify your Emergency Kit</string>
+    <string name="ek_cloud_verify_desc">
+        You saved your kit to Google Drive. Before you go, find it and take a good look inside.
+        Make sure you can do this in the future.
+    </string>
+    <string name="ek_cloud_verify_open_drive">Open in Drive</string>
+    <string name="ek_cloud_verify_done">Done</string>
+    <string name="ek_success_title">Success!</string>
+    <string name="ek_success_desc">You have complete, undisputed ownership of your bitcoin.</string>
+    <string name="ek_success_action">Excellent</string>
+    <string name="ek_abort_title">Abort Emergency Kit export?</string>
+    <string name="ek_abort_body">
+        You haven’t finished exporting up your Emergency Kit. You can restart this setup later.
+    </string>
+    <string name="ek_uploading_body">
+        Uploading your Emergency Kit
+    </string>
+    <string name="ek_upload_error_title">Your Emergency Kit could not be saved</string>
+    <string name="ek_upload_error_body">
+        We couldn\’t upload your Emergency Kit to the cloud. Please, check your connection and
+        try again.
+    </string>
+
+    <!-- Email DeepLink errors -->
+
+    <string name="email_link_error_title">Open your latest email</string>
+
+    <string name="authorize_email_link_expired">
+        The authorization failed because the link you used expired. Click the link
+        in the latest email you received.
+    </string>
+
+    <string name="authorize_email_link_invalid">
+        The authorization failed because the link you used is invalid. Click the
+        link in the latest email you received.
+    </string>
+
+    <string name="verify_email_link_expired">
+        The verification failed because the link you used expired. Click the link in the
+        latest email you received.
+    </string>
+
+    <string name="verify_email_link_invalid">
+        The verification failed because the link you used is invalid. Click the link in the
+        latest email you received.
+    </string>
+
+    <string name="confirm_email_link_expired">
+        The authorization failed because the link you used expired. Click the link in the
+        latest email you received.
+    </string>
+
+    <string name="confirm_email_link_invalid">
+        The authorization failed because the link you used is invalid. Click the link in the
+        latest email you received.
+    </string>
+
+    <!-- Email-less Recovery aka RC Only Login -->
+    <string name="recover_with_recovery_code">Recover with Recovery Code</string>
+
+    <string name="rc_only_login_recovery_code_explanation">Enter your Recovery Code</string>
+    <string name="rc_only_login_continue">Continue</string>
+    <string name="rc_only_login_whats_this">
+        <annotation link="whatsThis">What\'s this?</annotation>
+    </string>
+    <string name="rc_only_login_whats_this_dialog_title">What is the Recovery Code?</string>
+    <string name="rc_only_login_whats_this_dialog_body"> <!-- evaluar "looks like this" -->
+        The Recovery Code is a set of randomly-generated characters that is used to create an
+        encrypted backup of your Private Keys.
+    </string>
+    <string name="rc_only_login_error">
+        Wrong Recovery Code. Please review it and try again.
+    </string>
+
+    <!--
+    Note for future us: we put an arbitrary \n because of weird text wrapping problems in some
+    devices where 2nd line is not shown. Has to do with LinearLayout + TextView width interaction.
+    Easily reproduced in Editor/Design View, text view doesn't wrap up text right away, only when it
+    is WAAAAY longer than it should (in fact only when its longer/can't fit in the screen width).
+    -->
+    <string name="rc_only_login_legacy_error">
+        This Recovery Code can\'t be used without \n
+        <annotation link="goToLegacyLogin">entering your email first</annotation>.
+    </string>
+
+    <string name="option_label_recommended">Recommended</string>
+    <string name="option_label_disabled">Not enabled</string>
+
+    <string name="save_option_drive_title">Save to Drive</string>
+    <string name="save_option_drive_description">Use your Google account to save and access your kit.</string>
+
+    <string name="save_option_email_title">Send yourself an email</string>
+    <string name="save_option_email_description">Use your email account to save and access your kit.</string>
+
+    <string name="save_option_manual_title">Save manually</string>
+    <string name="save_option_manual_description">Choose an application to save and access your kit.</string>
+
+    <string name="migration_title">Updating your wallet</string>
+
+    <string name="migration_error_message">Failed to update wallet. Please try again.</string>
+    <string name="migration_error_retry">Retry</string>
+
+    <string name="title_wallet">Wallet</string>
+    <string name="title_security">Security</string>
+    <string name="title_settings">Settings</string>
+    <string name="home_balance_tap_to_reveal">Tap to reveal balance</string>
+    <string name="home_security_center_card_body">
+        <annotation fontColor="muunBlue">Back up your wallet.</annotation> Create a back-up to
+        never lose access to your wallet.
+    </string>
+    <string name="new_home_tx_list_tooltip">
+        Welcome to your new homescreen!\nTap or swipe up to see your transactions.
+    </string>
+    <string name="rbf_notice_banner">
+        Until confirmed, this transaction can be canceled by the sender.
+        <annotation link="how">How?</annotation>.
+    </string>
+    <string name="rbf_notice_banner_title">How can this be canceled?</string>
+    <string name="rbf_notice_banner_desc">
+        This transaction has RBF (replace-by-fee) enabled. This allows the sender to raise the
+        original fee for faster confirmation, but can also be used to cancel transactions.  Unless
+        you know and trust the sender, consider this a risk until the transaction is confirmed.
+    </string>
+
+    <string name="turbo_channels">Turbo channels</string>
+    <string name="turbo_channels_learn_more">
+        <annotation link="https://blog.muun.com/turbo-channels/">Learn more</annotation> about the trade-offs of turbo channels.
+    </string>
+    <string name="turbo_channels_disable_title">Disable turbo channels?</string>
+    <string name="turbo_channels_disable_message">
+        Receiving some lightning payments will take much longer.
+    </string>
+    <string name="turbo_channels_disable">DISABLE</string>
+    <string name="settings_header_advanced">Advanced settings</string>
+    <string name="settings_lightning">Lightning Network</string>
+</resources>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:id="@+id/turbo_channels_section"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/muun_blue_pale">
+
+            <Switch
+                    android:id="@+id/turbo_channels_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/turbo_channels"
+                    android:layout_marginTop="@dimen/muun_screen_margin"
+                    android:layout_marginBottom="@dimen/muun_screen_margin"
+                    android:layout_marginStart="@dimen/muun_screen_margin"
+                    android:layout_marginEnd="@dimen/muun_screen_margin"
+                    android:textSize="@dimen/muun_text_size_body"
+                    />
+
+        </LinearLayout>
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+                android:id="@+id/turbo_channels_learn_more"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/muun_screen_margin"
+                android:layout_marginBottom="@dimen/muun_screen_margin"
+                android:layout_marginStart="@dimen/muun_screen_margin"
+                android:layout_marginEnd="@dimen/muun_screen_margin"
+                android:textSize="@dimen/muun_text_size_help"
+                android:textAlignment="viewStart"
+                android:text="@string/turbo_channels_learn_more"
+                />
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.LoadingView
+            android:id="@+id/lightning_settings_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            />
+
+</LinearLayout>

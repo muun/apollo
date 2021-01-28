@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp" >
+
+    <ImageView
+            android:layout_width="290dp"
+            android:layout_height="180dp"
+            android:src="@drawable/illustration_drive_file" />
+
+        <TextView
+                style="@style/explanation_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:textSize="24sp"
+                android:text="@string/ek_cloud_verify_title" />
+
+        <TextView
+                style="@style/explanation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/ek_cloud_verify_desc" />
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/open_cloud_file"
+            style="@style/muun_button_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/ek_cloud_verify_open_drive" />
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/confirm"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/ek_cloud_verify_done" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

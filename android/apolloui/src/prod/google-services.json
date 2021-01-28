@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "11965157440",
+    "firebase_url": "https://muun-58bf8.firebaseio.com",
+    "project_id": "muun-58bf8",
+    "storage_bucket": "muun-58bf8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11965157440:android:efd7ce788a0f74c9",
+        "android_client_info": {
+          "package_name": "io.muun.apollo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11965157440-nujnln96jg30o12gs71bdo7u1esm4t5d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBARwhAR8G0sfBE5EgRGu5CJtbUX-fY4bE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:background="@color/muun_white">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/muun_screen_margin">
+
+                <io.muun.apollo.presentation.ui.view.HtmlTextView
+                        android:id="@+id/fee_options_message"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="@string/change_password_title"
+                        android:textColor="@color/muun_gray_dark"
+                        android:textSize="16sp"
+                        tools:text="Select a confirmation time. What's this?" />
+
+                <io.muun.apollo.presentation.ui.view.FeeOptionItem
+                        android:id="@+id/fee_option_fast"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
+
+                <io.muun.apollo.presentation.ui.view.FeeOptionItem
+                        android:id="@+id/fee_option_medium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
+
+                <io.muun.apollo.presentation.ui.view.FeeOptionItem
+                        android:id="@+id/fee_option_slow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
+
+                <io.muun.apollo.presentation.ui.view.FeeManualItem
+                        android:id="@+id/enter_fee_manually"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <io.muun.apollo.presentation.ui.view.StatusMessage
+                android:id="@+id/status_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/confirm_fee"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_fee_confirm" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

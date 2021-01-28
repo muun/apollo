@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/scan_qr_linear_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/scan_qr_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            muun:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            muun:layout_constraintTop_toBottomOf="@id/scan_qr_header">
+
+        <io.muun.apollo.presentation.ui.view.MuunEmptyScreen
+                android:id="@+id/empty_screen"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                muun:action="@string/grant_camera_permission_button"
+                muun:icon="@drawable/qr_ilustration"
+                muun:subtitle="@string/camera_permission_request"
+                muun:title="@string/camera_permission_request_title" />
+
+        <FrameLayout
+                android:id="@+id/scan_qr_frame_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/muun_black" />
+
+        <me.dm7.barcodescanner.zxing.ZXingScannerView
+                android:id="@+id/scan_qr_scanner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        <TextView
+                android:id="@+id/scan_qr_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|top"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginEnd="50dp"
+                android:gravity="center_horizontal"
+                android:lineSpacingExtra="5dp"
+                android:text="@string/qr_scanner_subtitle"
+                android:textColor="@color/muun_white"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

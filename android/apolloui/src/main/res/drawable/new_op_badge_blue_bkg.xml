@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="rectangle">
+
+    <solid android:color="@color/new_op_badge_light_blue" />
+    <corners android:radius="@dimen/default_corner_radius" />
+
+</shape>

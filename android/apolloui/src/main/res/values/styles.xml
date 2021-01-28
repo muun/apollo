@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Juno" parent="Theme.AppCompat.Light">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/muun_white</item>
+        <item name="colorPrimaryDark">@color/muun_gray_light</item>
+        <item name="android:textColorPrimary">@color/muun_gray_dark</item>
+        <item name="android:windowBackground">@color/muun_white</item>
+        <item name="colorAccent">@color/muun_blue</item>
+        <item name="android:textColorHint">@color/muun_gray_light</item>
+    </style>
+
+    <style name="MuunAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowTitleStyle">@style/MuunAlertDialogTitle</item>
+        <item name="android:buttonStyle">@style/MuunAlertDialogButton</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+        <item name="android:background">@color/muun_white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColorPrimary">@color/muun_gray_dark</item>
+        <item name="android:lineSpacingMultiplier">1.4</item>
+    </style>
+
+    <style name="MuunAlertDialogTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/muun_black</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <style name="MuunAlertDialogButton">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="MuunWelcomeDialog" parent="MuunAlertDialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:background">@drawable/muun_dialog_border_rounded</item>
+        <!-- Override the windowMinWidthMinor property -->
+        <item name="android:windowMinWidthMinor">280dp</item>
+    </style>
+
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:windowBackground">@color/muun_white</item>
+
+        <item name="colorPrimary">@color/muun_blue</item>
+        <item name="colorPrimaryDark">@color/muun_blue_dark</item>
+        <item name="colorAccent">@color/muun_blue</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- This is a hack to change the height of the drawer list items -->
+        <item name="listPreferredItemHeightSmall">50dp</item>
+        <item name="preferenceTheme">@style/PreferenceFragment</item>
+        <item name="android:actionBarStyle">@style/MuunActionBarStyle</item>
+    </style>
+
+    <!--  Bottom Navigation  -->
+    <!--  Explicit background color needed after upgrade material library to 1.2.0, which change
+       something in the way our current theme (appCompat, not material theme) interacts with
+       bottom nav, making it black.
+       TODO move to a material theme (not a minor change), adjust other styles, and CLEAN UP
+       See: https://material.io/develop/android/docs/getting-started for alternatives -->
+    <style name="BottomNavigation" parent="">
+        <item name="android:background">@color/muun_white</item>
+    </style>
+
+    <!-- ActionBar style -->
+    <style name="MuunActionBarStyle" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="titleTextColor">@color/muun_black</item>
+        <item name="android:textColorPrimary">@color/muun_gray_dark</item>
+        <item name="android:textColorSecondary">@color/muun_gray_dark</item>
+        <item name="selectableItemBackground">?android:selectableItemBackground</item>
+        <item name="selectableItemBackgroundBorderless">?android:selectableItemBackground</item>
+        <item name="searchViewStyle">@style/MuunSearchViewStyle</item>
+
+        <!-- Style search view query hint -->
+        <item name="android:textColorHint">@color/muun_gray_light</item>
+
+        <!-- Style search view text cursor See: https://goo.gl/gKzgJC -->
+        <item name="autoCompleteTextViewStyle">@style/cursorColor</item>
+
+        <item name="android:actionMenuTextColor">@color/muun_blue</item>
+    </style>
+
+    <style name="AppTheme" parent="BaseAppTheme">
+    </style>
+
+    <style name="MuunSearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="searchHintIcon">@null</item>
+
+        <item name="android:queryBackground">@android:color/transparent</item>
+        <item name="queryBackground">@android:color/transparent</item>
+
+    </style>
+
+    <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
+        <item name="android:textCursorDrawable">@drawable/cursor</item>
+    </style>
+
+    <style name="ScanQrAppTheme" parent="AppTheme">
+        <!-- Uncomment to make the activity fullscreen and avoid the black bars at the sides -->
+        <!--<item name="android:windowFullscreen">true</item>-->
+    </style>
+
+    <style name="WhiteToolbarTheme" parent="AppTheme">
+        <item name="colorPrimaryDark">@color/muun_gray_light</item>
+    </style>
+
+    <style name="AppTheme.WithoutActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ToolbarStyle" parent="ThemeOverlay.AppCompat.Light">
+        <item name="titleTextColor">@color/muun_black</item>
+    </style>
+
+    <style name="MuunPopupTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/muun_white</item>
+    </style>
+
+    <style name="ToolbarTextAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/muun_black</item>
+    </style>
+
+    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:fontFamily">sans-serif-bold</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.03</item>
+    </style>
+
+    <style name="Theme.AppCompat.NoDisplay" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowNoDisplay">true</item>
+    </style>
+
+    <style name="divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">?android:attr/listDivider</item>
+    </style>
+
+    <style name="expander">
+        <item name="android:layout_width">0px</item>
+        <item name="android:layout_height">0px</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="settings_item_separator">
+        <item name="android:layout_marginTop">7dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/muun_gray_light</item>
+    </style>
+
+    <style name="settings_section_header">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/muun_blue</item>
+    </style>
+
+    <style name="drop_shadow_bottom">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/dropshadow_height</item>
+        <item name="android:background">@drawable/dropshadow_bottom</item>
+    </style>
+
+    <style name="settings_item">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">17dp</item>
+        <item name="android:paddingBottom">17dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="numeric_keyboard_button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">fill_horizontal</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:paddingLeft">24dp</item>
+        <item name="android:paddingRight">24dp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/muun_black</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="numeric_keyboard_image_button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">fill</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:paddingBottom">10sp</item>
+    </style>
+
+    <style name="pin_indicator_bubble">
+        <item name="android:layout_width">12dp</item>
+        <item name="android:layout_height">12dp</item>
+        <item name="android:layout_marginRight">12dp</item>
+    </style>
+
+    <style name="small_button">
+        <item name="android:textColor">@color/muun_white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:paddingLeft">24dp</item>
+        <item name="android:paddingRight">24dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="explanation_title">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/muun_text_size_h1</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/muun_black</item>
+    </style>
+
+    <style name="explanation">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">32dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:typeface">normal</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="explanation_checkbox">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:gravity">top</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="help_screen_title">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/muun_black</item>
+    </style>
+
+    <style name="help_screen_body">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/muun_black</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+
+    <style name="help_screen_image">
+        <item name="android:layout_width">288dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginBottom">24dp</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="detail_item_header">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+    </style>
+
+    <style name="detail_item_content">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/muun_black</item>
+    </style>
+
+    <style name="detail_divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1px</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="android:background">@color/muun_gray_dark</item>
+    </style>
+
+    <style name="recovery_code_segment">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">-4dp</item>
+        <item name="android:layout_marginBottom">-4dp</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:imeOptions">actionNext</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:maxLength">4</item>
+        <item name="android:hint">\u00A0\u00A0\u00A0\u00A0</item> <!-- because minEms is broken -->
+        <item name="android:enabled">false</item>
+    </style>
+
+    <style name="edit_profile_input">
+        <item name="layout_gravity">center_horizontal</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:imeOptions">actionNext</item>
+    </style>
+
+    <style name="base_muun_text">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="muun_text_h1" parent="base_muun_text">
+        <item name="android:textSize">@dimen/muun_text_size_h1</item>
+        <item name="android:textColor">@color/muun_black</item>
+        <item name="android:letterSpacing">0.03</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+    </style>
+
+    <style name="muun_text_h2" parent="base_muun_text">
+        <item name="android:textSize">@dimen/muun_text_size_h2</item>
+        <item name="android:textColor">@color/muun_black</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <style name="muun_text_body" parent="base_muun_text">
+        <item name="android:textSize">@dimen/muun_text_size_body</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+        <item name="android:letterSpacing">0.03</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <style name="muun_help_text" parent="base_muun_text">
+        <item name="android:textSize">@dimen/muun_text_size_help</item>
+        <item name="android:textColor">@color/muun_gray_light</item>
+    </style>
+
+    <style name="muun_new_operation_label_text" parent="base_muun_text">
+        <item name="android:textSize">16sp</item>
+        <item name="android:padding">@dimen/muun_screen_margin</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+        <item name="android:letterSpacing">0.03</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <style name="muun_new_operation_separator">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/muun_gray_light</item>
+    </style>
+
+    <style name="muun_ek_save_separator">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:background">@color/muun_gray_lighter</item>
+    </style>
+
+    <style name="muun_button_internal" parent="Theme.AppCompat">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/muun_button_internal_height</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="muun_button_internal_cover">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/muun_button_internal_height</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/muun_white</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:background">@drawable/muun_button_covered_bg</item>
+    </style>
+
+    <style name="muun_button_floating">
+        <item name="android:background">@drawable/muun_button_floating_bg</item>
+        <item name="android:textColor">@color/muun_white</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+    </style>
+
+    <style name="muun_button_primary">
+        <item name="android:background">@drawable/muun_button_primary_bg</item>
+        <item name="android:textColor">@color/muun_white</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="muun_button_secondary">
+        <item name="android:background">@drawable/muun_button_secondary_bg</item>
+        <item name="android:textColor">@color/muun_blue</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="muun_card">
+        <item name="android:background">@drawable/round_rect_background</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="muun_item">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="muun_item_title" parent="muun_item_title_base">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/muun_black</item>
+    </style>
+
+    <style name="muun_item_subtitle" parent="muun_item_title_base">
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+    </style>
+
+    <style name="muun_item_title_badge" parent="muun_item_badge_base">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="muun_item_subtitle_badge" parent="muun_item_badge_base">
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="muun_item_icon">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginLeft">4dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="muun_item_badge_base">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">4dp</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="muun_item_title_base">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">none</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="new_operations_small_title" parent="ToolbarTextAppearance">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <style name="muun_new_op_error_extras_title">
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:textColor">@color/muun_gray_dark</item>
+    </style>
+
+    <style name="muun_new_op_error_extras_body">
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:textColor">@color/muun_black</item>
+
+    </style>
+
+    <style name="ShapeAppearanceOverlay.MuunDialogBottomCorners">
+        <item name="cornerSizeBottomLeft">@dimen/muun_welcome_dialog_corner_radius</item>
+        <item name="cornerSizeBottomRight">@dimen/muun_welcome_dialog_corner_radius</item>
+    </style>
+</resources>

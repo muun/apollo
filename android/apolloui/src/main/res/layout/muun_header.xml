@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/muun_header_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:theme="@style/MuunActionBarStyle"
+            app:contentInsetStartWithNavigation="0dp"
+            app:titleTextAppearance="@style/ToolbarTextAppearance"
+            app:titleMarginStart="16dp"
+            muun:popupTheme="@style/MuunPopupTheme">
+
+        <TextView
+                android:id="@+id/muun_header_indicator_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/muun_gray_light"
+                android:textSize="18sp"
+                android:visibility="gone"
+                />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <View
+            style="@style/drop_shadow_bottom"
+            android:id="@+id/muun_header_drop_shadow"
+            android:visibility="gone" /> <!-- GONE by default for compat with pre-existing code -->
+
+</LinearLayout>

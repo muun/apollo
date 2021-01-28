@@ -1,0 +1,65 @@
+/**
+ * Returns the ip of the first local network interface.
+ */
+ext.getLocalIp = {
+    def networks = NetworkInterface.getNetworkInterfaces().
+            findAll { it.isUp() && !it.isLoopback() }.
+            findAll { !it.name.startsWith("vmnet") && !it.name.startsWith("vnic") }. // vm ips
+            collect { it.getInterfaceAddresses() }.
+            flatten().
+            collect { it.getAddress() }.
+            findAll { it.isSiteLocalAddress() }
+
+    if (networks.isEmpty()) {
+        throw new RuntimeException("could not find local IP address")
+    }
+
+    return networks.last().getHostAddress() // list is reversed
+}
+
+ext {
+    houstonLocal = [
+            HOUSTON_PROTOCOL: 'http',
+            HOUSTON_DOMAIN  : getLocalIp(),
+            HOUSTON_PATH    : '',
+            HOUSTON_PORT    : 8080,
+            HOUSTON_CERT_PIN: 'sha1/AAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+            NETWORK_NAME    : 'regtest'
+    ]
+
+    houstonRemoteDev = [
+            HOUSTON_PROTOCOL: 'https',
+            HOUSTON_DOMAIN  : 'dev.api.muun.wtf',
+            HOUSTON_PATH    : 'houston',
+            HOUSTON_PORT    : 443,
+            HOUSTON_CERT_PIN: 'sha1/9PSg324+GJINh7NLIHbhI4mvRG4=',
+            NETWORK_NAME    : 'testnet3'
+    ]
+
+    houstonRemoteRegtest = [
+            HOUSTON_PROTOCOL: 'https',
+            HOUSTON_DOMAIN  : 'pub.reg.api.muun.wtf',
+            HOUSTON_PATH    : 'houston',
+            HOUSTON_PORT    : 443,
+            HOUSTON_CERT_PIN: 'sha1/9PSg324+GJINh7NLIHbhI4mvRG4=',
+            NETWORK_NAME    : 'regtest'
+    ]
+
+    houstonRemoteStg = [
+            HOUSTON_PROTOCOL: 'https',
+            HOUSTON_DOMAIN  : 'stg.api.muun.wtf',
+            HOUSTON_PATH    : 'houston',
+            HOUSTON_PORT    : 443,
+            HOUSTON_CERT_PIN: 'sha1/eYyk4j+ml5JoMmnwZjJP3Mcxe8Q=',
+            NETWORK_NAME    : 'mainnet'
+    ]
+
+    houstonRemotePrd = [
+            HOUSTON_PROTOCOL: 'https',
+            HOUSTON_DOMAIN  : 'pub.api.muun.io',
+            HOUSTON_PATH    : 'houston',
+            HOUSTON_PORT    : 443,
+            HOUSTON_CERT_PIN: 'sha256/zis9CR2Zmy9KVWoeet7BQA7jJsTmeRYyQaWse2ggLdQ=',
+            NETWORK_NAME    : 'mainnet'
+    ]
+}

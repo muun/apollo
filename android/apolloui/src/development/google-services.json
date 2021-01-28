@@ -1,0 +1,43 @@
+{
+  "project_info": {
+    "project_id": "muun-debug",
+    "project_number": "880007565849",
+    "name": "Muun Debug"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880007565849:android:95b71477f4f55308",
+        "client_id": "android:io.muun.apollo.debug",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "io.muun.apollo.debug",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [],
+      "api_key": [ { "current_key": "" } ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

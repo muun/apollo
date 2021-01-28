@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <RelativeLayout
+                android:id="@+id/settings_header_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/actionBarSize"
+                android:background="@color/muun_white"
+                >
+
+            <io.muun.apollo.presentation.ui.view.MuunPictureInput
+                    android:id="@+id/settings_profile_picture"
+                    android:layout_width="112dp"
+                    android:layout_height="112dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginBottom="16dp"
+                    android:layout_centerHorizontal="true"
+                    />
+
+            <TextView
+                    android:id="@+id/settings_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_below="@id/settings_profile_picture"
+                    android:layout_marginLeft="48dp"
+                    android:layout_marginRight="48dp"
+                    android:layout_marginBottom="16dp"
+                    android:textAlignment="center"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="normal"
+                    android:textColor="@color/muun_black"
+                    android:letterSpacing="0.03"
+                    android:maxLines="2"
+                    android:minEms="10"
+                    android:maxEms="14"
+                    android:ellipsize="end"
+                    tools:text="@string/tools_mock_long_name"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunIconButton
+                    android:id="@+id/settings_edit_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignTop="@+id/settings_username"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="16dp"
+                    muun:icon="@drawable/ic_edit_black_24"
+                    muun:iconSize="24dp"
+                    muun:color="@color/muun_gray_light"
+                    />
+
+            <View style="@style/drop_shadow_bottom"
+                    android:layout_below="@id/settings_username"
+                    android:layout_marginTop="16dp"
+                    />
+
+            <View
+                    android:id="@+id/header_separator"
+                    style="@style/settings_item_separator"
+                    android:layout_below="@id/settings_username"
+                    android:layout_marginTop="16dp"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+                android:id="@+id/wallet_details_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/settings_header_wallet_details"
+                    style="@style/settings_section_header"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_phone_number"
+                    muun:label="@string/settings_item_phone"
+                    style="@style/settings_item"
+                    />
+
+            <View style="@style/settings_item_separator"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/settings_header_general"
+                    style="@style/settings_section_header"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_bitcoin_unit"
+                    muun:label="@string/settings_item_bitcoin_unit"
+                    style="@style/settings_item"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_primary_currency"
+                    muun:label="@string/settings_item_primary_currency"
+                    style="@style/settings_item"
+                    />
+
+        </LinearLayout>
+
+        <View style="@style/settings_item_separator"/>
+
+        <LinearLayout
+                android:id="@+id/recovery_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/settings_header_recovery"
+                    style="@style/settings_section_header"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_password"
+                    muun:label="@string/settings_password"
+                    style="@style/settings_item"
+                    />
+
+            <View style="@style/settings_item_separator"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/settings_header_advanced"
+                    style="@style/settings_section_header"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_lightning"
+                    muun:label="@string/settings_lightning"
+                    style="@style/settings_item"
+                    />
+
+        </LinearLayout>
+
+        <View style="@style/settings_item_separator"/>
+
+        <LinearLayout
+                android:id="@+id/settings_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/log_out_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="@color/muun_red"
+                    android:textSize="@dimen/muun_text_size_body"
+                    android:text="@string/settings_logout"
+                    />
+
+        </LinearLayout>
+
+        <View style="@style/settings_item_separator"/>
+
+        <TextView
+                android:id="@+id/settings_version_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="24dp"
+                android:textSize="14sp"
+                />
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,1318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General-purpose strings -->
+    <string name="cancel">Cancelar</string>
+    <string name="dismiss">Aceptar</string>
+    <string name="retry">Reintentar</string>
+    <string name="abort">Abortar</string>
+    <string name="available_balance">Balance</string>
+    <string name="selected">Seleccionado</string>
+    <string name="why"><annotation link="why">¿Por qué?</annotation></string>
+    <string name="no_internet">Sin conexión a internet</string>
+    <string name="qr_code_image">Código QR</string>
+    <string name="backspace">Backspace</string>
+    <string name="long_date_format">%s a las %s%s</string>
+    <string name="not_available">No disponible</string>
+
+    <string name="overflow_menu_hint">Menu de desborde</string>
+
+    <!-- FCM -->
+    <string name="google_play_services_not_available">
+        Al parecer Google Play Services no está disponible en este dispositivo. Muun lo necesita
+        para funcionar correctamente. Por favor, instala Google Play Services e intenta nuevamente.
+    </string>
+    <string name="fcm_token_not_available">
+        El servicio de notificaciones de Android no responde. Por favor, intenta nuevamente.
+    </string>
+
+    <!-- New operation -->
+    <string name="new_operation_title">Nuevo pago</string>
+    <string name="operation_detail_title">Detalle del pago</string>
+    <string name="showqr_title">Recibir bitcoin</string>
+    <string name="scanqr_title">Enviar bitcoin</string>
+    <string name="scanqr_drawer_title">Enviar a la dirección en el portapapeles</string>
+    <string name="scanqr_drawer_no_address">Solicitud de pago de %s</string>
+    <string name="scanqr_drawer_no_address_no_host">Solicitud de pago de un comercio</string>
+    <string name="scanqr_drawer_ln_invoice_title">Usar factura del portapapeles</string>
+
+    <string name="grant_camera_permission_button">Habilitar cámara</string>
+
+    <string name="camera_permission_request_title">
+        Escanea un código QR de bitcoin o de lightning
+    </string>
+
+    <string name="camera_permission_request">
+        Habilita tu cámara para escanear códigos QR con direcciones o facturas
+    </string>
+
+    <string name="new_operation_to">A</string>
+    <string name="new_operation_to_hint">Ingresa una dirección de bitcoin o factura</string>
+    <string name="new_operation_dialog_full_address">Dirección completa</string>
+    <string name="new_operation_note_hint">Escribe una nota</string>
+    <string name="new_operation_total">Total</string>
+    <string name="new_operation_fee">Comisión de la red</string>
+    <string name="new_operation_amount">Monto</string>
+    <string name="new_operation_use_all_funds">Usar todos los fondos</string>
+    <string name="new_operation_note">Nota</string>
+    <string name="new_operation_confirm">Enviar</string>
+    <string name="new_operation_resolving">Cargando los detalles de pago</string>
+    <string name="new_operation_receiving_node_data">Información del nodo destinatario</string>
+    <string name="new_operation_invoice_exp_prefix">Esta factura expirará en</string>
+    <string name="new_operation_invoice_exp_weeks">%d semanas y %d días</string>
+    <string name="new_operation_invoice_exp_days">%d días y %d horas</string>
+    <string name="new_operation_invoice_exp_hours">%d horas y %d minutos</string>
+    <string name="new_operation_invoice_exp_minutes">%02d:%02d</string>
+    <string name="new_operation_invoice_exp_seconds">%02d:%02d</string>
+
+    <string name="confirm_amount">confirmar monto</string>
+    <string name="confirm_note">confirmar nota</string>
+    <string name="title_new_operation">Enviar bitcoin</string>
+
+    <string name="new_operation_abort_alert_title">¿Cancelar pago?</string>
+    <string name="new_operation_abort_alert_body">
+        Estás a punto de cancelar el pago y volver a la pantalla de inicio.
+    </string>
+
+    <string name="new_operation_swap_title">Pagar por lightning</string>
+    <string name="new_operation_receiving_node_public_key">
+        <![CDATA[<b>Clave pública:</b> %s]]>
+    </string>
+    <string name="new_operation_receiving_node_network_address">
+        <![CDATA[<b>Dirección de red:</b> %s]]>
+    </string>
+    <string name="see_in_node_explorer">Ver en explorador de nodos</string>
+
+    <string name="new_op_1_conf_notice_banner">
+        Este pago puede demorar más que la mayoría de los pagos en lightning.
+        <annotation link="link">¿Por qué?</annotation>
+    </string>
+    <string name="new_op_1_conf_notice_title">¿Por qué puede demorarse este pago?</string>
+    <string name="new_op_1_conf_notice_desc">
+        Este pago de lightning requiere de una transacción on-chain confirmada. Tardará un promedio de 10 minutos en completarse.
+    </string>
+
+    <!-- Failed operation -->
+    <string name="error_op_insufficient_funds">No tienes suficientes fondos</string>
+    <string name="error_op_insufficient_funds_desc">
+        No tienes suficientes fondos para cubrir este pago y la comisión de la red
+    </string>
+
+    <string name="error_op_invoice_unreachable_node_title">No es posible pagar esta factura</string>
+    <string name="error_op_invoice_unreachable_node_desc">
+        Esta factura fue creada por un nodo privado al que no se puede acceder. Para poder accederlo, la factura
+        debe incluir datos adicionales (RouteHints). Sólo el creador de la factura puede solucionar este problema.
+    </string>
+
+    <string name="error_op_invoice_no_route_title">No hay una ruta disponible</string>
+    <string name="error_op_invoice_no_route_desc">
+        No existe una ruta con suficiente capacidad para hacer este pago. Por favor, contacta a
+        nuestro <annotation link="support">equipo de soporte</annotation> y cuéntanos que ocurrió.
+        Estaremos felices de ayudarte.
+    </string>
+
+    <string name="error_op_invoice_will_expire_soon_title">
+        Este pago requiere un tiempo de expiración más largo
+    </string>
+    <string name="error_op_invoice_will_expire_soon_desc">
+        Este pago requiere más tiempo restante antes de que expire la factura. Por favor, 
+        crea o solicita una nueva factura. Sugerimos un tiempo de expiración de 1 hora o más.
+    </string>
+
+    <string name="error_op_invoice_used_title">Esta factura ya fue utilizada</string>
+    <string name="error_op_invoice_used_desc">
+        Esta factura ya ha sido escaneada o pagada por otro monedero. Por favor crea o solicita una
+        nueva factura.</string>
+
+    <string name="error_op_invoice_expired_title">Esta factura expiró</string>
+    <string name="error_op_invoice_expired_desc">
+        Esta factura expiró antes de que se realizara el pago. Por favor, crea o solicita una nueva.
+    </string>
+
+    <string name="error_op_invoice_invalid_amount_title">
+        Factura sin un monto válido
+    </string>
+    <string name="error_op_invoice_invalid_amount_desc">
+        La factura debe tener un monto de al menos 1 satoshi. Por favor, crea o solicita una nueva.
+    </string>
+
+    <string name="error_op_invoice_invalid_title">No es posible pagar esta factura</string>
+    <string name="error_op_invoice_invalid_desc">Intenta con otra factura</string>
+
+    <string name="error_op_exchange_rate_window_too_old_title">
+        La cotización de bitcoin cambió
+    </string>
+    <string name="error_op_exchange_rate_window_too_old_desc">
+        Tu pago no se completó porque el tipo de cambio de bitcoin cambió desde que comenzaste. Por favor inicia un nuevo pago.
+    </string>
+
+    <string name="error_op_cyclical_swap_title">Esta factura no se puede pagar</string>
+    <string name="error_op_cyclical_swap_desc">No puedes pagarte una factura a ti mismo.</string>
+
+    <string name="error_op_generic">Ha ocurrido un error inesperado</string>
+    <string name="error_op_generic_desc">
+        Algo salió mal, pero no sabemos qué fue. Por favor, contacta a nuestro
+        <annotation link="support">equipo de soporte</annotation> y cuéntanos que ocurrió. Estaremos
+        felices de ayudarte.
+    </string>
+
+    <string name="error_op_amount_too_small_title">Este pago es demasiado pequeño</string>
+    <string name="error_op_amount_too_small_desc">
+        El monto que estás intentando enviar es demasiado pequeño. Debe superar los 546 satoshis.
+    </string>
+
+    <string name="error_op_invalid_address_title">Esta no es una direción de BTC</string>
+    <string name="error_op_invalid_address_desc">
+        Esto no es una dirección de BTC ni una factura de lightning. Verifica su origen y asegúrate 
+        de que la dirección esté formateada correctamente.
+        \n
+        \nTexto escaneado:
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_op_action">Volver al inicio</string>
+
+    <!-- Operation detail -->
+    <string name="operation_detail_description">Descripción</string>
+    <string name="operation_detail_date">Cuándo</string>
+    <string name="operation_detail_amount">Monto</string>
+    <string name="operation_detail_confirmations">Confirmaciones</string>
+    <string name="operation_detail_fee">Comisión de la red</string>
+    <string name="operation_detail_address_incoming">Recibido en la dirección</string>
+    <string name="operation_detail_address_outgoing">Enviado a la dirección</string>
+    <string name="operation_detail_txid">Identificador de transacción</string>
+    <string name="operation_detail_share_txid_title">Identificador de transacción</string>
+    <string name="operation_detail_invoice">Factura de lightning</string>
+    <string name="operation_detail_swap_hash">Hash del pago</string>
+    <string name="operation_detail_swap_preimage">Preimagen del pago</string>
+    <string name="operation_detail_receiving_pubkey">Nodo destinatario</string>
+    <string name="operation_detail_fee_incoming">Comisión (del remitente a mineros)</string>
+    <string name="operation_detail_fee_outgoing">Comisión pagada a mineros</string>
+
+    <string name="operation_swap_pending_0conf_desc">
+        Esperando a que el destinatario acepte el pago.
+    </string>
+    <string name="operation_swap_pending_desc">
+        Este pago está esperando una confirmación on-chain.
+    </string>
+    <string name="operation_swap_failed_desc">
+        No hay ruta disponible para realizar este pago. Recibirás un reembolso en aproximadamente
+        %d horas (%d bloques)
+    </string>
+    <string name="operation_swap_expired_desc">
+        Este pago falló. Recibiste un reembolso.
+    </string>
+    <string name="operation_swap_pending_confirmations_explanation_title">Se necesita confirmación
+    </string>
+    <string name="operation_swap_pending_explanation_desc">
+        Este pago en lightning involucra una transacción on-chain.
+        Para completar el pago, la transacción debe confirmarse.
+    </string>
+    <string name="operation_detail_invoice_copied">Factura copiada al portapapeles</string>
+    <string name="operation_detail_preimage_copied">
+        Preimagen del pago copiada al portapapeles
+    </string>
+    <string name="operation_detail_txid_copied">
+        Identificador copiado al portapapeles
+    </string>
+    <string name="operation_detail_amount_copied">Monto copiado al portapapeles</string>
+    <string name="operation_detail_fee_copied">Comisión de la red copiada al portapapeles</string>
+    <string name="operation_detail_address_copied">Dirección copiada al portapapeles</string>
+
+    <!-- Operation history -->
+    <string name="home_operations_list_title">Pagos</string>
+    <string name="history_external_incoming_operation_description">De la red de bitcoin</string>
+    <string name="history_external_incoming_swap_description">De la red de lightning</string>
+    <string name="home_operations_empty_title">Tu historial de pagos aparecerá aquí
+</string>
+    <string name="home_operations_empty">
+        <annotation link="go_to_receive">Recibe</annotation> tu primer pago y comienza.
+    </string>
+    <string name="operation_sent_to_yourself">Te pagaste</string>
+    <string name="internal_incoming_operation">%s te pagó</string>
+    <string name="internal_outgoing_operation">Pagaste a %s</string>
+    <string name="external_incoming_operation">Te pagaron</string>
+    <string name="external_outgoing_operation">Pagaste</string>
+
+    <!-- Contacts -->
+    <string name="contact_list_empty">
+        <annotation link="go_to_p2p_setup">Habilita los contactos</annotation> y envíale dinero a
+        tus amigos usando tu número de teléfono y la lista de contactos.
+    </string>
+    <!-- UI TESTING ONLY: Must match above clickable span  -->
+    <string name="contact_list_empty_clickable_span">Habilita los contactos</string>
+
+    <string name="contact_list_title">Contactos</string>
+
+    <!-- NOTICE: Strings over this line hasn't received enough attention, and will probably go away,
+    please remove them if not used anymore. -->
+
+
+    <!-- Notifications -->
+    <string name="notifications_new_contact">¡%s ha llegado a Muun!</string>
+    <string name="notifications_amount_received">%s recibidos</string>
+    <string name="notifications_amount_received_from">%s te ha enviado %s</string>
+    <string name="notifications_op_failed_title">Tu pago falló</string>
+    <string name="notifications_op_failed_content">Abre tu monedero para ver los detalles</string>
+
+    <!-- Generic strings -->
+
+    <string name="slogan">Monedero de custodia propia\npara bitcoin y lightning</string>
+    <string name="network_error_message">No se puede conectar con el servidor de Muun</string>
+
+    <!-- Landing -->
+
+    <string name="signup_start">CREAR UN MONEDERO NUEVO</string>
+    <string name="login_start">YA TENGO UN MONEDERO</string>
+
+    <!-- Signup -->
+
+    <string name="signup_continue">Continuar</string>
+    <string name="signup_title">Crea un monedero</string>
+    <string name="login_title">Recupera tu monedero</string>
+
+    <!-- signup.phone_number -->
+
+    <string name="signup_phone_number_title">Verifica tu número de teléfono</string>
+    <string name="signup_phone_number_explanation">
+        Ingresa tu número de teléfono y país para recibir un código de verificación. Puede haber
+        costos de envío
+    </string>
+    <string name="signup_phone_number_why_this">¿Cómo funciona?</string>
+    <string name="signup_phone_number_why_this_title">¿Cómo funciona?</string>
+    <string name="signup_phone_number_why_this_description">
+        Muun te permite realizar pagos usando tu número de teléfono y lista de contactos. Las
+        personas que ya saben cómo contactarte por teléfono podrán enviarte bitcoins fácilmente
+        usando Muun.
+    </string>
+    <string name="signup_phone_number_select_country">Selecciona tu país</string>
+
+    <string name="select_country">Selecciona tu país</string>
+
+    <string name="signup_phone_number_code_helper">País</string>
+    <string name="signup_phone_number_phone_helper">Número de teléfono</string>
+    <string name="signup_enter_number">Ingresar número</string>
+
+    <!-- signup.email -->
+
+    <string name="signup_email_verify">Verifica tu email</string>
+    <string name="signup_email_authorize">Autoriza tu inicio de sesión</string>
+    <string name="signup_email_verify_explanation">
+        Recibirás un correo electrónico de autorización en
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
+        Por favor, haz clic en el enlace del correo para continuar.
+    </string>
+    <string name="email_verify_open_mail">Revisar email</string>
+
+    <!-- signup.verification -->
+
+    <string name="signup_verification_title">@string/signup_phone_number_title</string>
+    <string name="signup_verification_explanation">
+        Te enviamos un mensaje SMS con un código de verificación.
+    </string>
+    <string name="signup_verification_code_hint">Código de 6 dígitos</string>
+    <string name="signup_verification_resend_countdown">Esto puede tomar %d:%02d</string>
+    <string name="signup_verification_resend_message">¿No lo has recibido?</string>
+    <string name="action_change_num">¿Número incorrecto?</string>
+    <string name="action_resend_sms">Reenviar SMS</string>
+    <string name="action_call_me">Llamarme</string>
+    <string name="signup_enter_code">Ingresar código</string>
+
+    <string name="set_up_rc_step_count">%d of %d</string>
+
+    <!-- LoginEmailFragment -->
+    <string name="login_email_title">Ingresa tu email</string>
+    <string name="login_email_explanation">
+        Lo elegiste cuando configuraste tu monedero.
+    </string>
+    <string name="login_email_input_hint">Tu email</string>
+    <string name="login_email_action">Ingresar email</string>
+
+    <!-- signup.profile -->
+
+    <string name="signup_profile_title">Completa tu perfil</string>
+    <string name="signup_profile_explanation">
+        Tu nombre completo y foto son visibles únicamente para tus contactos
+    </string>
+    <string name="signup_profile_why_this">¿Quién puede ver esto?</string>
+    <string name="signup_profile_why_this_title">¿Quién puede ver esta información?</string>
+    <string name="signup_profile_why_this_explanation">
+        Tu nombre completo y foto serán visibles únicamente para personas que ya saben cómo
+        contactarte por teléfono.
+    </string>
+    <string name="signup_create_profile">Crear perfil</string>
+
+    <string name="signup_profile_first_name_hint">Nombre</string>
+    <string name="signup_profile_last_name_hint">Apellido</string>
+    <string name="field_first_name">Nombre</string>
+    <string name="field_last_name">Apellido</string>
+    <string name="field_password">Contraseña</string>
+
+    <!-- signup.unlock -->
+
+    <string name="signup_unlock_title">Ingresa tu contraseña</string>
+    <string name="signup_unlock_forgot">Olvidé mi contraseña</string>
+    <string name="signup_unlock_continue">Continuar</string>
+    <string name="signup_unlock_password_hint">Tu contraseña</string>
+    <string name="signup_unlock_password_reminder">
+        <![CDATA[<b>Recordatorio:</b> tiene al menos 8 caracteres. Este era el único
+         requerimiento.]]>
+    </string>
+    <string name="signup_unlock_password_abort_title">¿Abortar recuperación de monedero?</string>
+    <string name="signup_unlock_password_abort_msg">
+        No has terminado de recuperar tu monedero. Puedes recuperarlo más tarde.
+    </string>
+
+    <!-- signup.sync -->
+    <string name="signup_sync_creating">Creando tu monedero</string>
+    <string name="signup_sync_loading">Cargando tu monedero</string>
+
+    <!-- home -->
+    <string name="home_footer_action_send">Enviar</string>
+    <string name="home_footer_action_receive">Recibir</string>
+    <string name="home_send_feedback_action_title">Ayuda y comentarios</string>
+
+    <!-- WelcomeToMuun -->
+    <string name="welcome_to_muun">Creaste tu monedero.\n¡Bienvenido a Muun!</string>
+    <string name="welcome_to_muun_cta">Vamos</string>
+
+    <!-- Send screen -->
+    <string name="send_header_title">Enviar bitcoin</string>
+    <string name="send_confirm">Confirmar receptor</string>
+    <string name="send_uri_error_title">Dirección o factura inválida</string>
+    <string name="send_uri_error_body">
+        Ésta no es una dirección de BTC o factura de lightning.
+    </string>
+
+    <!-- QR scanner -->
+    <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
+
+    <!-- request_update -->
+
+    <string name="request_update_title">Actualización requerida</string>
+    <string name="request_update_subtitle">
+        Para continuar usando Muun, por favor actualiza la aplicación a la última versión.
+    </string>
+    <string name="request_update_body">Solo te llevará unos minutos.</string>
+    <string name="request_update_action">Actualizar</string>
+
+    <!-- request_restart -->
+
+    <string name="request_restart_title">Reinicio necesario</string>
+    <string name="request_restart_subtitle">
+        Para continuar usando Muun, por favor reinicia la aplicación y recupera tu monedero.
+    </string>
+    <string name="request_restart_body">¡Te esperan nuevas funcionalidades y mejoras!</string>
+    <string name="request_restart_action">Reiniciar</string>
+
+    <!-- pin -->
+
+    <string name="pin_error_on_setup_cancel">"Por favor, elige un PIN"</string>
+    <string name="navigation_back">atrás</string>
+    <string name="your_pin_did_not_match">El PIN no coincide</string>
+    <string name="choose_your_pin">Crea tu PIN</string>
+    <string name="choose_your_pin_description">Mantén tu monedero seguro</string>
+    <string name="choose_your_pin_repeat_description">Confirma tu PIN</string>
+    <string name="confirm_your_pin">Ingrésalo nuevamente</string>
+    <string name="enter_your_pin">Ingresa tu PIN</string>
+    <string name="pin_attempts_left_many">Quedan %d intentos</string>
+    <string name="pin_attempts_left_one">Queda 1 intento</string>
+    <string name="pin_attempts_left_zero">No quedan intentos</string>
+
+    <!-- Setup Email & Password  -->
+
+    <string name="setup_password_step_counter">%s de %s</string>
+
+    <string name="setup_password_intro_title">Respalda tu monedero</string>
+    <string name="setup_password_intro_body">
+        Usa tu email y una contraseña para recuperar tu dinero de forma conveniente
+        si cambias tu teléfono o reinstalas Muun.
+    </string>
+    <string name="setup_password_intro_title_has_rc">Respalda tu monedero con contraseña</string>
+    <string name="setup_password_intro_body_has_rc">
+        Usa tu email y una contraseña para recuperar tu dinero de forma conveniente
+        si cambias tu teléfono o reinstalas Muun.
+        \n\n
+        Esto habilita la autenticación multi-factor, mejorando la seguridad cuando usas tu
+        Código de Recuperación.
+    </string>
+    <string name="setup_password_intro_action">COMENZAR</string>
+
+    <string name="setup_password_abort_title">¿Abortar respaldo de tu monedero?</string>
+    <string name="setup_password_abort_body">
+        No has terminado el respaldo de tu monedero. Puedes reiniciar este proceso más tarde.
+    </string>
+
+    <string name="setup_password_skip_title">
+        ¿Estás seguro de que no querés configurar la recuperación por email?
+    </string>
+    <string name="setup_password_skip_body">
+        Podés volver más tarde, si cambiás de opinión.
+    </string>
+    <string name="setup_password_skip_yes">Estoy seguro</string>
+    <string name="setup_password_skip_no">Cancelar</string>
+
+    <string name="create_email_title">Ingresa tu email</string>
+    <string name="create_email_subtitle">
+        Recibirás un correo de verificación en este email.
+        <annotation link="why">¿Como usará Muun mi email?</annotation>
+    </string>
+    <string name="create_email_input_hint">Tu email</string>
+    <string name="create_email_skip">No quiero usar mi email</string>
+    <string name="create_email_action">CONFIRMAR email</string>
+    <string name="create_email_how_dialog_title">¿Como usará Muun mi email?</string>
+    <string name="create_email_how_dialog_desc">
+        Muun te enviará un correo electrónico cada vez que alguien intente acceder a tu
+        monedero, pidiendo tu autorización. Esto te proteje de gente (o computadoras) que intenten
+        adivinar tu contraseña, y te alerta si alguien lo intenta.
+    </string>
+
+    <string name="create_password_title">Crea tu contraseña</string>
+    <string name="create_password_subtitle">
+        Elige algo memorable. Si es posible, evita usar viejas contraseñas que ya estes usando.
+    </string>
+    <string name="create_password_input_hint">Tu contraseña</string>
+    <string name="create_password_confirm_input_hint">Confirma tu contraseña</string>
+    <string name="create_password_input_helper">Al menos 8 caracteres de longitud</string>
+    <string name="create_password_input_confirm_helper">Las contraseñas deben coincidir</string>
+    <string name="create_password_action">CREAR CONTRASEÑA</string>
+    <string name="create_email_help_link">
+        <annotation link="help">¿Necesitas ayuda?</annotation>
+    </string>
+    <string name="create_email_help_content">
+        <annotation role="h1">Otro monedero está usando éste email</annotation>
+
+        <annotation role="p">
+            Si necesitas ayuda con tu monedero, por favor, contacta a nuestro
+            <annotation link="support">equipo de soporte</annotation> y haznos saber que ocurrió.
+            Estaremos felices de ayudarte.
+        </annotation>
+    </string>
+
+    <string name="verify_email_title">Verifica tu email</string>
+    <string name="verify_email_subtitle">
+        Recibirás un correo de verificación en
+        <annotation fontStyle="bold"><annotation arg="0">%%s</annotation></annotation>.
+        Por favor, haz click en el enlace del correo para continuar.
+    </string>
+    <string name="verify_email_action">REVISAR CUENTA DE CORREO</string>
+
+    <string name="setup_password_accept_title">Dos cosas que debes entender</string>
+    <string name="setup_password_accept_why">
+        <annotation link="why">¿Por qué no se puede restaurar la contraseña?</annotation>
+    </string>
+    <string name="setup_password_accept_condition_1">
+        Entiendo que necesitaré mi contraseña y acceso a mi email para recuperar mi
+        monedero.
+    </string>
+    <string name="setup_password_accept_condition_2">
+        Entiendo que Muun no puede restaurar mi contraseña si me la olvido.
+    </string>
+    <string name="setup_password_accept_action">FINALIZAR</string>
+
+    <string name="setup_password_why_cant_reset_title">
+        ¿Por qué no se puede restaurar la contraseña?
+    </string>
+    <string name="setup_password_why_cang_reset_desc">
+        Tu contraseña se usa para encriptar tu respaldo, de manera que nadie puede acceder a el
+        sin la contraseña - ni siquiera Muun. Si pierdes tu contraseña original, el respaldo es
+        imposible de desencriptar y el monedero no se puede recuperar.
+    </string>
+
+    <string name="setup_password_success_title">¡Éxito!</string>
+    <string name="setup_password_success_body">
+        Respaldaste tu monedero, y ahora puedes recuperarlo usando tu email
+        y contraseña.
+    </string>
+    <string name="setup_password_success_action">EXCELENTE</string>
+
+    <!-- Setup Recovery Code -->
+    <string name="recovery_code_title">Código de Recuperación</string>
+
+    <string name="priming_recovery_code_start">INICIAR</string>
+    <string name="priming_recovery_code_title">Crea otro respaldo</string>
+    <string name="priming_recovery_code_desc">
+        Escribe un código en papel para recuperar tu monedero si te olvidas tu contraseña.
+    </string>
+    <string name="priming_recovery_code_email_skipped_title">Respalda tu monedero</string>
+    <string name="priming_recovery_code_email_skipped_desc">
+        Escribe un código en papel para recuperar tu monedero si cambias tu teléfono o reinstalas
+        Muun.
+    </string>
+
+    <string name="recovery_code_explanation_title">Escribe tu Código de Recuperación</string>
+    <string name="recovery_code_explanation">
+        Usa lapicera y papel. Por seguridad, no lo guardes en tu teléfono o en la nube.
+    </string>
+    <string name="recovery_code_continue">Continuar</string>
+
+    <string name="recovery_code_verify_explanation_title">
+        Confirma tu Código de Recuperación
+    </string>
+    <string name="recovery_code_verify_action">CONFIRMAR CÓDIGO</string>
+
+    <string name="recovery_code_verify_accept_explanation_title">
+        Dos cosas que debes entender
+    </string>
+    <string name="recovery_code_verify_accept_condition_1">
+        Entiendo que necesitaré este código si olvido mi contraseña.
+    </string>
+    <string name="recovery_code_verify_accept_condition_1_skipped_email">
+        Entiendo que necesitaré este código para recuperar mi monedero.
+    </string>
+    <string name="recovery_code_verify_accept_condition_2">
+        Entiendo que Muun no guarda una copia de este código y no se puede cambiar.
+    </string>
+
+    <string name="recovery_code_success_message">¡Éxito!</string>
+    <string name="recovery_code_success_description">
+        Ya puedes recuperar tu monedero usando tu email y tu Código de Recuperación.
+    </string>
+    <string name="recovery_code_success_description_email_skipped">
+        Creaste un respaldo para tu monedero, y ahora puedas recuperarlo usando tu Código de
+        Recuperación.
+    </string>
+    <string name="recovery_code_success_action">EXCELENTE</string>
+
+    <string name="recovery_code_accept">FINALIZAR</string>
+
+    <string name="recovery_code_missing_title">Código de Recuperación sin configurar</string>
+    <string name="recovery_code_missing_message">
+        Para continuar, primero debes configurar tu Código de Recuperación.
+    </string>
+
+    <string name="recovery_code_missing_action">Configurar Código de Recuperación</string>
+    <string name="recovery_code_error_invalid_character">
+        Se ha ingresado un símbolo inválido
+    </string>
+
+    <string name="recovery_code_abort_title">¿Abortar Configuración?</string>
+    <string name="recovery_code_abort_body">
+        No has terminado de configurar tu Código de Recuperación. Si abortas ahora, éste código
+        no funcionará para acceder a tu monedero o exportar tus Claves Privadas.
+    </string>
+
+    <!-- feedback -->
+    <string name="feedback_title">Ayuda y comentarios</string>
+    <string name="feedback_explanation">
+        Envíanos cualquier idea, comentario o problema que tengas.
+    </string>
+    <string name="feedback_input_hint">Comentarios</string>
+    <string name="feedback_action">Enviar comentarios</string>
+    <string name="feedback_success">Comentarios enviados</string>
+    <string name="anon_feedback_explanation">
+        Si tienes ideas, comentarios o problemas escribinos a
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="anon_feedback_explanation_support_id">
+        Por favor, incluye éste código de soporte (<annotation arg="0">1111-1111</annotation>).
+    </string>
+    <string name="anon_feedback_open_email">Abrir cliente de email</string>
+
+    <!-- other -->
+
+    <string name="operation_rbf">Cancelable</string>
+    <string name="operation_pending">Confirmando</string>
+    <string name="operation_failed">Falló</string>
+    <string name="operation_completed">Realizada</string>
+
+    <string name="copy">Copiar</string>
+    <string name="share">Compartir</string>
+
+    <!-- Phone Number Screen defaults -->
+    <string name="default_country_code">US</string>
+    <string name="default_country_prefix_hint">+1</string>
+
+    <string name="signup_forgot_password_recovery_code_explanation">
+        Ingresa tu Código de Recuperación para desencriptar tu monedero
+    </string>
+
+    <!--Settings-->
+    <string name="settings_title_profile_hidden">Configuración</string>
+    <string name="settings_header_recovery">Recuperación</string>
+    <string name="settings_header_wallet_details">Detalles del monedero</string>
+    <string name="settings_header_general">General</string>
+    <string name="settings_item_email">Email</string>
+    <string name="settings_item_phone">Número de teléfono</string>
+    <string name="settings_item_primary_currency">Moneda</string>
+    <string name="settings_item_bitcoin_unit">Unidad de bitcoin</string>
+    <string name="settings_password">Cambiar contraseña</string>
+    <string name="settings_item_export_keys">Respaldo de Claves Privadas</string>
+    <string name="settings_setup_recovery_code">Configurar Código de Recuperación</string>
+    <string name="settings_recovery_tool">Herramienta de Recuperación</string>
+    <string name="settings_version">Versión %s</string>
+
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logout_alert_title">¿Quieres cerrar sesión?</string>
+    <string name="settings_logout_alert_body">
+        Recuerda que necesitarás tu contraseña o Código de Recuperación para acceder nuevamente.
+    </string>
+    <string name="settings_logout_alert_yes">Cerrar sesión</string>
+    <string name="settings_logout_alert_no">Cancelar</string>
+
+    <string name="settings_logout_explanation_title">
+        No puedes cerrar sesión en este momento
+    </string>
+    <string name="settings_logout_explanation_description">
+        Recibiste pagos que todavía no están confirmados.
+        Antes de cerrar tu sesión, espera a que se confirmen.
+    </string>
+    <string name="settings_logout_explanation_action">OK</string>
+
+    <string name="settings_delete_wallet">Eliminar monedero</string>
+    <string name="settings_delete_wallet_alert_title">
+        ¿Quieres eliminar tu moendero?
+    </string>
+    <string name="settings_delete_wallet_alert_body">
+        Perderás tu historial de transacciones.
+    </string>
+    <string name="settings_delete_wallet_alert_yes">Eliminar</string>
+    <string name="settings_delete_wallet_alert_no">Cancelar</string>
+
+    <string name="delete_wallet_success_message">Eliminaste tu monedero</string>
+    <string name="delete_wallet_success_description">
+        ¡Lamentamos verte ir! Nos encantaría saber por qué eliminaste tu monedero. Contacta a
+        nuestro <annotation link="support">equipo de soporte</annotation> y cuentanos qué pasó.
+    </string>
+    <string name="delete_wallet_success_action">SALIR</string>
+
+    <string name="settings_delete_wallet_explanation_title">
+        No puedes eliminar tu monedero en este momento
+    </string>
+    <string name="settings_delete_wallet_explanation_description">
+        Necesitas vaciar tu monedero. Realiza un pago con todos tus fondos 
+        y vuelve a intentarlo cuando la transacción tenga 6 confirmaciones.
+    </string>
+    <string name="settings_delete_wallet_explanation_action">OK</string>
+
+    <string name="settings_edit_first_name">Nombre</string>
+    <string name="settings_edit_last_name">Apellido</string>
+    <string name="edit_username_save">Guardar</string>
+    <string name="edit_username_title">Editar nombre</string>
+
+    <string name="select_primary_currency_title">Moneda</string>
+    <string name="search_currency_title">Buscar moneda</string>
+    <string name="search_currency_hint">Buscar</string>
+    <string name="select_currency_most_popular_section_title">Populares</string>
+    <string name="select_currency_all_section_title">Ordenadas alfabéticamente</string>
+
+    <string name="edit_password_explanation">
+        Tu contraseña se utiliza por motivos de seguridad. Para cambiarla necesitarás acceso a tu
+        <annotation fontStyle="bold">email</annotation> y a tu
+        <annotation fontStyle="bold">contraseña actual</annotation> o Código de Recuperación.
+    </string>
+    <string name="edit_password_start">Comenzar cambio de contraseña</string>
+
+    <string name="export_keys_intro_action">Crea tu Kit de Emergencia</string>
+    <string name="swipe_to_continue">Desliza para continuar</string>
+
+    <string name="export_keys_intro_1_title">Un documento</string>
+    <string name="export_keys_intro_1_body">
+        Tu Kit de Emergencia es un documento PDF con información e instrucciones para transferir
+        tus fondos independientemente.
+    </string>
+
+    <string name="export_keys_intro_2_title">Guardado online</string>
+    <string name="export_keys_intro_2_body">
+        Tus claves privadas están encriptadas de forma segura con tu Código de Recuperación,
+        así que puedes guardarlo online.
+    </string>
+
+    <string name="export_keys_intro_3_title">Posesión Completa</string>
+    <string name="export_keys_intro_3_body">
+        Combinando tu Kit de Emergencia y tu Código de Recuperación, tendrás control total e
+        indisputado de tus fondos.
+    </string>
+
+    <string name="export_keys_intro_why_encrypted_title">
+        ¿Por qué están encriptadas mis claves?
+    </string>
+
+    <string name="export_keys_intro_why_encrypted_body">
+        Tus Claves Privadas fueron encriptadas para darte mayor seguridad. Esto evita que queden
+        expuestas en un papel, y te permite guardarlas online de manera segura.
+        \n
+        \nEn Muun, puedes recuperar el acceso a tu monedero haciendo clic en un correo y utilizando
+        tu contraseña. Tus Claves Privadas solo son necesarias en casos extremos donde Muun no está
+        disponible.
+        \n
+        \nPara ese caso, desarrollamos una herramienta de código abierto que te permite desencriptar
+        tus claves y enviar tu dinero a otra direccción.
+    </string>
+    <string name="export_keys_preparing">Preparando claves privadas</string>
+    <string name="export_keys_preparing_error_title">Algo salió mal</string>
+    <string name="export_keys_preparing_error_desc">
+        Ocurrió un error preparando las claves privadas. Inténtalo de nuevo más tarde.
+    </string>
+    <string name="recovery_tool_header">Herramienta de Recuperación</string>
+    <string name="recovery_tool_info_title">
+        Usa la Herramienta de Recuperación para extraer tu dinero.
+    </string>
+    <string name="recovery_tool_info_body">
+        En un escenario en el que Muun no se encuentra disponible, esta es la forma de recuperar tu
+        dinero sin la colaboración de nuestros servidores.
+        \n\nUtiliza tus Claves Privadas, tu Código de Recuperación y la Herramienta de Recuperación
+        para extraer tus fondos.
+        \n\nPuedes encontrar la herramienta y las instrucciones para este proceso en
+    </string>
+
+    <!-- Security logout -->
+    <string name="security_logout_action">Iniciar sesión</string>
+    <string name="security_logout_text">Tu sesión ha finalizado</string>
+    <string name="security_logout_subtext">
+        Como una medida de seguridad, se finalizó tu sesión. Incia sesión para continuar.
+    </string>
+
+    <string name="edit_profile_pic">Editar foto de perfil</string>
+    <string name="action_pick_profile_pic_title">Elige una foto de perfil</string>
+    <string name="action_camera">Tomar una foto</string>
+    <string name="action_gallery">Desde la galería</string>
+    <string name="uploading_picture">Subiendo foto de perfil...</string>
+
+    <string name="enter_old_password_explanation_title">Ingresa tu contraseña actual</string>
+    <string name="enter_old_password_explanation">
+        Verifica que este monedero te pertenece.
+    </string>
+    <string name="enter_old_password_hint">Contraseña actual</string>
+    <string name="use_recovery_code">Usar Código de Recuperación</string>
+    <string name="enter_old_password_continue">Empezar cambio de contraseña</string>
+
+    <string name="enter_recovery_code_title">Ingresa tu Código de Recuperación</string>
+    <string name="enter_recovery_code_continue">Ingresar Código de Recuperación</string>
+    <string name="use_password">Usar contraseña</string>
+
+    <string name="change_password_title">Ingresa tu nueva contraseña</string>
+    <string name="change_password_hint">Nueva contraseña</string>
+    <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_condition">Entiendo que mi contraseña anterior ya no será válida.
+    </string>
+    <string name="change_password_continue">Confirma tu nueva contraseña</string>
+    <string name="change_password_abort_dialog_title">¿Abortar cambio de contraseña?</string>
+    <string name="change_password_abort_dialog_message">
+        Tu nueva contraseña no funcionará a menos que termines.
+    </string>
+    <string name="change_password_abort_dialog_yes">Abortar cambio</string>
+    <string name="change_password_abort_dialog_no">Cancelar</string>
+    <string name="change_password_success_action">Volver a configuración</string>
+    <string name="change_password_success_message">Has cambiado tu contraseña</string>
+
+    <!-- Tools mock strings (to preview in layout design screen) -->
+    <string name="tools_mock_long_name">Super hiper mega Random name which happens to also be
+        extremely and utterly looong and includes a extra little last name :)
+    </string>
+
+    <!-- Sync Contacts - P2PSetup-->
+    <string name="sync_contacts_title">Permitir acceso a tus contactos</string>
+    <string name="sync_contacts_explanation">
+        Los números de teléfono de tus contactos no se envían al servidor.
+    </string>
+    <string name="sync_contacts_how_it_works">¿Cómo funciona?</string>
+    <string name="sync_contacts_image">Sync contacts image</string>
+    <string name="sync_contacts_button_text">Permitir acceso</string>
+    <string name="sync_contacts_how_it_works_title">¿Cómo funciona?</string>
+    <string name="sync_contacts_how_it_works_title_description">
+        Únicamente los hashes de los números de teléfono son enviados al servidor.
+        Por coincidencia de hashes, tus amigos usando Muun aparecerán como contactos.
+    </string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Muun</string>
+
+    <string name="first_on_muun_image">First on muun image</string>
+    <string name="first_on_muun_description">
+        No tienes contactos usando Muun aún. Podrás pagarles fácilmente cuando ellos activen sus
+        contactos.
+    </string>
+    <string name="home_contacts_loading">Escanéando contactos</string>
+    <string name="home_contacts_permission_denied_forever_text">
+        Muun requiere del permiso de Contactos para mostrar tus contactos, pero ha sido denegado
+        permanentemente.
+        \n\n
+        Por favor, visita la sección de configuración de Apps, selecciona
+        <annotation fontStyle="bold">Permisos</annotation>, y habilita
+        <annotation fontStyle="bold">Contactos</annotation>.
+    </string>
+    <string name="home_contacts_permission_denied_forever_action">Ir a configuración</string>
+    <string name="select_currency_title">Cambiar moneda</string>
+
+    <!-- ERRORS -->
+    <string name="error_amount_too_small">Este monto es demasiado pequeño</string>
+    <string name="error_network_error">Error en la red, intenta nuevamente más tarde.</string>
+    <string name="error_country_not_supported">¡Perdón! Muun no está disponible en ese país</string>
+    <string name="error_deprecated_client_version">
+        Esta versión ya no es soportada por Muun. Por favor, actualiza la aplicación
+        Esta versión es demasiado vieja. Necesitas actualizar tu aplicación Muun.
+    </string>
+    <string name="error_email_already_used">Otro monedero está usando éste email</string>
+    <string name="error_email_not_registered">Éste email no está registrado</string>
+    <string name="error_field_required">Falta completar %s</string>
+    <string name="error_expired_session">
+        Tu sesión en Muun expiró. Por favor, inicia una nueva sesión o contacta a nuestro soporte
+        técnico.
+    </string>
+    <string name="error_verification_code_expired">
+        Tu Código de Verificación expiró. Te enviaremos uno nuevo
+    </string>
+    <string name="error_incorrect_password">Contraseña incorrecta. Intenta de nuevo</string>
+    <string name="error_incorrect_recovery_code">
+        Código de Recuperación incorrecto. Intenta de nuevo
+    </string>
+    <string name="error_insufficient_funds">Fondos insuficientes</string>
+    <string name="error_invalid_address">
+        La dirección de bitcoin ingresada no es válida
+    </string>
+    <string name="error_invalid_email_address">Email inválido</string>
+    <string name="error_invalid_operation_uri">
+        Los detalles de pago ingresados no son válidos
+    </string>
+    <string name="error_invalid_payment_request">El enlance de pago no es válido</string>
+    <string name="error_invalid_phone_number">Número de teléfono inválido</string>
+    <string name="error_invalid_picture">La foto no puede ser leída</string>
+    <string name="error_invalid_verification_code">
+        El código ingresado no coincide con el enviado. Intenta de nuevo.
+    </string>
+    <string name="error_password_too_short">Contraseña demasiado corta</string>
+    <string name="error_passwords_dont_match">Las contraseñas no coinciden</string>
+    <string name="error_phone_number_already_used">
+        Tu número de teléfono ya está asociado a otro monedero
+    </string>
+    <string name="error_recovery_code_verification">Código incorrecto. Intenta de nuevo</string>
+    <string name="error_revoked_verification_code">
+        Este es un código de verificación viejo, por favor ingresa la versión más actual
+    </string>
+    <string name="error_verification_code_limit_reached">
+        Demasiados intentos fallidos. Te enviaremos un núevo código
+    </string>
+    <string name="error_generic">Ha ocurrido un error. Por favor, intenta de nuevo.</string>
+    <string name="error_no_email_client_installed">
+        Parece que no tienes una aplicación de emails instalada. Por favor, instala una y prueba de
+        nuevo.
+    </string>
+    <string name="error_no_web_client_installed">
+        Parece que no tienes un navegador instalado. Por favor, instala uno y prueba de nuevo.
+    </string>
+    <string name="error_ln_invoice_not_supported">
+        No puede realizarse este pago de lightning
+    </string>
+    <string name="error_no_valid_payment_details_provided">
+        No se han encontrado detalles de pago válidos
+    </string>
+
+    <string name="error_dialog_let_us_know">Haznos saber</string>
+
+    <string name="error_send_report_dialog_title">Ocurrió un error inesperado</string>
+    <string name="error_send_report_dialog_body">
+        Algo salió mal, pero no sabemos qué. Se generó un reporte de error que
+        ayudará a resolverlo. Por favor, envíanoslo por email.
+    </string>
+    <string name="error_send_report_dialog_body_short">
+        Se generó un reporte de error que ayudará a resolver este problema. Por favor,
+        envíanoslo por email.
+    </string>
+    <string name="error_send_report_dialog_yes">Enviar reporte</string>
+    <string name="error_report_email_subject">Reporte de error de Muun</string>
+    <string name="error_copy_report_dialog_title">No se ha encontrado una app de email</string>
+    <string name="error_copy_report_dialog_body">
+        Puedes copiar el reporte de error y enviarnoslo de la manera que prefieras.
+    </string>
+    <string name="error_copy_report_dialog_yes">Copiar al portapapeles</string>
+
+    <!-- Edit Fee -->
+    <string name="edit_fee_title">Editar la comisión de la red</string>
+    <string name="edit_fee_confirm">Confirmar comisión</string>
+    <string name="fee_options_message">Selecciona un tiempo de confirmación.</string>
+    <string name="fee_options_whats_this">¿Qué es esto?</string>
+    <string name="fee_option_item_title">Menos de</string>
+    <string name="fee_option_item_hs">%d h</string>
+    <string name="fee_option_item_mins">%d min</string>
+    <string name="fee_option_item_hs_mins">%d h %d min</string>
+    <string name="fee_option_item_fee_rate">%s sat/vbyte</string>
+    <string name="enter_fee_manually">Ingresar comisión manualmente</string>
+    <string name="manual_fee_entered">Comisión ingresada manualmente</string>
+    <string name="fee_options_whats_this_explanation_title">
+        Comisión de la red y tiempos de confirmación
+    </string>
+    <string name="fee_options_whats_this_explanation_desc">
+        Muun calcula y sugiere la comisión necesaria para que tu transacción sea confirmada en menos
+        de 30 minutos.
+        \n\n
+        Una comisión alta le da mayor prioridad a tu transacción, mientras que una transacción con
+        una comisión baja puede demorar horas en confirmarse.
+        \n\n
+        El valor de las comisiones puede aumentar cuando la red se encuentra muy activa. Si las
+        comisiones aumentan mientras tu transacción todavía no fue validada, puede demorar más
+        tiempo del calculado en ser confirmada.
+    </string>
+    <string name="manual_fee_message">Ingresa la comisión manualmente.</string>
+    <string name="manual_fee_how_this_works">¿Qué es esto?</string>
+    <string name="manual_fee_how_this_works_explanation_title">
+        Comisión manual y tiempos de confirmación
+    </string>
+    <string name="manual_fee_how_this_works_explanation_desc">
+        Satoshi por vbyte (sat/vbyte) es la unidad que permite calcular la prioridad de una
+        transacción.
+        \n\n
+        Una comisión alta le da mayor prioridad a tu transacción, mientras que una transacción con
+        una comisión baja puede demorar horas en confirmarse.
+        \n\n
+        El valor de las comisiones aumenta cuando la red se encuentra muy activa. Si este aumento
+        se produce mientras tu transacción está en proceso de confirmación, la transacción puede
+        demorar más tiempo en ser validada.
+    </string>
+    <string name="manual_fee_insufficient_funds_message">Fondos insuficientes</string>
+    <string name="manual_fee_insufficient_funds_desc">Ingresa una comisión más baja.</string>
+    <string name="manual_fee_low_warning_message">Comisión muy baja</string>
+    <string name="manual_fee_low_warning_desc">
+        Esta transacción puede demorar días en confirmarse.
+    </string>
+    <string name="manual_fee_too_high_message">Comisión demasiado alta</string>
+    <string name="manual_fee_too_high_desc">Ingresa una comisión menor a %s sat/vbyte</string>
+    <string name="sat_byte">sat/vbyte</string>
+    <string name="use_all_funds_warning_message">Aviso</string>
+    <string name="use_all_funds_warning_desc">
+        Debido a que estás usando todos tus fondos, la comisión de la red se deduce del monto
+        total.
+    </string>
+    <string name="fee_options_use_all_funds_warning_desc">
+        Como estás usando todos tus fondos, cambiar la comisión modificará el monto enviado.
+    </string>
+    <string name="manual_fee_high_traffic_error_message">Comisión demasiado baja</string>
+    <string name="manual_fee_high_traffic_error_desc">
+        La red de bitcoin está teniendo un tráfico inusualmente alto y rechazando transacciones con
+        comisiones menores a %s sat/vbyte.
+    </string>
+    <string name="manual_fee_too_low_error_message">Comisión demasiado baja</string>
+    <string name="manual_fee_too_low_error_desc">
+        Ingresa una comisión de al menos %s sat/vbyte.
+    </string>
+    <string name="new_op_insufficient_funds_warn_message">Aviso</string>
+    <string name="new_op_insufficient_funds_warn_desc">
+        No tienes fondos suficientes para pagar la comisión óptima.
+        <annotation fontColor="muunBlue">Elige una comisión</annotation> para continuar.
+    </string>
+    <string name="use_maximum_fee">Usar máxima comisión disponible</string>
+    <string name="new_op_error_required_amount">Total (Monto + Comisión Mínima)</string>
+    <string name="new_op_error_total_balance">Tu balance</string>
+
+    <!-- show_qr AKA RECEIVE -->
+    <string name="show_qr_copied">Copiado en el portapapeles</string>
+    <string name="tab_bitcoin_address">Bitcoin</string>
+    <string name="tab_ln_invoice">Lightning</string>
+    <string name="legacy_address_info">Dirección de bitcoin de compatibilidad</string>
+    <string name="your_bitcoin_address">Tu dirección de bitcoin</string>
+    <string name="your_compat_bitcoin_address">Tu dirección de bitcoin de compatibilidad</string>
+    <string name="your_ln_invoice">Tu factura de lightning</string>
+    <string name="show_qr_invoice_loading">Cargando</string>
+    <string name="show_qr_invoice_expiration">
+        <annotation arg="0">placeholder</annotation>.\n
+        <annotation link="createOther">Crear una nueva</annotation>
+    </string>
+    <string name="show_qr_invoice_expired">
+        Esta factura expiró. Crea una nueva.
+    </string>
+    <string name="show_qr_invoice_create_other">Crear factura</string>
+
+    <string name="address_share_title">Enviar a...</string>
+    <string name="show_qr_switch_to_legacy_format">
+        Problemas usando esta dirección?\n
+        <annotation link="legacy">Cambiar a dirección de compatibilidad</annotation>
+    </string>
+    <string name="show_qr_switch_to_segwit_format">
+        <annotation link="segwit">Cambiar a dirección Segwit</annotation>
+    </string>
+
+    <string name="bitcoin_address_help_content">
+        <annotation role="h1">Direcciones de Segwit y compatibilidad</annotation>
+
+        <annotation role="p">
+            Segwit y compatibilidad son dos tipos distintos de direcciones de
+            bitcoin.
+        </annotation>
+
+        <annotation role="p">
+            Las direcciones de compatibilidad son ampliamente aceptadas en el ecosistema, pero crean
+            transacciones más pesadas que las direcciones de Segwit. Usarlas resultará en comisiones
+            más altas en tus futuras transacciones.
+        </annotation>
+
+        <annotation role="p">
+            Para que tus transacciones sean más eficientes, Muun muestra las direcciones de Segwit
+            en primer lugar. Algunos servicios aún no se han actualizado a Segwit. Si tienes
+            problemas para utilizar Segwit, utiliza direcciones de compatibilidad en su lugar.
+        </annotation>
+    </string>
+
+
+    <string name="secure_storage_error">
+        Por razones de seguridad, tu sesión expiró. Por favor, ingresa nuevamente o contacta al
+        soporte técnico.
+    </string>
+
+    <string name="select_bitcoin_unit_title">Unidad de bitcoin</string>
+    <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
+    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
+
+    <!-- Security center -->
+    <string name="security_center_title">Centro de Seguridad</string>
+    <string name="security_center_title_improve_your_security">Aumenta tu seguridad</string>
+    <string name="security_center_title_backup_your_wallet">Respalda tu monedero</string>
+    <string name="task_email_skipped">Omitido</string>
+    <string name="task_email_pending_title">Respalda tu monedero</string>
+    <string name="task_email_pending_body">
+        Crea un método de recuperación en caso de que cambies tu teléfono o reinstales Muun.
+    </string>
+
+    <string name="task_email_skipped_body">
+        Usa tu email y una contraseña para recuperar tu monedero.
+    </string>
+
+    <string name="task_email_done_title">Respaldaste tu monedero</string>
+    <string name="task_email_done_body">
+        Puedes usar
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        y tu contraseña para recuperar tu monedero.
+    </string>
+
+    <string name="task_rc_title_pending">Crea respaldo alternativo</string>
+    <string name="task_rc_title_done">Creaste tu respaldo alternativo</string>
+
+    <string name="task_rc_body_pending">
+        Escribe un código en papel por si te olvidas tu contraseña.
+    </string>
+    <string name="task_rc_body_inactive">
+        Escribe un código en papel para mayor seguridad.
+    </string>
+    <string name="task_rc_body_email_skipped">
+        Escribe un código en papel para recuperar tu monedero.
+    </string>
+    <string name="task_rc_body_done_email_skipped">
+        Puedes usar el código que escribiste para recuperar tu monedero.
+    </string>
+    <string name="task_rc_body_done">
+        Puedes usar
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        y el código que escribiste para recuperar tu monedero.
+    </string>
+
+    <string name="task_export_keys_pending_title">Crea un Kit de Emergencia</string>
+    <string name="task_export_keys_pending_body">
+        Descarga la información necesaria para recuperar tu dinero sin usar Muun.
+    </string>
+
+    <string name="task_export_keys_done_title">Creaste un Kit de Emergencia</string>
+    <string name="task_export_keys_done_body">
+        Sigue las instrucciones en el kit que guardaste para recuperar tu dinero sin usar Muun.
+    </string>
+
+    <string name="task_export_keys_done_title_old">Exportaste tus claves</string>
+    <string name="task_export_keys_done_body_old">
+        Escribiste tus claves privadas. Úsalas con tu Código de Recuperación y nuestra
+        <annotation link="recovery_tool">Herramienta de Recuperación</annotation> para recuperar
+        tu dinero sin usar Muun.
+    </string>
+
+    <string name="task_export_keys_again">Crear otro Kit de Emergencia</string>
+
+    <string name="sc_task_header_0">Tu monedero no está respaldado</string>
+    <string name="sc_task_header_1">Tu monedero tiene un respaldo básico</string>
+    <string name="sc_task_header_2">Estás a un paso de tener un respaldo completo</string>
+    <string name="sc_task_header_3">Tu monedero esta completamente respaldado</string>
+
+    <!-- Emergency Kit -->
+    <string name="ek_title">Kit de Emergencia</string>
+    <string name="ek_save_title">Guarda tu Kit de Emergencia</string>
+    <string name="ek_save_explanation">
+        Recomendamos usar Google Drive, Dropbox, iCloud, o un email a tu propia cuenta.
+    </string>
+    <string name="ek_save_cloud_drawer_title">
+        ¿Es seguro guardar en la nube?
+    </string>
+    <string name="ek_save_cloud_drawer_description">
+        <annotation role="p">Los datos en tu Kit de Emergencia están encriptados de forma segura
+        con tu Código de Recuperación. Sin acceso a ese código, el Kit es inofensivo.</annotation>
+
+        Como tu Código de Recuperación está escrito en papel, puedes guardar tu Kit de Emergencia
+        en la nube sin correr riesgos. Estará seguro y disponible a largo plazo.
+    </string>
+    <string name="ek_save_drive_no_internet">
+        No puede usarse Drive: no hay conexión a internet
+    </string>
+    <string name="ek_verify_title">Verifica tu Kit de Emergencia</string>
+    <string name="ek_verify_explanation">
+        Ingresa el código de verificación ubicado en la esquina superior derecha del documento,
+        sólo para confirmar que todo salió bien.
+    </string>
+    <string name="ek_verify_hint">
+        123456
+    </string>
+    <string name="ek_verify_helper">
+        Código de 6 dígitos
+    </string>
+    <string name="ek_verify_failed">
+        Código de verificación inválido
+    </string>
+    <string name="ek_verify_old">
+        Este es un código viejo. Revisa tu Kit de Emergencia más reciente\n(tu código empieza con %s)
+    </string>
+    <string name="ek_verify_need_help">
+        <annotation link="help">Necesitas ayuda?</annotation>
+    </string>
+    <string name="ek_verify_help_title">
+        No puedes encontrar el código?
+    </string>
+    <string name="ek_verify_help_body">
+        El código de verificación es un <annotation fontStyle="bold">número de 6 dígitos</annotation>,
+        ubicado arriba a la derecha en tu Kit de Emergencia.
+    </string>
+    <string name="ek_verify_action">Verificar código</string>
+    <string name="ek_verify_help_save">
+        Si no puedes encontrar tu Kit de Emergencia,
+        <annotation link="">guárdalo de nuevo.</annotation>
+    </string>
+    <string name="ek_cloud_verify_title">Verifica tu Kit de Emergencia</string>
+    <string name="ek_cloud_verify_desc">
+        Guardaste tu kit en Google Drive. Antes de irte, búscalo y mira el contenido. Asegúrate
+        de poder hacer ésto en el futuro.
+    </string>
+    <string name="ek_cloud_verify_open_drive">Abrir en Drive</string>
+    <string name="ek_cloud_verify_done">Listo</string>
+    <string name="ek_success_title">¡Éxito!</string>
+    <string name="ek_success_desc">Tienes control completo e indisputado de tus bitcoins.</string>
+    <string name="ek_success_action">Excelente</string>
+    <string name="ek_abort_title">Abortar creación del Kit de Emergencia?</string>
+    <string name="ek_abort_body">
+        No has terminado de crear tu Kit de Emergencia. Puedes reiniciar este proceso más tarde.
+    </string>
+    <string name="ek_uploading_body">
+        Guardando tu Kit de Emergencia
+    </string>
+    <string name="ek_upload_error_title">Tu Kit de Emergencia no se pudo guardar</string>
+    <string name="ek_upload_error_body">
+        No pudimos guardar tu Kit de Emergencia en la nube. Por favor, verifica tu conexión e
+        inténtalo de nuevo.
+    </string>
+
+    <!-- Email DeepLink errors -->
+    <string name="email_link_error_title">Abre tu último email</string>
+
+    <string name="authorize_email_link_expired">
+        La autorización para recuperar tu monedero falló porque el enlace expiró.
+        Haz clic en el enlace del último correo recibido.
+    </string>
+
+    <string name="authorize_email_link_invalid">
+        La autorización para recuperar tu monedero falló porque el enlace es inválido.
+        Haz clic en el enlace del último email recibido.
+    </string>
+
+    <string name="verify_email_link_expired">
+        La verificación de email falló porque el enlace expiró. 
+        Haz clic en el enlace del último email recibido.
+    </string>
+
+    <string name="verify_email_link_invalid">
+        La verificación de email falló porque el enlace es inválido. 
+        Haz clic en el enlace del último email recibido.
+    </string>
+
+    <string name="confirm_email_link_expired">
+        La autorización por email falló porque el enlace expiró.
+        Haz clic en el enlace del último email recibido.
+    </string>
+
+    <string name="confirm_email_link_invalid">
+        La autorización por email falló porque el enlace es inválido. 
+        Haz clic en el enlace del último email recibido.
+    </string>
+
+    <!-- Email-less Recovery aka RC Only Login -->
+    <string name="recover_with_recovery_code">Usar Código de Recuperación</string>
+
+    <string name="rc_only_login_recovery_code_explanation">
+        Ingresa tu Código de Recuperación
+    </string>
+    <string name="rc_only_login_continue">Ingresar Código de Recuperación</string>
+    <string name="rc_only_login_whats_this">
+        <annotation link="whatsThis">¿Qué es esto?</annotation>
+    </string>
+    <string name="rc_only_login_whats_this_dialog_title">¿Qué es el Código de Recuperación?</string>
+    <string name="rc_only_login_whats_this_dialog_body">
+        El Código de Recuperación es un conjunto de caracteres generados aleatoriamente. Se
+        usa para crear un respaldo encriptado de tus Claves Privadas.
+    </string>
+    <string name="rc_only_login_error">
+        Código de Recuperación incorrecto. Por favor, revisalo y vuelve a intentar.
+    </string>
+
+    <!--
+    Note for future us: we put an arbitrary \n because of weird text wrapping problems in some
+    devices where 2nd line is not shown. Has to do with LinearLayout + TextView width interaction.
+    Easily reproduced in Editor/Design View, text view doesn't wrap up text right away, only when it
+    is WAAAAY longer than it should (in fact only when its longer/can't fit in the screen width).
+    -->
+    <string name="rc_only_login_legacy_error">
+        Este Código de Recuperación no puede ser usado sin \n
+        <annotation link="goToLegacyLogin">ingresar tu email primero</annotation>.
+    </string>
+
+    <string name="option_label_recommended">Recomendado</string>
+    <string name="option_label_disabled">Desactivado</string>
+
+    <string name="save_option_drive_title">Guardar en Drive</string>
+    <string name="save_option_drive_description">
+        Usa to cuenta de Google para guardar y acceder a tu kit.
+    </string>
+
+    <string name="save_option_email_title">Envíate un correo</string>
+    <string name="save_option_email_description">
+        Usa tu cuenta de email para guardar y acceder a tu kit.
+    </string>
+
+    <string name="save_option_manual_title">Guardar manualmente</string>
+    <string name="save_option_manual_description">
+        Elige una aplicación para guardar y acceder a tu kit.
+    </string>
+
+    <string name="migration_title">Actualizando tu monedero</string>
+
+    <string name="migration_error_message">
+        Error al actualizar tu monedero. Por favor, intenta nuevamente.
+    </string>
+    <string name="migration_error_retry">Reintentar</string>
+
+    <string name="title_wallet">Monedero</string>
+    <string name="title_security">Seguridad</string>
+    <string name="title_settings">Configuración</string>
+    <string name="home_balance_tap_to_reveal">Haz clic para ver el balance</string>
+    <string name="home_security_center_card_body">
+        <annotation fontColor="muunBlue">Respalda tu monedero.</annotation> Crea un respaldo para
+        no perder el acceso a tu monedero.
+    </string>
+    <string name="new_home_tx_list_tooltip">
+        ¡Bienvenido a tu nueva pantalla de inicio!\nHaz clic o desliza para ver tus pagos.
+    </string>
+    <string name="rbf_notice_banner">
+        Hasta que se confirme, esta transacción puede ser cancelada por el remitente.
+        <annotation link="how">¿Como?</annotation>.
+    </string>
+    <string name="rbf_notice_banner_title">¿Como puede ser cancelada?</string>
+    <string name="rbf_notice_banner_desc">
+        Esta transacción tiene RBF (replace-by-fee) activado. Esto permite al remitente incrementar
+        la comisión original para una confirmación más rápida, pero también puede usarse para
+        cancelar transacciones. A menos que conozcas y confíes en el remitente, considera esto como un
+        riesgo hasta que se confirme la transacción.
+    </string>
+    
+    <string name="turbo_channels">Turbo channels</string>
+    <string name="turbo_channels_learn_more">
+        <annotation link="https://blog.muun.com/turbo-channels-es/">Aprende más</annotation> sobre las implicancias de los turbo channels.
+    </string>
+    <string name="turbo_channels_disable_title">¿Apagar turbo channels?</string>
+    <string name="turbo_channels_disable_message">
+        Recibir algunos pagos en lightning llevará más tiempo.
+    </string>
+    <string name="turbo_channels_disable">APAGAR</string>
+
+    <string name="settings_header_advanced">Configuración avanzada</string>
+    <string name="settings_lightning">Lightning Network</string>
+</resources>

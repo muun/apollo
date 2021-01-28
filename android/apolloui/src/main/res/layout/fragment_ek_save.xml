@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/button_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <WebView
+            android:id="@+id/pdf_exporter_web_view"
+            android:layout_width="0px"
+            android:layout_height="0px"
+            android:visibility="gone" />
+
+    <TextView
+            style="@style/explanation_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/muun_screen_margin"
+            android:layout_marginRight="@dimen/muun_screen_margin"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"
+            android:textSize="24sp"
+            android:text="@string/ek_save_title" />
+
+    <io.muun.apollo.presentation.ui.view.HtmlTextView
+            style="@style/explanation"
+            android:id="@+id/explanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/muun_screen_margin"
+            android:layout_marginRight="@dimen/muun_screen_margin"
+            android:layout_marginBottom="24dp" />
+
+    <io.muun.apollo.presentation.ui.view.MuunSaveOption
+            android:id="@+id/save_option_drive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@string/save_option_drive_description"
+            app:title="@string/save_option_drive_title"
+            app:icon="@drawable/ic_google_drive" />
+
+    <View style="@style/muun_ek_save_separator" />
+
+    <io.muun.apollo.presentation.ui.view.MuunSaveOption
+            android:id="@+id/save_option_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@string/save_option_email_description"
+            app:title="@string/save_option_email_title"
+            app:icon="@drawable/ic_mail" />
+
+    <View style="@style/muun_ek_save_separator" />
+
+    <io.muun.apollo.presentation.ui.view.MuunSaveOption
+            android:id="@+id/save_option_manual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@string/save_option_manual_description"
+            app:title="@string/save_option_manual_title"
+            app:icon="@drawable/ic_manual_save" />
+
+    <View style="@style/muun_ek_save_separator" />
+
+</LinearLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+     "-//Puppy Crawl//DTD Suppressions 1.0//EN"
+     "http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+
+<suppressions>
+    <!-- Suppress errors caused by the double curly syntax for fixture templates -->
+    <suppress checks="Indentation" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
+    <suppress checks="RightCurly" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
+    <!-- Suppress errors caused by missing comments in tests -->
+    <suppress checks="JavadocMethod" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
+    <!-- Suppress errors caused by missing comments in resources -->
+    <suppress checks="JavadocMethod"
+            files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/].*[\\/].*Resource\.java"/>
+    <!-- Suppress errors caused by missing comments in api models -->
+    <suppress checks="JavadocMethod"
+            files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/]common[\\/]api[\\/].*"/>
+    <suppress checks="LineLength" files=".*[\\/]migrations\.xml" />
+    <suppress checks="LineLength" files=".*[\\/]logback[^.\\/]*\.xml" />
+    <suppress checks="LineLength" files=".*[\\/]AndroidManifest[^.\\/]*\.xml" />
+</suppressions>

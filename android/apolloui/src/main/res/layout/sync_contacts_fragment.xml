@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <TextView
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                style="@style/explanation_title"
+                android:text="@string/sync_contacts_title"
+        />
+
+        <io.muun.apollo.presentation.ui.view.HtmlTextView
+                style="@style/explanation"
+                android:id="@+id/sync_contacts_explanation"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="0dp"
+                tools:text="@string/sync_contacts_explanation"
+        />
+
+        <ImageView
+                android:contentDescription="@string/sync_contacts_image"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="32dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/sync_contacts"
+        />
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/sync_contacts_button"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_gravity="bottom"
+            android:text="@string/sync_contacts_button_text"
+    />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

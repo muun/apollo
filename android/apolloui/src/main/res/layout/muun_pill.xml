@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="end"
+        android:background="@drawable/muun_pill_background"
+        android:gravity="center_vertical">
+
+    <io.muun.apollo.presentation.ui.view.ProfilePictureView
+            android:id="@+id/muun_pill_picture"
+            android:layout_height="0px"
+            android:layout_width="0px"
+            android:visibility="gone"
+            />
+
+    <TextView
+            android:id="@+id/muun_pill_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="16dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            />
+
+</LinearLayout>

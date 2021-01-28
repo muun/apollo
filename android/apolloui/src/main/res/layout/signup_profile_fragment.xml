@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+>
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+    >
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/muun_screen_margin"
+                android:paddingRight="@dimen/muun_screen_margin"
+                android:orientation="vertical">
+
+            <TextView
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    style="@style/explanation_title"
+                    android:text="@string/signup_profile_title"
+            />
+
+            <io.muun.apollo.presentation.ui.view.HtmlTextView
+                    style="@style/explanation"
+                    android:id="@+id/signup_profile_explanation"
+                    tools:text="@string/signup_profile_explanation"
+            />
+
+            <io.muun.apollo.presentation.ui.view.MuunPictureInput
+                    android:id="@+id/signup_profile_picture"
+                    android:layout_width="103dp"
+                    android:layout_height="103dp"
+                    android:layout_gravity="center"/>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="15dp"
+                    android:gravity="center_vertical">
+
+                <io.muun.apollo.presentation.ui.view.MuunTextInput
+                        style="@style/edit_profile_input"
+                        android:id="@+id/signup_profile_edit_first_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/signup_profile_first_name_hint"
+                        android:inputType="text|textCapWords"
+                        android:nextFocusForward="@+id/signup_profile_edit_last_name"
+                />
+
+                <io.muun.apollo.presentation.ui.view.MuunTextInput
+                        style="@style/edit_profile_input"
+                        android:id="@+id/signup_profile_edit_last_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/signup_profile_last_name_hint"
+                        android:inputType="text|textCapWords"
+                        android:nextFocusForward="@+id/signup_profile_edit_email"
+                />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_primary"
+            android:id="@+id/signup_continue"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:text="@string/signup_create_profile"
+    />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

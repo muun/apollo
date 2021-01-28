@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp"
+        android:paddingLeft="@dimen/muun_screen_margin"
+        android:paddingRight="@dimen/muun_screen_margin"
+        android:background="@color/muun_white"
+>
+
+    <TextView
+            android:id="@+id/muun_action_drawer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            android:textStyle="normal"
+            android:textColor="@color/muun_black"
+            tools:text="Full address"
+            tools:visibility="visible"
+    />
+
+    <TextView
+            android:id="@+id/muun_action_drawer_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="@color/muun_gray_dark"
+            android:lineSpacingExtra="8sp"
+            tools:text="bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9"
+    />
+
+</LinearLayout>

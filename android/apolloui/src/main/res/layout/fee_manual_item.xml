@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/border_manual_fee"
+        android:padding="16dp">
+
+    <ImageView
+            android:id="@+id/icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/chevron_right" />
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/icon"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="4dp"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2sp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/enter_fee_manually"
+                android:textAllCaps="true"
+                android:textColor="@color/muun_blue"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+        <TextView
+                android:id="@+id/amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center_vertical"
+                android:textAllCaps="true"
+                android:textColor="@color/muun_gray_dark"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:visibility="gone"
+                tools:text="0.00000012 BTC"
+                tools:visibility="visible" />
+
+    </LinearLayout>
+
+</RelativeLayout>

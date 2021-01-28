@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/muun_gray_legacy"
+        >
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            android:background="@color/muun_white"
+            >
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <io.muun.apollo.presentation.ui.view.MuunHeader
+                    android:id="@+id/operation_detail_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:elevated="false"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.ProfilePictureView
+                    android:id="@+id/operation_detail_profile_picture"
+                    android:layout_width="93dp"
+                    android:layout_height="93dp"
+                    android:layout_marginTop="56dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_centerHorizontal="true"
+                    tools:src="@drawable/profile"
+                    />
+
+        </RelativeLayout>
+
+        <TextView
+                android:id="@+id/operation_detail_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:textSize="16sp"
+                android:textColor="@color/muun_black"
+                android:gravity="center"
+                tools:text="Juliet Wachbeing sent you"
+                />
+
+        <TextView
+                android:id="@+id/operation_detail_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:textSize="22sp"
+                android:textColor="@color/muun_black"
+                android:gravity="center"
+                tools:text="22.50 ARS"
+                />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/muun_white"
+                android:padding="16dp"
+                >
+
+            <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                    android:id="@+id/operation_detail_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:title="@string/operation_pending"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.NoticeBanner
+                    android:id="@+id/operation_detail_notice_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="9dp"
+                    android:background="@drawable/notice_banner_rbf_bkg"
+                    muun:icon="@drawable/error_badge"
+                    muun:tint="@color/balance_clock_rbf"
+                    tools:visibility="visible"
+                    android:visibility="gone"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                    android:id="@+id/operation_detail_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:title="@string/operation_detail_description"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                    android:id="@+id/operation_detail_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:title="@string/operation_detail_date"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                    android:id="@+id/operation_detail_amount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:title="@string/operation_detail_amount"
+                    muun:icon="@drawable/ic_copy"
+                    />
+
+            <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                    android:id="@+id/operation_detail_fee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:title="@string/operation_detail_fee"
+                    muun:icon="@drawable/ic_copy"
+                    />
+
+            <LinearLayout
+                    android:id="@+id/operation_detail_normal_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                <View style="@style/detail_divider" />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_confirmations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        muun:title="@string/operation_detail_confirmations"
+                />
+
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        muun:title="@string/operation_detail_address_incoming"
+                        muun:icon="@drawable/ic_copy"
+                />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_txid"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        muun:title="@string/operation_detail_txid"
+                        muun:icon="@drawable/ic_share_dark"
+                />
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:id="@+id/operation_detail_swap_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                <View style="@style/detail_divider" />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_swap_invoice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:maxLines="2"
+                        muun:title="@string/operation_detail_invoice"
+                        muun:icon="@drawable/ic_copy"
+                />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_swap_hash"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        muun:title="@string/operation_detail_swap_hash"
+                        muun:icon="@drawable/ic_copy"
+                        />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_swap_preimage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        muun:title="@string/operation_detail_swap_preimage"
+                        muun:icon="@drawable/ic_copy"
+                />
+
+                <io.muun.apollo.presentation.ui.view.MuunDetailItem
+                        android:id="@+id/operation_detail_swap_receiver_pubkey"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        muun:title="@string/operation_detail_receiving_pubkey"
+                />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

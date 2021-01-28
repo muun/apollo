@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <translate
+            android:fromYDelta="-100%"
+            android:toYDelta="0"
+            android:interpolator="@android:anim/accelerate_interpolator"
+            android:duration="800"/>
+
+    <alpha
+            android:fromAlpha="0"
+            android:toAlpha="1"
+            android:startOffset="300"
+            android:duration="500"
+            android:interpolator="@android:anim/accelerate_interpolator" />
+
+    <!--  stays frozen 800ms and starts moving again -->
+
+    <translate
+            android:fromYDelta="0"
+            android:toYDelta="100%"
+            android:startOffset="1600"
+            android:interpolator="@android:anim/accelerate_interpolator"
+            android:duration="800"/>
+
+    <alpha
+            android:fromAlpha="1"
+            android:toAlpha="0"
+            android:startOffset="1900"
+            android:duration="500"
+            android:interpolator="@android:anim/accelerate_interpolator" />
+</set>

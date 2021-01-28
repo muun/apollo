@@ -1,5 +1,8 @@
 apply plugin: 'idea'
 apply plugin: 'java-library'
+apply from: "${project.rootDir}/linters/checkstyle/check.gradle"
+apply from: "${project.rootDir}/linters/findbugs/check.gradle"
+apply from: "${project.rootDir}/linters/pmd/check.gradle"
 
 targetCompatibility = '1.8'
 sourceCompatibility = '1.8'

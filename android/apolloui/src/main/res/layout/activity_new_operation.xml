@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <io.muun.apollo.presentation.ui.view.MuunButtonLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <io.muun.apollo.presentation.ui.view.MuunHeader
+                android:id="@+id/new_operation_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:elevated="true" />
+
+        <androidx.core.widget.NestedScrollView
+                android:id="@+id/scrollable_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/root_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/muun_white">
+
+                <TextView
+                        android:id="@+id/receiver_label"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/new_operation_to"
+                        android:textColor="@color/muun_black"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                <io.muun.apollo.presentation.ui.view.MuunPill
+                        android:id="@+id/new_operation_receiver"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginBottom="8dp"
+                        app:layout_constraintBottom_toTopOf="@+id/separator_address"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/receiver_label"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Juan Jose Bitcoin"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/target_address"
+                        style="@style/base_muun_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:drawableEnd="@drawable/ic_reveal_address"
+                        android:drawablePadding="8dp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="8sp"
+                        android:textColor="@color/muun_gray_dark"
+                        android:textSize="16sp"
+                        android:visibility="gone"
+                        app:layout_constraintBottom_toTopOf="@+id/separator_address"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="bc1qc7T5…aR1pU8el"
+                        tools:visibility="visible" />
+
+                <View
+                        android:id="@+id/separator_address"
+                        style="@style/muun_new_operation_separator"
+                        app:layout_constraintBottom_toBottomOf="@+id/receiver_label" />
+
+                <TextView
+                        android:id="@+id/amount_label"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:text="@string/new_operation_amount"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toStartOf="@+id/selected_amount"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/separator_address"
+                        tools:text="Amount"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/selected_amount"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/muun_black"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/separator_address"
+                        tools:text="10,100.26 ARS"
+                        tools:visibility="visible" />
+
+                <!-- THIS wrapper layout is to EASILY make everything work with coordinatorLayout,
+                 since the content is dynamically shown/hidden. -->
+                <FrameLayout
+                        android:id="@+id/status_message_container"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/amount_label">
+
+                    <io.muun.apollo.presentation.ui.view.StatusMessage
+                            android:id="@+id/status_message"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:textSize="12sp"
+                            android:visibility="gone"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/amount_label"
+                            tools:visibility="visible" />
+
+                </FrameLayout>
+
+                <TextView
+                        android:id="@+id/fee_label"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_edit_black_24"
+                        android:drawablePadding="12dp"
+                        android:drawableTint="@color/muun_gray_dark"
+                        android:gravity="left"
+                        android:maxLines="1"
+                        android:text="@string/new_operation_fee"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/status_message_container"
+                        tools:text="Lightning Fee"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/fee_amount"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/muun_black"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/status_message_container"
+                        tools:text="50.00 ARS"
+                        tools:visibility="visible" />
+
+                <!-- THIS wrapper layout is to EASILY make everything work with coordinatorLayout,
+                since the content is dynamically shown/hidden. -->
+                <FrameLayout
+                        android:id="@+id/insufficient_funds_message_container"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/fee_label">
+
+                    <io.muun.apollo.presentation.ui.view.StatusMessage
+                            android:id="@+id/insufficient_funds_message"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:textSize="12sp"
+                            android:visibility="gone"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/amount_label"
+                            tools:visibility="visible" />
+
+                </FrameLayout>
+
+                <TextView
+                        android:id="@+id/total_label"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:text="@string/new_operation_total"
+                        android:textColor="@color/muun_black"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toStartOf="@+id/total_amount"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/insufficient_funds_message_container"
+                        tools:text="Total"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/total_amount"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:textColor="@color/muun_black"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/insufficient_funds_message_container"
+                        tools:text="10,150.26 ARS"
+                        tools:visibility="visible" />
+
+                <View
+                        android:id="@+id/separator_amount"
+                        style="@style/muun_new_operation_separator"
+                        android:visibility="gone"
+                        app:layout_constraintTop_toBottomOf="@+id/total_label"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/notes_label"
+                        style="@style/muun_text_h2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/muun_screen_margin"
+                        android:layout_marginEnd="@dimen/muun_screen_margin"
+                        android:fontFamily="sans-serif-medium"
+                        android:paddingTop="16dp"
+                        android:text="@string/new_operation_note"
+                        android:textSize="16sp"
+                        android:textStyle="normal"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/total_label"
+                        tools:visibility="visible" />
+
+                <TextView
+                        android:id="@+id/notes_content"
+                        style="@style/muun_new_operation_label_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:padding="8dp"
+                        android:textColor="@color/muun_black"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/notes_label"
+                        tools:text="This is some note"
+                        tools:visibility="visible" />
+
+                <io.muun.apollo.presentation.ui.view.MuunAmountInput
+                        android:id="@+id/muun_amount_input"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toTopOf="@id/use_all_funds"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/separator_address"
+                        app:layout_constraintVertical_bias="0.5"
+                        app:layout_constraintVertical_chainStyle="packed"
+                        app:textMaxWidthPercent="0.75" />
+
+                <TextView
+                        android:id="@+id/use_all_funds"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="@string/new_operation_use_all_funds"
+                        android:textColor="@color/muun_blue"
+                        android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/muun_amount_input" />
+
+                <io.muun.apollo.presentation.ui.view.TextInputWithBackHandling
+                        android:id="@+id/muun_note_input"
+                        style="@style/muun_text_h2"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@android:color/transparent"
+                        android:gravity="top"
+                        android:hint="@string/new_operation_note_hint"
+                        android:imeOptions="flagNoExtractUi"
+                        android:inputType="textMultiLine"
+                        android:lineSpacingExtra="8sp"
+                        android:padding="@dimen/activity_horizontal_margin"
+                        android:textColorHint="@color/muun_gray_light"
+                        android:textSize="20sp"
+                        android:visibility="visible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/separator_amount" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+
+
+        <!--
+        GONE by default so MuunButtonLayout doesn't add its own margin/padding. When content
+        becomes visible, this also has to change visibility to VISIBLE.
+        -->
+        <io.muun.apollo.presentation.ui.view.MuunButtonLayoutAnchor
+                android:id="@+id/button_layout_anchor"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:visibility="visible">
+
+            <!--
+            Spec says text should be 24dp below end of description. Taking a gradientHeight of 10dp,
+            we get a net 14dp marginTop.
+            -->
+            <TextView
+                    android:id="@+id/invoice_expiration_countdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="@color/transparent_muun_white"
+                    android:gravity="center"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="8dp"
+                    android:textColor="@color/muun_gray_dark"
+                    android:textSize="12sp"
+                    android:visibility="visible"
+                    tools:text="Expiration time in 1 week" />
+
+            <io.muun.apollo.presentation.ui.view.NoticeBanner
+                    android:id="@+id/one_conf_notice_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:background="@drawable/notice_banner_background"
+                    app:icon="@drawable/alert_badge"
+                    app:tint="@color/notice_banner_icon"
+                    tools:visibility="visible"
+                    />
+
+        </io.muun.apollo.presentation.ui.view.MuunButtonLayoutAnchor>
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                android:id="@+id/muun_next_step_button"
+                style="@style/muun_button_primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/confirm_amount" />
+    </io.muun.apollo.presentation.ui.view.MuunButtonLayout>
+
+    <LinearLayout
+            android:id="@+id/new_operation_resolving"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/muun_header_plus_shadow_height"
+            android:background="@color/muun_white"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <androidx.core.widget.ContentLoadingProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="16dp" />
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/new_operation_resolving"
+                android:textColor="@color/muun_black" />
+    </LinearLayout>
+
+    <FrameLayout
+            android:id="@+id/overlay_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:elevation="10dp"
+            android:visibility="gone" />
+
+</FrameLayout>

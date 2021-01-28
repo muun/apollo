@@ -3,18 +3,31 @@
 buildscript {
     repositories {
         google()
+        mavenCentral()
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
+        classpath 'com.squareup.sqldelight:gradle-plugin:0.9.0'
     }
 }
+
+
+plugins {
+    id "com.github.spotbugs" version "2.0.0" apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10' apply false
+}
+
+// Without this we cant define spot bugs as an external script that can be applied
+project.extensions.extraProperties.set('SpotBugsTask', com.github.spotbugs.SpotBugsTask)
 
 subprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
+        maven { url "https://clojars.org/repo/" }
         maven { url "https://jitpack.io" }
+        jcenter()
     }
 
     ext {
@@ -33,8 +46,10 @@ subprojects {
 
     buildscript {
         repositories {
-            jcenter()
+            google()
+            mavenCentral()
             maven { url "https://plugins.gradle.org/m2/" }
+            jcenter()
         }
 
         dependencies {

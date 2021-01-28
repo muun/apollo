@@ -1,1 +1,1 @@
-include ':apollo', ':common'
+include ':android:apollo', ':common', ':android:apolloui'

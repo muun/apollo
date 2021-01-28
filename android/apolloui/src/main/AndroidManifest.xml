@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        package="io.muun.apollo"
+>
+
+    <!-- Permissions -->
+
+    <uses-feature android:name="android.hardware.camera"/>
+    <uses-feature android:name="android.hardware.camera.autofocus"/>
+
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <!-- Application -->
+
+    <application
+            android:name="io.muun.apollo.presentation.app.${mainApplicationClass}"
+            android:allowBackup="false"
+            android:usesCleartextTraffic="${usesCleartextTraffic}"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.WithoutActionBar"
+    >
+
+        <!-- LauncherActivity -->
+
+        <activity
+                android:name=".presentation.ui.launcher.LauncherActivity"
+                android:label="@string/app_name"
+                android:theme="@style/Theme.AppCompat.NoDisplay"
+                android:launchMode="singleTask"
+        >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <intent-filter android:label="@string/verify_link_handler_label">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https"
+                        android:host="@string/muun_link_host"
+                        android:path="@string/verify_link_path" />
+            </intent-filter>
+
+            <intent-filter android:label="@string/authorize_link_handler_label">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https"
+                        android:host="@string/muun_link_host"
+                        android:path="@string/authorize_link_path" />
+            </intent-filter>
+
+            <intent-filter android:label="@string/confirm_link_handler_label">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https"
+                        android:host="@string/muun_link_host"
+                        android:path="@string/confirm_link_path" />
+            </intent-filter>
+
+            <intent-filter android:label="@string/confirm_link_handler_label">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https"
+                        android:host="@string/muun_link_host"
+                        android:path="@string/rc_login_authorize_link_path" />
+            </intent-filter>
+
+        </activity>
+
+        <!-- SignupActivity -->
+
+        <activity
+                android:name=".presentation.ui.signup.SignupActivity"
+                android:theme="@style/Juno"
+                android:windowSoftInputMode="adjustResize"
+        />
+
+        <!-- HomeActivity -->
+
+        <activity
+                android:name=".presentation.ui.home.HomeActivity"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme"
+        >
+
+        </activity>
+
+        <!-- NewOperation -->
+
+        <activity
+                android:name=".presentation.ui.new_operation.NewOperationActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:windowSoftInputMode="adjustResize"
+                android:theme="@style/WhiteToolbarTheme">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="bitcoin"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lightning"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="muun"/>
+            </intent-filter>
+
+        </activity>
+
+        <!-- OperationDetailActivity -->
+
+        <activity
+                android:name=".presentation.ui.operation_detail.OperationDetailActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="@string/operation_detail_title"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- ShowQrActivity -->
+
+        <activity
+                android:name=".presentation.ui.show_qr.ShowQrActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="@string/showqr_title"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- ScanQrActivity -->
+
+        <activity
+                android:name=".presentation.ui.scan_qr.ScanQrActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="@string/scanqr_title"
+                android:theme="@style/ScanQrAppTheme"
+        />
+
+        <!-- FeedbackActivity -->
+
+        <activity
+                android:name=".presentation.ui.feedback.email.FeedbackActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:windowSoftInputMode="adjustResize"
+                android:label="@string/feedback_title"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- SingleActionActivity -->
+        <activity
+                android:name=".presentation.ui.single_action.SingleActionActivity"
+                android:launchMode="singleTop"
+                android:label="Muun"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- V2SingleActionActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity"
+                android:launchMode="singleTop"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- DebugPanelActivity -->
+
+        <activity
+                android:name=".presentation.ui.debug.DebugPanelActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="Muun debug panel"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- RecoveryToolActivity -->
+        <activity
+                android:name="io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity"
+                android:theme="@style/AppTheme"
+                />
+
+        <!-- EditUsernameActivity -->
+
+        <activity
+            android:name=".presentation.ui.settings.edit_username.EditUsernameActivity"
+            android:theme="@style/AppTheme"
+            />
+
+        <!-- SetUpPinCodeActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity"
+                android:theme="@style/AppTheme"
+                android:label="@string/app_name"
+                />
+
+        <!-- SecurityLogoutActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity"
+                android:theme="@style/AppTheme"
+                android:label="@string/app_name"
+                />
+
+        <!-- SetupRecoveryCodeActivity -->
+
+        <activity
+                android:name=".presentation.ui.recovery_code.SetupRecoveryCodeActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="@string/recovery_code_title"
+                android:theme="@style/AppTheme"
+                android:windowSoftInputMode="adjustResize"
+                />
+
+        <!-- SelectCurrencyActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- SelectCountryActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.select_country.SelectCountryActivity"
+                android:theme="@style/AppTheme"
+        />
+
+        <!-- ExportKeysActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity"
+                android:theme="@style/AppTheme"
+        />
+
+
+        <!-- SelectBitcoinUnitActivity -->
+
+        <activity
+            android:name=".presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity"
+        />
+
+
+        <!-- EditPasswordActivity -->
+
+        <activity
+                android:name=".presentation.ui.settings.edit_password.EditPasswordActivity"
+                android:theme="@style/AppTheme"
+                android:windowSoftInputMode="adjustResize"
+        />
+
+        <!-- SetupP2PActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.setup_p2p.SetupP2PActivity"
+                android:theme="@style/AppTheme"
+                android:windowSoftInputMode="adjustResize"
+        />
+
+        <!-- EditFeeActivity -->
+
+        <activity
+                android:name=".presentation.ui.edit_fee.EditFeeActivity"
+                android:label="@string/edit_fee_title"
+                android:windowSoftInputMode="adjustResize"
+        />
+
+        <activity
+                android:name=".presentation.ui.send.SendActivity"
+                android:windowSoftInputMode="adjustResize"
+        />
+
+        <activity
+                android:name=".presentation.ui.setup_password.SetupPasswordActivity"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme" />
+
+        <!-- SuccessDeleteWalletActivity -->
+
+        <activity
+            android:name=".presentation.ui.settings.success_delete_wallet.SuccessDeleteWalletActivity"
+            android:windowSoftInputMode="adjustResize"
+            />
+
+        <activity
+                android:name=".presentation.ui.feedback.anon.AnonFeedbackActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:windowSoftInputMode="adjustResize"
+                android:label="@string/feedback_title"
+                android:theme="@style/AppTheme"
+                />
+
+        <activity
+                android:name=".presentation.ui.migration.MigrationActivity"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme" />
+
+        <!--   ShowQR : BitcoinAddressHelpActivity   -->
+        <activity
+                android:name=".presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpActivity"
+                android:parentActivityName=".presentation.ui.show_qr.ShowQrActivity"
+                android:theme="@style/AppTheme"
+                />
+
+        <!--   OperationsActivity   -->
+        <activity
+                android:name=".presentation.ui.activity.operations.OperationsActivity"
+                android:theme="@style/AppTheme"
+                />
+
+        <activity
+                android:name=".presentation.ui.base.SingleFragmentActivityImpl"
+                android:theme="@style/AppTheme" />
+
+        <!-- GcmMessageListenerService -->
+
+        <service
+                android:name=".data.async.gcm.GcmMessageListenerService"
+                android:exported="false"
+        >
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <!-- Metadata -->
+
+        <meta-data
+                android:name="com.google.android.gms.version"
+                android:value="@integer/google_play_services_version"
+        />
+
+        <!-- Providers -->
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.cache.fileprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/filepaths" />
+        </provider>
+
+        <!-- Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom)-->
+        <provider
+                android:name="androidx.work.impl.WorkManagerInitializer"
+                android:authorities="${applicationId}.workmanager-init"
+                android:enabled="false"
+                android:exported="false" />
+
+        <!-- Receivers -->
+        <receiver
+                android:name=".presentation.ui.fragments.ek_save.EmergencyKitSaveReceiver"
+                android:exported="false" />
+
+        <receiver
+                android:name=".data.os.sharer.FileSharerReceiver"
+                android:exported="false" />
+
+    </application>
+
+</manifest>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/muun_button_layout_root"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
+
+    <LinearLayout
+            android:id="@+id/muun_button_layout_content_box"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:orientation="vertical"
+            />
+
+    <LinearLayout
+            android:id="@+id/muun_button_layout_button_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingTop="@dimen/muun_button_layout_gradient_height"
+            android:paddingStart="@dimen/muun_button_layout_button_box_padding"
+            android:paddingEnd="@dimen/muun_button_layout_button_box_padding"
+            android:paddingBottom="@dimen/muun_button_layout_button_box_padding"
+            android:orientation="vertical"
+            android:background="@drawable/muun_button_layout_bg"
+            />
+
+</FrameLayout>

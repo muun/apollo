@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="top">
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/setup_p2p_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            muun:elevated="false"
+            android:visibility="gone"
+    />
+
+    <FrameLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/setup_p2p_frame_container"
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="1"
+    />
+
+</LinearLayout>
