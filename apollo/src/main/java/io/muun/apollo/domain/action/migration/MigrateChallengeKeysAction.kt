@@ -25,12 +25,12 @@ class MigrateChallengeKeysAction @Inject constructor(
     private fun executeMigration() =
         houstonClient.fetchChallengeKeyMigrationData()
             .doOnNext { data ->
-                data.newPasswordKeySalt.let {
-                    keysRepository.seasonPublicChallengeKey(it, ChallengeType.PASSWORD)
-                }
-
                 data.newRecoveryCodeKeySalt?.let {
                     keysRepository.seasonPublicChallengeKey(it, ChallengeType.RECOVERY_CODE)
+                }
+
+                data.newPasswordKeySalt.let {
+                    keysRepository.seasonPublicChallengeKey(it, ChallengeType.PASSWORD)
                 }
 
                 data.newEncryptedMuunKey?.let {

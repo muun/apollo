@@ -421,6 +421,134 @@ func TestVerifyAndFulfillHtlcWithCollect(t *testing.T) {
 	verifyInput(t, signedTx, hex.EncodeToString(swap.HtlcTx), 0, 0)
 }
 
+func TestIsInvoiceFulfillable(t *testing.T) {
+	setup()
+
+	network := Regtest()
+
+	userKey, _ := NewHDPrivateKey(randomBytes(32), network)
+	userKey.Path = "m/schema:1'/recovery:1'"
+	muunKey, _ := NewHDPrivateKey(randomBytes(32), network)
+	muunKey.Path = "m/schema:1'/recovery:1'"
+
+	secrets, err := GenerateInvoiceSecrets(userKey.PublicKey(), muunKey.PublicKey())
+	if err != nil {
+		panic(err)
+	}
+	err = PersistInvoiceSecrets(secrets)
+		if err != nil {
+		panic(err)
+	}
+
+	t.Run("single part payment", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+		amt := int64(10000)
+		lockTime := int64(1000)
+
+		nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+
+		onion := createSphinxPacket(nodePublicKey, paymentHash, invoiceSecrets.paymentSecret, amt, lockTime)
+
+		if err := IsInvoiceFulfillable(paymentHash, onion, amt, userKey, network); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("multi part payment fails", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+		amt := int64(10000)
+		lockTime := int64(1000)
+
+		nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+
+		onion := createMppSphinxPacket(nodePublicKey, paymentHash, invoiceSecrets.paymentSecret, amt, lockTime)
+
+		if err := IsInvoiceFulfillable(paymentHash, onion, amt, userKey, network); err == nil {
+			t.Fatal("expected failure to fulfill mpp payment")
+		}
+	})
+
+	t.Run("non existant invoice", func(t *testing.T) {
+		paymentHash := randomBytes(32)
+
+		if err := IsInvoiceFulfillable(paymentHash, []byte{}, 0, userKey, network); err == nil {
+			t.Fatal("expected failure to fulfill non existant invoice")
+		}
+	})
+
+	t.Run("invalid payment secret", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+		amt := int64(10000)
+		lockTime := int64(1000)
+
+		nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+
+		onion := createSphinxPacket(nodePublicKey, paymentHash, randomBytes(32), amt, lockTime)
+
+		if err := IsInvoiceFulfillable(paymentHash, onion, amt, userKey, network); err == nil {
+			t.Fatal("expected error with random payment secret")
+		}
+	})
+
+	t.Run("muun 2 muun with no blob", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+
+		if err := IsInvoiceFulfillable(paymentHash, nil, 0, userKey, network); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("invalid amount", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+		amt := int64(10000)
+		lockTime := int64(1000)
+
+		nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+
+		onion := createSphinxPacket(nodePublicKey, paymentHash, invoiceSecrets.paymentSecret, amt, lockTime)
+
+		if err := IsInvoiceFulfillable(paymentHash, onion, amt-1, userKey, network); err == nil {
+			t.Fatal("expected error with invalid amount")
+		}
+	})
+
+	t.Run("validates amount", func(t *testing.T) {
+		invoiceSecrets := secrets.Get(0)
+		paymentHash := invoiceSecrets.PaymentHash
+		amt := int64(10000)
+		lockTime := int64(1000)
+
+		nodePublicKey, err := invoiceSecrets.IdentityKey.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+
+		onion := createSphinxPacket(nodePublicKey, paymentHash, invoiceSecrets.paymentSecret, amt, lockTime)
+
+		if err := IsInvoiceFulfillable(paymentHash, onion, amt, userKey, network); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+}
+
 func newAddressAt(userKey, muunKey *HDPrivateKey, keyPath string, network *Network) btcutil.Address {
 	userPublicKey, err := userKey.PublicKey().DeriveTo(keyPath)
 	if err != nil {
@@ -451,6 +579,54 @@ func createSphinxPacket(nodePublicKey *btcec.PublicKey, paymentHash, paymentSecr
 	uintLocktime := uint32(lockTime)
 	tlvRecords := []tlv.Record{
 		record.NewAmtToFwdRecord(&uintAmount),
+		record.NewLockTimeRecord(&uintLocktime),
+		record.NewMPP(lnwire.MilliSatoshi(uintAmount), secret).Record(),
+	}
+
+	b := &bytes.Buffer{}
+	tlv.MustNewStream(tlvRecords...).Encode(b)
+	hopPayload, err := sphinx.NewHopPayload(nil, b.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	paymentPath[0].HopPayload = hopPayload
+
+	ephemeralKey, err := btcec.NewPrivateKey(btcec.S256())
+	if err != nil {
+		panic(err)
+	}
+
+	pkt, err := sphinx.NewOnionPacket(
+		&paymentPath, ephemeralKey, paymentHash, sphinx.BlankPacketFiller)
+	if err != nil {
+		panic(err)
+	}
+
+	var buf bytes.Buffer
+	err = pkt.Encode(&buf)
+	if err != nil {
+		panic(err)
+	}
+
+	return buf.Bytes()
+}
+
+func createMppSphinxPacket(
+	nodePublicKey *btcec.PublicKey,
+	paymentHash, paymentSecret []byte,
+	amt, lockTime int64,
+) []byte {
+
+	var paymentPath sphinx.PaymentPath
+	paymentPath[0].NodePub = *nodePublicKey
+
+	var secret [32]byte
+	copy(secret[:], paymentSecret)
+	uintAmount := uint64(amt * 1000) // msat are expected
+	uintLocktime := uint32(lockTime)
+	uintFwdAmount := uintAmount / 2
+	tlvRecords := []tlv.Record{
+		record.NewAmtToFwdRecord(&uintFwdAmount),
 		record.NewLockTimeRecord(&uintLocktime),
 		record.NewMPP(lnwire.MilliSatoshi(uintAmount), secret).Record(),
 	}

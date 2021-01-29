@@ -3,6 +3,7 @@ package libwallet
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 
 	"github.com/btcsuite/btcd/chaincfg"
@@ -12,7 +13,6 @@ import (
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/muun/libwallet/hdpath"
 	"github.com/muun/libwallet/sphinx"
-	"github.com/pkg/errors"
 )
 
 type coinIncomingSwap struct {
@@ -179,7 +179,7 @@ func (c *coinIncomingSwap) FullySignInput(index int, tx *wire.MsgTx, userKey, mu
 
 	derivedMuunKey, err := muunKey.DeriveTo(secrets.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive muun key")
+		return fmt.Errorf("failed to derive muun key: %w", err)
 	}
 
 	muunSignature, err := c.signature(index, tx, userKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)

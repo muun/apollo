@@ -1,6 +1,7 @@
 package walletdb
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -45,7 +46,10 @@ func Open(path string) (*DB, error) {
 }
 
 func migrate(db *gorm.DB) error {
-	m := gormigrate.New(db, gormigrate.DefaultOptions, []*gormigrate.Migration{
+	opts := gormigrate.Options{
+		UseTransaction: true,
+	}
+	m := gormigrate.New(db, &opts, []*gormigrate.Migration{
 		{
 			ID: "initial",
 			Migrate: func(tx *gorm.DB) error {
@@ -59,7 +63,14 @@ func migrate(db *gorm.DB) error {
 					State         string
 					UsedAt        *time.Time
 				}
-				return tx.CreateTable(&Invoice{}).Error
+				// This guard exists because at some point migrations were run outside a
+				// transactional context and a user experimented problems with an invoices
+				// table that was already created but whose migration had not been properly
+				// recorded.
+				if !tx.HasTable(&Invoice{}) {
+					return tx.CreateTable(&Invoice{}).Error
+				}
+				return nil
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.DropTable("invoices").Error
@@ -90,6 +101,11 @@ func (d *DB) SaveInvoice(invoice *Invoice) error {
 func (d *DB) FindFirstUnusedInvoice() (*Invoice, error) {
 	var invoice Invoice
 	if res := d.db.Where(&Invoice{State: InvoiceStateRegistered}).First(&invoice); res.Error != nil {
+
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		return nil, res.Error
 	}
 	invoice.ShortChanId = invoice.ShortChanId | (1 << 63)

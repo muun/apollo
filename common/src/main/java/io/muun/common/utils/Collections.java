@@ -1,7 +1,9 @@
 package io.muun.common.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class Collections {
@@ -73,5 +75,20 @@ public final class Collections {
     public static <T> boolean isEqual(Collection<? extends T> a, Collection<? extends T> b) {
 
         return symmetricDifference(a, b).isEmpty();
+    }
+
+    /**
+     * Concatenate two collections.
+     */
+    @SafeVarargs
+    public static <T> List<T> concat(Collection<? extends T> a, Collection<? extends T> ...others) {
+
+        final List<T> concatenation = new ArrayList<>(a);
+
+        for (Collection<? extends T> other : others) {
+            concatenation.addAll(other);
+        }
+
+        return concatenation;
     }
 }

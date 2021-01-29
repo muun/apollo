@@ -1,8 +1,9 @@
 package libwallet
 
 import (
+	"fmt"
+
 	"github.com/btcsuite/btcd/btcec"
-	"github.com/pkg/errors"
 )
 
 type PublicKey struct {
@@ -12,7 +13,7 @@ type PublicKey struct {
 func NewPublicKeyFromBytes(bytes []byte) (*PublicKey, error) {
 	key, err := btcec.ParsePubKey(bytes, btcec.S256())
 	if err != nil {
-		return nil, errors.Wrapf(err, "NewPublicKeyFromBytes: failed to parse pub key")
+		return nil, fmt.Errorf("NewPublicKeyFromBytes: failed to parse pub key: %w", err)
 	}
 
 	return &PublicKey{key}, nil

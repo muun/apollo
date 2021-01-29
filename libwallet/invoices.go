@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"path"
 	"time"
@@ -16,9 +17,9 @@ import (
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/lightningnetwork/lnd/netann"
 	"github.com/lightningnetwork/lnd/zpay32"
-	"github.com/pkg/errors"
 
 	"github.com/muun/libwallet/hdpath"
+	"github.com/muun/libwallet/sphinx"
 	"github.com/muun/libwallet/walletdb"
 )
 
@@ -185,6 +186,9 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	if err != nil {
 		return "", err
 	}
+	if dbInvoice == nil {
+		return "", nil
+	}
 
 	var paymentHash [32]byte
 	copy(paymentHash[:], dbInvoice.PaymentHash)
@@ -288,6 +292,54 @@ func ExposePreimage(paymentHash []byte) ([]byte, error) {
 	}
 
 	return secrets.Preimage, nil
+}
+
+func IsInvoiceFulfillable(paymentHash, onionBlob []byte, amount int64, userKey *HDPrivateKey, net *Network) error {
+	if len(paymentHash) != 32 {
+		return fmt.Errorf("IsInvoiceFulfillable: received invalid hash len %v", len(paymentHash))
+	}
+
+	// Lookup invoice data matching this HTLC using the payment hash
+	db, err := openDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	secrets, err := db.FindByPaymentHash(paymentHash)
+	if err != nil {
+		return fmt.Errorf("IsInvoiceFulfillable: could not find invoice data for payment hash: %w", err)
+	}
+
+	if len(onionBlob) == 0 {
+		return nil
+	}
+
+	identityKeyPath := hdpath.MustParse(secrets.KeyPath).Child(identityKeyChildIndex)
+
+	nodeHDKey, err := userKey.DeriveTo(identityKeyPath.String())
+	if err != nil {
+		return fmt.Errorf("IsInvoiceFulfillable: failed to derive key: %w", err)
+	}
+	nodeKey, err := nodeHDKey.key.ECPrivKey()
+	if err != nil {
+		return fmt.Errorf("IsInvoiceFulfillable: failed to get priv key: %w", err)
+	}
+
+	err = sphinx.Validate(
+		onionBlob,
+		paymentHash,
+		secrets.PaymentSecret,
+		nodeKey,
+		0, // This is used internally by the sphinx decoder but it's not needed
+		lnwire.MilliSatoshi(uint64(amount)*1000),
+		net.network,
+	)
+	if err != nil {
+		return fmt.Errorf("IsInvoiceFuflillable: invalid sphinx: %w", err)
+	}
+
+	return nil
 }
 
 type IncomingSwap struct {

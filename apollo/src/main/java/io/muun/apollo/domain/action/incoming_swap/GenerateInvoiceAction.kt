@@ -4,6 +4,8 @@ import io.muun.apollo.data.preferences.ForwardingPoliciesRepository
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.libwallet.Invoice
+import io.muun.apollo.domain.libwallet.errors.NoInvoicesLeftError
+import io.muun.apollo.domain.utils.onTypedErrorResumeNext
 import org.bitcoinj.core.NetworkParameters
 import rx.Observable
 import javax.inject.Inject
@@ -18,15 +20,23 @@ class GenerateInvoiceAction @Inject constructor(
 ): BaseAsyncAction0<String>() {
 
     override fun action(): Observable<String> {
-        return keysRepository.basePrivateKey
-                .flatMap { basePrivateKey -> Observable.just(
-                        Invoice.generate(
-                                networkParameters,
-                                basePrivateKey,
-                                forwardingPoliciesRepository.fetchOne().random()
-                        )
-                )}
-                .doOnCompleted(registerInvoices::run)
+        return generateInvoice()
+            .onTypedErrorResumeNext(NoInvoicesLeftError::class.java) {
+                registerInvoices.action()
+                    .flatMap { generateInvoice() }
+            }
+            .doOnCompleted(registerInvoices::run)
     }
+
+    private fun generateInvoice() = keysRepository.basePrivateKey
+        .flatMap { basePrivateKey ->
+            Observable.just(
+                Invoice.generate(
+                    networkParameters,
+                    basePrivateKey,
+                    forwardingPoliciesRepository.fetchOne().random()
+                )
+            )
+        }
 
 }

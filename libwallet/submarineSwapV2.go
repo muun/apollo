@@ -1,11 +1,13 @@
 package libwallet
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/swaps"
-	"github.com/pkg/errors"
 )
 
 type coinSubmarineSwapV2 struct {
@@ -26,11 +28,11 @@ func (c *coinSubmarineSwapV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive user key")
+		return fmt.Errorf("failed to derive user key: %w", err)
 	}
 
 	if len(c.ServerSignature) == 0 {
-		return errors.Errorf("Swap server must provide signature")
+		return errors.New("swap server must provide signature")
 	}
 
 	witnessScript, err := swaps.CreateWitnessScriptSubmarineSwapV2(

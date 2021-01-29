@@ -3,6 +3,8 @@ package libwallet
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
+	"fmt"
 
 	"github.com/muun/libwallet/addresses"
 
@@ -11,7 +13,6 @@ import (
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
-	"github.com/pkg/errors"
 )
 
 type SigningExpectations struct {
@@ -106,7 +107,7 @@ func NewPartiallySignedTransaction(inputs *InputList, rawTx []byte) (*PartiallyS
 	tx := wire.NewMsgTx(0)
 	err := tx.Deserialize(bytes.NewReader(rawTx))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to decode tx")
+		return nil, fmt.Errorf("failed to decode tx: %w", err)
 	}
 
 	return &PartiallySignedTransaction{tx: tx, inputs: inputs.Inputs()}, nil
@@ -128,13 +129,13 @@ func (p *PartiallySignedTransaction) Sign(userKey *HDPrivateKey, muunKey *HDPubl
 
 	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not convert input data to coin")
+		return nil, fmt.Errorf("could not convert input data to coin: %w", err)
 	}
 
 	for i, coin := range coins {
 		err = coin.SignInput(i, p.tx, userKey, muunKey)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to sign input")
+			return nil, fmt.Errorf("failed to sign input: %w", err)
 		}
 	}
 
@@ -146,13 +147,13 @@ func (p *PartiallySignedTransaction) FullySign(userKey, muunKey *HDPrivateKey) (
 
 	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not convert input data to coin")
+		return nil, fmt.Errorf("could not convert input data to coin: %w", err)
 	}
 
 	for i, coin := range coins {
 		err = coin.FullySignInput(i, p.tx, userKey, muunKey)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to sign input")
+			return nil, fmt.Errorf("failed to sign input: %w", err)
 		}
 	}
 
@@ -169,11 +170,11 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 	// If we were to receive more than that, we consider it invalid.
 	if expectations.change != nil {
 		if len(p.tx.TxOut) != 2 {
-			return errors.Errorf("expected destination and change outputs but found %v", len(p.tx.TxOut))
+			return fmt.Errorf("expected destination and change outputs but found %v", len(p.tx.TxOut))
 		}
 	} else {
 		if len(p.tx.TxOut) != 1 {
-			return errors.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
+			return fmt.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
 		}
 	}
 
@@ -208,12 +209,12 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 	// Fail if not destination output was found in the TX.
 	if toOutput == nil {
-		return errors.Errorf("destination output is not present")
+		return errors.New("destination output is not present")
 	}
 
 	// Verify destination output value matches expected amount
 	if toOutput.Value != expectedAmount {
-		return errors.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
+		return fmt.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
 	}
 
 	/*
@@ -238,25 +239,25 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 	// Verify change output is spendable by the wallet.
 	if expectedChange != nil {
 		if changeOutput == nil {
-			return errors.Errorf("Change is not present")
+			return errors.New("change is not present")
 		}
 
 		expectedChangeAmount := actualTotal - expectedAmount - expectedFee
 		if changeOutput.Value != expectedChangeAmount {
-			return errors.Errorf("Change amount is mismatched. found %v expected %v",
+			return fmt.Errorf("change amount is mismatched. found %v expected %v",
 				changeOutput.Value, expectedChangeAmount)
 		}
 
 		derivedUserKey, err := userPublicKey.DeriveTo(expectedChange.DerivationPath())
 		if err != nil {
-			return errors.Wrapf(err, "failed to derive user key to change path %v",
-				expectedChange.DerivationPath())
+			return fmt.Errorf("failed to derive user key to change path %v: %w",
+				expectedChange.DerivationPath(), err)
 		}
 
 		derivedMuunKey, err := muunPublickKey.DeriveTo(expectedChange.DerivationPath())
 		if err != nil {
-			return errors.Wrapf(err, "failed to derive muun key to change path %v",
-				expectedChange.DerivationPath())
+			return fmt.Errorf("failed to derive muun key to change path %v: %w",
+				expectedChange.DerivationPath(), err)
 		}
 
 		expectedChangeAddress, err := addresses.Create(
@@ -267,24 +268,24 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 			network.network,
 		)
 		if err != nil {
-			return errors.Wrapf(err, "failed to build the change address with version %v",
-				expectedChange.Version())
+			return fmt.Errorf("failed to build the change address with version %v: %w",
+				expectedChange.Version(), err)
 		}
 
 		if expectedChangeAddress.Address() != expectedChange.Address() {
-			return errors.Errorf("mismatched change address. found %v, expected %v",
+			return fmt.Errorf("mismatched change address. found %v, expected %v",
 				expectedChange.Address(), expectedChangeAddress.Address())
 		}
 
 		actualFee := actualTotal - expectedAmount - expectedChangeAmount
 		if actualFee != expectedFee {
-			return errors.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
+			return fmt.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
 		}
 
 	} else {
 		actualFee := actualTotal - expectedAmount
 		if actualFee >= expectedFee+dustThreshold {
-			return errors.Errorf("change output is too big to be burned as fee")
+			return errors.New("change output is too big to be burned as fee")
 		}
 	}
 
@@ -301,11 +302,11 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 func addressToScript(address string, network *Network) ([]byte, error) {
 	parsedAddress, err := btcutil.DecodeAddress(address, network.network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse address %v", address)
+		return nil, fmt.Errorf("failed to parse address %v: %w", address, err)
 	}
 	script, err := txscript.PayToAddrScript(parsedAddress)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate script for address %v", address)
+		return nil, fmt.Errorf("failed to generate script for address %v: %w", address, err)
 	}
 	return script, nil
 }
@@ -314,7 +315,7 @@ func newTransaction(tx *wire.MsgTx) (*Transaction, error) {
 	var buf bytes.Buffer
 	err := tx.Serialize(&buf)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to encode tx")
+		return nil, fmt.Errorf("failed to encode tx: %w", err)
 	}
 
 	return &Transaction{
@@ -426,6 +427,6 @@ func createCoin(input Input, network *Network) (coin, error) {
 			Collect:             btcutil.Amount(swap.CollectInSats()),
 		}, nil
 	default:
-		return nil, errors.Errorf("can't create coin from input version %v", version)
+		return nil, fmt.Errorf("can't create coin from input version %v", version)
 	}
 }

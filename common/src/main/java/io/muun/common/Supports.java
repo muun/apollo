@@ -98,4 +98,9 @@ public class Supports {
         int APOLLO = 200;
         int FALCON = 200;
     }
+
+    public interface FullDebtIncomingSwaps {
+        int APOLLO = 300;
+        int FALCON = 300;
+    }
 }

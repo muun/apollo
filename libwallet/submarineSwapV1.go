@@ -1,11 +1,13 @@
 package libwallet
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/swaps"
-	"github.com/pkg/errors"
 )
 
 type coinSubmarineSwapV1 struct {
@@ -24,7 +26,7 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive user key")
+		return fmt.Errorf("failed to derive user key: %w", err)
 	}
 
 	witnessScript, err := swaps.CreateWitnessScriptSubmarineSwapV1(
@@ -40,7 +42,7 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 
 	redeemScript, err := createNonNativeSegwitRedeemScript(witnessScript)
 	if err != nil {
-		return errors.Wrapf(err, "failed to build reedem script for signing")
+		return fmt.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	sig, err := signNonNativeSegwitInput(

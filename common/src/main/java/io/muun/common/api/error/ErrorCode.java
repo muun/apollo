@@ -290,6 +290,9 @@ public enum ErrorCode {
     MIN_FEE_RATE_INCREMENT_NOT_FOUND(
             2081, StatusCode.SERVER_FAILURE, "Didn't found any min fee rate increment"
     ),
+    NO_CLIENT_FOUND(
+            2082, StatusCode.CLIENT_FAILURE, "No client found for owner"
+    ),
 
     // unexpected errors
     CLIENT_DISCONNECTED(

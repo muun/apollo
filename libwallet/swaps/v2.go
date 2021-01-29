@@ -11,7 +11,6 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/lightningnetwork/lnd/zpay32"
-	"github.com/pkg/errors"
 )
 
 func (swap *SubmarineSwap) validateV2(rawInvoice string, userPublicKey, muunPublicKey *KeyDescriptor, originalExpirationInBlocks int64, network *chaincfg.Params) error {
@@ -98,7 +97,7 @@ func (swap *SubmarineSwap) validateV2(rawInvoice string, userPublicKey, muunPubl
 	if len(swap.PreimageInHex) > 0 {
 		preimage, err := hex.DecodeString(swap.PreimageInHex)
 		if err != nil {
-			return errors.Wrapf(err, "preimagehex is not actually hex 🤔")
+			return fmt.Errorf("preimageInHex is not valid hex: %w", err)
 		}
 
 		calculatedPaymentHash := sha256.Sum256(preimage)

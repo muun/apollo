@@ -9,6 +9,7 @@ import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
+import io.muun.apollo.domain.action.incoming_swap.VerifyFulfillableAction;
 import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
@@ -30,6 +31,7 @@ public class CreateOperationAction {
     private final SubmarineSwapDao submarineSwapDao;
     private final IncomingSwapDao incomingSwapDao;
     private final IncomingSwapHtlcDao incomingSwapHtlcDao;
+    private final VerifyFulfillableAction verifyFulfillable;
 
     private final NotificationService notificationService;
 
@@ -43,7 +45,8 @@ public class CreateOperationAction {
                                  final SubmarineSwapDao submarineSwapDao,
                                  final NotificationService notificationService,
                                  final IncomingSwapDao incomingSwapDao,
-                                 final IncomingSwapHtlcDao incomingSwapHtlcDao) {
+                                 final IncomingSwapHtlcDao incomingSwapHtlcDao,
+                                 final VerifyFulfillableAction verifyFulfillable) {
 
         this.transactionSizeRepository = transactionSizeRepository;
         this.operationDao = operationDao;
@@ -52,6 +55,7 @@ public class CreateOperationAction {
         this.notificationService = notificationService;
         this.incomingSwapDao = incomingSwapDao;
         this.incomingSwapHtlcDao = incomingSwapHtlcDao;
+        this.verifyFulfillable = verifyFulfillable;
     }
 
     public Observable<Operation> action(Operation operation,
@@ -67,6 +71,16 @@ public class CreateOperationAction {
                     }
 
                     return savedOperation;
+                })
+                .flatMap(savedOperation -> {
+                    final Observable<Operation> continuation = Observable.just(savedOperation);
+
+                    if (savedOperation.incomingSwap != null) {
+                        return verifyFulfillable.action(savedOperation.incomingSwap)
+                                .andThen(continuation);
+                    } else {
+                        return continuation;
+                    }
                 });
     }
 

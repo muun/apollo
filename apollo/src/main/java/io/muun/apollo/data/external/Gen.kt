@@ -1,9 +1,13 @@
 package io.muun.apollo.data.external
 
+import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.FeeWindow
 import io.muun.apollo.domain.model.ForwardingPolicy
+import io.muun.apollo.domain.model.IncomingSwap
+import io.muun.apollo.domain.model.IncomingSwapHtlc
 import io.muun.apollo.domain.model.NextTransactionSize
+import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapFees
@@ -16,9 +20,14 @@ import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.DebtType
+import io.muun.common.model.OperationDirection
+import io.muun.common.model.OperationStatus
 import io.muun.common.model.PhoneNumber
 import io.muun.common.model.SizeForAmount
 import io.muun.common.model.UtxoStatus
+import io.muun.common.utils.BitcoinUtils
+import io.muun.common.utils.Encodings
+import io.muun.common.utils.RandomGenerator
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.params.TestNet3Params
@@ -322,6 +331,69 @@ object Gen {
 
     fun forwardingPolicy() =
         ForwardingPolicy(ByteArray(0), 1, 1000, 9)
+
+    fun incomingSwapHtlc() =
+        IncomingSwapHtlc(
+            houstonId(),
+            RandomGenerator.getRandomUuid(),
+            long(800_000L),
+            0,
+            0,
+            Encodings.hexToBytes(lnPublicKey()),
+            null,
+            address(),
+            100_000L,
+            ByteArray(0)
+        )
+
+    fun incomingSwap(
+        paymentHash: ByteArray = RandomGenerator.getBytes(32),
+        amount: Long = 0,
+        sphinxPacket: ByteArray? = null,
+        htlc: IncomingSwapHtlc? = incomingSwapHtlc()
+    ) =
+        IncomingSwap(
+            0,
+            RandomGenerator.getRandomUuid(),
+            paymentHash,
+            htlc,
+            sphinxPacket,
+            0,
+            amount,
+            null
+        )
+
+    fun bitcoinAmount(satoshis: Long) =
+        BitcoinAmount(
+            satoshis,
+            Money.of(satoshis, "BTC").scaleByPowerOfTen(-BitcoinUtils.BITCOIN_PRECISION),
+            Money.of(satoshis, "BTC").scaleByPowerOfTen(-BitcoinUtils.BITCOIN_PRECISION)
+        )
+
+    fun operation(incomingSwap: IncomingSwap? = null) =
+        Operation(
+            houstonId(),
+            houstonId(),
+            OperationDirection.INCOMING,
+            true,
+            null,
+            true,
+            null,
+            true,
+            address(),
+            "m",
+            bitcoinAmount(long(1_000_000)),
+            bitcoinAmount(0),
+            0,
+            transactionHash(),
+            null,
+            OperationStatus.BROADCASTED,
+            null,
+            0,
+            null,
+            incomingSwap,
+            false
+        )
 
     /**
      * Get a string of fixed length with characters obtained from a generator.

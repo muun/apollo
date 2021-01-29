@@ -44,6 +44,7 @@ import io.muun.common.api.KeySet;
 import io.muun.common.api.LinkActionJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneConfirmation;
+import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.SendEncryptedKeysJson;
@@ -67,6 +68,7 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Pair;
 
 import android.content.Context;
@@ -660,6 +662,22 @@ public class HoustonClient extends BaseClient<HoustonService> {
                                                   final RawTransaction rawTransaction) {
 
         return getService().pushFulfillmentTransaction(incomingSwap, rawTransaction);
+    }
+
+    /**
+     * Expire an invoice by payment hash.
+     */
+    public Completable expireInvoice(final byte[] paymentHash) {
+        return getService().expireInvoice(Encodings.bytesToHex(paymentHash));
+    }
+
+    /**
+     * Fulfill a debt only incoming swap.
+     */
+    public Completable fulfillIncomingSwap(final String incomingSwap, final byte[] preimage) {
+        return getService().fulfillIncomingSwap(
+                incomingSwap, new PreimageJson(Encodings.bytesToHex(preimage))
+        );
     }
 
     /**

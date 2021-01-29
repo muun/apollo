@@ -30,6 +30,7 @@ import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PendingChallengeUpdateJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PhoneNumberJson;
+import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.RawTransaction;
@@ -49,6 +50,7 @@ import io.muun.common.model.VerificationType;
 
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -251,6 +253,14 @@ public interface HoustonService {
     Completable pushFulfillmentTransaction(
             @Path("incomingSwapUuid") String incomingSwapUuid,
             @Body RawTransaction tx);
+
+    @DELETE("incoming-swaps/invoices/{paymentHashHex}")
+    Completable expireInvoice(@Path("paymentHashHex") String paymentHashHex);
+
+    @PUT("incoming-swaps/{incomingSwapUuid}")
+    Completable fulfillIncomingSwap(
+            @Path("incomingSwapUuid") String incomingSwapUuid,
+            @Body PreimageJson preimage);
 
     // ---------------------------------------------------------------------------------------------
     // Other endpoints:

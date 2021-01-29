@@ -2,11 +2,11 @@ package addresses
 
 import (
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/hdkeychain"
-	"github.com/pkg/errors"
 )
 
 // CreateAddressV4 returns a P2WSH WalletAddress from a user HD-pubkey and a Muun co-signing HD-pubkey.
@@ -14,7 +14,7 @@ func CreateAddressV4(userKey, muunKey *hdkeychain.ExtendedKey, path string, netw
 
 	witnessScript, err := CreateWitnessScriptV4(userKey, muunKey, network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate witness script v4")
+		return nil, fmt.Errorf("failed to generate witness script v4: %w", err)
 	}
 	witnessScript256 := sha256.Sum256(witnessScript)
 

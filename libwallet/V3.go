@@ -1,10 +1,11 @@
 package libwallet
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/addresses"
-
-	"github.com/pkg/errors"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
@@ -26,16 +27,16 @@ func (c *coinV3) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muu
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive user key")
+		return fmt.Errorf("failed to derive user key: %w", err)
 	}
 
 	muunKey, err = muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive muun key")
+		return fmt.Errorf("failed to derive muun key: %w", err)
 	}
 
 	if len(c.MuunSignature) == 0 {
-		return errors.Errorf("muun signature must be present")
+		return errors.New("muun signature must be present")
 	}
 
 	witnessScript, err := createWitnessScriptV3(userKey.PublicKey(), muunKey)
@@ -60,12 +61,12 @@ func (c *coinV3) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 
 	derivedUserKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive user key")
+		return fmt.Errorf("failed to derive user key: %w", err)
 	}
 
 	derivedMuunKey, err := muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to derive muun key")
+		return fmt.Errorf("failed to derive muun key: %w", err)
 	}
 
 	muunSignature, err := c.signature(index, tx, derivedUserKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)
@@ -94,7 +95,7 @@ func (c *coinV3) signature(index int, tx *wire.MsgTx, userKey *HDPublicKey, muun
 
 	redeemScript, err := createRedeemScriptV3(userKey, muunKey)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to build reedem script for signing")
+		return nil, fmt.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	return signNonNativeSegwitInput(

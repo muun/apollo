@@ -283,7 +283,7 @@ func TestDoPaymentRequestCall(t *testing.T) {
 		serializedPaymentDetails, _ := proto.Marshal(&PaymentDetails{
 			Network: "test",
 			Outputs: []*Output{
-				&Output{
+				{
 					Script: script,
 					Amount: 2500,
 				},

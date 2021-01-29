@@ -2,10 +2,11 @@ package libwallet
 
 import (
 	"crypto/sha256"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/muun/libwallet/hdpath"
-	"github.com/pkg/errors"
 
 	"github.com/btcsuite/btcutil/hdkeychain"
 )
@@ -91,17 +92,17 @@ func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, err
 func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 
 	if !strings.HasPrefix(path, p.Path) {
-		return nil, errors.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
+		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
 	}
 
 	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", p.Path)
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
 	}
 
 	secondPath, err := hdpath.Parse(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", path)
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
 	}
 
 	indexes := secondPath.IndexesFrom(firstPath)
@@ -109,7 +110,7 @@ func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 	for depth, index := range indexes {
 		derivedKey, err = derivedKey.DerivedAt(int64(index.Index), index.Hardened)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to derive key at path %v on depth %v", path, depth)
+			return nil, fmt.Errorf("failed to derive key at path %v on depth %v: %w", path, depth, err)
 		}
 	}
 	// The generated path has no names in it, so replace it

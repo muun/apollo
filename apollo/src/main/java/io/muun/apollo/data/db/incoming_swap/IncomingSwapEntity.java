@@ -11,6 +11,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.google.auto.value.AutoValue;
 import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntity {
 
@@ -66,7 +68,7 @@ public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntit
      */
     @NonNull
     public static IncomingSwap getIncomingSwap(IncomingSwapEntity entity,
-                                               IncomingSwapHtlcEntity htlc) {
+                                               @Nullable IncomingSwapHtlcEntity htlc) {
 
         final String sphinxPacketInHex = entity.sphinx_packet_in_hex();
         final String preimageInHex = entity.preimage_in_hex();
@@ -74,7 +76,7 @@ public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntit
                 entity.id(),
                 entity.houston_uuid(),
                 Encodings.hexToBytes(entity.payment_hash_in_hex()),
-                IncomingSwapHtlcEntity.getIncomingSwapHtlc(htlc),
+                htlc != null ? IncomingSwapHtlcEntity.getIncomingSwapHtlc(htlc) : null,
                 sphinxPacketInHex != null ? Encodings.hexToBytes(sphinxPacketInHex) : null,
                 entity.collect_in_satoshis(),
                 entity.payment_amount_in_satoshis(),

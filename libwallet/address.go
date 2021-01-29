@@ -1,6 +1,7 @@
 package libwallet
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -8,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/errors"
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcutil"
-	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -44,11 +45,11 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
 	bitcoinUri, components := buildUriFromString(rawInput, bitcoinScheme)
 	if components == nil {
-		return nil, errors.Errorf("failed to parse uri %v", rawInput)
+		return nil, errors.Errorf(ErrInvalidURI, "failed to parse uri %v", rawInput)
 	}
 
 	if components.Scheme != "bitcoin" {
-		return nil, errors.New("Invalid scheme")
+		return nil, errors.New(ErrInvalidURI, "Invalid scheme")
 	}
 
 	base58Address := components.Opaque
@@ -61,7 +62,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
 	queryValues, err := url.ParseQuery(components.RawQuery)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Couldnt parse query")
+		return nil, errors.Errorf(ErrInvalidURI, "Couldn't parse query: %v", err)
 	}
 
 	var label, message, amount string
@@ -110,11 +111,11 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	// Bech32 check
 	validatedBase58Address, err := btcutil.DecodeAddress(base58Address, network.network)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid address: %w", err)
 	}
 
 	if !validatedBase58Address.IsForNet(network.network) {
-		return nil, errors.Errorf("Network mismatch")
+		return nil, errors.New(ErrInvalidURI, "Network mismatch")
 	}
 
 	return &MuunPaymentURI{
@@ -131,7 +132,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to create request to: %s", url)
+		return nil, fmt.Errorf("failed to create request to: %s", url)
 	}
 
 	req.Header.Set("Accept", "application/bitcoin-paymentrequest")
@@ -139,35 +140,35 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to make request to: %s", url)
+		return nil, errors.Errorf(ErrNetwork, "failed to make request to: %s", url)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read body response")
+		return nil, errors.Errorf(ErrNetwork, "Failed to read body response: %w", err)
 	}
 
 	payReq := &PaymentRequest{}
 	err = proto.Unmarshal(body, payReq)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to Unmarshall paymentRequest")
+		return nil, fmt.Errorf("failed to unmarshal payment request: %w", err)
 	}
 
 	payDetails := &PaymentDetails{}
 
 	err = proto.Unmarshal(payReq.SerializedPaymentDetails, payDetails)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to Unmarshall paymentDetails")
+		return nil, fmt.Errorf("failed to unmarshall payment details: %w", err)
 	}
 
 	if len(payDetails.Outputs) == 0 {
-		return nil, errors.New("No outputs provided")
+		return nil, fmt.Errorf("no outputs provided")
 	}
 
 	address, err := getAddressFromScript(payDetails.Outputs[0].Script, network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to get address")
+		return nil, fmt.Errorf("failed to get address: %w", err)
 	}
 
 	return &MuunPaymentURI{

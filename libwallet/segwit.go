@@ -2,24 +2,24 @@ package libwallet
 
 import (
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
-	"github.com/pkg/errors"
 )
 
 func signNativeSegwitInput(index int, tx *wire.MsgTx, privateKey *HDPrivateKey, witnessScript []byte, amount btcutil.Amount) ([]byte, error) {
 
 	privKey, err := privateKey.key.ECPrivKey()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to produce EC priv key for signing")
+		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
 	sigHashes := txscript.NewTxSigHashes(tx)
 	sig, err := txscript.RawTxInWitnessSignature(tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to sign V4 input")
+		return nil, fmt.Errorf("failed to sign V4 input: %w", err)
 	}
 
 	return sig, nil
@@ -44,20 +44,20 @@ func signNonNativeSegwitInput(index int, tx *wire.MsgTx, privateKey *HDPrivateKe
 	builder.AddData(redeemScript)
 	script, err := builder.Script()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate signing script")
+		return nil, fmt.Errorf("failed to generate signing script: %w", err)
 	}
 	txInput.SignatureScript = script
 
 	privKey, err := privateKey.key.ECPrivKey()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to produce EC priv key for signing")
+		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
 	sigHashes := txscript.NewTxSigHashes(tx)
 	sig, err := txscript.RawTxInWitnessSignature(
 		tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to sign V3 input")
+		return nil, fmt.Errorf("failed to sign V3 input: %w", err)
 	}
 
 	return sig, nil

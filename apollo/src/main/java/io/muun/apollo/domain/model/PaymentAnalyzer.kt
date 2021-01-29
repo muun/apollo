@@ -50,7 +50,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         }
     }
 
-    private fun analyzeCannotPay(): PaymentAnalysis {
+    private fun analyzeCannotPay(payReq: PaymentRequest = this.payReq): PaymentAnalysis {
         return createAnalysis(
             amountInSatoshis = originalAmountInSatoshis,
             feeInSatoshis = null,
@@ -316,7 +316,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             // Unlike other cases, this can happen because we calculate fee for the total output
             // amount (which includes the sweep fee) and not the original payment amount. So, our
             // caller has not verified this can be payed.
-            return analyzeCannotPay()
+            return analyzeCannotPay(payReq)
         }
 
         val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)
@@ -372,7 +372,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             // Unlike other cases, this can happen because we calculate fee for the total output
             // amount (which includes the sweep fee) and not the original payment amount. So, our
             // caller has not verified this can be payed.
-            return analyzeCannotPay()
+            return analyzeCannotPay(payReq)
         }
 
         val feeInSatoshis = FeeCalculator(payReq.feeInSatoshisPerByte, nextTransactionSize)

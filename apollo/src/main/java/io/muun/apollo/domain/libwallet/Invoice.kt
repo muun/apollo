@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.libwallet
 
+import io.muun.apollo.domain.libwallet.errors.NoInvoicesLeftError
 import io.muun.apollo.domain.model.ForwardingPolicy
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKeyPair
@@ -43,12 +44,19 @@ object Invoice {
         val options = InvoiceOptions()
         options.amountSat = 0 // no amount invoice
 
-        return Libwallet.createInvoice(
-                LibwalletBridge.toLibwalletModel(networkParams),
-                LibwalletBridge.toLibwalletModel(userPrivateKey, networkParams),
-                routeHints,
-                options
+        val invoice = Libwallet.createInvoice(
+            LibwalletBridge.toLibwalletModel(networkParams),
+            LibwalletBridge.toLibwalletModel(userPrivateKey, networkParams),
+            routeHints,
+            options
         )
+
+        if (invoice.isBlank()) {
+            throw NoInvoicesLeftError()
+        }
+
+        return invoice
+
     }
 
     class SecretList(val list: InvoiceSecretsList) {

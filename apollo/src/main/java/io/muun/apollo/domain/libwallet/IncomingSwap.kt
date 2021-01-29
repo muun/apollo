@@ -1,15 +1,20 @@
 package io.muun.apollo.domain.libwallet
 
+import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
+import io.muun.apollo.domain.model.IncomingSwap
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Preconditions
+import libwallet.Libwallet
 import org.bitcoinj.core.NetworkParameters
+import javax.inject.Inject
 
-object IncomingSwap {
+open class IncomingSwap
+@Inject constructor() {
 
-    fun signFulfillment(
+    open fun signFulfillment(
             swap: io.muun.apollo.domain.model.IncomingSwap,
             data: IncomingSwapFulfillmentData,
             userKey: PrivateKey,
@@ -38,11 +43,40 @@ object IncomingSwap {
         incomingSwap.blockHeight = 0
         incomingSwap.merkleTree = byteArrayOf()
 
-        return incomingSwap.verifyAndFulfill(
+        try {
+            return incomingSwap.verifyAndFulfill(
                 LibwalletBridge.toLibwalletModel(userKey, network),
                 LibwalletBridge.toLibwalletModel(muunKey, network),
                 LibwalletBridge.toLibwalletModel(network)
-        )
+            )
+        } catch (e: Exception) {
+            throw UnfulfillableIncomingSwapError(swap.houstonUuid, e)
+        }
+    }
+
+    open fun verifyFulfillable(
+        swap: IncomingSwap,
+        userKey: PrivateKey,
+        network: NetworkParameters
+    ) {
+
+        try {
+
+            Libwallet.isInvoiceFulfillable(
+                swap.paymentHash,
+                swap.sphinxPacket,
+                swap.paymentAmountInSats,
+                LibwalletBridge.toLibwalletModel(userKey, network),
+                LibwalletBridge.toLibwalletModel(network)
+            )
+
+        } catch (e: Exception) {
+            throw UnfulfillableIncomingSwapError(swap.houstonUuid, e)
+        }
+    }
+
+    open fun exposePreimage(swap: IncomingSwap): ByteArray {
+        return Libwallet.exposePreimage(swap.paymentHash)
     }
 
 }

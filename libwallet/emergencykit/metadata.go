@@ -24,10 +24,11 @@ type MetadataWriter struct {
 
 // Metadata holds the machine-readable data for an Emergency Kit.
 type Metadata struct {
-	Version           int            `json:"version"`
-	BirthdayBlock     int            `json:"birthdayBlock"`
-	EncryptedKeys     []*MetadataKey `json:"encryptedKeys"`
-	OutputDescriptors []string       `json:"outputDescriptors"`
+	Version           int                  `json:"version"`
+	BirthdayBlock     int                  `json:"birthdayBlock"`
+	EncryptedKeys     []*MetadataKey       `json:"encryptedKeys"`
+	PublicKeys        []*MetadataPublicKey `json:"publicKeys"`
+	OutputDescriptors []string             `json:"outputDescriptors"`
 }
 
 // MetadataKey holds an entry in the Metadata key array.
@@ -36,6 +37,15 @@ type MetadataKey struct {
 	EncryptedPrivKey string `json:"encryptedPrivKey"`
 	Salt             string `json:"salt"`
 }
+
+// MetadataPublicKey holds an entry in the Metadata public key array.
+type MetadataPublicKey struct {
+	Tag       string `json:"tag"`
+	PublicKey string `json:"publicKey"`
+}
+
+// SwapServerTag identifies the swap server's public key PublicKeys array.
+const SwapServerTag = "swapServer"
 
 // The name for the embedded metadata file in the PDF document:
 const metadataName = "metadata.json"

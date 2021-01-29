@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"io"
 	"math"
 	"math/big"
@@ -15,7 +17,6 @@ import (
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/pkg/errors"
 )
 
 const serializedPublicKeyLength = btcec.PubKeyBytesLenCompressed
@@ -47,18 +48,18 @@ type hdPubKeyEncrypter struct {
 
 func addVariableBytes(writer io.Writer, data []byte) error {
 	if len(data) > math.MaxUint16 {
-		return errors.Errorf("data length can't exceeed %v", math.MaxUint16)
+		return fmt.Errorf("data length can't exceeed %v", math.MaxUint16)
 	}
 
 	dataLen := uint16(len(data))
 	err := binary.Write(writer, binary.BigEndian, &dataLen)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write var bytes len")
+		return fmt.Errorf("failed to write var bytes len: %w", err)
 	}
 
 	n, err := writer.Write(data)
 	if err != nil || n != len(data) {
-		return errors.Errorf("failed to write var bytes")
+		return errors.New("failed to write var bytes")
 	}
 
 	return nil
@@ -88,12 +89,12 @@ func (e *hdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 
 	signingKey, err := e.senderKey.key.ECPrivKey()
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to extract signing key")
+		return "", fmt.Errorf("Encrypt: failed to extract signing key: %w", err)
 	}
 
 	encryptionKey, err := e.receiverKey.key.ECPubKey()
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to extract pub key")
+		return "", fmt.Errorf("Encrypt: failed to extract pub key: %w", err)
 	}
 
 	// Sign "payload || encryptionKey" to protect against payload reuse by 3rd parties
@@ -103,34 +104,34 @@ func (e *hdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 	hash := sha256.Sum256(signaturePayload)
 	senderSignature, err := btcec.SignCompact(btcec.S256(), signingKey, hash[:], false)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to sign payload")
+		return "", fmt.Errorf("Encrypt: failed to sign payload: %w", err)
 	}
 
 	// plaintext is "senderSignature || payload"
 	plaintext := bytes.NewBuffer(make([]byte, 0, 2+len(payload)+2+len(senderSignature)))
 	err = addVariableBytes(plaintext, senderSignature)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypter: failed to add senderSignature")
+		return "", fmt.Errorf("Encrypter: failed to add senderSignature: %w", err)
 	}
 
 	err = addVariableBytes(plaintext, payload)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypter: failed to add payload")
+		return "", fmt.Errorf("Encrypter: failed to add payload: %w", err)
 	}
 
 	pubEph, sharedSecret, err := generateSharedEncryptionSecretForAES(encryptionKey)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to generate shared encryption key")
+		return "", fmt.Errorf("Encrypt: failed to generate shared encryption key: %w", err)
 	}
 
 	blockCipher, err := aes.NewCipher(sharedSecret)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: new aes failed")
+		return "", fmt.Errorf("Encrypt: new aes failed: %w", err)
 	}
 
 	gcm, err := cipher.NewGCM(blockCipher)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: new gcm failed")
+		return "", fmt.Errorf("Encrypt: new gcm failed: %w", err)
 	}
 
 	nonce := randomBytes(gcm.NonceSize())
@@ -143,13 +144,13 @@ func (e *hdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 
 	err = addVariableBytes(result, []byte(e.receiverKey.Path))
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to add receiver path")
+		return "", fmt.Errorf("Encrypt: failed to add receiver path: %w", err)
 	}
 
 	nonceLen := uint16(len(nonce))
 	err = binary.Write(result, binary.BigEndian, &nonceLen)
 	if err != nil {
-		return "", errors.Wrapf(err, "Encrypt: failed to add nonce len")
+		return "", fmt.Errorf("Encrypt: failed to add nonce len: %w", err)
 	}
 
 	ciphertext := gcm.Seal(nil, nonce, plaintext.Bytes(), result.Bytes())
@@ -157,12 +158,12 @@ func (e *hdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 	// result is "additionalData || nonce || ciphertext"
 	n, err := result.Write(nonce)
 	if err != nil || n != len(nonce) {
-		return "", errors.Errorf("Encrypt: failed to add nonce")
+		return "", errors.New("Encrypt: failed to add nonce")
 	}
 
 	n, err = result.Write(ciphertext)
 	if err != nil || n != len(ciphertext) {
-		return "", errors.Errorf("Encrypt: failed to add ciphertext")
+		return "", errors.New("Encrypt: failed to add ciphertext")
 	}
 
 	return base58.Encode(result.Bytes()), nil
@@ -185,13 +186,13 @@ func extractVariableBytes(reader *bytes.Reader, limit int) ([]byte, error) {
 	var len uint16
 	err := binary.Read(reader, binary.BigEndian, &len)
 	if err != nil || int(len) > limit || int(len) > reader.Len() {
-		return nil, errors.Errorf("failed to read byte array len")
+		return nil, errors.New("failed to read byte array len")
 	}
 
 	result := make([]byte, len)
 	n, err := reader.Read(result)
 	if err != nil || n != int(len) {
-		return nil, errors.Errorf("failed to extract byte array")
+		return nil, errors.New("failed to extract byte array")
 	}
 
 	return result, nil
@@ -210,22 +211,22 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	reader := bytes.NewReader(decoded)
 	version, err := reader.ReadByte()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to read version byte")
+		return nil, fmt.Errorf("Decrypt: failed to read version byte: %w", err)
 	}
 	if version != PKEncryptionVersion {
-		return nil, errors.Errorf("Decrypt: found key version %v, expected %v",
+		return nil, fmt.Errorf("Decrypt: found key version %v, expected %v",
 			version, PKEncryptionVersion)
 	}
 
 	rawPubEph := make([]byte, serializedPublicKeyLength)
 	n, err := reader.Read(rawPubEph)
 	if err != nil || n != serializedPublicKeyLength {
-		return nil, errors.Errorf("Decrypt: failed to read pubeph")
+		return nil, errors.New("Decrypt: failed to read pubeph")
 	}
 
 	receiverPath, err := extractVariableString(reader, maxDerivationPathLen)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to extract receiver path")
+		return nil, fmt.Errorf("Decrypt: failed to extract receiver path: %w", err)
 	}
 
 	// additionalDataSize is Whatever I've read so far plus two bytes for the nonce len
@@ -234,24 +235,24 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	minCiphertextLen := 2 // an empty sig with no plaintext
 	nonce, err := extractVariableBytes(reader, reader.Len()-minCiphertextLen)
 	if err != nil || len(nonce) < minNonceLen {
-		return nil, errors.Errorf("Decrypt: failed to read nonce")
+		return nil, errors.New("Decrypt: failed to read nonce")
 	}
 
 	// What's left is the ciphertext
 	ciphertext := make([]byte, reader.Len())
 	_, err = reader.Read(ciphertext)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to read ciphertext")
+		return nil, fmt.Errorf("Decrypt: failed to read ciphertext: %w", err)
 	}
 
 	receiverKey, err := d.receiverKey.DeriveTo(receiverPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to derive receiver key to path %v", receiverPath)
+		return nil, fmt.Errorf("Decrypt: failed to derive receiver key to path %v: %w", receiverPath, err)
 	}
 
 	encryptionKey, err := receiverKey.key.ECPrivKey()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to extract encryption key")
+		return nil, fmt.Errorf("Decrypt: failed to extract encryption key: %w", err)
 	}
 
 	var verificationKey *btcec.PublicKey
@@ -259,7 +260,7 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 		// Use the derived receiver key if the sender key is not provided
 		verificationKey, err = receiverKey.PublicKey().key.ECPubKey()
 		if err != nil {
-			return nil, errors.Wrapf(err, "Decrypt: failed to extract verification key")
+			return nil, fmt.Errorf("Decrypt: failed to extract verification key: %w", err)
 		}
 	} else if d.senderKey != nil {
 		verificationKey = d.senderKey.key
@@ -267,34 +268,34 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 
 	sharedSecret, err := recoverSharedEncryptionSecretForAES(encryptionKey, rawPubEph)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to recover shared secret")
+		return nil, fmt.Errorf("Decrypt: failed to recover shared secret: %w", err)
 	}
 
 	blockCipher, err := aes.NewCipher(sharedSecret)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: new aes failed")
+		return nil, fmt.Errorf("Decrypt: new aes failed: %w", err)
 	}
 
 	gcm, err := cipher.NewGCMWithNonceSize(blockCipher, len(nonce))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: new gcm failed")
+		return nil, fmt.Errorf("Decrypt: new gcm failed: %w", err)
 	}
 
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, decoded[:additionalDataSize])
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: AEAD failed")
+		return nil, fmt.Errorf("Decrypt: AEAD failed: %w", err)
 	}
 
 	plaintextReader := bytes.NewReader(plaintext)
 
 	sig, err := extractVariableBytes(plaintextReader, maxSignatureLen)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to read sig")
+		return nil, fmt.Errorf("Decrypt: failed to read sig: %w", err)
 	}
 
 	data, err := extractVariableBytes(plaintextReader, plaintextReader.Len())
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to extract user data")
+		return nil, fmt.Errorf("Decrypt: failed to extract user data: %w", err)
 	}
 
 	signatureData := make([]byte, 0, len(sig)+serializedPublicKeyLength)
@@ -303,10 +304,10 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	hash := sha256.Sum256(signatureData)
 	signatureKey, _, err := btcec.RecoverCompact(btcec.S256(), sig, hash[:])
 	if err != nil {
-		return nil, errors.Wrapf(err, "Decrypt: failed to verify signature")
+		return nil, fmt.Errorf("Decrypt: failed to verify signature: %w", err)
 	}
 	if verificationKey != nil && !signatureKey.IsEqual(verificationKey) {
-		return nil, errors.Errorf("Decrypt: signing key mismatch")
+		return nil, errors.New("Decrypt: signing key mismatch")
 	}
 
 	return data, nil
@@ -331,7 +332,7 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 
 	ciphertext, err := aescbc.EncryptNoPadding(paddedSerializeBigInt(aescbc.KeySize, sharedSecret), iv, plaintext)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "encryptWithPubKey: encrypt failed")
+		return nil, nil, fmt.Errorf("encryptWithPubKey: encrypt failed: %w", err)
 	}
 
 	return pubEph, ciphertext, nil
@@ -342,7 +343,7 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 func generateSharedEncryptionSecret(pubKey *btcec.PublicKey) (*btcec.PublicKey, *big.Int, error) {
 	privEph, err := btcec.NewPrivateKey(btcec.S256())
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "generateSharedEncryptionSecretForAES: failed to generate key")
+		return nil, nil, fmt.Errorf("generateSharedEncryptionSecretForAES: failed to generate key: %w", err)
 	}
 
 	sharedSecret, _ := pubKey.ScalarMult(pubKey.X, pubKey.Y, privEph.D.Bytes())
@@ -374,7 +375,7 @@ func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext 
 
 	plaintext, err := aescbc.DecryptNoPadding(paddedSerializeBigInt(aescbc.KeySize, sharedSecret), iv, ciphertext)
 	if err != nil {
-		return nil, errors.Wrapf(err, "decryptWithPrivKey: failed to decrypt")
+		return nil, fmt.Errorf("decryptWithPrivKey: failed to decrypt: %w", err)
 	}
 
 	return plaintext, nil
@@ -385,7 +386,7 @@ func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext 
 func recoverSharedEncryptionSecret(privKey *btcec.PrivateKey, rawPubEph []byte) (*big.Int, error) {
 	pubEph, err := btcec.ParsePubKey(rawPubEph, btcec.S256())
 	if err != nil {
-		return nil, errors.Wrapf(err, "recoverSharedEncryptionSecretForAES: failed to parse pub eph")
+		return nil, fmt.Errorf("recoverSharedEncryptionSecretForAES: failed to parse pub eph: %w", err)
 	}
 
 	sharedSecret, _ := pubEph.ScalarMult(pubEph.X, pubEph.Y, privKey.D.Bytes())

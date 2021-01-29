@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lightningnetwork/lnd/zpay32"
-	"github.com/pkg/errors"
+	"github.com/muun/libwallet/errors"
 )
 
 // Invoice is muun's invoice struct
@@ -27,11 +27,11 @@ func ParseInvoice(rawInput string, network *Network) (*Invoice, error) {
 
 	_, components := buildUriFromString(rawInput, lightningScheme)
 	if components == nil {
-		return nil, errors.Errorf("failed to parse uri %v", rawInput)
+		return nil, errors.Errorf(ErrInvalidInvoice, "failed to parse uri %v", rawInput)
 	}
 
 	if components.Scheme != "lightning" {
-		return nil, errors.Errorf("invalid scheme %v", components.Scheme)
+		return nil, errors.Errorf(ErrInvalidInvoice, "invalid scheme %v", components.Scheme)
 	}
 
 	invoice := components.Opaque
@@ -44,7 +44,7 @@ func ParseInvoice(rawInput string, network *Network) (*Invoice, error) {
 
 	parsedInvoice, err := zpay32.Decode(invoice, network.network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Couldnt parse invoice")
+		return nil, errors.Errorf(ErrInvalidInvoice, "Couldn't parse invoice: %w", err)
 	}
 
 	var fallbackAdd *MuunPaymentURI
@@ -52,7 +52,7 @@ func ParseInvoice(rawInput string, network *Network) (*Invoice, error) {
 	if parsedInvoice.FallbackAddr != nil {
 		fallbackAdd, err = GetPaymentURI(parsedInvoice.FallbackAddr.String(), network)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Couldnt get address")
+			return nil, errors.Errorf(ErrInvalidInvoice, "Couldn't get address: %w", err)
 		}
 	}
 

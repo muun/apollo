@@ -1,10 +1,11 @@
 package libwallet
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/muun/libwallet/hdpath"
-	"github.com/pkg/errors"
 
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/hdkeychain"
@@ -43,7 +44,7 @@ func (p *HDPublicKey) String() string {
 func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 
 	if index&hdkeychain.HardenedKeyStart != 0 {
-		return nil, errors.Errorf("can't derive a hardened pub key (index %v)", index)
+		return nil, fmt.Errorf("can't derive a hardened pub key (index %v)", index)
 	}
 
 	child, err := p.key.Child(uint32(index))
@@ -58,29 +59,29 @@ func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 func (p *HDPublicKey) DeriveTo(path string) (*HDPublicKey, error) {
 
 	if !strings.HasPrefix(path, p.Path) {
-		return nil, errors.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
+		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
 	}
 
 	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", p.Path)
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
 	}
 
 	secondPath, err := hdpath.Parse(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't parse derivation path %v", path)
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
 	}
 
 	indexes := secondPath.IndexesFrom(firstPath)
 	derivedKey := p
 	for depth, index := range indexes {
 		if index.Hardened {
-			return nil, errors.Errorf("can't derive a hardened pub key (path %v)", path)
+			return nil, fmt.Errorf("can't derive a hardened pub key (path %v)", path)
 		}
 
 		derivedKey, err = derivedKey.DerivedAt(int64(index.Index))
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to derive key at path %v on depth %v", path, depth)
+			return nil, fmt.Errorf("failed to derive key at path %v on depth %v: %w", path, depth, err)
 		}
 	}
 	// The generated path has no names in it, so replace it

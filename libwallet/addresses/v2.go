@@ -1,6 +1,8 @@
 package addresses
 
 import (
+	"fmt"
+
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcutil"
@@ -12,12 +14,12 @@ func CreateAddressV2(userKey, muunKey *hdkeychain.ExtendedKey, path string, netw
 
 	script, err := CreateRedeemScriptV2(userKey, muunKey, network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate redeem script v2")
+		return nil, fmt.Errorf("failed to generate redeem script v2: %w", err)
 	}
 
 	address, err := btcutil.NewAddressScriptHash(script, network)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to generate multisig address")
+		return nil, fmt.Errorf("failed to generate multisig address: %w", err)
 	}
 
 	return &WalletAddress{

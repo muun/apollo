@@ -3,10 +3,10 @@ package libwallet
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/pkg/errors"
 )
 
 type ChallengePublicKey struct {
@@ -37,7 +37,7 @@ func (k *ChallengePublicKey) EncryptKey(privKey *HDPrivateKey, recoveryCodeSalt 
 	plaintext = append(plaintext, rawHDKey[privKeyStart:privKeyStart+privKeyLength]...)
 	plaintext = append(plaintext, rawHDKey[chainCodeStart:chainCodeStart+chainCodeLength]...)
 	if len(plaintext) != 64 {
-		return "", errors.Errorf("failed to encrypt key: expected payload of 64 bytes, found %v", len(plaintext))
+		return "", fmt.Errorf("failed to encrypt key: expected payload of 64 bytes, found %v", len(plaintext))
 	}
 
 	pubEph, ciphertext, err := encryptWithPubKey(k.pubKey, plaintext)
