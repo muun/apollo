@@ -39,16 +39,6 @@
     <color name="gray_lightest">#F4F4F5</color>
     <color name="white">#FFFFFF</color>
 
-    <!-- Special cases -->
-
-    <!-- Needed for ic_launcher adaptative icons -->
-    <!--
-    Note: seems android doesn't fully support app icon color change based on ui-mode so we
-    stick to a fixed app icon. See:
-    www.reddit.com/r/GooglePixel/comments/eqagn9/we_need_app_icons_backgrounds_to_respect_dark_mode/
-    -->
-    <color name="ic_launcher_background">@color/white</color>
-
     <!--  General purpose colors  -->
     <color name="icon_color">@color/gray_dark</color>
     <color name="text_primary_color">@color/black</color>
@@ -61,6 +51,17 @@
     <color name="warning_color">@color/yellow</color>
     <color name="pending_color">@color/yellow</color>
     <color name="rbf_color">@color/orange</color>
+
+
+    <!-- Special cases -->
+
+    <!-- Needed for ic_launcher adaptative icons -->
+    <!--
+    Note: seems android doesn't fully support app icon color change based on ui-mode so we
+    stick to a fixed app icon. See:
+    www.reddit.com/r/GooglePixel/comments/eqagn9/we_need_app_icons_backgrounds_to_respect_dark_mode/
+    -->
+    <color name="ic_launcher_background">@color/white</color>
 
     <!-- Used Only in api >= 21  -->
     <color name="statusBarColor">@color/black</color>

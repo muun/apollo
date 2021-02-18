@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
@@ -80,12 +79,12 @@ public class SelectCountryActivity extends BaseActivity<SelectCountryPresenter>
         finishActivity();
     }
 
-    private class CountryAdapter extends RecyclerView.Adapter<MuunViewHolder<AppCompatTextView>> {
+    private class CountryAdapter extends RecyclerView.Adapter<MuunViewHolder<TextView>> {
 
         @NonNull
         @Override
-        public MuunViewHolder<AppCompatTextView> onCreateViewHolder(ViewGroup root, int viewType) {
-            final AppCompatTextView view = (AppCompatTextView) LayoutInflater
+        public MuunViewHolder<TextView> onCreateViewHolder(ViewGroup root, int viewType) {
+            final TextView view = (TextView) LayoutInflater
                     .from(root.getContext())
                     .inflate(R.layout.country_info_item, root, false);
 
@@ -93,7 +92,7 @@ public class SelectCountryActivity extends BaseActivity<SelectCountryPresenter>
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MuunViewHolder<AppCompatTextView> holder, int pos) {
+        public void onBindViewHolder(@NonNull MuunViewHolder<TextView> holder, int pos) {
             final TextView textView = holder.getView();
             final CountryInfo countryInfo = countryInfoList.get(pos);
 

@@ -90,7 +90,13 @@
 
     </style>
 
-    <style name="cursorColor" parent="ThemeOverlay.MaterialComponents.AutoCompleteTextView">
+    <!--
+    We're keeping the AppCompat style inheritance (instead of migrating to MDC style, like
+    ThemeOverlay.MaterialComponents.AutoCompleteTextView) because otherwise a strange crash occurs
+    when trying to use the SearchView.
+    See: https://stackoverflow.com/a/22295139/901465
+    -->
+    <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
     </style>
 
