@@ -27,3 +27,5 @@ venv
 
 #Android
 *.apk
+mapping.txt
+output.json
