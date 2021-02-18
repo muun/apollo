@@ -2,10 +2,10 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <ripple
-                android:color="@android:color/darker_gray"
+                android:color="@color/ripple_gray"
                 android:radius="8dp">
             <item android:id="@android:id/mask">
-                <color android:color="@android:color/darker_gray"/>
+                <color android:color="@color/ripple_gray"/>
             </item>
             <item android:id="@android:id/background">
                 <color android:color="@android:color/transparent"/>

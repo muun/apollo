@@ -21,7 +21,7 @@ public class MuunEmptyScreen extends MuunView {
 
     static final ViewProps<MuunEmptyScreen> viewProps = new ViewProps.Builder<MuunEmptyScreen>()
             .addRef(R.attr.icon, MuunEmptyScreen::setIcon)
-            .addRef(R.attr.title, MuunEmptyScreen::setTitle)
+            .addString(R.attr.title, MuunEmptyScreen::setTitle)
             .addRef(R.attr.subtitle, MuunEmptyScreen::setSubtitle)
             .addRef(R.attr.action, MuunEmptyScreen::setAction)
             .build();
@@ -70,10 +70,11 @@ public class MuunEmptyScreen extends MuunView {
     /**
      * Set the (optional) title content.
      */
-    public void setTitle(@StringRes int resId) {
-        if (resId != 0) {
-            title.setText(resId);
+    public void setTitle(CharSequence text) {
+        if (text != null) {
+            title.setText(text);
             title.setVisibility(View.VISIBLE);
+
         } else {
             title.setVisibility(View.GONE);
         }

@@ -132,8 +132,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         setUpLayout();
         initializePresenter(savedInstanceState);
         initializeUi();
-
-        UiUtils.setStatusBarColor(this);
     }
 
     @Override

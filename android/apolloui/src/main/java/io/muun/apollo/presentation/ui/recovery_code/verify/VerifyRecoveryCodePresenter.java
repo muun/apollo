@@ -5,6 +5,7 @@ import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.errors.InvalidCharacterRecoveryCodeError;
 import io.muun.apollo.domain.errors.RecoveryCodeVerificationError;
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2;
+import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.RecoveryCode;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.RC_ERROR;
@@ -56,7 +57,7 @@ public class VerifyRecoveryCodePresenter
         } catch (RecoveryCode.RecoveryCodeLengthError error) {
             return; // ignore this error, the user is still typing.
 
-        } catch (RecoveryCode.RecoveryCodeAlphabetError error) {
+        } catch (RecoveryCode.RecoveryCodeAlphabetError | InvalidRecoveryCodeFormatError error) {
             view.setVerificationError(new InvalidCharacterRecoveryCodeError());
             return;
         }

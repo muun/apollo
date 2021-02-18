@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -10,7 +10,8 @@
             android:id="@+id/picture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/tick" />
+            android:src="@drawable/tick"
+            android:contentDescription="@null" />
 
     <TextView
             android:id="@+id/title"
@@ -18,9 +19,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="Example info"
-            android:textColor="@color/muun_black"
-            android:textSize="24sp" />
+            android:textColor="@color/text_primary_color"
+            android:textSize="24sp"
+            tools:text="Example info"/>
 
     <io.muun.apollo.presentation.ui.view.HtmlTextView
             android:id="@+id/description"
@@ -29,8 +30,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="Example multi-line description about some flow for this information box"
-            android:textColor="@color/muun_gray_dark"
-            android:textSize="16sp" />
+            android:textColor="@color/text_secondary_color"
+            android:textSize="16sp"
+            tools:text="Example multi-line description about some flow for this information box"/>
 
 </LinearLayout>

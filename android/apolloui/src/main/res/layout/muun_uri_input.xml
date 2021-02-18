@@ -14,24 +14,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/new_operation_to"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             android:textSize="16sp" />
 
+    <!-- Background transparent needed to disable default editText look (subline and height) -->
     <EditText
             android:id="@+id/text_input"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginLeft="16dp"
-            android:background="#00ffffff"
+            android:layout_marginStart="16dp"
+            android:background="@android:color/transparent"
             android:hint="@string/new_operation_to_hint"
-            android:textSize="16dp" />
+            android:textSize="16sp"
+            android:importantForAutofill="no"
+            android:inputType="text" />
 
     <ImageView
             android:id="@+id/scan_qr_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:padding="8dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_qr_blue" />

@@ -72,6 +72,6 @@
             android:gravity="center"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="@color/muun_red"
+            android:textColor="@color/error_color"
             android:visibility="gone" />
 </LinearLayout>

@@ -35,6 +35,6 @@
             android:id="@+id/recovery_code_accept"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/recovery_code_accept"
-            />
+            android:text="@string/recovery_code_accept" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

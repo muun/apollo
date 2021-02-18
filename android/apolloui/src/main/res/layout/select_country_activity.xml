@@ -11,8 +11,7 @@
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        muun:elevated="true"
-    />
+        muun:elevated="true" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -20,7 +19,6 @@
         android:layout_height="0px"
         android:layout_weight="1"
         android:scrollbars="vertical"
-        android:background="#fff"
-        tools:listitem="@layout/country_info_item"
-    />
+        tools:listitem="@layout/country_info_item" />
+
 </LinearLayout>

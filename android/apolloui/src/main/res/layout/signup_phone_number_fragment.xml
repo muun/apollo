@@ -12,7 +12,6 @@
             android:fillViewport="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-                tools:background="@color/muun_white"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -31,8 +30,7 @@
                     android:layout_marginLeft="@dimen/muun_screen_margin"
                     android:layout_marginRight="@dimen/muun_screen_margin"
                     app:layout_constraintTop_toBottomOf="@+id/explanation_title"
-                    tools:text="@string/signup_phone_number_explanation"
-            />
+                    tools:text="@string/signup_phone_number_explanation" />
 
             <io.muun.apollo.presentation.ui.view.MuunCountryInput
                     android:id="@+id/signup_phone_number_country_picker"
@@ -43,8 +41,7 @@
                     app:layout_constraintWidth_max="250dp"
                     app:layout_constraintTop_toBottomOf="@+id/explanation"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-            />
+                    app:layout_constraintStart_toStartOf="parent" />
 
             <io.muun.apollo.presentation.ui.view.MuunTextInput
                     android:id="@+id/signup_phone_number_edit_country_prefix"
@@ -56,11 +53,10 @@
                     android:maxLines="1"
                     android:imeOptions="actionNext"
                     android:nextFocusForward="@+id/signup_phone_number_edit_local_number"
-                    android:textColor="@color/muun_black"
+                    android:textColor="@color/text_primary_color"
                     app:helperText="@string/signup_phone_number_code_helper"
                     app:layout_constraintStart_toStartOf="@+id/signup_phone_number_country_picker"
-                    app:layout_constraintTop_toBottomOf="@+id/signup_phone_number_country_picker"
-            />
+                    app:layout_constraintTop_toBottomOf="@+id/signup_phone_number_country_picker" />
 
             <io.muun.apollo.presentation.ui.view.MuunPhoneInput
                     android:id="@id/signup_phone_number_edit_local_number"
@@ -74,12 +70,12 @@
                     android:maxLines="1"
                     android:minEms="8"
                     android:imeOptions="actionNext"
-                    android:textColor="@color/muun_black"
+                    android:textColor="@color/text_primary_color"
                     app:helperText="@string/signup_phone_number_phone_helper"
                     app:layout_constraintEnd_toEndOf="@+id/signup_phone_number_country_picker"
                     app:layout_constraintStart_toEndOf="@+id/signup_phone_number_edit_country_prefix"
-                    app:layout_constraintTop_toBottomOf="@+id/signup_phone_number_country_picker"
-            />
+                    app:layout_constraintTop_toBottomOf="@+id/signup_phone_number_country_picker" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -90,4 +86,5 @@
             android:layout_width="match_parent"
             android:text="@string/signup_enter_number"
             app:layout_constraintBottom_toBottomOf="parent"/>
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

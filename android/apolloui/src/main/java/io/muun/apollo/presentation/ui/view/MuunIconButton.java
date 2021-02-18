@@ -63,7 +63,7 @@ public class MuunIconButton extends MuunView {
 
         setClickable(true);
         setFocusable(true);
-        setColor(ContextCompat.getColorStateList(getContext(), R.color.muun_icon_button_default));
+        setColor(ContextCompat.getColorStateList(getContext(), R.color.blue));
 
         viewProps.transfer(attrs, this);
     }

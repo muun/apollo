@@ -13,14 +13,13 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:textSize="@dimen/muun_text_size_body"
-            android:textColor="@color/muun_black"
-            tools:text="Loading something"
-    />
+            android:textColor="@color/text_primary_color"
+            tools:text="Loading something" />
 
     <androidx.core.widget.ContentLoadingProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:id="@+id/loading_view_spinner"
             android:layout_width="24dp"
-            android:layout_height="24dp"
-    />
+            android:layout_height="24dp" />
+
 </LinearLayout>

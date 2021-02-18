@@ -90,7 +90,7 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
 
         for (y in 0 until height) {
             for (x in 0 until width) {
-                pixels[x + width * y] = if (qrMatrix.get(x, y)) Color.BLACK else Color.TRANSPARENT
+                pixels[x + width * y] = if (qrMatrix.get(x, y)) Color.BLACK else Color.WHITE
             }
         }
 

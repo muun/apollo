@@ -45,12 +45,10 @@ class RecoveryCode {
         }
     }
 
-    abstract class RecoveryCodeError : RuntimeException {
-        constructor()
-        constructor(message: String?) : super(message)
+    abstract class RecoveryCodeError : RuntimeException() {
     }
 
     class RecoveryCodeLengthError : RecoveryCodeError()
 
-    class RecoveryCodeAlphabetError : RecoveryCodeError("There's an invalid character in this code")
+    class RecoveryCodeAlphabetError : RecoveryCodeError()
 }

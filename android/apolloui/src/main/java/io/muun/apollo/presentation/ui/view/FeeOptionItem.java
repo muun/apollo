@@ -43,13 +43,13 @@ public class FeeOptionItem extends MuunView {
     @BindString(R.string.fee_option_item_title)
     String titlePrefix;
 
-    @BindColor(R.color.muun_black)
-    int muunBlack;
+    @BindColor(R.color.text_primary_color)
+    int textPrimaryColor;
 
-    @BindColor(R.color.muun_gray_dark)
-    int muunGrayDark;
+    @BindColor(R.color.text_secondary_color)
+    int textSecondaryColor;
 
-    @BindColor(R.color.muun_gray_light)
+    @BindColor(R.color.disabled_color)
     int disabledTintColor;
 
     @State
@@ -156,10 +156,10 @@ public class FeeOptionItem extends MuunView {
         super.setEnabled(enabled);
         layout.setEnabled(enabled);
 
-        title.setTextColor(enabled ? muunBlack : disabledTintColor);
-        mainValue.setTextColor(enabled ? muunBlack : disabledTintColor);
-        feeRate.setTextColor(enabled ? muunGrayDark : disabledTintColor);
-        secondaryValue.setTextColor(enabled ? muunGrayDark : disabledTintColor);
+        title.setTextColor(enabled ? textPrimaryColor : disabledTintColor);
+        mainValue.setTextColor(enabled ? textPrimaryColor : disabledTintColor);
+        feeRate.setTextColor(enabled ? textSecondaryColor : disabledTintColor);
+        secondaryValue.setTextColor(enabled ? textSecondaryColor : disabledTintColor);
     }
 
     public void setCurrencyDisplayMode(CurrencyDisplayMode currencyDisplayMode) {

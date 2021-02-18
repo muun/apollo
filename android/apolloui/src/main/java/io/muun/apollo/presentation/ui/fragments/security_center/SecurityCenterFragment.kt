@@ -98,25 +98,25 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
 
             SecurityLevel.ANON, SecurityLevel.SKIPPED_EMAIL_ANON -> {
                 progressBarSubtitle.setText(R.string.sc_task_header_0)
-                progressBar.colorRes = R.color.muun_red
+                progressBar.colorRes = R.color.red
                 progressBar.progress = 0.10
             }
 
             SecurityLevel.EMAIL -> {
                 progressBarSubtitle.setText(R.string.sc_task_header_1)
-                progressBar.colorRes = R.color.muun_green
+                progressBar.colorRes = R.color.green
                 progressBar.progress = 0.50
             }
 
             SecurityLevel.SKIPPED_EMAIL_RC -> {
                 progressBarSubtitle.setText(R.string.sc_task_header_2)
-                progressBar.colorRes = R.color.muun_green
+                progressBar.colorRes = R.color.green
                 progressBar.progress = 0.50
             }
 
             SecurityLevel.EMAIL_AND_RC -> {
                 progressBarSubtitle.setText(R.string.sc_task_header_2)
-                progressBar.colorRes = R.color.muun_green
+                progressBar.colorRes = R.color.green
                 progressBar.progress = 0.80
             }
 
@@ -141,8 +141,6 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
     }
 
     private fun setEmailSetupStatus(status: TaskStatus, securityCenter: SecurityCenter) {
-
-        val context = requireContext()
 
         if (securityCenter.emailSetupSkipped()) {
             emailTaskCard.status = MuunTaskCard.Status.SKIPPED

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/button_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,7 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/muun_screen_margin"
             android:layout_marginRight="@dimen/muun_screen_margin"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="24dp"
+            tools:text="@string/ek_save_explanation" />
 
     <io.muun.apollo.presentation.ui.view.MuunSaveOption
             android:id="@+id/save_option_drive"
@@ -49,7 +50,7 @@
             android:layout_height="wrap_content"
             app:description="@string/save_option_email_description"
             app:title="@string/save_option_email_title"
-            app:icon="@drawable/ic_mail" />
+            app:icon="@drawable/mail_48" />
 
     <View style="@style/muun_ek_save_separator" />
 
@@ -59,7 +60,7 @@
             android:layout_height="wrap_content"
             app:description="@string/save_option_manual_description"
             app:title="@string/save_option_manual_title"
-            app:icon="@drawable/ic_manual_save" />
+            app:icon="@drawable/app_drawer_48" />
 
     <View style="@style/muun_ek_save_separator" />
 

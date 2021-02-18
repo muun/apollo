@@ -2,6 +2,8 @@ package io.muun.apollo.presentation.ui.scan_qr;
 
 import io.muun.apollo.R;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
+import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
+import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
@@ -9,6 +11,7 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.text.TextUtils;
 import android.view.View;
@@ -90,14 +93,19 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     private void setupCamera() {
         camera.setFormats(Collections.singletonList(BarcodeFormat.QR_CODE));
         camera.setAutoFocus(true);
-        camera.setMaskColor(ContextCompat.getColor(getViewContext(), R.color.scanner_overlay));
+        camera.setMaskColor(UiUtils.getColorWithAlpha(this, R.color.black, getMaskColorAlpha()));
 
         camera.setLaserEnabled(false);
-        camera.setBorderColor(ContextCompat.getColor(getViewContext(), R.color.scanner_border));
+        camera.setBorderColor(ContextCompat.getColor(getViewContext(), R.color.blue));
         camera.setSquareViewFinder(true);
 
         // NOTE: this line fixed the problem with camera focus in Huawei Mate 9:
         camera.setAspectTolerance(0.5f);
+    }
+
+    private float getMaskColorAlpha() {
+        final int currentNightMode = ExtensionsKt.getCurrentNightMode(this);
+        return currentNightMode == Configuration.UI_MODE_NIGHT_YES ? 0.9f : 0.64f;
     }
 
     @Override

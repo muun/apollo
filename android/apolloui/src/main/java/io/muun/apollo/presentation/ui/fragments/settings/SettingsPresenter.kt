@@ -2,15 +2,14 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.net.Uri
 import android.os.Bundle
+import io.muun.apollo.data.preferences.NightModeRepository
+import io.muun.apollo.domain.NightModeManager
 import kotlin.Triple
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
 import io.muun.apollo.domain.errors.MuunError
-import io.muun.apollo.domain.model.CurrencyDisplayMode
-import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.model.UserProfile
+import io.muun.apollo.domain.model.*
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
@@ -30,7 +29,8 @@ class SettingsPresenter @Inject constructor(
     private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
     private val updateProfilePictureAction: UpdateProfilePictureAction,
     private val userActions: UserActions,
-    private val exchangeRateSelector: ExchangeRateSelector
+    private val exchangeRateSelector: ExchangeRateSelector,
+    private val nightModeManager: NightModeManager
 
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
@@ -39,6 +39,7 @@ class SettingsPresenter @Inject constructor(
         setUpUserWatcher()
         setUpUpdateProfilePictureAction()
         setUpUpdatePrimaryCurrencyAction()
+        setUpNightMode()
     }
 
     private fun setUpUserWatcher() {
@@ -92,6 +93,10 @@ class SettingsPresenter @Inject constructor(
         subscribeTo(observable)
     }
 
+    private fun setUpNightMode() {
+        view.setNightMode(nightModeManager.get())
+    }
+
     fun navigateToEditUsername() {
         navigator.navigateToEditUsername(context)
     }
@@ -114,6 +119,10 @@ class SettingsPresenter @Inject constructor(
 
     fun onPrimaryCurrencyChanged(currencyUnit: CurrencyUnit?) {
         userActions.updatePrimaryCurrencyAction.run(currencyUnit)
+    }
+
+    fun saveNightModePreference(mode: NightMode) {
+        nightModeManager.save(mode)
     }
 
     /**

@@ -146,9 +146,9 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
             statusItem.setTitleIcon(R.drawable.ic_clock);
 
             if (operation.isIncoming() && operation.isRbf()) {
-                statusItem.setTitleIconTint(R.color.balance_clock_rbf);
+                statusItem.setTitleIconTint(R.color.rbf_color);
             } else {
-                statusItem.setTitleIconTint(R.color.balance_clock_pending);
+                statusItem.setTitleIconTint(R.color.pending_color);
             }
 
         } else {

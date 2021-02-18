@@ -10,8 +10,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@id/home_widget_container"
-            android:layout_centerHorizontal="true"
-            />
+            android:layout_centerHorizontal="true" />
 
     <LinearLayout
             android:id="@+id/home_widget_container"
@@ -86,9 +85,7 @@
             android:id="@+id/chevron_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-
-            >
+            android:layout_alignParentBottom="true">
 
         <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/chevron"
@@ -99,9 +96,7 @@
                 app:lottie_loop="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                
-                />
+                android:layout_gravity="center_horizontal" />
 
     </FrameLayout>
 

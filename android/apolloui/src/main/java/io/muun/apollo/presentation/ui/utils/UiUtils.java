@@ -12,6 +12,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
@@ -22,8 +23,6 @@ import android.os.Looper;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,7 +38,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
-import androidx.fragment.app.FragmentActivity;
 import org.javamoney.moneta.Money;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalTime;
@@ -243,22 +241,6 @@ public class UiUtils {
     }
 
     /**
-     * Sets status bar color for lollipop devices.
-     *
-     * @param activity a fragment activity
-     */
-    public static void setStatusBarColor(FragmentActivity activity) {
-        if (isLollipop()) {
-            final Window window = activity.getWindow();
-
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-            window.setStatusBarColor(ContextCompat.getColor(activity, R.color.muun_black));
-        }
-    }
-
-    /**
      * Focus a MuunTextInput and show the soft keyboard.
      * WARNING: Never use directly as we have some rules for overriding requestFocus behaviour.
      * See {@link BaseActivity#focusInput(MuunTextInput)}.
@@ -360,6 +342,10 @@ public class UiUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
+    public static boolean supportsDarkMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+    }
+
     /**
      * Shows a view animating over its alpha property.
      *
@@ -399,6 +385,17 @@ public class UiUtils {
         Preconditions.checkState(color != 0);
 
         return color;
+    }
+
+    public static int getColorWithAlpha(@NonNull Context ctx, @ColorRes int colorId, float alpha) {
+        final int color = ContextCompat.getColor(ctx, colorId);
+
+        final int r = Color.red(color);
+        final int g = Color.green(color);
+        final int b = Color.blue(color);
+
+        // Using int version of argb for android retrocompat
+        return Color.argb((int) (alpha * 255), r, g, b);
     }
 
     /**

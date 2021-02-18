@@ -10,8 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top"
-            android:orientation="vertical"
-            />
+            android:orientation="vertical" />
 
     <LinearLayout
             android:id="@+id/muun_button_layout_button_box"
@@ -23,7 +22,6 @@
             android:paddingEnd="@dimen/muun_button_layout_button_box_padding"
             android:paddingBottom="@dimen/muun_button_layout_button_box_padding"
             android:orientation="vertical"
-            android:background="@drawable/muun_button_layout_bg"
-            />
+            android:background="@drawable/muun_button_layout_bg" />
 
 </FrameLayout>

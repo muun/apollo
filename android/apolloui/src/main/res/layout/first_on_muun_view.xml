@@ -14,18 +14,17 @@
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="#c22d4454"
+            android:textColor="@color/text_secondary_color"
             android:letterSpacing="0.03"
             android:lineSpacingExtra="8sp"
             android:gravity="center_horizontal"
-            android:text="@string/first_on_muun_description"
-            />
+            android:text="@string/first_on_muun_description" />
 
     <ImageView
             android:contentDescription="@string/first_on_muun_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/land_on_muun"
-            android:adjustViewBounds="true"
-    />
+            android:adjustViewBounds="true" />
+
 </LinearLayout>

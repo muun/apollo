@@ -20,7 +20,9 @@ public class SuccessDeleteWalletPresenter extends BasePresenter<SuccessDeleteWal
     String supportId;
 
     @Inject
-    public SuccessDeleteWalletPresenter() {}
+    public SuccessDeleteWalletPresenter() {
+
+    }
 
     @Override
     protected AnalyticsEvent getEntryEvent() {

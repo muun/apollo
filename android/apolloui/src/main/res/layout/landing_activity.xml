@@ -9,8 +9,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center"
-            >
+            android:gravity="center">
 
         <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/animation_view"
@@ -23,8 +22,7 @@
         <TextView
                 style="@style/explanation"
                 android:maxWidth="260dp"
-                android:text="@string/slogan"
-                />
+                android:text="@string/slogan" />
 
     </LinearLayout>
 
@@ -34,8 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:text="@string/login_start"
-            android:contentDescription="@string/login_start"
-            />
+            android:contentDescription="@string/login_start" />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_primary"
@@ -43,9 +40,6 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:text="@string/signup_start"
-            android:contentDescription="@string/signup_start"
-            />
-
-
+            android:contentDescription="@string/signup_start" />
 
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

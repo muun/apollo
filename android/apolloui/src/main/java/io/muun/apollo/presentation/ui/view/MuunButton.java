@@ -4,6 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Parcelable;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import butterknife.BindView;
@@ -34,7 +36,7 @@ public class MuunButton extends MuunView {
             .addSize(android.R.attr.paddingRight, MuunButton::setPaddingRight)
             .addSize(android.R.attr.paddingBottom, MuunButton::setPaddingBottom)
             .addInt(android.R.attr.textStyle, MuunButton::setTextStyle)
-            .addInt(android.R.attr.textColor, MuunButton::setTextColor)
+            .addColorList(android.R.attr.textColor, MuunButton::setTextColor)
             .addInt(android.R.attr.typeface, MuunButton::setTypeface)
             .addString(android.R.attr.fontFamily, MuunButton::setFontFamily)
             .build();
@@ -149,7 +151,7 @@ public class MuunButton extends MuunView {
         updateFromState();
     }
 
-    public void setText(CharSequence text) {
+    public void setText(@NonNull CharSequence text) {
         buttonText = text.toString();
         button.setText(text);
     }
@@ -179,6 +181,10 @@ public class MuunButton extends MuunView {
 
     public void setTextColor(int color) {
         button.setTextColor(color);
+    }
+
+    public void setTextColor(ColorStateList colors) {
+        button.setTextColor(colors);
     }
 
     /**
@@ -236,7 +242,7 @@ public class MuunButton extends MuunView {
     }
 
     /**
-     * Set button's typeface and style in which the text should be displayed
+     * Set button's typeface and style in which the text should be displayed.
      *
      * @see TextView#setTypeface(android.graphics.Typeface, int)
      */

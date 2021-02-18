@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,7 +16,9 @@
             android:layout_marginEnd="18dp"
             android:layout_marginStart="10dp"
             android:layout_centerVertical="true"
-            tools:src="@drawable/ic_settings" />
+            android:contentDescription="@null"
+            tools:src="@drawable/ic_settings"
+            app:tint="@color/blue" />
 
     <TextView
             android:id="@+id/body"
@@ -25,9 +28,9 @@
             android:layout_marginEnd="8dp"
             android:lineSpacingMultiplier="1.25"
             android:text="@string/new_operation_to"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             android:textSize="13sp"
             android:typeface="normal"
-            tools:text="Back up your wallet. Create a back-up to never lose access to your wallet." />
+            tools:text="Back up your wallet. Create a backup to never lose access to your wallet."/>
 
 </RelativeLayout>

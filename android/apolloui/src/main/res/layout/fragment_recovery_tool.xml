@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
-            android:gravity="left"
+            android:gravity="start"
             android:lineSpacingExtra="4sp"
             android:text="@string/recovery_tool_info_title" />
 

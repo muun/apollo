@@ -25,7 +25,7 @@ class EmergencyKitIntroPager(fm: FragmentManager) : FragmentStatePagerAdapter(fm
             )
 
             2 -> ExplanationPageFragment.create(
-                R.drawable.safe_v2,
+                R.drawable.complete_ownership,
                 R.string.export_keys_intro_3_title,
                 R.string.export_keys_intro_3_body
             )

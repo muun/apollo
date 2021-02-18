@@ -1,14 +1,13 @@
 package io.muun.apollo.presentation.ui.settings.lightning
 
-import android.opengl.Visibility
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import butterknife.BindView
+import com.google.android.material.switchmaterial.SwitchMaterial
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
-import io.muun.apollo.presentation.ui.base.BaseFragment
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.openInBrowser
@@ -25,7 +24,7 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
     lateinit var turboSection: ViewGroup
 
     @BindView(R.id.turbo_channels_switch)
-    lateinit var turboSwitch: Switch
+    lateinit var turboSwitch: SwitchMaterial
 
     @BindView(R.id.turbo_channels_learn_more)
     lateinit var learnMore: HtmlTextView

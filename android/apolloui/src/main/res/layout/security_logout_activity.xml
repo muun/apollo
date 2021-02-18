@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -20,7 +19,7 @@
                 android:gravity="center"
                 android:text="@string/security_logout_text"
                 android:textSize="24sp"
-                android:textColor="@color/muun_black" />
+                android:textColor="@color/text_primary_color" />
 
         <TextView
                 android:layout_width="match_parent"
@@ -28,16 +27,17 @@
                 android:layout_marginTop="16dp"
                 android:gravity="center"
                 android:text="@string/security_logout_subtext"
+                android:textColor="@color/text_secondary_color"
                 android:textSize="16sp" />
 
     </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatButton
-            style="@style/small_button"
+    <io.muun.apollo.presentation.ui.view.MuunButton
             android:id="@+id/security_logout_sign_in"
-            app:backgroundTint="@color/muun_blue"
+            style="@style/muun_button_primary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/muun_button_floating_bg"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="80dp"
             android:layout_gravity="center"

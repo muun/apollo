@@ -7,15 +7,15 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import androidx.appcompat.widget.Toolbar;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import com.google.android.material.appbar.MaterialToolbar;
 
 public class FloatingView {
 
-    @BindColor(R.color.muun_white)
+    @BindColor(R.color.background)
     int backgroundColor;
 
     @BindDrawable(R.drawable.pre_lollipop_popup_background)
@@ -35,8 +35,8 @@ public class FloatingView {
 
         popupWindow = new android.widget.PopupWindow(
                 this.view,
-                Toolbar.LayoutParams.WRAP_CONTENT,
-                Toolbar.LayoutParams.WRAP_CONTENT,
+                MaterialToolbar.LayoutParams.WRAP_CONTENT,
+                MaterialToolbar.LayoutParams.WRAP_CONTENT,
                 true // attach view to viewTree, important for ui tests to work
         );
 

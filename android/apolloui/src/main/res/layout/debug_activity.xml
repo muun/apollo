@@ -11,8 +11,7 @@
             android:orientation="vertical"
             android:gravity="center_horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-    >
+            android:layout_height="wrap_content">
 
         <TextView
                 android:layout_width="wrap_content"
@@ -20,84 +19,81 @@
                 android:layout_margin="15dp"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:text="Muun debug panel"
-        />
+                android:text="Muun debug panel" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_fetch_operations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and fetch operations"
-        />
+                android:text="Clear and fetch operations" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_fetch_contacts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and fetch contacts"
-        />
+                android:text="Clear and fetch contacts" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_upload_phone_contacts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and scan phone contacts"
-        />
+                android:text="Clear and scan phone contacts" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_sync_real_time_data"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sync real-time data"
-        />
+                android:text="Sync real-time data" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_sync_external_addresses_indexes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sync external addresses indexes"
-        />
+                android:text="Sync external addresses indexes" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_integrity_check"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Run integrity check"
-        />
+                android:text="Run integrity check" />
 
-        <Button
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_force_fcm_token_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update FCM token"
-        />
-
-        <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-        />
+                android:text="Update FCM token" />
 
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="5dp"
-        >
+                android:padding="5dp">
 
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Houston address: "
-                    android:textStyle="normal|bold"
-            />
+                    android:textStyle="normal|bold" />
 
             <TextView
                     android:id="@+id/debug_text_server_address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="https://192.168.0.1:8080"
-            />
+                    tools:text="https://192.168.0.1:8080" />
 
         </LinearLayout>
 

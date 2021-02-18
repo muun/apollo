@@ -2,27 +2,23 @@
 <io.muun.apollo.presentation.ui.view.MuunButtonLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
->
+        android:layout_height="match_parent">
 
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true"
-    >
+            android:fillViewport="true">
 
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="@dimen/muun_screen_margin"
-                android:orientation="vertical"
-        >
+                android:orientation="vertical">
 
             <TextView
                     android:layout_marginBottom="16dp"
                     style="@style/explanation_title"
-                    android:text="@string/signup_unlock_title"
-            />
+                    android:text="@string/signup_unlock_title" />
 
             <io.muun.apollo.presentation.ui.view.MuunTextInput
                     android:id="@+id/signup_unlock_edit_password"
@@ -31,8 +27,7 @@
                     android:inputType="textPassword"
                     android:imeOptions="actionNext"
                     android:fontFamily="sans-serif"
-                    android:hint="@string/signup_unlock_password_hint"
-            />
+                    android:hint="@string/signup_unlock_password_hint" />
 
             <io.muun.apollo.presentation.ui.view.HtmlTextView
                     android:id="@+id/signup_unlock_reminder"
@@ -42,8 +37,7 @@
                     android:layout_marginBottom="16dp"
                     android:visibility="gone"
                     android:textSize="14sp"
-                    android:text="@string/signup_unlock_password_reminder"
-            />
+                    android:text="@string/signup_unlock_password_reminder" />
 
         </LinearLayout>
 
@@ -54,15 +48,13 @@
             android:id="@+id/signup_forgot_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/signup_unlock_forgot"
-            />
+            android:text="@string/signup_unlock_forgot" />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_primary"
             android:id="@+id/signup_continue"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:text="@string/signup_unlock_continue"
-    />
+            android:text="@string/signup_unlock_continue" />
 
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

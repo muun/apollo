@@ -60,13 +60,13 @@ public class MuunAmountInput extends MuunView {
     TextView currencyInput;
 
     // Resources:
-    @BindColor(R.color.muun_blue)
+    @BindColor(R.color.blue)
     int normalNumberColor;
 
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.text_secondary_color)
     int normalBalanceColor;
 
-    @BindColor(R.color.muun_red)
+    @BindColor(R.color.error_color)
     int errorColor;
 
     // State:

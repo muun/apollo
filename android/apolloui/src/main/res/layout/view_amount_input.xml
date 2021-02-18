@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="vertical"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
     <LinearLayout
             android:gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-    >
+            android:layout_height="wrap_content">
 
         <io.muun.apollo.presentation.ui.view.MuunEditText
                 android:id="@+id/muun_amount"
@@ -18,7 +18,7 @@
                 android:textSize="40sp"
                 android:fontFamily="sans-serif-light"
                 android:textStyle="normal"
-                android:textColor="#caced2"
+                android:textColor="@color/text_tertiary_color"
                 android:hint="0"
                 android:maxLength="18"
                 android:lineSpacingExtra="0sp"
@@ -27,11 +27,10 @@
                 android:ellipsize="end"
                 android:inputType="numberDecimal"
                 android:imeOptions="flagNoExtractUi"
-        />
+                tools:ignore="HardcodedText" />
 
         <TextView
                 android:id="@+id/currency_code"
-                android:drawableRight="@drawable/ic_action_edit_blue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -39,10 +38,10 @@
                 android:layout_marginBottom="4dp"
                 android:layout_gravity="bottom"
                 android:textSize="16sp"
-                android:textColor="@color/muun_gray_dark"
+                android:textColor="@color/text_secondary_color"
                 android:lineSpacingExtra="0sp"
-                tools:text="ARS"
-        />
+                app:drawableEndCompat="@drawable/ic_action_edit_blue"
+                tools:text="ARS" />
 
     </LinearLayout>
 
@@ -53,10 +52,9 @@
             android:textSize="12sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="#57656f"
+            android:textColor="@color/text_secondary_color"
             android:lineSpacingExtra="4sp"
             android:gravity="center"
-            tools:text="Available: 12.349,11 ARS"
-    />
+            tools:text="Available: 12.349,11 ARS" />
 
 </LinearLayout>

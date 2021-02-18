@@ -52,6 +52,6 @@ public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
         }
 
         selectedIcon.setVisibility(viewModel.isSelected ? View.VISIBLE : View.GONE);
-        UiUtils.setTint(selectedIcon, R.color.muun_blue);
+        UiUtils.setTint(selectedIcon, R.color.blue);
     }
 }

@@ -16,11 +16,10 @@
             android:textSize="20sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="@color/muun_black"
+            android:textColor="@color/text_primary_color"
             android:gravity="center_horizontal"
             tools:visibility="visible"
-            tools:text="Some title placeholder"
-    />
+            tools:text="Some title placeholder" />
 
     <io.muun.apollo.presentation.ui.view.HtmlTextView
             android:id="@+id/simple_message_text"
@@ -32,12 +31,11 @@
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             android:letterSpacing="0.03"
             android:lineSpacingExtra="8sp"
             android:gravity="center_horizontal"
-            tools:text="Some long empty state description that wraps into  two lines."
-    />
+            tools:text="Some long empty state description that wraps into  two lines." />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_secondary"
@@ -53,7 +51,6 @@
             android:lineSpacingExtra="2sp"
             android:gravity="center_horizontal"
             tools:visibility="visible"
-            tools:text="Action"
-    />
+            tools:text="Action" />
 
 </LinearLayout>

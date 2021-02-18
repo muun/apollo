@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 public class LoadingView extends MuunView {
 
     static final ViewProps<LoadingView> viewProps = new ViewProps.Builder<LoadingView>()
-            .addRef(R.attr.title, LoadingView::setTitle)
+            .addString(R.attr.title, LoadingView::setTitle)
             .build();
 
     @BindView(R.id.loading_view_title)

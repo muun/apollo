@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 import butterknife.BindView;
 
 import javax.annotation.Nullable;
@@ -20,6 +22,7 @@ public class MuunSettingItem extends MuunView {
             .addString(R.attr.label, MuunSettingItem::setLabel)
             .addString(R.attr.description, MuunSettingItem::setDescription)
             .addRef(R.attr.icon, MuunSettingItem::setIcon)
+            .addColorList(R.attr.iconTint, MuunSettingItem::setIconColor)
             .build();
 
     @BindView(R.id.setting_item_label)
@@ -88,5 +91,9 @@ public class MuunSettingItem extends MuunView {
     public void setIcon(Drawable drawable) {
         icon.setImageDrawable(drawable);
         icon.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
+    }
+
+    public void setIconColor(ColorStateList color) {
+        ImageViewCompat.setImageTintList(icon, color);
     }
 }

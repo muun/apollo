@@ -28,7 +28,7 @@
             android:usesCleartextTraffic="${usesCleartextTraffic}"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.WithoutActionBar"
+            android:theme="@style/AppTheme"
     >
 
         <!-- LauncherActivity -->
@@ -36,7 +36,7 @@
         <activity
                 android:name=".presentation.ui.launcher.LauncherActivity"
                 android:label="@string/app_name"
-                android:theme="@style/Theme.AppCompat.NoDisplay"
+                android:theme="@style/Theme.NoDisplay"
                 android:launchMode="singleTask"
         >
 
@@ -91,7 +91,6 @@
 
         <activity
                 android:name=".presentation.ui.signup.SignupActivity"
-                android:theme="@style/Juno"
                 android:windowSoftInputMode="adjustResize"
         />
 
@@ -99,9 +98,7 @@
 
         <activity
                 android:name=".presentation.ui.home.HomeActivity"
-                android:label="@string/app_name"
-                android:theme="@style/AppTheme"
-        >
+                android:label="@string/app_name">
 
         </activity>
 
@@ -110,8 +107,7 @@
         <activity
                 android:name=".presentation.ui.new_operation.NewOperationActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
-                android:windowSoftInputMode="adjustResize"
-                android:theme="@style/WhiteToolbarTheme">
+                android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -141,9 +137,7 @@
         <activity
                 android:name=".presentation.ui.operation_detail.OperationDetailActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
-                android:label="@string/operation_detail_title"
-                android:theme="@style/AppTheme"
-        />
+                android:label="@string/operation_detail_title"/>
 
         <!-- ShowQrActivity -->
 
@@ -151,7 +145,6 @@
                 android:name=".presentation.ui.show_qr.ShowQrActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:label="@string/showqr_title"
-                android:theme="@style/AppTheme"
         />
 
         <!-- ScanQrActivity -->
@@ -170,7 +163,6 @@
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:windowSoftInputMode="adjustResize"
                 android:label="@string/feedback_title"
-                android:theme="@style/AppTheme"
         />
 
         <!-- SingleActionActivity -->
@@ -178,7 +170,6 @@
                 android:name=".presentation.ui.single_action.SingleActionActivity"
                 android:launchMode="singleTop"
                 android:label="Muun"
-                android:theme="@style/AppTheme"
         />
 
         <!-- V2SingleActionActivity -->
@@ -186,7 +177,6 @@
         <activity
                 android:name="io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity"
                 android:launchMode="singleTop"
-                android:theme="@style/AppTheme"
         />
 
         <!-- DebugPanelActivity -->
@@ -195,27 +185,23 @@
                 android:name=".presentation.ui.debug.DebugPanelActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:label="Muun debug panel"
-                android:theme="@style/AppTheme"
         />
 
         <!-- RecoveryToolActivity -->
         <activity
                 android:name="io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity"
-                android:theme="@style/AppTheme"
                 />
 
         <!-- EditUsernameActivity -->
 
         <activity
             android:name=".presentation.ui.settings.edit_username.EditUsernameActivity"
-            android:theme="@style/AppTheme"
             />
 
         <!-- SetUpPinCodeActivity -->
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity"
-                android:theme="@style/AppTheme"
                 android:label="@string/app_name"
                 />
 
@@ -223,7 +209,6 @@
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity"
-                android:theme="@style/AppTheme"
                 android:label="@string/app_name"
                 />
 
@@ -233,7 +218,6 @@
                 android:name=".presentation.ui.recovery_code.SetupRecoveryCodeActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:label="@string/recovery_code_title"
-                android:theme="@style/AppTheme"
                 android:windowSoftInputMode="adjustResize"
                 />
 
@@ -241,21 +225,18 @@
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity"
-                android:theme="@style/AppTheme"
         />
 
         <!-- SelectCountryActivity -->
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.select_country.SelectCountryActivity"
-                android:theme="@style/AppTheme"
         />
 
         <!-- ExportKeysActivity -->
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity"
-                android:theme="@style/AppTheme"
         />
 
 
@@ -270,7 +251,6 @@
 
         <activity
                 android:name=".presentation.ui.settings.edit_password.EditPasswordActivity"
-                android:theme="@style/AppTheme"
                 android:windowSoftInputMode="adjustResize"
         />
 
@@ -278,7 +258,6 @@
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.setup_p2p.SetupP2PActivity"
-                android:theme="@style/AppTheme"
                 android:windowSoftInputMode="adjustResize"
         />
 
@@ -297,8 +276,7 @@
 
         <activity
                 android:name=".presentation.ui.setup_password.SetupPasswordActivity"
-                android:label="@string/app_name"
-                android:theme="@style/AppTheme" />
+                android:label="@string/app_name" />
 
         <!-- SuccessDeleteWalletActivity -->
 
@@ -312,40 +290,37 @@
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:windowSoftInputMode="adjustResize"
                 android:label="@string/feedback_title"
-                android:theme="@style/AppTheme"
                 />
 
         <activity
                 android:name=".presentation.ui.migration.MigrationActivity"
-                android:label="@string/app_name"
-                android:theme="@style/AppTheme" />
+                android:label="@string/app_name" />
 
         <!--   ShowQR : BitcoinAddressHelpActivity   -->
         <activity
                 android:name=".presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpActivity"
                 android:parentActivityName=".presentation.ui.show_qr.ShowQrActivity"
-                android:theme="@style/AppTheme"
                 />
 
         <!--   OperationsActivity   -->
         <activity
                 android:name=".presentation.ui.activity.operations.OperationsActivity"
-                android:theme="@style/AppTheme"
                 />
 
         <activity
                 android:name=".presentation.ui.base.SingleFragmentActivityImpl"
-                android:theme="@style/AppTheme" />
+                />
 
         <!-- GcmMessageListenerService -->
 
         <service
                 android:name=".data.async.gcm.GcmMessageListenerService"
-                android:exported="false"
-        >
+                android:exported="false">
+
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
+
         </service>
 
         <!-- Metadata -->
@@ -375,9 +350,6 @@
                 android:exported="false" />
 
         <!-- Receivers -->
-        <receiver
-                android:name=".presentation.ui.fragments.ek_save.EmergencyKitSaveReceiver"
-                android:exported="false" />
 
         <receiver
                 android:name=".data.os.sharer.FileSharerReceiver"

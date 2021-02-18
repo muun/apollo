@@ -12,8 +12,7 @@
             android:id="@+id/muun_pill_picture"
             android:layout_height="0px"
             android:layout_width="0px"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
 
     <TextView
             android:id="@+id/muun_pill_text"
@@ -21,12 +20,11 @@
             android:layout_height="wrap_content"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="16dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:textSize="14sp"
-            android:textColor="@android:color/black"
-            />
+            android:textColor="@color/text_primary_color" />
 
 </LinearLayout>

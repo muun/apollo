@@ -8,7 +8,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.StringRes;
-import butterknife.BindColor;
 import butterknife.BindView;
 
 import javax.annotation.Nullable;
@@ -23,9 +22,6 @@ public class SimpleMessageView extends MuunView {
 
     @BindView(R.id.simple_message_button)
     MuunButton action;
-
-    @BindColor(R.color.muun_black)
-    int muunBlack;
 
     static final ViewProps<SimpleMessageView> viewProps = new ViewProps.Builder<SimpleMessageView>()
             .addRef(R.attr.title, SimpleMessageView::setTitle)

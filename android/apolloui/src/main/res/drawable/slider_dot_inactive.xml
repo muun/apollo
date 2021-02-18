@@ -5,5 +5,5 @@
         android:shape="ring"
         android:useLevel="false">
 
-    <solid android:color="@color/muun_gray_light"/>
+    <solid android:color="@color/slider_dot_inactive"/>
 </shape>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <io.muun.apollo.presentation.ui.view.MuunButtonLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/muun_white">
+        android:orientation="vertical">
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -13,21 +13,21 @@
             android:paddingLeft="24dp"
             android:paddingRight="24dp"
             android:orientation="vertical"
-            android:gravity="center"
-            tools:background="@color/muun_white">
+            android:gravity="center">
 
         <ImageView
                 android:contentDescription="@null"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 android:layout_marginBottom="24dp"
-                android:src="@drawable/error"/>
+                android:src="@drawable/error"
+                app:tint="@color/error_color" />
 
         <TextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/muun_black"
+                android:textColor="@color/text_primary_color"
                 android:gravity="center"
                 android:textSize="24sp"
                 tools:text="Something went wrong!"/>
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="22dp"
-                android:textColor="@color/muun_gray_dark"
+                android:textColor="@color/text_secondary_color"
                 android:gravity="center"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif"
@@ -54,6 +54,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/error_op_action"
-            tools:text="Take the red pill"
-            />
+            tools:text="Take the red pill" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

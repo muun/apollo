@@ -31,10 +31,8 @@
                     android:layout_height="wrap_content" />
 
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@color/muun_gray_light" />
+                    style="@style/divider"
+                    android:layout_marginBottom="16dp" />
 
             <io.muun.apollo.presentation.ui.view.StatusMessage
                     android:id="@+id/uri_error_message"
@@ -64,7 +62,6 @@
                     android:id="@+id/contact_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/muun_white"
                     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -75,4 +72,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/send_confirm" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:baselineAligned="false">
 
     <LinearLayout
             android:orientation="vertical"
@@ -28,16 +30,16 @@
                     android:layout_marginStart="2dp"
                     android:layout_marginEnd="6dp"
                     android:src="@drawable/ic_clock"
-                    android:visibility="gone"
-                    />
+                    android:contentDescription="@null"
+                    android:visibility="gone" />
 
             <TextView
                     android:id="@+id/operation_detail_item_text_title"
                     style="@style/detail_item_header"
                     android:layout_toEndOf="@id/operation_detail_item_icon_title"
                     android:layout_centerVertical="true"
-                    tools:text="When"
-            />
+                    tools:text="When" />
+
         </RelativeLayout>
 
         <io.muun.apollo.presentation.ui.view.HtmlTextView
@@ -45,8 +47,8 @@
                 style="@style/detail_item_content"
                 android:visibility="gone"
                 tools:visibility="visible"
-                tools:text="11 Feb 2016 at 14.35"
-        />
+                tools:text="11 Feb 2016 at 14.35" />
+
     </LinearLayout>
 
     <FrameLayout
@@ -61,9 +63,10 @@
 
         <ImageView
                 android:id="@+id/operation_detail_item_icon"
+                android:contentDescription="@null"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                />
+                app:tint="@color/icon_color" />
     </FrameLayout>
 
 </LinearLayout>

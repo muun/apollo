@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -9,11 +10,13 @@
 
     <ImageView
             android:id="@+id/icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:src="@drawable/chevron_right" />
+            android:contentDescription="@string/enter_fee_manually"
+            android:src="@drawable/chevron_right"
+            app:tint="@color/blue" />
 
     <LinearLayout
             android:layout_width="wrap_content"
@@ -32,7 +35,7 @@
                 android:fontFamily="sans-serif-medium"
                 android:text="@string/enter_fee_manually"
                 android:textAllCaps="true"
-                android:textColor="@color/muun_blue"
+                android:textColor="@color/blue"
                 android:textSize="14sp"
                 android:textStyle="normal"
                 android:ellipsize="end"
@@ -45,7 +48,7 @@
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center_vertical"
                 android:textAllCaps="true"
-                android:textColor="@color/muun_gray_dark"
+                android:textColor="@color/text_secondary_color"
                 android:textSize="14sp"
                 android:textStyle="normal"
                 android:visibility="gone"

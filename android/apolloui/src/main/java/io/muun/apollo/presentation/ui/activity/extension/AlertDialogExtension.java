@@ -14,10 +14,10 @@ import javax.inject.Inject;
 @PerActivity
 public class AlertDialogExtension extends ActivityExtension {
 
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.text_secondary_color)
     int negativeButtonColor;
 
-    @BindColor(R.color.muun_red)
+    @BindColor(R.color.red)
     int positiveButtonColor;
 
     private AlertDialog activeDialog;

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -18,10 +19,9 @@
                 android:id="@+id/setting_item_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/muun_black"
+                android:textColor="@color/text_primary_color"
                 android:textSize="@dimen/muun_text_size_body"
-                tools:text="Change email"
-                />
+                tools:text="Change email" />
 
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -41,8 +41,7 @@
                     android:layout_marginTop="2sp"
                     android:layout_marginEnd="1sp"
                     tools:src="@drawable/btc_logo"
-                    android:visibility="gone"
-                    />
+                    android:visibility="gone" />
 
             <TextView
                     android:id="@+id/setting_item_description"
@@ -50,11 +49,10 @@
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@+id/setting_item_description_icon"
                     android:textSize="@dimen/muun_text_size_body"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:visibility="gone"
                     tools:visibility="visible"
-                    tools:text="crespi@muun.io"
-                    />
+                    tools:text="crespi@muun.io" />
 
         </RelativeLayout>
 
@@ -64,11 +62,11 @@
             android:id="@+id/setting_item_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:scaleType="fitCenter"
             android:visibility="gone"
+            app:tint="@color/icon_color"
             tools:src="@drawable/ic_check_black_24_px"
-            tools:visibility="visible"
-            />
+            tools:visibility="visible" />
 
 </LinearLayout>

@@ -15,60 +15,54 @@
         <RelativeLayout
                 android:id="@+id/settings_header_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/muun_white"
-                >
+                android:layout_height="wrap_content">
 
             <RelativeLayout
                     android:id="@+id/settings_header_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="0dp"
+                    android:layout_marginStart="0dp"
                     android:layout_marginTop="?attr/actionBarSize"
                     android:layout_marginBottom="16dp">
 
                 <io.muun.apollo.presentation.ui.view.MuunPictureInput
                         android:id="@+id/settings_profile_picture"
-                        android:layout_marginLeft="56dp"
+                        android:layout_marginStart="56dp"
                         android:layout_width="112dp"
-                        android:layout_height="112dp"
-                        />
+                        android:layout_height="112dp" />
 
                 <TextView
                         android:id="@+id/settings_username"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toRightOf="@id/settings_profile_picture"
+                        android:layout_toEndOf="@id/settings_profile_picture"
                         android:layout_centerVertical="true"
-                        android:layout_marginLeft="20dp"
-                        android:layout_marginRight="12dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="12dp"
                         android:maxLines="2"
                         android:ellipsize="end"
                         android:maxEms="18"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif"
                         android:textStyle="normal"
-                        android:textColor="@color/muun_black"
+                        android:textColor="@color/text_primary_color"
                         android:letterSpacing="0.03"
-                        tools:text="@string/tools_mock_long_name"
-                        />
+                        tools:text="@string/tools_mock_long_name" />
 
                 <io.muun.apollo.presentation.ui.view.MuunIconButton
                         android:id="@+id/settings_edit_username"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toRightOf="@id/settings_username"
+                        android:layout_toEndOf="@id/settings_username"
                         android:layout_centerVertical="true"
-                        android:layout_marginRight="12dp"
+                        android:layout_marginEnd="12dp"
                         muun:icon="@drawable/ic_edit_black_24"
                         muun:iconSize="24dp"
-                        muun:color="@color/muun_gray_light"
-                        />
+                        muun:color="@color/icon_color" />
 
                 <View style="@style/drop_shadow_bottom"
                         android:layout_below="@id/settings_profile_picture"
-                        android:layout_marginTop="16dp"
-                        />
+                        android:layout_marginTop="16dp" />
 
                 <View
                         android:id="@+id/header_separator"
@@ -88,14 +82,12 @@
 
             <TextView
                     android:text="@string/settings_header_wallet_details"
-                    style="@style/settings_section_header"
-                    />
+                    style="@style/settings_section_header" />
 
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_phone_number"
                     muun:label="@string/settings_item_phone"
-                    style="@style/settings_item"
-                    />
+                    style="@style/settings_item" />
 
             <View style="@style/settings_item_separator"/>
 
@@ -113,14 +105,23 @@
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_bitcoin_unit"
                     muun:label="@string/settings_item_bitcoin_unit"
-                    style="@style/settings_item"
-                    />
+                    style="@style/settings_item" />
 
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_primary_currency"
                     muun:label="@string/settings_item_primary_currency"
-                    style="@style/settings_item"
-                    />
+                    style="@style/settings_item" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/dark_mode_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dark_mode"
+                    android:layout_marginTop="@dimen/muun_screen_margin"
+                    android:layout_marginBottom="@dimen/muun_screen_margin"
+                    android:layout_marginStart="@dimen/muun_screen_margin"
+                    android:layout_marginEnd="@dimen/muun_screen_margin"
+                    android:textSize="@dimen/muun_text_size_body" />
 
         </LinearLayout>
 
@@ -134,14 +135,12 @@
 
             <TextView
                     android:text="@string/settings_header_recovery"
-                    style="@style/settings_section_header"
-                    />
+                    style="@style/settings_section_header" />
 
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_password"
                     muun:label="@string/settings_password"
-                    style="@style/settings_item"
-                    />
+                    style="@style/settings_item" />
 
             <View style="@style/settings_item_separator" />
 
@@ -154,14 +153,12 @@
 
             <TextView
                     android:text="@string/settings_header_advanced"
-                    style="@style/settings_section_header"
-                    />
+                    style="@style/settings_section_header" />
 
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_lightning"
                     muun:label="@string/settings_lightning"
-                    style="@style/settings_item"
-                    />
+                    style="@style/settings_item" />
 
         </LinearLayout>
 
@@ -179,12 +176,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginBottom="20dp"
-                    android:textColor="#da5b67"
+                    android:textColor="@color/red"
                     android:textSize="@dimen/muun_text_size_body"
-                    android:text="@string/settings_logout"
-                    />
+                    android:text="@string/settings_logout" />
 
         </LinearLayout>
 
@@ -193,10 +189,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
-                android:textSize="14sp"
-                />
+                android:textSize="14sp" />
 
     </LinearLayout>
 

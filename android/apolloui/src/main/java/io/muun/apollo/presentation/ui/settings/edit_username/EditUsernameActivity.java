@@ -34,7 +34,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     @BindView(R.id.settings_edit_last_name)
     MuunTextInput lastName;
 
-    @BindColor(R.color.muun_gray_light)
+    @BindColor(R.color.disabled_color)
     int disabledColor;
 
     private MenuItem saveMenuItem;

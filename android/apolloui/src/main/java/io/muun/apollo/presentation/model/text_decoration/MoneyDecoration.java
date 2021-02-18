@@ -223,6 +223,8 @@ public class MoneyDecoration implements DecorationTransformation {
     }
 
     /**
+     * Count the amount of digits on the integer part.
+     *
      * @param s string with the number to analyze.
      * @return amount of digits on the integer part.
      */

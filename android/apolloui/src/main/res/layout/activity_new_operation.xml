@@ -25,16 +25,14 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/root_view"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/muun_white">
+                    android:layout_height="wrap_content">
 
                 <TextView
                         android:id="@+id/receiver_label"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/new_operation_to"
-                        android:textColor="@color/muun_black"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent" />
 
@@ -42,9 +40,9 @@
                         android:id="@+id/new_operation_receiver"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
+                        android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
-                        android:layout_marginRight="16dp"
+                        android:layout_marginEnd="16dp"
                         android:layout_marginBottom="8dp"
                         app:layout_constraintBottom_toTopOf="@+id/separator_address"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -59,13 +57,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:drawableEnd="@drawable/ic_reveal_address"
                         android:drawablePadding="8dp"
                         android:gravity="center"
                         android:lineSpacingExtra="8sp"
-                        android:textColor="@color/muun_gray_dark"
+                        android:textColor="@color/text_target_address"
                         android:textSize="16sp"
                         android:visibility="gone"
+                        app:drawableEndCompat="@drawable/ic_reveal_address"
                         app:layout_constraintBottom_toTopOf="@+id/separator_address"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
@@ -93,11 +91,10 @@
 
                 <TextView
                         android:id="@+id/selected_amount"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:textColor="@color/muun_black"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/separator_address"
                         tools:text="10,100.26 ARS"
@@ -131,24 +128,23 @@
                         style="@style/muun_new_operation_label_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:drawableEnd="@drawable/ic_edit_black_24"
                         android:drawablePadding="12dp"
-                        android:drawableTint="@color/muun_gray_dark"
-                        android:gravity="left"
+                        android:gravity="start"
                         android:maxLines="1"
                         android:text="@string/new_operation_fee"
+                        app:drawableEndCompat="@drawable/ic_edit_black_24"
+                        app:drawableTint="@color/blue"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/status_message_container"
                         tools:text="Lightning Fee"
-                        tools:visibility="visible" />
+                        tools:visibility="visible"/>
 
                 <TextView
                         android:id="@+id/fee_amount"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:textColor="@color/muun_black"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/status_message_container"
                         tools:text="50.00 ARS"
@@ -179,13 +175,12 @@
 
                 <TextView
                         android:id="@+id/total_label"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-medium"
                         android:maxLines="1"
                         android:text="@string/new_operation_total"
-                        android:textColor="@color/muun_black"
                         android:visibility="gone"
                         app:layout_constraintEnd_toStartOf="@+id/total_amount"
                         app:layout_constraintStart_toStartOf="parent"
@@ -195,11 +190,10 @@
 
                 <TextView
                         android:id="@+id/total_amount"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:textColor="@color/muun_black"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/insufficient_funds_message_container"
                         tools:text="10,150.26 ARS"
@@ -231,13 +225,12 @@
 
                 <TextView
                         android:id="@+id/notes_content"
-                        style="@style/muun_new_operation_label_text"
+                        style="@style/muun_new_operation_label_text_strong"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="8dp"
                         android:padding="8dp"
-                        android:textColor="@color/muun_black"
                         android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -264,7 +257,7 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp"
                         android:text="@string/new_operation_use_all_funds"
-                        android:textColor="@color/muun_blue"
+                        android:textColor="@color/blue"
                         android:textSize="12sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -283,7 +276,7 @@
                         android:inputType="textMultiLine"
                         android:lineSpacingExtra="8sp"
                         android:padding="@dimen/activity_horizontal_margin"
-                        android:textColorHint="@color/muun_gray_light"
+                        android:textColorHint="@color/text_tertiary_color"
                         android:textSize="20sp"
                         android:visibility="visible"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -315,11 +308,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
-                    android:background="@color/transparent_muun_white"
                     android:gravity="center"
                     android:paddingTop="14dp"
                     android:paddingBottom="8dp"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:textSize="12sp"
                     android:visibility="visible"
                     tools:text="Expiration time in 1 week" />
@@ -331,7 +323,7 @@
                     android:visibility="gone"
                     android:background="@drawable/notice_banner_background"
                     app:icon="@drawable/alert_badge"
-                    app:tint="@color/notice_banner_icon"
+                    app:tint="@color/warning_color"
                     tools:visibility="visible"
                     />
 
@@ -343,6 +335,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/confirm_amount" />
+
     </io.muun.apollo.presentation.ui.view.MuunButtonLayout>
 
     <LinearLayout
@@ -350,7 +343,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/muun_header_plus_shadow_height"
-            android:background="@color/muun_white"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
@@ -364,15 +356,14 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/new_operation_resolving"
-                android:textColor="@color/muun_black" />
+                android:text="@string/new_operation_resolving" />
     </LinearLayout>
 
     <FrameLayout
             android:id="@+id/overlay_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clickable="true"
+            android:background="@color/background"
             android:elevation="10dp"
             android:visibility="gone" />
 

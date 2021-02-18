@@ -4,8 +4,9 @@
 
     <item
             android:id="@+id/feedback"
-            android:icon="@drawable/feedback"
             android:title="@string/home_send_feedback_action_title"
+            android:icon="@drawable/feedback"
+            muun:iconTint="@color/icon_color"
             muun:showAsAction="always" />
 
 </menu>

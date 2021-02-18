@@ -3,13 +3,11 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
->
+        android:layout_height="match_parent">
 
     <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-    >
+            android:layout_height="match_parent">
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -22,14 +20,12 @@
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="8dp"
                     style="@style/explanation_title"
-                    android:text="@string/signup_profile_title"
-            />
+                    android:text="@string/signup_profile_title" />
 
             <io.muun.apollo.presentation.ui.view.HtmlTextView
                     style="@style/explanation"
                     android:id="@+id/signup_profile_explanation"
-                    tools:text="@string/signup_profile_explanation"
-            />
+                    tools:text="@string/signup_profile_explanation" />
 
             <io.muun.apollo.presentation.ui.view.MuunPictureInput
                     android:id="@+id/signup_profile_picture"
@@ -51,8 +47,7 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/signup_profile_first_name_hint"
                         android:inputType="text|textCapWords"
-                        android:nextFocusForward="@+id/signup_profile_edit_last_name"
-                />
+                        android:nextFocusForward="@+id/signup_profile_edit_last_name" />
 
                 <io.muun.apollo.presentation.ui.view.MuunTextInput
                         style="@style/edit_profile_input"
@@ -61,8 +56,7 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/signup_profile_last_name_hint"
                         android:inputType="text|textCapWords"
-                        android:nextFocusForward="@+id/signup_profile_edit_email"
-                />
+                        android:nextFocusForward="@+id/signup_profile_edit_email" />
 
             </LinearLayout>
         </LinearLayout>
@@ -73,7 +67,6 @@
             android:id="@+id/signup_continue"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:text="@string/signup_create_profile"
-    />
+            android:text="@string/signup_create_profile" />
 
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

@@ -155,7 +155,7 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
             setMarginRight(53)
             setMarginLeft(53)
             setCornerRadius(4f)
-            setBackgroundColorResource(R.color.new_home_tx_list_tooltip)
+            setBackgroundColorResource(R.color.new_home_tooltip)
             setOnBalloonClickListener(OnBalloonClickListener { onOperationHistoryChevronClick() })
             setBalloonAnimation(BalloonAnimation.NONE)
             setDismissWhenTouchOutside(false)
