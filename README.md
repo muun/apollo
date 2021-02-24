@@ -14,23 +14,9 @@ The app follows the [clean](https://fernandocejas.com/2014/09/03/architecting-an
 
 There's also a pure java **common** module with code shared all over.
 
-### LibWallet
+## Build
 
-Setup
-```
-brew install golang
-# Add your GOPATH to your bash profile
-bash tools/bootstrap-gomobile.sh
-```
-
- - Set the `ANDROID_HOME` env var to the SDK installation path for Android Studio. Most likely `~/Library/Android/sdk/`
- - Install the Android NDK using Android Studio. Go to Tools > SDK Manager > SDK Tools and select `NDK (Side by side)`.
- - Take note of the SDK path it shows when the install process ends and set it as `ANDROID_NDK_HOME` env var. It should of the form `~/Android/sdk/ndk/20.0.5594570`
-
-Building for Android
-```
-GO111MODULE=off go run golang.org/x/mobile/cmd/gomobile bind -target=android -o android/apollo/libs/libwallet.aar github.com/muun/muun/libwallet
-```
+For instructions on how to build Muun Wallet please refer to BUILD.md
 
 ## Auditing
 
@@ -38,10 +24,6 @@ GO111MODULE=off go run golang.org/x/mobile/cmd/gomobile bind -target=android -o 
 * All the keystore and data handling happens in the **data** layer.
 * All the business logic that decides when to sign what happens in the **domain** layer.
 * The **presentation** layer only depends on the **domain** layer, it never references **data** directly.
-
-## Veryfing our builds
-
-Our builds are not reproducible yet! Stay tuned.
 
 ## Responsible Disclosure
 
