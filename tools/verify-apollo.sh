@@ -17,25 +17,24 @@ fi
 # Go to repo root
 cd $(git rev-parse --show-toplevel)
 
-# TOOD: use a temp dir?
+tmp=$(mkdir -d)
 
 # Prepare paths to extract APKs
-rm -rf to_verify baseline
-mkdir -p to_verify baseline
+mkdir -p "$tmp/to_verify" "$tmp/baseline"
 
 echo "Building the APK from source. This might take a while (10-20 minutes)..."
 
 docker build -f android/Dockerfile -t muun_android:latest .
 docker run --rm -ti -v "$PWD:/src/android/apolloui/build/outputs/" muun_android:latest
 
-unzip -q -d to_verify "$apk_to_verify"
-unzip -q -d baseline "apk/prod/release/apolloui-prod-release-unsigned.apk"
+unzip -q -d "$tmp/to_verify" "$apk_to_verify"
+unzip -q -d "$tmp/baseline" "apk/prod/release/apolloui-prod-release-unsigned.apk"
 
 # TODO: verify the signature
 
 # Remove the signature since OSS users won't have Muuns private signing key
-rm -rf {to_verify,baseline}/{META-INF,resources.arsc}
+rm -r "$tmp"/{to_verify,baseline}/{META-INF,resources.arsc}
 
-diff -r to_verify baseline && echo "Verification success!" || echo "Verification failed :("
+diff -r "$tmp/to_verify" "$tmp/baseline" && echo "Verification success!" || echo "Verification failed :("
 
 
