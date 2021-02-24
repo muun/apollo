@@ -76,8 +76,6 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
     @Override
     public void changeStep(SignupStep step, SignupStep previousStep) {
         replaceFragment(createStepFragment(step, previousStep), false);
-        // This needs to happen AFTER fragment TX commit to avoid visual glitches
-        getHeader().clear(); // let the next fragment set everything up
     }
 
     public MuunHeader getHeader() {

@@ -15,8 +15,7 @@
                 android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:elevated="true"
-                />
+                app:elevated="true" />
 
         <io.muun.apollo.presentation.ui.view.HtmlTextView
                 android:id="@+id/anon_feedback_explanation"
@@ -27,6 +26,7 @@
                 android:layout_marginTop="@dimen/muun_screen_margin"
                 android:text="@string/anon_feedback_explanation"
                 android:textSize="@dimen/muun_text_size_body"
+                android:textColor="@color/text_secondary_color"
                 android:lineSpacingMultiplier="1.2"
                 android:gravity="center_horizontal" />
 

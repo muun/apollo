@@ -24,10 +24,8 @@ class FeeManualItem: MuunView {
 
     var currencyDisplayMode = CurrencyDisplayMode.BTC
 
-
     override fun getLayoutResource() =
         R.layout.fee_manual_item
-
 
     var title: String = ""
         set(value) {

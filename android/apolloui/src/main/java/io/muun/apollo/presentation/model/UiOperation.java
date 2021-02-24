@@ -129,11 +129,11 @@ public abstract class UiOperation {
 
         if (isCyclical()) {
             text = getInputAmount();
-            colorId = R.color.operation_self;
+            colorId = R.color.text_secondary_color;
 
         } else {
             text = showSign ? getSignedInputAmount() : getInputAmount();
-            colorId = isIncoming() ? R.color.operation_incoming : R.color.operation_outgoing;
+            colorId = isIncoming() ? R.color.green : R.color.text_secondary_color;
         }
 
         return new RichText(text).setForegroundColor(ContextCompat.getColor(context, colorId));
@@ -165,7 +165,7 @@ public abstract class UiOperation {
 
     private RichText getFormattedRbfStatus(Context context) {
         final String text = context.getString(R.string.operation_rbf);
-        final int color = ContextCompat.getColor(context, R.color.balance_clock_rbf);
+        final int color = ContextCompat.getColor(context, R.color.rbf_color);
 
         return new RichText(text).setForegroundColor(color).setBold();
     }
@@ -173,21 +173,21 @@ public abstract class UiOperation {
     private RichText getFormattedPendingStatus(Context context) {
         final int textResId = R.string.operation_pending;
         final String text = context.getString(textResId);
-        final int color = ContextCompat.getColor(context, R.color.operation_pending);
+        final int color = ContextCompat.getColor(context, R.color.pending_color);
 
         return new RichText(text).setForegroundColor(color).setBold();
     }
 
     private RichText getFormattedCompletedStatus(Context context) {
         final String text = context.getString(R.string.operation_completed);
-        final int color = ContextCompat.getColor(context, R.color.operation_completed);
+        final int color = ContextCompat.getColor(context, R.color.green);
 
         return new RichText(text).setForegroundColor(color).setBold();
     }
 
     private RichText getFormattedFailedStatus(Context context) {
         final String text = context.getString(R.string.operation_failed);
-        final int color = ContextCompat.getColor(context, R.color.operation_failed);
+        final int color = ContextCompat.getColor(context, R.color.error_color);
 
         return new RichText(text).setForegroundColor(color).setBold();
     }

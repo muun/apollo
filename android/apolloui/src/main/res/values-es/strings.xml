@@ -89,7 +89,8 @@
     </string>
     <string name="new_op_1_conf_notice_title">¿Por qué puede demorarse este pago?</string>
     <string name="new_op_1_conf_notice_desc">
-        Este pago de lightning requiere de una transacción on-chain confirmada. Tardará un promedio de 10 minutos en completarse.
+        Este pago de lightning requiere de una transacción on-chain confirmada. Tardará un promedio
+        de 10 minutos en completarse.
     </string>
 
     <!-- Failed operation -->
@@ -100,8 +101,9 @@
 
     <string name="error_op_invoice_unreachable_node_title">No es posible pagar esta factura</string>
     <string name="error_op_invoice_unreachable_node_desc">
-        Esta factura fue creada por un nodo privado al que no se puede acceder. Para poder accederlo, la factura
-        debe incluir datos adicionales (RouteHints). Sólo el creador de la factura puede solucionar este problema.
+        Esta factura fue creada por un nodo privado al que no se puede acceder. Para poder
+        accederlo, la factura debe incluir datos adicionales (RouteHints). Sólo el creador de la
+        factura puede solucionar este problema.
     </string>
 
     <string name="error_op_invoice_no_route_title">No hay una ruta disponible</string>
@@ -143,7 +145,8 @@
         La cotización de bitcoin cambió
     </string>
     <string name="error_op_exchange_rate_window_too_old_desc">
-        Tu pago no se completó porque el tipo de cambio de bitcoin cambió desde que comenzaste. Por favor inicia un nuevo pago.
+        Tu pago no se completó porque el tipo de cambio de bitcoin cambió desde que comenzaste. Por
+        favor inicia un nuevo pago.
     </string>
 
     <string name="error_op_cyclical_swap_title">Esta factura no se puede pagar</string>
@@ -1152,7 +1155,8 @@
         Código de verificación inválido
     </string>
     <string name="ek_verify_old">
-        Este es un código viejo. Revisa tu Kit de Emergencia más reciente\n(tu código empieza con %s)
+        Este es un código viejo. Revisa tu Kit de Emergencia más reciente\n(tu código empieza
+        con %s)
     </string>
     <string name="ek_verify_need_help">
         <annotation link="help">Necesitas ayuda?</annotation>
@@ -1161,8 +1165,8 @@
         No puedes encontrar el código?
     </string>
     <string name="ek_verify_help_body">
-        El código de verificación es un <annotation fontStyle="bold">número de 6 dígitos</annotation>,
-        ubicado arriba a la derecha en tu Kit de Emergencia.
+        El código de verificación es un <annotation fontStyle="bold">número de 6
+        dígitos</annotation>, ubicado arriba a la derecha en tu Kit de Emergencia.
     </string>
     <string name="ek_verify_action">Verificar código</string>
     <string name="ek_verify_help_save">
@@ -1299,13 +1303,14 @@
     <string name="rbf_notice_banner_desc">
         Esta transacción tiene RBF (replace-by-fee) activado. Esto permite al remitente incrementar
         la comisión original para una confirmación más rápida, pero también puede usarse para
-        cancelar transacciones. A menos que conozcas y confíes en el remitente, considera esto como un
-        riesgo hasta que se confirme la transacción.
+        cancelar transacciones. A menos que conozcas y confíes en el remitente, considera esto como
+        un riesgo hasta que se confirme la transacción.
     </string>
     
     <string name="turbo_channels">Turbo channels</string>
     <string name="turbo_channels_learn_more">
-        <annotation link="https://blog.muun.com/turbo-channels-es/">Aprende más</annotation> sobre las implicancias de los turbo channels.
+        <annotation link="https://blog.muun.com/turbo-channels-es/">Aprende más</annotation> sobre
+        las implicancias de los turbo channels.
     </string>
     <string name="turbo_channels_disable_title">¿Apagar turbo channels?</string>
     <string name="turbo_channels_disable_message">
@@ -1315,4 +1320,5 @@
 
     <string name="settings_header_advanced">Configuración avanzada</string>
     <string name="settings_lightning">Lightning Network</string>
+    <string name="dark_mode">Modo oscuro</string>
 </resources>

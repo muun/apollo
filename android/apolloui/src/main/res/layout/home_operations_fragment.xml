@@ -3,14 +3,16 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:muun="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/background">
+    <!-- Need to set a non-transparent background to avoid glitch on enter transition -->
 
     <io.muun.apollo.presentation.ui.view.MuunEmptyScreen
             android:id="@+id/empty_screen"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            muun:icon="@drawable/tx_empty"
+            muun:icon="@drawable/tx_history"
             muun:title="@string/home_operations_empty_title"
             muun:subtitle="@string/home_operations_empty" />
 

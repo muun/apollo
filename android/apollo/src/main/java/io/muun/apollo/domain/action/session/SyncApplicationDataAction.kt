@@ -5,6 +5,7 @@ import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.ApiMigrationsManager
 import io.muun.apollo.domain.action.ContactActions
+import io.muun.apollo.domain.action.LogoutActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction3

@@ -4,11 +4,10 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/new_home_tx_list_tooltip"
+        android:background="@color/new_home_tooltip"
         android:padding="6dp"
         tools:layout_gravity="center"
-        tools:layout_margin="53dp"
-        >
+        tools:layout_margin="53dp">
 
     <TextView
             android:id="@+id/new_home_tooltip_text"
@@ -17,9 +16,8 @@
             android:gravity="center"
             android:text="@string/new_home_tx_list_tooltip"
             android:textSize="13sp"
-            android:textColor="@color/muun_blue"
+            android:textColor="@color/blue"
             android:lineSpacingExtra="5sp"
-            android:textAlignment="center"
-            />
+            android:textAlignment="center" />
 
 </LinearLayout>

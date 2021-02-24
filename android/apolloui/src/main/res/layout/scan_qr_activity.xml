@@ -24,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 muun:action="@string/grant_camera_permission_button"
-                muun:icon="@drawable/qr_ilustration"
+                muun:icon="@drawable/enable_camera"
                 muun:subtitle="@string/camera_permission_request"
                 muun:title="@string/camera_permission_request_title" />
 
@@ -32,7 +32,7 @@
                 android:id="@+id/scan_qr_frame_background"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/muun_black" />
+                android:background="@color/black" />
 
         <me.dm7.barcodescanner.zxing.ZXingScannerView
                 android:id="@+id/scan_qr_scanner"
@@ -50,7 +50,7 @@
                 android:gravity="center_horizontal"
                 android:lineSpacingExtra="5dp"
                 android:text="@string/qr_scanner_subtitle"
-                android:textColor="@color/muun_white"
+                android:textColor="@color/white"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-medium"
                 android:visibility="gone"

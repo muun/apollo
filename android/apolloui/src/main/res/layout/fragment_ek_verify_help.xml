@@ -7,7 +7,7 @@
 
     <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingLeft="@dimen/muun_screen_margin"
             android:paddingRight="@dimen/muun_screen_margin"
@@ -30,7 +30,7 @@
                 style="@style/help_screen_image"
                 android:scaleType="centerInside"
                 android:layout_marginTop="32dp"
-                android:src="@drawable/ek_vcode_help"
-                />
+                android:src="@drawable/ek_vcode_help" />
+
     </LinearLayout>
 </ScrollView>

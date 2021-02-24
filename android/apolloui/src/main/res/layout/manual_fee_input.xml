@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         style="@style/muun_item"
         android:id="@+id/fee_option_item"
@@ -37,14 +38,15 @@
                     android:maxLength="8"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
-                    tools:text="1000"/>
+                    tools:text="1000"
+                    tools:ignore="HardcodedText" />
 
             <TextView
                     android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_weight="1"
                     android:textSize="14sp"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:fontFamily="sans-serif"
@@ -56,7 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:textStyle="bold"
-                    android:textColor="@color/muun_black"
+                    android:textColor="@color/text_primary_color"
                     android:textSize="16sp"
                     android:layout_marginStart="4dp"
                     android:fontFamily="sans-serif"
@@ -80,17 +82,17 @@
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:textSize="14sp"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:fontFamily="sans-serif"
                     android:lines="1"
-                    android:drawableStart="@drawable/clock"
-                    android:drawableTint="@color/muun_gray_dark"
                     android:drawablePadding="5dp"
                     android:visibility="invisible"
                     tools:visibility="visible"
-                    tools:text="Less than 72 h"/>
+                    tools:text="Less than 72 h"
+                    app:drawableStartCompat="@drawable/clock"
+                    app:drawableTint="@color/icon_color" />
 
             <TextView
                     android:id="@+id/fee_secondary_value"
@@ -99,7 +101,7 @@
                     android:layout_weight="0"
                     android:layout_marginStart="8dp"
                     android:textSize="14sp"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:maxLines="1"
                     android:fontFamily="sans-serif"
                     android:ellipsize="end"

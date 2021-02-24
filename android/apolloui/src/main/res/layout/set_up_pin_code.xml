@@ -18,9 +18,9 @@
                 android:src="@drawable/ic_arrow_back"
                 android:background="?android:attr/selectableItemBackground"
                 android:layout_margin="@dimen/muun_screen_margin"
-                tools:visibility="visible"
                 android:visibility="gone"
-        />
+                tools:visibility="visible"
+                app:tint="@color/icon_color" />
 
         <io.muun.apollo.presentation.ui.view.MuunPinInput
                 android:id="@+id/set_up_pin_input"

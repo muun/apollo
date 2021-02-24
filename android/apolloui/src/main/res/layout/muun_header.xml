@@ -7,7 +7,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/muun_header_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,12 +24,11 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="end|center_vertical"
                 android:layout_marginEnd="16dp"
-                android:textColor="@color/muun_gray_light"
+                android:textColor="@color/text_tertiary_color"
                 android:textSize="18sp"
-                android:visibility="gone"
-                />
+                android:visibility="gone" />
 
-    </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <View
             style="@style/drop_shadow_bottom"

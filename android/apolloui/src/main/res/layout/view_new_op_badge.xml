@@ -20,6 +20,6 @@
             android:fontFamily="sans-serif-medium"
             tools:text="-740287 SAT"
             tools:background="@drawable/new_op_badge_blue_bkg"
-            tools:textColor="@color/muun_blue"
-            />
+            tools:textColor="@color/blue" />
+
 </FrameLayout>

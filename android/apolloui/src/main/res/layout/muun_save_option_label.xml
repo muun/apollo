@@ -11,7 +11,7 @@
         android:paddingRight="8dp"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="@color/muun_blue"
+        android:textColor="@color/blue"
         android:maxLines="1"
         tools:text="Recommended"
         tools:background="@drawable/muun_save_option_label_recommended_bg" />

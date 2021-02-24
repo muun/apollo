@@ -20,7 +20,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/scanqr_drawer_title"
                 android:textAllCaps="true"
-                android:textColor="@color/muun_blue"
+                android:textColor="@color/blue"
                 android:textStyle="bold" />
 
         <TextView
@@ -35,7 +35,7 @@
             android:id="@+id/icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:src="@drawable/ic_clipboard_blue" />
 
 </LinearLayout>

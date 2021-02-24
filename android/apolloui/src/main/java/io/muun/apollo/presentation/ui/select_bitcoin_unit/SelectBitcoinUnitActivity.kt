@@ -68,7 +68,7 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter?>(),
         val selectedIcon = UiUtils.getTintedDrawable(
             this,
             R.drawable.ic_check_black_24_px,
-            R.color.muun_blue
+            R.color.blue
         )
 
         satoshisUnitItem.setIcon(null)

@@ -11,18 +11,18 @@ import android.view.Gravity;
 import android.view.View;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
-import androidx.appcompat.widget.Toolbar;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import com.google.android.material.appbar.MaterialToolbar;
 import rx.functions.Action0;
 
 import javax.annotation.Nonnull;
 
 public class PopupWindow {
 
-    @BindColor(R.color.muun_white)
+    @BindColor(R.color.background)
     int backgroundColor;
 
     @BindDrawable(R.drawable.pre_lollipop_popup_background)
@@ -43,8 +43,8 @@ public class PopupWindow {
 
         popupWindow = new android.widget.PopupWindow(
                 layoutView,
-                Toolbar.LayoutParams.WRAP_CONTENT,
-                Toolbar.LayoutParams.WRAP_CONTENT
+                MaterialToolbar.LayoutParams.WRAP_CONTENT,
+                MaterialToolbar.LayoutParams.WRAP_CONTENT
         );
 
         if (UiUtils.isLollipop()) {

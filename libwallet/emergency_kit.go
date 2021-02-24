@@ -14,7 +14,6 @@ type EKInput struct {
 	FirstFingerprint   string
 	SecondEncryptedKey string
 	SecondFingerprint  string
-	SwapperPublicKey   string
 }
 
 // EKOutput with the html as string and the verification code
@@ -119,16 +118,10 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 		createEmergencyKitMetadataKey(secondKey),
 	}
 
-	// Create the public key array:
-	publicKeys := []*emergencykit.MetadataPublicKey{
-		{Tag: emergencykit.SwapServerTag, PublicKey: ekParams.SwapperPublicKey},
-	}
-
 	metadata := &emergencykit.Metadata{
-		Version:           3,
+		Version:           2,
 		BirthdayBlock:     int(secondKey.Birthday),
 		EncryptedKeys:     keys,
-		PublicKeys:        publicKeys,
 		OutputDescriptors: descriptors,
 	}
 

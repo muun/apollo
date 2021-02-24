@@ -7,7 +7,8 @@ public interface AppStandbyBucketProvider {
         FREQUENT,
         WORKING_SET,
         ACTIVE,
-        UNKNOWN
+        UNKNOWN,
+        UNAVAILABLE,
     }
 
     Bucket current();

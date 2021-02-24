@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
-import butterknife.BindColor;
 import butterknife.BindView;
 import icepick.State;
 import rx.functions.Action0;
@@ -34,9 +33,6 @@ public class MuunLockOverlay extends MuunView {
 
     @BindView(R.id.unlock_pin_input)
     MuunPinInput pinInput;
-
-    @BindColor(R.color.muun_gray_dark)
-    int iconOverBackgroundColor;
 
     @State
     boolean isFingerprintAllowed;

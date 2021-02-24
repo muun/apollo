@@ -1,19 +1,17 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.ui.utils.UiUtils;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.core.graphics.drawable.DrawableCompat;
 import butterknife.BindColor;
-import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.BindViews;
 
@@ -60,16 +58,7 @@ public class MuunNumericKeyboard extends MuunView {
     @BindView(R.id.key_del)
     ImageView deleteKey;
 
-    @BindDrawable(R.drawable.ic_backspace_black_24_px)
-    Drawable deleteKeyIcon;
-
-    @BindDrawable(R.drawable.ic_backspace_black_24_px)
-    Drawable deleteKeyIconDisabled;
-
-    @BindColor(R.color.muun_gray_light)
-    int disabledTextColor;
-
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.text_secondary_color)
     int alphabetCharactersColor;
 
     private OnKeyListener listener;
@@ -111,9 +100,6 @@ public class MuunNumericKeyboard extends MuunView {
             numberKey.setOnClickListener(ignored -> onNumberKeyClicked(number));
         }
 
-        deleteKeyIconDisabled = DrawableCompat.wrap(deleteKeyIconDisabled);
-        DrawableCompat.setTint(deleteKeyIconDisabled, disabledTextColor);
-
         deleteKey.setOnClickListener(ignored -> onDeleteKeyClicked());
     }
 
@@ -136,7 +122,7 @@ public class MuunNumericKeyboard extends MuunView {
      * Set whether the delete key can be pressed.
      */
     public void setDeleteEnabled(boolean enabled) {
-        deleteKey.setImageDrawable(enabled ? deleteKeyIcon : deleteKeyIconDisabled);
+        UiUtils.setTint(deleteKey, enabled ? R.color.icon_color : R.color.disabled_color);
         deleteKey.setEnabled(enabled);
     }
 

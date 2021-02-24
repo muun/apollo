@@ -9,19 +9,18 @@
         android:id="@+id/select_currency_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        muun:elevated="true"
-    />
+        muun:elevated="true" />
 
     <io.muun.apollo.presentation.ui.view.MuunSettingItem
             android:id="@+id/bitcoin_unit_btc"
             muun:label="@string/select_bitcoin_unit_btc"
-            style="@style/settings_item"
-            />
+            muun:iconTint="@color/blue"
+            style="@style/settings_item" />
 
     <io.muun.apollo.presentation.ui.view.MuunSettingItem
             android:id="@+id/bitcoin_unit_sat"
             muun:label="@string/select_bitcoin_unit_sat"
-            style="@style/settings_item"
-            />
+            muun:iconTint="@color/blue"
+            style="@style/settings_item" />
 
 </LinearLayout>

@@ -46,8 +46,8 @@ public class AnonFeedbackActivity
     @BindView(R.id.anon_feedback_open_email_app)
     MuunButton openEmailAppButton;
 
-    @BindColor(R.color.muun_gray_dark)
-    int muunGrayDark;
+    @BindColor(R.color.text_secondary_color)
+    int textSecondaryColor;
 
     @Override
     protected void inject() {
@@ -67,7 +67,7 @@ public class AnonFeedbackActivity
         header.showTitle(R.string.feedback_title);
         header.setNavigation(Navigation.BACK);
 
-        explanation.setTextColor(muunGrayDark); // Setting attr in xml isn't working
+        explanation.setTextColor(textSecondaryColor); // Setting attr in xml isn't working
         explanation.setText(getExplanationBase());
 
         openEmailAppButton.setEnabled(presenter.hasEmailAppInstalled());

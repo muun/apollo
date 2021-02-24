@@ -12,6 +12,14 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 )
 
+const (
+	// EncodedKeyLength is the size of a modern encoded key, as exported by the clients.
+	EncodedKeyLength = 147
+
+	// EncodedKeyLengthLegacy is the size of a legacy key, when salt resided only in the 2nd key.
+	EncodedKeyLengthLegacy = 136
+)
+
 type ChallengePrivateKey struct {
 	key *btcec.PrivateKey
 }
@@ -117,9 +125,15 @@ func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) 
 		return nil, errors.New("decrypting key: failed to read ciphertext")
 	}
 
-	n, err = reader.Read(recoveryCodeSalt)
-	if err != nil || n != 8 {
-		return nil, errors.New("decrypting key: failed to read recoveryCodeSalt")
+	// NOTE:
+	// The very, very old format for encrypted keys didn't contain the encryption salt in the first
+	// of the two keys. This is a valid scenario, and a zero-filled salt can be returned.
+	if shouldHaveSalt(encodedKey) {
+		n, err = reader.Read(recoveryCodeSalt)
+
+		if err != nil || n != 8 {
+			return nil, errors.New("decrypting key: failed to read recoveryCodeSalt")
+		}
 	}
 
 	result := &encryptedPrivateKey{
@@ -131,4 +145,8 @@ func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) 
 	}
 
 	return result, nil
+}
+
+func shouldHaveSalt(encodedKey string) bool {
+	return len(encodedKey) > EncodedKeyLengthLegacy // not military-grade logic, but works for now
 }

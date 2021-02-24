@@ -35,14 +35,14 @@ class NewOpBadge @JvmOverloads constructor(
     @BindDrawable(R.drawable.new_op_badge_blue_bkg)
     lateinit var outgoingTxBkg: Drawable
 
-    @BindColor(R.color.muun_blue)
+    @BindColor(R.color.blue)
     @JvmField
     internal var outgoingTxColor: Int = 0
 
     @BindDrawable(R.drawable.new_op_badge_green_bkg)
     lateinit var incomingTxBkg: Drawable
 
-    @BindColor(R.color.new_op_badge_green)
+    @BindColor(R.color.green)
     @JvmField
     internal var incomingTxColor: Int = 0
 

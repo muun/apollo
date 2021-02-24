@@ -6,16 +6,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="10dp">
 
         <RelativeLayout
                 android:id="@+id/invoice_expired_overlay"
@@ -24,7 +14,8 @@
                 android:translationZ="1dp"
                 android:clickable="true"
                 android:focusable="true"
-                android:background="#F2F4F8FD"
+                android:background="@color/invoice_expired_overlay"
+                android:alpha="0.95"
                 android:visibility="gone">
 
             <LinearLayout
@@ -38,13 +29,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/show_qr_invoice_expired"
+                        android:textColor="@color/text_secondary_color"
                         android:layout_marginStart="40dp"
                         android:layout_marginEnd="40dp"
                         android:layout_marginBottom="16dp"
                         android:lineSpacingExtra="8dp"
                         android:textSize="16sp"
-                        android:gravity="center"
-                        />
+                        android:gravity="center" />
 
                 <io.muun.apollo.presentation.ui.view.MuunButton
                         android:id="@+id/create_other_invoice"
@@ -65,7 +56,12 @@
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/qr_overlay"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
 
             <io.muun.apollo.presentation.ui.view.HtmlTextView
                     android:id="@+id/ln_invoice_expiration_message"
@@ -78,7 +74,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/show_qr_image_qr"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:textSize="16sp"
                     android:gravity="center"
                     android:visibility="gone"
@@ -108,9 +104,10 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintBottom_toTopOf="@id/buttons_container"
                     app:drawableEndCompat="@drawable/ic_visibility"
+                    app:drawableTint="@color/icon_color"
                     android:drawablePadding="8dp"
                     android:gravity="center"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:textSize="13sp"
                     tools:text="lnbc1p0856nkpp5jgd...3s64rqeqpgwnlyc" />
 
@@ -137,7 +134,7 @@
                         android:paddingEnd="12dp"
                         android:paddingBottom="8dp"
                         android:text="@string/share"
-                        android:textColor="@color/muun_blue"
+                        android:textColor="@color/blue"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -151,7 +148,7 @@
                         android:paddingEnd="12dp"
                         android:paddingBottom="8dp"
                         android:text="@string/copy"
-                        android:textColor="@color/muun_blue"
+                        android:textColor="@color/blue"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -165,9 +162,6 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 app:title="@string/show_qr_invoice_loading"
-                android:visibility="gone"
-                />
-
-    </androidx.cardview.widget.CardView>
+                android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

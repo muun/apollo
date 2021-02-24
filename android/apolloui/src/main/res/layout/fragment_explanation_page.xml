@@ -40,7 +40,7 @@
                     android:layout_marginTop="12dp"
                     android:gravity="center"
                     android:lineSpacingMultiplier="1.25"
-                    android:textColor="@color/muun_gray_dark"
+                    android:textColor="@color/text_secondary_color"
                     android:textSize="16sp"
                     android:typeface="normal"
                     tools:text="This is the body of the explanation" />

@@ -45,7 +45,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     @BindView(R.id.home_header)
     MuunHeader header;
 
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.icon_color)
     int menuIconColor;
 
     @State

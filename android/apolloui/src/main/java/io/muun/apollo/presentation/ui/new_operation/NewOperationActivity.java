@@ -193,23 +193,17 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     View[] noteEnteredViews;
 
     // Resources:
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.text_secondary_color)
     int currencyTextColor;
 
-    @BindColor(R.color.muun_black)
+    @BindColor(R.color.text_primary_color)
     int amountNumberTextColor;
 
-    @BindColor(R.color.muun_blue)
-    int linkEnabledColor;
+    @BindColor(R.color.red)
+    int errorColor;
 
-    @BindColor(R.color.muun_gray_dark)
-    int linkDisabledColor;
-
-    @BindColor(R.color.muun_red)
-    int muunRedColor;
-
-    @BindColor(R.color.muun_gray_dark)
-    int muunGrayDark;
+    @BindColor(R.color.icon_color)
+    int iconColor;
 
     // State:
     @State
@@ -269,7 +263,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
             presenter.onViewCreated(uri, origin);
 
             // Needed for api levels < 23 (TextView's drawableTint xml attr)
-            UiUtils.setRightDrawableTint(feeLabel, R.drawable.ic_edit_black_24, muunGrayDark);
+            UiUtils.setRightDrawableTint(feeLabel, R.drawable.ic_edit_black_24, iconColor);
 
         } else {
             showTextToast(getString(R.string.error_no_valid_payment_details_provided));
@@ -886,8 +880,8 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
         return MoneyHelper.toLongRichText(
                 amount,
-                isValid ? amountNumberTextColor : muunRedColor,
-                isValid ? currencyTextColor : muunRedColor,
+                isValid ? amountNumberTextColor : errorColor,
+                isValid ? currencyTextColor : errorColor,
                 currencyDisplayMode
         );
     }

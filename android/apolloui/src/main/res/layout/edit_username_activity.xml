@@ -14,8 +14,7 @@
             android:id="@+id/edit_username_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            muun:elevated="true"
-            />
+            muun:elevated="true" />
 
         <io.muun.apollo.presentation.ui.view.MuunTextInput
             android:id="@+id/settings_edit_first_name"
@@ -27,8 +26,7 @@
             android:layout_gravity="center_horizontal"
             android:imeOptions="actionNext"
             android:nextFocusForward="@+id/settings_edit_last_name"
-            android:hint="@string/settings_edit_first_name"
-            />
+            android:hint="@string/settings_edit_first_name" />
 
         <io.muun.apollo.presentation.ui.view.MuunTextInput
             android:id="@+id/settings_edit_last_name"
@@ -39,8 +37,7 @@
             android:layout_marginBottom="16dp"
             android:layout_gravity="center_horizontal"
             android:imeOptions="actionNext"
-            android:hint="@string/settings_edit_last_name"
-                />
+            android:hint="@string/settings_edit_last_name" />
 
     </LinearLayout>
 </ScrollView>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -11,8 +11,9 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:textSize="16sp"
-            android:textColor="@color/muun_gray_dark"
-            android:textColorLink="@color/muun_blue"
-            android:lineSpacingMultiplier="1.4" />
+            android:textColor="@color/text_secondary_color"
+            android:textColorLink="@color/blue"
+            android:lineSpacingMultiplier="1.4"
+            tools:text="Sample Message" />
 
 </ScrollView>

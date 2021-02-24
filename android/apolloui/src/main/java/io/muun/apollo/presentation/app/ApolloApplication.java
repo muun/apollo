@@ -13,12 +13,15 @@ import io.muun.apollo.data.logging.MuunTree;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
+import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent;
 import io.muun.apollo.presentation.ui.utils.UserFacingErrorMessagesImpl;
+import io.muun.common.exception.MissingCaseError;
 
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -29,6 +32,7 @@ import android.provider.Settings;
 import android.util.Log;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 import androidx.work.Configuration;
@@ -65,6 +69,9 @@ public abstract class ApolloApplication extends Application
     @Inject
     LibwalletDataDirectory libwalletDataDirectory;
 
+    @Inject
+    NightModeManager nightModeManager;
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -87,6 +94,8 @@ public abstract class ApolloApplication extends Application
         initializeStaticSingletons();
         initializeDagger();
 
+        setNightMode();
+
         initializeLibwallet();
 
         setupDebugTools();
@@ -104,6 +113,26 @@ public abstract class ApolloApplication extends Application
 
         if (lockManager.isLockConfigured()) {
             lockManager.setLock();
+        }
+    }
+
+    private void setNightMode() {
+        final NightMode userPreference = nightModeManager.get();
+
+        switch (userPreference) {
+            case DARK:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+
+            case LIGHT:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+
+            case FOLLOW_SYSTEM:
+                break; // Shouldn't need to do anything, since current theme is provided by system
+
+            default:
+                throw new MissingCaseError(userPreference, "NighMode preference");
         }
     }
 

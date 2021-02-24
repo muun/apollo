@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
@@ -47,6 +48,11 @@ fun Activity.getStyledString(@StringRes resId: Int, vararg args: String) =
 fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
     StyledStringRes(context, resId).toCharSequence(*args)
 
+fun Activity.getCurrentNightMode() =
+    resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+fun Fragment.getCurrentNightMode() =
+    resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
 
 /**
  * Dangerous. Might throw ActivityNotFoundException if there's no application to handle the intent.

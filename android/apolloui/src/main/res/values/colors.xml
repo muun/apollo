@@ -2,63 +2,136 @@
 <resources>
 
     <!-- General-purpose color scheme -->
-    <color name="muun_blue">#2474cd</color>
-    <color name="muun_blue_dark">#2064b3</color>
-    <color name="muun_blue_light">#ADD4FF</color>
-    <color name="muun_blue_lighter">#F2F7FC</color>
-    <color name="muun_blue_disabled">#D3E3F5</color>
-    <color name="muun_black">#1a2733</color>
-    <color name="muun_gray_dark">#57656f</color>
-    <color name="muun_gray_light">#cbced2</color>
-    <color name="muun_gray_lighter">#E5ECF4</color>
-    <color name="muun_gray_legacy">#f4f5f6</color>
-    <color name="muun_red">#cf4454</color>
-    <color name="muun_green">#1fcc7e</color>
-    <color name="muun_green_pale">#F7FCF9</color>
-    <color name="muun_white">#ffffff</color>
-    <color name="muun_white_almost">#eeeff0</color>
+    <color name="blue_darkest">#0A1726</color>
+    <color name="blue_dark">#0F2842</color>
+    <color name="blue">#2474CD</color>  <!-- Has DarkMode override -->
+    <color name="blue_light">#D9EBFF</color>
+    <color name="blue_lightest">#F4F8FD</color>
+
+    <color name="green_darkest">#0A201A</color>
+    <color name="green_dark">#175B2F</color>
+    <color name="green">#36A93F</color> <!-- Has DarkMode override -->
+    <color name="green_light">#C3E5C5</color>
+    <color name="green_lightest">#F7FCF9</color>
+
+    <color name="red_darkest">#1C1017</color>
+    <color name="red_dark">#5D1D22</color>
+    <color name="red">#E03738</color>
+    <color name="red_light">#F6C3C3</color>
+    <color name="red_lightest">#FDF5F5</color>
+
+    <color name="yellow_darkest">#1F1D11</color>
+    <color name="yellow_dark">#6A510B</color>
+    <color name="yellow">#F49F00</color>
+    <color name="yellow_light">#FFE296</color>
+    <color name="yellow_lightest">#FFFDEF</color>
+
+    <color name="orange_darkest">#1D1611</color>
+    <color name="orange_dark">#62340B</color>
+    <color name="orange">#EB7100</color>
+    <color name="orange_light">#F7C699</color>
+    <color name="orange_lightest">#FFF8EF</color>
+
+    <color name="black">#060C13</color>
+    <color name="gray_darkest">#1A1F26</color>
+    <color name="gray_dark">#57656F</color>
+    <color name="gray_light">#CBCED2</color>
+    <color name="gray_lightest">#F4F4F5</color>
+    <color name="white">#FFFFFF</color>
+
+    <!--  General purpose colors  -->
+    <color name="icon_color">@color/gray_dark</color>
+    <color name="text_primary_color">@color/black</color>
+    <color name="text_secondary_color">@color/gray_dark</color>
+    <color name="text_tertiary_color">@color/gray_light</color>
+    <color name="disabled_color">@color/gray_light</color>
+    <color name="background">@color/white</color>
+    <color name="dialog_background">@color/white</color>
+    <color name="error_color">@color/red</color>
+    <color name="warning_color">@color/yellow</color>
+    <color name="pending_color">@color/yellow</color>
+    <color name="rbf_color">@color/orange</color>
+
 
     <!-- Special cases -->
-    <color name="operation_pending">#FAB931</color>
-    <color name="operation_failed">#E03738</color>
-    <color name="operation_completed">#4C9400</color>
-
-    <color name="operation_self">@color/muun_gray_dark</color>
-    <color name="operation_incoming">#4C9400</color>
-    <color name="operation_outgoing">@color/muun_gray_dark</color>
-
-    <!-- A3 = 64% alpha, according to https://gist.github.com/lopspower/03fb1cc0ac9f32ef38f4  -->
-    <color name="scanner_overlay">#a31a2733</color>
-    <color name="scanner_border">#57B9EA</color>
-
-    <color name="toolbar_back_arrow">@color/muun_gray_dark</color>
-
-    <color name="transparent_muun_white">#e6ffffff</color>
-
-    <color name="muun_blue_faded">#f4f8fd</color>
-    <color name="muun_blue_pale">#f8f8ff</color>
-    <color name="warning">#c58450</color>
-    <color name="error">#c14E57</color>
-
-    <color name="muun_button_primary_disabled_background">#d3e3f5</color>
-    <color name="security_center_card_skipped_background">
-        @color/muun_button_primary_disabled_background
-    </color>
 
     <!-- Needed for ic_launcher adaptative icons -->
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!--
+    Note: seems android doesn't fully support app icon color change based on ui-mode so we
+    stick to a fixed app icon. See:
+    www.reddit.com/r/GooglePixel/comments/eqagn9/we_need_app_icons_backgrounds_to_respect_dark_mode/
+    -->
+    <color name="ic_launcher_background">@color/white</color>
 
-    <!--  Notice Banner Colors -->
-    <color name="notice_banner_background">#FFFDEF</color>
-    <color name="notice_banner_border">#FFE296</color>
-    <color name="notice_banner_icon">#F49300</color>
-    <color name="notice_banner_rbf_bkg">#FFF8EF</color>
+    <!-- Used Only in api >= 21  -->
+    <color name="statusBarColor">@color/black</color>
 
-    <!--  Notice Banner Colors -->
-    <color name="balance_clock_pending">#FFB800</color>
-    <color name="balance_clock_rbf">#EB7100</color>
+    <!--
+     TODO: use android attrs: colorPrimary, colorError, colorAccent/Secondary,
+     colorControlHighlight, etc... See: https://link.medium.com/NOx9CHPhndb
+     -->
 
-    <color name="new_home_tx_list_tooltip">#F7F9FE</color>
-    <color name="new_op_badge_light_blue">#F7FBFF</color>
-    <color name="new_op_badge_green">#218321</color>
+    <!-- Styles occurrences. Named after the style name -->
+    <color name="settings_item_separator">@color/gray_light</color>
+    <color name="muun_new_operation_separator">@color/gray_light</color>
+    <color name="muun_ek_save_separator">@color/gray_lightest</color>
+
+    <!--  Drawable res colors. Named after the drawable name and state/item  -->
+    <color name="muun_dialog_border_rounded">@color/white</color>
+    <color name="cursor">@color/black</color>
+    <color name="muun_button_covered_bg">@color/gray_dark</color>
+    <color name="muun_button_floating_bg_enabled">@color/blue</color>
+    <color name="muun_button_floating_bg_disabled">@color/blue_lightest</color>
+    <color name="muun_button_primary_bg_enabled">@color/blue</color>
+    <color name="muun_button_primary_bg_disabled">@color/blue_light</color>
+    <color name="muun_button_primary_text_disabled">@color/white</color>
+    <color name="muun_button_secondary_bg">@color/white</color>
+    <color name="round_rect_background">@color/white</color>
+    <color name="round_rect_background_border">@color/gray_light</color>
+    <color name="border_bg_selected">@color/blue_lightest</color>
+    <color name="border_border_selected">@color/blue</color>
+    <color name="border_border">@color/gray_light</color>
+    <color name="border_border_manual_fee">@color/blue</color>
+    <color name="muun_bubble_button_bg">@color/blue_lightest</color>
+    <color name="muun_bubble_button_ripple">@color/blue_light</color>
+    <color name="muun_bubble_error">@color/red</color>
+    <color name="muun_bubble_off_border">@color/blue</color>
+    <color name="muun_bubble_on_bg">@color/blue</color>
+    <color name="muun_bubble_success_bg">@color/green</color>
+    <color name="muun_button_layout_bg">@color/white</color>
+    <color name="muun_pill_background">@color/gray_lightest</color>
+    <color name="muun_progress_bar_bg">@color/gray_lightest</color>
+    <color name="muun_recovery_code_box_background">@color/gray_light</color>
+    <color name="muun_save_option_label_disabled_bg">@color/gray_light</color>
+    <color name="muun_save_option_label_recommended_bg">@color/blue_lightest</color>
+    <color name="muun_task_card_active_bg">@color/white</color>
+    <color name="muun_task_card_active_bg_border">@color/blue</color>
+    <color name="muun_task_card_default_bg">@color/white</color>
+    <color name="muun_task_card_default_bg_border">@color/gray_lightest</color>
+    <color name="muun_task_card_done_bg">@color/green_lightest</color>
+    <color name="muun_task_card_skipped_bg_border">@color/blue_light</color>
+    <color name="muun_task_card_skipped_tag">@color/blue_light</color>
+    <color name="new_op_badge_blue_bkg">@color/blue_lightest</color>
+    <color name="new_op_badge_green_bkg">@color/green_lightest</color>
+    <color name="notice_banner_background">@color/yellow_lightest</color>
+    <color name="notice_banner_background_border">@color/yellow_light</color>
+    <color name="notice_banner_rbf_bkg">@color/orange_light</color>
+    <color name="notice_banner_rbf_bkg_border">@color/orange</color>
+    <color name="pre_lollipop_popup_background_border">@color/gray_dark</color>
+    <color name="pre_lollipop_popup_background">@color/white</color>
+    <color name="ripple_gray">@color/gray_dark</color>
+    <color name="slider_dot_active">@color/blue</color>
+    <color name="slider_dot_inactive">@color/gray_light</color>
+    <color name="muun_ripple_circle_bg">@color/white</color>
+
+    <!-- Code References -->
+    <color name="toolbarColor">@color/background</color>
+
+    <!-- Layout references -->
+    <color name="text_status_message">@color/gray_dark</color>
+    <color name="text_target_address">@color/gray_dark</color>
+    <color name="lightning_settings_background">@color/blue_lightest</color>
+    <color name="new_home_tooltip">@color/blue_lightest</color>
+    <color name="invoice_expired_overlay">@color/blue_lightest</color>
+
 </resources>

@@ -332,7 +332,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      * needing anything from the local data (which may or may not be available).
      */
     protected boolean canLogout() {
-        return logoutOptionsSel.get().canDeleteWallet();
+        return logoutOptionsSel.canDeleteWallet();
     }
 
     /**

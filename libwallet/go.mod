@@ -10,7 +10,7 @@ require (
 	github.com/lightningnetwork/lightning-onion v1.0.1
 	github.com/lightningnetwork/lnd v0.10.4-beta
 	github.com/miekg/dns v1.1.29 // indirect
-	github.com/pdfcpu/pdfcpu v0.3.8
+	github.com/pdfcpu/pdfcpu v0.3.9
 	github.com/pkg/errors v0.9.1
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect

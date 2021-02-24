@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.muun.apollo.presentation.ui.view.MuunButtonLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -35,6 +36,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/recovery_code_continue"
-            />
+            android:text="@string/recovery_code_continue" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

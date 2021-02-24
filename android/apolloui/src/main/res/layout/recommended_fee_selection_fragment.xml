@@ -3,8 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:background="@color/muun_white">
+        android:layout_height="match_parent">
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -28,7 +27,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:text="@string/change_password_title"
-                        android:textColor="@color/muun_gray_dark"
+                        android:textColor="@color/text_secondary_color"
                         android:textSize="16sp"
                         tools:text="Select a confirmation time. What's this?" />
 

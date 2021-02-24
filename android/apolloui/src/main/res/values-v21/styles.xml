@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="BaseAppTheme">
-        <item name="android:statusBarColor">@color/muun_black</item>
+        <item name="android:statusBarColor">@color/statusBarColor</item>
         <item name="android:windowContentTransitions">true</item>
     </style>
 </resources>

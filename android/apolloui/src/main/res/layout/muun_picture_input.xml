@@ -2,8 +2,7 @@
 <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
 
     <io.muun.apollo.presentation.ui.view.ProfilePictureView
             android:id="@+id/muun_picture_input_button"
@@ -13,16 +12,14 @@
             android:elevation="0dp"
             android:background="@drawable/avatar_badge_grey"
             android:translationZ="0dp"
-            style="?android:attr/borderlessButtonStyle"
-    />
+            style="?android:attr/borderlessButtonStyle" />
 
     <ImageView
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_gravity="bottom|right"
+            android:layout_gravity="bottom|end"
             android:src="@drawable/edit_photo"
-            android:contentDescription="@string/edit_profile_pic"
-    />
+            android:contentDescription="@string/edit_profile_pic" />
 
     <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/muun_button_progress_bar"
@@ -31,7 +28,6 @@
             android:layout_gravity="center"
             android:translationZ="10dp"
             android:visibility="gone"
-            style="?android:attr/progressBarStyleLarge"
-    />
+            style="?android:attr/progressBarStyleLarge" />
 
 </FrameLayout>

@@ -45,7 +45,7 @@ public class MuunHeader extends MuunView {
     @BindView(R.id.muun_header_drop_shadow)
     View dropShadow;
 
-    @BindColor(R.color.muun_white)
+    @BindColor(R.color.toolbarColor)
     int defaultBackgroundColor;
 
     private ActionBar actionBar;
@@ -186,7 +186,7 @@ public class MuunHeader extends MuunView {
 
         // Tint:
         final Drawable drawable = toolbar.getNavigationIcon();
-        final int color = ContextCompat.getColor(getContext(), R.color.toolbar_back_arrow);
+        final int color = ContextCompat.getColor(getContext(), R.color.icon_color);
         drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 

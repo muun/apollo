@@ -11,8 +11,7 @@
             android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:elevated="true"
-            />
+            app:elevated="true" />
 
     <TextView
             android:id="@+id/feedback_explanation"
@@ -24,8 +23,7 @@
             android:layout_marginBottom="@dimen/signup_explanation_margin"
             android:text="@string/feedback_explanation"
             android:textSize="@dimen/muun_text_size_body"
-            android:color="@color/muun_gray_dark"
-            />
+            android:color="@color/text_secondary_color" />
 
     <io.muun.apollo.presentation.ui.view.MuunTextInput
             android:id="@+id/feedback_content"
@@ -34,14 +32,13 @@
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:inputType="textMultiLine"
-            android:hint="@string/feedback_input_hint"
-            />
+            android:hint="@string/feedback_input_hint" />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_primary"
             android:id="@+id/submit"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:text="@string/feedback_action"
-    />
+            android:text="@string/feedback_action" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

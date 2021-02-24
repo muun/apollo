@@ -2,6 +2,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
         android:shape="rectangle" >
 
-    <solid android:color="@color/security_center_card_skipped_background" />
+    <solid android:color="@color/muun_task_card_skipped_tag" />
     <corners android:radius="10dp" />
 </shape>

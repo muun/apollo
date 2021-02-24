@@ -1,32 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
-    android:background="@color/muun_white">
-
-    <TextView
-        android:id="@+id/muun_action_drawer_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:visibility="gone"
-        android:textSize="16sp"
-        android:fontFamily="sans-serif-medium"
-        android:textStyle="normal"
-        android:textColor="@color/muun_black"
-        android:lineSpacingExtra="0sp"/>
-
-    <LinearLayout
-        android:id="@+id/muun_action_drawer_container"
-        android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-    />
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@color/dialog_background">
+
+    <TextView
+            android:id="@+id/muun_action_drawer_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="0sp"
+            android:textColor="@color/text_primary_color"
+            android:textSize="16sp"
+            android:textStyle="normal"
+            android:visibility="gone" />
+
+    <LinearLayout
+            android:id="@+id/muun_action_drawer_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" />
+
 </LinearLayout>

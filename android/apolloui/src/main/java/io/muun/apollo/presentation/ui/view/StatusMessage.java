@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
+import androidx.core.widget.ImageViewCompat;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -33,13 +35,13 @@ public class StatusMessage extends MuunView {
     @BindDrawable(R.drawable.alert_badge)
     Drawable warningIcon;
 
-    @BindColor(R.color.warning)
+    @BindColor(R.color.warning_color)
     int warningColor;
 
     @BindDrawable(R.drawable.error_badge)
     Drawable errorIcon;
 
-    @BindColor(R.color.error)
+    @BindColor(R.color.error_color)
     int errorColor;
 
     public StatusMessage(Context context) {
@@ -126,6 +128,7 @@ public class StatusMessage extends MuunView {
                            char separator) {
 
         imageView.setImageDrawable(warningIcon);
+        ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(warningColor));
         imageView.setVisibility(showIcon ? View.VISIBLE : View.GONE);
 
         textView.setText(TextUtils.concat(
@@ -149,6 +152,7 @@ public class StatusMessage extends MuunView {
      */
     public void setError(String mainMessage, CharSequence description) {
         imageView.setImageDrawable(errorIcon);
+        ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(errorColor));
 
         textView.setText(TextUtils.concat(
                 highlight(mainMessage + ".", errorColor),

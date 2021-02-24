@@ -2,24 +2,26 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatDelegate
 import butterknife.BindView
 import butterknife.OnClick
+import com.google.android.material.switchmaterial.SwitchMaterial
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.errors.UserFacingError
-import io.muun.apollo.domain.model.CurrencyDisplayMode
-import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.model.UserProfile
+import io.muun.apollo.domain.model.*
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity
+import io.muun.apollo.presentation.ui.utils.UiUtils
+import io.muun.apollo.presentation.ui.utils.getCurrentNightMode
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
@@ -50,6 +52,9 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     @BindView(R.id.settings_primary_currency)
     lateinit var currencyItem: MuunSettingItem
 
+    @BindView(R.id.dark_mode_switch)
+    lateinit var darkModeSwitch: SwitchMaterial
+
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
 
@@ -78,6 +83,10 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         muunPictureInput.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
         muunPictureInput.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
         versionCode.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+
+        if (UiUtils.supportsDarkMode()) {
+            darkModeSwitch.visibility = View.GONE // On Android 10+ we follow the system setting
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -100,6 +109,18 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         setUpPublicProfileSection(user)
         setUpWalletDetailsSection(user)
         setUpGeneralSection(user, mode, rateWindow)
+    }
+
+    override fun setNightMode(mode: NightMode) {
+        when(mode) {
+            NightMode.LIGHT -> darkModeSwitch.isChecked = false
+            NightMode.DARK -> darkModeSwitch.isChecked = true
+            NightMode.FOLLOW_SYSTEM -> setNightModeAccordingToSystem()
+        }
+    }
+
+    private fun setNightModeAccordingToSystem() {
+        darkModeSwitch.isChecked = getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
     }
 
     private fun setUpRecoveryAndLogoutSection(user: User) {
@@ -196,6 +217,22 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     @OnClick(R.id.settings_bitcoin_unit)
     fun editBitcoinUnit() {
         presenter.navigateToSelectBitcoinUnit()
+    }
+
+    @OnClick(R.id.dark_mode_switch)
+    fun onDarkModeToggle() {
+        when (getCurrentNightMode()) {
+
+            Configuration.UI_MODE_NIGHT_YES -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                presenter.saveNightModePreference(NightMode.LIGHT)
+            }
+
+            Configuration.UI_MODE_NIGHT_NO -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                presenter.saveNightModePreference(NightMode.DARK)
+            }
+        }
     }
 
     /**

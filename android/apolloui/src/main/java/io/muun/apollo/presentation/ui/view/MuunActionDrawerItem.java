@@ -23,10 +23,10 @@ public class MuunActionDrawerItem extends MuunView {
     @BindView(R.id.muun_action_drawer_item_label)
     TextView label;
 
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.text_secondary_color)
     int enabledTintColor;
 
-    @BindColor(R.color.muun_gray_light)
+    @BindColor(R.color.disabled_color)
     int disabledTintColor;
 
     public MuunActionDrawerItem(Context context) {

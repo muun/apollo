@@ -9,8 +9,7 @@
         android:paddingBottom="24dp"
         android:paddingLeft="@dimen/muun_screen_margin"
         android:paddingRight="@dimen/muun_screen_margin"
-        android:background="@color/muun_white"
->
+        android:background="@color/dialog_background">
 
     <TextView
             android:id="@+id/muun_action_drawer_title"
@@ -21,10 +20,9 @@
             android:textSize="16sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="normal"
-            android:textColor="@color/muun_black"
+            android:textColor="@color/text_primary_color"
             tools:text="Full address"
-            tools:visibility="visible"
-    />
+            tools:visibility="visible" />
 
     <TextView
             android:id="@+id/muun_action_drawer_description"
@@ -33,9 +31,8 @@
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             android:lineSpacingExtra="8sp"
-            tools:text="bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9"
-    />
+            tools:text="bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9" />
 
 </LinearLayout>

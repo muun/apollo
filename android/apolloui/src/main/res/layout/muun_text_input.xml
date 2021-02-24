@@ -10,17 +10,15 @@
             android:layout_width="match_parent"
             android:textSize="@dimen/muun_input_text_size"
             android:layout_height="match_parent"
-            android:id="@+id/muun_text_input_layout"
-    >
+            android:id="@+id/muun_text_input_layout">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/muun_text_input_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/muun_black"
+                android:textColor="@color/text_primary_color"
                 android:imeOptions="flagNoExtractUi"
-                android:singleLine="true"
-        />
+                android:singleLine="true" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -32,8 +30,8 @@
             android:visibility="gone"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:textColor="@color/muun_gray_dark"
-    />
+            android:textColor="@color/text_secondary_color" />
+
 </FrameLayout>
 
 

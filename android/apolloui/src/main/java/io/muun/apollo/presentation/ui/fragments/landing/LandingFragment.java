@@ -48,6 +48,8 @@ public class LandingFragment extends SingleFragment<LandingPresenter> {
     protected void initializeUi(View view) {
         super.initializeUi(view);
 
+        getParentActivity().getHeader().clear();
+
         if (getArgumentsBundle().getBoolean(ARG_SHOW_ANIMATION)) {
             lottieView.setAnimation(R.raw.logo_animation);
             lottieView.setMinFrame(40); // Small arbitrary correction to json exported animation

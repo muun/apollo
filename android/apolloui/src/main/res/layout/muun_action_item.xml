@@ -15,8 +15,8 @@
         <ImageView
                 style="@style/muun_item_icon"
                 android:id="@+id/muun_action_item_picture"
-                tools:src="@drawable/profile"
-        />
+                android:contentDescription="@null"
+                tools:src="@drawable/profile" />
 
         <LinearLayout
                 android:layout_width="0dp"
@@ -28,15 +28,14 @@
                     style="@style/muun_item_title"
                     android:layout_width="match_parent"
                     android:id="@+id/muun_action_item_title"
-                    tools:text="Do something! Also wrap this title if it is too long for a line"
-            />
+                    tools:text="Do something! Also wrap this title if it is too long for a line" />
 
             <TextView
                     style="@style/muun_item_subtitle"
                     android:layout_width="match_parent"
                     android:id="@+id/muun_action_item_subtitle"
-                    tools:text="Because of the fun"
-            />
+                    tools:text="Because of the fun" />
+
         </LinearLayout>
 
         <io.muun.apollo.presentation.ui.view.MuunIconButton
@@ -46,9 +45,9 @@
                 android:layout_marginEnd="4dp"
                 android:visibility="gone"
                 muun:icon="@drawable/ic_close"
-                muun:color="@color/muun_gray_dark"
-                tools:visibility="visible"
-        />
+                muun:color="@color/icon_color"
+                tools:visibility="visible" />
+
     </LinearLayout>
 
     <View
@@ -56,4 +55,5 @@
         style="@style/divider"
         android:layout_marginStart="82dp"
         android:layout_marginEnd="0dp" />
+
 </LinearLayout>

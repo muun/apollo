@@ -54,7 +54,7 @@ public abstract class InvoiceExpirationCountdownTimer extends MuunCountdownTimer
         final RichText richText = new RichText(text);
 
         if (remainingSeconds < INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS) {
-            richText.setForegroundColor(ContextCompat.getColor(ctx, R.color.muun_red));
+            richText.setForegroundColor(ContextCompat.getColor(ctx, R.color.red));
         }
 
         onTextUpdate(remainingSeconds, richText);

@@ -58,4 +58,15 @@ class LogoutOptionsSelector @Inject constructor(
     fun get(): LogoutOptions =
         watch().toBlocking().first()
 
+    /**
+     * We decide if it's ok to go ahead and delete wallet aka clear local storage.
+     */
+    fun canDeleteWallet(): Boolean =
+        if (userSel.getOptional().isPresent) {
+            get().canDeleteWallet()
+        } else {
+            // If we don't have enough data to decide we'll asume its some early or inconsistent
+            // state and we default to false
+            false
+        }
 }

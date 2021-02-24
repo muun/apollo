@@ -27,7 +27,7 @@
     <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:orientation="vertical">
 
         <TextView
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/new_operation_to"
                 android:lineSpacingMultiplier="1.25"
-                android:textColor="@color/muun_gray_dark"
+                android:textColor="@color/text_secondary_color"
                 android:textSize="16sp"
                 android:typeface="normal"
                 tools:text="It will be very interesting, I promise. You should definitely enable it, as soon as possible in fact." />

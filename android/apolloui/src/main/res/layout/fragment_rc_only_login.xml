@@ -30,7 +30,7 @@
                     android:gravity="center"
                     android:text="@string/rc_only_login_whats_this"
                     android:textAlignment="center"
-                    android:textColor="@color/muun_blue"
+                    android:textColor="@color/blue"
                     android:textSize="16sp" />
 
             <io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
@@ -48,4 +48,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/rc_only_login_continue" />
+
 </io.muun.apollo.presentation.ui.view.MuunButtonLayout>

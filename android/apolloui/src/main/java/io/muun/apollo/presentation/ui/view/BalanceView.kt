@@ -46,11 +46,11 @@ class BalanceView : MuunView {
     @BindDrawable(R.drawable.ic_clock)
     lateinit var clockDrawable: Drawable
 
-    @BindColor(R.color.balance_clock_pending)
+    @BindColor(R.color.pending_color)
     @JvmField
     internal var clockPendingColor: Int = 0
 
-    @BindColor(R.color.balance_clock_rbf)
+    @BindColor(R.color.rbf_color)
     @JvmField
     internal var clockRbfColor: Int = 0
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      Note: this could also go, and we could handle everything through night-colors. Leaving it here
+      so we don't forget we can use this mechanism.
+       -->
+    <style name="BaseAppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:windowBackground">@color/background</item>
+
+        <!-- Original AppCompat attributes. -->
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorAccent">@color/blue</item>
+        <item name="colorError">@color/error_color</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Keep pre-MDC TextInputLayout look and feel See: https://link.medium.com/NOx9CHPhndb -->
+        <item name="textInputStyle">@style/Widget.Design.TextInputLayout</item>
+
+        <item name="android:actionBarStyle">@style/MuunActionBarStyle</item>
+    </style>
+
+</resources>

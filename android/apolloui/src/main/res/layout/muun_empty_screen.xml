@@ -13,8 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="28dp"
-            tools:src="@drawable/enable_p2p_empty_state"
-    />
+            tools:src="@drawable/enable_p2p_empty_state" />
 
     <TextView
             android:id="@+id/muun_empty_screen_title"
@@ -27,11 +26,12 @@
             android:textSize="18sp"
             android:fontFamily="sans-serif-medium"
             android:textStyle="normal"
-            android:textColor="@color/muun_black"
+            android:textColor="@color/text_primary_color"
+            android:letterSpacing="0.03"
+            android:lineSpacingExtra="8sp"
             android:gravity="center_horizontal"
             tools:visibility="visible"
-            tools:text="@string/camera_permission_request_title"
-    />
+            tools:text="@string/camera_permission_request_title" />
 
     <io.muun.apollo.presentation.ui.view.HtmlTextView
             android:id="@+id/muun_empty_screen_text"
@@ -43,12 +43,11 @@
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             android:letterSpacing="0.03"
             android:lineSpacingExtra="8sp"
             android:gravity="center_horizontal"
-            tools:text="Some long empty state description that wraps into  two lines."
-    />
+            tools:text="Some long empty state description that wraps into  two lines." />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_floating"
@@ -65,7 +64,6 @@
             android:lineSpacingExtra="2sp"
             android:gravity="center_horizontal"
             tools:visibility="visible"
-            tools:text="Action"
-    />
+            tools:text="Action" />
 
 </LinearLayout>

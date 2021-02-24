@@ -43,8 +43,7 @@
     <string name="grant_camera_permission_button">Enable camera</string>
 
     <string name="camera_permission_request_title">
-        Scan a bitcoin or
-        \n lightning QR code
+        Scan a bitcoin or lightning QR code
     </string>
 
     <string name="camera_permission_request">
@@ -1097,8 +1096,10 @@
         Is cloud storage safe?
     </string>
     <string name="ek_save_cloud_drawer_description">
-        <annotation role="p">Data inside your Emergency Kit is securely encrypted with your Recovery Code.
-        Without access to that code, the kit is harmless.</annotation>
+        <annotation role="p">
+            Data inside your Emergency Kit is securely encrypted with your Recovery Code.
+        Without access to that code, the kit is harmless.
+        </annotation>
 
         Since your Recovery Code is written in paper, you can save your Emergency Kit in the cloud
         without risk. It will be safe and available in the long term.
@@ -1217,13 +1218,19 @@
     <string name="option_label_disabled">Not enabled</string>
 
     <string name="save_option_drive_title">Save to Drive</string>
-    <string name="save_option_drive_description">Use your Google account to save and access your kit.</string>
+    <string name="save_option_drive_description">
+        Use your Google account to save and access your kit.
+    </string>
 
     <string name="save_option_email_title">Send yourself an email</string>
-    <string name="save_option_email_description">Use your email account to save and access your kit.</string>
+    <string name="save_option_email_description">
+        Use your email account to save and access your kit.
+    </string>
 
     <string name="save_option_manual_title">Save manually</string>
-    <string name="save_option_manual_description">Choose an application to save and access your kit.</string>
+    <string name="save_option_manual_description">
+        Choose an application to save and access your kit.
+    </string>
 
     <string name="migration_title">Updating your wallet</string>
 
@@ -1263,4 +1270,5 @@
     <string name="turbo_channels_disable">DISABLE</string>
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
+    <string name="dark_mode">Dark mode</string>
 </resources>

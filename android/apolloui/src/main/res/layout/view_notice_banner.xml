@@ -11,7 +11,8 @@
             android:layout_height="18dp"
             android:layout_marginStart="12dp"
             android:layout_centerVertical="true"
-            tools:src="@drawable/alert_badge"/>
+            tools:src="@drawable/alert_badge"
+            android:contentDescription="@null" />
 
     <!--
     Using TextView instead of HtmlTextView because we always want to handle click in entire
@@ -28,7 +29,7 @@
             android:paddingStart="12dp"
             android:lineSpacingExtra="5sp"
             android:textSize="13sp"
-            android:textColor="@color/muun_gray_dark"
+            android:textColor="@color/text_secondary_color"
             tools:text="This payment may take longer than most Lightning payments. Why?"/>
 
 </RelativeLayout>

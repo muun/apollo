@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="wrap_content">
 
     <TextView
             android:id="@+id/welcome_title"
@@ -18,7 +18,7 @@
             android:lineSpacingMultiplier="1.2"
             android:text="@string/welcome_to_muun"
             android:textAlignment="center"
-            android:textColor="@color/muun_black"
+            android:textColor="@color/text_primary_color"
             android:textSize="18sp"
             android:fontFamily="sans-serif-medium"/>
 
@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/welcome_title"
                 app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MuunDialogBottomCorners"
-                android:src="@drawable/astronaut_light" />
+                android:src="@drawable/astronaut" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 android:id="@+id/welcome_to_muun_cta"

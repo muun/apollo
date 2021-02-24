@@ -55,8 +55,8 @@ public class FeeManualInput extends MuunView {
     @BindString(R.string.fee_option_item_title)
     String maxTimePrefix;
 
-    @BindColor(R.color.muun_gray_dark)
-    int muunGrayDark;
+    @BindColor(R.color.icon_color)
+    int iconColor;
 
     // State:
     @State
@@ -91,7 +91,7 @@ public class FeeManualInput extends MuunView {
         super.setUp(context, attrs);
 
         // Needed for api levels < 23 (TextView's drawableTint xml attr)
-        UiUtils.setLeftDrawableTint(estimatedTime, R.drawable.clock, muunGrayDark);
+        UiUtils.setLeftDrawableTint(estimatedTime, R.drawable.clock, iconColor);
 
         feeRateInput.addTextChangedListener(new TextWatcher() {
             @Override

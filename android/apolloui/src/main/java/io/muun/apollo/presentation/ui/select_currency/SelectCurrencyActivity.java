@@ -50,7 +50,7 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     @BindView(R.id.select_currency_list)
     RecyclerView recyclerView;
 
-    @BindColor(R.color.muun_gray_dark)
+    @BindColor(R.color.icon_color)
     int toolbarMenuItemColor;
 
     @BindString(R.string.select_currency_most_popular_section_title)

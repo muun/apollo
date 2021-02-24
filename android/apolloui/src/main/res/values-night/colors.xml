@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- General-purpose color scheme -->
+
+    <color name="blue">#3399FF</color>
+    <color name="green">#30D158</color>
+
+    <!--  General purpose colors  -->
+    <color name="icon_color">@color/gray_light</color>
+    <color name="text_primary_color">@color/white</color>
+    <color name="text_secondary_color">@color/gray_light</color>
+    <color name="text_tertiary_color">@color/gray_dark</color>
+    <color name="disabled_color">@color/gray_darkest</color>
+    <color name="background">@color/black</color>
+    <color name="dialog_background">@color/gray_darkest</color>
+
+    <!-- Used Only in api >= 21  -->
+    <color name="statusBarColor">@color/black</color>
+
+    <!--
+     TODO: use android attrs: colorPrimary, colorError, colorAccent/Secondary,
+     colorControlHighlight, etc... See: https://link.medium.com/NOx9CHPhndb
+     -->
+
+    <!-- Styles occurrences. Named after the style name -->
+    <color name="settings_item_separator">@color/blue_darkest</color>
+    <color name="muun_new_operation_separator">@color/blue_darkest</color>
+    <color name="muun_ek_save_separator">@color/gray_darkest</color>
+
+    <!--  Drawable res colors. Named after the drawable name and state/item  -->
+    <color name="muun_dialog_border_rounded">@color/dialog_background</color>
+    <color name="cursor">@color/white</color>
+    <color name="muun_button_covered_bg">@color/gray_light</color>
+    <color name="muun_button_floating_bg_enabled">@color/blue</color>
+    <color name="muun_button_floating_bg_disabled">@color/blue_darkest</color>
+    <color name="muun_button_primary_bg_enabled">@color/blue</color>
+    <color name="muun_button_primary_bg_disabled">@color/blue_darkest</color>
+    <color name="muun_button_primary_text_disabled">@color/gray_dark</color>
+    <color name="muun_button_secondary_bg">@color/black</color>
+    <color name="round_rect_background">@color/black</color>
+    <color name="round_rect_background_border">@color/gray_dark</color>
+    <color name="border_bg_selected">@color/blue_darkest</color>
+    <color name="border_border_selected">@color/blue</color>
+    <color name="border_border">@color/gray_dark</color>
+    <color name="border_border_manual_fee">@color/blue</color>
+    <color name="muun_bubble_button_bg">@color/blue_darkest</color>
+    <color name="muun_bubble_button_ripple">@color/blue_dark</color>
+    <color name="muun_bubble_error">@color/red</color>
+    <color name="muun_bubble_off_border">@color/blue</color>
+    <color name="muun_bubble_on_bg">@color/blue</color>
+    <color name="muun_bubble_success_bg">@color/green</color>
+    <color name="muun_button_layout_bg">@color/black</color>
+    <color name="muun_pill_background">@color/gray_darkest</color>
+    <color name="muun_progress_bar_bg">@color/gray_darkest</color>
+    <color name="muun_recovery_code_box_background">@color/gray_dark</color>
+    <color name="muun_save_option_label_disabled_bg">@color/gray_dark</color>
+    <color name="muun_save_option_label_recommended_bg">@color/blue_darkest</color>
+    <color name="muun_task_card_active_bg">@color/black</color>
+    <color name="muun_task_card_active_bg_border">@color/blue</color>
+    <color name="muun_task_card_default_bg">@color/black</color>
+    <color name="muun_task_card_default_bg_border">@color/gray_darkest</color>
+    <color name="muun_task_card_done_bg">@color/green_darkest</color>
+    <color name="muun_task_card_skipped_bg_border">@color/blue_darkest</color>
+    <color name="muun_task_card_skipped_tag">@color/blue_darkest</color>
+    <color name="new_op_badge_blue_bkg">@color/blue_darkest</color>
+    <color name="new_op_badge_green_bkg">@color/green_darkest</color>
+    <color name="notice_banner_background">@color/yellow_darkest</color>
+    <color name="notice_banner_background_border">@color/yellow_dark</color>
+    <color name="notice_banner_rbf_bkg">@color/orange_dark</color>
+    <color name="notice_banner_rbf_bkg_border">@color/orange</color>
+    <color name="pre_lollipop_popup_background_border">@color/gray_light</color>
+    <color name="pre_lollipop_popup_background">@color/black</color>
+    <color name="ripple_gray">@color/gray_light</color>
+    <color name="slider_dot_active">@color/blue</color>
+    <color name="slider_dot_inactive">@color/gray_dark</color>
+    <color name="muun_ripple_circle_bg">@color/black</color>
+
+    <!-- Code References -->
+
+    <!-- Layout references -->
+    <color name="text_status_message">@color/gray_light</color>
+    <color name="text_target_address">@color/gray_light</color>
+    <color name="lightning_settings_background">@color/blue_darkest</color>
+    <color name="new_home_tooltip">@color/blue_darkest</color>
+    <color name="invoice_expired_overlay">@color/blue_darkest</color>
+
+</resources>
