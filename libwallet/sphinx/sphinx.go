@@ -41,20 +41,21 @@ func Validate(
 	if err != nil {
 		return err
 	}
+
+	amountToForward := payload.ForwardingInfo().AmountToForward
+	if amount != 0 && amountToForward > amount {
+		return fmt.Errorf(
+			"sphinx payment amount does not match (%v != %v)", amount, amountToForward,
+		)
+	}
+
 	// Validate payment secret if it exists
 	if payload.MPP != nil {
 		paymentAddr := payload.MPP.PaymentAddr()
-		amountToForward := payload.ForwardingInfo().AmountToForward
 		total := payload.MultiPath().TotalMsat()
 
 		if !bytes.Equal(paymentAddr[:], paymentSecret) {
 			return errors.New("sphinx payment secret does not match")
-		}
-
-		if amount != 0 && amountToForward > amount {
-			return fmt.Errorf(
-				"sphinx payment amount does not match (%v != %v)", amount, amountToForward,
-			)
 		}
 
 		if amountToForward < total {

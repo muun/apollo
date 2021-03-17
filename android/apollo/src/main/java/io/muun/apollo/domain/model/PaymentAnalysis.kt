@@ -29,7 +29,11 @@ class PaymentAnalysis(
     /** The transaction fee for the PaymentRequest, null if `canPayWithoutFee` is false. */
     val fee: BitcoinAmount?,
 
-    /** The total money to be spent, null if `canPayWithSelectedFee` is false. */
+    /**
+     * The total money to be spent, null if `canPayWithSelectedFee` is false.
+     * UPDATE: This is total BS. Sometimes canPayWithSelectedFee is false and total is not null.
+     * E.g for UseAllFunds/TFFA this can happen.
+     */
     val total: BitcoinAmount?,
 
     /** Whether the amount could itself be paid, ignoring fees. */

@@ -57,7 +57,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             totalInSatoshis = null,
             outputAmountInSatoshis = payReq.swap?.fundingOutput?.outputAmountInSatoshis,
             swapFees = payReq.swap?.fees,
-            canPayWithoutFee = false,
+            canPayWithoutFee = originalAmountInSatoshis < totalBalanceInSatoshis,
             canPayWithSelectedFee = false,
             canPayWithMinimumFee = false
         )
@@ -65,6 +65,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
     private fun analyzeFeeFromAmount(): PaymentAnalysis {
         checkNotNull(payReq.feeInSatoshisPerByte)
+        check(payReq.takeFeeFromAmount)
 
         // TODO UseAllFunds shouldn't need amount, take userBalance from payCtx
         val totalInSatoshis = originalAmountInSatoshis
@@ -145,6 +146,7 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         checkNotNull(payReq.swap)
         checkNotNull(payReq.swap.bestRouteFees)
         checkNotNull(payReq.swap.fundingOutputPolicies)
+        check(payReq.takeFeeFromAmount)
 
         var (feeInSats, offchainAmountInSats, params, feeRate) = computeTffaParamsFor(payReq.swap, 0)
 
@@ -405,17 +407,48 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                                canPayWithSelectedFee: Boolean,
                                canPayWithMinimumFee: Boolean): PaymentAnalysis {
 
+        val amount = convertToBitcoinAmount(amountInSatoshis)
+        val sweepFee = convertToNullableBitcoinAmount(swapFees?.sweepInSats)
+        val lightningFee = convertToNullableBitcoinAmount(swapFees?.lightningInSats)
+        val fee = convertToNullableBitcoinAmount(feeInSatoshis)
+
+
+        // Ok, so here's how it goes. Sometimes we don't care to calculate the total, as the
+        // payment is invalid/can't be paid. (Most of) Those times, totalInSatoshis is null, so
+        // we're fine leaving total null (and avoiding the precondition check).
+        var total: BitcoinAmount? = null
+
+        if (totalInSatoshis != null) {
+
+            // Avoiding precondition check, and keep returning same value as before, for TFFA edge
+            // case where we return a non-null total (e.g total == amount) when
+            // canPayWithSelectedFee is false.
+            // TODO: fix this edge case
+            if (payReq.takeFeeFromAmount && !canPayWithSelectedFee) {
+                total = convertToBitcoinAmount(totalInSatoshis)
+
+            } else {
+
+                // Doing math with converted amounts to avoid showing rounding errors in UI.
+                total = amount
+                    .add(sweepFee)
+                    .add(lightningFee)
+                    .add(fee)
+
+                Preconditions.checkArgument(totalInSatoshis == total.inSatoshis)
+            }
+        }
+
         return PaymentAnalysis(
             updatedPayReq ?: payReq,
             totalBalance = convertToBitcoinAmount(totalBalanceInSatoshis),
 
-            amount = convertToBitcoinAmount(amountInSatoshis),
+            amount = amount,
             outputAmount = convertToBitcoinAmount(outputAmountInSatoshis ?: amountInSatoshis),
-            sweepFee = convertToNullableBitcoinAmount(swapFees?.sweepInSats),
-            lightningFee = convertToNullableBitcoinAmount(swapFees?.lightningInSats),
-            fee = convertToNullableBitcoinAmount(feeInSatoshis),
-            total = convertToNullableBitcoinAmount(totalInSatoshis),
-
+            sweepFee = sweepFee,
+            lightningFee = lightningFee,
+            fee = fee,
+            total = total,
             canPayWithoutFee = canPayWithoutFee,
             canPayWithSelectedFee = canPayWithSelectedFee,
             canPayWithMinimumFee = canPayWithMinimumFee,

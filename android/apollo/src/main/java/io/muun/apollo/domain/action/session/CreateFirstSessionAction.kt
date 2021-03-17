@@ -6,6 +6,7 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.CurrencyActions
+import io.muun.apollo.domain.action.LogoutActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.apollo.domain.action.keys.CreateBasePrivateKeyAction
@@ -20,6 +21,7 @@ class CreateFirstSessionAction @Inject constructor(
     private val userRepository: UserRepository,
     private val keysRepository: KeysRepository,
     private val currencyActions: CurrencyActions,
+    private val logoutActions: LogoutActions,
     private val getFcmToken: GetFcmTokenAction,
     private val createBasePrivateKey: CreateBasePrivateKeyAction
 
@@ -30,6 +32,7 @@ class CreateFirstSessionAction @Inject constructor(
      */
     override fun action(): Observable<CreateFirstSessionOk> =
         Observable.defer {
+            logoutActions.destroyWalletToStartClean()
             getFcmToken.action().flatMap { setUpUser(it) }
         }
 

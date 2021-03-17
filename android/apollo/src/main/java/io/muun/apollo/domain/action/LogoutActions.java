@@ -139,6 +139,13 @@ public class LogoutActions {
     }
 
     /**
+     * Wipe all user associated data from the app, prior to a signup/login.
+     */
+    public void destroyWalletToStartClean() {
+        destroyWallet();
+    }
+
+    /**
      * Wipe all user associated data from the app.
      * As the name suggests, this method performs no checks and dangerously destroy all user data in
      * a final and unrecoverable way. It is public for the only use of clearing data between

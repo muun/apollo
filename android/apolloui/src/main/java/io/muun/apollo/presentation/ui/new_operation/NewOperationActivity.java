@@ -39,7 +39,6 @@ import io.muun.common.Rules;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.utils.BitcoinUtils;
-import io.muun.common.utils.Preconditions;
 
 import android.animation.LayoutTransition;
 import android.app.Activity;
@@ -426,9 +425,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         setDetailText(feeAmount, analysis.getFee(), analysis.getCanPayWithSelectedFee());
         setDetailText(totalAmount, analysis.getTotal(), analysis.getCanPayWithSelectedFee());
 
-        if (analysis.getPayReq().getSwap() != null) {
-            setAmountAnalysisForSwap(analysis);
-        }
+        setAmountAnalysisForSwap(analysis);
 
         // Updates to action button:
         if (step == NewOperationStep.ENTER_AMOUNT) {
@@ -472,10 +469,10 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
     private void setAmountAnalysisForSwap(PaymentAnalysis analysis) {
         final SubmarineSwap swap = analysis.getPayReq().getSwap();
-        Preconditions.checkNotNull(swap);
 
-        Preconditions.checkNotNull(analysis.getSweepFee());
-        Preconditions.checkNotNull(analysis.getLightningFee());
+        if (swap == null || analysis.getLightningFee() == null || analysis.getSweepFee() == null) {
+            return; // We're dealing with an amount less invoice
+        }
 
         BitcoinAmount totalFee = analysis.getSweepFee().add(analysis.getLightningFee());
 
@@ -697,7 +694,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
     private void goToResolvingStep() {
         root.setLayoutTransition(null);
-        resolvingSpinner.setVisibility(View.VISIBLE);
+        showLoadingSpinner(true);
 
         // Avoid capturing focus and showing keyboard:
         amountInput.setVisibility(View.GONE);
@@ -706,7 +703,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
     private void goToEnterAmountStep() {
         root.setLayoutTransition(null);
-        resolvingSpinner.setVisibility(View.GONE);
+        showLoadingSpinner(false);
 
         // Always request focus before changing views to GONE
         // otherwise you might cause the previous input to lose focus
@@ -727,7 +724,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
     private void goToEnterDescriptionStep() {
         root.setLayoutTransition(null);
-        resolvingSpinner.setVisibility(View.GONE);
+        showLoadingSpinner(false);
 
         final boolean isDescriptionTextVisible = descriptionContent.getVisibility() == View.VISIBLE;
         final float originX = amountInput.getX();
@@ -773,7 +770,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
      */
     private void goToConfirmStep() {
         hideSoftKeyboard();
-        resolvingSpinner.setVisibility(View.GONE);
+        showLoadingSpinner(false);
 
         changeVisibility(amountSelectedViews, View.VISIBLE);
 
@@ -803,6 +800,11 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         UiUtils.fadeIn(totalAmount);
 
         actionButton.setText(R.string.new_operation_confirm);
+    }
+
+    private void showLoadingSpinner(boolean showLoading) {
+        resolvingSpinner.setVisibility(showLoading ? View.VISIBLE : View.GONE);
+        root.setVisibility(showLoading ? View.GONE : View.VISIBLE);
     }
 
     private static Animation revealFrom(float deltaX, float deltaY) {

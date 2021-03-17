@@ -91,8 +91,8 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
 
     }
 
-    class GestureListener(val chevron: View, val context: Context, val down: Boolean):
-            GestureDetector.SimpleOnGestureListener() {
+    class GestureListener(private val chevron: View, context: Context, private val down: Boolean):
+        GestureDetector.SimpleOnGestureListener() {
 
         private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
         private val minTravelDistance = ViewConfiguration.get(context).scaledTouchSlop
@@ -178,14 +178,12 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
 
         balanceView.setBalance(homeBalanceState)
 
-        if (utxoSetState != homeBalanceState.utxoSetState) {
-            when (homeBalanceState.utxoSetState) {
-                UtxoSetStateSelector.UtxoSetState.PENDING -> chevron.setAnimation(R.raw.lm_chevron_pending)
-                UtxoSetStateSelector.UtxoSetState.RBF -> chevron.setAnimation(R.raw.lm_chevron_rbf)
-                UtxoSetStateSelector.UtxoSetState.CONFIRMED -> chevron.setAnimation(R.raw.lm_chevron_regular)
-            }
-            utxoSetState = homeBalanceState.utxoSetState
+        when (homeBalanceState.utxoSetState) {
+            UtxoSetStateSelector.UtxoSetState.PENDING -> chevron.setAnimation(R.raw.lm_chevron_pending)
+            UtxoSetStateSelector.UtxoSetState.RBF -> chevron.setAnimation(R.raw.lm_chevron_rbf)
+            UtxoSetStateSelector.UtxoSetState.CONFIRMED -> chevron.setAnimation(R.raw.lm_chevron_regular)
         }
+        utxoSetState = homeBalanceState.utxoSetState
     }
 
     override fun setNewOp(newOp: Operation, mode: CurrencyDisplayMode) {

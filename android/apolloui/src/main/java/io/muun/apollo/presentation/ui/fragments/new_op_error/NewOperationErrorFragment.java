@@ -15,7 +15,6 @@ import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.Optional;
 import io.muun.common.Rules;
 import io.muun.common.exception.MissingCaseError;
-import io.muun.common.utils.Preconditions;
 
 import android.os.Bundle;
 import android.view.View;
@@ -136,9 +135,8 @@ public class NewOperationErrorFragment
 
         final MonetaryAmount minBalance;
 
-        if (payReq.getSwap() != null && analysis.getFee() != null) {
+        if (payReq.getSwap() != null && analysis.getTotal() != null) {
             // We could compute the fee (and thus, the total amount too) but we can't pay for it
-            Preconditions.checkNotNull(analysis.getTotal());
             minBalance = analysis.getTotal().inInputCurrency;
 
         } else if (minFeeAnalysis.getTotal() != null) {

@@ -72,8 +72,8 @@
      -->
 
     <!-- Styles occurrences. Named after the style name -->
-    <color name="settings_item_separator">@color/gray_light</color>
-    <color name="muun_new_operation_separator">@color/gray_light</color>
+    <color name="settings_item_separator">@color/gray_lightest</color>
+    <color name="muun_new_operation_separator">@color/gray_lightest</color>
     <color name="muun_ek_save_separator">@color/gray_lightest</color>
 
     <!--  Drawable res colors. Named after the drawable name and state/item  -->

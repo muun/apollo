@@ -57,8 +57,7 @@ public class NotificationProcessor {
     private final OperationMetadataMapper operationMapper;
     private final FulfillIncomingSwapAction fulfillIncomingSwap;
 
-    private final Map<String, NotificationHandler> handlers =
-            new HashMap<>();
+    private final Map<String, NotificationHandler> handlers = new HashMap<>();
 
     /**
      * Constructor.

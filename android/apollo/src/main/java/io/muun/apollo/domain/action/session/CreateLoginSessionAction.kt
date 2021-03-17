@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action.session
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.domain.action.LogoutActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.common.model.CreateSessionOk
@@ -14,7 +15,8 @@ import javax.validation.constraints.NotNull
 @Singleton
 class CreateLoginSessionAction @Inject constructor(
     private val houstonClient: HoustonClient,
-    private val getFcmToken: GetFcmTokenAction
+    private val getFcmToken: GetFcmTokenAction,
+    private val logoutActions: LogoutActions,
 
 ): BaseAsyncAction1<String, CreateSessionOk>() {
 
@@ -24,8 +26,11 @@ class CreateLoginSessionAction @Inject constructor(
     /**
      * Creates a new session to log into Houston, associated with a given email.
      */
-    private fun createSession(@NotNull email: String) =
-        getFcmToken.action()
+    private fun createSession(@NotNull email: String): Observable<CreateSessionOk> {
+
+        logoutActions.destroyWalletToStartClean()
+
+        return getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createLoginSession(
                     Globals.INSTANCE.oldBuildType,
@@ -35,4 +40,5 @@ class CreateLoginSessionAction @Inject constructor(
                 )
             }
             .doOnNext { LoggingContext.configure(email, "NotLoggedYet") }
+    }
 }

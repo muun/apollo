@@ -123,7 +123,7 @@ class PaymentContext(
             .withAmount(allFunds)
             .withTakeFeeFromAmount(true)
 
-        if (payReq.swap != null) {
+        if (payReq.swap?.bestRouteFees == null) {
            simulatedUseAllFundsPayReq = simulatedUseAllFundsPayReq
                .withSwapAmount(userBalance)
         }
