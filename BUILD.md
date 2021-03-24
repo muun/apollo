@@ -13,7 +13,7 @@ Ensure the env var `ANDROID_NDK_HOME` points to your NDK install directory.
 ```shell
 tools/bootstrap-gomobile.sh
 tools/libwallet-android.sh
-./gradlew :android:apollo:assembleProdRelease
+./gradlew :android:apolloui:assembleProdRelease
 ```
 
 # Reproducible build
