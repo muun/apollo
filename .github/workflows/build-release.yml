@@ -31,3 +31,9 @@ jobs:
         with:
           name: apk
           path: apk/apolloui-prod-release-unsigned.apk
+
+      - name: Upload mapping
+        uses: actions/upload-artifact@e448a9b857ee2131e752b06002bf0e093c65e571
+        with:
+          name: mapping
+          path: apk/mapping.txt
