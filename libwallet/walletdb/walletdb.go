@@ -25,6 +25,7 @@ type Invoice struct {
 	PaymentSecret []byte
 	KeyPath       string
 	ShortChanId   uint64
+	AmountSat     int64
 	State         InvoiceState
 	UsedAt        *time.Time
 }
@@ -74,6 +75,26 @@ func migrate(db *gorm.DB) error {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.DropTable("invoices").Error
+			},
+		},
+		{
+			ID: "add amount to invoices table",
+			Migrate: func(tx *gorm.DB) error {
+				type Invoice struct {
+					gorm.Model
+					Preimage      []byte
+					PaymentHash   []byte
+					PaymentSecret []byte
+					KeyPath       string
+					ShortChanId   uint64
+					AmountSat     int64
+					State         string
+					UsedAt        *time.Time
+				}
+				return tx.AutoMigrate(&Invoice{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Table("invoices").DropColumn(gorm.ToColumnName("AmountSat")).Error
 			},
 		},
 	})

@@ -7,8 +7,10 @@ import io.muun.apollo.domain.model.UserPreferences
 import rx.Observable
 import javax.inject.Inject
 
-open class UserPreferencesRepository
-@Inject constructor(context: Context?) : BaseRepository(context) {
+open class UserPreferencesRepository @Inject constructor(
+    context: Context,
+    repositoryRegistry: RepositoryRegistry
+) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val KEY = "USER_PREFERENCES"

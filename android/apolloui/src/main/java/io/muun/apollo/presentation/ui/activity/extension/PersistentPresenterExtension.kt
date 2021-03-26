@@ -1,12 +1,10 @@
 package io.muun.apollo.presentation.ui.activity.extension
 
 import android.os.Bundle
-import io.muun.apollo.domain.errors.MissingPersistentPresenterError
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.Presenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.utils.PresenterProvider
-import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 

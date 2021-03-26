@@ -16,9 +16,11 @@ import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
+import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
 import io.muun.apollo.presentation.ui.select_country.SelectCountryActivity;
 import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity;
+import io.muun.apollo.presentation.ui.select_night_mode.SelectNightModeActivity;
 import io.muun.apollo.presentation.ui.send.SendActivity;
 import io.muun.apollo.presentation.ui.settings.edit_password.EditPasswordActivity;
 import io.muun.apollo.presentation.ui.settings.edit_username.EditUsernameActivity;
@@ -27,7 +29,6 @@ import io.muun.apollo.presentation.ui.setup_p2p.SetupP2PActivity;
 import io.muun.apollo.presentation.ui.setup_password.SetupPasswordActivity;
 import io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity;
 import io.muun.apollo.presentation.ui.show_qr.ShowQrActivity;
-import io.muun.apollo.presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpActivity;
 import io.muun.apollo.presentation.ui.signup.SignupActivity;
 import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
@@ -95,9 +96,12 @@ public interface ActivityComponent {
 
     void inject(MigrationActivity migrationActivity);
 
-    void inject(BitcoinAddressHelpActivity bitcoinAddressHelpActivity);
-
     void inject(OperationsActivity operationsActivity);
 
     void inject(SingleFragmentActivityImpl singleFragmentActivityImpl);
+
+    void inject(SelectAmountActivity selectAmountActivity);
+
+    void inject(SelectNightModeActivity selectDarkModeActivity);
+
 }

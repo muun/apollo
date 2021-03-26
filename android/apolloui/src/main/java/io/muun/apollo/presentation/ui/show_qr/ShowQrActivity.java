@@ -2,7 +2,8 @@ package io.muun.apollo.presentation.ui.show_qr;
 
 import io.muun.apollo.R;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.ui.activity.extension.ApplicationLockExtension;
+import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension;
+import io.muun.apollo.presentation.ui.base.BaseFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
@@ -43,16 +44,6 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
     }
 
     @Override
-    protected void setUpExtensions() {
-        super.setUpExtensions();
-
-        // This Activity would normally be protected by the application lock (the user is logged
-        // in and the Application is lock-capable at this point), but it's revealing nothing private
-        // and this way we can show it using the unlock shortcut.
-        getExtension(ApplicationLockExtension.class).setRequireUnlock(false);
-    }
-
-    @Override
     protected int getLayoutResource() {
         return R.layout.show_qr_activity;
     }
@@ -83,5 +74,13 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
     @Override
     protected int getFragmentsContainer() {
         return R.id.fragment_container; // Only used to show auxiliary (help, moreInfo) fragments
+    }
+
+    @Override
+    public ExternalResultExtension.Caller getDelegateCaller() {
+        final ShowQrFragmentPagerAdapter adapter = (ShowQrFragmentPagerAdapter) viewPager
+                .getAdapter();
+
+        return (BaseFragment) adapter.getExistingItem(viewPager.getCurrentItem());
     }
 }

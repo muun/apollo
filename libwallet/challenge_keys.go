@@ -32,6 +32,15 @@ type encryptedPrivateKey struct {
 	Salt         []byte // (optional) 8-byte salt
 }
 
+// EncryptedPrivateKeyInfo is a Gomobile-compatible version of EncryptedPrivateKey using hex-encoding.
+type EncryptedPrivateKeyInfo struct {
+	Version      int
+	Birthday     int
+	EphPublicKey string
+	CipherText   string
+	Salt         string
+}
+
 type DecryptedPrivateKey struct {
 	Key      *HDPrivateKey
 	Birthday int
@@ -69,8 +78,17 @@ func (k *ChallengePrivateKey) PubKey() *ChallengePublicKey {
 	return &ChallengePublicKey{pubKey: k.key.PubKey()}
 }
 
-func (k *ChallengePrivateKey) DecryptKey(encryptedKey string, network *Network) (*DecryptedPrivateKey, error) {
-	decoded, err := decodeEncryptedPrivateKey(encryptedKey)
+func (k *ChallengePrivateKey) DecryptRawKey(encryptedKey string, network *Network) (*DecryptedPrivateKey, error) {
+	decoded, err := DecodeEncryptedPrivateKey(encryptedKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.DecryptKey(decoded, network)
+}
+
+func (k *ChallengePrivateKey) DecryptKey(decodedInfo *EncryptedPrivateKeyInfo, network *Network) (*DecryptedPrivateKey, error) {
+	decoded, err := unwrapEncryptedPrivateKey(decodedInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +112,7 @@ func (k *ChallengePrivateKey) DecryptKey(encryptedKey string, network *Network) 
 	}, nil
 }
 
-func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) {
+func DecodeEncryptedPrivateKey(encodedKey string) (*EncryptedPrivateKeyInfo, error) {
 	reader := bytes.NewReader(base58.Decode(encodedKey))
 	version, err := reader.ReadByte()
 	if err != nil {
@@ -136,12 +154,12 @@ func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) 
 		}
 	}
 
-	result := &encryptedPrivateKey{
-		Version:      version,
-		Birthday:     birthday,
-		EphPublicKey: rawPubEph,
-		CipherText:   ciphertext,
-		Salt:         recoveryCodeSalt,
+	result := &EncryptedPrivateKeyInfo{
+		Version:      int(version),
+		Birthday:     int(birthday),
+		EphPublicKey: hex.EncodeToString(rawPubEph),
+		CipherText:   hex.EncodeToString(ciphertext),
+		Salt:         hex.EncodeToString(recoveryCodeSalt),
 	}
 
 	return result, nil
@@ -149,4 +167,31 @@ func decodeEncryptedPrivateKey(encodedKey string) (*encryptedPrivateKey, error) 
 
 func shouldHaveSalt(encodedKey string) bool {
 	return len(encodedKey) > EncodedKeyLengthLegacy // not military-grade logic, but works for now
+}
+
+func unwrapEncryptedPrivateKey(info *EncryptedPrivateKeyInfo) (*encryptedPrivateKey, error) {
+	ephPublicKey, err := hex.DecodeString(info.EphPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	cipherText, err := hex.DecodeString(info.CipherText)
+	if err != nil {
+		return nil, err
+	}
+
+	salt, err := hex.DecodeString(info.Salt)
+	if err != nil {
+		return nil, err
+	}
+
+	unwrapped := &encryptedPrivateKey{
+		Version:      uint8(info.Version),
+		Birthday:     uint16(info.Birthday),
+		EphPublicKey: ephPublicKey,
+		CipherText:   cipherText,
+		Salt:         salt,
+	}
+
+	return unwrapped, nil
 }

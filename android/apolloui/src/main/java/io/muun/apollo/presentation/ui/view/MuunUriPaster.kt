@@ -12,10 +12,10 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
     MuunView(c, a, s) {
 
     @BindView(R.id.title)
-    internal lateinit var titleView: TextView
+    lateinit var titleView: TextView
 
     @BindView(R.id.description)
-    internal lateinit var descriptionView: TextView
+    lateinit var descriptionView: TextView
 
     var onSelectListener: (uri: OperationUri) -> Unit = {}
 

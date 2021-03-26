@@ -7,7 +7,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FcmTokenRepository @Inject constructor(context: Context): BaseRepository(context) {
+class FcmTokenRepository @Inject constructor(
+    context: Context,
+    repositoryRegistry: RepositoryRegistry
+): BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val FCM_TOKEN_KEY = "fcm_token_key"

@@ -14,7 +14,7 @@ class MuunProgressBar @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     MuunView(c, a, s) {
 
     @BindView(R.id.progress)
-    internal lateinit var progressView: View
+    lateinit var progressView: View
 
     override fun getLayoutResource() =
         R.layout.muun_progress_bar

@@ -83,6 +83,6 @@
     <color name="text_target_address">@color/gray_light</color>
     <color name="lightning_settings_background">@color/blue_darkest</color>
     <color name="new_home_tooltip">@color/blue_darkest</color>
-    <color name="invoice_expired_overlay">@color/blue_darkest</color>
+    <color name="invoice_qr_loading_background">@color/gray_darkest</color>
 
 </resources>

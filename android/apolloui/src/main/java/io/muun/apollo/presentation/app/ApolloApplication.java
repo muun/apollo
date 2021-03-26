@@ -255,10 +255,10 @@ public abstract class ApolloApplication extends Application
         if (dataComponent == null) {
             final DataModule dataModule = new DataModule(
                     this,
-                    (applicationContext, transformerFactory) -> new NotificationServiceImpl(
-                            applicationContext,
+                    (appContext, transformerFactory, repoRegistry) -> new NotificationServiceImpl(
+                            appContext,
                             transformerFactory,
-                            new CurrencyDisplayModeSelector(new UserRepository(this))
+                            new CurrencyDisplayModeSelector(new UserRepository(this, repoRegistry))
                     ),
                     AppStandbyBucketProviderImpl::new,
                     new HoustonConfigImpl()

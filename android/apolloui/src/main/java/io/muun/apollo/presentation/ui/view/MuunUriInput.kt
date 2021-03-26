@@ -13,10 +13,10 @@ class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     MuunView(c, a, s) {
 
     @BindView(R.id.text_input)
-    internal lateinit var textInput: EditText
+    lateinit var textInput: EditText
 
     @BindView(R.id.scan_qr_button)
-    internal lateinit var scanQrButton: ImageView
+    lateinit var scanQrButton: ImageView
 
     override fun getLayoutResource() =
         R.layout.muun_uri_input

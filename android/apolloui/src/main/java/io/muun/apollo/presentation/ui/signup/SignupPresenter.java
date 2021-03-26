@@ -277,8 +277,6 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
         logIn.reset();
         signinActions.clearSession();
-        signupDraftManager.clear();
-        restoreSignupDraft();
         navigateToStep(SignupStep.START);
     }
 
@@ -341,8 +339,15 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
     private void navigateToStep(SignupStep step) {
         final SignupStep previousStep = signupDraft.getStep();
-        signupDraft.setStep(step);
-        signupDraftManager.save(signupDraft);
+
+        // Make sure we start with a clean slate if we get back to the start screen
+        if (step == SignupStep.START) {
+            signupDraftManager.clear();
+            restoreSignupDraft();
+        } else {
+            signupDraft.setStep(step);
+            signupDraftManager.save(signupDraft);
+        }
 
         view.changeStep(step, previousStep);
     }

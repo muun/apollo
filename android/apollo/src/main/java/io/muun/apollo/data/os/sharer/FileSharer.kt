@@ -46,6 +46,14 @@ class FileSharer(val context: Context) {
          * so it's not necessary.
          */
         var onSelectionListener = { _: Selection -> }
+
+        val emailAppBlacklist = listOf(
+            // Required for UI testing in Android emulators (doesn't show up in actual phones):
+            "com.android.fallback",
+
+            // Applications that handle mailto links but c'mon:
+            "com.mercadopago.wallet"
+        )
     }
 
     fun getEmailTargets(): List<Target> {
@@ -59,9 +67,7 @@ class FileSharer(val context: Context) {
         // Create a list of viable Targets based on the results:
         return intentResolvers
             .filter {
-                // This resolver appears only in Android emulators, but we can't ignore it
-                // because it sabotages our UI testing:
-                it.activityInfo.packageName != "com.android.fallback"
+                !emailAppBlacklist.contains(it.activityInfo.packageName)
             }
             .map {
                 Target(

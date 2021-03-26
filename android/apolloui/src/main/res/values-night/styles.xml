@@ -20,6 +20,8 @@
         <item name="textInputStyle">@style/Widget.Design.TextInputLayout</item>
 
         <item name="android:actionBarStyle">@style/MuunActionBarStyle</item>
+        <item name="radioButtonStyle">@style/MuunRadioButtonStyle</item>
+
     </style>
 
 </resources>

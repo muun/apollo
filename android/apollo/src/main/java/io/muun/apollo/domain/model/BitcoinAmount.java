@@ -44,4 +44,8 @@ public class BitcoinAmount {
                 inPrimaryCurrency.add(other.inPrimaryCurrency)
         );
     }
+
+    public boolean isZero() {
+        return inInputCurrency.isZero();
+    }
 }

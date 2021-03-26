@@ -19,8 +19,8 @@ public class TransactionSizeRepository extends BaseRepository {
     private final Preference<String> transactionSizePreference;
 
     @Inject
-    public TransactionSizeRepository(Context context) {
-        super(context);
+    public TransactionSizeRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         transactionSizePreference = rxSharedPreferences.getString(KEY_TRANSACTION_SIZE, null);
     }
 

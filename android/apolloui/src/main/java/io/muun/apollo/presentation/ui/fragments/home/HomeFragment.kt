@@ -22,10 +22,15 @@ import io.muun.apollo.presentation.ui.view.BalanceView
 import io.muun.apollo.presentation.ui.view.MuunHomeCard
 import io.muun.apollo.presentation.ui.view.NewOpBadge
 import io.muun.common.utils.BitcoinUtils
+import org.threeten.bp.ZonedDateTime
 import kotlin.math.abs
 
 
 class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
+
+    companion object {
+        private const val NEW_OP_ANIMATION_WINDOW = 15L   // In Seconds
+    }
 
     @BindView(R.id.chevron)
     lateinit var chevron: LottieAnimationView
@@ -80,12 +85,12 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
         // Having both allows us to retain the default on click (and thus animation) for the chevron
 
         val containerDetector = GestureDetector(
-                requireContext(), GestureListener(chevron, requireContext(), true)
+            requireContext(), GestureListener(chevron, requireContext(), true)
         )
         chevronContainer.setOnTouchListener { _, event -> containerDetector.onTouchEvent(event) }
 
         val chevronDetector = GestureDetector(
-                requireContext(), GestureListener(chevron, requireContext(), false)
+            requireContext(), GestureListener(chevron, requireContext(), false)
         )
         chevron.setOnTouchListener { _, event -> chevronDetector.onTouchEvent(event) }
 
@@ -98,10 +103,10 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
         private val minTravelDistance = ViewConfiguration.get(context).scaledTouchSlop
 
         override fun onFling(
-                e1: MotionEvent?,
-                e2: MotionEvent?,
-                velocityX: Float,
-                velocityY: Float
+            e1: MotionEvent?,
+            e2: MotionEvent?,
+            velocityX: Float,
+            velocityY: Float
         ): Boolean {
             checkNotNull(e1)
             checkNotNull(e2)
@@ -209,7 +214,10 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
 
         newOpBadge.setAmount(amountInBtc, mode)
 
-        newOpBadge.startAnimation(animRes)
+        // Only show animation for recently received or sent ops
+        if (newOp.creationDate.isAfter(ZonedDateTime.now().minusSeconds(NEW_OP_ANIMATION_WINDOW))) {
+            newOpBadge.startAnimation(animRes)
+        }
     }
 
     override fun setUserRecoverable(recoverable: Boolean) {

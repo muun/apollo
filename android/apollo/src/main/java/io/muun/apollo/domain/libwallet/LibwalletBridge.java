@@ -367,7 +367,7 @@ public class LibwalletBridge {
         return PublicKey.deserializeFromBase58(pubKey.getPath(), pubKey.string());
     }
 
-    static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
+    public static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
         return new HDPublicKey(
                 pubKey.serializeBase58(),
                 pubKey.getAbsoluteDerivationPath(),
@@ -375,7 +375,7 @@ public class LibwalletBridge {
         );
     }
 
-    static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
+    public static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
         return new HDPrivateKey(
                 privKey.serializeBase58(),
                 privKey.getAbsoluteDerivationPath(),
@@ -399,7 +399,7 @@ public class LibwalletBridge {
         };
     }
 
-    static Network toLibwalletModel(NetworkParameters networkParameters) {
+    public static Network toLibwalletModel(NetworkParameters networkParameters) {
         if (NetworkParameters.ID_MAINNET.equals(networkParameters.getId())) {
             return Libwallet.mainnet();
 

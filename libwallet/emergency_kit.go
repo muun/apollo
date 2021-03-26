@@ -1,7 +1,6 @@
 package libwallet
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 
@@ -96,12 +95,12 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 	// boundary to craft the object here.
 
 	// Decode both keys, to extract their inner properties:
-	firstKey, err := decodeEncryptedPrivateKey(ekParams.FirstEncryptedKey)
+	firstKey, err := DecodeEncryptedPrivateKey(ekParams.FirstEncryptedKey)
 	if err != nil {
 		return nil, fmt.Errorf("createEkMetadata failed to decode first key: %w", err)
 	}
 
-	secondKey, err := decodeEncryptedPrivateKey(ekParams.SecondEncryptedKey)
+	secondKey, err := DecodeEncryptedPrivateKey(ekParams.SecondEncryptedKey)
 	if err != nil {
 		return nil, fmt.Errorf("createEkMetadata failed to decode second key: %w", err)
 	}
@@ -128,10 +127,10 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 	return metadata, nil
 }
 
-func createEmergencyKitMetadataKey(key *encryptedPrivateKey) *emergencykit.MetadataKey {
+func createEmergencyKitMetadataKey(key *EncryptedPrivateKeyInfo) *emergencykit.MetadataKey {
 	return &emergencykit.MetadataKey{
-		DhPubKey:         hex.EncodeToString(key.EphPublicKey),
-		EncryptedPrivKey: hex.EncodeToString(key.CipherText),
-		Salt:             hex.EncodeToString(key.Salt),
+		DhPubKey:         key.EphPublicKey,
+		EncryptedPrivKey: key.CipherText,
+		Salt:             key.Salt,
 	}
 }

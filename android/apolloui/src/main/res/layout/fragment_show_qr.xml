@@ -1,133 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="32dp"
+            android:paddingBottom="@dimen/muun_screen_margin">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/main_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                    android:id="@+id/show_qr_image_qr"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_height="0dp"
+                    android:contentDescription="@string/qr_code_image"
+                    app:layout_constraintDimensionRatio="1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintVertical_chainStyle="packed"
-                    app:layout_constraintBottom_toTopOf="@id/switch_bitcoin_address_format">
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:src="@drawable/qr_code" />
 
-                <TextView
-                        android:id="@+id/legacy_address_info"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/show_qr_image_qr"
-                        android:textColor="@color/text_primary_color"
-                        android:textSize="16sp"
-                        android:fontFamily="sans-serif-medium"
-                        android:text="@string/legacy_address_info"
-                        android:drawablePadding="10dp"
-                        app:drawableEndCompat="@drawable/question_icon" />
+            <TextView
+                    android:id="@+id/show_qr_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="8dp"
+                    android:gravity="center"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
+                    android:ellipsize="middle"
+                    android:singleLine="true"
+                    android:textColor="@color/text_secondary_color"
+                    android:textSize="16sp"
+                    app:drawableEndCompat="@drawable/ic_visibility"
+                    app:drawableTint="@color/text_secondary_color"
+                    app:layout_constraintBottom_toTopOf="@id/buttons_container"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/show_qr_image_qr"
+                    tools:text="bcrt1q4sxn23q04dezx6vqghrvpuw3kupt9hr6pg8wmzt5qmtlxqduuw8sqtk5q2" />
 
-                <!--
-                For screens with heigh <= 800 dp we will set layout_constraintDimensionRatio
-                programatically so everything fits in screen.
-                TODO: we could try doing it with dimens and a h800dp resource folder
-                -->
-                <ImageView
-                        android:id="@+id/show_qr_image_qr"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        app:layout_constraintDimensionRatio="1"
-                        app:layout_constraintTop_toBottomOf="@id/legacy_address_info"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginTop="16dp"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:contentDescription="@string/qr_code_image"
-                        tools:src="@drawable/qr_code" />
+            <LinearLayout
+                    android:id="@+id/buttons_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:baselineAligned="false"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/show_qr_content">
 
-                <TextView
-                        android:id="@+id/show_qr_content"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        app:layout_constraintTop_toBottomOf="@id/show_qr_image_qr"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintBottom_toTopOf="@id/buttons_container"
-                        android:textColor="@color/text_secondary_color"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:drawablePadding="8dp"
-                        app:drawableEndCompat="@drawable/ic_visibility"
-                        app:drawableTint="@color/text_secondary_color"
-                        tools:text="bc1qc7slrfxkknq...dlk4ugp7szw5tk9" />
-
+                <!-- Wrapping LinearLayout needed as MuunButton can't handle layout_weight -->
                 <LinearLayout
-                        android:id="@+id/buttons_container"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        app:layout_constraintTop_toBottomOf="@id/show_qr_content"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_centerHorizontal="true"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingBottom="16dp">
+                        android:layout_weight="1">
 
-                    <TextView
+                    <io.muun.apollo.presentation.ui.view.MuunButton
                             android:id="@+id/show_qr_share"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:paddingTop="8dp"
-                            android:paddingBottom="8dp"
-                            android:text="@string/share"
-                            android:textSize="14sp"
-                            android:textColor="@color/blue"
-                            android:textStyle="bold"
-                            android:background="@drawable/muun_bubble_button" />
-
-                    <TextView
-                            android:id="@+id/show_qr_copy"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:paddingTop="8dp"
-                            android:paddingBottom="8dp"
-                            android:text="@string/copy"
-                            android:textSize="14sp"
-                            android:textColor="@color/blue"
-                            android:textStyle="bold"
-                            android:background="@drawable/muun_bubble_button" />
+                            style="@style/muun_button_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/muun_button_floating_bg"
+                            android:text="@string/share" />
 
                 </LinearLayout>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Wrapping LinearLayout needed as MuunButton can't handle layout_weight -->
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
 
-        <io.muun.apollo.presentation.ui.view.HtmlTextView
-                android:id="@+id/switch_bitcoin_address_format"
-                android:layout_width="wrap_content"
+                    <io.muun.apollo.presentation.ui.view.MuunButton
+                            android:id="@+id/show_qr_copy"
+                            style="@style/muun_button_primary"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="4dp"
+                            android:background="@drawable/muun_button_floating_bg"
+                            android:text="@string/copy" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <io.muun.apollo.presentation.ui.view.HiddenSection
+                android:id="@+id/address_settings"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                android:textColor="@color/text_secondary_color"
-                android:textSize="13sp"
-                android:lineSpacingExtra="7sp"
-                android:gravity="center"
-                tools:text="@string/show_qr_switch_to_legacy_format" />
+                app:layout_constraintTop_toBottomOf="@+id/main_content"
+                app:layout_constraintVertical_bias="0"
+                app:retractedLabel="@string/address_settings"
+                app:expandedLabel="@string/address_settings_hide"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+                android:id="@+id/address_settings_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/address_settings">
+
+            <io.muun.apollo.presentation.ui.view.EditAmountItem
+                    android:id="@+id/edit_amount_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            <io.muun.apollo.presentation.ui.view.AddressTypeItem
+                    android:id="@+id/address_type_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

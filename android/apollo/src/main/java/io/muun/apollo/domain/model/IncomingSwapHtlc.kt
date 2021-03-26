@@ -13,4 +13,14 @@ class IncomingSwapHtlc(
         val address: String,
         val outputAmountInSatoshis: Long,
         val htlcTx: ByteArray,
-): HoustonUuidModel(id, houstonUuid)
+): HoustonUuidModel(id, houstonUuid) {
+
+    fun toLibwalletModel(): libwallet.IncomingSwapHtlc {
+        val htlc = libwallet.IncomingSwapHtlc()
+        htlc.htlcTx = htlcTx
+        htlc.expirationHeight = expirationHeight
+        htlc.swapServerPublicKey = swapServerPublicKey
+
+        return htlc;
+    }
+}

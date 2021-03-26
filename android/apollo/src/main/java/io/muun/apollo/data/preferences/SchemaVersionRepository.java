@@ -16,8 +16,8 @@ public class SchemaVersionRepository extends BaseRepository {
      * Creates a repository.
      */
     @Inject
-    public SchemaVersionRepository(Context context) {
-        super(context);
+    public SchemaVersionRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         versionPreference = rxSharedPreferences.getInteger(KEY_VERSION);
     }
 

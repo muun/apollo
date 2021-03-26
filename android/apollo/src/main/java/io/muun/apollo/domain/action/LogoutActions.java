@@ -5,17 +5,9 @@ import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
-import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.BaseRepository;
-import io.muun.apollo.data.preferences.ClientVersionRepository;
-import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FcmTokenRepository;
-import io.muun.apollo.data.preferences.FeeWindowRepository;
-import io.muun.apollo.data.preferences.KeysRepository;
-import io.muun.apollo.data.preferences.NotificationRepository;
-import io.muun.apollo.data.preferences.SchemaVersionRepository;
-import io.muun.apollo.data.preferences.TransactionSizeRepository;
-import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
@@ -53,7 +45,7 @@ public class LogoutActions {
 
     private final LogoutOptionsSelector logoutOptionsSel;
 
-    private final List<BaseRepository> repositoriesToClear;
+    private final RepositoryRegistry repositoryRegistry;
     private final List<String> thirdPartyPreferencesToClear;
 
     private final FcmTokenRepository fcmTokenRepository;
@@ -73,15 +65,7 @@ public class LogoutActions {
                          ContactActions contactActions,
                          ApplicationLockManager lockManager,
                          LogoutOptionsSelector logoutOptionsSel,
-                         AuthRepository authRepository,
-                         ExchangeRateWindowRepository exchangeRateWindowRepository,
-                         KeysRepository keysRepository,
-                         UserRepository userRepository,
-                         SchemaVersionRepository schemaVersionRepository,
-                         FeeWindowRepository feeWindowRepository,
-                         ClientVersionRepository clientVersionRepository,
-                         NotificationRepository notificationRepository,
-                         TransactionSizeRepository transactionSizeRepository,
+                         RepositoryRegistry repositoryRegistry,
                          FcmTokenRepository fcmTokenRepository,
                          LibwalletDataDirectory libwalletDataDirectory) {
 
@@ -96,18 +80,7 @@ public class LogoutActions {
         this.logoutOptionsSel = logoutOptionsSel;
 
         this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
-
-        this.repositoriesToClear = Arrays.asList(
-                authRepository,
-                exchangeRateWindowRepository,
-                keysRepository,
-                userRepository,
-                schemaVersionRepository,
-                feeWindowRepository,
-                clientVersionRepository,
-                notificationRepository,
-                transactionSizeRepository
-        );
+        this.repositoryRegistry = repositoryRegistry;
 
         this.fcmTokenRepository = fcmTokenRepository;
         this.libwalletDataDirectory = libwalletDataDirectory;
@@ -205,7 +178,7 @@ public class LogoutActions {
      * clearing some repositories on logout (e.g FcmTokenRepository).
      */
     private void clearRepositoriesForLogout() {
-        for (BaseRepository repository : repositoriesToClear) {
+        for (BaseRepository repository : repositoryRegistry.repositoriesToClear()) {
             clearRepository(repository);
         }
 

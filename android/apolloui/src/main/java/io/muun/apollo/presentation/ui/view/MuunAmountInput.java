@@ -53,8 +53,8 @@ public class MuunAmountInput extends MuunView {
     @BindView(R.id.muun_amount)
     MuunEditText inputAmount;
 
-    @BindView(R.id.muun_available_amount)
-    TextView availableBalance;
+    @BindView(R.id.secondary_amount)
+    TextView secondaryAmount;
 
     @BindView(R.id.currency_code)
     TextView currencyInput;
@@ -167,16 +167,17 @@ public class MuunAmountInput extends MuunView {
         }
     }
 
-    public void setBalance(CharSequence amount) {
-        this.availableBalance.setText(amount);
+    public void setSecondaryAmount(CharSequence amount) {
+        this.secondaryAmount.setText(amount);
+        this.secondaryAmount.setVisibility(View.VISIBLE);
+    }
+
+    public void hideSecondaryAmount() {
+        this.secondaryAmount.setVisibility(View.GONE);
     }
 
     public void setAmountError(boolean hasError) {
         inputAmount.setTextColor(hasError ? errorColor : normalNumberColor);
-    }
-
-    public void setAvailableBalanceError(boolean hasError) {
-        availableBalance.setTextColor(hasError ? errorColor : normalBalanceColor);
     }
 
     public void setExchangeRateProvider(ExchangeRateProvider rateProvider) {
@@ -235,6 +236,9 @@ public class MuunAmountInput extends MuunView {
         }
 
         value = newValue;
+
+        // Once we start typing, text should have this color, unless overruled by setAmountError
+        inputAmount.setTextColor(normalNumberColor);
 
         if (!isCurrentyChangingCurrency) {
             valueBeforeCurrencyChange = newValue;

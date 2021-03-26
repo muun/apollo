@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/muun_screen_margin">
+
+    <TextView
+            android:id="@+id/picker_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif-medium"
+            android:lineSpacingExtra="0sp"
+            android:textColor="@color/text_primary_color"
+            android:textSize="16sp"
+            android:textStyle="normal"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Some title" />
+
+
+    <RadioGroup
+            android:id="@+id/picker_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <!-- Only here for layout editor preview. Content will be dynamically created -->
+
+        <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:text="Option 1"
+                tools:visibility="visible" />
+
+        <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:textAppearance="@style/MuunRadioButtonTextAppearanceSelected"
+                tools:checked="true"
+                tools:text="Option 2" />
+
+        <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="Option 3" />
+
+    </RadioGroup>
+</LinearLayout>

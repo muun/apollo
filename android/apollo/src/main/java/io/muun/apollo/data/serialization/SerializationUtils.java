@@ -248,6 +248,36 @@ public final class SerializationUtils {
     }
 
     /**
+     * Serialize a BitcoinAmount.
+     */
+    @NotNull
+    public static String serializeBitcoinAmount(@NotNull BitcoinAmount btcAmount) {
+        return String.format(
+                "%s;%s;%s",
+                btcAmount.inSatoshis.toString(),
+                serializeMonetaryAmount(btcAmount.inInputCurrency),
+                serializeMonetaryAmount(btcAmount.inPrimaryCurrency)
+        );
+    }
+
+    /**
+     * Deserialize a BitcoinAmount.
+     */
+    @NotNull
+    public static BitcoinAmount deserializeBitcoinAmount(@NotNull String string) {
+        final String[] parts = string.split(";");
+        if (parts.length != 3) {
+            throw new IllegalArgumentException();
+        }
+
+        final Long inSatoshis = Long.valueOf(parts[0]);
+        final MonetaryAmount inInputCurrency =  deserializeMonetaryAmount(parts[1]);
+        final MonetaryAmount inPrimaryCurrency =  deserializeMonetaryAmount(parts[2]);
+
+        return new BitcoinAmount(inSatoshis, inInputCurrency, inPrimaryCurrency);
+    }
+
+    /**
      * Serialize a list of objects to a JSON array.
      */
     public static <T> String serializeList(Class<T> itemType, List<T> items) {

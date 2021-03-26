@@ -17,6 +17,7 @@ import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.execution.JobExecutor;
+import io.muun.apollo.data.preferences.RepositoryRegistry;
 
 import android.content.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +28,7 @@ import org.bitcoinj.core.NetworkParameters;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
-import rx.functions.Func2;
+import rx.functions.Func3;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -39,7 +40,7 @@ public class DataModule {
 
     private final Context applicationContext;
 
-    private final Func2<Context, ExecutionTransformerFactory, NotificationService>
+    private final Func3<Context, ExecutionTransformerFactory, RepositoryRegistry, NotificationService>
             notificationServiceFactory;
 
     private final Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory;
@@ -51,7 +52,7 @@ public class DataModule {
      */
     public DataModule(
             Context applicationContext,
-            Func2<Context, ExecutionTransformerFactory, NotificationService> notificationServiceFactory,
+            Func3<Context, ExecutionTransformerFactory, RepositoryRegistry, NotificationService> notificationServiceFactory,
             Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory,
             HoustonConfig houstonConfig) {
 
@@ -108,8 +109,9 @@ public class DataModule {
     @Singleton
     NotificationService provideNotificationService(
             Context context,
-            ExecutionTransformerFactory executionTransformerFactory) {
-        return notificationServiceFactory.call(context, executionTransformerFactory);
+            ExecutionTransformerFactory executionTransformerFactory,
+            RepositoryRegistry repoRegistry) {
+        return notificationServiceFactory.call(context, executionTransformerFactory, repoRegistry);
     }
 
     @Provides
@@ -167,5 +169,11 @@ public class DataModule {
     @Singleton
     AppStandbyBucketProvider provideAppStandbyBucketProvider(final Context  context) {
         return appStandbyBucketProviderFactory.call(context);
+    }
+
+    @Provides
+    @Singleton
+    RepositoryRegistry provideRepositoryRegistry() {
+        return new RepositoryRegistry();
     }
 }

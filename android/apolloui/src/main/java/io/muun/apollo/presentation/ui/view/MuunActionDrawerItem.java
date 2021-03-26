@@ -60,6 +60,7 @@ public class MuunActionDrawerItem extends MuunView {
     public void setIcon(@DrawableRes int iconRes) {
         icon.setImageResource(iconRes);
         icon.setVisibility(View.VISIBLE);
+        setTint(enabledTintColor);
     }
 
     public void setIcon(Drawable drawable) {

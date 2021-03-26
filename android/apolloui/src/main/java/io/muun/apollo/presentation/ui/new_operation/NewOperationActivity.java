@@ -14,7 +14,6 @@ import io.muun.apollo.domain.model.SubmarineSwapReceiver;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer;
-import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.edit_fee.EditFeeActivity;
@@ -32,6 +31,7 @@ import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.apollo.presentation.ui.view.MuunPill;
 import io.muun.apollo.presentation.ui.view.NoticeBanner;
+import io.muun.apollo.presentation.ui.view.RichText;
 import io.muun.apollo.presentation.ui.view.StatusMessage;
 import io.muun.apollo.presentation.ui.view.TextInputWithBackHandling;
 import io.muun.common.Optional;
@@ -57,6 +57,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -73,13 +74,15 @@ import static android.animation.LayoutTransition.APPEARING;
 import static android.animation.LayoutTransition.DISAPPEARING;
 
 public class NewOperationActivity extends BaseActivity<NewOperationPresenter> implements
-        NewOperationView, ExternalResultExtension.Caller {
+        NewOperationView {
 
     public static final String OPERATION_URI = "operation_uri";
     public static final String ORIGIN = "origin";
 
     private static final int ANIMATION_DURATION_MS = 300;
     private static final int EDIT_FEE_REQUEST_CODE = 1001;
+
+    private static final long INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS = 60;
 
     /**
      * Create an Intent to launch this Activity.
@@ -201,9 +204,6 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     @BindColor(R.color.red)
     int errorColor;
 
-    @BindColor(R.color.icon_color)
-    int iconColor;
-
     // State:
     @State
     CurrencyDisplayMode currencyDisplayMode;
@@ -260,9 +260,6 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
             final NewOperationOrigin origin = getOrigin(intent);
 
             presenter.onViewCreated(uri, origin);
-
-            // Needed for api levels < 23 (TextView's drawableTint xml attr)
-            UiUtils.setRightDrawableTint(feeLabel, R.drawable.ic_edit_black_24, iconColor);
 
         } else {
             showTextToast(getString(R.string.error_no_valid_payment_details_provided));
@@ -396,7 +393,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
                 )
         );
 
-        amountInput.setBalance(balanceText);
+        amountInput.setSecondaryAmount(balanceText);
         useAllFundsView.setEnabled(true);
     }
 
@@ -1045,11 +1042,6 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         finishActivity();
     }
 
-    @Override
-    public int getId() {
-        return System.identityHashCode(this);
-    }
-
     private void hideSoftKeyboard() {
         final View currentFocus = this.getCurrentFocus();
         final InputMethodManager inputMethodManager =
@@ -1064,7 +1056,18 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         return new InvoiceExpirationCountdownTimer(this, remainingMillis) {
 
             @Override
-            protected void onTextUpdate(long remainingSeconds, CharSequence text) {
+            protected void onTextUpdate(long remainingSeconds, CharSequence timeText) {
+
+                final String prefixText = ctx.getString(R.string.new_operation_invoice_exp_prefix);
+
+                final CharSequence text = TextUtils.concat(prefixText, " ", timeText);
+
+                final RichText richText = new RichText(text);
+
+                if (remainingSeconds < INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS) {
+                    richText.setForegroundColor(ContextCompat.getColor(ctx, R.color.red));
+                }
+
                 invoiceExpirationCountdown.setText(text);
             }
 

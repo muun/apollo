@@ -10,7 +10,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@id/home_widget_container"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"
+            tools:visibility="visible"/>
 
     <LinearLayout
             android:id="@+id/home_widget_container"

@@ -29,8 +29,8 @@
     <!-- New operation -->
     <string name="new_operation_title">Nuevo pago</string>
     <string name="operation_detail_title">Detalle del pago</string>
-    <string name="showqr_title">Recibir bitcoin</string>
-    <string name="scanqr_title">Enviar bitcoin</string>
+    <string name="showqr_title">Recibir</string>
+    <string name="scanqr_title">Enviar</string>
     <string name="scanqr_drawer_title">Enviar a la dirección en el portapapeles</string>
     <string name="scanqr_drawer_no_address">Solicitud de pago de %s</string>
     <string name="scanqr_drawer_no_address_no_host">Solicitud de pago de un comercio</string>
@@ -1005,24 +1005,13 @@
     <string name="your_bitcoin_address">Tu dirección de bitcoin</string>
     <string name="your_compat_bitcoin_address">Tu dirección de bitcoin de compatibilidad</string>
     <string name="your_ln_invoice">Tu factura de lightning</string>
-    <string name="show_qr_invoice_loading">Cargando</string>
-    <string name="show_qr_invoice_expiration">
-        <annotation arg="0">placeholder</annotation>.\n
-        <annotation link="createOther">Crear una nueva</annotation>
-    </string>
+    <string name="show_qr_invoice_loading">Generando factura</string>
     <string name="show_qr_invoice_expired">
-        Esta factura expiró. Crea una nueva.
+        Esta factura expiró antes de que se hiciera el pago. Por favor, crea o pide una nueva.
     </string>
     <string name="show_qr_invoice_create_other">Crear factura</string>
 
     <string name="address_share_title">Enviar a...</string>
-    <string name="show_qr_switch_to_legacy_format">
-        Problemas usando esta dirección?\n
-        <annotation link="legacy">Cambiar a dirección de compatibilidad</annotation>
-    </string>
-    <string name="show_qr_switch_to_segwit_format">
-        <annotation link="segwit">Cambiar a dirección Segwit</annotation>
-    </string>
 
     <string name="bitcoin_address_help_content">
         <annotation role="h1">Direcciones de Segwit y compatibilidad</annotation>
@@ -1320,5 +1309,23 @@
 
     <string name="settings_header_advanced">Configuración avanzada</string>
     <string name="settings_lightning">Lightning Network</string>
-    <string name="dark_mode">Modo oscuro</string>
+    <string name="dark_mode">Apariencia</string>
+    <string name="dark_mode_dark">Modo oscuro</string>
+    <string name="dark_mode_light">Modo claro</string>
+    <string name="dark_mode_follow_system">Determinada por el sistema</string>
+
+    <string name="address_settings">Configuración de dirección</string>
+    <string name="address_settings_hide">Ocultar configuración</string>
+    <string name="edit_amount_add">Añadir +</string>
+    <string name="edit_address_type">Tipo de dirección</string>
+    <string name="segwit">Segwit</string>
+    <string name="legacy">Compatibilidad</string>
+    <string name="choose_address_type">Elige tu tipo de dirección</string>
+
+    <string name="invoice_settings">Configuración de factura</string>
+    <string name="invoice_settings_hide">Ocultar configuración</string>
+    <string name="select_amount_title">Editar monto</string>
+    <string name="confirm_empty_amount">Confirmar monto vacío</string>
+    <string name="expiration_time">Tiempo de expiración</string>
+
 </resources>

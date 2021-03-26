@@ -19,8 +19,8 @@ public class ExchangeRateWindowRepository extends BaseRepository {
      * Constructor.
      */
     @Inject
-    public ExchangeRateWindowRepository(Context context) {
-        super(context);
+    public ExchangeRateWindowRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         windowPreference = rxSharedPreferences.getString(KEY_WINDOW);
     }
 

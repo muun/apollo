@@ -2,6 +2,7 @@ package io.muun.apollo.domain.action;
 
 import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.apollo.domain.errors.MissingCurrencyError;
+import io.muun.apollo.domain.errors.MissingLocaleError;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 
@@ -75,7 +76,7 @@ public class CurrencyActions {
         if (currencies.isEmpty()) {
 
             if (regionLocales.isEmpty()) {  // Should never happen
-                Timber.e(new IllegalStateException("No locales found for country:" + countryCode));
+                Timber.e(new MissingLocaleError(countryCode));
 
             } else {
                 Timber.e(

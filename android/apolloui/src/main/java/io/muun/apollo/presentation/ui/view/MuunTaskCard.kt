@@ -22,13 +22,13 @@ class MuunTaskCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     }
 
     @BindView(R.id.icon)
-    internal lateinit var iconView: ImageView
+    lateinit var iconView: ImageView
 
     @BindView(R.id.title)
-    internal lateinit var titleView: TextView
+    lateinit var titleView: TextView
 
     @BindView(R.id.body)
-    internal lateinit var bodyView: TextView
+    lateinit var bodyView: TextView
 
     override fun getLayoutResource() =
         R.layout.muun_task_card

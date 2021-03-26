@@ -33,8 +33,8 @@
     <!-- New operation -->
     <string name="new_operation_title">New payment</string>
     <string name="operation_detail_title">Payment details</string>
-    <string name="showqr_title">Receive bitcoin</string>
-    <string name="scanqr_title">Send bitcoin</string>
+    <string name="showqr_title">Receive</string>
+    <string name="scanqr_title">Send</string>
     <string name="scanqr_drawer_title">Use address in clipboard</string>
     <string name="scanqr_drawer_no_address">Payment request from %s</string>
     <string name="scanqr_drawer_no_address_no_host">Payment request from a merchant</string>
@@ -972,24 +972,13 @@
     <string name="your_bitcoin_address">Your bitcoin address</string>
     <string name="your_compat_bitcoin_address">Your legacy address</string>
     <string name="your_ln_invoice">Your lightning invoice</string>
-    <string name="show_qr_invoice_loading">Creating invoice</string> <!-- creating invoice async -->
-    <string name="show_qr_invoice_expiration">
-        <annotation arg="0">placeholder</annotation>.\n
-        <annotation link="createOther">Create a new one</annotation> <!-- a new one -->
-    </string>
+    <string name="show_qr_invoice_loading">Generating invoice</string>
     <string name="show_qr_invoice_expired">
-        This invoice expired. Create a new one.
+        This invoice expired before the payment was made. Please, create or request a new one.
     </string>
     <string name="show_qr_invoice_create_other">Create invoice</string>
 
     <string name="address_share_title">Send to...</string>
-    <string name="show_qr_switch_to_legacy_format">
-        Having trouble using this address?\n
-        <annotation link="legacy">Switch to legacy addresses</annotation>
-    </string>
-    <string name="show_qr_switch_to_segwit_format">
-        <annotation link="segwit">Switch to Segwit addresses</annotation>
-    </string>
 
     <string name="bitcoin_address_help_content">
         <annotation role="h1">Segwit and legacy addresses</annotation>
@@ -1270,5 +1259,23 @@
     <string name="turbo_channels_disable">DISABLE</string>
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
-    <string name="dark_mode">Dark mode</string>
+    <string name="dark_mode">Appearance</string>
+    <string name="dark_mode_dark">Dark mode</string>
+    <string name="dark_mode_light">Light mode</string>
+    <string name="dark_mode_follow_system">Determined by the system</string>
+
+    <string name="address_settings">Address settings</string>
+    <string name="address_settings_hide">Hide settings</string>
+    <string name="edit_amount_add">Add +</string>
+    <string name="edit_address_type">Address type</string>
+    <string name="segwit">Segwit</string>
+    <string name="legacy">Legacy</string>
+    <string name="choose_address_type">Choose your address type</string>
+
+    <string name="invoice_settings">Invoice settings</string>
+    <string name="invoice_settings_hide">Hide settings</string>
+    <string name="select_amount_title">Edit amount</string>
+    <string name="confirm_empty_amount">Confirm empty amount</string>
+    <string name="expiration_time">Expiration time</string>
+
 </resources>

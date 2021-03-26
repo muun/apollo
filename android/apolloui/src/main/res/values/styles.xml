@@ -16,6 +16,8 @@
         <item name="textInputStyle">@style/Widget.Design.TextInputLayout</item>
 
         <item name="android:actionBarStyle">@style/MuunActionBarStyle</item>
+        <item name="radioButtonStyle">@style/MuunRadioButtonStyle</item>
+
     </style>
 
     <style name="AppTheme" parent="BaseAppTheme">
@@ -98,6 +100,32 @@
     -->
     <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
+    </style>
+
+    <style name="MuunRadioButtonStyle"
+            parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:textSize">16sp</item>
+        <!-- BEWARE for some reason android:textAppearance ignores textColor attr when set via
+        xml or View constructor. Apparently works if set dynamically via setter.
+        So to use this style statically, we put textColor here. -->
+        <item name="android:textColor">@color/text_secondary_color</item>
+        <item name="android:textAppearance">@style/MuunRadioButtonTextAppearanceDefault</item>
+        <item name="android:padding">@dimen/muun_screen_margin</item>
+    </style>
+
+    <style name="MuunRadioButtonTextAppearanceDefault" parent="@android:style/TextAppearance">
+    </style>
+
+    <style name="MuunRadioButtonTextAppearanceSelected" parent="@android:style/TextAppearance">
+        <!-- BEWARE for some reason android:textAppearance ignores textColor attr when set via
+        xml or View constructor. Apparently works if set dynamically via setter. -->
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary_color</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="MuunPopupTheme" parent="ThemeOverlay.MaterialComponents.Light">

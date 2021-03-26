@@ -48,7 +48,7 @@ import javax.validation.constraints.NotNull;
 
 
 public abstract class BaseActivity<PresenterT extends Presenter> extends ExtensibleActivity
-        implements BaseView, PermissionRequester {
+        implements BaseView, PermissionRequester, ExternalResultExtension.DelegableCaller {
 
     @Inject
     @NotNull // not true, but compatible with Kotlin lateinit var
@@ -369,7 +369,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      */
     @Override
     public int getId() {
-        return 0;
+        return System.identityHashCode(this);
     }
 
     /**
@@ -407,6 +407,20 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     public String requestExternalResult(Caller caller, int requestCode, DialogFragment dialog) {
         return getExtension(ExternalResultExtension.class)
                 .showDialogForResult(caller, requestCode, dialog);
+    }
+
+    public void requestDelegatedExternalResult(int requestCode, Intent intent) {
+        requestExternalResult(this, requestCode, intent);
+    }
+
+    @Override
+    public void onExternalResult(int requestCode, int resultCode, Intent data) {
+
+    }
+
+    @Override
+    public Caller getDelegateCaller() {
+        return null;
     }
 
     /**

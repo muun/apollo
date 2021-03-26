@@ -8,10 +8,8 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatDelegate
 import butterknife.BindView
 import butterknife.OnClick
-import com.google.android.material.switchmaterial.SwitchMaterial
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.errors.UserFacingError
@@ -52,8 +50,8 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     @BindView(R.id.settings_primary_currency)
     lateinit var currencyItem: MuunSettingItem
 
-    @BindView(R.id.dark_mode_switch)
-    lateinit var darkModeSwitch: SwitchMaterial
+    @BindView(R.id.settings_dark_mode)
+    lateinit var darkModeItem: MuunSettingItem
 
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
@@ -83,10 +81,6 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         muunPictureInput.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
         muunPictureInput.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
         versionCode.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
-
-        if (UiUtils.supportsDarkMode()) {
-            darkModeSwitch.visibility = View.GONE // On Android 10+ we follow the system setting
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -113,14 +107,29 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
 
     override fun setNightMode(mode: NightMode) {
         when(mode) {
-            NightMode.LIGHT -> darkModeSwitch.isChecked = false
-            NightMode.DARK -> darkModeSwitch.isChecked = true
-            NightMode.FOLLOW_SYSTEM -> setNightModeAccordingToSystem()
+            NightMode.DARK -> darkModeItem.setDescription(getString(R.string.dark_mode_dark))
+            NightMode.LIGHT -> darkModeItem.setDescription(getString(R.string.dark_mode_light))
+            NightMode.FOLLOW_SYSTEM -> setFollowSystemDarkMode()
         }
     }
 
-    private fun setNightModeAccordingToSystem() {
-        darkModeSwitch.isChecked = getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
+    private fun setFollowSystemDarkMode() {
+
+        if (UiUtils.supportsDarkMode()) {
+            darkModeItem.setDescription(getString(R.string.dark_mode_follow_system))
+
+        } else {
+            when (getCurrentNightMode()) {
+
+                Configuration.UI_MODE_NIGHT_YES -> {
+                    setNightMode(NightMode.DARK)
+                }
+
+                Configuration.UI_MODE_NIGHT_NO -> {
+                    setNightMode(NightMode.LIGHT)
+                }
+            }
+        }
     }
 
     private fun setUpRecoveryAndLogoutSection(user: User) {
@@ -219,20 +228,9 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         presenter.navigateToSelectBitcoinUnit()
     }
 
-    @OnClick(R.id.dark_mode_switch)
-    fun onDarkModeToggle() {
-        when (getCurrentNightMode()) {
-
-            Configuration.UI_MODE_NIGHT_YES -> {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                presenter.saveNightModePreference(NightMode.LIGHT)
-            }
-
-            Configuration.UI_MODE_NIGHT_NO -> {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                presenter.saveNightModePreference(NightMode.DARK)
-            }
-        }
+    @OnClick(R.id.settings_dark_mode)
+    fun editDarkMode() {
+        presenter.navigateToSelectDarkMode()
     }
 
     /**

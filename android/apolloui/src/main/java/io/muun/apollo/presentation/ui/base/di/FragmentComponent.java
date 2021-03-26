@@ -50,7 +50,6 @@ import io.muun.apollo.presentation.ui.settings.edit_password.StartPasswordChange
 import io.muun.apollo.presentation.ui.settings.edit_password.success.EditPasswordSuccessFragment;
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment;
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment;
-import io.muun.apollo.presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpFragment;
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment;
 
 import dagger.Subcomponent;
@@ -154,8 +153,6 @@ public interface FragmentComponent {
     void inject(RcLoginEmailAuthorizeFragment rcLoginEmailAuthorizeFragment);
 
     void inject(EmergencyKitCloudVerifyFragment emergencyKitCloudCloudVerifyFragment);
-
-    void inject(BitcoinAddressHelpFragment bitcoinAddressHelpFragment);
 
     void inject(SettingsFragment settingsFragment);
 

@@ -86,6 +86,7 @@
     <color name="muun_button_primary_bg_disabled">@color/blue_light</color>
     <color name="muun_button_primary_text_disabled">@color/white</color>
     <color name="muun_button_secondary_bg">@color/white</color>
+    <color name="muun_button_tertiary_bg">@color/white</color>
     <color name="round_rect_background">@color/white</color>
     <color name="round_rect_background_border">@color/gray_light</color>
     <color name="border_bg_selected">@color/blue_lightest</color>
@@ -132,6 +133,6 @@
     <color name="text_target_address">@color/gray_dark</color>
     <color name="lightning_settings_background">@color/blue_lightest</color>
     <color name="new_home_tooltip">@color/blue_lightest</color>
-    <color name="invoice_expired_overlay">@color/blue_lightest</color>
+    <color name="invoice_qr_loading_background">@color/gray_lightest</color>
 
 </resources>

@@ -105,7 +105,7 @@ class StyledStringRes(private val context: Context,
         // Match annotation to color resource:
         val colorRes = when (a.value) {
             FONT_COLOR_BLUE -> R.color.blue
-            FONT_COLOR_BLACK -> R.color.black
+            FONT_COLOR_BLACK -> R.color.text_primary_color
 
             else ->
                 throw IllegalArgumentException("Color ${a.value} not supported")
@@ -153,7 +153,7 @@ class StyledStringRes(private val context: Context,
 
     private fun applyTitleRole(sb: StyleBuilder, range: Range) {
         sb.addSpans(
-            ForegroundColorSpan(color(R.color.black)),
+            ForegroundColorSpan(color(R.color.text_primary_color)),
             StyleSpan(Typeface.BOLD),
             RelativeSizeSpan(1.125f),
             range = range,
@@ -183,7 +183,7 @@ class StyledStringRes(private val context: Context,
     private fun applyEmphasisRole(sb: StyleBuilder, range: Range) {
         sb.addSpans(
             StyleSpan(Typeface.BOLD),
-            ForegroundColorSpan(color(R.color.black)),
+            ForegroundColorSpan(color(R.color.text_primary_color)),
             range = range,
             priority = ROLE_EMPHASIS_PRIORITY
         )

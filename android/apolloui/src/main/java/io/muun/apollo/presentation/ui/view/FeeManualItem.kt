@@ -10,17 +10,14 @@ import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import org.javamoney.moneta.Money
 import javax.money.MonetaryAmount
 
-class FeeManualItem: MuunView {
-
-    @JvmOverloads
-    constructor(context: Context, attrs: AttributeSet? = null, style: Int = 0):
-        super(context, attrs, style)
+class FeeManualItem @JvmOverloads constructor(context: Context, a: AttributeSet? = null, s: Int = 0)
+    : MuunView(context, a, s) {
 
     @BindView(R.id.title)
-    internal lateinit var titleView: TextView
+    lateinit var titleView: TextView
 
     @BindView(R.id.amount)
-    internal lateinit var amountView: TextView
+    lateinit var amountView: TextView
 
     var currencyDisplayMode = CurrencyDisplayMode.BTC
 
@@ -33,7 +30,7 @@ class FeeManualItem: MuunView {
             titleView.text = value
         }
 
-    var amount: MonetaryAmount = Money.of(0, "BTC")
+    var amount: MonetaryAmount? = null
         set(value) {
             field = value
             amountView.text = MoneyHelper.formatLongMonetaryAmount(value, currencyDisplayMode)

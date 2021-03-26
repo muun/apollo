@@ -296,12 +296,6 @@
                 android:name=".presentation.ui.migration.MigrationActivity"
                 android:label="@string/app_name" />
 
-        <!--   ShowQR : BitcoinAddressHelpActivity   -->
-        <activity
-                android:name=".presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpActivity"
-                android:parentActivityName=".presentation.ui.show_qr.ShowQrActivity"
-                />
-
         <!--   OperationsActivity   -->
         <activity
                 android:name=".presentation.ui.activity.operations.OperationsActivity"
@@ -310,6 +304,18 @@
         <activity
                 android:name=".presentation.ui.base.SingleFragmentActivityImpl"
                 />
+
+        <activity
+                android:name=".presentation.ui.select_amount.SelectAmountActivity"
+                android:windowSoftInputMode="adjustResize"
+                />
+
+        <!-- SelectNightModeActivity -->
+
+        <activity
+                android:name=".presentation.ui.select_night_mode.SelectNightModeActivity"
+                />
+
 
         <!-- GcmMessageListenerService -->
 

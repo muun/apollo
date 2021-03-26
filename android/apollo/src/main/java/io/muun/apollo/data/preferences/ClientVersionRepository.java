@@ -18,8 +18,8 @@ public class ClientVersionRepository extends BaseRepository {
      * Creates a repository for auth data.
      */
     @Inject
-    public ClientVersionRepository(Context context) {
-        super(context);
+    public ClientVersionRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         minClientVersionPreference = rxSharedPreferences.getInteger(KEY_MIN_CLIENT_VERSION, null);
     }
 

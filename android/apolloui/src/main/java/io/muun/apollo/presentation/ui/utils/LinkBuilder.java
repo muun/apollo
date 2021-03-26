@@ -39,8 +39,8 @@ public class LinkBuilder {
      */
     public String rawTransactionLink(String txId) {
         final String urlRoot = isTestnet(network)
-                ? "https://blockstream.info/testnet/tx/"
-                : "https://blockstream.info/tx/";
+                ? "https://mempool.space/testnet/tx/"
+                : "https://mempool.space/tx/";
 
         return urlRoot + txId;
     }
@@ -51,8 +51,8 @@ public class LinkBuilder {
     public RichText addressLink(String address) {
 
         final String urlRoot = isTestnet(network)
-                ? "https://blockstream.info/testnet/address/"
-                : "https://blockstream.info/address/";
+                ? "https://mempool.space/testnet/address/"
+                : "https://mempool.space/address/";
 
         return createLink(address, urlRoot + address, "block_explorer_address");
     }

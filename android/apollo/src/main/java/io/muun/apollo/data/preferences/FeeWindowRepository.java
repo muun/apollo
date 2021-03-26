@@ -65,8 +65,8 @@ public class FeeWindowRepository extends BaseRepository {
      * Constructor.
      */
     @Inject
-    public FeeWindowRepository(Context context) {
-        super(context);
+    public FeeWindowRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
 
         feeWindowPreference = rxSharedPreferences.getObject(
                 KEY_FEE_WINDOW,

@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * Very much inspired in Alex Bosworth's JS ref implementation.
  * See:
  * https://github.com/lightningnetwork/lightning-rfc/blob/master/11-payment-encoding.md
- * https://github.com/alexbosworth/ln-service/blob/master/bolt11/parse_payment_request.js
+ * https://github.com/alexbosworth/invoices
  */
 public class LnInvoice {
 
@@ -664,8 +664,10 @@ public class LnInvoice {
         if (multiplier != null) {
             final Matcher matcher = AMOUNT_MULTIPLIER_REGEXP.matcher(multiplier);
 
-            if (multiplier.length() > MULTIPLIER_MARKER_LENGTH || !matcher.matches()) {
-                throw new IllegalArgumentException("InvalidAmountMultiplier");
+            if (multiplier != null && !multiplier.isEmpty()) {
+                if (multiplier.length() > MULTIPLIER_MARKER_LENGTH || !matcher.matches()) {
+                    throw new IllegalArgumentException("InvalidAmountMultiplier");
+                }
             }
         }
 

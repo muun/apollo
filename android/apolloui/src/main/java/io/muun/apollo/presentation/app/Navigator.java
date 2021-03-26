@@ -27,6 +27,7 @@ import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
+import io.muun.apollo.presentation.ui.select_night_mode.SelectNightModeActivity;
 import io.muun.apollo.presentation.ui.send.SendActivity;
 import io.muun.apollo.presentation.ui.settings.edit_password.EditPasswordActivity;
 import io.muun.apollo.presentation.ui.settings.edit_username.EditUsernameActivity;
@@ -34,7 +35,6 @@ import io.muun.apollo.presentation.ui.settings.success_delete_wallet.SuccessDele
 import io.muun.apollo.presentation.ui.setup_p2p.SetupP2PActivity;
 import io.muun.apollo.presentation.ui.setup_password.SetupPasswordActivity;
 import io.muun.apollo.presentation.ui.show_qr.ShowQrActivity;
-import io.muun.apollo.presentation.ui.show_qr.bitcoin.help.BitcoinAddressHelpActivity;
 import io.muun.apollo.presentation.ui.signup.SignupActivity;
 import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
@@ -351,6 +351,18 @@ public class Navigator {
     }
 
     /**
+     * Takes the user to the Dark Mode selection screen.
+     */
+    public void navigateToSelectDarkMode(Context context) {
+        final Intent intent = SelectNightModeActivity.Companion.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
      * Takes the user to the edit username screen.
      */
     public void navigateToEditUsername(Context context) {
@@ -524,12 +536,6 @@ public class Navigator {
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        context.startActivity(intent);
-    }
-
-    public void navigateToBitoinAddressHelp(@NotNull Context context) {
-        final Intent intent = new Intent(context, BitcoinAddressHelpActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         context.startActivity(intent);
     }
 

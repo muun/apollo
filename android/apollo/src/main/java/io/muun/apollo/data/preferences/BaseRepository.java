@@ -14,13 +14,15 @@ public abstract class BaseRepository {
     /**
      * Creates a base preferences repository.
      */
-    public BaseRepository(Context context) {
+    public BaseRepository(Context context, RepositoryRegistry repositoryRegistry) {
         sharedPreferences = context.getSharedPreferences(
                 getFileName(),
                 Context.MODE_PRIVATE
         );
 
         rxSharedPreferences = RxSharedPreferences.create(sharedPreferences);
+
+        repositoryRegistry.load(this);
     }
 
     protected abstract String getFileName();

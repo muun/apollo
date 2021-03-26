@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.analytics
 
 import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin
 import io.muun.common.model.OperationDirection
@@ -48,6 +49,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         "type" to type.name.toLowerCase(),
         "origin" to origin.name.toLowerCase()
     ))
+    class S_AMOUNT_PICKER: AnalyticsEvent()
 
     class S_SCAN_QR: AnalyticsEvent()
     class S_NEW_OP_LOADING: AnalyticsEvent()
@@ -98,6 +100,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_EMERGENCY_KIT_HELP: AnalyticsEvent()
     class S_EXPORT_KEYS_RECOVERY_TOOL: AnalyticsEvent()
     class S_BITCOIN_UNIT_PICKER: AnalyticsEvent()
+    class S_NIGHT_MODE_PICKER: AnalyticsEvent()
 
     enum class S_RECEIVE_TYPE {
         SEGWIT_ADDRESS,
@@ -269,6 +272,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     ))
 
     class E_DID_SELECT_BITCOIN_UNIT(val type: CurrencyDisplayMode): AnalyticsEvent(listOf(
+        "type" to type.name.toLowerCase()
+    ))
+
+    class E_DID_SELECT_NIGHT_MODE(val type: NightMode): AnalyticsEvent(listOf(
         "type" to type.name.toLowerCase()
     ))
 

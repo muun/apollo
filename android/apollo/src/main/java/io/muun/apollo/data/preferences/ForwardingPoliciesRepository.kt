@@ -8,8 +8,10 @@ import io.muun.common.utils.Preconditions
 import java.util.*
 import javax.inject.Inject
 
-open class ForwardingPoliciesRepository
-@Inject constructor(context: Context?) : BaseRepository(context) {
+open class ForwardingPoliciesRepository @Inject constructor(
+    context: Context,
+    repositoryRegistry: RepositoryRegistry
+) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val KEY = "FORWARDING_POLICIES"

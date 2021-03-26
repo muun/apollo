@@ -1,36 +1,66 @@
 package io.muun.apollo.presentation.ui.show_qr.ln
 
+import android.app.Activity
+import android.content.Intent
 import android.view.View
-import android.widget.TextView
+import androidx.core.widget.NestedScrollView
 import butterknife.BindView
 import butterknife.OnClick
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
+import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
-import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.view.LoadingView
+import io.muun.apollo.presentation.ui.view.*
 import io.muun.common.utils.LnInvoice
+import javax.money.MonetaryAmount
 
 
-class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
+class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
+    LnInvoiceView,
+    EditAmountItem.EditAmountHandler {
 
     companion object {
-        private const val EXPIRATION_MESSAGE_THRESHOLD_IN_SECONDS: Int = 10 * 60
+        private const val REQUEST_AMOUNT = 2
     }
 
-    @BindView(R.id.invoice_loading)
-    lateinit var loadingView: LoadingView
+    @BindView(R.id.scrollView)
+    lateinit var scrollView: NestedScrollView
 
     @BindView(R.id.qr_overlay)
     lateinit var qrOverlay: View
 
-    @BindView(R.id.ln_invoice_expiration_message)
-    lateinit var expirationTime: TextView
+    @BindView(R.id.invoice_settings)
+    lateinit var hiddenSection: HiddenSection
+
+    @BindView(R.id.invoice_settings_content)
+    lateinit var invoiceSettingsContent: View
+
+    @BindView(R.id.edit_amount_item)
+    lateinit var editAmountItem: EditAmountItem
+
+    @BindView(R.id.expiration_time_item)
+    lateinit var expirationTimeItem: ExpirationTimeItem
+
+    @BindView(R.id.invoice_loading)
+    lateinit var loadingView: LoadingView
+
+    @BindView(R.id.show_qr_copy)
+    lateinit var copyButton: MuunButton
+
+    @BindView(R.id.show_qr_share)
+    lateinit var shareButton: MuunButton
 
     @BindView(R.id.invoice_expired_overlay)
     lateinit var invoiceExpiredOverlay: View
+
+    // State:
+
+    @State
+    lateinit var mode: CurrencyDisplayMode
 
     private var countdownTimer: InvoiceExpirationCountdownTimer? = null
 
@@ -41,17 +71,35 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     override fun getLayoutResource() =
         R.layout.fragment_show_qr_ln
 
-    override fun setLoading(loading: Boolean) {
-        loadingView.visibility = if (loading) View.VISIBLE else View.GONE
-        qrOverlay.visibility = if (loading) View.INVISIBLE else View.VISIBLE // Keep cardView bounds
+    override fun initializeUi(view: View?) {
+        super.initializeUi(view)
+        editAmountItem.setEditAmountHandler(this)
     }
 
-    override fun setInvoice(invoice: LnInvoice) {
-        super.setQrContent(invoice.original)
+    override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
+        hiddenSection.setExpanded(showingAdvancedSettings)
+        if (showingAdvancedSettings) {
+            invoiceSettingsContent.visibility = View.VISIBLE
+        }
+    }
 
-        invoiceExpiredOverlay.visibility = View.GONE
-        qrOverlay.visibility = View.VISIBLE
-        expirationTime.visibility = View.GONE
+    override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
+        this.mode = mode
+    }
+
+    override fun setLoading(loading: Boolean) {
+        loadingView.visibility = if (loading) View.VISIBLE else View.GONE
+        qrContent.visibility = if (loading) View.INVISIBLE else View.VISIBLE // Keep view Bounds
+
+        copyButton.isEnabled = !loading
+        shareButton.isEnabled = !loading
+
+        editAmountItem.setLoading(loading)
+        expirationTimeItem.setLoading(loading)
+    }
+
+    override fun setInvoice(invoice: LnInvoice, amount: MonetaryAmount?) {
+        super.setQrContent(invoice.original)
 
         // Detect if 1h left of expiration time, and show countdown
         val expirationTimeInMillis = invoice.expirationTime.toEpochSecond() * 1000
@@ -61,8 +109,11 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         countdownTimer = buildCountDownTimer(remainingMillis)
         countdownTimer!!.start()
 
-        expirationTime.setOnClickListener {
-            presenter.generateNewInvoice()
+        if (amount != null) {
+            editAmountItem.setAmount(amount, mode)
+
+        } else {
+            editAmountItem.resetAmount()
         }
     }
 
@@ -86,7 +137,57 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
 
     @OnClick(R.id.create_other_invoice)
     fun onCreateInvoiceClick() {
-        presenter.generateNewInvoice()
+        presenter.generateNewEmptyInvoice()
+        resetViewState()
+    }
+
+    @OnClick(R.id.invoice_settings)
+    fun onInvoiceSettingsClick() {
+        presenter.toggleAdvancedSettings()
+        hiddenSection.toggleSection()
+
+        if (invoiceSettingsContent.visibility == View.VISIBLE) {
+            invoiceSettingsContent.visibility = View.GONE
+
+        } else {
+            invoiceSettingsContent.visibility = View.VISIBLE
+
+            scrollView.postDelayed({
+                scrollView.fullScroll(View.FOCUS_DOWN)
+            }, 100)
+        }
+    }
+
+    override fun onEditAmount(amount: MonetaryAmount?) {
+        requestDelegatedExternalResult(
+            REQUEST_AMOUNT,
+            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(), amount)
+        )
+    }
+
+    override fun onExternalResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onExternalResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_AMOUNT && resultCode == Activity.RESULT_OK) {
+            val result = SelectAmountActivity.getResult(data!!)
+
+            if (result != null && !result.isZero) {
+                presenter.setAmount(result)
+
+            } else {
+                resetAmount()
+            }
+        }
+    }
+
+    override fun resetAmount() {
+        presenter.setAmount(null)
+    }
+
+    private fun resetViewState() {
+        invoiceExpiredOverlay.visibility = View.GONE
+        qrOverlay.visibility = View.VISIBLE
+        hiddenSection.visibility = View.VISIBLE
     }
 
     private fun stopTimer() {
@@ -100,22 +201,20 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
 
         return object : InvoiceExpirationCountdownTimer(context, remainingMillis) {
             override fun onTextUpdate(remainingSeconds: Long, text: CharSequence) {
-
-                if (remainingSeconds <= Companion.EXPIRATION_MESSAGE_THRESHOLD_IN_SECONDS) {
-                    expirationTime.text = StyledStringRes(ctx, R.string.show_qr_invoice_expiration)
-                        .toCharSequence(text.toString())
-                    expirationTime.visibility = View.VISIBLE
-                }
+                expirationTimeItem.setExpirationTime(text)
             }
 
             override fun onFinish() {
-                expirationTime.visibility = View.GONE
                 invoiceExpiredOverlay.visibility = View.VISIBLE
+                qrOverlay.visibility = View.GONE
+                hiddenSection.visibility = View.GONE
+                invoiceSettingsContent.visibility = View.GONE
             }
         }
     }
 
     fun refresh() {
+        resetViewState()
         presenter.generateNewInvoice()
     }
 }

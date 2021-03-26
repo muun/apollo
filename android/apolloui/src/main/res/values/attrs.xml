@@ -51,4 +51,8 @@
         <!-- from 0.0f to 1.0f -->
         <attr name="textMaxWidthPercent" format="float"/>
     </declare-styleable>
+
+    <attr name="expandedLabel" format="reference" />
+    <attr name="retractedLabel" format="reference" />
+
 </resources>

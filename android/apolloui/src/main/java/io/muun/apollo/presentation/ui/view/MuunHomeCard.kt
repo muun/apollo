@@ -13,10 +13,10 @@ class MuunHomeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     MuunView(c, a, s) {
 
     @BindView(R.id.icon)
-    internal lateinit var iconView: ImageView
+    lateinit var iconView: ImageView
 
     @BindView(R.id.body)
-    internal lateinit var bodyView: TextView
+    lateinit var bodyView: TextView
 
     override fun getLayoutResource() =
         R.layout.view_muun_home_card

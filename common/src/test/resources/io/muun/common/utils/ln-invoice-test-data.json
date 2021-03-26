@@ -228,5 +228,29 @@
       "tokens": 493
     },
     "request": "lntb4930200p1pdkm5xfrzjqwfn3p9278ttzzpe0e00uhyxhned3j5d9acqak5emwfpflp8z2cng99y0sqqqgcqqqqqqqlgqqqqqeqqjqfppqvzxxvnahw6gkj9aqpptktxpt6906cn2sdqqxqy9gcqpp5ts3ux9ghp38unvgzqeqk2x4wzupp6ley3qtql36eh09kv6hhw8rqlsewhluvdsc05q8pcfwnrfplrglgzlzqmgkzamrhvxj8lep7hhajx6pu5s3ay6pjunw679nx9nrvkdl52n9l273ah4rxwm4tj8fcjcqqh4ku2d"
+  },
+  {
+    "description": "No amount unit multiplier",
+    "expected": {
+      "cltv_delta": 144,
+      "created_at": "2021-03-09T18:02:35.000Z",
+      "destination": "03c435777d79d99089ebfa2002589170e0867148cff54b69dea9ae6ddb3104b1e9",
+      "expires_at": "2021-03-09T19:02:35.000Z",
+      "id": "75f8fb343a709433fe101a09ac855ec95112ab666f3ed75690f74cd084137594",
+      "is_expired": true,
+      "network": "regtest",
+      "routes": [[
+        {
+          "base_fee_mtokens": "1000",
+          "channel": "8003543965c08d25",
+          "cltv_delta": 9,
+          "fee_rate": 1000,
+          "public_key": "02d68e2350b30aa90ef85d133d6fc6706e240a755338fda4b96ef1d282c9a9a75e"
+        }
+      ]],
+      "mtokens": "100000000000",
+      "tokens": 100000000
+    },
+    "request": "lnbcrt11psy0wpmpp5whu0kdp6wz2r8lssrgy6ep27e9g392mxduldw45s7axdppqnwk2qdqqcqzysxqrrssrzjqttgug6skv92jrhct5fn6m7xwphzgzn42vu0mf9edmca9qkf4xn4aqqr2suktsydy5qqqqlgqqqq86qqpysp5kyl6f7v3j3ph3zlt4x4we532g20nvefvwh5xryta7rgvpjht8lqq9qypqsqfh6rwt0eg7npw452du2vwdedxe36q45pkadcdsgmf9u06s3tgwdrusz4r9tsmejf04eyvw87htqf8787fcdqxk38wnkxxage7j5gt7qqgvpgfj"
   }
 ]

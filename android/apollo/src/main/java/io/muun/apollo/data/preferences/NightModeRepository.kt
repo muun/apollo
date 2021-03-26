@@ -6,7 +6,10 @@ import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.NightMode
 import javax.inject.Inject
 
-class NightModeRepository @Inject constructor(context: Context?) : BaseRepository(context) {
+class NightModeRepository @Inject constructor(
+    context: Context,
+    repositoryRegistry: RepositoryRegistry
+) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val KEY = "current_night_mode"
@@ -27,4 +30,7 @@ class NightModeRepository @Inject constructor(context: Context?) : BaseRepositor
 
     fun getNightMode() =
         nightModePreference.get()!!
+
+    fun watchNightMode() =
+        nightModePreference.asObservable()
 }

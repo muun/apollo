@@ -435,7 +435,16 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                     .add(lightningFee)
                     .add(fee)
 
-                Preconditions.checkArgument(totalInSatoshis == total.inSatoshis)
+                check(totalInSatoshis == total.inSatoshis) {
+                    "Check failed." +
+                        "(TotalInSatoshis=$totalInSatoshis;" +
+                        "total.inSatoshis=${total.inSatoshis};" +
+                        "amountInSatoshis=${amountInSatoshis};" +
+                        "feeInSatoshis=${feeInSatoshis};" +
+                        "sweepFee=${sweepFee?.inSatoshis};" +
+                        "lightningFee=${lightningFee?.inSatoshis};" +
+                        "rate=${payCtx.exchangeRateWindow.windowHid})"
+                }
             }
         }
 

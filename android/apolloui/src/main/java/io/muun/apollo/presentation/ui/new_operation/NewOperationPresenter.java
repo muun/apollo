@@ -65,7 +65,8 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
     private final FetchRealTimeDataAction fetchRealTimeData;
 
-    @VisibleForTesting final ResolveOperationUriAction resolveOperationUri;
+    @VisibleForTesting
+    final ResolveOperationUriAction resolveOperationUri;
 
     @VisibleForTesting
     final PaymentContextSelector paymentContextSel;

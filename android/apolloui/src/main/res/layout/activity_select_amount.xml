@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/select_amount_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevated="true" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+        <io.muun.apollo.presentation.ui.view.MuunAmountInput
+                android:id="@+id/muun_amount_input"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.5"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:textMaxWidthPercent="0.75" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/confirm_amount_button"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm_amount" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

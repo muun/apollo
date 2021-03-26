@@ -17,7 +17,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import icepick.State;
@@ -55,9 +54,6 @@ public class FeeManualInput extends MuunView {
     @BindString(R.string.fee_option_item_title)
     String maxTimePrefix;
 
-    @BindColor(R.color.icon_color)
-    int iconColor;
-
     // State:
     @State
     Double feeRateInSatsPerVbyte;
@@ -89,9 +85,6 @@ public class FeeManualInput extends MuunView {
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
-        // Needed for api levels < 23 (TextView's drawableTint xml attr)
-        UiUtils.setLeftDrawableTint(estimatedTime, R.drawable.clock, iconColor);
 
         feeRateInput.addTextChangedListener(new TextWatcher() {
             @Override

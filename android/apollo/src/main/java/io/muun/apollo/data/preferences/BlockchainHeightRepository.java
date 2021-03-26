@@ -16,8 +16,8 @@ public class BlockchainHeightRepository extends BaseRepository {
      * Constructor.
      */
     @Inject
-    public BlockchainHeightRepository(Context context) {
-        super(context);
+    public BlockchainHeightRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         blockchainHeightPreference = rxSharedPreferences.getInteger(BLOCKCHAIN_HEIGHT, 0);
     }
 

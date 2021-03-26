@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        tools:ignore="UseCompoundDrawables">
+
+    <TextView
+            android:id="@+id/hidden_section_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:textColor="@color/blue"
+            android:textSize="16sp"
+            tools:text="@string/address_settings" />
+
+    <!-- Content Description set dynamically, equal to the hidden_section_text's text  -->
+    <ImageView
+            android:id="@+id/hidden_section_icon"
+            android:layout_width="21dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/chevron_down"
+            tools:ignore="ContentDescription" />
+
+</LinearLayout>

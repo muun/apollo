@@ -27,10 +27,10 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     }
 
     @BindView(R.id.banner_icon)
-    internal lateinit var icon: ImageView
+    lateinit var icon: ImageView
 
     @BindView(R.id.banner_text)
-    internal lateinit var textView: TextView
+    lateinit var textView: TextView
 
     override fun getLayoutResource(): Int =
         R.layout.view_notice_banner

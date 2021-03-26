@@ -110,16 +110,10 @@
                     muun:label="@string/settings_item_primary_currency"
                     style="@style/settings_item" />
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/dark_mode_switch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/dark_mode"
-                    android:layout_marginTop="@dimen/muun_screen_margin"
-                    android:layout_marginBottom="@dimen/muun_screen_margin"
-                    android:layout_marginStart="@dimen/muun_screen_margin"
-                    android:layout_marginEnd="@dimen/muun_screen_margin"
-                    android:textSize="@dimen/muun_text_size_body" />
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_dark_mode"
+                    muun:label="@string/dark_mode"
+                    style="@style/settings_item" />
 
         </LinearLayout>
 

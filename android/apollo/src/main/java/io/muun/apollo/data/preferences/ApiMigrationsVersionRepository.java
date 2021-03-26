@@ -16,8 +16,8 @@ public class ApiMigrationsVersionRepository extends BaseRepository {
      * Creates a repository.
      */
     @Inject
-    public ApiMigrationsVersionRepository(Context context) {
-        super(context);
+    public ApiMigrationsVersionRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         versionPreference = rxSharedPreferences.getInteger(KEY_VERSION);
     }
 

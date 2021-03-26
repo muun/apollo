@@ -31,6 +31,8 @@ public class LnInvoiceTest {
 
     private static final String BITCOIN_MAINNET = "bitcoin";
     private static final String BITCOIN_TESTNET = "testnet";
+    private static final String BITCOIN_REGTEST = "regtest";
+
 
     private final List<LnInvoiceTestData> testData = TestUtils.loadJson(
             "ln-invoice-test-data.json",
@@ -62,6 +64,9 @@ public class LnInvoiceTest {
 
         } else if (BITCOIN_TESTNET.equals(network)) {
             return TestNet3Params.get();
+
+        } else if (BITCOIN_REGTEST.equals(network)) {
+            return RegTestParams.get();
 
         } else {
             fail("Unknown network");
@@ -136,6 +141,5 @@ public class LnInvoiceTest {
         assertArrayEquals(paymentHash, Encodings.hexToBytes(decoded.id));
         assertEquals(144L, decoded.cltvDelta.longValue());
         assertEquals(description, decoded.description);
-
     }
 }

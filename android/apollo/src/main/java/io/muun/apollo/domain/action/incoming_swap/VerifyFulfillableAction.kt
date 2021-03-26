@@ -14,7 +14,6 @@ class VerifyFulfillableAction
     private val keysRepository: KeysRepository,
     private val houstonClient: HoustonClient,
     private val networkParameters: NetworkParameters,
-    private val incomingSwap: io.muun.apollo.domain.libwallet.IncomingSwap
 ) {
     fun action(swap: IncomingSwap): Completable {
 
@@ -22,14 +21,9 @@ class VerifyFulfillableAction
             .flatMapCompletable { userKey ->
 
                 try {
-                    incomingSwap.verifyFulfillable(
-                        swap,
-                        userKey,
-                        networkParameters
-                    )
-
+                    swap.verifyFulfillable(userKey, networkParameters)
                 } catch (e: UnfulfillableIncomingSwapError) {
-                    Log.w("", "Will expire invoice due to unfulfillable swap", e)
+                    Log.e("", "Will expire invoice due to unfulfillable swap", e)
 
                     houstonClient.expireInvoice(swap.paymentHash)
                 }

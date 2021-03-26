@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.net.Uri
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import io.muun.apollo.data.preferences.NightModeRepository
 import io.muun.apollo.domain.NightModeManager
 import kotlin.Triple
@@ -109,6 +110,10 @@ class SettingsPresenter @Inject constructor(
         navigator.navigateToSelectBitcoinUnit(context)
     }
 
+    fun navigateToSelectDarkMode() {
+        navigator.navigateToSelectDarkMode(context)
+    }
+
     /**
      * Call to report the profile picture has changed.
      */
@@ -119,10 +124,6 @@ class SettingsPresenter @Inject constructor(
 
     fun onPrimaryCurrencyChanged(currencyUnit: CurrencyUnit?) {
         userActions.updatePrimaryCurrencyAction.run(currencyUnit)
-    }
-
-    fun saveNightModePreference(mode: NightMode) {
-        nightModeManager.save(mode)
     }
 
     /**

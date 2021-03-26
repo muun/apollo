@@ -19,22 +19,22 @@ class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     MuunView(c, a, s) {
 
     @BindView(R.id.contact_list_empty)
-    internal lateinit var goToP2PSetupView: MuunEmptyScreen
+    lateinit var goToP2PSetupView: MuunEmptyScreen
 
     @BindView(R.id.contact_list_loading)
-    internal lateinit var loadingView: LoadingView
+    lateinit var loadingView: LoadingView
 
     @BindView(R.id.contact_list_first_on_muun)
-    internal lateinit var firstOnMuunView: FirstOnMuunView
+    lateinit var firstOnMuunView: FirstOnMuunView
 
     @BindView(R.id.contact_list_permission_denied_forever)
-    internal lateinit var goToSettingsView: SimpleMessageView
+    lateinit var goToSettingsView: SimpleMessageView
 
     @BindView(R.id.contact_list_recycler)
-    internal lateinit var listView: RecyclerView
+    lateinit var listView: RecyclerView
 
     @BindView(R.id.contact_list_recycler_title)
-    internal lateinit var listViewTitle: TextView
+    lateinit var listViewTitle: TextView
 
     private lateinit var listAdapter: ItemAdapter
 

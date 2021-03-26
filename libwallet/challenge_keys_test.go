@@ -1,8 +1,6 @@
 package libwallet
 
 import (
-	"bytes"
-	"encoding/hex"
 	"reflect"
 	"testing"
 
@@ -57,7 +55,7 @@ func TestChallengeKeyCrypto(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	decryptedKey, err := challengePrivKey.DecryptKey(encryptedKey, network)
+	decryptedKey, err := challengePrivKey.DecryptRawKey(encryptedKey, network)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +84,7 @@ func TestChallengeKeyCryptoV2(t *testing.T) {
 	}
 
 	challengeKey := NewChallengePrivateKey([]byte(password), extractSalt(encryptedKey))
-	decryptedKey, err := challengeKey.DecryptKey(encryptedKey, Regtest())
+	decryptedKey, err := challengeKey.DecryptRawKey(encryptedKey, Regtest())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,16 +110,16 @@ func TestDecodeKeyWithOrWithoutSalt(t *testing.T) {
 		unsaltedKey = "5XEEts6mc9WV34krDWsqmpLcPCw2JkK8qJu3gFdZpP8ngkERuQEsaDvYrGkhXUpM6jQRtimTYm4XnBPujpo3MsdYBedsNVxvT3WC6uCCFuzNUZCoydVY39yJXbxva7naDxH5iTra"
 	)
 
-	expected := &encryptedPrivateKey{
+	expected := &EncryptedPrivateKeyInfo{
 		Version:      2,
 		Birthday:     376,
-		CipherText:   unHex("f6af1ecd17052a81b75902c1712567cf1c650329875feb7e24af3e27235f384054ea549025e99dc2659f95bb6447cf861aa2ec0407ea74baf5a9d6a885ae184b"),
-		EphPublicKey: unHex("020a8d322dda8ff685d80b16681d4e87c109664cdc246a9d3625adfe0de203e71e"),
-		Salt:         unHex("e3305526d0cd675f"),
+		CipherText:   "f6af1ecd17052a81b75902c1712567cf1c650329875feb7e24af3e27235f384054ea549025e99dc2659f95bb6447cf861aa2ec0407ea74baf5a9d6a885ae184b",
+		EphPublicKey: "020a8d322dda8ff685d80b16681d4e87c109664cdc246a9d3625adfe0de203e71e",
+		Salt:         "e3305526d0cd675f",
 	}
 
 	// Verify the salted version:
-	actual, err := decodeEncryptedPrivateKey(saltedKey)
+	actual, err := DecodeEncryptedPrivateKey(saltedKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,17 +127,17 @@ func TestDecodeKeyWithOrWithoutSalt(t *testing.T) {
 	assertDecodedKeysEqual(t, actual, expected)
 
 	// Verify the unsalted version:
-	actual, err = decodeEncryptedPrivateKey(unsaltedKey)
+	actual, err = DecodeEncryptedPrivateKey(unsaltedKey)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expected.Salt = make([]byte, 8) // unsalted key should decode with zeroed field
+	expected.Salt = "0000000000000000" // unsalted key should decode with zeroed field
 
 	assertDecodedKeysEqual(t, actual, expected)
 }
 
-func assertDecodedKeysEqual(t *testing.T, actual, expected *encryptedPrivateKey) {
+func assertDecodedKeysEqual(t *testing.T, actual, expected *EncryptedPrivateKeyInfo) {
 	if actual.Version != expected.Version {
 		t.Fatalf("version %v expected %v", actual.Version, expected.Version)
 	}
@@ -148,25 +146,15 @@ func assertDecodedKeysEqual(t *testing.T, actual, expected *encryptedPrivateKey)
 		t.Fatalf("birthday %v, expected %v", actual.Birthday, expected.Birthday)
 	}
 
-	if !bytes.Equal(actual.CipherText, expected.CipherText) {
+	if actual.CipherText != expected.CipherText {
 		t.Fatalf("cipherText %x expected %x", actual.CipherText, expected.CipherText)
 	}
 
-	if !bytes.Equal(actual.EphPublicKey, expected.EphPublicKey) {
+	if actual.EphPublicKey != expected.EphPublicKey {
 		t.Fatalf("ephPublicKey %x expected %x", actual.EphPublicKey, expected.EphPublicKey)
 	}
 
-	if !bytes.Equal(actual.Salt, expected.Salt) {
+	if actual.Salt != expected.Salt {
 		t.Fatalf("salt %x expected %x", actual.Salt, expected.Salt)
 	}
-}
-
-// unHex decodes a string without returning an error (panic instead).
-func unHex(text string) []byte {
-	data, err := hex.DecodeString(text)
-	if err != nil {
-		panic(err)
-	}
-
-	return data
 }

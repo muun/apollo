@@ -20,7 +20,14 @@ object CrashReportBuilder {
         "io.muun.apollo.data.os.execution.ExecutionTransformerFactory",
         "io.muun.apollo.domain.action.base.AsyncAction",
         "rx.internal",
-        "rx.observers"
+        "rx.observers",
+        // In order to force Crashlytics to better group errors, we filter first line of stack
+        // traces that come from Preconditions class so that, for example, not all checkNotNull
+        // precondition fails get grouped together.
+        // Note: this assumes that, as it normally happens, Preconditions lines in a stack trace are
+        // the first line/s in the stack trace. With this, other Preconditions lines in a stack
+        // trace will get filtered too (but it would be a pretty abnormal use of Preconditions).
+        "io.muun.common.utils.Preconditions",
     )
 
     private val parser = TraceParser()

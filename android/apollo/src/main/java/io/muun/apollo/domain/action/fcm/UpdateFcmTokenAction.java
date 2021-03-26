@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.fcm;
 
 import io.muun.apollo.data.net.HoustonClient;
-import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.domain.action.NotificationActions;
@@ -20,7 +19,6 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
     private final HoustonClient houstonClient;
     private final FcmTokenRepository fcmTokenRepository;
     private final AuthRepository authRepository;
-    private final ExecutionTransformerFactory executionTransformerFactory;
     private final NotificationActions notificationActions;
 
     /**
@@ -30,12 +28,10 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
     public UpdateFcmTokenAction(HoustonClient houstonClient,
                                 FcmTokenRepository fcmTokenRepository,
                                 AuthRepository authRepository,
-                                ExecutionTransformerFactory executionTransformerFactory,
                                 NotificationActions notificationActions) {
         this.houstonClient = houstonClient;
         this.fcmTokenRepository = fcmTokenRepository;
         this.authRepository = authRepository;
-        this.executionTransformerFactory = executionTransformerFactory;
         this.notificationActions = notificationActions;
     }
 

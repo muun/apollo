@@ -1,10 +1,6 @@
 package io.muun.apollo.domain.action.incoming_swap
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doNothing
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import io.muun.apollo.BaseTest
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao
 import io.muun.apollo.data.db.operation.OperationDao
@@ -12,8 +8,8 @@ import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.libwallet.IncomingSwap
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
+import io.muun.apollo.domain.model.IncomingSwap
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData
 import io.muun.apollo.domain.model.Operation
 import io.muun.common.api.error.ErrorCode
@@ -26,6 +22,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnitRunner
 import rx.Completable
@@ -46,9 +43,6 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
     @Mock
     private lateinit var incomingSwapDao: IncomingSwapDao
-
-    @Mock
-    private lateinit var incomingSwap: IncomingSwap
 
     private lateinit var action: FulfillIncomingSwapAction
 
@@ -77,8 +71,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
             operationDao,
             keysRepository,
             params,
-            incomingSwapDao,
-            incomingSwap
+            incomingSwapDao
         )
     }
 
@@ -92,17 +85,14 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
     @Test
     fun unfulfillableSwap() {
-        val swap = Gen.incomingSwap()
+        val swap = Mockito.spy(Gen.incomingSwap())
         val operation = Gen.operation(swap)
 
         whenever(operationDao.fetchByIncomingSwapUuid(eq(swap.houstonUuid)))
             .thenReturn(Observable.just(operation))
 
-        whenever(incomingSwap.verifyFulfillable(
-            eq(swap),
-            any(),
-            eq(params)
-        )).thenThrow(UnfulfillableIncomingSwapError(swap.houstonUuid, java.lang.RuntimeException()))
+        doThrow(UnfulfillableIncomingSwapError(swap.houstonUuid, java.lang.RuntimeException()))
+                .`when`(swap).verifyFulfillable(any(), eq(params))
 
         whenever(houstonClient.fetchFulfillmentData(eq(swap.houstonUuid)))
             .thenReturn(Single.just(null))
@@ -120,7 +110,8 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
     @Test
     fun onchainFulfillment() {
-        val swap = Gen.incomingSwap()
+        val preimage = RandomGenerator.getBytes(32)
+        val swap = Mockito.spy(Gen.incomingSwap())
         val operation = Gen.operation(swap)
         val fulfillmentData = IncomingSwapFulfillmentData(
             ByteArray(0),
@@ -132,8 +123,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
         whenever(operationDao.fetchByIncomingSwapUuid(eq(swap.houstonUuid)))
             .thenReturn(Observable.just(operation))
 
-        doNothing().whenever(incomingSwap).verifyFulfillable(
-            eq(swap),
+        doNothing().whenever(swap).verifyFulfillable(
             any(),
             eq(params)
         )
@@ -141,13 +131,8 @@ class FulfillIncomingSwapActionTest: BaseTest() {
         whenever(houstonClient.fetchFulfillmentData(eq(swap.houstonUuid)))
             .thenReturn(Single.just(fulfillmentData))
 
-        whenever(incomingSwap.signFulfillment(
-            eq(swap),
-            eq(fulfillmentData),
-            any(),
-            any(),
-            eq(params)
-        )).thenReturn(ByteArray(0))
+        doReturn(IncomingSwap.FulfillmentResult(ByteArray(0), preimage))
+                .`when`(swap).fulfill(eq(fulfillmentData), any(), any(), eq(params))
 
         whenever(houstonClient.pushFulfillmentTransaction(eq(swap.houstonUuid), any()))
             .thenReturn(Completable.complete())
@@ -163,19 +148,19 @@ class FulfillIncomingSwapActionTest: BaseTest() {
     @Test
     fun fullDebtFulfilment() {
         val preimage = RandomGenerator.getBytes(32)
-        val swap = Gen.incomingSwap(paymentHash = Hashes.sha256(preimage), htlc = null)
+        val swap = Mockito.spy(Gen.incomingSwap(paymentHash = Hashes.sha256(preimage), htlc = null))
         val operation = Gen.operation(swap)
 
         whenever(operationDao.fetchByIncomingSwapUuid(eq(swap.houstonUuid)))
             .thenReturn(Observable.just(operation))
 
-        doNothing().whenever(incomingSwap).verifyFulfillable(
-            eq(swap),
+        doNothing().whenever(swap).verifyFulfillable(
             any(),
             eq(params)
         )
 
-        whenever(incomingSwap.exposePreimage(eq(swap))).thenReturn(preimage)
+        doReturn(IncomingSwap.FulfillmentResult(byteArrayOf(), preimage))
+                .`when`(swap).fulfillFullDebt()
 
         whenever(houstonClient.fulfillIncomingSwap(eq(swap.houstonUuid), eq(preimage)))
             .thenReturn(Completable.complete())
@@ -192,14 +177,13 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
     @Test
     fun onchainAlreadyFulfilled() {
-        val swap = Gen.incomingSwap()
+        val swap = Mockito.spy(Gen.incomingSwap())
         val operation = Gen.operation(swap)
 
         whenever(operationDao.fetchByIncomingSwapUuid(eq(swap.houstonUuid)))
             .thenReturn(Observable.just(operation))
 
-        doNothing().whenever(incomingSwap).verifyFulfillable(
-            eq(swap),
+        doNothing().whenever(swap).verifyFulfillable(
             any(),
             eq(params)
         )

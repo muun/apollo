@@ -5,7 +5,6 @@ import io.muun.apollo.data.db.operation.OperationDao
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.domain.libwallet.IncomingSwap
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
 import io.muun.apollo.domain.model.Operation
 import io.muun.common.api.RawTransaction
@@ -26,7 +25,6 @@ open class FulfillIncomingSwapAction
         private val keysRepository: KeysRepository,
         private val network: NetworkParameters,
         private val incomingSwapDao: IncomingSwapDao,
-        private val incomingSwap: IncomingSwap
 ) : BaseAsyncAction1<String, Unit>() {
 
     override fun action(incomingSwapUuid: String): Observable<Unit> {
@@ -65,19 +63,19 @@ open class FulfillIncomingSwapAction
         checkNotNull(op.incomingSwap)
 
         return Completable.defer {
-            val preimage = incomingSwap.exposePreimage(op.incomingSwap)
-            houstonClient.fulfillIncomingSwap(op.incomingSwap.houstonUuid, preimage)
+            val result = op.incomingSwap.fulfillFullDebt()
+            houstonClient.fulfillIncomingSwap(op.incomingSwap.houstonUuid, result.preimage)
         }
     }
 
     private fun fulfillOnChain(op: Operation): Completable {
         checkNotNull(op.incomingSwap)
+        checkNotNull(op.incomingSwap.htlc)
 
         return houstonClient.fetchFulfillmentData(op.incomingSwap.houstonUuid)
             .flatMap { data ->
                 Single.fromCallable {
-                    incomingSwap.signFulfillment(
-                        op.incomingSwap,
+                    op.incomingSwap.fulfill(
                         data,
                         fetchUserPrivateKey(),
                         keysRepository.baseMuunPublicKey,
@@ -85,7 +83,7 @@ open class FulfillIncomingSwapAction
                     )
                 }
             }
-            .map { RawTransaction(Encodings.bytesToHex(it)) }
+            .map { RawTransaction(Encodings.bytesToHex(it.fullfillmentTx!!)) }
             .flatMapCompletable { tx ->
                 houstonClient.pushFulfillmentTransaction(op.incomingSwap.houstonUuid, tx)
             }
@@ -95,8 +93,6 @@ open class FulfillIncomingSwapAction
 
     private fun persistPreimage(op: Operation) = Completable.defer {
         checkNotNull(op.incomingSwap)
-
-        op.incomingSwap.preimage = incomingSwap.exposePreimage(op.incomingSwap)
 
         Observable.zip(
             incomingSwapDao.store(op.incomingSwap),
@@ -109,7 +105,7 @@ open class FulfillIncomingSwapAction
 
     private fun verify(op: Operation) = Completable.fromAction {
         checkNotNull(op.incomingSwap)
-        incomingSwap.verifyFulfillable(op.incomingSwap, fetchUserPrivateKey(), network)
+        op.incomingSwap.verifyFulfillable(fetchUserPrivateKey(), network)
     }
 
 }

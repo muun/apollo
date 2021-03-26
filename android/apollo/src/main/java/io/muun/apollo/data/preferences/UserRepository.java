@@ -76,8 +76,8 @@ public class UserRepository extends BaseRepository {
      * Creates a user preference repository.
      */
     @Inject
-    public UserRepository(Context context) {
-        super(context);
+    public UserRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
 
         userPreference = rxSharedPreferences
                 .getObject(KEY_USER, new UserPreferenceDebugAdapter());

@@ -357,6 +357,10 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         return getParentActivity().requestExternalResult(this, requestCode, dialog);
     }
 
+    protected final void requestDelegatedExternalResult(int requestCode, Intent intent) {
+        getParentActivity().requestDelegatedExternalResult(requestCode, intent);
+    }
+
     @Override
     public void onExternalResult(int requestCode, int resultCode, Intent data) {
 

@@ -87,9 +87,10 @@ public class KeysRepository extends BaseRepository {
             Context context,
             NetworkParameters networkParameters,
             SecureStorageProvider secureStorageProvider,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            RepositoryRegistry repositoryRegistry) {
 
-        super(context);
+        super(context, repositoryRegistry);
 
         this.networkParameters = networkParameters;
 

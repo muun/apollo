@@ -29,19 +29,19 @@ def run_checkstyle(jar_path, checks_path, suppressions_path, files):
         return []
 
     stdout, stderr = process.communicate()
-    lines = stdout.strip().split("\n")
-    lines = [l for l in lines if "Starting audit" not in l]
-    lines = [l for l in lines if "Audit done" not in l]
-    lines = [l for l in lines if "Checkstyle ends" not in l]
+    line_list = stdout.strip().split("\n")
+    line_list = [line for line in line_list if "Starting audit" not in line]
+    line_list = [line for line in line_list if "Audit done" not in line]
+    line_list = [line for line in line_list if "Checkstyle ends" not in line]
 
-    return lines
+    return line_list
 
 
 def lint(files):
     root = get_git_root()
 
     results = run_checkstyle(
-        root + "/linters/checkstyle/checkstyle-8.36.2-all.jar",
+        root + "/linters/checkstyle/checkstyle-8.41-all.jar",
         root + "/linters/checkstyle/config.xml",
         root + "/linters/checkstyle/suppressions.xml",
         files

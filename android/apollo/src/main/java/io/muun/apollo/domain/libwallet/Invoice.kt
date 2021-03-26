@@ -32,7 +32,8 @@ object Invoice {
     fun generate(
             networkParams: NetworkParameters,
             userPrivateKey: PrivateKey,
-            forwardingPolicy: ForwardingPolicy
+            forwardingPolicy: ForwardingPolicy,
+            amountInSat: Long? = null
     ): String {
 
         val routeHints = RouteHints()
@@ -42,7 +43,8 @@ object Invoice {
         routeHints.pubkey = Encodings.bytesToHex(forwardingPolicy.identityKey)
 
         val options = InvoiceOptions()
-        options.amountSat = 0 // no amount invoice
+
+        options.amountSat = amountInSat ?: 0 // Specified amount or amount-less invoice
 
         val invoice = Libwallet.createInvoice(
             LibwalletBridge.toLibwalletModel(networkParams),

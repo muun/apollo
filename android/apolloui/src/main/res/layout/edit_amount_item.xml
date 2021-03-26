@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+
+    <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/amount_label"
+                style="@style/muun_new_operation_label_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="12dp"
+                android:gravity="start"
+                android:maxLines="1"
+                android:text="@string/new_operation_amount"
+                android:textColor="@color/text_primary_color"
+                app:drawableEndCompat="@null"
+                app:drawableTint="@color/blue"
+                tools:drawableEndCompat="@drawable/ic_edit_black_24" />
+
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/selected_amount"
+            style="@style/muun_new_operation_label_text_strong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="10000 SAT"
+            tools:visibility="gone" />
+
+    <TextView
+            android:id="@+id/add_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/muun_screen_margin"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@drawable/muun_button_tertiary_bg"
+            android:textSize="14sp"
+            android:textColor="@color/blue"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:text="@string/edit_amount_add" />
+
+</LinearLayout>

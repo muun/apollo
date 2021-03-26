@@ -14,8 +14,8 @@ public class NotificationRepository extends BaseRepository {
     private final Preference<Long> lastProcessedIdPreference;
 
     @Inject
-    public NotificationRepository(Context context) {
-        super(context);
+    public NotificationRepository(Context context, RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
         lastProcessedIdPreference = rxSharedPreferences.getLong(KEY_LAST_PROCESSED_ID, 0L);
     }
 

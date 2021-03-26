@@ -426,6 +426,20 @@ public class BitcoinUri {
     /**
      * Simple Bitcoin URI builder using known good fields.
      *
+     * @param params        The network parameters that determine which network the URI is for.
+     * @param address       The Bitcoin address
+     * @param amountInSat   The amount, in satoshis
+     * @return A String containing the Bitcoin URI
+     */
+    public static String convertToBitcoinUri(NetworkParameters params,
+                                             String address, @Nullable Long amountInSat) {
+
+        return convertToBitcoinUri(params, address, Coin.valueOf(amountInSat), null, null);
+    }
+
+    /**
+     * Simple Bitcoin URI builder using known good fields.
+     *
      * @param address The Bitcoin address
      * @param amount  The amount
      * @param label   A label

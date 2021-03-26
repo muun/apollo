@@ -26,8 +26,10 @@ public class AuthRepository extends BaseRepository {
      * Creates a repository for auth data.
      */
     @Inject
-    public AuthRepository(Context context, SecureStorageProvider secureStorageProvider) {
-        super(context);
+    public AuthRepository(Context context,
+                          SecureStorageProvider secureStorageProvider,
+                          RepositoryRegistry repositoryRegistry) {
+        super(context, repositoryRegistry);
 
         this.secureStorageProvider = secureStorageProvider;
         this.sessionStatusPreference = rxSharedPreferences.getEnum(

@@ -38,6 +38,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.widget.TextViewCompat;
 import org.javamoney.moneta.Money;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalTime;
@@ -143,55 +144,10 @@ public class UiUtils {
     }
 
     /**
-     * Set the color of a TextView's compound drawable (compat with api < 23).
+     * The only way to successfully tint TextView's compound drawables dynamically.
      */
-    public static void setLeftDrawableTint(TextView textView,
-                                           @DrawableRes int drawableRes,
-                                           @ColorInt int color) {
-
-        final Drawable drawable = ContextCompat.getDrawable(textView.getContext(), drawableRes);
-
-        if (drawable == null) {
-            return;
-        }
-
-        setDrawablesTint(textView, color, drawable, null, null, null);
-    }
-
-    /**
-     * Set the color of a TextView's compound drawable (compat with api < 23).
-     */
-    public static void setRightDrawableTint(TextView textView,
-                                            @DrawableRes int drawableRes,
-                                            @ColorInt int color) {
-
-        final Drawable drawable = ContextCompat.getDrawable(textView.getContext(), drawableRes);
-
-        if (drawable == null) {
-            return;
-        }
-
-        setDrawablesTint(textView, color, null, null, drawable, null);
-    }
-
-    private static void setDrawablesTint(TextView textView,
-                                         @ColorInt int color,
-                                         @Nullable Drawable left,
-                                         @Nullable Drawable top,
-                                         @Nullable Drawable right,
-                                         @Nullable Drawable bottom) {
-
-        setTintColor(left, color);
-        setTintColor(top, color);
-        setTintColor(right, color);
-        setTintColor(bottom, color);
-
-        textView.setCompoundDrawablesWithIntrinsicBounds(
-                left,
-                top,
-                right,
-                bottom
-        );
+    public static void setDrawableTint(TextView textView, @ColorInt int color) {
+        TextViewCompat.setCompoundDrawableTintList(textView, ColorStateList.valueOf(color));
     }
 
     /**
@@ -342,7 +298,25 @@ public class UiUtils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
+    /**
+     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
+     * accessible way (aka there's a system config accessible for all users). Android P aka 9
+     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
+     * a system that does NOT support Dark Mode as most users won't ever find how to display the
+     * developer options and/or find that Dark Mode config in there.
+     */
     public static boolean supportsDarkMode() {
+        return supportsDarkModePublicly();
+    }
+
+    /**
+     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
+     * accessible way (aka there's a system config accessible for all users). Android P aka 9
+     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
+     * a system that does NOT support Dark Mode as most users won't ever find how to display the
+     * developer options and/or find that Dark Mode config in there.
+     */
+    private static boolean supportsDarkModePublicly() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 

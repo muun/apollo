@@ -4,6 +4,7 @@ import io.muun.apollo.R;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.StringRes;
 import butterknife.BindView;
@@ -15,6 +16,7 @@ public class LoadingView extends MuunView {
 
     static final ViewProps<LoadingView> viewProps = new ViewProps.Builder<LoadingView>()
             .addString(R.attr.title, LoadingView::setTitle)
+            .addBoolean(R.attr.showText, LoadingView::showText)
             .build();
 
     @BindView(R.id.loading_view_title)
@@ -49,5 +51,9 @@ public class LoadingView extends MuunView {
 
     public void setTitle(@NotNull String text) {
         title.setText(text);
+    }
+
+    public void showText(Boolean showText) {
+        title.setVisibility(showText ? View.VISIBLE : View.GONE);
     }
 }

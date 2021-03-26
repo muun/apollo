@@ -12,14 +12,12 @@ import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 
-class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter?>(),
-                                 SelectBitcoinUnitView {
+class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), SelectBitcoinUnitView {
 
     companion object {
         fun getStartActivityIntent(context: Context) =
             Intent(context, SelectBitcoinUnitActivity::class.java)
     }
-
 
     @BindView(R.id.select_currency_header)
     lateinit var header: MuunHeader
@@ -56,7 +54,7 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter?>(),
     }
 
     private fun onItemSelected(newCurrencyDisplayMode: CurrencyDisplayMode) {
-        presenter?.changeCurrencyDisplayMode(newCurrencyDisplayMode)
+        presenter.changeCurrencyDisplayMode(newCurrencyDisplayMode)
     }
 
     override fun setCurrencyDisplayMode(currencyDisplayMode: CurrencyDisplayMode) {

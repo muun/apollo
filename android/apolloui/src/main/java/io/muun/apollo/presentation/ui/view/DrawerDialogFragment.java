@@ -2,67 +2,24 @@ package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import androidx.annotation.CallSuper;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrawerDialogFragment extends BottomSheetDialogFragment
+public class DrawerDialogFragment extends MuunBottomSheetDialogFragment
         implements MuunActionDrawer.OnActionClickListener {
-
-    private final BottomSheetBehavior.BottomSheetCallback bottomSheetCallback =
-            new BottomSheetBehavior.BottomSheetCallback() {
-                @Override
-                public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        dismiss();
-                    }
-                }
-
-                @Override
-                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                }
-            };
 
     int titleResId;
 
     protected List<Action> actionList = new ArrayList<>();
 
-    protected MuunActionDrawer actionDrawer;
-
-    private Unbinder butterKnifeUnbinder;
-
     public DrawerDialogFragment() {
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getBehavior(actionDrawer).setState(BottomSheetBehavior.STATE_EXPANDED);
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Auto-dismiss. We want the fragment to be removed once it goes to the background.
-        // This helps us avoid saving state to handle this fragment recreation (HARD) in case
-        // activity/fragment gets destroyed while in background.
-        dismiss();
     }
 
     public DrawerDialogFragment setTitle(int resId) {
@@ -107,18 +64,10 @@ public class DrawerDialogFragment extends BottomSheetDialogFragment
         return action;
     }
 
+    @NotNull
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        butterKnifeUnbinder = ButterKnife.bind(this, getActivity());
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Dialog dialog = super.onCreateDialog(savedInstanceState);
-
-        actionDrawer = createActionDrawer();
+    protected View createContentView() {
+        final MuunActionDrawer actionDrawer = createActionDrawer();
 
         if (titleResId > 0) {
             actionDrawer.setTitle(titleResId);
@@ -130,10 +79,7 @@ public class DrawerDialogFragment extends BottomSheetDialogFragment
             actionDrawer.addAction(action.actionId, action.icon, action.iconRes, action.label);
         }
 
-        dialog.setContentView(actionDrawer);
-        getBehavior(actionDrawer).setBottomSheetCallback(bottomSheetCallback);
-
-        return dialog;
+        return actionDrawer;
     }
 
     @NonNull
@@ -142,23 +88,9 @@ public class DrawerDialogFragment extends BottomSheetDialogFragment
     }
 
     @Override
-    @CallSuper
-    public void onDestroyView() {
-        butterKnifeUnbinder.unbind();
-        super.onDestroyView();
-    }
-
-    @Override
     public void onActionClick(int actionId) {
         ((BaseActivity) getActivity()).onDialogResult(this, actionId, null);
         dismiss();
-    }
-
-    private BottomSheetBehavior getBehavior(View content) {
-        final CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams)
-                ((ViewGroup) content.getParent()).getLayoutParams();
-
-        return (BottomSheetBehavior) layoutParams.getBehavior();
     }
 
     private static class Action {
