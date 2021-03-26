@@ -70,3 +70,4 @@ RUN tools/bootstrap-gomobile.sh \
 FROM scratch
 
 COPY --from=build /src/android/apolloui/build/outputs/apk/prod/release/apolloui-prod-release-unsigned.apk apolloui-prod-release-unsigned.apk
+COPY --from=build /src/android/apolloui/build/outputs/mapping/prodRelease/mapping.txt mapping.txt
