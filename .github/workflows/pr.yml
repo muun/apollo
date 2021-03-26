@@ -1,10 +1,7 @@
-name: build-release
-on: 
-  push:
-    tags:
-      - v*
+name: pr
+on: pull_request
 jobs:
-  build-release:
+  pr:
     runs-on: ubuntu-20.04
     steps:
       - name: Set up Docker Buildx
@@ -31,9 +28,3 @@ jobs:
         with:
           name: apk
           path: apk/apolloui-prod-release-unsigned.apk
-
-      - name: Upload mapping
-        uses: actions/upload-artifact@e448a9b857ee2131e752b06002bf0e093c65e571
-        with:
-          name: mapping
-          path: apk/mapping.txt
