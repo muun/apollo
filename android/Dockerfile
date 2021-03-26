@@ -56,13 +56,17 @@ RUN sdkmanager --install "ndk;${NDK_VERSION}"
 
 ENV ANDROID_NDK_HOME ${ANDROID_HOME}/ndk/${NDK_VERSION}
 
-FROM muun_android_builder
+FROM muun_android_builder AS build
 
 WORKDIR /src
 COPY . /src
-CMD tools/bootstrap-gomobile.sh \
+
+RUN tools/bootstrap-gomobile.sh \
     && (cd libwallet; go clean) \
     && tools/libwallet-android.sh \
     && ./gradlew :android:apollo:clean :android:apolloui:clean \
-    && ./gradlew :android:apolloui:assembleProdRelease \
-    && mv /src/android/apolloui/build/outputs/apk/prod/release/apolloui-prod-release-unsigned.apk /apk
+    && ./gradlew :android:apolloui:assembleProdRelease
+
+FROM scratch
+
+COPY --from=build /src/android/apolloui/build/outputs/apk/prod/release/apolloui-prod-release-unsigned.apk apolloui-prod-release-unsigned.apk

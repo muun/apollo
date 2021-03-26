@@ -12,24 +12,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
 
+      - name: Create output dir
+        run: |
+          mkdir -p apk
+
       - name: Build
         uses: docker/build-push-action@9379083e426e2e84abb80c8c091f5cdeb7d3fd7a
         with:
-          load: true
-          tags: muun_android:latest
           file: android/Dockerfile
           context: .
-
-      - name: Inspect
-        run: |
-            docker images 
-
-      - name: Build apollo
-        run: |
-          docker run --rm -t -v "${GITHUB_WORKSPACE}:/src/android/apolloui/build/outputs/" muun_android:latest
+          outputs: apk
 
       - name: Upload APK
         uses: actions/upload-artifact@e448a9b857ee2131e752b06002bf0e093c65e571
         with:
           name: apk
-          path: apk/prod/release/apolloui-prod-release-unsigned.apk
+          path: apk/apolloui-prod-release-unsigned.apk
