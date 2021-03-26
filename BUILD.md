@@ -26,7 +26,7 @@ tools/libwallet-android.sh
 
 ```shell
 docker build -f android/Dockerfile -t muun_android:latest .
-docker run --rm -ti -v "$PWD:/src/android/apolloui/build/outputs/" muun_android:latest
+docker run --rm -ti -v "$PWD:/apk" muun_android:latest
 ```
 
 # (Advanced) Verifying an existing APK

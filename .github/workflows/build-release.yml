@@ -21,12 +21,16 @@ jobs:
           file: android/Dockerfile
           context: .
 
+      - name: Inspect
+        run: |
+          docker images
+
       - name: Build apollo
         run: |
-          docker run --rm -t -v "${GITHUB_WORKSPACE}:/src/android/apolloui/build/outputs/" muun_android:latest
+          docker run --rm -t -v "${GITHUB_WORKSPACE}/apk:/apk" muun_android:latest
 
       - name: Upload release
         uses: actions/upload-artifact@e448a9b857ee2131e752b06002bf0e093c65e571
         with:
           name: apk
-          path: apk/prod/release/apolloui-prod-release-unsigned.apk
+          path: apk/apolloui-prod-release-unsigned.apk

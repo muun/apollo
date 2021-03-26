@@ -64,4 +64,5 @@ CMD tools/bootstrap-gomobile.sh \
     && (cd libwallet; go clean) \
     && tools/libwallet-android.sh \
     && ./gradlew :android:apollo:clean :android:apolloui:clean \
-    && ./gradlew :android:apolloui:assembleProdRelease
+    && ./gradlew :android:apolloui:assembleProdRelease \
+    && mv /src/android/apolloui/build/outputs/apk/prod/release/apolloui-prod-release-unsigned.apk /apk
