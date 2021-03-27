@@ -60,11 +60,10 @@ FROM muun_android_builder AS build
 
 WORKDIR /src
 COPY . /src
-
 RUN tools/bootstrap-gomobile.sh \
     && (cd libwallet; go clean) \
-    && tools/libwallet-android.sh \
     && ./gradlew :android:apollo:clean :android:apolloui:clean \
+    && ./gradlew :android:apollo:libwallet \
     && ./gradlew :android:apolloui:assembleProdRelease
 
 FROM scratch

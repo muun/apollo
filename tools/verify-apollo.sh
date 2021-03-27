@@ -17,18 +17,18 @@ fi
 # Go to repo root
 cd $(git rev-parse --show-toplevel)
 
-tmp=$(mkdir -d)
+tmp=$(mktemp -d)
 
 # Prepare paths to extract APKs
 mkdir -p "$tmp/to_verify" "$tmp/baseline"
 
 echo "Building the APK from source. This might take a while (10-20 minutes)..."
 
-docker build -f android/Dockerfile -t muun_android:latest .
-docker run --rm -ti -v "$PWD:/src/android/apolloui/build/outputs/" muun_android:latest
+mkdir -p apk
+docker build -f android/Dockerfile -o apk .
 
 unzip -q -d "$tmp/to_verify" "$apk_to_verify"
-unzip -q -d "$tmp/baseline" "apk/prod/release/apolloui-prod-release-unsigned.apk"
+unzip -q -d "$tmp/baseline" "apk/apolloui-prod-release-unsigned.apk"
 
 # TODO: verify the signature
 

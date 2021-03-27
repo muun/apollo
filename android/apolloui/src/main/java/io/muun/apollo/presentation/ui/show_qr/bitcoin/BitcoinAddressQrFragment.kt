@@ -76,7 +76,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         super.setQrContent(content)
 
         // Hackish way to override and show just the address when dealing with a bitcoin uri
-        if (editAmountItem.amount != null) {
+        if (amount != null) {
             setShowingText(BitcoinUri(Globals.INSTANCE.network, content).address!!)
         }
 

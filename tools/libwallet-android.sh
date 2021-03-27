@@ -14,6 +14,8 @@ fi
 
 cd "$repo_root/libwallet"
 
+mkdir -p "$(dirname $libwallet)"
+
 # Create the cache folders
 mkdir -p "$build_dir/android"
 mkdir -p "$build_dir/pkg"
