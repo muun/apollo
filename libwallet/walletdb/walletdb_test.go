@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"io/ioutil"
+	"math"
 	"path"
 	"testing"
 )
@@ -33,7 +34,7 @@ func TestInvoices(t *testing.T) {
 	}
 	defer db.Close()
 
-	shortChanId := uint64(12345678 | (1 << 63))
+	shortChanId := uint64((math.MaxInt64 - 5) | (1 << 63))
 	paymentHash := randomBytes(32)
 
 	err = db.CreateInvoice(&Invoice{

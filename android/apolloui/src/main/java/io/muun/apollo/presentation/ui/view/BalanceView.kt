@@ -153,4 +153,7 @@ class BalanceView : MuunView {
             UiUtils.setMarginBottom(clockIcon, 0)
         }
     }
+
+    fun isFullyInitialized(): Boolean =
+        rateProvider != null
 }

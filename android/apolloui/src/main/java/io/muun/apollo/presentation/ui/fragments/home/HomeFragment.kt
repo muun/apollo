@@ -231,8 +231,10 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
 
     @OnClick(R.id.home_balance_view)
     fun onBalanceClick() {
-        val hidden = balanceView.toggleVisibility()
-        presenter.setBalanceHidden(hidden)
+        if (balanceView.isFullyInitialized()) {
+            val hidden = balanceView.toggleVisibility()
+            presenter.setBalanceHidden(hidden)
+        }
     }
 
     @OnClick(R.id.home_receive_button)

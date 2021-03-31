@@ -322,4 +322,9 @@ public class MuunAmountInput extends MuunView {
             return BigDecimal.ZERO;
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        inputAmount.setEnabled(enabled);
+    }
 }

@@ -52,7 +52,8 @@ class FileSharer(val context: Context) {
             "com.android.fallback",
 
             // Applications that handle mailto links but c'mon:
-            "com.mercadopago.wallet"
+            "com.mercadopago.wallet",
+            "com.paypal.android.p2pmobile"
         )
     }
 

@@ -4,22 +4,20 @@ import io.muun.apollo.R;
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.logging.CrashReport;
 import io.muun.apollo.data.logging.CrashReportBuilder;
+import io.muun.apollo.data.logging.EmailReport;
 import io.muun.apollo.data.net.NetworkInfoProvider;
-import io.muun.apollo.data.net.base.NetworkException;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
-import io.muun.apollo.data.os.TelephonyInfoProvider;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.ClientVersionRepository;
 import io.muun.apollo.domain.ClipboardManager;
+import io.muun.apollo.domain.EmailReportManager;
 import io.muun.apollo.domain.action.base.ActionState;
-import io.muun.apollo.domain.action.fcm.GetFcmTokenAction;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.errors.TooManyRequestsError;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.domain.model.User;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
@@ -31,8 +29,6 @@ import io.muun.common.Optional;
 import io.muun.common.exception.PotentialBug;
 import io.muun.common.model.SessionStatus;
 import io.muun.common.rx.RxHelper;
-import io.muun.common.utils.Encodings;
-import io.muun.common.utils.Hashes;
 
 import android.content.Context;
 import android.content.Intent;
@@ -40,12 +36,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
+import com.scottyab.rootbeer.RootBeer;
 import icepick.Icepick;
 import rx.Observable;
 import rx.Subscription;
@@ -54,9 +50,7 @@ import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
@@ -95,10 +89,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     @Inject
     protected NetworkInfoProvider networkInfoProvider;
 
-    // TODO: this belongs to data module, shouldn't be injected here
-    @Inject
-    protected TelephonyInfoProvider telephonyInfoProvider;
-
     @Inject
     protected ClientVersionRepository clientVersionRepository;
 
@@ -121,7 +111,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     protected ClipboardManager clipboardManager;
 
     @Inject
-    protected GetFcmTokenAction getFcmToken;
+    protected EmailReportManager emailReportManager;
 
     @Inject
     protected BasePresenter() {
@@ -347,7 +337,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             );
             return true;
 
-        } else if (error instanceof NetworkException) {
+        } else if (ExtensionsKt.isInstanceOrIsCausedByNetworkError(error)) {
             view.showErrorDialog(
                     getContext().getString(R.string.network_error_message),
                     () -> showErrorReportDialog(error, false)
@@ -545,41 +535,17 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     private void sendErrorReport(Throwable error) {
 
         final CrashReport report = CrashReportBuilder.INSTANCE.build(error);
-        final String versionName = Globals.INSTANCE.getVersionName();
-        final int versionCode = Globals.INSTANCE.getVersionCode();
-        final String supportId = userSel.getOptional()
-                .map(User::getSupportId)
-                .orElse(Optional.empty())
-                .orElse(null);
+        analytics.attachAnalyticsMetadata(report);
 
-        final String fcmToken = getFcmToken.actionNow();  // Insta-return, token ready at this point
-        final String fcmTokenHash;
+        final String presenterName = this.getClass().getSimpleName();
+        final boolean isRootedDevice = new RootBeer(getContext()).isRooted();
 
-        if (fcmToken != null) {
-            fcmTokenHash = Encodings.bytesToHex(Hashes.sha256(Encodings.stringToBytes(fcmToken)));
+        final EmailReport emailReport = emailReportManager
+                .buildEmailReport(report, presenterName, isRootedDevice);
 
-        } else {
-            fcmTokenHash = "null";
-        }
-        final String[] unsupportedCurrencies = ExtensionsKt.getUnsupportedCurrencies(report);
-
-        final String subject = getContext().getString(R.string.error_report_email_subject);
-        final boolean googlePlayServicesAvailable =
-                googlePlayServicesHelper.isAvailable() == GooglePlayServicesHelper.AVAILABLE;
-
-        final String body = "Android version: " + Build.VERSION.SDK_INT + "\n"
-                + "App version: " + versionName + "(" + versionCode + ")\n"
-                + "SupportId: " + supportId + "\n"
-                + "FcmTokenHash: " + fcmTokenHash + "\n"
-                + "GooglePlayServices: " + googlePlayServicesAvailable + "\n"
-                + "Device: " + Globals.INSTANCE.getDeviceName() + "\n"
-                + "DeviceModel: " + Globals.INSTANCE.getDeviceModel() + "\n"
-                + "DeviceManufacturer: " + Globals.INSTANCE.getDeviceManufacturer() + "\n"
-                + "Available Locales: " + Arrays.toString(Locale.getAvailableLocales()) + "\n"
-                + "Unsupported Currencies: " + Arrays.toString(unsupportedCurrencies) + "\n"
-                + "Default Region: " + telephonyInfoProvider.getRegion() + "\n"
-                + report.print();
-
+        final String subjectPrefix = getContext().getString(R.string.error_report_email_subject);
+        final String subject = emailReport.subject(subjectPrefix);
+        final String body = emailReport.getBody();
         final Intent emailIntent = composeEmail("support@muun.com", subject, body);
 
         if (hasEmailAppInstalled()) {
@@ -602,6 +568,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             view.showDialog(muunDialog);
         }
     }
+
+
 
     private Intent composeEmail(String address, String subject, String body) {
         return composeEmail(new String[] { address }, subject, body);

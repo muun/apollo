@@ -80,8 +80,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         header.showTitle(getString(R.string.select_amount_title))
         header.setNavigation(MuunHeader.Navigation.BACK)
 
-        amountInput.setOnChangeListener { amount: MonetaryAmount -> onAmountChange(amount) }
-        amountInput.requestFocus()
+        amountInput.isEnabled = false // Wait for ExchangeRateProvider to be fully init
     }
 
     override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
@@ -91,6 +90,9 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
 
     override fun setExchangeRateProvider(exchangeRateProvider: ExchangeRateProvider) {
         amountInput.setExchangeRateProvider(exchangeRateProvider)
+        amountInput.setOnChangeListener { amount: MonetaryAmount -> onAmountChange(amount) }
+        amountInput.requestFocus()
+        amountInput.isEnabled = true
     }
 
     override fun initializeAmountInput(primaryCurrency: CurrencyUnit) {

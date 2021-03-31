@@ -80,8 +80,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 501
-        versionName "45.1"
+        versionCode 502
+        versionName "45.2"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -401,6 +401,9 @@ dependencies {
 
     // Fancy animations
     implementation 'com.airbnb.android:lottie:3.5.0'
+
+    // Detect root devices (just for error reports metadata)
+    implementation 'com.scottyab:rootbeer-lib:0.0.8'
 }
 
 task start(type: Exec, dependsOn: 'assembleDebug') {

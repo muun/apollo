@@ -104,7 +104,7 @@ func migrate(db *gorm.DB) error {
 func (d *DB) CreateInvoice(invoice *Invoice) error {
 	// uint64 values with high bit set are not supported, we will
 	// have to convert back and forth
-	invoice.ShortChanId = invoice.ShortChanId & 0x7FFFFFFFFFFFF
+	invoice.ShortChanId = invoice.ShortChanId & 0x7FFFFFFFFFFFFFFF
 	res := d.db.Create(invoice)
 	invoice.ShortChanId = invoice.ShortChanId | (1 << 63)
 	return res.Error
@@ -113,7 +113,7 @@ func (d *DB) CreateInvoice(invoice *Invoice) error {
 func (d *DB) SaveInvoice(invoice *Invoice) error {
 	// uint64 values with high bit set are not supported, we will
 	// have to convert back and forth
-	invoice.ShortChanId = invoice.ShortChanId & 0x7FFFFFFFFFFFF
+	invoice.ShortChanId = invoice.ShortChanId & 0x7FFFFFFFFFFFFFFF
 	res := d.db.Save(invoice)
 	invoice.ShortChanId = invoice.ShortChanId | (1 << 63)
 	return res.Error
