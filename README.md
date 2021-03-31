@@ -16,7 +16,7 @@ There's also a pure java **common** module with code shared all over.
 
 ## Build
 
-For instructions on how to build Muun Wallet please refer to BUILD.md
+For instructions on how to build Muun Wallet please refer to [BUILD.md](https://github.com/muun/apollo/blob/master/BUILD.md).
 
 ## Auditing
 
