@@ -21,14 +21,14 @@
 
 ### Requirements
 
-* [Docker](https://www.docker.com/)
+* [Docker](https://www.docker.com/) >= 18.09
 
 ### Instructions
 
 1. Ensure Docker has at least 5 GB of RAM and run:
     ```shell
     mkdir -p apk
-    docker build -f android/Dockerfile -o apk .
+    DOCKER_BUILDKIT=1 docker build -f android/Dockerfile -o apk .
     ```
 
 
@@ -36,7 +36,7 @@
 
 ### Requirements
 
-* [Docker](https://www.docker.com/)
+* [Docker](https://www.docker.com/) >= 18.09
 * [ADB](https://developer.android.com/studio/releases/platform-tools)
 
 ### Instructions
