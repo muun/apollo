@@ -1045,7 +1045,7 @@
     <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
 
     <!-- Security center -->
-    <string name="security_center_title">Centro de Seguridad</string>
+    <string name="security_center_title">Seguridad</string>
     <string name="security_center_title_improve_your_security">Aumenta tu seguridad</string>
     <string name="security_center_title_backup_your_wallet">Respalda tu monedero</string>
     <string name="task_email_skipped">Omitido</string>
