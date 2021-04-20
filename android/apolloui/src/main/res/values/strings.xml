@@ -191,7 +191,6 @@
     <string name="operation_detail_swap_hash">Payment hash</string>
     <string name="operation_detail_swap_preimage">Payment preimage</string>
     <string name="operation_detail_receiving_pubkey">Receiving node</string>
-    <string name="operation_detail_fee_incoming">Fee (from sender to miners)</string>
     <string name="operation_detail_fee_outgoing">Fee paid to miners</string>
 
     <string name="operation_swap_pending_0conf_desc">

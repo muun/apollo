@@ -22,4 +22,20 @@ class SettingsScreen(
     fun deleteWallet() {
         id(R.id.log_out_text_view).click()
     }
+
+    fun setBitcoinUnitToSat() {
+        id(R.id.settings_bitcoin_unit).click()
+
+        id(R.id.bitcoin_unit_sat)
+    }
+
+    fun toggleTurboChannels() {
+        id(R.id.settings_lightning).click()
+
+        id(R.id.turbo_channels_switch).click()
+
+        dialog.pressDisable()
+
+        device.pressBack()
+    }
 }

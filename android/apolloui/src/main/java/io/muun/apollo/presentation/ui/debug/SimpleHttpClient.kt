@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit
 open class SimpleHttpClient {
 
     private val httpClient: OkHttpClient = OkHttpClient.Builder()
-        .readTimeout(20000, TimeUnit.MILLISECONDS)
+        // Big timeout to avoid flakiness in CI (remote kube regtest env)
+        .readTimeout(3, TimeUnit.MINUTES)
         .addInterceptor { chain ->
             val request = chain
                 .request()

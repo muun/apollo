@@ -3,6 +3,7 @@ package io.muun.apollo.utils.screens
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObjectNotFoundException
+import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -60,6 +61,16 @@ class HomeScreen(
         openOperationHistory()
 
         openOperationDetail(description, isPending)
+    }
+
+    fun goToOperationDetail(index: Int) {
+        openOperationHistory()
+
+        val listUiObject = id(R.id.home_operations_recycler_operation_list)
+
+        // NOTE: unless you combine .instance() with another selector method (like .clickable()),
+        // it doesn't work as expected :'(
+        listUiObject.getChild(UiSelector().clickable(true).instance(index)).click()
     }
 
     private fun openOperationHistory() {

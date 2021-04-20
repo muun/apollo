@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.utils.FeeCalculator
+import io.muun.common.Rules
 import io.muun.common.model.ExchangeRateProvider
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
@@ -16,12 +17,11 @@ class PaymentContext(
     val user: User,
     val exchangeRateWindow: ExchangeRateWindow,
     val feeWindow: FeeWindow,
-    val nextTransactionSize: NextTransactionSize
+    val nextTransactionSize: NextTransactionSize,
+    val minFeeRate: Double = Rules.OP_MINIMUM_FEE_RATE
 ) {
 
     companion object {
-
-
         // NOTE: this is a hack to ensure all operation-related screens share a preset payment
         // context. Ideally, NewOperation would be an Activity with Fragments sharing this.
         var currentlyInUse: PaymentContext? = null
@@ -97,8 +97,7 @@ class PaymentContext(
     /**
      * Return the minimum acceptable fee rate, obtained from the lowest recommended value.
      */
-    fun getMinimumFeeRate() =
-        feeWindow.targetedFees.values.min()!! // assume vector is not empty (ie min can't be null)
+    fun getMinimumFeeRate() = minFeeRate
 
     /**
      * Examine a PaymentRequest, and return a PaymentAnalysis.

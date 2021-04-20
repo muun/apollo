@@ -4,6 +4,6 @@ import io.muun.apollo.presentation.ui.base.BaseView
 
 interface QrView : BaseView {
 
-    fun setQrContent(content: String)
+    fun setQrContent(displayContent: String, qrContent: String)
 
 }

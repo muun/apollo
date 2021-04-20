@@ -23,7 +23,6 @@ class Analytics @Inject constructor(val context: Context) {
      */
     fun setUserProperties(user: User) {
         fba.setUserId(user.hid.toString())
-        fba.setUserProperty("email", user.email.map(this::sanitizeEmail).orElse(null))
         fba.setUserProperty("currency", user.unsafeGetPrimaryCurrency().currencyCode)
     }
 
@@ -95,6 +94,4 @@ class Analytics @Inject constructor(val context: Context) {
         inMemoryMapBreadcrumbCollector[event.eventId] = bundle
     }
 
-    private fun sanitizeEmail(email: String) =
-        email.take(36)
 }

@@ -35,7 +35,6 @@ import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.RealTimeData;
-import io.muun.common.api.SendEncryptedKeysJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapJson;
@@ -191,9 +190,6 @@ public interface HoustonService {
 
     @POST("user/profile")
     Observable<UserJson> createProfile(@Body UserProfileJson userProfileJson);
-
-    @POST("user/export-keys")
-    Observable<Void> sendExportKeysEmail(@Body SendEncryptedKeysJson json);
 
     @POST("user/emergency-kit/exported")
     Observable<Void> reportEmergencyKitExported(@Body ExportEmergencyKitJson json);

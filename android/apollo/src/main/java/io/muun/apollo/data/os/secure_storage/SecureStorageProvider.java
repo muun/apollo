@@ -89,7 +89,7 @@ public class SecureStorageProvider {
         Preconditions.checkState(
                 hasKeyInPreferences == hasKeyInKeystore,
                 String.format(
-                        "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInPreferences =%s",
+                        "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInKeystore =%s",
                         key,
                         hasKeyInPreferences,
                         hasKeyInKeystore

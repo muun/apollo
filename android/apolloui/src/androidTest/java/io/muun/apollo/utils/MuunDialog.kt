@@ -25,4 +25,8 @@ class MuunDialog(
     fun pressSkip() {
         normalizedLabel(R.string.setup_password_skip_yes).click()
     }
+
+    fun pressDisable() {
+        normalizedLabel(R.string.turbo_channels_disable).click()
+    }
 }

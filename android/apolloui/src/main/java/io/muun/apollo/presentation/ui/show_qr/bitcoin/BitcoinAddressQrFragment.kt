@@ -73,7 +73,15 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     }
 
     override fun setContent(content: String, addressType: AddressType, amount: MonetaryAmount?) {
-        super.setQrContent(content)
+
+        // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
+        val qrContent = if (addressType == AddressType.SEGWIT && amount == null) {
+            content.toUpperCase()
+        } else {
+            content
+        }
+
+        super.setQrContent(content, qrContent)
 
         // Hackish way to override and show just the address when dealing with a bitcoin uri
         if (amount != null) {
@@ -102,9 +110,6 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         dialog.setDescription(address)
         showDrawerDialog(dialog)
     }
-
-    override fun preProcessQrContent(content: String): String =
-        content // No pre-processing
 
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.H

@@ -349,8 +349,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 mapFeeWindow(realTimeData.feeWindow),
                 mapExchangeRateWindow(realTimeData.exchangeRateWindow),
                 realTimeData.currentBlockchainHeight,
-                mapForwadingPolicies(realTimeData.forwardingPolicies)
-        );
+                mapForwadingPolicies(realTimeData.forwardingPolicies),
+                realTimeData.minFeeRateInWeightUnits);
     }
 
     private List<ForwardingPolicy> mapForwadingPolicies(

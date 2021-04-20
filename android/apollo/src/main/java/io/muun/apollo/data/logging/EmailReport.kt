@@ -20,7 +20,7 @@ class EmailReport private constructor(val body: String) {
     ) {
 
         fun report(report: CrashReport) = apply { this.report = report }
-        fun supportId(supportId: String) = apply { this.supportId = supportId }
+        fun supportId(supportId: String?) = apply { this.supportId = supportId }
         fun fcmTokenHash(fcmTokenHash: String) = apply { this.fcmTokenHash = fcmTokenHash }
         fun presenterName(presenterName: String) = apply { this.presenterName = presenterName }
         fun defaultRegion(defaultRegion: String) = apply { this.defaultRegion = defaultRegion }
@@ -32,7 +32,6 @@ class EmailReport private constructor(val body: String) {
         fun build(): EmailReport {
 
             checkNotNull(report)
-            checkNotNull(supportId)
             checkNotNull(fcmTokenHash)
             checkNotNull(presenterName)
             checkNotNull(googlePlayServicesAvailable)
@@ -46,7 +45,7 @@ class EmailReport private constructor(val body: String) {
                 """
                 Android version: ${Build.VERSION.SDK_INT}
                 App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
-                SupportId: $supportId
+                SupportId: ${if (supportId != null) "Not logged in" else supportId}
                 ScreenPresenter: $presenterName
                 FcmTokenHash: $fcmTokenHash
                 GooglePlayServices: $googlePlayServicesAvailable

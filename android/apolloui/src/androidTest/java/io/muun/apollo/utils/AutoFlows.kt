@@ -4,11 +4,11 @@ import android.content.Context
 import android.os.SystemClock
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.UserPhoneNumber
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.common.model.DebtType
+import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
 import org.javamoney.moneta.Money
 import java.lang.IllegalStateException
@@ -167,6 +167,62 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
+    /**
+     * Receive funds via Lightning Network using an AmountLess Invoice. TurboChannels flag hints
+     * whether we should check for operation status pending or not.
+     *
+     * NOTE: BEWARE if amount is low (< debt limit) and turboChannels is disabled, this method will
+     * fail as our Receive LN feature confirms the payment instantly (full debt mechanism).
+     */
+    fun receiveMoneyFromLNWithAmountLessInvoice(amountInSats: Long, turboChannels: Boolean = true) {
+        receiveMoneyFromLN(amountInSats, turboChannels, false)
+    }
+
+    /**
+     * Receive funds via Lightning Network using an Invoice with amount. TurboChannels flag hints
+     * whether we should check for operation status pending or not.
+     *
+     * NOTE: BEWARE if amount is low (< debt limit) and turboChannels is disabled, this method will
+     * fail as our Receive LN feature confirms the payment instantly (full debt mechanism).
+     */
+    fun receiveMoneyFromLNWithInvoiceWithAmount(amountInSats: Long, turboChannels: Boolean = true) {
+        receiveMoneyFromLN(amountInSats, turboChannels, true)
+    }
+
+    private fun receiveMoneyFromLN(amountInSat: Long, turboChannel: Boolean, amountFixed: Boolean) {
+        val prevBalance = homeScreen.balanceInBtc
+
+        homeScreen.goToReceive()
+
+        if (amountFixed) {
+            receiveScreen.addInvoiceAmount(amountInSat)
+        }
+
+        // For fixed amount invoices, amount MUST NOT be specified, otherwise an error occurs.
+        val amountToReceive = if (amountFixed) {
+            null
+        } else {
+            amountInSat
+        }
+
+        LappClient().receiveBtcViaLN(receiveScreen.invoice, amountToReceive, turboChannel)
+
+        // If we return right now, we'll have to wait for the FCM notification to know we received
+        // the money. If we give Syncer some time to see the transaction, the notification will be
+        // waiting for us when we reach Home (and pullNotifications):
+        SystemClock.sleep(1800)
+
+        device.pressBack()
+
+        // Wait for balance to be updated:
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSat)
+        homeScreen.waitUntilBalanceEquals(prevBalance.add(amount))
+
+        checkOperationDetails(amount, statusPending = !turboChannel) {
+            homeScreen.goToOperationDetail(0)
+        }
+    }
+
     fun receiveMoneyFromNetwork(amount: Money) {
         val expectedBalance = homeScreen.balanceInBtc
         val balanceAfter = expectedBalance.add(amount)
@@ -247,7 +303,9 @@ class AutoFlows(override val device: UiDevice,
 
         homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
 
-        checkOperationDetails(amount, description, fee)
+        checkOperationDetails(amount, description, fee) {
+            homeScreen.goToOperationDetail(description, isPending = true)
+        }
     }
 
     /**
@@ -276,7 +334,9 @@ class AutoFlows(override val device: UiDevice,
 
         homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
 
-        checkOperationDetails(amount, description, fee)
+        checkOperationDetails(amount, description, fee) {
+            homeScreen.goToOperationDetail(description, isPending = true)
+        }
     }
 
     fun settleOperation(description: String) {
@@ -439,22 +499,54 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
+    fun toggleTurboChannels() {
+        homeScreen.goToSettings()
+
+        settingsScreen.toggleTurboChannels()
+
+        backToHome()
+    }
+
+    fun setBitcoinUnitToSat() {
+        homeScreen.goToSettings()
+
+        settingsScreen.setBitcoinUnitToSat()
+
+        backToHome()
+    }
+
     private fun dismissDialog() {
         device.pressBack() // Pressing back should dismiss dialog ;)
     }
 
-    // PRIVATE, helper stuff
+    fun checkOperationDetails(amount: MonetaryAmount,
+                              description: String? = null,
+                              fee: MonetaryAmount? = null,
+                              statusPending: Boolean = true,
+                              reachOperationDetail: () -> Unit) {
 
-    private fun checkOperationDetails(amount: Money, description: String, fee: Money) {
-        homeScreen.goToOperationDetail(description, isPending = true)
+        reachOperationDetail()
 
-        opDetailScreen.checkStatus(context.getString(R.string.operation_pending))
+        if (statusPending) {
+            opDetailScreen.checkStatus(context.getString(R.string.operation_pending))
+        } else {
+            opDetailScreen.waitForStatusChange(R.string.operation_completed)
+        }
+
         opDetailScreen.checkAmount(amount)
-        opDetailScreen.checkFee(fee)
-        opDetailScreen.checkDescription(description)
+
+        if (fee != null) {
+            opDetailScreen.checkFee(fee)
+        }
+
+        if (description != null) {
+            opDetailScreen.checkDescription(description)
+        }
 
         exitOpDetailAndReturnHome()
     }
+
+    // PRIVATE, helper stuff
 
     private fun goToSettingsAndClickDeleteWallet() {
         homeScreen.goToSettings()

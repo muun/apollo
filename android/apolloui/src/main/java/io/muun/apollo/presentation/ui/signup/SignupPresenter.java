@@ -337,6 +337,18 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         view.finishActivity();
     }
 
+    /**
+     * This is a workaround for a problem that occurs on low end devices (and using DKA) due to
+     * our local storage wiping (to avoid carring over data from previous sessions) happening while
+     * doing startActivityForResult (for SetUpPinCodeActivity). Wiping local storage +
+     * SignupActivity being re-created means losing signupDraft state which triggered some
+     * preconditions.
+     */
+    public void setSyncStep() {
+        signupDraft.setStep(SignupStep.SYNC);
+        signupDraftManager.save(signupDraft);
+    }
+
     private void navigateToStep(SignupStep step) {
         final SignupStep previousStep = signupDraft.getStep();
 
