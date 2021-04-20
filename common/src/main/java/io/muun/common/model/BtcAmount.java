@@ -1,5 +1,7 @@
 package io.muun.common.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -35,8 +37,20 @@ public class BtcAmount {
         return milliSats;
     }
 
+    /**
+     * Convert to Sats.
+     *
+     * @deprecated Use toSats(RoundingMode) for explicit rounding
+     */
+    @Deprecated
     public long toSats() {
         return milliSats / MSATS_PER_SAT;
+    }
+
+    public long toSats(final RoundingMode roundingMode) {
+        return BigDecimal.valueOf(milliSats)
+                .divide(BigDecimal.valueOf(MSATS_PER_SAT), roundingMode)
+                .longValueExact();
     }
 
     public double toBtc() {

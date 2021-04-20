@@ -2,7 +2,7 @@ package io.muun.apollo.presentation
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.presentation.ui.debug.LappClient
-import io.muun.apollo.utils.RandomUser
+import io.muun.common.utils.BitcoinUtils
 import org.javamoney.moneta.Money
 import org.junit.Ignore
 import org.junit.Test
@@ -162,5 +162,145 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         autoFlows.spendAllFunds(description)
         autoFlows.settleOperation(description)
+    }
+
+    @Test
+    fun test_14_user_can_receive_small_amount_via_LN_using_amountless_invoice() {
+        autoFlows.signUp()
+
+        // 1. Generate a small amount of debt
+        autoFlows.receiveMoneyFromNetwork(Money.of(0.1, "BTC"))
+
+        // This amount is "brittle/fickle" as it depends on service configs
+        val amountThatWillTriggerALendSwap = 200 // Should be < MAX_USER_DEBT
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+
+        // 2. Let's receive via LN using that debt
+
+        // Receive low amount (full debt) 100 sats
+        autoFlows.receiveMoneyFromLNWithAmountLessInvoice(100)
+    }
+
+    @Test
+    fun test_15_user_can_receive_big_amount_via_LN_using_amountless_invoice() {
+        autoFlows.signUp()
+
+        // Receive big amount (> debt limit, htlc + fullfilment tx) 100k sats
+        autoFlows.receiveMoneyFromLNWithAmountLessInvoice(100_000)
+    }
+
+    @Test
+    fun test_16_user_can_receive_via_LN_using_amountless_invoice_without_turbo_channels() {
+        autoFlows.signUp()
+
+        autoFlows.toggleTurboChannels()
+
+        // Receive disabling turbo channels 100k sats
+        val amountInSats: Long = 100_000
+        autoFlows.receiveMoneyFromLNWithAmountLessInvoice(amountInSats, false)
+
+        LappClient().generateBlocks(1)
+
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSats)
+        autoFlows.checkOperationDetails(amount, statusPending = false) {
+            homeScreen.goToOperationDetail(0)
+        }
+    }
+
+    /**
+     * Premature spend: receive via LN with 1 conf (big amount + turbo channels disabled) and spend
+     * the funds before confirmation.
+     */
+    @Test
+    fun test_17_user_can_do_a_premature_spend_using_amountless_invoice() {
+        autoFlows.signUp()
+
+        autoFlows.toggleTurboChannels()
+
+        // Receive disabling turbo channels 100k sats
+        val amountInSats: Long = 100_000
+        autoFlows.receiveMoneyFromLNWithAmountLessInvoice(amountInSats, false)
+
+        // Premature spend (big amount and spend before 1-conf) 100k sats
+        val description = "Some description"
+        autoFlows.spendAllFunds(description)
+        autoFlows.settleOperation(description)
+
+        LappClient().generateBlocks(1)
+
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSats)
+        autoFlows.checkOperationDetails(amount, statusPending = false) {
+            homeScreen.goToOperationDetail(1)
+        }
+    }
+
+    @Test
+    fun test_18_user_can_receive_small_amount_via_LN_using_invoice_with_amount() {
+        autoFlows.signUp()
+
+        // 1. Generate a small amount of debt
+        autoFlows.receiveMoneyFromNetwork(Money.of(0.1, "BTC"))
+
+        // This amount is "brittle/fickle" as it depends on service configs
+        val amountThatWillTriggerALendSwap = 200 // Should be < MAX_USER_DEBT
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+
+        // 2. Let's receive via LN using that debt
+
+        // Receive low amount (full debt) 100 sats
+        autoFlows.receiveMoneyFromLNWithInvoiceWithAmount(100)
+    }
+
+    @Test
+    fun test_19_user_can_receive_big_amount_via_LN_using_invoice_with_amount() {
+        autoFlows.signUp()
+
+        // Receive big amount (> debt limit, htlc + fullfilment tx) 100k sats
+        autoFlows.receiveMoneyFromLNWithInvoiceWithAmount(100_000)
+    }
+
+    @Test
+    fun test_20_user_can_receive_via_LN_using_invoice_with_amount_without_turbo_channels() {
+        autoFlows.signUp()
+
+        autoFlows.toggleTurboChannels()
+
+        // Receive disabling turbo channels 100k sats
+        val amountInSats: Long = 100_000
+        autoFlows.receiveMoneyFromLNWithInvoiceWithAmount(amountInSats, false)
+
+        LappClient().generateBlocks(1)
+
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSats)
+        autoFlows.checkOperationDetails(amount, statusPending = false) {
+            homeScreen.goToOperationDetail(0)
+        }
+    }
+
+    /**
+     * Premature spend: receive via LN with 1 conf (big amount + turbo channels disabled) and spend
+     * the funds before confirmation.
+     */
+    @Test
+    fun test_21_user_can_do_a_premature_spend_using_invoice_with_amount() {
+        autoFlows.signUp()
+
+        autoFlows.toggleTurboChannels()
+
+        // Receive disabling turbo channels 100k sats
+        val amountInSats: Long = 100_000
+        autoFlows.receiveMoneyFromLNWithInvoiceWithAmount(amountInSats, false)
+
+        // Premature spend (big amount and spend before 1-conf) 100k sats
+        val description = "Some description"
+        autoFlows.spendAllFunds(description)
+        autoFlows.settleOperation(description)
+
+        LappClient().generateBlocks(1)
+
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSats)
+        autoFlows.checkOperationDetails(amount, statusPending = false) {
+            homeScreen.goToOperationDetail(1)
+        }
     }
 }

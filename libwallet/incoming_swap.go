@@ -118,16 +118,17 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 		return fmt.Errorf("could not verify Muun signature for htlc: %w", err)
 	}
 
-	var outputAmount lnwire.MilliSatoshi
+	var outputAmount, expectedAmount lnwire.MilliSatoshi
 	if c.VerifyOutputAmount {
 		outputAmount = lnwire.MilliSatoshi(tx.TxOut[0].Value * 1000)
+
+		// This incoming swap might be collecting debt, which would be deducted from the outputAmount
+		// so we add it back up so the amount will match with the sphinx
+		expectedAmount = outputAmount + lnwire.NewMSatFromSatoshis(c.Collect)
 	}
 
 	// Now check the information we have against the sphinx created by the payer
 	if len(c.Sphinx) > 0 {
-		// This incoming swap might be collecting debt, which would be deducted from the outputAmount
-		// so we add it back up so the amount will match with the sphinx
-		expectedAmount := outputAmount + lnwire.NewMSatFromSatoshis(c.Collect)
 		err = sphinx.Validate(
 			c.Sphinx,
 			c.PaymentHash256,

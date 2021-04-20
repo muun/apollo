@@ -189,7 +189,6 @@
     <string name="operation_detail_swap_hash">Hash del pago</string>
     <string name="operation_detail_swap_preimage">Preimagen del pago</string>
     <string name="operation_detail_receiving_pubkey">Nodo destinatario</string>
-    <string name="operation_detail_fee_incoming">Comisión (del remitente a mineros)</string>
     <string name="operation_detail_fee_outgoing">Comisión pagada a mineros</string>
 
     <string name="operation_swap_pending_0conf_desc">

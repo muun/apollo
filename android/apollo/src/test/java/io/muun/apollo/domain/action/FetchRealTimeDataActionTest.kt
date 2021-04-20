@@ -8,6 +8,7 @@ import io.muun.apollo.data.preferences.BlockchainHeightRepository
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository
+import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.model.RealTimeData
 import org.junit.Before
@@ -32,6 +33,9 @@ class FetchRealTimeDataActionTest : BaseTest() {
     private lateinit var forwardingPoliciesRepository: ForwardingPoliciesRepository
 
     @Mock
+    private lateinit var minFeeRateRepository: MinFeeRateRepository
+
+    @Mock
     private lateinit var houstonClient: HoustonClient
 
     private lateinit var fetchRealTimeDataAction: FetchRealTimeDataAction
@@ -43,7 +47,8 @@ class FetchRealTimeDataActionTest : BaseTest() {
                 feeWindowRepository,
                 exchangeRateWindowRepository,
                 blockchainHeightRepository,
-                forwardingPoliciesRepository
+                forwardingPoliciesRepository,
+                minFeeRateRepository
         )
     }
 
@@ -54,12 +59,14 @@ class FetchRealTimeDataActionTest : BaseTest() {
         val exchangeRateWindow = Gen.exchangeRateWindow()
         val blockchainHeight = 590000
         val forwardingPolicies = listOf(Gen.forwardingPolicy())
+        val minFeeRateInWeightUnits = 0.25
 
         val realTimeData = RealTimeData(
                 feeWindow,
                 exchangeRateWindow,
                 blockchainHeight,
-                forwardingPolicies
+                forwardingPolicies,
+                minFeeRateInWeightUnits
         )
 
         Mockito.doReturn(Observable.just(realTimeData))

@@ -228,20 +228,21 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
     private void setNormalOperation(Context context, UiOperation operation) {
         // Sections involved:
         normalSection.setVisibility(View.VISIBLE);
-        feeItem.setVisibility(View.VISIBLE);
 
         // On-chain transaction details:
         confirmationsItem.setDescription(operation.getConfirmations());
 
         if (operation.isIncoming()) {
-            feeItem.setTitle(getString(R.string.operation_detail_fee_incoming));
+            feeItem.setVisibility(View.GONE);
+
         } else {
+            feeItem.setVisibility(View.VISIBLE);
             feeItem.setTitle(getString(R.string.operation_detail_fee_outgoing));
+            feeItem.setDescription(operation.getDetailedFee());
+            feeItem.setOnIconClickListener(
+                    view -> onCopyNetworkFeeToClipboard(operation.getCopyableNetworkFee())
+            );
         }
-        feeItem.setDescription(operation.getDetailedFee());
-        feeItem.setOnIconClickListener(
-                view -> onCopyNetworkFeeToClipboard(operation.getCopyableNetworkFee())
-        );
 
         if (!operation.isFailed()) {
             transactionIdItem.setVisibility(View.VISIBLE);

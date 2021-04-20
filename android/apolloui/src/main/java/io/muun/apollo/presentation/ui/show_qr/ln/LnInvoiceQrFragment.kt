@@ -99,7 +99,9 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     }
 
     override fun setInvoice(invoice: LnInvoice, amount: MonetaryAmount?) {
-        super.setQrContent(invoice.original)
+
+        // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
+        super.setQrContent(invoice.original, invoice.original.toUpperCase())
 
         // Detect if 1h left of expiration time, and show countdown
         val expirationTimeInMillis = invoice.expirationTime.toEpochSecond() * 1000
@@ -128,9 +130,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         dialog.setDescription(invoice)
         showDrawerDialog(dialog)
     }
-
-    override fun preProcessQrContent(content: String): String =
-        content.toUpperCase()
 
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.L  // Bech 32 already has its own error correction.

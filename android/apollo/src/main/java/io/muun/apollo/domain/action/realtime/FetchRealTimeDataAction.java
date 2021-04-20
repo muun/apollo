@@ -5,6 +5,7 @@ import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository;
+import io.muun.apollo.data.preferences.MinFeeRateRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
 import io.muun.common.rx.RxHelper;
 
@@ -22,6 +23,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     private final ExchangeRateWindowRepository exchangeRateWindowRepository;
     private final BlockchainHeightRepository blockchainHeightRepository;
     private final ForwardingPoliciesRepository forwardingPoliciesRepository;
+    private final MinFeeRateRepository minFeeRateRepository;
 
     /**
      * Update time-sensitive data, such as network fees and exchange rates.
@@ -32,13 +34,15 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
             final FeeWindowRepository feeWindowRepository,
             final ExchangeRateWindowRepository exchangeRateWindowRepository,
             final BlockchainHeightRepository blockchainHeightRepository,
-            final ForwardingPoliciesRepository forwardingPoliciesRepository) {
+            final ForwardingPoliciesRepository forwardingPoliciesRepository,
+            final MinFeeRateRepository minFeeRateRepository) {
 
         this.houstonClient = houstonClient;
         this.feeWindowRepository = feeWindowRepository;
         this.exchangeRateWindowRepository = exchangeRateWindowRepository;
         this.blockchainHeightRepository = blockchainHeightRepository;
         this.forwardingPoliciesRepository = forwardingPoliciesRepository;
+        this.minFeeRateRepository = minFeeRateRepository;
     }
 
     @Override
@@ -63,6 +67,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                     exchangeRateWindowRepository.store(realTimeData.exchangeRateWindow);
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                     forwardingPoliciesRepository.store(realTimeData.forwardingPolicies);
+                    minFeeRateRepository.store(realTimeData.minFeeRateInWeightUnits);
                 })
                 .map(RxHelper::toVoid);
     }

@@ -10,8 +10,10 @@ import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
+import io.muun.apollo.domain.model.SubmarineSwapBestRouteFees
 import io.muun.apollo.domain.model.SubmarineSwapFees
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutput
+import io.muun.apollo.domain.model.SubmarineSwapFundingOutputPolicies
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
 import io.muun.apollo.domain.model.User
 import io.muun.apollo.domain.model.UserPhoneNumber
@@ -32,6 +34,7 @@ import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.params.TestNet3Params
 import org.javamoney.moneta.Money
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import javax.money.CurrencyUnit
 import javax.money.Monetary
@@ -286,6 +289,43 @@ object Gen {
             futureDate(),
             null,
             null
+        )
+
+    fun amountlessSubmarineSwap(proportionalFee: Long = 1000,
+                                baseFee: Long = 1,
+                                maxDebt: Long = Long.MAX_VALUE,
+                                potentialCollect: Long = 0,
+                                maxAmountFor0Conf: Long = Long.MAX_VALUE) =
+        SubmarineSwap(
+            houstonId(),
+            "1234-1234",
+            lnInvoice(),
+            submarineSwapReceiver(),
+            SubmarineSwapFundingOutput(
+                address(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                muunAddress(),
+                lnPaymentHash(),
+                lnPublicKey()
+            ),
+            null,
+            futureDate(),
+            null,
+            null,
+            listOf(SubmarineSwapBestRouteFees(
+                Long.MAX_VALUE,
+                proportionalFee,
+                baseFee
+            )),
+            SubmarineSwapFundingOutputPolicies(
+                maxDebt,
+                potentialCollect,
+                maxAmountFor0Conf
+            )
         )
 
     fun submarineSwapReceiver() =

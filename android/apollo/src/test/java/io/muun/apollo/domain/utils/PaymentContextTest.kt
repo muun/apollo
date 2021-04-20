@@ -11,6 +11,7 @@ import io.muun.apollo.domain.model.PaymentContext
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.User
+import io.muun.common.Rules
 import io.muun.common.bitcoinj.NetworkParametersHelper
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
@@ -35,8 +36,7 @@ class PaymentContextTest: BaseTest() {
     lateinit var feeWindow: FeeWindow
     lateinit var nextTransactionSize: NextTransactionSize
 
-    val payCtx get() =
-        PaymentContext(user, exchangeRateWindow, feeWindow, nextTransactionSize)
+    val payCtx get() = PaymentContext(user, exchangeRateWindow, feeWindow, nextTransactionSize)
 
     @Before
     fun setUp() {

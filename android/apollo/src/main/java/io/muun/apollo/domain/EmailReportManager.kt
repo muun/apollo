@@ -1,6 +1,5 @@
 package io.muun.apollo.domain
 
-import android.content.Context
 import io.muun.apollo.data.logging.CrashReport
 import io.muun.apollo.data.logging.EmailReport
 import io.muun.apollo.data.os.GooglePlayServicesHelper

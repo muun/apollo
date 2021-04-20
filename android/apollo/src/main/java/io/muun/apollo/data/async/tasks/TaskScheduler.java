@@ -89,7 +89,7 @@ public class TaskScheduler {
         scheduleDelayedPeriodicTask("pullNotifications", PULL_NOTIFICATIONS_PERIOD);
 
         // Following data is usually synchronized on demand. Several Presenters do this when set up.
-        // If the user doesn't use the app in a long time, however, these values can go severly
+        // If the user doesn't use the app in a long time, however, these values can go severely
         // stale. This long timer keeps the data somewhat fresh:
         scheduleDelayedPeriodicTask("syncPhoneContacts", FALLBACK_SYNC_PERIOD);
         scheduleDelayedPeriodicTask("syncRealTimeData", FALLBACK_SYNC_PERIOD);

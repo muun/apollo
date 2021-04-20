@@ -28,6 +28,7 @@ class RepositoryRegistry {
         FeeWindowRepository::class.java,
         FcmTokenRepository::class.java,
         ForwardingPoliciesRepository::class.java,
+        MinFeeRateRepository::class.java,
         KeysRepository::class.java,
         NightModeRepository::class.java,
         NotificationRepository::class.java,

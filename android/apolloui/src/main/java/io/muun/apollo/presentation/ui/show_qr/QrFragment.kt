@@ -34,22 +34,17 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
     internal var qrCodeSize: Int = 0
 
     /**
-     * Allow children to enable/disable extra QR compression mode if content is Upper alphanumeric.
-     */
-    abstract fun preProcessQrContent(content: String): String
-
-    /**
      * Allow children to specify error correction (e.g if content already has error
      * correction/checksum).
      */
     abstract fun getErrorCorrection(): ErrorCorrectionLevel
 
-    override fun setQrContent(content: String) {
+    override fun setQrContent(displayContent: String, qrContent: String) {
 
-        setShowingText(content)
+        setShowingText(displayContent)
 
         try {
-            qrImage.setImageBitmap(createQrCode(preProcessQrContent(content), qrCodeSize))
+            qrImage.setImageBitmap(createQrCode(qrContent, qrCodeSize))
 
         } catch (error: WriterException) {
             presenter.handleError(error)

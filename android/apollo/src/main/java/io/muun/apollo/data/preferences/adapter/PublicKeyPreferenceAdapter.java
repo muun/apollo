@@ -12,6 +12,9 @@ public class PublicKeyPreferenceAdapter implements Preference.Adapter<PublicKey>
 
     public static final PublicKeyPreferenceAdapter INSTANCE = new PublicKeyPreferenceAdapter();
 
+    private PublicKeyPreferenceAdapter() {
+    }
+
     @Override
     @Nullable
     public PublicKey get(@NonNull String prefName, @NonNull SharedPreferences prefs) {

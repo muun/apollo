@@ -62,6 +62,7 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
 
     public void pinCodeSetUpSuccess() {
         isPinSetUp = true;
+        getParentPresenter().setSyncStep();
         finishSignupIfReady();
     }
 
