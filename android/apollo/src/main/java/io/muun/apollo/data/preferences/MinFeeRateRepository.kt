@@ -18,6 +18,7 @@ open class MinFeeRateRepository @Inject constructor(
 
     private val preference: Preference<Double> = rxSharedPreferences.getObject(
         KEY,
+        1.0, // Default (lowest limit) just to avoid NPE problems before RTD is pulled
         DoublePreferenceAdapter.INSTANCE
     )
 
