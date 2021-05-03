@@ -27,12 +27,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import com.bumptech.glide.BitmapTypeRequest;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.SimpleResource;
-import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.SimpleTarget;
-import jp.wasabeef.glide.transformations.CropCircleTransformation;
+import com.bumptech.glide.request.transition.Transition;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -137,11 +136,11 @@ public class NotificationServiceImpl implements NotificationService {
                                               Intent intent,
                                               @DrawableRes int drawableId) {
 
-        final BitmapTypeRequest<Integer> integerBitmapTypeRequest = Glide.with(context)
-                .load(drawableId)
-                .asBitmap();
+        final RequestBuilder<Bitmap> requestBuilder = Glide.with(context)
+                .asBitmap()
+                .load(drawableId);
 
-        showNotificationWithBitmapRequest(title, content, intent, integerBitmapTypeRequest);
+        showNotificationWithBitmapRequest(title, content, intent, requestBuilder);
     }
 
     private void showNewOperationFromUserNotification(Operation op) {
@@ -178,36 +177,44 @@ public class NotificationServiceImpl implements NotificationService {
             return;
         }
 
-        final BitmapTypeRequest<String> stringBitmapTypeRequest = Glide.with(context)
-                .load(contact.profilePictureUrl)
-                .asBitmap();
+        final RequestBuilder<Bitmap> requestBuilder = Glide.with(context)
+                .asBitmap()
+                .load(contact.profilePictureUrl);
 
-        showNotificationWithBitmapRequest(title, content, intent, stringBitmapTypeRequest);
+        showNotificationWithBitmapRequest(title, content, intent, requestBuilder);
     }
 
-    private <T> void showNotificationWithBitmapRequest(
+    private void showNotificationWithBitmapRequest(
             String title,
             String content,
             Intent intent,
-            BitmapTypeRequest<T> bitmapTypeRequest) {
+            RequestBuilder<Bitmap> requestBuilder) {
 
-        Observable.just(bitmapTypeRequest)
+
+        final RequestBuilder<Bitmap> updatedBuilder = requestBuilder
+                .apply(RequestOptions.overrideOf(PROFILE_PICTURE_WIDTH, PROFILE_PICTURE_HEIGHT))
+                .apply(RequestOptions.circleCropTransform());
+
+        final SimpleTarget<Bitmap> target = new SimpleTarget<Bitmap>(
+                NOTIFICATION_IMAGE_WIDTH, NOTIFICATION_IMAGE_HEIGHT
+        ) {
+
+            @Override
+            public void onResourceReady(
+                    @NonNull final Bitmap resource,
+                    @Nullable final Transition<? super Bitmap> transition) {
+
+                showNotificationWithBitmap(
+                        title,
+                        content,
+                        resource,
+                        intent
+                );
+            }
+        };
+        Observable.just(updatedBuilder)
                 .compose(executionTransformerFactory.getAsyncExecutor())
-                .subscribe(request -> request.into(
-                        new SimpleTarget<Bitmap>(PROFILE_PICTURE_WIDTH, PROFILE_PICTURE_HEIGHT) {
-
-                            @Override
-                            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-
-                                showNotificationWithBitmap(
-                                        title,
-                                        content,
-                                        resizeToShowInNotification(bitmap),
-                                        intent
-                                );
-                            }
-                        }
-                ));
+                .subscribe(request -> request.into(target));
     }
 
     private void showNotificationWithoutBitmap(String title, String content, Intent intent) {
@@ -288,15 +295,6 @@ public class NotificationServiceImpl implements NotificationService {
     @NonNull
     private String getMuunChannelName() {
         return context.getString(R.string.notification_channel_name);
-    }
-
-    private Bitmap resizeToShowInNotification(Bitmap bitmap) {
-
-        final SimpleResource<Bitmap> bitmapResource = new SimpleResource<>(bitmap);
-
-        return new CropCircleTransformation(context)
-                .transform(bitmapResource, NOTIFICATION_IMAGE_WIDTH, NOTIFICATION_IMAGE_HEIGHT)
-                .get();
     }
 
     /**

@@ -80,8 +80,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 504
-        versionName "45.4"
+        versionCode 505
+        versionName "45.5"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -342,17 +342,15 @@ dependencies {
     // ui
     kapt "com.jakewharton:butterknife-compiler:$version_butterknife"
     implementation "com.jakewharton:butterknife:$version_butterknife"
-    implementation 'com.getbase:floatingactionbutton:1.10.1'
-    implementation 'jp.wasabeef:recyclerview-animators:2.3.0'
     implementation "com.github.skydoves:balloon:1.2.7"
 
     // image processing
-    implementation 'com.github.bumptech.glide:glide:3.7.0'
-    implementation 'jp.wasabeef:glide-transformations:2.0.2'
+    implementation 'com.github.bumptech.glide:glide:4.6.1'
+    implementation 'com.github.muun:glide-transformations:3.1.2'
 
     // qr codes
     implementation 'com.google.zxing:core:3.3.0'
-    implementation 'me.dm7.barcodescanner:zxing:1.9.13'
+    implementation 'com.github.muun.barcodescanner:zxing:1.9.13'
 
     // lifecycle helpers
     implementation 'frankiesardo:icepick:3.2.0'

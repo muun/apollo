@@ -74,14 +74,10 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
 
     override fun setContent(content: String, addressType: AddressType, amount: MonetaryAmount?) {
 
-        // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
-        val qrContent = if (addressType == AddressType.SEGWIT && amount == null) {
-            content.toUpperCase()
-        } else {
-            content
-        }
-
-        super.setQrContent(content, qrContent)
+        // TODO Enable extra QR compression mode. Uppercase bech32 strings are more efficiently
+        //  encoded. When? When and if ever popular services like blockchain.info and ledger upgrade
+        //  their impls.
+        super.setQrContent(content, content)
 
         // Hackish way to override and show just the address when dealing with a bitcoin uri
         if (amount != null) {
