@@ -6,18 +6,20 @@ import io.muun.common.Optional;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.View;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.signature.StringSignature;
+import com.bumptech.glide.signature.ObjectKey;
 import com.google.android.material.imageview.ShapeableImageView;
 import icepick.State;
-import jp.wasabeef.glide.transformations.CropCircleTransformation;
 
 import java.io.File;
 import javax.annotation.Nullable;
@@ -97,29 +99,34 @@ public class ProfilePictureView extends ShapeableImageView {
 
         Glide.with(context)
                 .load(pictureUri)
-                .signature(new StringSignature(signature))
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .bitmapTransform(new CropCircleTransformation(context))
-                .error(R.drawable.avatar_badge_grey)
-                .listener(new RequestListener<Uri, GlideDrawable>() {
+                .apply(RequestOptions.signatureOf(new ObjectKey(signature)))
+                .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+                .apply(RequestOptions.circleCropTransform())
+                .error(Glide.with(context).load(R.drawable.avatar_badge_grey))
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public boolean onException(Exception e,
-                                               Uri uri,
-                                               Target<GlideDrawable> target,
-                                               boolean isFirstResource) {
+                    public boolean onLoadFailed(
+                            @androidx.annotation.Nullable final GlideException e,
+                            final Object model,
+                            final Target<Drawable> target,
+                            final boolean isFirstResource
+                    ) {
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(GlideDrawable glideDrawable,
-                                                   Uri uri,
-                                                   Target<GlideDrawable> target,
-                                                   boolean isFromMemoryCache,
-                                                   boolean isFirstResource) {
-                        if (isNewPictureUri(uri)) {
-                            ProfilePictureView.this.pictureUri = uri;
-                            onPictureChange(uri);
+                    public boolean onResourceReady(
+                            final Drawable resource,
+                            final Object model,
+                            final Target<Drawable> target,
+                            final DataSource dataSource,
+                            final boolean isFirstResource
+                    ) {
+                        if (isNewPictureUri(pictureUri)) {
+                            ProfilePictureView.this.pictureUri = pictureUri;
+                            onPictureChange(pictureUri);
                         }
+
                         return false;
                     }
                 })

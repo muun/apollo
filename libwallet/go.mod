@@ -12,12 +12,15 @@ require (
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/pdfcpu/pdfcpu v0.3.11
 	github.com/pkg/errors v0.9.1
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
-	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
-	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
+	golang.org/x/sys v0.0.0-20210412220455-f1c623a9e750 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/gormigrate.v1 v1.6.0
 )
 
 // Fork that includes the -cache flag for quicker builds
-replace golang.org/x/mobile => github.com/champo/mobile v0.0.0-20201226003606-ef8e5756cda7
+replace golang.org/x/mobile => github.com/champo/mobile v0.0.0-20210412201235-a784c99e2a62
