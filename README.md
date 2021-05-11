@@ -4,6 +4,8 @@
 
 This is the source code repository for muun's android wallet. Muun is a non-custodial 2-of-2 multisig wallet with a special focus on security and ease of use.
 
+note: Muun requires google play services to run
+
 ## Structure
 
 The app follows the [clean](https://fernandocejas.com/2014/09/03/architecting-android-the-clean-way/) [architecture](https://fernandocejas.com/2015/07/18/architecting-android-the-evolution/) pattern, and has three layers:
