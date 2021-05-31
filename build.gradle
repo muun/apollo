@@ -4,7 +4,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.3'
@@ -27,7 +26,6 @@ subprojects {
         mavenCentral()
         maven { url "https://clojars.org/repo/" }
         maven { url "https://jitpack.io" }
-        jcenter()
     }
 
     ext {
@@ -49,7 +47,6 @@ subprojects {
             google()
             mavenCentral()
             maven { url "https://plugins.gradle.org/m2/" }
-            jcenter()
         }
 
         dependencies {
