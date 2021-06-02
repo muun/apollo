@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action;
 import io.muun.apollo.BaseTest;
 import io.muun.apollo.TestExecutor;
 import io.muun.apollo.data.external.AppStandbyBucketProvider;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.preferences.NotificationRepository;
@@ -76,6 +77,9 @@ public class NotificationActionsTest extends BaseTest {
     @Mock
     private FulfillIncomingSwapAction fulfillIncomingSwap;
 
+    @Mock
+    private NotificationService notificationService;
+
     private final TestExecutor executor = new TestExecutor();
 
     private final ModelObjectsMapper mapper = new ModelObjectsMapper(
@@ -100,8 +104,9 @@ public class NotificationActionsTest extends BaseTest {
                 signinActions,
                 mapper,
                 operationMapper,
-                fulfillIncomingSwap
-        ));
+                fulfillIncomingSwap,
+                houstonClient,
+                notificationService));
 
         testMessageHandler = spy(new TestMessageHandler());
         notificationProcessor.addHandler(TEST_SPEC, testMessageHandler);

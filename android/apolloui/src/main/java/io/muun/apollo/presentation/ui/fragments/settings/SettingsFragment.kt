@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
 import android.view.Menu
 import android.view.MenuInflater
@@ -18,8 +17,8 @@ import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity
-import io.muun.apollo.presentation.ui.utils.UiUtils
-import io.muun.apollo.presentation.ui.utils.getCurrentNightMode
+import io.muun.apollo.presentation.ui.utils.isInNightMode
+import io.muun.apollo.presentation.ui.utils.supportsDarkMode
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
@@ -114,21 +113,11 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     }
 
     private fun setFollowSystemDarkMode() {
+        when {
+            supportsDarkMode() -> darkModeItem.setDescription(R.string.dark_mode_follow_system)
+            isInNightMode() -> setNightMode(NightMode.DARK)
+            else -> setNightMode(NightMode.LIGHT)
 
-        if (UiUtils.supportsDarkMode()) {
-            darkModeItem.setDescription(getString(R.string.dark_mode_follow_system))
-
-        } else {
-            when (getCurrentNightMode()) {
-
-                Configuration.UI_MODE_NIGHT_YES -> {
-                    setNightMode(NightMode.DARK)
-                }
-
-                Configuration.UI_MODE_NIGHT_NO -> {
-                    setNightMode(NightMode.LIGHT)
-                }
-            }
         }
     }
 

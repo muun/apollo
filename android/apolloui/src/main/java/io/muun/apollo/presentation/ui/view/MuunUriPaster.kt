@@ -43,6 +43,9 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
 
     private fun getUriTitle(uri: OperationUri) =
         when {
+            uri.lnUrl.isPresent ->
+                context.getString(R.string.lnurl_withdraw_uri_paster_title)
+
             uri.lnInvoice.isPresent ->
                 context.getString(R.string.scanqr_drawer_ln_invoice_title)
 
@@ -55,6 +58,10 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
 
     private fun getUriDescription(uri: OperationUri): CharSequence? {
         val maybeDescription = when {
+            uri.lnUrl.isPresent ->
+                uri.lnUrl
+
+
             uri.lnInvoice.isPresent ->
                 uri.lnInvoice
 
@@ -65,10 +72,10 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
                 uri.bitcoinAddress
         }
 
-        if (maybeDescription.isPresent) {
-            return maybeDescription.get()
+        return if (maybeDescription.isPresent) {
+            maybeDescription.get()
         } else {
-            return context.getString(R.string.scanqr_drawer_no_address_no_host)
+            context.getString(R.string.scanqr_drawer_no_address_no_host)
         }
     }
 }

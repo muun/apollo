@@ -45,7 +45,7 @@
             android:layout_height="match_parent"
             android:padding="@dimen/muun_screen_margin"
             android:layout_gravity="center"
-            app:showText="false"
+            app:showTitle="false"
             android:visibility="gone" />
 
 </LinearLayout>

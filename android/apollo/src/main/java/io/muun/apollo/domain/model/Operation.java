@@ -2,6 +2,7 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.apollo.domain.utils.DateUtils;
+import io.muun.common.api.OperationMetadataJson;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
@@ -52,6 +53,7 @@ public class Operation extends HoustonIdModel {
                 0L,
                 NO_HASH,
                 preparedPayment.description,
+                new OperationMetadataJson(preparedPayment.description),
                 OperationStatus.CREATED,
                 ZonedDateTime.now(),
                 preparedPayment.rateWindowHid,
@@ -83,6 +85,7 @@ public class Operation extends HoustonIdModel {
                 0L,
                 NO_HASH,
                 preparedPayment.description,
+                new OperationMetadataJson(preparedPayment.description),
                 OperationStatus.CREATED,
                 DateUtils.now(),
                 preparedPayment.rateWindowHid,
@@ -134,6 +137,9 @@ public class Operation extends HoustonIdModel {
     @Nullable
     public final String description;
 
+    @Nullable
+    public final OperationMetadataJson metadata;
+
     @NotNull
     public OperationStatus status;
 
@@ -171,6 +177,7 @@ public class Operation extends HoustonIdModel {
             @NotNull Long confirmations,
             @Nullable String hash,
             @Nullable String description,
+            @Nullable OperationMetadataJson metadata,
             @NotNull OperationStatus status,
             @NotNull ZonedDateTime creationDate,
             @NotNull Long exchangeRateWindowHid,
@@ -192,6 +199,7 @@ public class Operation extends HoustonIdModel {
         this.confirmations = confirmations;
         this.hash = hash;
         this.description = description;
+        this.metadata = metadata;
         this.status = status;
         this.creationDate = creationDate;
         this.exchangeRateWindowHid = exchangeRateWindowHid;
@@ -265,6 +273,10 @@ public class Operation extends HoustonIdModel {
         return swap != null && swap.isLend();
     }
 
+    public boolean isIncomingSwap() {
+        return incomingSwap != null;
+    }
+
     /**
      * Get the creation date of the operation, localized to the system timezone.
      */
@@ -309,6 +321,7 @@ public class Operation extends HoustonIdModel {
                 confirmations,
                 hash,
                 description,
+                metadata,
                 other.status,
                 creationDate,
                 exchangeRateWindowHid,

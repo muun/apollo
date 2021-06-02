@@ -13,7 +13,188 @@ import (
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/muun/libwallet/hdpath"
 	"github.com/muun/libwallet/sphinx"
+	"github.com/muun/libwallet/walletdb"
 )
+
+type IncomingSwap struct {
+	Htlc             *IncomingSwapHtlc
+	SphinxPacket     []byte
+	PaymentHash      []byte
+	PaymentAmountSat int64
+	CollectSat       int64
+}
+
+type IncomingSwapHtlc struct {
+	HtlcTx              []byte
+	ExpirationHeight    int64
+	SwapServerPublicKey []byte
+}
+
+type IncomingSwapFulfillmentData struct {
+	FulfillmentTx      []byte
+	MuunSignature      []byte
+	OutputVersion      int    // unused
+	OutputPath         string // unused
+	MerkleTree         []byte // unused
+	HtlcBlock          []byte // unused
+	BlockHeight        int64  // unused
+	ConfirmationTarget int64  // to validate fee rate, unused for now
+}
+
+type IncomingSwapFulfillmentResult struct {
+	FulfillmentTx []byte
+	Preimage      []byte
+}
+
+func (s *IncomingSwap) getInvoice() (*walletdb.Invoice, error) {
+	db, err := openDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	return db.FindByPaymentHash(s.PaymentHash)
+}
+
+// VerifyFulfillable checks that an incoming swap is fulfillable.
+func (s *IncomingSwap) VerifyFulfillable(userKey *HDPrivateKey, net *Network) error {
+	paymentHash := s.PaymentHash
+
+	if len(paymentHash) != 32 {
+		return fmt.Errorf("VerifyFulfillable: received invalid hash len %v", len(paymentHash))
+	}
+
+	// Lookup invoice data matching this HTLC using the payment hash
+	invoice, err := s.getInvoice()
+	if err != nil {
+		return fmt.Errorf("VerifyFulfillable: could not find invoice data for payment hash: %w", err)
+	}
+
+	parentPath, err := hdpath.Parse(invoice.KeyPath)
+	if err != nil {
+		return fmt.Errorf("VerifyFulfillable: invoice key path is not valid: %v", invoice.KeyPath)
+	}
+	identityKeyPath := parentPath.Child(identityKeyChildIndex)
+
+	nodeHDKey, err := userKey.DeriveTo(identityKeyPath.String())
+	if err != nil {
+		return fmt.Errorf("VerifyFulfillable: failed to derive key: %w", err)
+	}
+	nodeKey, err := nodeHDKey.key.ECPrivKey()
+	if err != nil {
+		return fmt.Errorf("VerifyFulfillable: failed to get priv key: %w", err)
+	}
+
+	// implementation is allowed to send a few extra sats
+	if invoice.AmountSat != 0 && invoice.AmountSat > s.PaymentAmountSat {
+		return fmt.Errorf("VerifyFulfillable: payment amount (%v) does not match invoice amount (%v)",
+			s.PaymentAmountSat, invoice.AmountSat)
+	}
+
+	if len(s.SphinxPacket) == 0 {
+		return nil
+	}
+
+	err = sphinx.Validate(
+		s.SphinxPacket,
+		paymentHash,
+		invoice.PaymentSecret,
+		nodeKey,
+		0, // This is used internally by the sphinx decoder but it's not needed
+		lnwire.MilliSatoshi(uint64(s.PaymentAmountSat)*1000),
+		net.network,
+	)
+	if err != nil {
+		return fmt.Errorf("VerifyFulfillable: invalid sphinx: %w", err)
+	}
+
+	return nil
+}
+
+// Fulfill validates and creates a fulfillment tx for the incoming swap.
+// It returns the fullfillment tx and the preimage.
+func (s *IncomingSwap) Fulfill(
+	data *IncomingSwapFulfillmentData,
+	userKey *HDPrivateKey, muunKey *HDPublicKey,
+	net *Network) (*IncomingSwapFulfillmentResult, error) {
+
+	if s.Htlc == nil {
+		return nil, fmt.Errorf("Fulfill: missing swap htlc data")
+	}
+
+	err := s.VerifyFulfillable(userKey, net)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the fullfillment tx proposed by Muun.
+	tx := wire.MsgTx{}
+	err = tx.DeserializeNoWitness(bytes.NewReader(data.FulfillmentTx))
+	if err != nil {
+		return nil, fmt.Errorf("Fulfill: could not deserialize fulfillment tx: %w", err)
+	}
+	if len(tx.TxIn) != 1 {
+		return nil, fmt.Errorf("Fulfill: expected fulfillment tx to have exactly 1 input, found %d", len(tx.TxIn))
+	}
+	if len(tx.TxOut) != 1 {
+		return nil, fmt.Errorf("Fulfill: expected fulfillment tx to have exactly 1 output, found %d", len(tx.TxOut))
+	}
+
+	// Lookup invoice data matching this HTLC using the payment hash
+	invoice, err := s.getInvoice()
+	if err != nil {
+		return nil, fmt.Errorf("Fulfill: could not find invoice data for payment hash: %w", err)
+	}
+
+	// Sign the htlc input (there is only one, at index 0)
+	coin := coinIncomingSwap{
+		Network:             net.network,
+		MuunSignature:       data.MuunSignature,
+		Sphinx:              s.SphinxPacket,
+		HtlcTx:              s.Htlc.HtlcTx,
+		PaymentHash256:      s.PaymentHash,
+		SwapServerPublicKey: []byte(s.Htlc.SwapServerPublicKey),
+		ExpirationHeight:    s.Htlc.ExpirationHeight,
+		VerifyOutputAmount:  true,
+		Collect:             btcutil.Amount(s.CollectSat),
+	}
+	err = coin.SignInput(0, &tx, userKey, muunKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Serialize and return the signed fulfillment tx
+	var buf bytes.Buffer
+	err = tx.Serialize(&buf)
+	if err != nil {
+		return nil, fmt.Errorf("Fulfill: could not serialize fulfillment tx: %w", err)
+	}
+	return &IncomingSwapFulfillmentResult{
+		FulfillmentTx: buf.Bytes(),
+		Preimage:      invoice.Preimage,
+	}, nil
+}
+
+// FulfillFullDebt gives the preimage matching a payment hash if we have it
+func (s *IncomingSwap) FulfillFullDebt() (*IncomingSwapFulfillmentResult, error) {
+
+	// Lookup invoice data matching this HTLC using the payment hash
+	db, err := openDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	secrets, err := db.FindByPaymentHash(s.PaymentHash)
+	if err != nil {
+		return nil, fmt.Errorf("FulfillFullDebt: could not find invoice data for payment hash: %w", err)
+	}
+
+	return &IncomingSwapFulfillmentResult{
+		FulfillmentTx: nil,
+		Preimage:      secrets.Preimage,
+	}, nil
+}
 
 type coinIncomingSwap struct {
 	Network             *chaincfg.Params
@@ -47,9 +228,14 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 		return fmt.Errorf("could not find invoice data for payment hash: %w", err)
 	}
 
+	parentPath, err := hdpath.Parse(secrets.KeyPath)
+	if err != nil {
+		return fmt.Errorf("invalid invoice key path: %w", err)
+	}
+
 	// Recreate the HTLC script to verify it matches the transaction. For this
 	// we must derive the keys used in the HTLC script
-	htlcKeyPath := hdpath.MustParse(secrets.KeyPath).Child(htlcKeyChildIndex)
+	htlcKeyPath := parentPath.Child(htlcKeyChildIndex)
 
 	// Derive first the private key, which we are going to use for signing later
 	userPrivateKey, err := userKey.DeriveTo(htlcKeyPath.String())
@@ -76,7 +262,7 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 
 	// Next, we must validate the sphinx data. We derive the client identity
 	// key used by this invoice with the key path stored in the db.
-	identityKeyPath := hdpath.MustParse(secrets.KeyPath).Child(identityKeyChildIndex)
+	identityKeyPath := parentPath.Child(identityKeyChildIndex)
 
 	nodeHDKey, err := userKey.DeriveTo(identityKeyPath.String())
 	if err != nil {

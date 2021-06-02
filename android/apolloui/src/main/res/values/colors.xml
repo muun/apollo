@@ -2,38 +2,39 @@
 <resources>
 
     <!-- General-purpose color scheme -->
-    <color name="blue_darkest">#0A1726</color>
-    <color name="blue_dark">#0F2842</color>
+    <color name="blue_darkest">#0A1726</color> <!-- Has DarkMode override -->
+    <color name="blue_dark">#0F2842</color> <!-- Has DarkMode override -->
     <color name="blue">#2474CD</color>  <!-- Has DarkMode override -->
     <color name="blue_light">#D9EBFF</color>
     <color name="blue_lightest">#F4F8FD</color>
+    <color name="blue_buttons">@color/blue</color> <!-- Has DarkMode override -->
 
-    <color name="green_darkest">#0A201A</color>
-    <color name="green_dark">#175B2F</color>
+    <color name="green_darkest">#0A201A</color> <!-- Has DarkMode override -->
+    <color name="green_dark">#175B2F</color> <!-- Has DarkMode override -->
     <color name="green">#36A93F</color> <!-- Has DarkMode override -->
     <color name="green_light">#C3E5C5</color>
     <color name="green_lightest">#F7FCF9</color>
 
-    <color name="red_darkest">#1C1017</color>
-    <color name="red_dark">#5D1D22</color>
-    <color name="red">#E03738</color>
+    <color name="red_darkest">#1C1017</color> <!-- Has DarkMode override -->
+    <color name="red_dark">#5D1D22</color> <!-- Has DarkMode override -->
+    <color name="red">#E03738</color> <!-- Has DarkMode override -->
     <color name="red_light">#F6C3C3</color>
     <color name="red_lightest">#FDF5F5</color>
 
-    <color name="yellow_darkest">#1F1D11</color>
-    <color name="yellow_dark">#6A510B</color>
-    <color name="yellow">#F49F00</color>
+    <color name="yellow_darkest">#1F1D11</color> <!-- Has DarkMode override -->
+    <color name="yellow_dark">#6A510B</color> <!-- Has DarkMode override -->
+    <color name="yellow">#F49F00</color> <!-- Has DarkMode override -->
     <color name="yellow_light">#FFE296</color>
     <color name="yellow_lightest">#FFFDEF</color>
 
-    <color name="orange_darkest">#1D1611</color>
-    <color name="orange_dark">#62340B</color>
-    <color name="orange">#EB7100</color>
+    <color name="orange_darkest">#1D1611</color> <!-- Has DarkMode override -->
+    <color name="orange_dark">#62340B</color> <!-- Has DarkMode override -->
+    <color name="orange">#EB7100</color> <!-- Has DarkMode override -->
     <color name="orange_light">#F7C699</color>
     <color name="orange_lightest">#FFF8EF</color>
 
-    <color name="black">#060C13</color>
-    <color name="gray_darkest">#1A1F26</color>
+    <color name="black">#060C13</color> <!-- Has DarkMode override -->
+    <color name="gray_darkest">#1A1F26</color> <!-- Has DarkMode override -->
     <color name="gray_dark">#57656F</color>
     <color name="gray_light">#CBCED2</color>
     <color name="gray_lightest">#F4F4F5</color>
@@ -45,6 +46,7 @@
     <color name="text_secondary_color">@color/gray_dark</color>
     <color name="text_tertiary_color">@color/gray_light</color>
     <color name="disabled_color">@color/gray_light</color>
+    <color name="sc_task_text_disabled_color">@color/disabled_color</color> <!-- Has DM override -->
     <color name="background">@color/white</color>
     <color name="dialog_background">@color/white</color>
     <color name="error_color">@color/red</color>

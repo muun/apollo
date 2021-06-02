@@ -22,7 +22,7 @@ class SendPresenter @Inject constructor(
         const val MIN_ADDRESS_LENGTH_FOR_VALIDATION = 23
     }
 
-    override fun setUp(@NotNull arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         setUpContactList()
@@ -59,7 +59,13 @@ class SendPresenter @Inject constructor(
         }
 
     fun selectUriFromPaster(uri: OperationUri) {
-        navigator.navigateToNewOperation(context, NewOperationOrigin.SEND_CLIPBOARD_PASTE, uri)
+
+        if (uri.lnUrl.isPresent) {
+            navigator.navigateToLnUrlWithdrawConfirm(context, uri.lnUrl.get())
+
+        } else {
+            navigator.navigateToNewOperation(context, NewOperationOrigin.SEND_CLIPBOARD_PASTE, uri)
+        }
         view.finishActivity()
     }
 

@@ -20,5 +20,5 @@ tasks.withType(SpotBugsTask) {
 }
 
 dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }

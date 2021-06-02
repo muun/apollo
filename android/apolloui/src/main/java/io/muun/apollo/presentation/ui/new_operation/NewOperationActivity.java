@@ -359,6 +359,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
                 .commitNow();
 
         overlayContainer.setVisibility(View.VISIBLE);
+        ExtensionsKt.isUserInteractionEnabled(scrollableLayout, false);
     }
 
     private Optional<Fragment> getOverlayFragment() {
@@ -548,10 +549,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         receiver.setVisibility(View.GONE);
 
         // 2. Start invoice expiration countdown
-        final long expirationTimeInMillis = invoice.getExpirationTime().toEpochSecond() * 1000;
-        final long remainingMillis = expirationTimeInMillis - System.currentTimeMillis();
-
-        countdownTimer = buildCountDownTimer(remainingMillis);
+        countdownTimer = buildCountDownTimer(invoice.remainingMillis());
         countdownTimer.start();
 
         buttonLayoutAnchor.setVisibility(View.VISIBLE);

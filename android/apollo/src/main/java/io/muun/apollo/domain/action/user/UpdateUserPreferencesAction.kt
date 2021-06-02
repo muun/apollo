@@ -9,10 +9,9 @@ import rx.Observable
 import rx.Single
 import javax.inject.Inject
 
-public typealias UserPreferencesMutator = (UserPreferences) -> UserPreferences
+typealias UserPreferencesMutator = (UserPreferences) -> UserPreferences
 
-class UpdateUserPreferencesAction
-@Inject constructor(
+class UpdateUserPreferencesAction @Inject constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
         private val houstonClient: HoustonClient
 ): BaseAsyncAction1<UserPreferencesMutator, Unit>() {

@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.show_qr
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Point
@@ -18,7 +17,7 @@ import com.google.zxing.qrcode.encoder.Encoder
 import io.muun.apollo.R
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.utils.getCurrentNightMode
+import io.muun.apollo.presentation.ui.utils.isInNightMode
 
 
 abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<PresenterT>(), QrView {
@@ -62,7 +61,7 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
         val qrMatrix = qrCode.matrix
 
         // If on Dark Mode let's add a little white padding for better/nice UI
-        val padding = if (getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES) 1 else 0
+        val padding = if (isInNightMode()) 1 else 0
         val width = qrMatrix.width + 2 * padding
         val height = qrMatrix.height + 2 * padding
 

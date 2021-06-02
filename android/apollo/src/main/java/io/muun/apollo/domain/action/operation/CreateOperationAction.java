@@ -60,7 +60,6 @@ public class CreateOperationAction {
 
     public Observable<Operation> action(Operation operation,
                                         NextTransactionSize nextTransactionSize) {
-
         return saveOperation(operation)
                 .map(savedOperation -> {
                     Timber.d("Updating next transaction size estimation");

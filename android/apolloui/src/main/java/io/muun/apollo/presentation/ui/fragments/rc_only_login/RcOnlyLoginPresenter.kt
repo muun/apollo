@@ -14,7 +14,7 @@ import javax.inject.Inject
 class RcOnlyLoginPresenter @Inject constructor()
     : SingleFragmentPresenter<RcOnlyLoginView, RcOnlyLoginParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         val observable = parentPresenter

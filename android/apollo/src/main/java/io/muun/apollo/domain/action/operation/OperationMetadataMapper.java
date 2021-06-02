@@ -6,6 +6,7 @@ import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationWithMetadata;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.api.OperationMetadataJson;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
@@ -58,6 +59,7 @@ public class OperationMetadataMapper {
                 operation.getConfirmations(),
                 operation.getHash(),
                 description,
+                metadata,
                 operation.getStatus(),
                 operation.getCreationDate(),
                 operation.getExchangeRateWindowHid(),
@@ -70,14 +72,14 @@ public class OperationMetadataMapper {
     private OperationMetadataJson decryptMetadata(final OperationWithMetadata operation) {
         final byte[] payload;
 
-        if (operation.getReceiverMetadata() != null) {
+        if (!ExtensionsKt.isEmpty(operation.getReceiverMetadata())) {
             // TODO: we need to extract the sender public key from somewhere to verify the message
             payload = LibwalletBridge.decryptPayloadFromPeer(
                     getUserPrivateKey(),
                     operation.getReceiverMetadata(),
                     networkParameters
             );
-        } else if (operation.getSenderMetadata() != null) {
+        } else if (!ExtensionsKt.isEmpty(operation.getSenderMetadata())) {
             payload = LibwalletBridge.decryptPayload(
                     getUserPrivateKey(),
                     operation.getSenderMetadata(),
@@ -91,8 +93,6 @@ public class OperationMetadataMapper {
                 OperationMetadataJson.class,
                 Encodings.bytesToString(payload)
         );
-
-
     }
 
     /**
@@ -165,9 +165,9 @@ public class OperationMetadataMapper {
         );
     }
 
-    private OperationWithMetadata buildOperationWithMetadata(final Operation operation,
-                                                             final String senderMetadata,
-                                                             final String receiverMetadata) {
+    public OperationWithMetadata buildOperationWithMetadata(final Operation operation,
+                                                            final String senderMetadata,
+                                                            final String receiverMetadata) {
         return new OperationWithMetadata(
                 operation.getHid(),
                 operation.direction,

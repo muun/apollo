@@ -147,17 +147,16 @@ public class LnInvoice {
         final String expectedHeader = getHeader(params);
 
         // Separate the Human Readable Part from the data part by decoding bech32
-        final Pair<String, byte[]> pair;
-
+        final Bech32.Decoded decoded;
         try {
-            pair = Bech32.decode(bech32Invoice, Long.MAX_VALUE);
+            decoded = Bech32.decode(bech32Invoice, Long.MAX_VALUE);
         } catch (IllegalArgumentException e) {
             // TODO throw error
             throw e;
         }
 
-        final String hrp = pair.fst;
-        final byte[] data = pair.snd;
+        final String hrp = decoded.hrp;
+        final byte[] data = decoded.data;
 
         // Separate the signature words (fixed length) from the rest of the data
         final byte[] signature = ByteArray.slice(data, -SIGNATURE_WORD_LENGTH);

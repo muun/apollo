@@ -14,7 +14,7 @@ constructor(
         private val apiMigrationsManager: ApiMigrationsManager
 ): BasePresenter<BaseView>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         runMigrations()

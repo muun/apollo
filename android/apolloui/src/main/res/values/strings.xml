@@ -9,6 +9,7 @@
     <string name="cancel">Cancel</string>
     <string name="dismiss">Dismiss</string>
     <string name="retry">Retry</string>
+    <string name="send_report">Send report</string>
     <string name="abort">Abort</string>
     <string name="available_balance">Balance</string>
     <string name="selected">Selected</string>
@@ -18,6 +19,8 @@
     <string name="backspace">Backspace</string> <!-- accesibility -->
     <string name="long_date_format">%s at %s%s</string>
     <string name="not_available">Not available</string>
+    <string name="open_app">Open app</string>
+    <string name="loading">Loading...</string>
 
     <string name="overflow_menu_hint">Overflow</string>
 
@@ -175,6 +178,40 @@
         \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
     </string>
 
+    <string name="error_invalid_lnurl_title">Is it a LNURL code?</string>
+    <string name="error_invalid_lnurl_desc">
+        It doesn\'t seem to be one. Please, double-check its source. Keep in mind you can only use
+        LNURL with services that support it.
+        \n
+        \nScanned text:
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_invalid_lnurl_tag_title">Is it a LNURL withdraw?</string>
+    <string name="error_invalid_lnurl_tag_desc">
+        This is a valid LNURL, but not for this operation. Please, double-check its source.
+    </string>
+
+    <string name="error_lnurl_service_unresponsive_title">%s is not responding</string>
+    <string name="error_lnurl_service_unresponsive_desc">
+        The service that created the LNURL code is unavailable. Please, try again later.
+    </string>
+
+    <string name="error_lnurl_unknown_title">Something went wrong</string>
+    <string name="error_lnurl_unknown_desc">
+        Something failed and we aren\'t sure what it was. Please send us a report to help us find
+        out what happened.
+    </string>
+
+    <string name="error_lnurl_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_expired_desc">
+        Your lightning invoice expired, and <annotation arg="0">placeholder</annotation> didn\'t
+        complete the payment. Please, contact them for more information.
+        \n
+        \n<annotation fontStyle="bold">USED INVOICE:</annotation>
+        \n<annotation arg="1">placeholder</annotation>
+    </string>
+
     <string name="error_op_action">Go to home</string>
 
     <!-- Operation detail -->
@@ -218,19 +255,19 @@
     <string name="operation_detail_address_copied">Address copied to clipboard</string>
 
     <!-- Operation history -->
-    <string name="home_operations_list_title">Transactions</string>
+    <string name="home_operations_list_title">Payments</string>
     <string name="history_external_incoming_operation_description">From the bitcoin network</string>
     <string name="history_external_incoming_swap_description">From the lightning network</string>
     <string name="home_operations_empty">
-        Welcome! <annotation link="go_to_receive">Load your wallet</annotation> to make a
-        <annotation fontStyle="bold">bitcoin or lightning payment</annotation>
+        <annotation link="go_to_receive">Receive</annotation> your first payment and get it started!
     </string>
-    <string name="home_operations_empty_title">You don\'t have any transactions yet</string>
+    <string name="home_operations_empty_title">Your payment history will appear here</string>
     <string name="operation_sent_to_yourself">You paid yourself</string>
     <string name="internal_incoming_operation">%s paid you</string>
     <string name="internal_outgoing_operation">You paid %s</string>
     <string name="external_incoming_operation">You were paid</string>
     <string name="external_outgoing_operation">You paid</string>
+    <string name="lnurl_withdraw_op_detail_title">%s paid you</string>
 
     <!-- Contacts -->
     <string name="contact_list_empty">
@@ -248,6 +285,14 @@
     <string name="notifications_amount_received_from">%s sent you %s</string>
     <string name="notifications_op_failed_title">Your payment failed</string>
     <string name="notifications_op_failed_content">Open your wallet to see the details</string>
+    <string name="notification_receiving_ln_payment">Your payment is on the way</string>
+    <string name="notification_receiving_ln_payment_desc">
+        You\'ll receive your payment as soon as %s completes it.
+    </string>
+    <string name="notification_ln_payment_failed">@string/notifications_op_failed_title</string>
+    <string name="notification_ln_payment_failed_desc">
+        Your lightning invoice expired, and %s didn\'t complete the payment.
+    </string>
 
     <!-- Generic strings -->
     <string name="slogan">Bitcoin and lightning wallet</string>
@@ -979,9 +1024,8 @@
 
     <string name="address_share_title">Send to...</string>
 
+    <string name="bitcoin_address_help_title">Segwit and legacy addresses</string>
     <string name="bitcoin_address_help_content">
-        <annotation role="h1">Segwit and legacy addresses</annotation>
-
         <annotation role="p">
            Segwit and legacy are two different types of bitcoin addresses.
         </annotation>
@@ -991,11 +1035,9 @@
             Using them will result in higher fees on your future transactions.
         </annotation>
 
-        <annotation role="p">
-            To make your transactions more cost-effective, Muun displays Segwit addresses by
-            default. Some services haven\'t upgraded to Segwit yet. If you are having trouble using
-            a Segwit address, try a legacy address instead.
-        </annotation>
+        To make your transactions more cost-effective, Muun displays Segwit addresses by
+        default. Some services haven\'t upgraded to Segwit yet. If you are having trouble using
+        a Segwit address, try a legacy address instead.
     </string>
 
     <string name="secure_storage_error">
@@ -1276,5 +1318,41 @@
     <string name="select_amount_title">Edit amount</string>
     <string name="confirm_empty_amount">Confirm empty amount</string>
     <string name="expiration_time">Expiration time</string>
+
+    <!-- LNURL -->
+    <string name="lnurl_intro_title">Scan and receive lightning payments</string>
+    <string name="lnurl_intro_desc">
+        Use LNURL to receive payments without having to share invoices. You can only use it with
+        other services that support it.
+    </string>
+    <string name="lnurl_continue">Continue</string>
+    <string name="scan_lnurl">LNURL</string>
+    <string name="scan_lnurl_subtitle">Scan an LNURL QR to  receive bitcoin</string>
+    <string name="lnurl_withdraw_confirm_title">Looking to receive via lightning?</string>
+    <string name="lnurl_withdraw_confirm_desc">
+        This seems like a LNURL code. It allows you to receive bitcoin via lightning, instead of
+        sending it. Do you want to use it?
+    </string>
+    <string name="lnurl_withdraw_confirm_back">Go back to send</string>
+    <string name="lnurl_withdraw_confirm_continue">Receive bitcoin</string>
+    <string name="lnurl_withdraw_contacting">
+        Contacting
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_receiving">
+        Receiving from
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_taking_long">
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> is
+        taking too long to pay
+    </string>
+    <string name="lnurl_withdraw_taking_long_desc">
+        You can choose to wait here or leave, and receive a notification when the payment completes.
+        If the payment doesn\'t complete, please contact
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
+    </string>
+    <string name="lnurl_withdraw_uri_paster_title">Use LNURL from clipboard</string>
+
 
 </resources>

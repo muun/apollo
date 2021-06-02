@@ -5,9 +5,8 @@ import io.muun.apollo.domain.model.UserPreferences
 import rx.Observable
 import javax.inject.Inject
 
-class UserPreferencesSelector
-@Inject constructor(
-        private val userPreferencesRepository: UserPreferencesRepository
+class UserPreferencesSelector @Inject constructor(
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
 
     fun watch(): Observable<UserPreferences> {

@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 import butterknife.BindView;
@@ -62,6 +63,11 @@ public class MuunSettingItem extends MuunView {
 
     public void setLabel(CharSequence labelText) {
         label.setText(labelText);
+    }
+
+    public void setDescription(@StringRes int descriptionRes) {
+        showDescription(getContext().getString(descriptionRes));
+        descriptionIcon.setVisibility(GONE);
     }
 
     public void setDescription(CharSequence descriptionText) {

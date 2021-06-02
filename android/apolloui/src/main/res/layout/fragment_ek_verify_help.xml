@@ -30,7 +30,7 @@
                 style="@style/help_screen_image"
                 android:scaleType="centerInside"
                 android:layout_marginTop="32dp"
-                android:src="@drawable/ek_vcode_help" />
+                android:src="@drawable/illustration_verification" />
 
     </LinearLayout>
 </ScrollView>

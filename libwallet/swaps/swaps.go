@@ -52,7 +52,16 @@ type KeyDescriptor struct {
 
 func (d *KeyDescriptor) DeriveTo(path string) (*hdkeychain.ExtendedKey, error) {
 	key := d.Key
-	indexes := hdpath.MustParse(path).IndexesFrom(hdpath.MustParse(d.Path))
+
+	currentPath, err := hdpath.Parse(d.Path)
+	if err != nil {
+		return nil, fmt.Errorf("invalid current key path: %w", err)
+	}
+	targetPath, err := hdpath.Parse(path)
+	if err != nil {
+		return nil, fmt.Errorf("invalid target key path: %w", err)
+	}
+	indexes := targetPath.IndexesFrom(currentPath)
 	for _, index := range indexes {
 		var err error
 		var modifier uint32

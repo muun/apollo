@@ -25,12 +25,13 @@ CREATE TABLE operations (
     exchange_rate_window_hid INTEGER NOT NULL,
     submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid),
     incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid),
-    is_rbf INTEGER AS Boolean NOT NULL
+    is_rbf INTEGER AS Boolean NOT NULL,
+    metadata TEXT AS io.muun.common.api.OperationMetadataJson
 );
 
 insertOperation:
 INSERT OR REPLACE INTO operations
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateStatus:
 UPDATE operations

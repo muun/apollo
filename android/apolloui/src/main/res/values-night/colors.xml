@@ -2,9 +2,31 @@
 <resources>
 
     <!-- General-purpose color scheme -->
-
+   
+    <color name="blue_darkest">#1C2837</color>
+    <color name="blue_dark">#1E3958</color>
     <color name="blue">#3399FF</color>
-    <color name="green">#30D158</color>
+    <color name="blue_buttons">#2474CD</color> <!-- aka light mode blue -->
+
+    <color name="green_darkest">#1C2528</color>
+    <color name="green_dark">#23492E</color>
+    <color name="green">#36A93F</color>
+
+    <color name="red_darkest">#2B242A</color>
+    <color name="red_dark">#583035</color>
+    <color name="red">#E55757</color>
+
+    <color name="yellow_darkest">#222425</color>
+    <color name="yellow_dark">#5F592A</color>
+    <color name="yellow">#FFDE33</color>
+
+    <color name="orange_darkest">#212326</color>
+    <color name="orange_dark">#593E26</color>
+    <color name="orange">#E98425</color>
+
+    <color name="black">#1B2026</color>
+    <color name="gray_darkest">#242B33</color>
+
 
     <!--  General purpose colors  -->
     <color name="icon_color">@color/gray_light</color>
@@ -12,6 +34,7 @@
     <color name="text_secondary_color">@color/gray_light</color>
     <color name="text_tertiary_color">@color/gray_dark</color>
     <color name="disabled_color">@color/gray_darkest</color>
+    <color name="sc_task_text_disabled_color">@color/gray_dark</color>
     <color name="background">@color/black</color>
     <color name="dialog_background">@color/gray_darkest</color>
 
@@ -25,7 +48,7 @@
 
     <!-- Styles occurrences. Named after the style name -->
     <color name="settings_item_separator">@color/blue_darkest</color>
-    <color name="muun_new_operation_separator">@color/blue_darkest</color>
+    <color name="muun_new_operation_separator">@color/gray_darkest</color>
     <color name="muun_ek_save_separator">@color/gray_darkest</color>
 
     <!--  Drawable res colors. Named after the drawable name and state/item  -->
@@ -34,7 +57,7 @@
     <color name="muun_button_covered_bg">@color/gray_light</color>
     <color name="muun_button_floating_bg_enabled">@color/blue</color>
     <color name="muun_button_floating_bg_disabled">@color/blue_darkest</color>
-    <color name="muun_button_primary_bg_enabled">@color/blue</color>
+    <color name="muun_button_primary_bg_enabled">@color/blue_buttons</color>
     <color name="muun_button_primary_bg_disabled">@color/blue_darkest</color>
     <color name="muun_button_primary_text_disabled">@color/gray_dark</color>
     <color name="muun_button_secondary_bg">@color/black</color>
@@ -56,7 +79,7 @@
     <color name="muun_recovery_code_box_background">@color/gray_dark</color>
     <color name="muun_save_option_label_disabled_bg">@color/gray_dark</color>
     <color name="muun_save_option_label_recommended_bg">@color/blue_darkest</color>
-    <color name="muun_task_card_active_bg">@color/black</color>
+    <color name="muun_task_card_active_bg">@color/blue_darkest</color>
     <color name="muun_task_card_active_bg_border">@color/blue</color>
     <color name="muun_task_card_default_bg">@color/black</color>
     <color name="muun_task_card_default_bg_border">@color/gray_darkest</color>

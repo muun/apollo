@@ -119,9 +119,11 @@ public class SubmarineSwapJson {
 
         // Compatibility:
         if (fees != null) {
-            this.lightningFeeInSatoshis = fees.lightningInSats
-                    + fees.channelOpenInSats
-                    + fees.channelCloseInSats;
+            this.lightningFeeInSatoshis = fees.lightningInSats;
+
+            if (fees.channelOpenInSats != null && fees.channelCloseInSats != null) {
+                this.lightningFeeInSatoshis += fees.channelOpenInSats + fees.channelCloseInSats;
+            }
 
             this.sweepFeeInSatoshis = fees.sweepInSats;
         }

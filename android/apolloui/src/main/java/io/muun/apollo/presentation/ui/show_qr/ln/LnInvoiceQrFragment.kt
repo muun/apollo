@@ -9,6 +9,8 @@ import butterknife.OnClick
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.domain.libwallet.DecodedInvoice
+import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
@@ -98,17 +100,14 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         expirationTimeItem.setLoading(loading)
     }
 
-    override fun setInvoice(invoice: LnInvoice, amount: MonetaryAmount?) {
+    override fun setInvoice(invoice: DecodedInvoice, amount: MonetaryAmount?) {
 
         // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
         super.setQrContent(invoice.original, invoice.original.toUpperCase())
 
         // Detect if 1h left of expiration time, and show countdown
-        val expirationTimeInMillis = invoice.expirationTime.toEpochSecond() * 1000
-        val remainingMillis = expirationTimeInMillis - System.currentTimeMillis()
-
         stopTimer()
-        countdownTimer = buildCountDownTimer(remainingMillis)
+        countdownTimer = buildCountDownTimer(invoice.remainingMillis())
         countdownTimer!!.start()
 
         if (amount != null) {

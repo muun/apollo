@@ -35,15 +35,14 @@ public class Bech32SegwitAddress {
 
         final String hrp = getHeader(params);
 
-        final Pair<String, byte[]> pair;
-
+        final Bech32.Decoded decoded;
         try {
-            pair = Bech32.decode(addr);
+            decoded = Bech32.decode(addr);
         } catch (IllegalArgumentException e) {
             throw new AddressFormatException(e.getMessage());
         }
 
-        final String hrpgot = pair.fst;
+        final String hrpgot = decoded.hrp;
 
         if (!hrp.equalsIgnoreCase(hrpgot)) {
             throw new AddressFormatException("mismatching bech32 human readeable part");
@@ -55,10 +54,11 @@ public class Bech32SegwitAddress {
             throw new AddressFormatException("invalid segwit human readable part");
         }
 
-        final byte[] data = pair.snd;
-        final byte[] decoded = convertBits(Arrays.copyOfRange(data, 1, data.length), 5, 8, false);
+        final byte[] data = decoded.data;
+        final byte[] decodedData = convertBits(
+                Arrays.copyOfRange(data, 1, data.length), 5, 8, false);
 
-        if (decoded.length < 2 || decoded.length > 40) {
+        if (decodedData.length < 2 || decodedData.length > 40) {
             throw new AddressFormatException("invalid decoded data length");
         }
 
@@ -66,17 +66,26 @@ public class Bech32SegwitAddress {
         if (witnessVersion > 16) {
             throw new AddressFormatException("invalid decoded witness version");
         }
+        if (witnessVersion > 0 && decoded.encoding == Bech32.Encoding.BECH32) {
+            throw new AddressFormatException(
+                    "witness version 1+ addresses must be encoded using bech32m");
+        } else if (witnessVersion == 0 && decoded.encoding == Bech32.Encoding.BECH32M) {
+            throw new AddressFormatException(
+                    "witness version 0 addresses must be encoded using legacy bech32"
+            );
+        }
 
-        if (witnessVersion == 0 && decoded.length != 20 && decoded.length != 32) {
+        if (witnessVersion == 0 && decodedData.length != 20 && decodedData.length != 32) {
             throw new AddressFormatException("decoded witness version 0 with unknown length");
         }
 
-        return Pair.of(witnessVersion, decoded);
+        return Pair.of(witnessVersion, decodedData);
     }
 
     /**
      * Encodes a human-readable part, a witness program and its witness version into a Bech32
-     * Segwit address.
+     * Segwit address. Programs with witness version >0 will use the newer Bech32m standard defined
+     * in BIP 350.
      *
      * @param params The network parameters that determine which network the address is from
      * @param witnessVersion the witness version of the program
@@ -95,7 +104,11 @@ public class Bech32SegwitAddress {
         System.arraycopy(new byte[]{witnessVersion}, 0, data, 0, 1);
         System.arraycopy(prog, 0, data, 1, prog.length);
 
-        return Bech32.encode(getHeader(params), data);
+        final String header = getHeader(params);
+        if (witnessVersion == 0) {
+            return Bech32.encode(header, data);
+        }
+        return Bech32.encodeBech32m(header, data);
     }
 
     /**

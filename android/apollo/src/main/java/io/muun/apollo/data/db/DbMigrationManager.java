@@ -801,6 +801,8 @@ public class DbMigrationManager {
         add(36, MigrationsModel.MIGRATIONS_36_OPERATIONS_ADD_IS_RBF_COLUMN);
 
         add(37, MigrationsModel.MIGRATIONS_37_ADD_PREIMAGE_TO_INCOMING_SWAPS);
+
+        add(38, MigrationsModel.MIGRATIONS_38_ADD_METADATA_TO_OPERATIONS);
     }
 
     /**

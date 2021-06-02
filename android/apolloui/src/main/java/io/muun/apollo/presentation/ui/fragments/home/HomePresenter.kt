@@ -38,7 +38,7 @@ class HomePresenter @Inject constructor(
             val balanceHidden: Boolean
     )
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         Observable.combineLatest(

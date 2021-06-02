@@ -31,7 +31,7 @@ class UpdateUserPreferencesActionTest: BaseTest() {
     @Before
     fun before() {
         doReturn(Observable.just(
-                UserPreferences(strictMode = false, seenNewHome = false)
+                UserPreferences(strictMode = false, seenNewHome = false, seenLnurlFirstTime = false)
         )).whenever(repository).watch()
     }
 

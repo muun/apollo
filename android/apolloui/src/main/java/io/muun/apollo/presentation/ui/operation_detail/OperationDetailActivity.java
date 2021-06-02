@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.operation_detail;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.model.UiOperation;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
@@ -287,6 +288,11 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         swapPreimageItem.setDescription(preimage);
         swapPreimageItem.setVisibility(!TextUtils.isEmpty(preimage) ? View.VISIBLE : View.GONE);
         swapPreimageItem.setOnIconClickListener(view -> onCopyPreimageToClipboard(preimage));
+
+        if (!ExtensionsKt.isEmpty(operation.getInvoiceDescription())) {
+            descriptionItem.setVisibility(View.VISIBLE);
+            descriptionItem.setDescription(operation.getInvoiceDescription());
+        }
     }
 
     private CharSequence getStatusDescription(UiOperation operation) {

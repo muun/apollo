@@ -283,12 +283,14 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     }
 
     protected boolean maybeHandleFatalError(Throwable error) {
-        if (error instanceof DeprecatedClientVersionError && canLogout()) {
+        final boolean isRecoverableWallet = logoutOptionsSel.isRecoverable();
+
+        if (error instanceof DeprecatedClientVersionError && isRecoverableWallet) {
             navigator.navigateToRequestUpdate(getContext());
 
         } else if (error instanceof ExpiredSessionError) {
 
-            if (canLogout()) {
+            if (isRecoverableWallet) {
                 // TODO this handling sucks. The application is useless now, until Houston decides
                 // to un-expire the Session. However, we can do this manually, which is much better
                 // than irreversibly destroying the wallet keys.
@@ -304,7 +306,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                 );
             }
 
-        } else if (error instanceof SecureStorageError && canLogout()) {
+        } else if (error instanceof SecureStorageError && isRecoverableWallet) {
 
             view.showErrorDialog(getContext().getString(R.string.secure_storage_error),
                     () -> navigator.navigateToLogout(getContext())
@@ -315,14 +317,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         }
 
         return true;
-    }
-
-    /**
-     * Protected so some special presenters e.g SignupPresenter) can answer this directly without
-     * needing anything from the local data (which may or may not be available).
-     */
-    protected boolean canLogout() {
-        return logoutOptionsSel.canDeleteWallet();
     }
 
     /**
@@ -532,7 +526,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         view.showDialog(muunDialog);
     }
 
-    private void sendErrorReport(Throwable error) {
+    protected void sendErrorReport(Throwable error) {
 
         final CrashReport report = CrashReportBuilder.INSTANCE.build(error);
         analytics.attachAnalyticsMetadata(report);
@@ -568,8 +562,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             view.showDialog(muunDialog);
         }
     }
-
-
 
     private Intent composeEmail(String address, String subject, String body) {
         return composeEmail(new String[] { address }, subject, body);

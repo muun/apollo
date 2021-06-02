@@ -54,16 +54,6 @@ class SyncApplicationDataAction @Inject constructor(
                                     hasContactsPermission: Boolean,
                                     loginWithRc: LoginWithRc?): Observable<Void> {
 
-        val syncContacts = if (hasContactsPermission) {
-            // Sync phone contacts sending PATCH, then fetch full list:
-            contactActions.syncPhoneContacts()
-                .flatMap { contactActions.fetchReplaceContacts() }
-
-        } else {
-            // Just fetch previous contacts, we can't PATCH with local changes:
-            contactActions.fetchReplaceContacts()
-        }
-
         // Before anything else, new (unrecoverable) users need a session:
         val step0 = if (isFirstSession) {
             createFirstSession.action()
@@ -83,7 +73,7 @@ class SyncApplicationDataAction @Inject constructor(
             fetchUserInfo(),
             fetchNextTransactionSize.action(),
             fetchRealTimeData.action(),
-            syncContacts,
+            syncContacts(hasContactsPermission),
             Observable.fromCallable(apiMigrationsManager::reset),
             RxHelper::toVoid
         )
@@ -108,12 +98,24 @@ class SyncApplicationDataAction @Inject constructor(
             .toVoid()
     }
 
-    private fun fetchUserInfo(): Observable<Unit> =
+    private fun fetchUserInfo(): Observable<Void> =
         houstonClient.fetchUser()
             .doOnNext {
                 userRepository.store(it.fst)
                 userPreferencesRepository.update(it.snd)
                 signinActions.setupCrashlytics()
             }
-            .map { }
+            .toVoid()
+
+    private fun syncContacts(hasContactsPermission: Boolean): Observable<Void> {
+        return if (hasContactsPermission) {
+            // Sync phone contacts sending PATCH, then fetch full list:
+            contactActions.syncPhoneContacts()
+                .flatMap { contactActions.fetchReplaceContacts() }
+
+        } else {
+            // Just fetch previous contacts, we can't PATCH with local changes:
+            contactActions.fetchReplaceContacts()
+        }
+    }
 }

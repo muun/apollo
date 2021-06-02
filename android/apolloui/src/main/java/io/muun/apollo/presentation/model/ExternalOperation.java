@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.model;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
@@ -28,7 +29,13 @@ public class ExternalOperation extends UiOperation {
             return context.getString(R.string.operation_sent_to_yourself);
 
         } else if (isIncoming()) {
-            return context.getString(R.string.external_incoming_operation);
+
+            if (isIncomingSwap() && !ExtensionsKt.isEmpty(getLnUrlSender())) {
+                return context.getString(R.string.lnurl_withdraw_op_detail_title, getLnUrlSender());
+
+            } else {
+                return context.getString(R.string.external_incoming_operation);
+            }
 
         } else {
             return context.getString(R.string.external_outgoing_operation);
@@ -40,10 +47,10 @@ public class ExternalOperation extends UiOperation {
 
         final int resId;
         if (isSwap() || isIncomingSwap()) {
-            resId = R.drawable.lightning_badge;
+            resId = R.drawable.lightning;
 
         } else {
-            resId = R.drawable.detail_bitcoin_logo;
+            resId = R.drawable.btc;
         }
 
         return UiUtils.getResourceUri(context, resId).toString();

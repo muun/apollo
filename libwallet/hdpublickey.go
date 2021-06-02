@@ -52,7 +52,12 @@ func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 		return nil, err
 	}
 
-	path := hdpath.MustParse(p.Path).Child(uint32(index))
+	parentPath, err := hdpath.Parse(p.Path)
+	if err != nil {
+		return nil, err
+	}
+	path := parentPath.Child(uint32(index))
+
 	return &HDPublicKey{key: *child, Network: p.Network, Path: path.String()}, nil
 }
 

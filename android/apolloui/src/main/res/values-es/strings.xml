@@ -5,6 +5,7 @@
     <string name="cancel">Cancelar</string>
     <string name="dismiss">Aceptar</string>
     <string name="retry">Reintentar</string>
+    <string name="send_report">Enviar reporte</string>
     <string name="abort">Abortar</string>
     <string name="available_balance">Balance</string>
     <string name="selected">Seleccionado</string>
@@ -14,6 +15,8 @@
     <string name="backspace">Backspace</string>
     <string name="long_date_format">%s a las %s%s</string>
     <string name="not_available">No disponible</string>
+    <string name="open_app">Abrir app</string>
+    <string name="loading">Cargando...</string>
 
     <string name="overflow_menu_hint">Menu de desborde</string>
 
@@ -173,6 +176,42 @@
         \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
     </string>
 
+    <string name="error_invalid_lnurl_title">¿Es un código LNURL?</string>
+    <string name="error_invalid_lnurl_desc">
+        No parece ser uno. Por favor, vuelve a verificar su fuente. Ten en cuenta que solo puedes
+        usar LNURL con servicios que lo soporten.
+        \n
+        \nTexto escaneado:
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_invalid_lnurl_tag_title">¿Es un una LNURL de extracción?</string>
+    <string name="error_invalid_lnurl_tag_desc">
+        Esta es una LNURL válida, pero no para esta operación. Por favor, vuelve a verificar su
+        fuente.
+    </string>
+
+    <string name="error_lnurl_service_unresponsive_title">%s no responde</string>
+    <string name="error_lnurl_service_unresponsive_desc">
+        El servicio que creó el código LNURL no está disponible. Por favor, inténtalo de nuevo más
+        tarde.
+    </string>
+
+    <string name="error_lnurl_unknown_title">Algo salió mal</string>
+    <string name="error_lnurl_unknown_desc">
+        Algo falló y no estamos seguros de qué fue. Envíanos un reporte para ayudarnos a averiguar
+        qué sucedió.
+    </string>
+
+    <string name="error_lnurl_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_expired_desc">
+        Tu factura de lightning venció y <annotation arg="0">placeholder</annotation> no completó el
+        pago. Por favor, contáctalos para obtener más información.
+        \n
+        \n<annotation fontStyle="bold">FACTURA UTILIZADA:</annotation>
+        \n<annotation arg="1">placeholder</annotation>
+    </string>
+
     <string name="error_op_action">Volver al inicio</string>
 
     <!-- Operation detail -->
@@ -225,8 +264,7 @@
     <string name="home_operations_list_title">Pagos</string>
     <string name="history_external_incoming_operation_description">De la red de bitcoin</string>
     <string name="history_external_incoming_swap_description">De la red de lightning</string>
-    <string name="home_operations_empty_title">Tu historial de pagos aparecerá aquí
-</string>
+    <string name="home_operations_empty_title">Tu historial de pagos aparecerá aquí</string>
     <string name="home_operations_empty">
         <annotation link="go_to_receive">Recibe</annotation> tu primer pago y comienza.
     </string>
@@ -235,6 +273,7 @@
     <string name="internal_outgoing_operation">Pagaste a %s</string>
     <string name="external_incoming_operation">Te pagaron</string>
     <string name="external_outgoing_operation">Pagaste</string>
+    <string name="lnurl_withdraw_op_detail_title">%s te pagó</string>
 
     <!-- Contacts -->
     <string name="contact_list_empty">
@@ -256,6 +295,14 @@
     <string name="notifications_amount_received_from">%s te ha enviado %s</string>
     <string name="notifications_op_failed_title">Tu pago falló</string>
     <string name="notifications_op_failed_content">Abre tu monedero para ver los detalles</string>
+    <string name="notification_receiving_ln_payment">Tu pago está en camino</string>
+    <string name="notification_receiving_ln_payment_desc">
+        Recibirás tu pago tan pronto como %s lo complete.
+    </string>
+    <string name="notification_ln_payment_failed">@string/notifications_op_failed_title</string>
+    <string name="notification_ln_payment_failed_desc">
+        Tu factura de lightning venció y %s no completó el pago.
+    </string>
 
     <!-- Generic strings -->
 
@@ -1012,9 +1059,8 @@
 
     <string name="address_share_title">Enviar a...</string>
 
+    <string name="bitcoin_address_help_title">Direcciones de Segwit y compatibilidad</string>
     <string name="bitcoin_address_help_content">
-        <annotation role="h1">Direcciones de Segwit y compatibilidad</annotation>
-
         <annotation role="p">
             Segwit y compatibilidad son dos tipos distintos de direcciones de
             bitcoin.
@@ -1026,11 +1072,9 @@
             más altas en tus futuras transacciones.
         </annotation>
 
-        <annotation role="p">
-            Para que tus transacciones sean más eficientes, Muun muestra las direcciones de Segwit
-            en primer lugar. Algunos servicios aún no se han actualizado a Segwit. Si tienes
-            problemas para utilizar Segwit, utiliza direcciones de compatibilidad en su lugar.
-        </annotation>
+        Para que tus transacciones sean más eficientes, Muun muestra las direcciones de Segwit
+        en primer lugar. Algunos servicios aún no se han actualizado a Segwit. Si tienes
+        problemas para utilizar Segwit, utiliza direcciones de compatibilidad en su lugar.
     </string>
 
 
@@ -1252,17 +1296,17 @@
 
     <string name="save_option_drive_title">Guardar en Drive</string>
     <string name="save_option_drive_description">
-        Usa to cuenta de Google para guardar y acceder a tu kit.
+        Usa tu cuenta de Google para guardar y acceder a tu Kit.
     </string>
 
     <string name="save_option_email_title">Envíate un correo</string>
     <string name="save_option_email_description">
-        Usa tu cuenta de email para guardar y acceder a tu kit.
+        Usa tu cuenta de email para guardar y acceder a tu Kit.
     </string>
 
     <string name="save_option_manual_title">Guardar manualmente</string>
     <string name="save_option_manual_description">
-        Elige una aplicación para guardar y acceder a tu kit.
+        Elige una aplicación para guardar y acceder a tu Kit.
     </string>
 
     <string name="migration_title">Actualizando tu monedero</string>
@@ -1327,4 +1371,38 @@
     <string name="confirm_empty_amount">Confirmar monto vacío</string>
     <string name="expiration_time">Tiempo de expiración</string>
 
+    <!-- LNURL -->
+    <string name="lnurl_intro_title">Escanea y recibe pagos de lightning</string>
+    <string name="lnurl_intro_desc">
+        Usa LNURL para recibir pagos sin tener que compartir facturas. Solo puedes usarlo con otros
+        servicios que lo soporten.
+    </string>
+    <string name="lnurl_continue">Continuar</string>
+    <string name="scan_lnurl">LNURL</string>
+    <string name="scan_lnurl_subtitle">Escanea un código QR de LNURL para recibir bitcoin</string>
+    <string name="lnurl_withdraw_confirm_title">¿Quieres recibir por lightning?</string>
+    <string name="lnurl_withdraw_confirm_desc">
+        Esto parece ser un código LNURL. Te permite recibir bitcoins a través de lightning, en lugar
+        de enviarlos. ¿Quieres usarlo?
+    </string>
+    <string name="lnurl_withdraw_confirm_back">Regresar a enviar</string>
+    <string name="lnurl_withdraw_confirm_continue">Recibir bitcoin</string>
+    <string name="lnurl_withdraw_contacting">
+        Contactando a
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_receiving">
+        Recibiendo de
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_taking_long">
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> está
+        tardando mucho en pagar
+    </string>
+    <string name="lnurl_withdraw_taking_long_desc">
+        Puedes esperar aquí o irte, y recibir una notificación cuando se complete el pago. Si el
+        pago no se completa, comunícate con
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
+    </string>
+    <string name="lnurl_withdraw_uri_paster_title">Usar LNURL del portapapeles</string>
 </resources>

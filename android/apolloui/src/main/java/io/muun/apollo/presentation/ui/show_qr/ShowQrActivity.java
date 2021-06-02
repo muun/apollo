@@ -10,6 +10,8 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.viewpager.widget.ViewPager;
 import butterknife.BindView;
 import com.google.android.material.tabs.TabLayout;
@@ -39,6 +41,11 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
     ViewPager viewPager;
 
     @Override
+    public MuunHeader getHeader() {
+        return header;
+    }
+
+    @Override
     protected void inject() {
         getComponent().inject(this);
     }
@@ -46,6 +53,28 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
     @Override
     protected int getLayoutResource() {
         return R.layout.show_qr_activity;
+    }
+
+    @Override
+    protected int getMenuResource() {
+        return R.menu.activity_show_qr;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        final boolean showMenu = super.onCreateOptionsMenu(menu);
+
+        final MenuItem item = menu.findItem(R.id.scan_lnurl);
+        item.setOnMenuItemClickListener(menuItem -> {
+            onScanLnUrlClick();
+            return true;
+        });
+
+        return showMenu;
+    }
+
+    private void onScanLnUrlClick() {
+        presenter.startScanLnUrlFlow();
     }
 
     @Override
@@ -64,11 +93,6 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
         viewPager.addOnPageChangeListener(adapter.onPageChangeListener);
 
         tabLayout.setupWithViewPager(viewPager);
-    }
-
-    @Override
-    public MuunHeader getHeader() {
-        return header;
     }
 
     @Override

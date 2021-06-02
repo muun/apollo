@@ -24,7 +24,7 @@ public class PeriodicTaskWorker extends Worker {
 
     /**
      * Constructor. This is now called from background (WorkManager handles it) so dependency
-     * injection is handled by a WorkFactory. See PeriodicTaskWorkerFactory.
+     * injection is handled by a WorkFactory. See MuunWorkerFactory.
      */
     public PeriodicTaskWorker(@NonNull Context context,
                               @NonNull WorkerParameters workerParams,

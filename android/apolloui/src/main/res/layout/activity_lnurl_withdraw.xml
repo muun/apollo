@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/lnurl_withdraw_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevated="true" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+        <View style="@style/expander" />
+
+        <io.muun.apollo.presentation.ui.view.LoadingView
+                android:id="@+id/lnurl_withdraw_loading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/muun_screen_margin"
+                android:layout_marginEnd="@dimen/muun_screen_margin"
+                android:layout_gravity="center"
+                app:title="@string/loading" />
+
+        <View style="@style/expander" />
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/lnurl_withdraw_action"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/error_op_action"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
+	"fmt"
 )
 
 const KeySize = 32
@@ -16,7 +17,7 @@ func EncryptPkcs7(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 
 func EncryptNoPadding(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	if len(key) != KeySize {
-		panic("key does not have the right size")
+		return nil, fmt.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -42,7 +43,7 @@ func DecryptPkcs7(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 
 func DecryptNoPadding(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 	if len(key) != KeySize {
-		panic("key does not have the right size")
+		return nil, fmt.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {

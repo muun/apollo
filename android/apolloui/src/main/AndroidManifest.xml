@@ -7,7 +7,6 @@
     <!-- Permissions -->
 
     <uses-feature android:name="android.hardware.camera"/>
-    <uses-feature android:name="android.hardware.camera.autofocus"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -314,6 +313,24 @@
 
         <activity
                 android:name=".presentation.ui.select_night_mode.SelectNightModeActivity"
+                />
+
+        <!-- LnUrlIntroActivity -->
+
+        <activity
+                android:name=".presentation.ui.lnurl.intro.LnUrlIntroActivity"
+                />
+
+        <!-- LnUrlWithdrawConfirmActivity -->
+
+        <activity
+                android:name=".presentation.ui.lnurl.withdraw.confirm.LnUrlWithdrawConfirmActivity"
+                />
+
+        <!-- LnUrlWithdrawActivity -->
+
+        <activity
+                android:name=".presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity"
                 />
 
 

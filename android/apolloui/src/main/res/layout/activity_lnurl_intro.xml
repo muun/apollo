@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/lnurl_intro_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevated="true" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+        <View style="@style/expander" />
+
+        <ImageView
+                android:contentDescription="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:src="@drawable/qr_lnurl" />
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="8dp"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="normal"
+                android:textColor="@color/text_primary_color"
+                android:letterSpacing="0.03"
+                android:lineSpacingExtra="8sp"
+                android:gravity="center"
+                android:visibility="visible"
+                android:text="@string/lnurl_intro_title" />
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="28dp"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"
+                android:textColor="@color/text_secondary_color"
+                android:letterSpacing="0.03"
+                android:lineSpacingExtra="8sp"
+                android:gravity="center_horizontal"
+                android:text="@string/lnurl_intro_desc" />
+
+        <View style="@style/expander" />
+
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/lnurl_intro_action"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/lnurl_continue" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

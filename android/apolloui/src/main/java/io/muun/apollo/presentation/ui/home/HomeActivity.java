@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import butterknife.BindColor;
 import butterknife.BindView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import icepick.State;
@@ -44,12 +43,6 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
 
     @BindView(R.id.home_header)
     MuunHeader header;
-
-    @BindColor(R.color.icon_color)
-    int menuIconColor;
-
-    @State
-    String profilePictureUrl;
 
     @State
     int currentNavItem = R.id.home_fragment;

@@ -1,22 +1,26 @@
 package io.muun.apollo.presentation.ui.scan_qr;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.model.OperationUri;
+import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
+import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
+import io.muun.apollo.presentation.ui.view.MuunUriPaster;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import butterknife.BindView;
 import com.google.zxing.BarcodeFormat;
@@ -36,6 +40,15 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         return new Intent(context, ScanQrActivity.class);
     }
 
+    /**
+     * Creates an intent to launch this activity.
+     */
+    public static Intent getStartActivityIntentForLnurl(@NotNull Context context,
+                                                        @NotNull LnUrlFlow flow) {
+        return getStartActivityIntent(context)
+                .putExtra(ARG_LNURL_FLOW, flow.name());
+    }
+
     @BindView(R.id.empty_screen)
     MuunEmptyScreen emptyScreen;
 
@@ -52,6 +65,9 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     // the camera permission call to action when it isn't necessary.
     @BindView(R.id.scan_qr_frame_background)
     FrameLayout background;
+
+    @BindView(R.id.uri_paster)
+    MuunUriPaster uriPaster;
 
     @Override
     protected void inject() {
@@ -73,7 +89,17 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         super.initializeUi();
 
         header.attachToActivity(this);
-        header.showTitle(R.string.scanqr_title);
+
+        final String lnurlFlow = getArgumentsBundle().getString(ARG_LNURL_FLOW);
+        if (lnurlFlow != null && LnUrlFlow.valueOf(lnurlFlow) == LnUrlFlow.STARTED_FROM_RECEIVE) {
+            header.showTitle(R.string.showqr_title);
+            subtitle.setText(R.string.scan_lnurl_subtitle);
+
+            uriPaster.setOnSelectListener(presenter::selectFromUriPaster);
+        } else {
+            header.showTitle(R.string.scanqr_title);
+        }
+
         header.setNavigation(Navigation.BACK);
 
         emptyScreen.setOnActionClickListener(view -> onGrantPermissionClick());
@@ -104,8 +130,7 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     }
 
     private float getMaskColorAlpha() {
-        final int currentNightMode = ExtensionsKt.getCurrentNightMode(this);
-        return currentNightMode == Configuration.UI_MODE_NIGHT_YES ? 0.9f : 0.64f;
+        return ExtensionsKt.isInNightMode(this) ? 0.9f : 0.64f;
     }
 
     @Override
@@ -139,15 +164,28 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
 
     @Override
     public void handleResult(Result result) {
-        presenter.newOperationFromScannedText(result.getText());
+        presenter.handleResult(result.getText());
     }
 
     @Override
     public void onScanError(String text) {
-        showError(
-                R.string.error_op_invalid_address_title,
-                R.string.error_op_invalid_address_desc,
-                sanitizeScannedText(text)
+        showError(new ErrorViewModel.Builder()
+                .loggingName(AnalyticsEvent.ERROR_TYPE.INVALID_QR)
+                .title(getString(R.string.error_op_invalid_address_title))
+                .descriptionRes(R.string.error_op_invalid_address_desc)
+                .descriptionArgs(sanitizeScannedText(text))
+                .build()
+        );
+    }
+
+    @Override
+    public void onLnUrlScanError(String text) {
+        showError(new ErrorViewModel.Builder()
+                .loggingName(AnalyticsEvent.ERROR_TYPE.LNURL_INVALID_CODE)
+                .title(getString(R.string.error_invalid_lnurl_title))
+                .descriptionRes(R.string.error_invalid_lnurl_desc)
+                .descriptionArgs(sanitizeScannedText(text))
+                .build()
         );
     }
 
@@ -191,5 +229,17 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         background.setVisibility(View.VISIBLE);
         subtitle.setVisibility(View.VISIBLE);
         presenter.reportCameraPermissionGranted();
+
+        if (uriPaster.getUri() != null) {
+            uriPaster.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void setClipboardUri(@Nullable OperationUri operationUri) {
+        uriPaster.setUri(operationUri);
+        if (!allPermissionsGranted(Manifest.permission.CAMERA)) {
+            uriPaster.setVisibility(View.GONE);
+        }
     }
 }

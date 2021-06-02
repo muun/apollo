@@ -9,8 +9,8 @@ import javax.money.MonetaryAmount
 
 class MonetaryAmountBundler : Bundler<MonetaryAmount> {
 
-    override fun put(s: String, amount: MonetaryAmount?, bundle: Bundle) {
-        bundle.putString(s, amount?.serialize())
+    override fun put(key: String, amount: MonetaryAmount?, bundle: Bundle) {
+        bundle.putString(key, amount?.serialize())
     }
 
     override fun get(key: String, bundle: Bundle): MonetaryAmount? {

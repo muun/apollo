@@ -8,7 +8,7 @@ import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap
 import io.muun.common.model.DebtType
 import io.muun.common.utils.Deprecated
 
-data class SubmarineSwapFundingOutput (
+data class SubmarineSwapFundingOutput(
     val outputAddress: String,
     val outputAmountInSatoshis: Long?,
     val debtType: DebtType?,
@@ -22,10 +22,10 @@ data class SubmarineSwapFundingOutput (
     val userRefundAddress: MuunAddress,
     val serverPaymentHashInHex: String,
     val serverPublicKeyInHex: String,
-    var scriptVersion: Int = TransactionSchemeSubmarineSwap.ADDRESS_VERSION,
-    var expirationInBlocks: Int? = null,    // for swaps v2 not nullable
-    var userPublicKey: PublicKey? = null,   // for swaps v2 not nullable
-    var muunPublicKey: PublicKey? = null    // for swaps v2 not nullable)
+    val scriptVersion: Int,
+    val expirationInBlocks: Int? = null,    // for swaps v2 not nullable
+    val userPublicKey: PublicKey? = null,   // for swaps v2 not nullable
+    val muunPublicKey: PublicKey? = null    // for swaps v2 not nullable)
 ) {
 
     fun toJson() =

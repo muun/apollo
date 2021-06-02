@@ -3,6 +3,7 @@ package io.muun.common.crypto.hd;
 import io.muun.common.api.MuunInputIncomingSwapJson;
 import io.muun.common.utils.Encodings;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -42,13 +43,16 @@ public class MuunInputIncomingSwap {
     /**
      * Constructor.
      */
-    public MuunInputIncomingSwap(byte[] sphinx,
+    public MuunInputIncomingSwap(@Nullable byte[] sphinx,
                                  byte[] htlcTx,
                                  byte[] swapServerPublicKey,
                                  byte[] paymentHash256,
                                  final long expirationHeight,
                                  final long collectInSats) {
-        this.sphinx = sphinx;
+        // Due to a few mapping errors, apps expect sphinx to always be non-null. However,
+        // Muun to Muun payments don't have a sphinx and swapper now (properly) returns it as null.
+        // We map it here for retrocompat with the apps.
+        this.sphinx = sphinx != null ? sphinx : new byte[0];
         this.htlcTx = htlcTx;
         this.swapServerPublicKey = swapServerPublicKey;
         this.paymentHash256 = paymentHash256;

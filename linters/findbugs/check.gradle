@@ -1,14 +1,16 @@
-apply plugin: 'com.github.spotbugs'
+apply plugin: 'com.github.spotbugs-base'
 
-spotbugs {
+task spotbugsMain(type: SpotBugsTask) {
+    dependsOn 'classes'
+
+    sourceDirs = project.sourceSets.main.allSource.sourceDirectories
+    classDirs = project.sourceSets.main.output
+    auxClassPaths = project.sourceSets.main.compileClasspath
+
     ignoreFailures = true
     reportLevel = 'medium'
     effort = 'max'
 
-    sourceSets = [sourceSets.main]
-}
-
-tasks.withType(SpotBugsTask).configureEach {
     reports {
         xml.enabled = false
         html.enabled = !xml.enabled
@@ -16,5 +18,5 @@ tasks.withType(SpotBugsTask).configureEach {
 }
 
 dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.9.0'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }

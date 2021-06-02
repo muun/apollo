@@ -18,12 +18,16 @@ import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
 import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment.Flow;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity;
+import io.muun.apollo.presentation.ui.lnurl.intro.LnUrlIntroActivity;
+import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity;
+import io.muun.apollo.presentation.ui.lnurl.withdraw.confirm.LnUrlWithdrawConfirmActivity;
 import io.muun.apollo.presentation.ui.migration.MigrationActivity;
 import io.muun.apollo.presentation.ui.new_operation.NewOperationActivity;
 import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin;
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
+import io.muun.apollo.presentation.ui.scan_qr.LnUrlFlow;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
@@ -214,17 +218,6 @@ public class Navigator {
     }
 
     /**
-     * Open app chooser to share a file with an external application.
-     */
-    public void shareFile(@NotNull Context context, Uri uri, String mimeType, String title) {
-        final Intent intent = new Intent(Intent.ACTION_SEND)
-                .setType(mimeType)
-                .putExtra(Intent.EXTRA_STREAM, uri);
-
-        context.startActivity(Intent.createChooser(intent, title));
-    }
-
-    /**
      * Open app chooser to send an email to Muun support.
      */
     public void sendSupportEmail(@NotNull Context context) {
@@ -258,10 +251,59 @@ public class Navigator {
     }
 
     /**
+     * Takes the user to LNURL Withdraw intro screen.
+     */
+    public void navigateToLnUrlIntro(@NotNull Context context) {
+        final Intent intent = LnUrlIntroActivity.Companion.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
      * Takes the user to the Scan Qr screen.
      */
     public void navigateToScanQr(@NotNull Context context) {
         final Intent intent = ScanQrActivity.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
+     * Takes the user to the Scan Qr screen, as part of an LNURL flow.
+     */
+    public void navigateToLnUrlWithdrawScanQr(@NotNull Context context, @NotNull LnUrlFlow flow) {
+        final Intent intent = ScanQrActivity.getStartActivityIntentForLnurl(context, flow);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
+     * Takes the user to the LNURL Withdraw screen.
+     */
+    public void navigateToLnUrlWithdraw(@NotNull Context ctx, @NotNull String lnurl) {
+        final Intent intent = LnUrlWithdrawActivity.Companion.getStartActivityIntent(ctx, lnurl);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        ctx.startActivity(intent);
+    }
+
+    /**
+     * Takes the user to the confirm LNURL Withdraw screen.
+     */
+    public void navigateToLnUrlWithdrawConfirm(@NotNull Context context, @NotNull String lnurl) {
+        final Intent intent = LnUrlWithdrawConfirmActivity.Companion
+                .getStartActivityIntent(context, lnurl);
 
         // No animation between activities for now
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);

@@ -183,7 +183,7 @@ public class Currency {
         load(new Currency("XOF", "CFA", "CFA Franc BCEAO", null));
         load(new Currency("XPF", "F", "CFP Franc", "\uD83C\uDDF5\uD83C\uDDEB"));
         load(new Currency("YER", "﷼", "Yemeni Rial", "\uD83C\uDDFE\uD83C\uDDEA"));
-        load(new Currency("ZAR", "R", "South African Rand", "\uD83C\uDDFE\uD83C\uDDEA"));
+        load(new Currency("ZAR", "R", "South African Rand", "\uD83C\uDDFF\uD83C\uDDE6"));
         load(new Currency("ZMW", "ZK", "Zambian Kwacha", "\uD83C\uDDFF\uD83C\uDDF2"));
         load(new Currency("ZWL", "Z$", "Zimbabwean Dollar", "\uD83C\uDDFF\uD83C\uDDFC"));
 

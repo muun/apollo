@@ -1,21 +1,21 @@
-package io.muun.apollo
+package io.muun.apollo.domain.utils
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.domain.libwallet.LibwalletBridge
+import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.FeeWindow
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.model.PaymentAnalysis
 import io.muun.apollo.domain.model.PaymentContext
 import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutputPolicies
 import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.utils.SwapperFundingOutputPolicies
+import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
+import org.javamoney.moneta.Money
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -51,10 +51,19 @@ class PaymentAnalyzerTest {
 
     @Test
     @Ignore("Must be run manually")
-    fun fuzz() {
+    fun fuzzSwaps() {
         for (i in 1..200000) {
             Log.i("", i.toString())
-            runFuzzTest()
+            runSwapTest()
+        }
+    }
+
+    @Test
+    @Ignore("Must be run manually")
+    fun fuzzOnChain() {
+        for (i in 1..200000) {
+            Log.i("", i.toString())
+            runOnchainTest()
         }
     }
 
@@ -269,7 +278,62 @@ class PaymentAnalyzerTest {
         )
     }
 
-    fun runFuzzTest() {
+    @Test
+    fun zeroAmountIsTooSmall() {
+        val result = run(
+            proportionalFee = 1000,
+            baseFee = 0,
+            maxDebt = 0,
+            potentialCollect = 0,
+            maxFor0Conf = Long.MAX_VALUE,
+            amount = 0,
+            useAllFunds = true,
+            nts = Gen.nextTransactionSize(
+                Gen.sizeForAmount(600L to 209),
+                expectedDebtInSat = 0
+            )
+        )
+
+        assertThat(result.isAmountTooSmall).isTrue()
+    }
+
+    fun runOnchainTest() {
+
+        val useAllfunds = Random.nextBoolean()
+
+        var totalAmount = 0L
+        var totalSize = 0
+        val ntsEntries = Array(Random.nextInt(1, 5)) {
+            totalAmount += Random.nextLong(1000, 1_500_000)
+            totalSize += Random.nextInt(209, 500)
+            Gen.sizeForAmount(
+                totalAmount to totalSize
+            )
+        }
+        // Don't do 0 balance through debt, it's a boring case to fuzz
+        val expectedDebtInSat = Random.nextLong(0, totalAmount - 1)
+        val nts = Gen.nextTransactionSize(
+            *ntsEntries, expectedDebtInSat = expectedDebtInSat
+        )
+
+        val amount = if (useAllfunds)
+            nts.userBalance
+        else
+            Random.nextLong(1, nts.userBalance)
+
+        runForFuzz(
+            proportionalFee = null,
+            baseFee = null,
+            maxDebt = null,
+            maxFor0Conf = null,
+            potentialCollect = null,
+            amount = amount,
+            useAllFunds = useAllfunds,
+            nts = nts
+        )
+    }
+
+    fun runSwapTest() {
 
         val baseFee = Random.nextLong(1, 5)
         val proportionalFee = Random.nextLong(100, 2000)
@@ -315,37 +379,79 @@ class PaymentAnalyzerTest {
     }
 
 
-    private fun run(proportionalFee: Long,
-                    baseFee: Long,
-                    maxDebt: Long,
-                    potentialCollect: Long,
-                    maxFor0Conf: Long,
+    private fun run(proportionalFee: Long?,
+                    baseFee: Long?,
+                    maxDebt: Long?,
+                    potentialCollect: Long?,
+                    maxFor0Conf: Long?,
                     amount: Long,
                     useAllFunds: Boolean,
-                    nts: NextTransactionSize) {
-
-        val swap = Gen.amountlessSubmarineSwap(
-            proportionalFee,
-            baseFee,
-            maxDebt,
-            potentialCollect,
-            maxFor0Conf
-        )
+                    nts: NextTransactionSize): PaymentAnalysis {
 
         val ctx = PaymentContext(user, exchangeRateWindow, feeWindow, nts)
-        val payReq = submarineSwapPayReq(ctx, amount, swap, useAllFunds)
+
+        val payReq: PaymentRequest
+        if (proportionalFee != null) {
+            checkNotNull(proportionalFee)
+            checkNotNull(baseFee)
+            checkNotNull(maxDebt)
+            checkNotNull(potentialCollect)
+            checkNotNull(maxFor0Conf)
+
+            val swap = Gen.amountlessSubmarineSwap(
+                proportionalFee,
+                baseFee,
+                maxDebt,
+                potentialCollect,
+                maxFor0Conf
+            )
+
+            val invoice = Invoice.decodeInvoice(Globals.INSTANCE.network, swap.invoice)
+            payReq = PaymentRequest(
+                type = PaymentRequest.Type.TO_LN_INVOICE,
+                amount = amount.let<Long, Money?>(ctx::convertToBitcoin),
+                description = "Some swap",
+                invoice = invoice,
+                swap = swap,
+                feeInSatoshisPerByte = null,
+                takeFeeFromAmount = useAllFunds
+            )
+
+        } else {
+            payReq = PaymentRequest(
+                type = PaymentRequest.Type.TO_ADDRESS,
+                amount = amount.let<Long, Money?>(ctx::convertToBitcoin),
+                description = "Some address",
+                feeInSatoshisPerByte = feeWindow.fastestFeeInSatoshisPerByte,
+                takeFeeFromAmount = useAllFunds
+            )
+        }
 
         val analyze = checkNotNull(ctx.analyze(payReq))
-        if (analyze.canPayWithSelectedFee) {
-            matchToSwapperLogic(analyze, swap.fundingOutputPolicies!!)
+        if (analyze.canPayWithSelectedFee && payReq.swap != null) {
+            matchToSwapperLogic(analyze, payReq.swap!!.fundingOutputPolicies!!)
         }
+
+        val _unused = analyze.isAmountTooSmall
+
+        Preconditions.checkNonNegative(analyze.amount.inSatoshis)
+        Preconditions.checkNonNegative(analyze.outputAmount.inSatoshis)
+        analyze.fee?.inSatoshis?.let { Preconditions.checkNonNegative(it) }
+        analyze.total?.inSatoshis?.let { Preconditions.checkNonNegative(it) }
+
+        if (analyze.canPayWithSelectedFee) {
+            checkNotNull(analyze.fee)
+            checkNotNull(analyze.total)
+        }
+
+        return analyze
     }
 
-    private fun runForFuzz(proportionalFee: Long,
-                           baseFee: Long,
-                           maxDebt: Long,
-                           potentialCollect: Long,
-                           maxFor0Conf: Long,
+    private fun runForFuzz(proportionalFee: Long?,
+                           baseFee: Long?,
+                           maxDebt: Long?,
+                           potentialCollect: Long?,
+                           maxFor0Conf: Long?,
                            amount: Long,
                            useAllFunds: Boolean,
                            nts: NextTransactionSize) {
@@ -396,37 +502,32 @@ class PaymentAnalyzerTest {
         val amount = paymentAnalysis.amount.inSatoshis
         val lightningFee = paymentAnalysis.lightningFee!!.inSatoshis
         val fundingOutput = paymentAnalysis.payReq.swap!!.fundingOutput
+        val hasTx = paymentAnalysis.hasOnChainTransaction
 
         assertThat(fundingOutput.debtType)
             .`as`("debtType")
-            .isEqualTo(swapperFundingOutputPolicies.getDebtType(amount, lightningFee))
+            .isEqualTo(
+                swapperFundingOutputPolicies.getDebtType(amount, lightningFee, hasTx)
+            )
+
         assertThat(fundingOutput.debtAmountInSatoshis)
             .`as`("debtAmount")
-            .isEqualTo(swapperFundingOutputPolicies.getDebtAmount(amount, lightningFee).toSats())
+            .isEqualTo(
+                swapperFundingOutputPolicies.getDebtAmount(amount, lightningFee, hasTx).toSats()
+            )
+
         assertThat(fundingOutput.confirmationsNeeded)
             .`as`("confirmationsNeeded")
-            .isEqualTo(swapperFundingOutputPolicies.getFundingConfirmations(amount, lightningFee))
+            .isEqualTo(
+                swapperFundingOutputPolicies.getFundingConfirmations(amount, lightningFee)
+            )
+
         assertThat(fundingOutput.outputAmountInSatoshis)
             .`as`("outputAmountInSatoshis")
-            .isEqualTo(swapperFundingOutputPolicies.getFundingOutputAmount(amount, lightningFee).toSats())
-    }
-
-    private fun submarineSwapPayReq(payCtx: PaymentContext,
-                                    amountInSatoshis: Long,
-                                    swap: SubmarineSwap,
-                                    useAllFunds: Boolean
-    ): PaymentRequest {
-        val invoice = LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, swap.invoice)
-
-        return PaymentRequest(
-            type = PaymentRequest.Type.TO_LN_INVOICE,
-            amount = amountInSatoshis.let(payCtx::convertToBitcoin),
-            description = "Some swap",
-            invoice = invoice,
-            swap = swap,
-            feeInSatoshisPerByte = null,
-            takeFeeFromAmount = useAllFunds
-        )
+            .isEqualTo(
+                swapperFundingOutputPolicies.getFundingOutputAmount(amount, lightningFee, hasTx)
+                    .toSats()
+            )
     }
 
 }

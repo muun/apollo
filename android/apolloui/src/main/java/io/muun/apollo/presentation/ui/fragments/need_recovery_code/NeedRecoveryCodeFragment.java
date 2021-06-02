@@ -49,7 +49,7 @@ public class NeedRecoveryCodeFragment extends SingleActionFragment<NeedRecoveryC
 
     @Override
     protected int getImageRes() {
-        return R.drawable.missing_recovery_code;
+        return R.drawable.missing_recovery;
     }
 
     @Override

@@ -10,7 +10,13 @@ import javax.annotation.Nullable;
 public class OperationMetadataJson {
 
     @Nullable
+    public String lnurlSender;
+
+    @Nullable
     public String description;
+
+    @Nullable
+    public String invoice;
 
     public OperationMetadataJson() {
     }

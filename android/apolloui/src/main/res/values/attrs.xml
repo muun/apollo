@@ -4,12 +4,6 @@
         <attr name="elevated" format="boolean" />
     </declare-styleable>
 
-    <declare-styleable name="MuunActionItem">
-        <attr name="title" format="string" />
-        <attr name="subtitle" format="string" />
-        <attr name="picture" format="reference" />
-    </declare-styleable>
-
     <declare-styleable name="MuunDetailItem">
         <attr name="description" format="string" />
     </declare-styleable>
@@ -52,6 +46,8 @@
         <attr name="textMaxWidthPercent" format="float"/>
     </declare-styleable>
 
+    <!-- For reason can't be called just 'picture' (probably clashes with some other attr) -->
+    <attr name="pictureDrawable" format="reference" />
     <attr name="expandedLabel" format="reference" />
     <attr name="retractedLabel" format="reference" />
 

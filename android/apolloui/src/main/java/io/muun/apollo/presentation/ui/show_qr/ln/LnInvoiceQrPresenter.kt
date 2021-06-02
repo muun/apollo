@@ -2,26 +2,23 @@ package io.muun.apollo.presentation.ui.show_qr.ln
 
 import android.os.Bundle
 import icepick.State
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
+import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
-import io.muun.apollo.domain.selector.LatestOperationSelector
+import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
-import io.muun.common.utils.Encodings
-import io.muun.common.utils.LnInvoice
-import org.bitcoinj.core.NetworkParameters
 import javax.inject.Inject
 
 @PerFragment
 class LnInvoiceQrPresenter @Inject constructor(
     private val generateInvoice: GenerateInvoiceAction,
-    private val latestOperation: LatestOperationSelector,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
-    private val networkParameters: NetworkParameters
+    private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
+    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
 ) : QrPresenter<LnInvoiceView>() {
 
     @State
@@ -37,7 +34,7 @@ class LnInvoiceQrPresenter @Inject constructor(
     @JvmField
     var showingAdvancedSettings = false
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         view.setCurrencyDisplayMode(currencyDisplayModeSel.get())
@@ -51,20 +48,6 @@ class LnInvoiceQrPresenter @Inject constructor(
 
         // We want to re-generate the invoice each time we come back to this fragment.
         generateNewInvoice()
-
-        subscribeTo(latestOperation.watch()) { maybeOp ->
-            maybeOp.ifPresent(this::onNewOperation)
-        }
-    }
-
-    private fun onNewOperation(op: Operation) {
-        if (::invoice.isInitialized && op.incomingSwap != null) {
-            val receivedPaymentHash = Encodings.bytesToHex(op.incomingSwap!!.paymentHash)
-            val paymentHashInDisplay = LnInvoice.decode(networkParameters, invoice).id
-            if (receivedPaymentHash == paymentHashInDisplay) {
-                generateNewEmptyInvoice()
-            }
-        }
     }
 
     internal fun generateNewEmptyInvoice() {
@@ -109,6 +92,12 @@ class LnInvoiceQrPresenter @Inject constructor(
 
     private fun onInvoiceReady(invoice: String) {
         this.invoice = invoice
-        view.setInvoice(LnInvoice.decode(networkParameters, invoice), amount?.inInputCurrency)
+        view.setInvoice(
+            Invoice.decodeInvoice(Globals.INSTANCE.network, invoice), amount?.inInputCurrency
+        )
+
+        subscribeTo(waitForIncomingLnPaymentSel.watchInvoice(invoice)) {
+            generateNewEmptyInvoice()
+        }
     }
 }

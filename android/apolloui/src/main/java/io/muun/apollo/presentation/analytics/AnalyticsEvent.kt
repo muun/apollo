@@ -207,7 +207,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_EMAIL_ALREADY_USED : AnalyticsEvent()
     class S_RECOVERY_CODE_PRIMING: AnalyticsEvent()
     class S_FINISH_EMAIL_SETUP : AnalyticsEvent()
-
+    class S_LNURL_FIRST_TIME: AnalyticsEvent()
+    class S_LNURL_FROM_SEND: AnalyticsEvent()
+    class S_LNURL_WITHDRAW: AnalyticsEvent()
+    class S_LNURL_SCAN_QR: AnalyticsEvent()
 
     // User interaction events:
 
@@ -359,4 +362,32 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     class E_EK_EMAIL(app: String):
         AnalyticsEvent(listOf("app" to app))
+
+    enum class ERROR_TYPE {
+        INVALID_QR, // A little bit duplicated with NEW_OP_ERROR(INVALID_ADDRESS)
+        EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR,
+        LNURL_INVALID_CODE,
+        LNURL_INVALID_TAG, // E.g Not a withdraw request
+        LNURL_UNRESPONSIVE,
+        LNURL_UNKNOWN_ERROR,
+        LNURL_EXPIRED_INVOICE
+    }
+
+    class E_ERROR(val type: ERROR_TYPE, vararg extras: Any): AnalyticsEvent(listOf(
+        "type" to type.name.toLowerCase(),
+        *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }.toTypedArray()
+    ))
+
+    enum class LNURL_WITHDRAW_STATE_TYPE {
+        CONTACTING,
+        INVOICE_CREATED,
+        RECEIVING,
+        TAKING_TOO_LONG,
+        FAILED,
+        SUCCESS
+    }
+
+    class E_LNURL_WITHDRAW_STATE(val type: LNURL_WITHDRAW_STATE_TYPE): AnalyticsEvent(listOf(
+        "type" to type.name.toLowerCase()
+    ))
 }

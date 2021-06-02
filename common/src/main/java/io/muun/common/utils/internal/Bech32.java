@@ -1,7 +1,6 @@
 package io.muun.common.utils.internal;
 
 import io.muun.common.utils.ByteArray;
-import io.muun.common.utils.Pair;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -33,7 +32,25 @@ public class Bech32 {
     };
 
     private static final String BECH32_SEPARATOR = "1";
+    private static final int BECH32_CONST = 1;
+    private static final int BECH32M_CONST = 0x2bc830a3;
     private static final int[] GEN = {0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3};
+
+    public enum Encoding {
+        BECH32, BECH32M
+    }
+
+    public static class Decoded {
+        public final Encoding encoding;
+        public final String hrp;
+        public final byte[] data;
+
+        private Decoded(Encoding encoding, String hrp, byte[] data) {
+            this.encoding = encoding;
+            this.hrp = hrp;
+            this.data = data;
+        }
+    }
 
     /**
      * Encode the human-readable part and data part into a bech32 encoded string.
@@ -44,6 +61,10 @@ public class Bech32 {
      * @return a bech32 encoded string.
      */
     public static String encode(String header, byte[] data) {
+        return encode(header, data, BECH32_CONST);
+    }
+
+    private static String encode(String header, byte[] data, int checksumConst) {
         checkArgument(!header.isEmpty(), "Header shouldn't be empty");
         checkArgument(header.length() <= 83, "Header is too long");
 
@@ -51,7 +72,7 @@ public class Bech32 {
             checkArgument(b >= 33 && b <= 126, "Only printable US-ASCII allowed in header");
         }
 
-        final byte[] checksum = createChecksum(header.getBytes(), data);
+        final byte[] checksum = createChecksum(header.getBytes(), data, checksumConst);
         final byte[] combined = ByteArray.concat(data, checksum);
 
         final StringBuilder builder = new StringBuilder(header.length() + 1 + combined.length);
@@ -67,14 +88,27 @@ public class Bech32 {
     }
 
     /**
+     * Encode the human-readable part and data part into a bech32 encoded string using the newer
+     * bech32m variant defined in BIP 350.
+     *
+     * @param header the human-readable part
+     * @param data the data part
+     *
+     * @return a bech32m encoded string.
+     */
+    public static String encodeBech32m(String header, byte[] data) {
+        return encode(header, data, BECH32M_CONST);
+    }
+
+    /**
      * Decodes a bech32 encoded string into its human-readable part and data part.
      *
      * @param bech the bec32 encoded string
      *
-     * @return a Pair containing the human-readable part and data part
+     * @return an object containing the encoding, human-readable part and data part
      * @throws Exception if there's a decoding error
      */
-    public static Pair<String, byte[]> decode(String bech) {
+    public static Decoded decode(String bech) {
         return decode(bech, BIP_0173_CHARACTER_LIMIT);
     }
 
@@ -89,10 +123,10 @@ public class Bech32 {
      * @param bech the bec32 encoded string
      * @param limit the maximum string length acceptable
      *
-     * @return a Pair containing the human-readable part and data part
+     * @return an object containing the encoding, human-readable part and data part
      * @throws Exception if there's a decoding error
      */
-    public static Pair<String, byte[]> decode(String bech, long limit) {
+    public static Decoded decode(String bech, long limit) {
         if (!bech.equals(bech.toLowerCase()) && !bech.equals(bech.toUpperCase())) {
             throw new IllegalArgumentException("bech32 cannot mix upper and lower case");
         }
@@ -113,7 +147,6 @@ public class Bech32 {
 
         } else if (bech.length() < 8) {
             throw new IllegalArgumentException("bech32 input too short");
-
         }
 
         final byte[] hrp = bech.substring(0, pos).getBytes();
@@ -128,12 +161,13 @@ public class Bech32 {
 
         // Data with checksum
         final byte[] checkedData = buffer.array();
-        checkArgument(verifyChecksum(hrp, checkedData), "Invalid checksum");
+        final Encoding encoding = verifyChecksum(hrp, checkedData);
+        checkArgument(encoding != null, "Invalid checksum");
 
         // Data without checksum
         final byte[] data = Arrays.copyOfRange(checkedData, 0, checkedData.length - 6);
 
-        return Pair.of(new String(hrp), data);
+        return new Decoded(encoding, new String(hrp), data);
     }
 
     private static int polymod(byte[] values) {
@@ -173,17 +207,23 @@ public class Bech32 {
         return ret;
     }
 
-    private static boolean verifyChecksum(byte[] hrp, byte[] data) {
+    private static Encoding verifyChecksum(byte[] hrp, byte[] data) {
         final byte[] exp = hrpExpand(hrp);
 
         final byte[] values = new byte[exp.length + data.length];
         System.arraycopy(exp, 0, values, 0, exp.length);
         System.arraycopy(data, 0, values, exp.length, data.length);
 
-        return (1 == polymod(values));
+        final int check = polymod(values);
+        if (check == BECH32_CONST) {
+            return Encoding.BECH32;
+        } else if (check == BECH32M_CONST) {
+            return Encoding.BECH32M;
+        }
+        return null;
     }
 
-    private static  byte[] createChecksum(byte[] hrp, byte[] data) {
+    private static  byte[] createChecksum(byte[] hrp, byte[] data, int checksumConst) {
         final byte[] zeroes = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         final byte[] expanded = hrpExpand(hrp);
         final byte[] values = new byte[zeroes.length + expanded.length + data.length];
@@ -192,7 +232,7 @@ public class Bech32 {
         System.arraycopy(data, 0, values, expanded.length, data.length);
         System.arraycopy(zeroes, 0, values, expanded.length + data.length, zeroes.length);
 
-        final int polymod = polymod(values) ^ 1;
+        final int polymod = polymod(values) ^ checksumConst;
         final byte[] ret = new byte[6];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = (byte) ((polymod >> 5 * (5 - i)) & 0x1f);

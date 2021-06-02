@@ -5,6 +5,7 @@ import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
+import io.muun.apollo.domain.errors.LocalStorageIntegrityError;
 import io.muun.common.model.SessionStatus;
 
 import rx.Observable;
@@ -54,9 +55,12 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
             final boolean hasJwtButInvalidSession = !hasValidSession && hasJwt;
 
             // Integrity check. May sound silly but its our canary for when things go wrong with
-            // a logout (our logout logic has become a bit cumbersome).
+            // a logout (our logout logic has become a bit cumbersome) or a local storage wipe.
             if (hasValidSessionButNoJwt || hasJwtButInvalidSession) {
-                Timber.e("Integrity error! Probably something went wrong with a logout");
+                Timber.e(new LocalStorageIntegrityError(
+                        hasValidSessionButNoJwt,
+                        hasJwtButInvalidSession
+                ));
             }
 
             // We don't have a session with Houston yet. This is our first FCM token, so there's

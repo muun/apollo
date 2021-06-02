@@ -55,8 +55,9 @@ class PaymentAnalysis(
 
     /** Whether the amount entered (when an on-chain transaction is needed) is below dust. */
     val isAmountTooSmall =
-        hasOnChainTransaction &&
-            checkNonNegative(outputAmount.inSatoshis) < BitcoinUtils.DUST_IN_SATOSHIS
+        (hasOnChainTransaction &&
+            checkNonNegative(outputAmount.inSatoshis) < BitcoinUtils.DUST_IN_SATOSHIS)
+            || amount.inSatoshis == 0L
 
     /** Whether the description length is below the mininum set by Rules. */
     val isDescriptionTooShort =

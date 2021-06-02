@@ -13,7 +13,9 @@ import io.muun.apollo.domain.model.SignupDraft
 import io.muun.common.utils.Encodings
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class SignupDraftManager @Inject constructor(
     private val context: Context,
     private val secureStorageProvider: SecureStorageProvider
@@ -78,7 +80,10 @@ class SignupDraftManager @Inject constructor(
         }
     }
 
-    @VisibleForTesting // For BaseInstrumentationTest only
+    /**
+     * ONLY FOR BaseInstrumentationTest and preserving signupDraft when doing a
+     * destroyWalletToStartClean.
+     */
     fun fetchSignupDraft(): SignupDraft? {
         if (!secureStorageProvider.has(SIGNUP_DRAFT_KEY)) {
             return null

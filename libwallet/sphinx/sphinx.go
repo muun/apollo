@@ -25,7 +25,7 @@ func Validate(
 ) error {
 	router := lndsphinx.NewRouter(nodeKey, net, lndsphinx.NewMemoryReplayLog())
 	if err := router.Start(); err != nil {
-		panic(err)
+		return fmt.Errorf("could not start router for validating onion blob: %w", err)
 	}
 	onionProcessor := hop.NewOnionProcessor(router)
 	onionProcessor.Start()

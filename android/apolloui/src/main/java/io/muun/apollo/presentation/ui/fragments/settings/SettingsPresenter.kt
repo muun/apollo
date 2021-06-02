@@ -2,8 +2,6 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
-import io.muun.apollo.data.preferences.NightModeRepository
 import io.muun.apollo.domain.NightModeManager
 import kotlin.Triple
 import io.muun.apollo.domain.action.UserActions
@@ -35,7 +33,7 @@ class SettingsPresenter @Inject constructor(
 
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
-    override fun setUp(@NotNull arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
         setUpUserWatcher()
         setUpUpdateProfilePictureAction()
@@ -169,10 +167,10 @@ class SettingsPresenter @Inject constructor(
             .toBlocking()
             .first()
         val shouldBlockAndExplain = options.isBlocked()
-        if (options.wouldDeleteWallet()) {
-            view.handleDeleteWallet(shouldBlockAndExplain)
-        } else {
+        if (options.isRecoverable()) {
             view.handleLogout(shouldBlockAndExplain)
+        } else {
+            view.handleDeleteWallet(shouldBlockAndExplain)
         }
     }
 

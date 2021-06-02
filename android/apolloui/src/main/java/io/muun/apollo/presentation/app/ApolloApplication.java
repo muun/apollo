@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.app;
 
-import io.muun.apollo.data.async.tasks.PeriodicTaskWorkerFactory;
+import io.muun.apollo.data.async.tasks.MuunWorkerFactory;
 import io.muun.apollo.data.di.DaggerDataComponent;
 import io.muun.apollo.data.di.DataComponent;
 import io.muun.apollo.data.di.DataModule;
@@ -147,7 +147,7 @@ public abstract class ApolloApplication extends Application
     @Override
     public Configuration getWorkManagerConfiguration() {
         return new Configuration.Builder()
-                .setWorkerFactory(new PeriodicTaskWorkerFactory(this))
+                .setWorkerFactory(new MuunWorkerFactory(this))
                 .setMinimumLoggingLevel(Globals.isReleaseBuild() ? Log.ASSERT : Log.VERBOSE)
                 .build();
     }

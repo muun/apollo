@@ -6,10 +6,7 @@ import io.muun.common.Optional
 import rx.Observable
 import javax.inject.Inject
 
-class LatestOperationSelector
-@Inject constructor(
-        private val operationDao: OperationDao
-) {
+class LatestOperationSelector @Inject constructor(private val operationDao: OperationDao) {
 
     fun watch(): Observable<Optional<Operation>> {
         return operationDao.fetchMaybeLatest()

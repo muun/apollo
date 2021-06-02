@@ -1,12 +1,14 @@
 package io.muun.apollo.presentation.ui.activity.extension
 
-import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.ExtensibleActivity
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragment
+import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
+import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
+import io.muun.common.utils.CollectionUtils
 import io.muun.common.utils.Preconditions
 import javax.inject.Inject
 
@@ -16,25 +18,57 @@ import javax.inject.Inject
 @PerActivity
 class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
 
+    companion object {
+        private const val TAG: String = "Muun Error Fragment"
+    }
+
     override fun setActivity(activity: ExtensibleActivity) {
         Preconditions.checkArgument(activity is SingleFragmentActivity<*>)
         super.setActivity(activity)
+
+        val fragments = activity.supportFragmentManager.fragments
+        if (fragments.isNotEmpty()) {
+
+            val errorFragments: List<Fragment> = CollectionUtils
+                .filterList(fragments) { f: Fragment -> f is ErrorFragment }
+
+            if (errorFragments.isNotEmpty()) {
+                Preconditions.checkState(
+                    errorFragments.size == 1,
+                    "Only 1 ErrorFragment allowed. Current: " + errorFragments.size
+                )
+
+                if (activity is ErrorFragmentDelegate) {
+                    val errorFragment = errorFragments[0] as ErrorFragment
+                    errorFragment.setDelegate((activity as ErrorFragmentDelegate))
+                }
+            }
+        }
     }
 
-    fun showError(@StringRes titleRes: Int, @StringRes descriptionRes: Int, vararg args: String) {
-        val fragment = ErrorFragment.create(
-            titleRes,
-            descriptionRes,
-            *args
-        )
+    fun showError(viewModel: ErrorViewModel) {
+        val errorFragment = ErrorFragment.create(viewModel)
+        show(errorFragment)
+        if (activity is ErrorFragmentDelegate) {
+            errorFragment.setDelegate(activity as ErrorFragmentDelegate)
+        }
+    }
 
-        show(fragment)
+    fun hideError() {
+        val errorFragment = activity.supportFragmentManager.findFragmentByTag(TAG)
+
+        if (errorFragment != null) {
+            activity.supportFragmentManager
+                .beginTransaction()
+                .remove(errorFragment)
+                .commitNow()
+        }
     }
 
     private fun show(fragment: Fragment) {
         activity.supportFragmentManager
             .beginTransaction()
-            .replace(android.R.id.content, fragment)
+            .replace(android.R.id.content, fragment, TAG)
             .commitNow()
     }
 }
