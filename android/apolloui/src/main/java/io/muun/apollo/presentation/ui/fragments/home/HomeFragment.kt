@@ -10,7 +10,6 @@ import butterknife.BindView
 import butterknife.OnClick
 import com.airbnb.lottie.LottieAnimationView
 import com.skydoves.balloon.*
-import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.Operation
@@ -46,10 +45,6 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
 
     @BindView(R.id.home_security_center_card)
     lateinit var securityCenterCard: MuunHomeCard
-
-    @State
-    @JvmField
-    var utxoSetState: UtxoSetStateSelector.UtxoSetState? = null
 
     var balloon: Balloon? = null
 
@@ -147,7 +142,7 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
             lockManager.setUnlockListener {
                 showTooltip()
             }
-            return;
+            return
         }
 
         this.balloon = createBalloon(parentActivity) {
@@ -180,15 +175,8 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
     }
 
     override fun setBalance(homeBalanceState: HomePresenter.HomeBalanceState) {
-
         balanceView.setBalance(homeBalanceState)
-
-        when (homeBalanceState.utxoSetState) {
-            UtxoSetStateSelector.UtxoSetState.PENDING -> chevron.setAnimation(R.raw.lm_chevron_pending)
-            UtxoSetStateSelector.UtxoSetState.RBF -> chevron.setAnimation(R.raw.lm_chevron_rbf)
-            UtxoSetStateSelector.UtxoSetState.CONFIRMED -> chevron.setAnimation(R.raw.lm_chevron_regular)
-        }
-        utxoSetState = homeBalanceState.utxoSetState
+        setChevronAnimation(homeBalanceState.utxoSetState)
     }
 
     override fun setNewOp(newOp: Operation, mode: CurrencyDisplayMode) {
@@ -250,5 +238,16 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
     @OnClick(R.id.chevron)
     fun onOperationHistoryChevronClick() {
         presenter.navigateToOperations()
+    }
+
+    private fun setChevronAnimation(utxoSetState: UtxoSetStateSelector.UtxoSetState) {
+        val animationRes = when (utxoSetState) {
+            UtxoSetStateSelector.UtxoSetState.PENDING -> R.raw.chevron_pending
+            UtxoSetStateSelector.UtxoSetState.RBF -> R.raw.chevron_rbf
+            UtxoSetStateSelector.UtxoSetState.CONFIRMED -> R.raw.chevron_regular
+        }
+
+        chevron.setAnimation(animationRes)
+        chevron.playAnimation()
     }
 }

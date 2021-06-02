@@ -13,6 +13,7 @@ plugins {
     id 'com.palantir.configuration-resolver' version '0.1.0'
     id 'com.github.ben-manes.versions' version '0.15.0'
     id 'org.owasp.dependencycheck' version '5.3.2.1'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 apply plugin: 'com.android.application'
@@ -80,8 +81,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 505
-        versionName "45.5"
+        versionCode 600
+        versionName "46"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -259,6 +260,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     lintOptions {
         abortOnError false
         htmlReport true
@@ -349,8 +354,8 @@ dependencies {
     implementation 'com.github.muun:glide-transformations:3.1.2'
 
     // qr codes
-    implementation 'com.google.zxing:core:3.3.0'
-    implementation 'com.github.muun.barcodescanner:zxing:1.9.13'
+    implementation 'com.google.zxing:core:3.3.0'                    // For showing QR codes
+    implementation 'com.github.muun.barcodescanner:zxing:1.9.13'    // For scanning QR codes
 
     // lifecycle helpers
     implementation 'frankiesardo:icepick:3.2.0'
@@ -378,6 +383,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'org.assertj:assertj-core:3.8.0'
+    androidTestImplementation 'org.mockito:mockito-core:3.10.0'
+    androidTestImplementation 'org.mockito:mockito-android:3.10.0'
+    androidTestImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 

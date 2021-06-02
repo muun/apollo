@@ -103,4 +103,14 @@ public class Supports {
         int APOLLO = 300;
         int FALCON = 300;
     }
+
+    public interface IncomingMpp {
+        int APOLLO = NOT_SUPPORTED;
+        int FALCON = NOT_SUPPORTED;
+    }
+
+    public interface NonBrokenUserPreferences {
+        int APOLLO = 600;
+    }
+
 }

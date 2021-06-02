@@ -12,7 +12,6 @@ import io.muun.apollo.presentation.ui.view.DividerItemDecoration;
 import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
-import android.content.Context;
 import android.view.View;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -50,8 +49,6 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
     protected void initializeUi(View view) {
         super.initializeUi(view);
 
-        final Context context = getContext();
-
         final MuunHeader header = getParentActivity().getHeader();
         header.attachToActivity(getParentActivity());
         header.clear();
@@ -62,8 +59,8 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
         adapter = new ItemAdapter(new ViewHolderFactory());
         adapter.setOnItemClickListener(this::onItemClicked);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.addItemDecoration(new DividerItemDecoration(context, 82, 0));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.addItemDecoration(new DividerItemDecoration(requireContext(), 82, 0));
         recyclerView.setAdapter(adapter);
 
         emptyScreen.setOnLinkClickListener(ignored -> {

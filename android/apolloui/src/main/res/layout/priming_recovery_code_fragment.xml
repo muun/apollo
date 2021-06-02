@@ -22,7 +22,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/missing_recovery_code" />
+                app:srcCompat="@drawable/missing_recovery" />
 
         <TextView
                 android:id="@+id/priming_recovery_code_title"

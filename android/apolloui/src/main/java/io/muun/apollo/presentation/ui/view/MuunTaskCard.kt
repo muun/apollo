@@ -63,16 +63,16 @@ class MuunTaskCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
 
             val titleColorRes = ContextCompat.getColor(context, when (newStatus) {
                 Status.DEFAULT -> R.color.blue
+                Status.INACTIVE -> R.color.sc_task_text_disabled_color
                 Status.ACTIVE -> R.color.blue
-                Status.INACTIVE -> R.color.disabled_color
                 Status.DONE -> R.color.text_secondary_color
                 Status.SKIPPED -> R.color.blue
             })
 
             val bodyColorRes = ContextCompat.getColor(context, when (newStatus) {
                 Status.DEFAULT -> R.color.text_secondary_color
+                Status.INACTIVE -> R.color.sc_task_text_disabled_color
                 Status.ACTIVE -> R.color.text_secondary_color
-                Status.INACTIVE -> R.color.disabled_color
                 Status.DONE -> R.color.text_secondary_color
                 Status.SKIPPED -> R.color.text_secondary_color
             })

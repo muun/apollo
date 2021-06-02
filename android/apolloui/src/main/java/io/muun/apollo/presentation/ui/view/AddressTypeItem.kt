@@ -55,6 +55,7 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     fun onLabelClick() {
 
         val dialog = TitleAndDescriptionDrawer()
+        dialog.setTitle(R.string.bitcoin_address_help_title)
 
         StyledStringRes(context, R.string.bitcoin_address_help_content)
             .toCharSequence()

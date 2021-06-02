@@ -13,10 +13,12 @@ class SwapperFundingOutputPolicies(
     /**
      * Decide whether the debt policy to use for a swap (LEND, COLLECT or NONE).
      */
-    fun getDebtType(paymentAmountInSat: Long, lightningFeeInSat: Long): DebtType {
+    fun getDebtType(paymentAmountInSat: Long,
+                    lightningFeeInSat: Long,
+                    hasKnownFundingTx: Boolean): DebtType {
         val numConfirmations = getFundingConfirmations(paymentAmountInSat, lightningFeeInSat)
         val totalAmountInSat = paymentAmountInSat + lightningFeeInSat
-        if (numConfirmations == 0 && totalAmountInSat <= maxDebtInSat) {
+        if (!hasKnownFundingTx && numConfirmations == 0 && totalAmountInSat <= maxDebtInSat) {
             return DebtType.LEND
         }
         return if (potentialCollectInSat > 0) {
@@ -27,8 +29,10 @@ class SwapperFundingOutputPolicies(
     /**
      * Decide how much debt to issue / collect for a swap.
      */
-    fun getDebtAmount(paymentAmountInSat: Long, lightningFeeInSat: Long): BtcAmount {
-        return when (getDebtType(paymentAmountInSat, lightningFeeInSat)) {
+    fun getDebtAmount(paymentAmountInSat: Long,
+                      lightningFeeInSat: Long,
+                      hasKnownFundingTx: Boolean): BtcAmount {
+        return when (getDebtType(paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx)) {
             DebtType.LEND -> BtcAmount.fromSats(paymentAmountInSat + lightningFeeInSat)
             DebtType.COLLECT -> BtcAmount.fromSats(potentialCollectInSat)
             DebtType.NONE -> BtcAmount.ZERO
@@ -48,10 +52,15 @@ class SwapperFundingOutputPolicies(
     /**
      * Compute the minimum amount that the user should pay in order to perform the swap.
      */
-    private fun getMinFundingAmountInSat(paymentAmountInSat: Long, lightningFeeInSat: Long): Long {
+    private fun getMinFundingAmountInSat(paymentAmountInSat: Long,
+                                         lightningFeeInSat: Long,
+                                         hasKnownFundingTx: Boolean): Long {
         var inputAmountInSat = paymentAmountInSat + lightningFeeInSat
-        if (getDebtType(paymentAmountInSat, lightningFeeInSat) == DebtType.COLLECT) {
-            inputAmountInSat += getDebtAmount(paymentAmountInSat, lightningFeeInSat).toSats()
+        val debtType = getDebtType(paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx)
+        if (debtType == DebtType.COLLECT) {
+            inputAmountInSat += getDebtAmount(
+                paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
+            ).toSats()
         }
         return inputAmountInSat
     }
@@ -59,8 +68,12 @@ class SwapperFundingOutputPolicies(
     /**
      * Compute the amount that the user should pay in the funding output.
      */
-    fun getFundingOutputAmount(paymentAmountInSat: Long, lightningFeeInSat: Long): BtcAmount {
-        val minAmountInSat = getMinFundingAmountInSat(paymentAmountInSat, lightningFeeInSat)
+    fun getFundingOutputAmount(paymentAmountInSat: Long,
+                               lightningFeeInSat: Long,
+                               hasKnownFundingTx: Boolean): BtcAmount {
+        val minAmountInSat = getMinFundingAmountInSat(
+            paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
+        )
         val outputAmountInSat = Math.max(minAmountInSat, BitcoinUtils.DUST_IN_SATOSHIS)
         return BtcAmount.fromSats(outputAmountInSat)
     }
@@ -68,9 +81,15 @@ class SwapperFundingOutputPolicies(
     /**
      * Compute the padding used in the output amount in order to reach the minimum DUST amount.
      */
-    fun getFundingOutputPaddingInSat(paymentAmountInSat: Long, lightningFeeInSat: Long): Long {
-        val minAmountInSat = getMinFundingAmountInSat(paymentAmountInSat, lightningFeeInSat)
-        val outputAmount = getFundingOutputAmount(paymentAmountInSat, lightningFeeInSat)
+    fun getFundingOutputPaddingInSat(paymentAmountInSat: Long,
+                                     lightningFeeInSat: Long,
+                                     hasKnownFundingTx: Boolean): Long {
+        val minAmountInSat = getMinFundingAmountInSat(
+            paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
+        )
+        val outputAmount = getFundingOutputAmount(
+            paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
+        )
         return outputAmount.toSats() - minAmountInSat
     }
 

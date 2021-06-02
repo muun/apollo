@@ -34,7 +34,7 @@ class SetupPasswordActivityPresenter @Inject constructor(
         password = null
     )
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         startEmailSetup.state

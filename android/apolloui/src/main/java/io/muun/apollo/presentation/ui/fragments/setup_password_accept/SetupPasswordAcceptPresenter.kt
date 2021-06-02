@@ -10,7 +10,7 @@ import javax.inject.Inject
 class SetupPasswordAcceptPresenter @Inject constructor():
     SingleFragmentPresenter<SetupPasswordAcceptView, SetupPasswordAcceptParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         parentPresenter.watchAcceptPasswordSetupTerms()

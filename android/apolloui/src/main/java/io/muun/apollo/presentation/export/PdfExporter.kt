@@ -14,7 +14,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
-import io.muun.apollo.R
 import timber.log.Timber
 import java.io.File
 import kotlin.random.Random

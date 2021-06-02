@@ -50,6 +50,7 @@ open class UserPreferencesRepository @Inject constructor(
 
         var strictMode: Boolean = false
         var seenNewHome: Boolean = false
+        var seenLnurlFirstTime: Boolean = false
 
         // JSON constructor
         constructor()
@@ -57,12 +58,14 @@ open class UserPreferencesRepository @Inject constructor(
         constructor(prefs: UserPreferences): this() {
             strictMode = prefs.strictMode
             seenNewHome = prefs.seenNewHome
+            seenLnurlFirstTime = prefs.seenLnurlFirstTime
         }
 
         fun toModel(): UserPreferences {
             return UserPreferences(
                     strictMode,
-                    seenNewHome
+                    seenNewHome,
+                    seenLnurlFirstTime
             )
         }
     }

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.common.exception.MissingCaseError;
 
 import android.content.Context;
@@ -138,6 +139,12 @@ public class MuunHeader extends MuunView {
      * Set to true to display a drop shadow below the Header.
      */
     public void setElevated(boolean isElevated) {
+        // In dark theme, we disable shadow from top navbar
+        // TODO: This is a temporary fix, we might work on this later
+        if (ExtensionsKt.isInNightMode(this)) {
+            isElevated = false;
+        }
+
         dropShadow.setVisibility(isElevated ? View.VISIBLE : View.GONE);
     }
 

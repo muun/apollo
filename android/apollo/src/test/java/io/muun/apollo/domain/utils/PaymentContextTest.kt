@@ -792,7 +792,8 @@ class PaymentContextTest: BaseTest() {
                         invoice.amount?.amountInSatoshis,
                         invoice.description ?: "",
                         invoice.expirationTime,
-                        invoice.destinationPubKey
+                        invoice.destinationPubKey,
+                        invoice.id
                 ),
                 swap = swap,
                 feeInSatoshisPerByte = defaultFeeCalculator.satoshisPerByte

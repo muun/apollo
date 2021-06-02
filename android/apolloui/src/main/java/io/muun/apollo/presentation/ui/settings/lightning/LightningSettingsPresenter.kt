@@ -5,19 +5,18 @@ import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.model.UserPreferences
 import io.muun.apollo.domain.selector.UserPreferencesSelector
+import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
-import io.muun.apollo.presentation.ui.home.HomePresenter
 import rx.Observable
 import javax.inject.Inject
 
-// FIXME: The parent presenter is wrong!
 class LightningSettingsPresenter
 @Inject constructor(
-        private val userPreferencesSelector: UserPreferencesSelector,
-        private val updateUserPreferences: UpdateUserPreferencesAction
-): SingleFragmentPresenter<LightningSettingsView, HomePresenter>() {
+    private val userPreferencesSelector: UserPreferencesSelector,
+    private val updateUserPreferences: UpdateUserPreferencesAction
+): SingleFragmentPresenter<LightningSettingsView, ParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         val combined = Observable.combineLatest(

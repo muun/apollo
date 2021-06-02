@@ -7,7 +7,7 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.libwallet.DecodedInvoice;
-import io.muun.apollo.domain.libwallet.LibwalletBridge;
+import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
@@ -15,6 +15,7 @@ import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.crypto.hd.PublicKeyPair;
+import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Preconditions;
 
@@ -59,8 +60,8 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     }
 
     private Observable<PaymentRequest> resolveLnUri(OperationUri uri) {
-        final DecodedInvoice invoice =
-                LibwalletBridge.decodeInvoice(network, uri.getLnInvoice().get());
+        final DecodedInvoice invoice = Invoice.INSTANCE
+                .decodeInvoice(network, uri.getLnInvoice().get());
 
         if (invoice.getExpirationTime().isBefore(DateUtils.now())) {
             throw new InvoiceExpiredException(invoice.getOriginal());
@@ -145,6 +146,19 @@ public class ResolveLnUriAction extends BaseAsyncAction1<OperationUri, PaymentRe
     @VisibleForTesting
     public Observable<SubmarineSwap> prepareSwap(SubmarineSwapRequest request) {
         final PublicKeyPair basePublicKeyPair = keysRepository.getBasePublicKeyPair();
-        return houstonClient.createSubmarineSwap(request, basePublicKeyPair, network);
+        return houstonClient.createSubmarineSwap(request)
+                .doOnNext(submarineSwap -> {
+                    final boolean isValid = TransactionSchemeSubmarineSwapV2.validateSwap(
+                            request.invoice,
+                            request.swapExpirationInBlocks,
+                            basePublicKeyPair,
+                            submarineSwap.toJson(), // Needs to be a common's class
+                            network
+                    );
+
+                    if (!isValid) {
+                        throw new InvalidSwapException(submarineSwap.houstonUuid);
+                    }
+                });
     }
 }

@@ -16,4 +16,5 @@ public interface ApplicationComponent {
     FragmentComponent fragmentComponent();
 
     ActivityComponent activityComponent();
+
 }

@@ -508,9 +508,7 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
         } else if (error instanceof AmountTooSmallError) {
             // This error should only reach us if the user scanned a QR with an invalid amount (eg
-            // DUST), and is not allowed to change it. There's nothing we can do, but for now we
-            // want to detect this case:
-            Timber.e(error);
+            // DUST), and is not allowed to change it. There's nothing we can do.
             showErrorScreen(NewOperationErrorType.AMOUNT_TOO_SMALL);
 
         } else if (error instanceof UserFacingError) {

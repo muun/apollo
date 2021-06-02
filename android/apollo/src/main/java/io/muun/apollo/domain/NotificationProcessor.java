@@ -1,6 +1,8 @@
 package io.muun.apollo.domain;
 
 
+import io.muun.apollo.data.external.NotificationService;
+import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.ContactActions;
@@ -13,13 +15,15 @@ import io.muun.apollo.domain.action.operation.UpdateOperationAction;
 import io.muun.apollo.domain.errors.MessageOriginError;
 import io.muun.apollo.domain.errors.MessagePermissionsError;
 import io.muun.apollo.domain.errors.UnknownNotificationTypeError;
+import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.NextTransactionSize;
-import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUpdated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.common.Optional;
+import io.muun.common.api.IncomingSwapJson;
+import io.muun.common.api.OperationJson;
 import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.messages.AuthorizeChallengeUpdateMessage;
 import io.muun.common.api.messages.AuthorizeRcSigninMessage;
@@ -35,9 +39,11 @@ import io.muun.common.api.messages.NewOperationMessage;
 import io.muun.common.api.messages.OperationUpdateMessage;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.SessionStatus;
+import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
 import rx.Completable;
+import rx.Single;
 import rx.functions.Func1;
 
 import java.util.HashMap;
@@ -57,6 +63,9 @@ public class NotificationProcessor {
     private final OperationMetadataMapper operationMapper;
     private final FulfillIncomingSwapAction fulfillIncomingSwap;
 
+    private final HoustonClient houstonClient;
+    private final NotificationService notificationService;
+
     private final Map<String, NotificationHandler> handlers = new HashMap<>();
 
     /**
@@ -70,7 +79,9 @@ public class NotificationProcessor {
                                  SigninActions signinActions,
                                  ModelObjectsMapper mapper,
                                  OperationMetadataMapper operationMapper,
-                                 FulfillIncomingSwapAction fulfillIncomingSwap) {
+                                 FulfillIncomingSwapAction fulfillIncomingSwap,
+                                 HoustonClient houstonClient,
+                                 NotificationService notificationService) {
 
         this.updateOperation = updateOperation;
         this.createOperation = createOperation;
@@ -80,6 +91,8 @@ public class NotificationProcessor {
         this.mapper = mapper;
         this.operationMapper = operationMapper;
         this.fulfillIncomingSwap = fulfillIncomingSwap;
+        this.houstonClient = houstonClient;
+        this.notificationService = notificationService;
 
 
         addHandler(NewContactMessage.SPEC, this::handleNewContact);
@@ -155,13 +168,38 @@ public class NotificationProcessor {
                 notification.message
         );
 
-        final OperationWithMetadata operationWithMetadata = mapper.mapOperation(message.operation);
-        final Operation operation = operationMapper.mapFromMetadata(operationWithMetadata);
-
         final NextTransactionSize nextTransactionSize = mapper
                 .mapNextTransactionSize(message.nextTransactionSize);
 
-        return createOperation.action(operation, nextTransactionSize).toCompletable();
+        return mapOperationWithMetadata(message.operation)
+                .map(operationMapper::mapFromMetadata)
+                .flatMapObservable(operation -> {
+
+                    if (operation.isIncomingSwap()) {
+                        notificationService.cancelLnUrlNotification(
+                                Encodings.bytesToHex(operation.incomingSwap.getPaymentHash()
+                        ));
+                    }
+
+                    // Everything works fine as long as createOperation calls onComplete
+                    return createOperation.action(operation, nextTransactionSize);
+                })
+                .toCompletable();
+    }
+
+    private Single<OperationWithMetadata> mapOperationWithMetadata(OperationJson operation) {
+        final IncomingSwapJson incomingSwap = operation.incomingSwap;
+        if (incomingSwap != null) {
+            operation.receiverMetadata = Invoice.INSTANCE.getMetadata(incomingSwap);
+
+            if (operation.receiverMetadata != null) {
+                final OperationWithMetadata operationWithMetadata = mapper.mapOperation(operation);
+                return houstonClient.updateOperationMetadata(operationWithMetadata)
+                        .toSingle(() -> operationWithMetadata);
+            }
+        }
+
+        return Single.just(mapper.mapOperation(operation));
     }
 
     private Completable handleOperationUpdate(NotificationJson notification) {

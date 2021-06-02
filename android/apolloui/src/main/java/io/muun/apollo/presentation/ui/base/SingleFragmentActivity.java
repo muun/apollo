@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.base;
 
 import io.muun.apollo.presentation.ui.activity.extension.ErrorFragmentExtension;
 import io.muun.apollo.presentation.ui.bundler.StringListBundler;
+import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.listener.OnBackPressedListener;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.common.utils.Preconditions;
@@ -9,7 +10,6 @@ import io.muun.common.utils.Preconditions;
 import android.os.Bundle;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -211,7 +211,11 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         this.backPressedListener = listener;
     }
 
-    public void showError(@StringRes int titleRes, @StringRes int descriptionRes, String... args) {
-        errorFragmentExtension.showError(titleRes, descriptionRes, args);
+    public void showError(ErrorViewModel viewModel) {
+        errorFragmentExtension.showError(viewModel);
+    }
+
+    public void hideError() {
+        errorFragmentExtension.hideError();
     }
 }

@@ -11,7 +11,7 @@ import javax.inject.Inject
 class SetupPasswordIntroPresenter @Inject constructor():
     SingleFragmentPresenter<SetupPasswordIntroView, SetupPasswordIntroParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         view.setSecurityLevel(SecurityCenter(userSel.get(), userSel.emailSetupSkipped()).getLevel())

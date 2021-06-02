@@ -5,8 +5,12 @@ import io.muun.apollo.R;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.annotation.ColorInt;
 import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import butterknife.BindView;
 
 import javax.annotation.Nullable;
@@ -16,11 +20,17 @@ public class LoadingView extends MuunView {
 
     static final ViewProps<LoadingView> viewProps = new ViewProps.Builder<LoadingView>()
             .addString(R.attr.title, LoadingView::setTitle)
-            .addBoolean(R.attr.showText, LoadingView::showText)
+            .addBoolean(R.attr.showTitle, LoadingView::showTitle)
             .build();
+
+    @BindView(R.id.loading_view_spinner)
+    ProgressBar progressBar;
 
     @BindView(R.id.loading_view_title)
     TextView title;
+
+    @BindView(R.id.loading_view_desc)
+    TextView description;
 
     public LoadingView(Context context) {
         super(context);
@@ -49,11 +59,26 @@ public class LoadingView extends MuunView {
         title.setText(resId);
     }
 
-    public void setTitle(@NotNull String text) {
+    public void setTitle(@NotNull CharSequence text) {
         title.setText(text);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
-    public void showText(Boolean showText) {
+    public void setDescription(@NotNull CharSequence text) {
+        description.setText(text);
+        description.setVisibility(View.VISIBLE);
+    }
+
+    public void showTitle(Boolean showText) {
         title.setVisibility(showText ? View.VISIBLE : View.GONE);
+    }
+
+    public void tintProgressBar(@ColorInt int color) {
+        DrawableCompat.setTint(progressBar.getIndeterminateDrawable(), color);
+    }
+
+    public void resetViewState() {
+        description.setVisibility(View.GONE);
+        tintProgressBar(ContextCompat.getColor(getContext(), R.color.blue));
     }
 }

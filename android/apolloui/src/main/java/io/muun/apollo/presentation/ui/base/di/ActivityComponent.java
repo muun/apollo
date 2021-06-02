@@ -9,6 +9,9 @@ import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity;
+import io.muun.apollo.presentation.ui.lnurl.intro.LnUrlIntroActivity;
+import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity;
+import io.muun.apollo.presentation.ui.lnurl.withdraw.confirm.LnUrlWithdrawConfirmActivity;
 import io.muun.apollo.presentation.ui.migration.MigrationActivity;
 import io.muun.apollo.presentation.ui.new_operation.NewOperationActivity;
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity;
@@ -104,4 +107,9 @@ public interface ActivityComponent {
 
     void inject(SelectNightModeActivity selectDarkModeActivity);
 
+    void inject(LnUrlIntroActivity lnUrlIntroActivity);
+
+    void inject(LnUrlWithdrawConfirmActivity lnUrlWithdrawConfirmActivity);
+
+    void inject(LnUrlWithdrawActivity lnUrlWithdrawActivity);
 }

@@ -15,7 +15,7 @@
     <!-- Suppress errors caused by missing comments in api models -->
     <suppress checks="JavadocMethod"
             files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/]common[\\/]api[\\/].*"/>
-    <suppress checks="LineLength" files=".*[\\/]migrations\.xml" />
+    <suppress checks="LineLength" files=".*[\\/]migrations(-[^.\\/]+)?\.xml" />
     <suppress checks="LineLength" files=".*[\\/]logback[^.\\/]*\.xml" />
     <suppress checks="LineLength" files=".*[\\/]AndroidManifest[^.\\/]*\.xml" />
 </suppressions>

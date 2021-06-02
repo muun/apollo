@@ -79,12 +79,16 @@ func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, err
 		modifier = hdkeychain.HardenedKeyStart
 	}
 
-	path := hdpath.MustParse(p.Path).Child(uint32(index) | modifier)
-
 	child, err := p.key.Child(uint32(index) | modifier)
 	if err != nil {
 		return nil, err
 	}
+
+	parentPath, err := hdpath.Parse(p.Path)
+	if err != nil {
+		return nil, err
+	}
+	path := parentPath.Child(uint32(index) | modifier)
 
 	return &HDPrivateKey{key: *child, Network: p.Network, Path: path.String()}, nil
 }

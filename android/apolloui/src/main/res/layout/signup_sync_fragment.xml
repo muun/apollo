@@ -1,25 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center">
 
-    <TextView
-        android:id="@+id/signup_sync_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:textSize="@dimen/muun_text_size_body"
-        android:textColor="@color/text_primary_color"
-        tools:text="Creating your wallet" />
-
-    <androidx.core.widget.ContentLoadingProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:id="@+id/signup_sync_spinner"
-            android:layout_width="24dp"
-            android:layout_height="24dp" />
+    <io.muun.apollo.presentation.ui.view.LoadingView
+            android:id="@+id/initial_sync_loading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            tools:title="Creating your wallet"/>
 
 </LinearLayout>

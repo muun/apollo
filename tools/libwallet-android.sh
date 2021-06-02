@@ -27,10 +27,18 @@ mkdir -p "$build_dir/pkg"
 # 4. Use a fixed build cache location
 # 5. Opt in to reproducible builds
 
-GOMODCACHE="$build_dir/pkg" \
+if [[ -z $GOMODCACHE ]]; then
+    GOMODCACHE="$build_dir/pkg"
+fi
+
+if [[ -z $GOCACHE ]]; then
+    GOCACHE="$build_dir/android"
+fi
+
+GOMODCACHE="$GOMODCACHE" \
     go run golang.org/x/mobile/cmd/gomobile bind \
     -target="android" -o "$libwallet" \
-    -cache "$build_dir/android" \
+    -cache  "$GOCACHE"\
     -trimpath -ldflags="-buildid=. -v" \
     .
 

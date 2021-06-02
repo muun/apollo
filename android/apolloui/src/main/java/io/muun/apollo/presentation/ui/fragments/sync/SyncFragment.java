@@ -4,12 +4,12 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.model.SignupStep;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity;
+import io.muun.apollo.presentation.ui.view.LoadingView;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 import butterknife.BindString;
 import butterknife.BindView;
 
@@ -30,11 +30,8 @@ public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncV
         return fragment;
     }
 
-    @BindView(R.id.signup_sync_spinner)
-    View loadingSpinner;
-
-    @BindView(R.id.signup_sync_message)
-    TextView message;
+    @BindView(R.id.initial_sync_loading)
+    LoadingView loadingView;
 
     @BindString(R.string.signup_sync_creating)
     String newUserMessage;
@@ -66,12 +63,12 @@ public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncV
 
     @Override
     public void setLoading(boolean isLoading) {
-        loadingSpinner.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
+        loadingView.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
     }
 
     @Override
     public void setIsExistingUser(boolean isExistingUser) {
-        message.setText(isExistingUser ? existingUserMessage : newUserMessage);
+        loadingView.setTitle(isExistingUser ? existingUserMessage : newUserMessage);
     }
 
     @Override

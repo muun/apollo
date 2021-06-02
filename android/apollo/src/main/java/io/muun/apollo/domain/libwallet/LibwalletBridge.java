@@ -3,7 +3,6 @@ package io.muun.apollo.domain.libwallet;
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.errors.AddressDerivationError;
-import io.muun.apollo.domain.libwallet.errors.InvoiceParsingError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletEmergencyKitError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletVerificationError;
@@ -33,7 +32,6 @@ import libwallet.EKInput;
 import libwallet.EKOutput;
 import libwallet.HDPrivateKey;
 import libwallet.HDPublicKey;
-import libwallet.Invoice;
 import libwallet.Libwallet;
 import libwallet.MuunPaymentURI;
 import libwallet.Network;
@@ -41,9 +39,6 @@ import libwallet.SigningExpectations;
 import libwallet.Transaction;
 import org.bitcoinj.core.NetworkParameters;
 import org.javamoney.moneta.Money;
-import org.threeten.bp.Instant;
-import org.threeten.bp.ZoneId;
-import org.threeten.bp.ZonedDateTime;
 import timber.log.Timber;
 
 import java.util.Arrays;
@@ -197,31 +192,6 @@ public class LibwalletBridge {
         } catch (Exception e) {
             throw new AddressDerivationError(
                     TransactionSchemeV4.ADDRESS_VERSION, pubKeyPair.getAbsoluteDerivationPath(), e);
-        }
-    }
-
-    /**
-     * Decode a LN Invoice.
-     */
-    public static io.muun.apollo.domain.libwallet.DecodedInvoice
-            decodeInvoice(NetworkParameters params, String bech32Invoice) {
-
-        final Invoice invoice = parseInvoice(params, bech32Invoice);
-        return new io.muun.apollo.domain.libwallet.DecodedInvoice(
-                bech32Invoice,
-                invoice.getSats() != 0 ? invoice.getSats() : null,
-                invoice.getDescription(),
-                ZonedDateTime.ofInstant(Instant.ofEpochSecond(invoice.getExpiry()), ZoneId.of("Z")),
-                Encodings.bytesToHex(invoice.getDestination())
-        );
-    }
-
-    private static Invoice parseInvoice(NetworkParameters params, String bech32Invoice) {
-        try {
-            return Libwallet.parseInvoice(bech32Invoice, toLibwalletModel(params));
-
-        } catch (Exception e) {
-            throw new InvoiceParsingError(bech32Invoice, e);
         }
     }
 

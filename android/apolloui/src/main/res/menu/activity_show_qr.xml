@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:muun="http://schemas.android.com/apk/res-auto">
+
+    <item
+            android:id="@+id/scan_lnurl"
+            android:icon="@drawable/icon_scan"
+            android:title="@string/scan_lnurl"
+            muun:iconTint="@color/blue"
+            muun:showAsAction="always" />
+
+</menu>

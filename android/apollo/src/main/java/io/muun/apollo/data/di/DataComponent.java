@@ -3,12 +3,13 @@ package io.muun.apollo.data.di;
 import io.muun.apollo.data.apis.DriveAuthenticator;
 import io.muun.apollo.data.apis.DriveUploader;
 import io.muun.apollo.data.async.gcm.GcmMessageListenerService;
-import io.muun.apollo.data.async.tasks.PeriodicTaskWorkerFactory;
+import io.muun.apollo.data.async.tasks.MuunWorkerFactory;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.external.HoustonConfig;
+import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.NetworkInfoProvider;
 import io.muun.apollo.data.os.ClipboardProvider;
@@ -40,7 +41,7 @@ public interface DataComponent extends ActionComponent {
 
     void inject(GcmMessageListenerService service);
 
-    void inject(PeriodicTaskWorkerFactory workerFactory);
+    void inject(MuunWorkerFactory workerFactory);
 
     // Exposed to dependent components
 
@@ -95,4 +96,6 @@ public interface DataComponent extends ActionComponent {
     DriveUploader driveUploader();
 
     RepositoryRegistry repositoryRegistry();
+
+    NotificationService notificationService();
 }

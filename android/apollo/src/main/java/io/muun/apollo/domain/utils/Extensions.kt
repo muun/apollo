@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.utils
 
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.fragment.app.Fragment
 import io.muun.apollo.data.logging.CrashReport
 import io.muun.apollo.data.net.base.NetworkException
@@ -36,16 +37,22 @@ fun <T, U> Observable<T>.zipWith(o1: Observable<U>) =
 fun <T, U, V> Observable<T>.zipWith(o1: Observable<U>, o2: Observable<V>) =
     Observable.zip(this, o1, o2) { a, b, c -> Triple(a, b, c) }
 
-fun Fragment.applyArgs(f: Bundle.() -> Unit) =
+fun <T: Fragment> T.applyArgs(f: Bundle.() -> Unit) =
     apply {
         arguments = (arguments ?: Bundle()).apply(f)
     }
 
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
 fun Throwable.isInstanceOrIsCausedByNetworkError() =
-    this is NetworkException || isCausedByNetworkError()
+    isInstanceOrIsCausedByError<NetworkException>()
 
-fun Throwable.isCausedByNetworkError() =
-    ExceptionUtils.getTypedCause(this, NetworkException::class.java).isPresent
+inline fun <reified T> Throwable.isInstanceOrIsCausedByError() =
+    this is T || isCausedByError<NetworkException>()
+
+inline fun <reified T> Throwable.isCausedByError() =
+    ExceptionUtils.getTypedCause(this, T::class.java).isPresent
 
 /**
  * Return the list of currencies reported by the device (based on the list of available locales
@@ -89,3 +96,6 @@ private fun getUnsupportedCurrencies(metadata: MutableMap<String, Serializable>)
 
     return unsupportedCurrencies.toTypedArray()
 }
+
+fun String?.isEmpty(): Boolean =
+    this == null || TextUtils.isEmpty(this)

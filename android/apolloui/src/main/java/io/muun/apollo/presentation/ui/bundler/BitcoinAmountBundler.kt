@@ -10,8 +10,8 @@ import javax.money.MonetaryAmount
 
 class BitcoinAmountBundler : Bundler<BitcoinAmount> {
 
-    override fun put(s: String, amount: BitcoinAmount?, bundle: Bundle) {
-        bundle.putString(s, amount?.serialize())
+    override fun put(key: String, amount: BitcoinAmount?, bundle: Bundle) {
+        bundle.putString(key, amount?.serialize())
     }
 
     override fun get(key: String, bundle: Bundle): BitcoinAmount? {

@@ -2,6 +2,7 @@ package io.muun.apollo.domain.model
 
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.DecodedInvoice
+import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.common.utils.Preconditions
 import javax.money.MonetaryAmount
@@ -76,7 +77,7 @@ data class PaymentRequest(val type: Type,
                 Contact.fromJson(payReqJson.contact),
                 payReqJson.address,
                 payReqJson.invoice?.let {
-                    LibwalletBridge.decodeInvoice(Globals.INSTANCE.network, it)
+                    Invoice.decodeInvoice(Globals.INSTANCE.network, it)
                 },
                 SubmarineSwap.fromJson(payReqJson.swap),
                 payReqJson.feeInSatoshisPerByte,

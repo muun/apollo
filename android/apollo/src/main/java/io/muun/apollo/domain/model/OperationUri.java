@@ -1,12 +1,13 @@
 package io.muun.apollo.domain.model;
 
 import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.domain.libwallet.Invoice;
+import io.muun.apollo.domain.libwallet.LnUrl;
 import io.muun.apollo.domain.utils.UriBuilder;
 import io.muun.apollo.domain.utils.UriParser;
 import io.muun.common.Optional;
 import io.muun.common.bitcoinj.BitcoinUri;
 import io.muun.common.bitcoinj.ValidationHelpers;
-import io.muun.common.utils.LnInvoice;
 import io.muun.common.utils.Preconditions;
 
 import android.net.Uri;
@@ -63,6 +64,18 @@ public class OperationUri {
         }
 
         try {
+            return fromLnUrl(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a LNURL.
+        }
+
+        try {
+            return fromLnUrlUri(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a LNURL URI.
+        }
+
+        try {
             return fromMuunBitcoinUri(text);
         } catch (IllegalArgumentException ex) {
             // Not a Muun Bitcoin URI.
@@ -74,6 +87,13 @@ public class OperationUri {
             // Not a Muun Lightning URI.
         }
 
+        try {
+            return fromMuunLnUrlUri(text);
+        } catch (IllegalArgumentException ex) {
+            // Not a Muun LNURL URI.
+        }
+
+        //  This needs to go last as its the most permissive
         try {
             return fromMuunUri(text);
         } catch (IllegalArgumentException ex) {
@@ -139,8 +159,20 @@ public class OperationUri {
      * Create an OperationUri from a raw LN invoice.
      */
     public static OperationUri fromLnInvoice(String lnInvoice) {
+        if (lnInvoice.toLowerCase().startsWith(LN_SCHEME + ":")) {
+            // Should be handled by fromLnUri. Invoice#parseInvoice can parse it (if it its
+            // lightning:<invoice>) but we can end up with lightning:lightning:<invoice>.
+            throw new IllegalArgumentException(lnInvoice);
+        }
+
+        if (lnInvoice.toLowerCase().startsWith(MUUN_SCHEME + ":")) {
+            // Should be handled by fromMuunLightningUri. Invoice#parseInvoice can parse it (if it
+            // its muun:<invoice>) but we can end up with lightning:muun:<invoice>.
+            throw new IllegalArgumentException(lnInvoice);
+        }
+
         try {
-            LnInvoice.decode(Globals.INSTANCE.getNetwork(), lnInvoice);
+            Invoice.INSTANCE.parseInvoice(Globals.INSTANCE.getNetwork(), lnInvoice);
         } catch (Exception ex) {
             throw new IllegalArgumentException(lnInvoice, ex);
         }
@@ -157,8 +189,7 @@ public class OperationUri {
         }
 
         final String bitcoinScheme = Globals.INSTANCE.getNetwork().getUriScheme();
-        final String bitcoinUri = bitcoinScheme + muunBitcoinUri.substring(MUUN_SCHEME.length());
-        return fromBitcoinUri(bitcoinUri);
+        return fromBitcoinUri(bitcoinScheme + muunBitcoinUri.substring(MUUN_SCHEME.length()));
     }
 
     /**
@@ -169,8 +200,7 @@ public class OperationUri {
             throw new IllegalArgumentException(muunLightningUri);
         }
 
-        final String bitcoinUri = LN_SCHEME + muunLightningUri.substring(MUUN_SCHEME.length());
-        return fromLnUri(bitcoinUri);
+        return fromLnUri(LN_SCHEME + muunLightningUri.substring(MUUN_SCHEME.length()));
     }
 
     /**
@@ -182,6 +212,51 @@ public class OperationUri {
         }
 
         return new OperationUri(muunUri);
+    }
+
+    /**
+     * Create an OperationUri from an LNURL.
+     */
+    public static OperationUri fromLnUrl(String lnUrl) {
+        if (lnUrl.toLowerCase().startsWith(LN_SCHEME + ":")) {
+            // Should be handled by fromLnUrlUri. LnUrl#isvalid can parse it (if it its
+            // lightning:<LNURL>) but we can end up with lightning:lightning:<LNURL>.
+            throw new IllegalArgumentException(lnUrl);
+        }
+
+        if (lnUrl.toLowerCase().startsWith(MUUN_SCHEME + ":")) {
+            // Should be handled by fromMuunLnUrlUri. LnUrl#isvalid can parse it (if it its
+            // muun:<LNURL>) but we can end up with lightning:muun:<LNURL>.
+            throw new IllegalArgumentException(lnUrl);
+        }
+
+        if (!LnUrl.INSTANCE.isValid(lnUrl)) {
+            throw new IllegalArgumentException(lnUrl);
+        }
+
+        return new OperationUri(LN_SCHEME + ":" + lnUrl);
+    }
+
+    /**
+     * Create an OperationUri from a "lightning:{LNURL}" URI.
+     */
+    public static OperationUri fromLnUrlUri(String lnUrlUri) {
+        if (!lnUrlUri.toLowerCase().startsWith(LN_SCHEME + ":")) {
+            throw new IllegalArgumentException(lnUrlUri);
+        }
+
+        return fromLnUrl(lnUrlUri.substring(LN_SCHEME.length() + 1));
+    }
+
+    /**
+     * Create an OperationUri from a "muun:{LNURL}" URI.
+     */
+    public static OperationUri fromMuunLnUrlUri(String muunLnUrlUri) {
+        if (!muunLnUrlUri.toLowerCase().startsWith(MUUN_SCHEME + ":")) {
+            throw new IllegalArgumentException(muunLnUrlUri);
+        }
+
+        return fromLnUrlUri(LN_SCHEME + muunLnUrlUri.substring(MUUN_SCHEME.length()));
     }
 
     /**
@@ -257,7 +332,7 @@ public class OperationUri {
     }
 
     public boolean isLn() {
-        return getScheme().equals(LN_SCHEME);
+        return getScheme().equals(LN_SCHEME) && Invoice.INSTANCE.isValid(getHost());
     }
 
     public long getContactHid() {
@@ -291,6 +366,18 @@ public class OperationUri {
 
         } else if (isBitcoin()) {
             return getParam(BOLT11_INVOICE_PARAM);
+
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Get the LNURL contained in this URI, or empty if not included.
+     */
+    public Optional<String> getLnUrl() {
+        if (LnUrl.INSTANCE.isValid(original)) {
+            return Optional.ifNotEmpty(getHost());
 
         } else {
             return Optional.empty();

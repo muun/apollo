@@ -1,9 +1,13 @@
 package io.muun.apollo.presentation.model;
 
 import io.muun.apollo.R;
+import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.domain.libwallet.DecodedInvoice;
+import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutput;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
@@ -427,19 +431,42 @@ public abstract class UiOperation {
     public String getPreimage() {
         if (operation.swap != null) {
             return operation.swap.getPreimageInHex();
+
         } else if (operation.incomingSwap != null) {
             final byte[] preimage = operation.incomingSwap.getPreimage();
             return preimage != null ? Encodings.bytesToHex(preimage) : "";
+
         } else {
             return "";
         }
     }
 
+    @Nullable
+    public String getInvoiceDescription() {
+        if (operation.metadata == null || ExtensionsKt.isEmpty(operation.metadata.invoice)) {
+            return null;
+        }
+
+        final DecodedInvoice decodedInvoice = Invoice.INSTANCE.decodeInvoice(
+                Globals.INSTANCE.getNetwork(),
+                operation.metadata.invoice
+        );
+
+        return decodedInvoice.getDescription();
+    }
+
+    @Nullable
+    public String getLnUrlSender() {
+        return operation.metadata != null ? operation.metadata.lnurlSender : null;
+    }
+
     public String getPaymentHash() {
         if (operation.swap != null) {
             return operation.swap.getFundingOutput().getServerPaymentHashInHex();
+
         } else if (operation.incomingSwap != null) {
             return Encodings.bytesToHex(operation.incomingSwap.getPaymentHash());
+
         } else {
             return "";
         }
@@ -488,6 +515,6 @@ public abstract class UiOperation {
     }
 
     public boolean isIncomingSwap() {
-        return operation.incomingSwap != null;
+        return operation.isIncomingSwap();
     }
 }

@@ -5,11 +5,13 @@ import io.muun.apollo.data.db.incoming_swap.IncomingSwapEntity;
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapHtlcEntity;
 import io.muun.apollo.data.db.public_profile.PublicProfileEntity;
 import io.muun.apollo.data.db.submarine_swap.SubmarineSwapEntity;
+import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.common.api.OperationMetadataJson;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
 
@@ -21,6 +23,8 @@ import com.squareup.sqldelight.prerelease.ColumnAdapter;
 import com.squareup.sqldelight.prerelease.EnumColumnAdapter;
 import com.squareup.sqldelight.prerelease.SqlDelightStatement;
 
+import javax.validation.constraints.NotNull;
+
 @AutoValue
 public abstract class OperationEntity implements OperationModel, BaseEntity {
 
@@ -30,6 +34,23 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
     private static final ColumnAdapter<OperationStatus, String> OPERATION_STATUS_ADAPTER =
             EnumColumnAdapter.create(OperationStatus.class);
 
+    private static final ColumnAdapter<OperationMetadataJson, String> OPERATION_METADATA_ADAPTER =
+            new ColumnAdapter<OperationMetadataJson, String>() {
+                @NotNull
+                @Override
+                public OperationMetadataJson decode(String databaseValue) {
+                    return SerializationUtils.deserializeJson(
+                            OperationMetadataJson.class,
+                            databaseValue
+                    );
+                }
+
+                @Override
+                public String encode(@NotNull OperationMetadataJson value) {
+                    return SerializationUtils.serializeJson(OperationMetadataJson.class, value);
+                }
+            };
+
     public static final Factory<OperationEntity> FACTORY = new Factory<>(
             AutoValue_OperationEntity::new,
             OPERATION_DIRECTION_ADAPTER,
@@ -38,7 +59,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
             MONETARY_AMOUNT_ADAPTER,
             MONETARY_AMOUNT_ADAPTER,
             OPERATION_STATUS_ADAPTER,
-            ZONED_DATE_TIME_ADAPTER
+            ZONED_DATE_TIME_ADAPTER,
+            OPERATION_METADATA_ADAPTER
     );
 
     @AutoValue
@@ -87,7 +109,8 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 operation.exchangeRateWindowHid,
                 operation.swap == null ? null : operation.swap.houstonUuid,
                 operation.incomingSwap == null ? null : operation.incomingSwap.houstonUuid,
-                operation.isRbf
+                operation.isRbf,
+                operation.metadata
         );
 
         return insertStatement;
@@ -130,6 +153,7 @@ public abstract class OperationEntity implements OperationModel, BaseEntity {
                 entity.operations().confirmations(),
                 entity.operations().hash(),
                 entity.operations().description(),
+                entity.operations().metadata(),
                 entity.operations().status(),
                 entity.operations().creation_date(),
                 entity.operations().exchange_rate_window_hid(),

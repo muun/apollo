@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.utils
 
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -37,6 +38,15 @@ fun View.addOnNextLayoutListener(f: () -> Unit) {
     viewTreeObserver.addOnGlobalLayoutListener(listener)
 }
 
+fun View.isUserInteractionEnabled(enabled: Boolean) {
+    isEnabled = enabled
+    if (this is ViewGroup && this.childCount > 0) {
+        this.children.forEach {
+            it.isUserInteractionEnabled(enabled)
+        }
+    }
+}
+
 fun Fragment.getDrawable(@DrawableRes resId: Int) =
     ContextCompat.getDrawable(activity!!, resId)!!
 
@@ -51,6 +61,18 @@ fun Activity.getStyledString(@StringRes resId: Int, vararg args: String) =
 
 fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
     StyledStringRes(context, resId).toCharSequence(*args)
+
+/**
+ * Returns whether the device supports night mode or not.
+ */
+fun supportsDarkMode(): Boolean =
+    UiUtils.supportsDarkMode()
+
+/**
+ * Returns whether night mode is active or not.
+ */
+fun Activity.isInNightMode(): Boolean =
+    getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
 
 /**
  * Return whether night mode is active or not.
@@ -76,6 +98,12 @@ fun Activity.getCurrentNightMode(): Int {
 }
 
 /**
+ * Returns whether night mode is active or not.
+ */
+fun Fragment.isInNightMode(): Boolean =
+    getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
+
+/**
  * Return whether night mode is active or not.
  *
  * Sadly, the answer from the OS, in theory, could be, undefined :s. From the docs:
@@ -97,6 +125,48 @@ fun Fragment.getCurrentNightMode(): Int {
 
     return uiMode
 }
+
+/**
+ * Returns whether night mode is active or not.
+ */
+fun View.isInNightMode(): Boolean =
+    getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
+
+/**
+ * Return whether night mode is active or not.
+ *
+ * Sadly, the answer from the OS, in theory, could be, undefined :s. From the docs:
+ *
+ * <p>The {@link #UI_MODE_NIGHT_MASK} defines whether the screen
+ * is in a special mode. They may be one of {@link #UI_MODE_NIGHT_UNDEFINED},
+ * {@link #UI_MODE_NIGHT_NO} or {@link #UI_MODE_NIGHT_YES}.
+ *
+ * Apparently, we should assume night mode is NOT active if answer is undefined, so that's what
+ * we'll do (also it helps to be consistent).
+ * https://medium.com/androiddevelopers/appcompat-v23-2-daynight-d10f90c83e94
+ */
+fun View.getCurrentNightMode(): Int {
+    val uiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+    if (uiMode == Configuration.UI_MODE_NIGHT_UNDEFINED) {
+        return Configuration.UI_MODE_NIGHT_YES
+    }
+
+    return uiMode
+}
+
+fun Context.string(@StringRes id: Int) =
+    resources.getString(id)
+
+fun Context.string(@StringRes id: Int, vararg formatArgs: Any) =
+    resources.getString(id, *formatArgs)
+
+fun Context.notificationManager(): NotificationManager =
+    systemService(Context.NOTIFICATION_SERVICE)
+
+@Suppress("UNCHECKED_CAST")
+fun <T> Context.systemService(name: String): T =
+    getSystemService(name) as T
 
 /**
  * Dangerous. Might throw ActivityNotFoundException if there's no application to handle the intent.

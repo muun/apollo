@@ -25,13 +25,8 @@ class LogoutOptionsSelector @Inject constructor(
             }
         }
 
-        fun wouldDeleteWallet(): Boolean {
-            return !isRecoverable
-        }
-
-        @Deprecated("use isBlocked instead")
-        fun canDeleteWallet(): Boolean {
-            return isRecoverable || (!hasBalance && !hasUnsettledOps)
+        fun isRecoverable(): Boolean {
+            return isRecoverable
         }
     }
 
@@ -43,7 +38,7 @@ class LogoutOptionsSelector @Inject constructor(
                 operationSel.watchUnsettled()
             ) { user, balance, unsettledOps ->
                 val hasPendingIncomingSwap = unsettledOps
-                        .filter { it.incomingSwap != null }
+                        .filter { it.isIncomingSwap }
                         .filter { it.status == OperationStatus.BROADCASTED }
                         .isNotEmpty()
 
@@ -58,15 +53,13 @@ class LogoutOptionsSelector @Inject constructor(
     fun get(): LogoutOptions =
         watch().toBlocking().first()
 
-    /**
-     * We decide if it's ok to go ahead and delete wallet aka clear local storage.
-     */
-    fun canDeleteWallet(): Boolean =
+    fun isRecoverable(): Boolean =
         if (userSel.getOptional().isPresent) {
-            get().canDeleteWallet()
+            get().isRecoverable()
         } else {
-            // If we don't have enough data to decide we'll asume its some early or inconsistent
+            // If we don't have enough data to decide we'll assume its some early or inconsistent
             // state and we default to false
+            // That is, if we're not sure don't delete anything just in case
             false
         }
 }

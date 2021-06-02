@@ -23,6 +23,8 @@
                 android:textColor="@color/blue"
                 android:textStyle="bold" />
 
+        <!-- TODO: we may want to ellipsize this in the middle. And may want to do it on-demand
+                (aka not every time this component is used). -->
         <TextView
                 android:id="@+id/description"
                 android:layout_width="match_parent"

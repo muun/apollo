@@ -5,7 +5,6 @@ import io.muun.apollo.data.net.okio.ContentUriRequestBody;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.errors.CyclicalSwapError;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
-import io.muun.apollo.domain.errors.InvalidSwapException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
 import io.muun.apollo.domain.errors.InvoiceExpiredException;
 import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
@@ -48,6 +47,7 @@ import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.SetupChallengeResponse;
+import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
@@ -55,8 +55,6 @@ import io.muun.common.api.error.ErrorCode;
 import io.muun.common.api.houston.HoustonService;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.hd.PublicKeyPair;
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.Diff;
@@ -73,7 +71,6 @@ import io.muun.common.utils.Pair;
 import android.content.Context;
 import android.net.Uri;
 import okhttp3.MediaType;
-import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 import rx.Completable;
 import rx.Observable;
@@ -458,6 +455,17 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * Updates the receiver metadata for an incoming operation.
+     */
+    public Completable updateOperationMetadata(OperationWithMetadata operation) {
+
+        final UpdateOperationMetadataJson json =
+                new UpdateOperationMetadataJson(operation.getReceiverMetadata());
+
+        return getService().updateOperationMetadata(operation.getId(), json);
+    }
+
+    /**
      * Pushes a raw transaction to Houston.
      *
      * @param txHex        The bitcoinj's transaction.
@@ -498,9 +506,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Request a new Submarine Swap.
      */
-    public Observable<SubmarineSwap> createSubmarineSwap(SubmarineSwapRequest request,
-                                                         PublicKeyPair publicKeyPair,
-                                                         NetworkParameters network) {
+    public Observable<SubmarineSwap> createSubmarineSwap(SubmarineSwapRequest request) {
 
         return getService()
                 .createSubmarineSwap(apiMapper.mapSubmarineSwapRequest(request))
@@ -540,19 +546,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                         ErrorCode.AMOUNTLESS_INVOICES_NOT_SUPPORTED,
                         e -> new InvoiceMissingAmountException(request.invoice, e)
                 ))
-                .doOnNext(submarineSwapJson -> {
-                    final boolean isValid = TransactionSchemeSubmarineSwapV2.validateSwap(
-                            request.invoice,
-                            request.swapExpirationInBlocks,
-                            publicKeyPair,
-                            submarineSwapJson,
-                            network
-                    );
-
-                    if (!isValid) {
-                        throw new InvalidSwapException(submarineSwapJson.swapUuid);
-                    }
-                })
                 .map(modelMapper::mapSubmarineSwap);
     }
 

@@ -16,6 +16,10 @@ import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.Companion.ARG
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 class StyledStringRes(private val context: Context,
@@ -59,6 +63,22 @@ class StyledStringRes(private val context: Context,
         private const val ROLE_EMPHASIS_PRIORITY = 1
     }
 
+    @Serializable
+    data class StringResWithArgs(val resId: Int, val args: Array<String> = arrayOf()) {
+
+        companion object {
+            fun deserialize(serialization: String): StringResWithArgs =
+                Json.decodeFromString(serialization)
+        }
+
+        fun serialize() =
+            Json.encodeToString(this)
+    }
+
+    fun serializeWithArgs(vararg args: String): String =
+        StringResWithArgs(resId, arrayOf(*args)).serialize()
+
+
     private var sb: StyleBuilder = StyleBuilder("") // will be replaced
 
     fun toCharSequence(vararg args: String): CharSequence {
@@ -71,7 +91,9 @@ class StyledStringRes(private val context: Context,
         sb = StyleBuilder(charSeq)
 
         // Apply ALL "arg" annotations FIRST
-        sb.applyArgAnnotations(*args)
+        if (args.isNotEmpty()) {
+            sb.applyArgAnnotations(*args)
+        }
 
         // Count the annotations, but don't obtain the list right now. If we insert or remove
         // characters using the builder, the spans will be displaced:

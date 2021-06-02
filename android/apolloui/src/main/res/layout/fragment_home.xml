@@ -94,7 +94,6 @@
                 android:background="@drawable/muun_ripple_circle_bg"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                app:lottie_autoPlay="true"
                 app:lottie_loop="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

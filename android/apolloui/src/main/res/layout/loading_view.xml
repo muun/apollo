@@ -7,19 +7,36 @@
         android:orientation="vertical"
         android:gravity="center">
 
+    <androidx.core.widget.ContentLoadingProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:theme="@style/Widget.AppCompat.ProgressBar"
+            android:id="@+id/loading_view_spinner"
+            android:layout_width="24dp"
+            android:layout_height="24dp" />
+
     <TextView
             android:id="@+id/loading_view_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
             android:textSize="@dimen/muun_text_size_body"
             android:textColor="@color/text_primary_color"
+            android:lineSpacingMultiplier="1.4"
             tools:text="Loading something" />
 
-    <androidx.core.widget.ContentLoadingProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:id="@+id/loading_view_spinner"
-            android:layout_width="24dp"
-            android:layout_height="24dp" />
+    <TextView
+            android:id="@+id/loading_view_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:letterSpacing="0.01"
+            android:lineSpacingMultiplier="1.4"
+            android:textColor="@color/text_primary_color"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="You can choose to wait here or leave, and receive a notification when the payment completes. If the payment doesn't complete, please contact XXX" />
 
 </LinearLayout>

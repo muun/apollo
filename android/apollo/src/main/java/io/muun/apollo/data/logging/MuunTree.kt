@@ -2,6 +2,8 @@ package io.muun.apollo.data.logging
 
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.muun.apollo.domain.errors.*
+import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
 import timber.log.Timber
 
 class MuunTree: Timber.DebugTree() {
@@ -31,7 +33,7 @@ class MuunTree: Timber.DebugTree() {
     private fun sendPreparedCrashReport(tag: String?, message: String?, error: Throwable?) {
         val report = CrashReportBuilder.build(tag, message, error)
 
-        if (LoggingContext.sendToCrashlytics) {
+        if (LoggingContext.sendToCrashlytics && !isOnCrashlyticsBlacklist(report.error)) {
             sendToCrashlytics(report)
         }
 
@@ -82,5 +84,25 @@ class MuunTree: Timber.DebugTree() {
         }
 
         crashlytics.recordException(report.error)
+    }
+
+    /**
+     * There are certain errors that are expected and/or there's nothing we can do about it (besides
+     * properly informing the user about the situation), so let's try to reduce crashlytics noise by
+     * silencing some common "nothing to worry about" errors.
+     */
+    private fun isOnCrashlyticsBlacklist(error: Throwable): Boolean {
+
+        return when {
+            error.isInstanceOrIsCausedByError<UnreachableNodeException>() -> true
+            error.isInstanceOrIsCausedByError<NoPaymentRouteException>() -> true
+            error.isInstanceOrIsCausedByError<InvoiceExpiredException>() -> true
+            error.isInstanceOrIsCausedByError<InvoiceExpiresTooSoonException>() -> true
+            error.isInstanceOrIsCausedByError<InvoiceAlreadyUsedException>() -> true
+            error.isInstanceOrIsCausedByError<InvoiceMissingAmountException>() -> true
+            error.isInstanceOrIsCausedByError<CyclicalSwapError>() -> true
+
+            else -> false
+        }
     }
 }

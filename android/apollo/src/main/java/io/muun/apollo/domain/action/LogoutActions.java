@@ -9,8 +9,10 @@ import io.muun.apollo.data.preferences.BaseRepository;
 import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
+import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
 import io.muun.common.utils.Preconditions;
@@ -27,73 +29,69 @@ import javax.inject.Singleton;
 @Singleton
 public class LogoutActions {
 
+    // Presentation
     private final Context context;
 
-    private final TaskScheduler taskScheduler;
-
+    // Domain
+    private final ContactActions contactActions; // TODO should be dismembered (as this action bag)
     private final AsyncActionStore asyncActionStore;
-
     private final DaoManager daoManager;
-
-    private final SecureStorageProvider secureStorageProvider;
-
-    private final ContactActions contactActions;
-
-    private final NotificationService notificationService;
-
     private final ApplicationLockManager lockManager;
-
     private final LogoutOptionsSelector logoutOptionsSel;
+    private final SignupDraftManager signupDraftManager;
 
+    // Data
+    private final TaskScheduler taskScheduler;
+    private final SecureStorageProvider secureStorageProvider;
+    private final NotificationService notificationService;
     private final RepositoryRegistry repositoryRegistry;
-    private final List<String> thirdPartyPreferencesToClear;
-
     private final FcmTokenRepository fcmTokenRepository;
-
     private final LibwalletDataDirectory libwalletDataDirectory;
+
+    private final List<String> thirdPartyPreferencesToClear;
 
     /**
      * Constructor.
      */
     @Inject
     public LogoutActions(Context context,
+                         ContactActions contactActions,
                          AsyncActionStore asyncActionStore,
                          DaoManager daoManager,
+                         ApplicationLockManager lockManager,
+                         LogoutOptionsSelector logoutOptionsSel,
+                         SignupDraftManager signupDraftManager,
                          TaskScheduler taskScheduler,
                          SecureStorageProvider secureStorageProvider,
                          NotificationService notificationService,
-                         ContactActions contactActions,
-                         ApplicationLockManager lockManager,
-                         LogoutOptionsSelector logoutOptionsSel,
                          RepositoryRegistry repositoryRegistry,
                          FcmTokenRepository fcmTokenRepository,
                          LibwalletDataDirectory libwalletDataDirectory) {
 
         this.context = context;
+
+        this.contactActions = contactActions;
         this.asyncActionStore = asyncActionStore;
         this.daoManager = daoManager;
+        this.lockManager = lockManager;
+        this.logoutOptionsSel = logoutOptionsSel;
+        this.signupDraftManager = signupDraftManager;
+
         this.taskScheduler = taskScheduler;
         this.secureStorageProvider = secureStorageProvider;
-        this.lockManager = lockManager;
-        this.contactActions = contactActions;
         this.notificationService = notificationService;
-        this.logoutOptionsSel = logoutOptionsSel;
-
-        this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
         this.repositoryRegistry = repositoryRegistry;
-
         this.fcmTokenRepository = fcmTokenRepository;
         this.libwalletDataDirectory = libwalletDataDirectory;
 
+        this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
     }
 
     /**
      * Wipes all user associated data from the app (recoverable only).
      */
     public void destroyRecoverableWallet() {
-        final LogoutOptions logoutOptions = logoutOptionsSel.get();
-
-        if (logoutOptions.wouldDeleteWallet()) {
+        if (!logoutOptionsSel.isRecoverable()) {
             Timber.e(new UnrecoverableUserLogoutError());
             return; // should never happen, but if a bug causes this NEVER delete storage
         }
@@ -113,9 +111,18 @@ public class LogoutActions {
 
     /**
      * Wipe all user associated data from the app, prior to a signup/login.
+     *
+     * <p>NOTE: since we do this prior to createLoginSession AND createFirstSession (login and
+     * signup, respectively), some problems can arise if this calls take too much time, or fail,
+     * and the user leaves the app and comes back (activity can be destroyed and re-created). So, if
+     * there's a signupDraft when doing this local storage wipe, we preserve it.
      */
     public void destroyWalletToStartClean() {
+        final SignupDraft signupDraft = signupDraftManager.fetchSignupDraft();
         destroyWallet();
+        if (signupDraft != null) {
+            signupDraftManager.save(signupDraft);
+        }
     }
 
     /**

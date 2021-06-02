@@ -57,4 +57,16 @@
                 tools:visibility="visible" />
 
     </FrameLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunUriPaster
+            android:id="@+id/uri_paster"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            muun:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

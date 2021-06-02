@@ -14,7 +14,7 @@
     <ImageView
             android:layout_width="290dp"
             android:layout_height="180dp"
-            android:src="@drawable/illustration_drive_file" />
+            android:src="@drawable/illustration_drive" />
 
         <TextView
                 style="@style/explanation_title"

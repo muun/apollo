@@ -22,6 +22,8 @@
             <TextView
                     style="@style/muun_item_title"
                     android:id="@+id/home_operations_item_title"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     tools:text="Mr. Foo sent you" />
 
             <TextView

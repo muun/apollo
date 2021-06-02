@@ -20,6 +20,7 @@ import io.muun.apollo.domain.model.UserPhoneNumber
 import io.muun.apollo.domain.model.UserProfile
 import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
+import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.DebtType
 import io.muun.common.model.OperationDirection
@@ -34,7 +35,6 @@ import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.params.TestNet3Params
 import org.javamoney.moneta.Money
-import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import javax.money.CurrencyUnit
 import javax.money.Monetary
@@ -310,7 +310,8 @@ object Gen {
                 null,
                 muunAddress(),
                 lnPaymentHash(),
-                lnPublicKey()
+                lnPublicKey(),
+                TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION
             ),
             null,
             futureDate(),
@@ -346,7 +347,8 @@ object Gen {
             userLockTime,
             userRefundAddress,
             lnPaymentHash(),
-            lnPublicKey()
+            lnPublicKey(),
+            TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION
         )
 
     fun submarineSwapFees(lightningInSats: Long, sweepInSats: Long) =
@@ -426,6 +428,7 @@ object Gen {
             bitcoinAmount(0),
             0,
             transactionHash(),
+            null,
             null,
             OperationStatus.BROADCASTED,
             null,

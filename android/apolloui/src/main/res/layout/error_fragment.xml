@@ -8,50 +8,68 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:fillViewport="true">
 
-        <ImageView
-                android:contentDescription="@null"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginBottom="24dp"
-                android:src="@drawable/error"
-                app:tint="@color/error_color" />
-
-        <TextView
-                android:id="@+id/title"
+        <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary_color"
-                android:gravity="center"
-                android:textSize="24sp"
-                tools:text="Something went wrong!"/>
+                android:layout_height="match_parent"
+                android:paddingLeft="24dp"
+                android:paddingRight="24dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="48dp"
+                android:orientation="vertical"
+                android:gravity="center">
 
-        <TextView
-                android:id="@+id/description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="22dp"
-                android:textColor="@color/text_secondary_color"
-                android:gravity="center"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif"
-                android:textStyle="normal"
-                android:letterSpacing="0.03"
-                android:lineSpacingExtra="8sp"
-                tools:text="Here you have a detailed explanation of why this happened"/>
-    </LinearLayout>
+            <ImageView
+                    android:contentDescription="@null"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginBottom="24dp"
+                    android:src="@drawable/error"
+                    app:tint="@color/error_color" />
+
+            <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary_color"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:lineSpacingExtra="4sp"
+                    tools:text="southxchange.com is not responding!"/>
+
+            <TextView
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/text_secondary_color"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif"
+                    android:textStyle="normal"
+                    android:letterSpacing="0.03"
+                    android:lineSpacingExtra="8sp"
+                    tools:text="Here you have a detailed explanation of why this happened"/>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            style="@style/muun_button_secondary"
+            android:id="@+id/secondary_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/error_op_action"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Take the blue pill" />
 
     <io.muun.apollo.presentation.ui.view.MuunButton
             style="@style/muun_button_primary"
-            android:id="@+id/exit"
+            android:id="@+id/primary_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/error_op_action"

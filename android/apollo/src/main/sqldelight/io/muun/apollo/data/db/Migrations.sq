@@ -206,3 +206,7 @@ ADD COLUMN is_rbf INTEGER NOT NULL DEFAULT 0;
 migrations_37_add_preimage_to_incoming_swaps:
 ALTER TABLE incoming_swaps
 ADD COLUMN preimage_in_hex TEXT;
+
+migrations_38_add_metadata_to_operations:
+ALTER TABLE operations
+ADD COLUMN metadata TEXT;

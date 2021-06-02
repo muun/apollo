@@ -40,6 +40,7 @@ import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.TransactionPushedJson;
+import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
@@ -221,6 +222,10 @@ public interface HoustonService {
 
     @POST("operations")
     Observable<OperationCreatedJson> newOperation(@Body OperationJson operation);
+
+    @PUT("operations/{operationId}/metadata")
+    Completable updateOperationMetadata(@Path("operationId") Long operationId,
+                                        @Body UpdateOperationMetadataJson data);
 
     @PUT("operations/{operationId}/raw-transaction")
     Observable<TransactionPushedJson> pushTransaction(@Path("operationId") Long operationId);

@@ -15,7 +15,7 @@ class EmergencyKitVerifyPresenter @Inject constructor(
 
 ): SingleFragmentPresenter<EmergencyKitVerifyView, EmergencyKitVerifyParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         parentPresenter.refreshToolbar()

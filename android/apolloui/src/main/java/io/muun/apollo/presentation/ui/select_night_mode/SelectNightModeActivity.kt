@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.select_night_mode
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import butterknife.BindView
@@ -10,7 +9,7 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.utils.UiUtils
-import io.muun.apollo.presentation.ui.utils.getCurrentNightMode
+import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
@@ -82,15 +81,12 @@ class SelectNightModeActivity: BaseActivity<SelectNightModePresenter>(), SelectN
                 followSystemItem.setIcon(selectedIcon)
 
                 if (!UiUtils.supportsDarkMode()) {
-                    when (getCurrentNightMode()) {
+                    if (isInNightMode()) {
+                        setNightMode(NightMode.DARK)
 
-                        Configuration.UI_MODE_NIGHT_YES -> {
-                            setNightMode(NightMode.DARK)
-                        }
+                    } else {
+                        setNightMode(NightMode.LIGHT)
 
-                        Configuration.UI_MODE_NIGHT_NO -> {
-                            setNightMode(NightMode.LIGHT)
-                        }
                     }
                 }
             }

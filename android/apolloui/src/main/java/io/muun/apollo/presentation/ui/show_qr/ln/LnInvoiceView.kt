@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.show_qr.ln
 
+import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.base.BaseView
-import io.muun.common.utils.LnInvoice
 import javax.money.MonetaryAmount
 
 interface LnInvoiceView : BaseView {
@@ -13,7 +13,7 @@ interface LnInvoiceView : BaseView {
 
     fun setLoading(loading: Boolean)
 
-    fun setInvoice(invoice: LnInvoice, amount: MonetaryAmount?)
+    fun setInvoice(invoice: DecodedInvoice, amount: MonetaryAmount?)
 
     fun showFullContent(invoice: String)
 

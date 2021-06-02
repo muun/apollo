@@ -1,5 +1,8 @@
 package io.muun.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * How to add new preferences:
  * 1. Decide the type of the field and it's default value.
@@ -16,11 +19,15 @@ package io.muun.common.model;
  *  * In StoredUserPreferences add the field with a default value
  *  * In StoredUserPreferences map the field in the constructor and toModel method
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPreferences {
 
     public Boolean receiveStrictMode = false;
 
     public Boolean seenNewHome = false;
+
+    public Boolean seenLnurlFirstTime = false;
 
     /**
      * JSON constructor.
@@ -32,9 +39,11 @@ public class UserPreferences {
      * Apollo constructor.
      */
     public UserPreferences(final boolean receiveStrictMode,
-                           final boolean seenNewHome) {
+                           final boolean seenNewHome,
+                           final boolean seenLnurlFirstTime) {
         this.receiveStrictMode = receiveStrictMode;
         this.seenNewHome = seenNewHome;
+        this.seenLnurlFirstTime = seenLnurlFirstTime;
     }
 
     public void merge(final UserPreferences other) {
@@ -50,6 +59,10 @@ public class UserPreferences {
 
         if (other.seenNewHome != null) {
             this.seenNewHome = other.seenNewHome;
+        }
+
+        if (other.seenLnurlFirstTime != null) {
+            this.seenLnurlFirstTime = other.seenLnurlFirstTime;
         }
 
     }

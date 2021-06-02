@@ -36,7 +36,7 @@ class EmergencyKitSavePresenter @Inject constructor(
 
 ): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         renderEmergencyKit.state

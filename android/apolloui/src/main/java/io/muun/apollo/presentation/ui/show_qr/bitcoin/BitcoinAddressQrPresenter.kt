@@ -38,7 +38,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     @JvmField
     var showingAdvancedSettings = false
 
-    override fun setUp(arguments: Bundle?) {
+    override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         view.setCurrencyDisplayMode(currencyDisplayModeSel.get())
