@@ -279,9 +279,13 @@ class NotificationServiceImpl @Inject constructor(
 
     private fun showWithDrawable(noti: MuunNotification, @DrawableRes drawableId: Int) {
 
+        // This won't handle changes in OS's light/dark theme. Its a limitation of the
+        // NotificationCompat API, because it only allows to set a Bitmap as LargeIcon. Since it is
+        // the OS who is in charge of re-drawing the notification, it will just re-use the bitmap
+        // instead of properly resolving a drawable resource which may have light/dark variants.
         val requestBuilder = Glide.with(context)
             .asBitmap()
-            .load(drawableId)
+            .load(drawableId)  // For some reason, can't use ContextCompat.getDrawable(ctx, resId)
 
         showWithBitmapRequest(noti, requestBuilder)
     }

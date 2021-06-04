@@ -5,7 +5,7 @@ import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
-import io.muun.apollo.presentation.ui.utils.UiUtils;
+import io.muun.apollo.presentation.ui.utils.Uri;
 
 import android.content.Context;
 import org.bitcoinj.core.NetworkParameters;
@@ -53,6 +53,6 @@ public class ExternalOperation extends UiOperation {
             resId = R.drawable.btc;
         }
 
-        return UiUtils.getResourceUri(context, resId).toString();
+        return Uri.getResourceUri(context, resId).toString();
     }
 }
