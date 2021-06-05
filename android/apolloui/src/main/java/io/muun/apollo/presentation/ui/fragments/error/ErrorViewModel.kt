@@ -9,6 +9,7 @@ import io.muun.common.utils.Preconditions
 
 interface ErrorViewModel {
 
+    @Suppress("ArrayInDataClass")
     data class Builder(
         var loggingName: AnalyticsEvent.ERROR_TYPE? = null,
         var title: String? = null,

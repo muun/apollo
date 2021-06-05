@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.fragments.error
 import android.view.View
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import io.muun.apollo.R
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -15,11 +14,13 @@ class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
 
     companion object {
         const val VIEW_MODEL_ARG = "view_model"
+        private const val DESCRIPTION_CLICKABLE = "description_clickable"
 
         @JvmStatic
-        fun create(errorViewModel: ErrorViewModel) =
+        fun create(errorViewModel: ErrorViewModel, descriptionClickable: Boolean = false) =
             ErrorFragment().applyArgs {
                 putString(VIEW_MODEL_ARG, errorViewModel.serialize())
+                putBoolean(DESCRIPTION_CLICKABLE, descriptionClickable)
             }
     }
 
@@ -49,8 +50,10 @@ class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
 
         titleView.text = viewModel.title()
         descriptionView.text = viewModel.description(requireContext())
-        descriptionView.setOnClickListener {
-            handleDescriptionClicked()
+        if (argumentsBundle.getBoolean(DESCRIPTION_CLICKABLE)) {
+            descriptionView.setOnClickListener {
+                handleDescriptionClicked()
+            }
         }
 
         when (viewModel.kind()) {

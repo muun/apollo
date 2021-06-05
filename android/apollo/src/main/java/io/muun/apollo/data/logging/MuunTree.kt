@@ -33,7 +33,7 @@ class MuunTree: Timber.DebugTree() {
     private fun sendPreparedCrashReport(tag: String?, message: String?, error: Throwable?) {
         val report = CrashReportBuilder.build(tag, message, error)
 
-        if (LoggingContext.sendToCrashlytics && !isOnCrashlyticsBlacklist(report.error)) {
+        if (LoggingContext.sendToCrashlytics && !isOnCrashlyticsBlacklist(error)) {
             sendToCrashlytics(report)
         }
 
@@ -91,7 +91,13 @@ class MuunTree: Timber.DebugTree() {
      * properly informing the user about the situation), so let's try to reduce crashlytics noise by
      * silencing some common "nothing to worry about" errors.
      */
-    private fun isOnCrashlyticsBlacklist(error: Throwable): Boolean {
+    private fun isOnCrashlyticsBlacklist(error: Throwable?): Boolean {
+
+        // If root error has no throwable cause then there's nothing to blacklist
+        // This is an ugly signature and behaviour to have but makes life easier for caller
+        if (error == null) {
+            return false
+        }
 
         return when {
             error.isInstanceOrIsCausedByError<UnreachableNodeException>() -> true
