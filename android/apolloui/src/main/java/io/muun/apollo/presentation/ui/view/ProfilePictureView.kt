@@ -95,7 +95,7 @@ class ProfilePictureView  @JvmOverloads constructor(c: Context, a: AttributeSet?
 
                 override fun onLoadFailed(
                     e: GlideException?,
-                    model: Any,
+                    model: Any?,
                     target: Target<Drawable?>,
                     isFirstResource: Boolean
                 ): Boolean {
@@ -104,7 +104,7 @@ class ProfilePictureView  @JvmOverloads constructor(c: Context, a: AttributeSet?
 
                 override fun onResourceReady(
                     resource: Drawable?,
-                    model: Any,
+                    model: Any?,
                     target: Target<Drawable?>,
                     dataSource: DataSource,
                     isFirstResource: Boolean

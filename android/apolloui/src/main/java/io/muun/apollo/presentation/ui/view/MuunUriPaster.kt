@@ -61,7 +61,6 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
             uri.lnUrl.isPresent ->
                 uri.lnUrl
 
-
             uri.lnInvoice.isPresent ->
                 uri.lnInvoice
 
