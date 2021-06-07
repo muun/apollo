@@ -149,7 +149,8 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	notifier.SetInvoice(invoice)
 	notifier.Status(StatusInvoiceCreated)
 
-	query := url.Values{}
+	// Mutate the query params so we keep those the original URL had
+	query := callbackURL.Query()
 	query.Add("k1", wr.K1)
 	query.Add("pr", invoice)
 

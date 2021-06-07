@@ -1,33 +1,12 @@
 package io.muun.apollo.data.external
 
-import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.FeeWindow
-import io.muun.apollo.domain.model.ForwardingPolicy
-import io.muun.apollo.domain.model.IncomingSwap
-import io.muun.apollo.domain.model.IncomingSwapHtlc
-import io.muun.apollo.domain.model.NextTransactionSize
-import io.muun.apollo.domain.model.Operation
-import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.SubmarineSwap
-import io.muun.apollo.domain.model.SubmarineSwapBestRouteFees
-import io.muun.apollo.domain.model.SubmarineSwapFees
-import io.muun.apollo.domain.model.SubmarineSwapFundingOutput
-import io.muun.apollo.domain.model.SubmarineSwapFundingOutputPolicies
-import io.muun.apollo.domain.model.SubmarineSwapReceiver
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.model.UserPhoneNumber
-import io.muun.apollo.domain.model.UserProfile
+import io.muun.apollo.domain.model.*
 import io.muun.common.Optional
 import io.muun.common.crypto.hd.MuunAddress
+import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2
 import io.muun.common.exception.MissingCaseError
-import io.muun.common.model.DebtType
-import io.muun.common.model.OperationDirection
-import io.muun.common.model.OperationStatus
-import io.muun.common.model.PhoneNumber
-import io.muun.common.model.SizeForAmount
-import io.muun.common.model.UtxoStatus
+import io.muun.common.model.*
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.RandomGenerator
@@ -136,6 +115,25 @@ object Gen {
      */
     fun userProfile() = UserProfile(alpha(5, 10), alpha(5, 10))
 
+    /**
+     * Get a PublicProfile.
+     */
+    fun publicProfile(profilePictureUrl: String? = profilePicture()) = PublicProfile(
+        houstonId(),
+        houstonId(),
+        alpha(5, 10),
+        alpha(5, 10),
+        profilePictureUrl
+    )
+
+    private fun profilePicture() =
+        "https://pbs.twimg.com/profile_images/1366466342354751491/JyhZpbtu_400x400.jpg"
+
+    fun privateKey() =
+        PrivateKey.getNewRootPrivateKey(Globals.INSTANCE.network)
+
+    fun publicKey() =
+        privateKey().publicKey
 
     /**
      * Get a User.
@@ -369,7 +367,7 @@ object Gen {
 
     /** TODO this should be in hex **/
     fun lnPaymentHash() =
-        Gen.alpha(32)
+        alpha(32)
 
     fun forwardingPolicy() =
         ForwardingPolicy(ByteArray(0), 1, 1000, 9)
@@ -437,6 +435,20 @@ object Gen {
             incomingSwap,
             false
         )
+
+    fun contact() =
+        Contact(
+            houstonId(),
+            houstonId(),
+            if (Random.nextBoolean()) publicProfile() else publicProfile(null),
+            Random.nextInt(),
+            publicKey(),
+            publicKey(),
+            Random.nextLong()
+        )
+
+    fun contactList() =
+        listOf(contact(), contact(), contact(), contact(), contact(), contact(), contact())
 
     /**
      * Get a string of fixed length with characters obtained from a generator.

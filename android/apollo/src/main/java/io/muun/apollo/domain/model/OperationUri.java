@@ -335,6 +335,11 @@ public class OperationUri {
         return getScheme().equals(LN_SCHEME) && Invoice.INSTANCE.isValid(getHost());
     }
 
+    public boolean isLnUrl() {
+        return getLnUrl().isPresent();
+    }
+
+
     public long getContactHid() {
         Preconditions.checkArgument(getHost().equals(MUUN_HOST_CONTACT));
         return Long.parseLong(getPath());

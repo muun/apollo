@@ -255,6 +255,11 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
             if (uri.isLn()) {
                 header.showTitle(R.string.new_operation_swap_title);
+
+            } else if (uri.isLnUrl()) {
+                presenter.handleLnUrl(uri.getLnUrl().get());
+                finishActivity();
+                return;
             }
 
             final NewOperationOrigin origin = getOrigin(intent);

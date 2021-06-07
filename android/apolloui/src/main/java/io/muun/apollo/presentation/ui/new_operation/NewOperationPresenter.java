@@ -715,4 +715,8 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
     public void reportShowDestinationInfo() {
         analytics.report(new AnalyticsEvent.S_MORE_INFO(S_MORE_INFO_TYPE.NEW_OP_DESTINATION));
     }
+
+    public void handleLnUrl(String lnurl) {
+        navigator.navigateToLnUrlWithdraw(getContext(), lnurl);
+    }
 }

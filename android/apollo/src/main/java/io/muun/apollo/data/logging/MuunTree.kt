@@ -108,6 +108,8 @@ class MuunTree: Timber.DebugTree() {
             error.isInstanceOrIsCausedByError<InvoiceMissingAmountException>() -> true
             error.isInstanceOrIsCausedByError<CyclicalSwapError>() -> true
 
+            error.isInstanceOrIsCausedByError<FcmTokenNotAvailableError>() -> true
+
             else -> false
         }
     }
