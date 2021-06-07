@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             app:description="@string/save_option_manual_description"
             app:title="@string/save_option_manual_title"
-            app:icon="@drawable/app_drawer_48" />
+            app:icon="@drawable/appdrawer_48" />
 
     <View style="@style/muun_ek_save_separator" />
 

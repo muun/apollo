@@ -55,7 +55,7 @@
     <color name="muun_dialog_border_rounded">@color/dialog_background</color>
     <color name="cursor">@color/white</color>
     <color name="muun_button_covered_bg">@color/gray_light</color>
-    <color name="muun_button_floating_bg_enabled">@color/blue</color>
+    <color name="muun_button_floating_bg_enabled">@color/blue_buttons</color>
     <color name="muun_button_floating_bg_disabled">@color/blue_darkest</color>
     <color name="muun_button_primary_bg_enabled">@color/blue_buttons</color>
     <color name="muun_button_primary_bg_disabled">@color/blue_darkest</color>

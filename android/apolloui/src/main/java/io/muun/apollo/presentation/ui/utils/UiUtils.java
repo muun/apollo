@@ -8,7 +8,6 @@ import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.common.utils.Preconditions;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -16,7 +15,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,7 +25,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.annotation.AnyRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
@@ -444,23 +441,6 @@ public class UiUtils {
 
     private static ZonedDateTime getLocalizedNow() {
         return DateUtils.toSystemDefault(ZonedDateTime.now());
-    }
-
-    /**
-     * Get the ContentResolver URI of a resource.
-     */
-    public static Uri getResourceUri(@NonNull Context context,
-                                     @AnyRes int resourceId) {
-
-        final String uriString = String.format(
-                "%s://%s/%s/%s",
-                ContentResolver.SCHEME_ANDROID_RESOURCE,
-                context.getResources().getResourcePackageName(resourceId),
-                context.getResources().getResourceTypeName(resourceId),
-                context.getResources().getResourceEntryName(resourceId)
-        );
-
-        return Uri.parse(uriString);
     }
 
     /**

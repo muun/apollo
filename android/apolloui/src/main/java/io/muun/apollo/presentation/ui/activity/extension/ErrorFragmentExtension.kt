@@ -46,10 +46,11 @@ class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
         }
     }
 
-    fun showError(viewModel: ErrorViewModel) {
-        val errorFragment = ErrorFragment.create(viewModel)
+    fun showError(vm: ErrorViewModel) {
+        val isErrorFragmentDelegate = activity is ErrorFragmentDelegate
+        val errorFragment = ErrorFragment.create(vm, descriptionClickable = isErrorFragmentDelegate)
         show(errorFragment)
-        if (activity is ErrorFragmentDelegate) {
+        if (isErrorFragmentDelegate) {
             errorFragment.setDelegate(activity as ErrorFragmentDelegate)
         }
     }

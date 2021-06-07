@@ -13,9 +13,9 @@ import io.muun.apollo.presentation.ui.fragments.ek_success.EmergencyKitSuccessFr
 import io.muun.apollo.presentation.ui.fragments.ek_verify.EmergencyKitVerifyFragment
 import io.muun.apollo.presentation.ui.fragments.ek_verify_cloud.EmergencyKitCloudVerifyFragment
 import io.muun.apollo.presentation.ui.fragments.ek_verify_help.EmergencyKitVerifyHelpFragment
-import io.muun.apollo.presentation.ui.fragments.error.ErrorFragment.Companion.create
+import io.muun.apollo.presentation.ui.fragments.error.ErrorFragment
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
-import io.muun.apollo.presentation.ui.fragments.loading.LoadingFragment.Companion.create
+import io.muun.apollo.presentation.ui.fragments.loading.LoadingFragment
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 
@@ -66,14 +66,14 @@ class EmergencyKitActivity: SingleFragmentActivity<EmergencyKitPresenter?>(), Em
 
     private fun createStepFragment(step: EmergencyKeysStep): Fragment {
         return when (step) {
-            EmergencyKeysStep.LOADING -> create(R.string.export_keys_preparing)
+            EmergencyKeysStep.LOADING -> LoadingFragment.create(R.string.export_keys_preparing)
             EmergencyKeysStep.INTRO -> EmergencyKitIntroFragment()
             EmergencyKeysStep.SAVE -> EmergencyKitSaveFragment()
             EmergencyKeysStep.VERIFY -> EmergencyKitVerifyFragment()
             EmergencyKeysStep.VERIFY_HELP -> EmergencyKitVerifyHelpFragment()
             EmergencyKeysStep.CLOUD_VERIFY -> EmergencyKitCloudVerifyFragment()
             EmergencyKeysStep.SUCCESS -> EmergencyKitSuccessFragment()
-            EmergencyKeysStep.ERROR -> create(ErrorViewModel.Builder()
+            EmergencyKeysStep.ERROR -> ErrorFragment.create(ErrorViewModel.Builder()
                 .loggingName(AnalyticsEvent.ERROR_TYPE.EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR)
                 .title(getString(R.string.export_keys_preparing_error_title))
                 .descriptionRes(R.string.export_keys_preparing_error_desc)
