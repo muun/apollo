@@ -5,8 +5,10 @@ import io.muun.apollo.data.preferences.ForwardingPoliciesRepository
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction
+import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.libwallet.Invoice
-import io.muun.apollo.domain.libwallet.LibwalletBridge
+import io.muun.apollo.domain.libwallet.toLibwalletModel
+import io.muun.apollo.domain.model.Sha256Hash
 import io.muun.apollo.domain.model.lnurl.LnUrlError
 import io.muun.apollo.domain.model.lnurl.LnUrlEvent
 import io.muun.apollo.domain.model.lnurl.LnUrlState
@@ -16,7 +18,6 @@ import libwallet.LNURLEvent
 import libwallet.LNURLListener
 import libwallet.Libwallet
 import libwallet.RouteHints
-import org.threeten.bp.ZonedDateTime
 import rx.Observable
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -30,7 +31,7 @@ class LnUrlWithdrawAction @Inject constructor(
     private val registerInvoices: RegisterInvoicesAction,
 ): BaseAsyncAction1<String, LnUrlState>() {
 
-    lateinit var paymentHash: ByteArray
+    lateinit var paymentHash: Sha256Hash
 
     override fun action(@NotNull lnurlContent: String): Observable<LnUrlState> =
         Observable.defer { lnUrlWithdraw(lnurlContent) }
@@ -56,8 +57,8 @@ class LnUrlWithdrawAction @Inject constructor(
             val listener = RxListener(lnurlContent)
 
             Libwallet.lnurlWithdraw(
-                LibwalletBridge.toLibwalletModel(Globals.INSTANCE.network),
-                LibwalletBridge.toLibwalletModel(basePrivateKey, Globals.INSTANCE.network),
+                Globals.INSTANCE.network.toLibwalletModel(),
+                basePrivateKey.toLibwalletModel(Globals.INSTANCE.network),
                 routeHints,
                 lnurlContent,
                 listener
@@ -69,7 +70,7 @@ class LnUrlWithdrawAction @Inject constructor(
                     when (state) {
 
                         is LnUrlState.InvoiceCreated ->
-                            this.paymentHash = parseInvoice(state.invoice).paymentHash
+                            this.paymentHash = decodeInvoice(state.invoice).paymentHash
 
                         else -> {
                             // ignore
@@ -87,10 +88,10 @@ class LnUrlWithdrawAction @Inject constructor(
                         // schedule invoice expired error message after invoice expiration
                         is LnUrlState.InvoiceCreated -> {
 
-                            val invoice = parseInvoice(state.invoice)
-                            val currentTime = ZonedDateTime.now().toEpochSecond()
+                            val invoice = decodeInvoice(state.invoice)
                             val safeMargin = 60 // One minute
-                            val secondsToExpiration = invoice.expiry - currentTime + safeMargin
+                            val remainingSeconds = invoice.remainingMillis() / 1000
+                            val secondsToExpiration = remainingSeconds + safeMargin
 
                             val failed = LnUrlState.Failed(
                                 LnUrlError.ExpiredInvoice(state.domain, state.invoice)
@@ -106,17 +107,17 @@ class LnUrlWithdrawAction @Inject constructor(
                         }
                     }
                 }
-            }
         }
+    }
 
     private fun waitForPayment(): Observable<LnUrlState> {
         return waitForIncomingLnPaymentSel.watch { newOpPaymentHash ->
-            ::paymentHash.isInitialized && this.paymentHash.contentEquals(newOpPaymentHash)
+            ::paymentHash.isInitialized && this.paymentHash == newOpPaymentHash
         }.map { LnUrlState.Success }
     }
 
-    private fun parseInvoice(invoice: String): libwallet.Invoice =
-        Invoice.parseInvoice(Globals.INSTANCE.network, invoice)
+    private fun decodeInvoice(invoice: String): DecodedInvoice =
+        Invoice.decodeInvoice(Globals.INSTANCE.network, invoice)
 
     private class RxListener(val lnUrl: String): LNURLListener {
 
@@ -162,6 +163,15 @@ class LnUrlWithdrawAction @Inject constructor(
 
                     Libwallet.LNURLErrWrongTag ->
                         LnUrlError.InvalidLnUrlTag(lnUrl)
+
+                    Libwallet.LNURLErrNoAvailableBalance ->
+                        LnUrlError.NoWithdrawBalance(event.message, event.metadata.host)
+
+                    Libwallet.LNURLErrRequestExpired ->
+                        LnUrlError.ExpiredLnUrl(event.message, lnUrl)
+
+                    Libwallet.LNURLErrNoRoute ->
+                        LnUrlError.NoRoute(event.message, event.metadata.host)
 
                     else -> {
                         LnUrlError.Unknown(

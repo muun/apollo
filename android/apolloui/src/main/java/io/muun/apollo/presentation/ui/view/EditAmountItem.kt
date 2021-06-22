@@ -14,7 +14,6 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.bundler.MonetaryAmountBundler
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
-import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.setDrawableTint
 import javax.money.MonetaryAmount
 

@@ -6,6 +6,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentView;
 import io.muun.apollo.presentation.ui.settings.EmailWaitFragment;
 import io.muun.apollo.presentation.ui.settings.OldPasswordFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeFragment;
+import io.muun.common.exception.MissingCaseError;
 
 import androidx.fragment.app.Fragment;
 
@@ -46,7 +47,7 @@ public class BaseEditPasswordPresenter<T extends SingleFragmentView>
                 return new ChangePasswordFragment();
 
             default:
-                return new StartPasswordChangeFragment(); // ?
+                throw new MissingCaseError(step);
         }
     }
 }

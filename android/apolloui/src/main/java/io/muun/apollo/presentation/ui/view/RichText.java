@@ -14,6 +14,7 @@ import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
 import android.view.View;
+import androidx.annotation.NonNull;
 
 import javax.validation.constraints.NotNull;
 
@@ -93,12 +94,12 @@ public class RichText extends SpannableStringBuilder {
         }
 
         @Override
-        public void onClick(View textView) {
+        public void onClick(@NonNull View textView) {
             clickListener.onClick();
         }
 
         @Override
-        public void updateDrawState(TextPaint textPaint) {
+        public void updateDrawState(@NonNull TextPaint textPaint) {
             super.updateDrawState(textPaint);
             textPaint.setUnderlineText(false);
         }

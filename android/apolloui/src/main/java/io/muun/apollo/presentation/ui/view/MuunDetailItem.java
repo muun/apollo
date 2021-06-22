@@ -152,7 +152,7 @@ public class MuunDetailItem extends MuunView {
     /**
      * A LinkMovementMethod for TextViews that allows ignoring touch events.
      */
-    private class CustomLinkMovementMethod extends LinkMovementMethod {
+    private static class CustomLinkMovementMethod extends LinkMovementMethod {
         boolean ignoreNextTouchEvent = false;
 
         @Override

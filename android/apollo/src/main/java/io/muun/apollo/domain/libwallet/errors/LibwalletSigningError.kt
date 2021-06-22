@@ -4,12 +4,9 @@ import io.muun.apollo.domain.errors.MuunError
 
 private var msg = "Libwallet failed to produce a signature"
 
-class LibwalletSigningError : MuunError {
+class LibwalletSigningError(val tx: String, cause: Throwable) : MuunError(msg, cause) {
 
-    val tx: String
-
-    constructor(tx: String, cause: Throwable): super(msg, cause) {
-        this.tx = tx
+    init {
         metadata["tx"] = tx
     }
 }

@@ -15,12 +15,12 @@ import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
-import io.muun.apollo.presentation.ui.base.BaseActivity;
-import io.muun.apollo.presentation.ui.edit_fee.EditFeeActivity;
+import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
+import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeFragment;
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorFragment;
+import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeFragment;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
-import io.muun.apollo.presentation.ui.listener.OnBackPressedListener;
 import io.muun.apollo.presentation.ui.listener.SimpleTextWatcher;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
@@ -41,7 +41,6 @@ import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.utils.BitcoinUtils;
 
 import android.animation.LayoutTransition;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -53,8 +52,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -73,14 +72,13 @@ import javax.validation.constraints.NotNull;
 import static android.animation.LayoutTransition.APPEARING;
 import static android.animation.LayoutTransition.DISAPPEARING;
 
-public class NewOperationActivity extends BaseActivity<NewOperationPresenter> implements
+public class NewOperationActivity extends SingleFragmentActivity<NewOperationPresenter> implements
         NewOperationView {
 
     public static final String OPERATION_URI = "operation_uri";
     public static final String ORIGIN = "origin";
 
     private static final int ANIMATION_DURATION_MS = 300;
-    private static final int EDIT_FEE_REQUEST_CODE = 1001;
 
     private static final long INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS = 60;
 
@@ -207,7 +205,10 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     // State:
     @State
     CurrencyDisplayMode currencyDisplayMode;
-    private NewOperationStep step;
+
+    @State
+    NewOperationStep step;
+
     private NewOperationForm form;
 
     private boolean confirmationInProgress;
@@ -223,6 +224,16 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     @Override
     protected int getLayoutResource() {
         return R.layout.activity_new_operation;
+    }
+
+    @Override
+    public MuunHeader getHeader() {
+        return header;
+    }
+
+    @Override
+    protected int getFragmentsContainer() {
+        return R.id.overlay_container;
     }
 
     @Override
@@ -266,6 +277,11 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
 
             presenter.onViewCreated(uri, origin);
 
+            // If we're re-creating activity, and a fragment was being shown before, display it
+            if (!getSupportFragmentManager().getFragments().isEmpty()) {
+                overlayContainer.setVisibility(View.VISIBLE);
+            }
+
         } else {
             showTextToast(getString(R.string.error_no_valid_payment_details_provided));
             finishActivity();
@@ -296,6 +312,15 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     @Override
     protected boolean isPresenterPersistent() {
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (step == NewOperationStep.ENTER_AMOUNT) {
+            amountInput.requestFocus();
+        }
     }
 
     @Override
@@ -352,19 +377,20 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     @Override
     public void showErrorScreen(NewOperationErrorType type) {
         presenter.reportError(type);
-        showOverlayFragment(NewOperationErrorFragment.create(type));
+        showOverlayFragment(NewOperationErrorFragment.create(type), false);
+        ExtensionsKt.setUserInteractionEnabled(scrollableLayout, false);
     }
 
-    private void showOverlayFragment(Fragment fragment) {
+    private void showOverlayFragment(Fragment fragment, boolean canGoBack) {
         UiUtils.lastResortHideKeyboard(this);
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.overlay_container, fragment)
-                .commitNow();
-
+        if (canGoBack) {
+            replaceFragment(fragment, true);
+        } else {
+            // Keeping long standing (maybe legacy) behaviour of using commitNow for fragment txs
+            // that CAN't go back (namely error fragment). We used to have glitches during the tx
+            replaceFragmentNow(fragment);
+        }
         overlayContainer.setVisibility(View.VISIBLE);
-        ExtensionsKt.isUserInteractionEnabled(scrollableLayout, false);
     }
 
     private Optional<Fragment> getOverlayFragment() {
@@ -504,10 +530,6 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         view.setText(toRichTextOrBlank(value, isValid));
     }
 
-    private void setDetailText(TextView view, @Nullable MonetaryAmount value, boolean isValid) {
-        view.setText(toRichTextOrBlank(value, isValid));
-    }
-
     private void setReceiverContact(Contact contact) {
         receiver.setText(contact.publicProfile.getFullName());
         receiver.setPictureUri(contact.publicProfile.profilePictureUrl);
@@ -640,32 +662,27 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     }
 
     @Override
-    public void editFee(PaymentRequest payReq) {
-        requestExternalResult(
-                this,
-                EDIT_FEE_REQUEST_CODE,
-                EditFeeActivity.getStartActivityIntent(this, payReq)
-        );
+    public void editFee(@NonNull PaymentRequest payReq) {
+        showOverlayFragment(RecommendedFeeFragment.create(payReq), true);
     }
 
     @Override
-    public void onExternalResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == EDIT_FEE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                final Optional<Double> selectedFeeRate = EditFeeActivity.getResult(data);
+    public void editFeeManually(@NonNull PaymentRequest payReq) {
+        replaceFragment(ManualFeeFragment.create(payReq), true);
+    }
 
-                selectedFeeRate.ifPresent(feeRate -> {
-                            if (feeRate >= Rules.OP_MINIMUM_FEE_RATE) {
-                                presenter.updateFeeRate(feeRate);
+    @Override
+    public void confirmFee(double selectedFeeRate) {
+        if (selectedFeeRate >= Rules.OP_MINIMUM_FEE_RATE) {
+            presenter.updateFeeRate(selectedFeeRate);
 
-                            } else {
-                                Timber.e(new BugDetected("Invalid fee rate selected: " + feeRate));
-                            }
-                        }
-                );
-            }
-
+        } else {
+            Timber.e(new BugDetected("Invalid fee rate selected: " + selectedFeeRate));
         }
+
+        // Go back to confirm Step
+        clearFragmentBackStack();
+        hideFragmentOverlay();
     }
 
     /**
@@ -710,6 +727,9 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         // which in turn causes the keyboard to hide.
         changeVisibility(amountEditableViews, View.VISIBLE);
         amountInput.requestFocus();
+
+        // Post as sometimes requestFocus is called early and soft keyboard isn't shown
+        new Handler().post(() -> amountInput.requestFocus());
 
         changeVisibility(amountSelectedViews, View.GONE);
         changeVisibility(noteEnteredViews, View.GONE);
@@ -769,7 +789,7 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
      * run more things on background and/or preload fees and total value.
      */
     private void goToConfirmStep() {
-        hideSoftKeyboard();
+        UiUtils.lastResortHideKeyboard(this);
         showLoadingSpinner(false);
 
         changeVisibility(amountSelectedViews, View.VISIBLE);
@@ -973,18 +993,14 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
             return;
         }
 
-        // TODO this code is repeated in SingleFragmentActivity, which right now we can't inherit.
+        logStepChange("onBackPressed");
+
         if (handleBackByOverlayFragment()) {
             return;
         }
 
-        logStepChange("onBackPressed");
-
         switch (step) {
             case RESOLVING:
-                finishAndGoToHome();
-                break;
-
             case ENTER_AMOUNT:
                 finishAndGoToHome();
                 break;
@@ -1014,11 +1030,28 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
     private boolean handleBackByOverlayFragment() {
         final Fragment overlayFragment = getOverlayFragment().orElse(null);
 
-        if (overlayFragment instanceof OnBackPressedListener) {
-            return ((OnBackPressedListener) overlayFragment).onBackPressed();
-        } else {
-            return false;
+        if (overlayFragment != null) {
+            super.onBackPressed();
+
+            // If we popped all singleFragment, let's hide fragment overlay and reset MuunHeader
+            if (!getOverlayFragment().isPresent()) {
+                hideFragmentOverlay();
+            }
+
+            return true;
         }
+
+        return false;
+    }
+
+    private void hideFragmentOverlay() {
+        if (getValidIntentUri(getIntent()).map(OperationUri::isLn).orElse(false)) {
+            header.showTitle(R.string.new_operation_swap_title);
+        } else {
+            header.showTitle(R.string.title_new_operation);
+        }
+        header.setNavigation(Navigation.BACK);
+        overlayContainer.setVisibility(View.GONE);
     }
 
     private void showAbortDialog() {
@@ -1043,16 +1076,6 @@ public class NewOperationActivity extends BaseActivity<NewOperationPresenter> im
         }
 
         finishActivity();
-    }
-
-    private void hideSoftKeyboard() {
-        final View currentFocus = this.getCurrentFocus();
-        final InputMethodManager inputMethodManager =
-                (InputMethodManager) this.getSystemService(Activity.INPUT_METHOD_SERVICE);
-
-        if (currentFocus != null && inputMethodManager != null) {
-            inputMethodManager.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
-        }
     }
 
     private InvoiceExpirationCountdownTimer buildCountDownTimer(long remainingMillis) {

@@ -143,7 +143,7 @@ class MoneyDecorationTest {
             }
         }
 
-        internal fun deleteOneCharacter(): Given {
+        fun deleteOneCharacter(): Given {
             caretPosition--
             decoration.beforeTextChanged(text, caretPosition, 1, 0)
             text.deleteCharAt(caretPosition)
@@ -151,7 +151,7 @@ class MoneyDecorationTest {
             return this
         }
 
-        internal fun paste(from: Int, to: Int, inserted: String): Given {
+        fun paste(from: Int, to: Int, inserted: String): Given {
             val replacedCount = from - to
             decoration.beforeTextChanged(text, from, replacedCount, inserted.length)
             text.replace(from, to, inserted)
@@ -168,14 +168,14 @@ class MoneyDecorationTest {
             return this
         }
 
-        internal fun expect(expected: String) {
+        fun expect(expected: String) {
             val expectedPosition = expected.indexOf('|')
 
             assertThat(text.toString()).isEqualTo(cleanText(expected))
             assertThat(caretPosition).isEqualTo(expectedPosition)
         }
 
-        internal fun cleanText(dslText: String): String {
+        fun cleanText(dslText: String): String {
             return dslText.replace("|", "")
                     .replace("_", decoration.groupingSeparator + "")
                     .replace(".", decoration.decimalSeparator + "")

@@ -26,6 +26,10 @@ class ReceiveScreen(
         return Clipboard.read()
     }
 
+    fun goToScanLnUrl() {
+        desc(R.string.scan_lnurl).click()
+    }
+
     fun addInvoiceAmount(amountInSat: Long) {
         normalizedLabel(ShowQrPage.LN.titleRes).click()
         id(R.id.invoice_settings).click()

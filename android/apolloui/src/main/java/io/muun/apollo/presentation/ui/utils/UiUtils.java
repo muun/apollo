@@ -257,7 +257,8 @@ public class UiUtils {
         }
 
         // Workaround for the case when the fragment transition was initiated by soft keyboard's
-        // Next key. Apparently, above method doesn't work but this does.
+        // Next key. Apparently, tryHideKeyboard with fragment's view does not work, probably
+        // because focus changes rapidly to a view that does not belongs to the fragment.
         UiUtils.tryHideKeyboard(activity, activity.getCurrentFocus());
 
         // Last desperate attempt to hide soft keyboard

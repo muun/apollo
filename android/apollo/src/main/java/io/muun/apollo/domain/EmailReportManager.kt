@@ -1,7 +1,7 @@
 package io.muun.apollo.domain
 
-import io.muun.apollo.data.logging.CrashReport
-import io.muun.apollo.data.logging.EmailReport
+import io.muun.apollo.domain.model.report.CrashReport
+import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.TelephonyInfoProvider
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
@@ -27,9 +27,8 @@ class EmailReportManager @Inject constructor(
             .orElse(null)
 
         val fcmToken = getFcmToken.actionNow() // Insta-return, token ready at this point
-        val fcmTokenHash: String
 
-        fcmTokenHash = if (fcmToken != null) {
+        val fcmTokenHash = if (fcmToken != null) {
             Encodings.bytesToHex(Hashes.sha256(Encodings.stringToBytes(fcmToken)))
         } else {
             "null"

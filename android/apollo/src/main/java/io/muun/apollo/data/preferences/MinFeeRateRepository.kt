@@ -2,9 +2,7 @@ package io.muun.apollo.data.preferences
 
 import android.content.Context
 import io.muun.apollo.data.preferences.adapter.DoublePreferenceAdapter
-import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
-import io.muun.common.crypto.hd.PublicKey
 import javax.inject.Inject
 
 open class MinFeeRateRepository @Inject constructor(

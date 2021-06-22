@@ -4,14 +4,10 @@ import io.muun.apollo.domain.errors.MuunError
 
 private var msg = "Libwallet failed to derive an address"
 
-class AddressDerivationError : MuunError {
+class AddressDerivationError(val version: Int, val path: String, cause: Throwable) :
+    MuunError(msg, cause) {
 
-    val version: Int
-    val path: String
-
-    constructor(version: Int, path: String, cause: Throwable): super(msg, cause) {
-        this.version = version
-        this.path = path
+    init {
         metadata["version"] = version
         metadata["path"] = path
     }

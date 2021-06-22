@@ -36,24 +36,25 @@ open class ForwardingPoliciesRepository @Inject constructor(
         /**
          * JSON constructor.
          */
-        constructor() {}
+        @Suppress("unused")
+        constructor()
 
         fun toForwardingPolicy(): ForwardingPolicy {
             return ForwardingPolicy(
-                    identityKey!!,
-                    feeBaseMsat,
-                    feeProportionalMillionths,
-                    cltvExpiryDelta
+                identityKey!!,
+                feeBaseMsat,
+                feeProportionalMillionths,
+                cltvExpiryDelta
             )
         }
     }
 
     private val preference: Preference<List<StoredForwardingPolicy>> =
-            rxSharedPreferences.getObject(
-                    Companion.KEY,
-                    emptyList(),
-                    JsonListPreferenceAdapter(StoredForwardingPolicy::class.java)
-            );
+        rxSharedPreferences.getObject(
+            KEY,
+            emptyList(),
+            JsonListPreferenceAdapter(StoredForwardingPolicy::class.java)
+        )
 
     override fun getFileName(): String {
         return "forwarding_policies"

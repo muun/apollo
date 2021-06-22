@@ -19,8 +19,8 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
-import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -57,7 +57,7 @@ public interface DataComponent extends ActionComponent {
 
     UserRepository userRepository();
 
-    FcmTokenRepository fcmTokenRepository();
+    FirebaseInstalationIdRepository fcmTokenRepository();
 
     ContactDao contactDao();
 

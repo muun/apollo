@@ -174,7 +174,7 @@ class SettingsPresenter @Inject constructor(
         }
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return S_SETTINGS()
     }
 

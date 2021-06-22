@@ -49,13 +49,12 @@ class ShowQrFragmentPagerAdapter(
      * Return an existing Fragment in the ViewPager. This will succeed after the ViewPager is first
      * attached, even across recreations, since the FragmentManager preserves state.
      */
-    public fun getExistingItem(position: Int): Fragment {
+    fun getExistingItem(position: Int): Fragment {
         return fm.fragments.find { ShowQrPage.classAt(position).isInstance(it) }!!
     }
 
 
-    override fun getPageTitle(position: Int): CharSequence? {
-        return context.resources.getString(ShowQrPage.at(position).titleRes)
-            .toUpperCase()
+    override fun getPageTitle(position: Int): CharSequence {
+        return context.resources.getString(ShowQrPage.at(position).titleRes).toUpperCase()
     }
 }

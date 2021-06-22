@@ -370,7 +370,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         LNURL_INVALID_TAG, // E.g Not a withdraw request
         LNURL_UNRESPONSIVE,
         LNURL_UNKNOWN_ERROR,
-        LNURL_EXPIRED_INVOICE
+        LNURL_EXPIRED_INVOICE,
+        LNURL_REQUEST_EXPIRED,
+        LNURL_NO_BALANCE,
+        LNURL_NO_ROUTE
     }
 
     class E_ERROR(val type: ERROR_TYPE, vararg extras: Any): AnalyticsEvent(listOf(

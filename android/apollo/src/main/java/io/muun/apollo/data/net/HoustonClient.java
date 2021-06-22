@@ -23,6 +23,7 @@ import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
+import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.TransactionPushed;
@@ -107,18 +108,22 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Creates a session for a first-time unrecoverable user.
      */
-    public Observable<CreateFirstSessionOk> createFirstSession(String buildType,
-                                                               int version,
-                                                               String gcmRegistrationToken,
-                                                               PublicKey basePublicKey,
-                                                               CurrencyUnit primaryCurrency) {
+    public Observable<CreateFirstSessionOk> createFirstSession(
+            String buildType,
+            int version,
+            String gcmRegistrationToken,
+            PublicKey basePublicKey,
+            CurrencyUnit primaryCurrency,
+            String bigQueryPseudoId
+    ) {
 
         final CreateFirstSessionJson params = apiMapper.mapCreateFirstSession(
                 buildType,
                 version,
                 gcmRegistrationToken,
                 basePublicKey,
-                primaryCurrency
+                primaryCurrency,
+                bigQueryPseudoId
         );
 
         return getService().createFirstSession(params)
@@ -131,13 +136,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<CreateSessionOk> createLoginSession(String buildType,
                                                           int clientVersion,
                                                           String gcmRegistrationToken,
-                                                          String email) {
+                                                          String email,
+                                                          String bigQueryPseudoId) {
 
         final CreateLoginSessionJson params = apiMapper.mapCreateLoginSession(
                 buildType,
                 clientVersion,
                 gcmRegistrationToken,
-                email
+                email,
+                bigQueryPseudoId
         );
 
         return getService().createLoginSession(params)
@@ -150,13 +157,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<Challenge> createRcLoginSession(String buildType,
                                                       int clientVersion,
                                                       String gcmToken,
-                                                      String rcChallengePublicKeyHex) {
+                                                      String rcChallengePublicKeyHex,
+                                                      String bigQueryPseudoId) {
 
         final CreateRcLoginSessionJson session = apiMapper.mapCreateRcLoginSession(
                 buildType,
                 clientVersion,
                 gcmToken,
-                rcChallengePublicKeyHex
+                rcChallengePublicKeyHex,
+                bigQueryPseudoId
         );
 
         return getService().createRecoveryCodeLoginSession(session)
@@ -651,8 +660,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Expire an invoice by payment hash.
      */
-    public Completable expireInvoice(final byte[] paymentHash) {
-        return getService().expireInvoice(Encodings.bytesToHex(paymentHash));
+    public Completable expireInvoice(final Sha256Hash paymentHash) {
+        return getService().expireInvoice(paymentHash.toString());
     }
 
     /**

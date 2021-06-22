@@ -4,6 +4,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.errors.InvoiceParsingError
 import io.muun.apollo.domain.libwallet.errors.NoInvoicesLeftError
 import io.muun.apollo.domain.model.ForwardingPolicy
+import io.muun.apollo.domain.model.Sha256Hash
 import io.muun.common.api.IncomingSwapJson
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
@@ -23,8 +24,8 @@ object Invoice {
 
         val networkParameters = publicKeyPair.networkParameters
         val secrets = Libwallet.generateInvoiceSecrets(
-            LibwalletBridge.toLibwalletModel(publicKeyPair.userPublicKey, networkParameters),
-            LibwalletBridge.toLibwalletModel(publicKeyPair.muunPublicKey, networkParameters),
+            publicKeyPair.userPublicKey.toLibwalletModel(networkParameters),
+            publicKeyPair.muunPublicKey.toLibwalletModel(networkParameters),
         )
 
         return SecretList(secrets)
@@ -52,8 +53,8 @@ object Invoice {
         options.amountSat = amountInSat ?: 0 // Specified amount or amount-less invoice
 
         val invoice = Libwallet.createInvoice(
-            LibwalletBridge.toLibwalletModel(networkParams),
-            LibwalletBridge.toLibwalletModel(userPrivateKey, networkParams),
+            networkParams.toLibwalletModel(),
+            userPrivateKey.toLibwalletModel(networkParams),
             routeHints,
             options
         )
@@ -67,10 +68,10 @@ object Invoice {
     }
 
     fun getMetadata(incomingSwap: IncomingSwapJson): String? {
-        val paymentHash = Encodings.hexToBytes(incomingSwap.paymentHashHex)
+        val paymentHash = Sha256Hash.fromHex(incomingSwap.paymentHashHex)
 
         return try {
-            val invoiceMetadata: String = Libwallet.getInvoiceMetadata(paymentHash)
+            val invoiceMetadata: String = Libwallet.getInvoiceMetadata(paymentHash.toBytes())
 
             if (invoiceMetadata.isNotEmpty()) {
                 invoiceMetadata
@@ -96,7 +97,7 @@ object Invoice {
             invoice.description,
             ZonedDateTime.ofInstant(Instant.ofEpochSecond(invoice.expiry), ZoneId.of("Z")),
             Encodings.bytesToHex(invoice.destination),
-            Encodings.bytesToHex(invoice.paymentHash)
+            Sha256Hash.fromBytes(invoice.paymentHash)
         )
     }
 
@@ -107,7 +108,7 @@ object Invoice {
      */
     fun parseInvoice(params: NetworkParameters, bech32Invoice: String): Invoice {
         return try {
-            Libwallet.parseInvoice(bech32Invoice, LibwalletBridge.toLibwalletModel(params))
+            Libwallet.parseInvoice(bech32Invoice, params.toLibwalletModel())
         } catch (e: Exception) {
             throw InvoiceParsingError(bech32Invoice, e)
         }
@@ -141,11 +142,11 @@ object Invoice {
 
         val shortChannelId = secret.shortChanId
 
-        val userPublicKey: PublicKey = LibwalletBridge.fromLibwalletModel(secret.userHtlcKey)
+        val userPublicKey: PublicKey = Extensions.fromLibwalletModel(secret.userHtlcKey)
 
-        val muunPublicKey: PublicKey = LibwalletBridge.fromLibwalletModel(secret.muunHtlcKey)
+        val muunPublicKey: PublicKey = Extensions.fromLibwalletModel(secret.muunHtlcKey)
 
-        val identityKey: PublicKey = LibwalletBridge.fromLibwalletModel(secret.identityKey)
+        val identityKey: PublicKey = Extensions.fromLibwalletModel(secret.identityKey)
 
     }
 }

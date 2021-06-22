@@ -6,15 +6,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+    <io.muun.apollo.presentation.ui.view.MuunHeader
+            android:id="@+id/new_operation_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevated="true" />
+
     <io.muun.apollo.presentation.ui.view.MuunButtonLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        <io.muun.apollo.presentation.ui.view.MuunHeader
-                android:id="@+id/new_operation_header"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:elevated="true" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/muun_header_plus_shadow_height">
 
         <androidx.core.widget.NestedScrollView
                 android:id="@+id/scrollable_layout"
@@ -363,8 +364,8 @@
             android:id="@+id/overlay_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/muun_header_plus_shadow_height"
             android:background="@color/background"
-            android:elevation="10dp"
             android:visibility="gone" />
 
 </FrameLayout>

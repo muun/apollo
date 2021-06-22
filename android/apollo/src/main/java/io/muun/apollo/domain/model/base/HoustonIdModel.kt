@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model.base
 
 import android.annotation.SuppressLint
 
-open class HoustonIdModel protected constructor(id: Long?, open val hid: Long) : PersistentModel(id) {
+open class HoustonIdModel protected constructor(id: Long?, open var hid: Long) : PersistentModel(id) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

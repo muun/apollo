@@ -3,6 +3,7 @@ package io.muun.apollo.data.external;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.LnUrlWithdraw;
 import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.model.Sha256Hash;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,6 +42,11 @@ public interface NotificationService {
     void showLnPaymentExpiredNotification(@NotNull LnUrlWithdraw lnUrlWithdraw);
 
     /**
+     * Show a notification for an incoming lightning payment that is pending.
+     */
+    void showIncomingLightningPaymentPending();
+
+    /**
      * Cancel all previously shown notifications.
      */
     void cancelAllNotifications();
@@ -53,7 +59,7 @@ public interface NotificationService {
 
     /**
      * Cancel a previously shown LNURL withdraw notification.
-     * @param paymentHashHex the paymentHash (in hex) of invoice associated with the lnurl withdraw
+     * @param paymentHash the paymentHash of invoice associated with the lnurl withdraw
      */
-    void cancelLnUrlNotification(@NotNull String paymentHashHex);
+    void cancelLnUrlNotification(@NotNull Sha256Hash paymentHash);
 }

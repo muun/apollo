@@ -23,17 +23,45 @@ class SubmarineSwap(
     val fundingOutput: SubmarineSwapFundingOutput,
     val fees: SubmarineSwapFees?,
     val expiresAt: ZonedDateTime,
-    var payedAt: ZonedDateTime?,         // may not be payed yet
-    var preimageInHex: String?,
+    val payedAt: ZonedDateTime?,                                            // may not be payed yet
+    private val preimageInHex: String?,
     val bestRouteFees: List<SubmarineSwapBestRouteFees>? = null,            // Transient
     val fundingOutputPolicies: SubmarineSwapFundingOutputPolicies? = null,  // Transient
 ) : HoustonUuidModel(id, houstonUuid) {
 
-    fun isLend() =
-        fundingOutput.debtType == DebtType.LEND
+    companion object {
+        fun fromJson(swap: SubmarineSwapJson?): SubmarineSwap? {
+            return if (swap == null) {
+                null
 
-    fun isCollect() =
-        fundingOutput.debtType == DebtType.COLLECT
+            } else SubmarineSwap(
+                null,
+                swap.swapUuid,
+                swap.invoice,
+                SubmarineSwapReceiver.fromJson(swap.receiver),
+                SubmarineSwapFundingOutput.fromJson(swap.fundingOutput),
+                swap.fees?.let(SubmarineSwapFees::fromJson),
+                ApolloZonedDateTime.fromMuunZonedDateTime(swap.expiresAt)!!.dateTime,
+                ApolloZonedDateTime.fromMuunZonedDateTime(swap.payedAt)?.dateTime,
+                swap.preimageInHex,
+                swap.bestRouteFees?.map(SubmarineSwapBestRouteFees::fromJson),
+                swap.fundingOutputPolicies?.let(SubmarineSwapFundingOutputPolicies::fromJson)
+            )
+        }
+    }
+
+    val preimage
+        get() = if (this.preimageInHex != null) {
+            Preimage.fromHex(this.preimageInHex)
+        } else {
+            null
+        }
+
+    val isLend: Boolean
+        get() = fundingOutput.debtType == DebtType.LEND
+
+    val isCollect: Boolean
+        get() = fundingOutput.debtType == DebtType.COLLECT
 
     fun toJson() =
         SubmarineSwapJson(
@@ -116,26 +144,4 @@ class SubmarineSwap(
             payedAt,
             preimageInHex
         )
-
-    companion object {
-
-        fun fromJson(swap: SubmarineSwapJson?): SubmarineSwap? {
-            return if (swap == null) {
-                null
-
-            } else SubmarineSwap(
-                null,
-                swap.swapUuid,
-                swap.invoice,
-                SubmarineSwapReceiver.fromJson(swap.receiver),
-                SubmarineSwapFundingOutput.fromJson(swap.fundingOutput),
-                swap.fees?.let(SubmarineSwapFees::fromJson),
-                ApolloZonedDateTime.fromMuunZonedDateTime(swap.expiresAt)!!.dateTime,
-                ApolloZonedDateTime.fromMuunZonedDateTime(swap.payedAt)?.dateTime,
-                swap.preimageInHex,
-                swap.bestRouteFees?.map(SubmarineSwapBestRouteFees::fromJson),
-                swap.fundingOutputPolicies?.let(SubmarineSwapFundingOutputPolicies::fromJson)
-            )
-        }
-    }
 }

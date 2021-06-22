@@ -1,8 +1,8 @@
 package io.muun.apollo.data.preferences.migration;
 
 import io.muun.apollo.data.preferences.AuthRepository;
-import io.muun.apollo.data.preferences.FcmTokenRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
@@ -39,7 +39,7 @@ public class PreferencesMigrationManager {
 
     private final TransactionSizeRepository transactionSizeRepository;
 
-    private final FcmTokenRepository fcmTokenRepository;
+    private final FirebaseInstalationIdRepository firebaseInstalationIdRepository;
 
     private final KeysRepository keysRepository;
 
@@ -108,16 +108,18 @@ public class PreferencesMigrationManager {
      * Creates migration manager.
      */
     @Inject
-    public PreferencesMigrationManager(Context context,
-                                       AuthRepository authRepository,
-                                       SchemaVersionRepository schemaVersionRepository,
-                                       UserRepository userRepository,
-                                       LogoutActions logoutActions,
-                                       FeeWindowRepository feeWindowRepository,
-                                       TransactionSizeRepository transactionSizeRepository,
-                                       FcmTokenRepository fcmTokenRepository,
-                                       KeysRepository keysRepository,
-                                       SignupDraftManager signupDraftManager) {
+    public PreferencesMigrationManager(
+            Context context,
+            AuthRepository authRepository,
+            SchemaVersionRepository schemaVersionRepository,
+            UserRepository userRepository,
+            LogoutActions logoutActions,
+            FeeWindowRepository feeWindowRepository,
+            TransactionSizeRepository transactionSizeRepository,
+            FirebaseInstalationIdRepository firebaseInstalationIdRepository,
+            KeysRepository keysRepository,
+            SignupDraftManager signupDraftManager
+    ) {
         this.context = context;
 
         this.schemaVersionRepository = schemaVersionRepository;
@@ -128,7 +130,7 @@ public class PreferencesMigrationManager {
 
         this.logoutActions = logoutActions;
         this.transactionSizeRepository = transactionSizeRepository;
-        this.fcmTokenRepository = fcmTokenRepository;
+        this.firebaseInstalationIdRepository = firebaseInstalationIdRepository;
         this.keysRepository = keysRepository;
         this.signupDraftManager = signupDraftManager;
     }
@@ -247,7 +249,7 @@ public class PreferencesMigrationManager {
         if (hasFcmToken) {
 
             final String fcmToken = userRepositoryPrefs.getString("fcm_token_key", null);
-            fcmTokenRepository.storeFcmToken(fcmToken);
+            firebaseInstalationIdRepository.storeFcmToken(fcmToken);
 
             userRepositoryPrefs.edit().remove("fcm_token_key").apply();
         }

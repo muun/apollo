@@ -4,9 +4,9 @@ import io.muun.apollo.domain.errors.MuunError
 
 private var msg = "Cant fulfill incoming swap"
 
-class UnfulfillableIncomingSwapError: MuunError {
+class UnfulfillableIncomingSwapError(uuid: String, cause: Throwable) : MuunError(msg, cause) {
 
-    constructor(uuid: String, cause: Throwable) : super(msg, cause) {
+    init {
         metadata["uuid"] = uuid
     }
 }

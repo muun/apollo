@@ -10,12 +10,7 @@ class DoublePreferenceAdapter private constructor() : Preference.Adapter<Double>
     }
 
     override fun get(key: String, preferences: SharedPreferences): Double? {
-        val maybeDouble = preferences.getString(key, null)
-
-        if (maybeDouble == null) {
-            return null
-        }
-
+        val maybeDouble = preferences.getString(key, null) ?: return null
         return maybeDouble.toDouble()
     }
 

@@ -9,11 +9,23 @@ import rx.Observable
 
 class LappClient : SimpleHttpClient() {
 
+    enum class LnUrlVariant(val value: String) {
+        NORMAL("normal"),
+        SLOW("slow"),
+        INVOICE_EXPIRES("expires"),
+        FAILS("fails"),
+        NO_BALANCE("noBalance"),
+        EXPIRED_LNURL("expiredLnurl"),
+        NO_ROUTE("noRoute"),
+        WRONT_TAG("wrongTag"),
+        UNRESPONSIVE("unresponsive")
+    }
+
     private val url = BuildConfig.LAPP_URL
 
     private fun executeNow(request: Observable<Response>): String {
         val response = request.toBlocking().first()!!
-        return response.body()!!.string()!!
+        return response.body()!!.string()
     }
 
     fun getLnInvoice(amountInSats: Int): LnInvoice {
@@ -50,6 +62,24 @@ class LappClient : SimpleHttpClient() {
 
         val request = post("$url/payInvoice?invoice=$invoice$withAmount$async", "")
         executeNow(request)
+    }
+
+    /**
+     * Return a new withdraw LNURL. Receives a variant param to generate different LNRULs to force
+     * different use cases.
+     */
+    fun generateWithdrawLnUrl(variant: LnUrlVariant = LnUrlVariant.NORMAL): String {
+
+        if (variant == LnUrlVariant.UNRESPONSIVE) {
+            // Hard-coded lnurl to force "unresponsive service" response
+            return "LNURL1DP68GURN8GHJ7ARGD9EJUER0D4SKJM3WV3HK2UEWDEHHGTN90P5HXAPWV4UXZMTSD3JJUC" +
+                "M0D5LHXETRWFJHG0F3XGENGDGQ8EH52"
+        }
+
+        val request = get("$url/lnurl/withdrawStart?variant=${variant.value}")
+        val response = executeNow(request)
+
+        return response.trim()
     }
 
     /**

@@ -330,7 +330,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         return shouldIgnoreBackAndExit;
     }
 
-    @Deprecated
+    @Deprecated // Use BaseActivity#finishActivity() instead
     @Override
     public void finish() {
         super.finish();

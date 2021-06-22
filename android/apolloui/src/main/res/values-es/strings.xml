@@ -167,13 +167,19 @@
         El monto que estás intentando enviar es demasiado pequeño. Debe superar los 546 satoshis.
     </string>
 
-    <string name="error_op_invalid_address_title">Esta no es una direción de BTC</string>
+    <string name="error_op_invalid_address_title">Esta no es una dirección de BTC</string>
     <string name="error_op_invalid_address_desc">
         Esto no es una dirección de BTC ni una factura de lightning. Verifica su origen y asegúrate 
         de que la dirección esté formateada correctamente.
         \n
         \nTexto escaneado:
         \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_op_invalid_address_title_no_arg">Esta no es una dirección de BTC</string>
+    <string name="error_op_invalid_address_desc_no_arg">
+        Esto no es una dirección de BTC ni una factura de lightning. Verifica su origen y asegúrate
+        de que la dirección esté formateada correctamente.
     </string>
 
     <string name="error_invalid_lnurl_title">¿Es un código LNURL?</string>
@@ -201,15 +207,39 @@
     <string name="error_lnurl_unknown_desc">
         Algo falló y no estamos seguros de qué fue. Envíanos un reporte para ayudarnos a averiguar
         qué sucedió.
+        \n
+        \n<annotation fontStyle="bold">MENSAJE RECIBIDO:</annotation>
+        \n<annotation arg="1">placeholder</annotation>
     </string>
 
-    <string name="error_lnurl_expired_title">@string/notification_ln_payment_failed</string>
-    <string name="error_lnurl_expired_desc">
+    <string name="error_lnurl_invoice_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_invoice_expired_desc">
         Tu factura de lightning venció y <annotation arg="0">placeholder</annotation> no completó el
         pago. Por favor, contáctalos para obtener más información.
         \n
         \n<annotation fontStyle="bold">FACTURA UTILIZADA:</annotation>
         \n<annotation arg="1">placeholder</annotation>
+    </string>
+
+    <string name="error_lnurl_expired_title">La solicitud de retiro expiró</string>
+    <string name="error_lnurl_expired_desc">
+        La LNURL expiró antes de que se realizara el pago. Por favor, solicita una nueva.
+    </string>
+
+    <string name="error_lnurl_no_balance_title">No hay fondos para retirar</string>
+    <string name="error_lnurl_no_balance_desc">
+        Parece que no tienes fondos para retirar de
+        <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation>. Por
+        favor, comprueba que tu saldo no esté vacío.
+    </string>
+
+    <string name="error_lnurl_no_route_title">No hay ruta disponible</string>
+    <string name="error_lnurl_no_route_desc">
+        Parece que
+        <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation> no pudo
+        encontrar una ruta para enviarte el pago. Te sugerimos que te pongas en contacto con
+        <annotation fontStyle="bold"><annotation arg="1">service</annotation></annotation> para
+        avisarles.
     </string>
 
     <string name="error_op_action">Volver al inicio</string>
@@ -303,6 +333,11 @@
     <string name="notification_ln_payment_failed_desc">
         Tu factura de lightning venció y %s no completó el pago.
     </string>
+    <string name="notification_incoming_ln_payment_pending">Abre Muun para recibir un pago</string>
+    <string name="notification_incoming_ln_payment_pending_desc">
+        Alguien te envío bitcoin via Lightning Network. Haz clic para recibirlo.
+    </string>
+    <string name="notification_incoming_ln_payment_pending_cta">RECIBIR PAGO</string>
 
     <!-- Generic strings -->
 

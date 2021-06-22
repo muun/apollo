@@ -18,10 +18,10 @@ class LogoutOptionsSelector @Inject constructor(
     ) {
 
         fun isBlocked(): Boolean {
-            if (isRecoverable) {
-                return hasPendingIncomingSwaps
+            return if (isRecoverable) {
+                hasPendingIncomingSwaps
             } else {
-                return hasBalance || hasUnsettledOps
+                hasBalance || hasUnsettledOps
             }
         }
 
@@ -38,15 +38,14 @@ class LogoutOptionsSelector @Inject constructor(
                 operationSel.watchUnsettled()
             ) { user, balance, unsettledOps ->
                 val hasPendingIncomingSwap = unsettledOps
-                        .filter { it.isIncomingSwap }
-                        .filter { it.status == OperationStatus.BROADCASTED }
-                        .isNotEmpty()
+                    .filter { it.isIncomingSwap }
+                    .any { it.status == OperationStatus.BROADCASTED }
 
                 LogoutOptions(
-                        user.isRecoverable,
-                        balance,
-                        unsettledOps.isNotEmpty(),
-                        hasPendingIncomingSwap
+                    user.isRecoverable,
+                    balance,
+                    unsettledOps.isNotEmpty(),
+                    hasPendingIncomingSwap
                 )
             }
 

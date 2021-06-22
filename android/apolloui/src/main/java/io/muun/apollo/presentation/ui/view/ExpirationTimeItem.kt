@@ -1,21 +1,11 @@
 package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
-import butterknife.BindColor
-import butterknife.BindDrawable
 import butterknife.BindView
-import butterknife.OnClick
-import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
-import io.muun.apollo.presentation.ui.bundler.MonetaryAmountBundler
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
-import io.muun.apollo.presentation.ui.utils.UiUtils
-import javax.money.MonetaryAmount
 
 class ExpirationTimeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
     MuunView(c, a, s) {

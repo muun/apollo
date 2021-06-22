@@ -1,11 +1,12 @@
 package io.muun.apollo.domain.model
 
 class IncomingSwapFulfillmentData(
-        val fulfillmentTx: ByteArray,
-        val muunSignature:ByteArray,
-        val outputPath: String,
-        val outputVersion: Int
+    private val fulfillmentTx: ByteArray,
+    private val muunSignature: ByteArray,
+    private val outputPath: String,
+    private val outputVersion: Int
 ) {
+
     fun toLibwalletModel(): libwallet.IncomingSwapFulfillmentData {
         val data = libwallet.IncomingSwapFulfillmentData()
 

@@ -1,5 +1,6 @@
 package io.muun.apollo.data.net;
 
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BitcoinAmount;
@@ -38,6 +39,8 @@ import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.Encodings;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
@@ -140,8 +143,16 @@ public class ApiObjectsMapper {
     /**
      * Map client information.
      */
-    public ClientJson mapClient(String buildType, int version) {
-        return new ClientJson(ClientTypeJson.APOLLO, buildType, version);
+    public ClientJson mapClient(String buildType, int version, final String bigQueryPseudoId) {
+        return new ClientJson(
+                ClientTypeJson.APOLLO,
+                buildType,
+                version,
+                Globals.INSTANCE.getDeviceName(),
+                TimeZone.getDefault().getRawOffset() / 1000L,
+                Locale.getDefault().toString(),
+                bigQueryPseudoId
+        );
     }
 
     /**
@@ -151,10 +162,11 @@ public class ApiObjectsMapper {
                                                         int version,
                                                         String gcmToken,
                                                         PublicKey basePublicKey,
-                                                        CurrencyUnit primaryCurrency) {
+                                                        CurrencyUnit primaryCurrency,
+                                                        String bigQueryPseudoId) {
 
         return new CreateFirstSessionJson(
-                mapClient(buildType, version),
+                mapClient(buildType, version, bigQueryPseudoId),
                 gcmToken,
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
@@ -168,10 +180,11 @@ public class ApiObjectsMapper {
     public CreateLoginSessionJson mapCreateLoginSession(String buildType,
                                                         int clientVersion,
                                                         String gcmToken,
-                                                        String email) {
+                                                        String email,
+                                                        String bigQueryPseudoId) {
 
         return new CreateLoginSessionJson(
-                mapClient(buildType, clientVersion),
+                mapClient(buildType, clientVersion, bigQueryPseudoId),
                 gcmToken,
                 email
         );
@@ -183,10 +196,11 @@ public class ApiObjectsMapper {
     public CreateRcLoginSessionJson mapCreateRcLoginSession(String buildType,
                                                             int clientVersion,
                                                             String gcmToken,
-                                                            String rcChallengePublicKeyHex) {
+                                                            String rcChallengePublicKeyHex,
+                                                            String bigQueryPseudoId) {
 
         return new CreateRcLoginSessionJson(
-                mapClient(buildType, clientVersion),
+                mapClient(buildType, clientVersion, bigQueryPseudoId),
                 gcmToken,
                 new ChallengeKeyJson(
                         ChallengeType.RECOVERY_CODE,

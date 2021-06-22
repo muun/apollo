@@ -10,5 +10,7 @@ public interface SingleFragmentView extends BaseView {
 
     void replaceFragment(@NotNull Fragment fragment, boolean pushToBackstack);
 
+    void replaceFragmentNow(@NotNull Fragment fragment);
+
     void setLoading(boolean loading);
 }

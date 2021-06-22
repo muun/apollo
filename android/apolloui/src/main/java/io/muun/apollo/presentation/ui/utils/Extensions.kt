@@ -38,11 +38,11 @@ fun View.addOnNextLayoutListener(f: () -> Unit) {
     viewTreeObserver.addOnGlobalLayoutListener(listener)
 }
 
-fun View.isUserInteractionEnabled(enabled: Boolean) {
+fun View.setUserInteractionEnabled(enabled: Boolean) {
     isEnabled = enabled
     if (this is ViewGroup && this.childCount > 0) {
         this.children.forEach {
-            it.isUserInteractionEnabled(enabled)
+            it.setUserInteractionEnabled(enabled)
         }
     }
 }

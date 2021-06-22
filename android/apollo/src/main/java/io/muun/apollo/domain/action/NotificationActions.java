@@ -11,6 +11,7 @@ import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.api.messages.FulfillIncomingSwapMessage;
 
 import android.os.Build;
 import androidx.annotation.Nullable;
@@ -153,7 +154,8 @@ public class NotificationActions {
     private Completable processNotification(NotificationJson notification) {
 
         return Completable.defer(() -> {
-            Timber.d("[Notifications] Processing " + notification.messageType);
+            final String messageType = notification.messageType;
+            Timber.d("[Notifications] Processing " + messageType);
 
             final long lastProcessedId = notificationRepository.getLastProcessedId();
 
@@ -168,6 +170,11 @@ public class NotificationActions {
             return notificationProcessor.process(notification)
                     .onErrorComplete(cause -> {
                         Timber.e(NotificationProcessingError.fromCause(notification, cause));
+                        if (messageType.equals(FulfillIncomingSwapMessage.SPEC.messageType)) {
+                            // We don't allow skipping fulfills
+                            return false;
+                        }
+
                         return true; // skip notification, log the error
                     })
                     .doOnCompleted(() -> {

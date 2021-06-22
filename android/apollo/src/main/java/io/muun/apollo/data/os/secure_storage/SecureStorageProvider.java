@@ -141,11 +141,7 @@ public class SecureStorageProvider {
     /**
      * The Android KeyStore appears to be corrupted: a key present in our Preference map is missing.
      */
-    public class KeyStoreCorruptedError extends SecureStorageError {
-        public KeyStoreCorruptedError(Throwable throwable) {
-            super(throwable);
-        }
-
+    public static class KeyStoreCorruptedError extends SecureStorageError {
         public KeyStoreCorruptedError() {
         }
     }
@@ -153,7 +149,7 @@ public class SecureStorageProvider {
     /**
      * The SharedPreferences bag appears to be corrupted: a key present in our KeyStore is missing.
      */
-    public class SharedPreferencesCorruptedError extends SecureStorageError {
+    public static class SharedPreferencesCorruptedError extends SecureStorageError {
         public SharedPreferencesCorruptedError(Throwable throwable) {
             super(throwable);
         }
@@ -166,11 +162,7 @@ public class SecureStorageProvider {
      * An operation was attempted using a SecureStorageMode different from the one used last time.
      * This is most likely due to a system update to Marshmallow from a previous version.
      */
-    public class InconsistentModeError extends SecureStorageError {
-        public InconsistentModeError(Throwable throwable) {
-            super(throwable);
-        }
-
+    public static class InconsistentModeError extends SecureStorageError {
         public InconsistentModeError() {
         }
     }

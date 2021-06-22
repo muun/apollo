@@ -12,8 +12,6 @@ class FeeCalculatorTest : BaseTest() {
     companion object {
         const val FEE_RATE: Double = 10.0
 
-        val emptyNts = Gen.nextTransactionSize()
-
         val defaultNts = Gen.nextTransactionSize(
             Gen.sizeForAmount(103456L to 110),
             Gen.sizeForAmount(20345678L to 230),

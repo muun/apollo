@@ -29,11 +29,18 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     val device: UiDevice
 
+    // UI Components:
+
     val toolbar get() =
         MuunToolbar(device, context)
 
     val dialog get() =
         MuunDialog(device, context)
+
+    val uriPaster get() =
+        UriPaster(device, context)
+
+    // Screens:
 
     val newOpScreen get() =
         NewOperationScreen(device, context)
@@ -192,6 +199,10 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun button(@IdRes id: Int): UiObject
         = id(id).getChild(idSelector(R.id.muun_button_button))
 
+    /** Obtain a MuunButton as a domain object, matching by id resource name. */
+    fun muunButton(@IdRes id: Int): MuunButton =
+        MuunButton(device, context, button(id))
+
     /** Obtain a MuunDetailItem, matching by id resource name. */
     fun detailItem(@IdRes id: Int): UiObject
         = device.findObject(idSelector(id))
@@ -296,13 +307,8 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     /**
      * Check MuunButton is enabled and press/click it.
      */
-    fun pressMuunButton(@IdRes id: Int) {
-        val buttonObject = button(id)
-
-        assertThat(buttonObject.isEnabled).isTrue()
-
-        buttonObject.click()
-    }
+    fun pressMuunButton(@IdRes id: Int) =
+        button(id).assertEnabledAndClick()
 
     /**
      * Check MuunButton is enabled and press/click it, waiting for next activity, dialog, etc..
@@ -392,6 +398,26 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     fun UiObject.await(millis: Long) =
         waitForExists(millis)
+
+    fun UiObject.assertExists() {
+        assertThat(this.waitForExists(3000)).isTrue()
+    }
+
+    fun UiObject.assertDoesntExist() {
+        assertThat(this.exists()).isFalse()
+    }
+    fun UiObject.assertTextEquals(expectedText: String) {
+        assertThat(this.text).isEqualTo(expectedText)
+    }
+
+    fun UiObject.assertEnabled() {
+        assertThat(this.isEnabled).isTrue()
+    }
+
+    fun UiObject.assertEnabledAndClick(): Boolean {
+        assertEnabled()
+        return click()
+    }
 
     // I WISH I could made these extension functions but we can't (as of this writing) static
     // static extension methods of JAVA classes (we can if the extended class is in Kotlin)

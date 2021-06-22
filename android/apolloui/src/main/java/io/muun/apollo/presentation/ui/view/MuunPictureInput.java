@@ -4,14 +4,17 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.errors.InvalidPictureError;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
+import io.muun.apollo.presentation.ui.utils.Device;
 import io.muun.common.Optional;
 import io.muun.common.exception.MissingCaseError;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -22,6 +25,7 @@ import androidx.fragment.app.DialogFragment;
 import butterknife.BindString;
 import butterknife.BindView;
 import icepick.State;
+import timber.log.Timber;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -269,15 +273,29 @@ public class MuunPictureInput extends MuunView {
             bitmap = (Bitmap) result.getExtras().get("data");
         }
 
+        if (bitmap == null) {
+            // This is VERY weird, but has happened so lets gather as much data as we can
+            final InvalidPictureError error = new InvalidPictureError(result);
+            Timber.e(error);
+            throw error;
+        }
+
         return storeInLocalTempFile(bitmap);
     }
 
     private Bitmap getBitmap(Uri data) {
+
+        final ContentResolver contentResolver = getContext().getContentResolver();
+
         try {
-            return MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), data);
+            if (Device.INSTANCE.supportsImageDecoderApi()) {
+                return ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, data));
+            } else {
+                return MediaStore.Images.Media.getBitmap(contentResolver, data);
+            }
 
         } catch (IOException e) {
-            throw  new InvalidPictureError();
+            throw new InvalidPictureError();
         }
     }
 

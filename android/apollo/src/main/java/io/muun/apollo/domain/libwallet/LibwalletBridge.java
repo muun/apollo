@@ -8,6 +8,7 @@ import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletVerificationError;
 import io.muun.apollo.domain.libwallet.errors.PayloadDecryptError;
 import io.muun.apollo.domain.libwallet.errors.PayloadEncryptError;
+import io.muun.apollo.domain.libwallet.model.Input;
 import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.GeneratedEmergencyKit;
 import io.muun.apollo.domain.model.Operation;
@@ -44,6 +45,8 @@ import timber.log.Timber;
 import java.util.Arrays;
 import java.util.Locale;
 
+// TODO: slowly start chopping down this class. See Extensions file and other models in this
+//  (libwallet) package. Also, migrate it to Kotlin too.
 public class LibwalletBridge {
 
     /**
@@ -331,10 +334,6 @@ public class LibwalletBridge {
                 address.derivationPath(),
                 address.address()
         );
-    }
-
-    static PublicKey fromLibwalletModel(final HDPublicKey pubKey) {
-        return PublicKey.deserializeFromBase58(pubKey.getPath(), pubKey.string());
     }
 
     public static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {

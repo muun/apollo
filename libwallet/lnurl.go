@@ -17,16 +17,20 @@ type LNURLEventMetadata struct {
 }
 
 const (
-	LNURLErrDecode            = lnurl.ErrDecode
-	LNURLErrUnsafeURL         = lnurl.ErrUnsafeURL
-	LNURLErrUnreachable       = lnurl.ErrUnreachable
-	LNURLErrInvalidResponse   = lnurl.ErrInvalidResponse
-	LNURLErrResponse          = lnurl.ErrResponse
-	LNURLErrUnknown           = lnurl.ErrUnknown
-	LNURLErrWrongTag          = lnurl.ErrWrongTag
-	LNURLStatusContacting     = lnurl.StatusContacting
-	LNURLStatusInvoiceCreated = lnurl.StatusInvoiceCreated
-	LNURLStatusReceiving      = lnurl.StatusReceiving
+	LNURLErrDecode             = lnurl.ErrDecode
+	LNURLErrUnsafeURL          = lnurl.ErrUnsafeURL
+	LNURLErrUnreachable        = lnurl.ErrUnreachable
+	LNURLErrInvalidResponse    = lnurl.ErrInvalidResponse
+	LNURLErrResponse           = lnurl.ErrResponse
+	LNURLErrUnknown            = lnurl.ErrUnknown
+	LNURLErrWrongTag           = lnurl.ErrWrongTag
+	LNURLErrNoAvailableBalance = lnurl.ErrNoAvailableBalance
+	LNURLErrRequestExpired     = lnurl.ErrRequestExpired
+	LNURLErrNoRoute            = lnurl.ErrNoRoute
+	LNURLErrTorNotSupported    = lnurl.ErrTorNotSupported
+	LNURLStatusContacting      = lnurl.StatusContacting
+	LNURLStatusInvoiceCreated  = lnurl.StatusInvoiceCreated
+	LNURLStatusReceiving       = lnurl.StatusReceiving
 )
 
 type LNURLListener interface {

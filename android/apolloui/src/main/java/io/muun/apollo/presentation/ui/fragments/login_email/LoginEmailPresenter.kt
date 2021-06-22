@@ -59,7 +59,7 @@ class LoginEmailPresenter @Inject constructor():
         }
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return S_SIGN_IN_EMAIL()
     }
 

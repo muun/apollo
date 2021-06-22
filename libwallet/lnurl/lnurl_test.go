@@ -226,6 +226,119 @@ func TestWrongTagInQR(t *testing.T) {
 	})
 }
 
+func TestOnionLinkNotSupported(t *testing.T) {
+	qr := "LNURL1DP68GUP69UHKVMM0VFSHYTN0DE5K7MSHXU8YD"
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 && e.Code != ErrTorNotSupported {
+			t.Fatalf("unexpected error code: %v", e.Code)
+		}
+		if e.Code == StatusContacting {
+			t.Fatal("should not contact server")
+		}
+	})
+}
+
+func TestExpiredCheck(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&Response{
+			Status: "ERROR",
+			Reason: "something something Expired blabla",
+		})
+	})
+	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&Response{
+			Status: StatusOK,
+		})
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 && e.Code != ErrRequestExpired {
+			t.Fatalf("unexpected error code: %v", e.Code)
+		}
+		if e.Code == StatusInvoiceCreated {
+			t.Fatal("should not create invoice")
+		}
+	})
+}
+
+func TestNoAvailableBalance(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&WithdrawResponse{
+			K1:                 "foobar",
+			Callback:           "http://" + r.Host + "/withdraw/complete",
+			MaxWithdrawable:    0,
+			MinWithdrawable:    0,
+			DefaultDescription: "Withdraw from Lapp",
+			Tag:                "withdrawRequest",
+		})
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 && e.Code != ErrNoAvailableBalance {
+			t.Fatalf("unexpected error code: %d", e.Code)
+		}
+		if e.Code == StatusInvoiceCreated {
+			t.Fatalf("should not create invoice")
+		}
+	})
+}
+
+func TestNoRouteCheck(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&WithdrawResponse{
+			K1:                 "foobar",
+			Callback:           "http://" + r.Host + "/withdraw/complete",
+			MaxWithdrawable:    1_000_000,
+			DefaultDescription: "Withdraw from Lapp",
+			Tag:                "withdrawRequest",
+		})
+	})
+	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&Response{
+			Status: StatusError,
+			Reason: "Unable to pay LN Invoice: FAILURE_REASON_NO_ROUTE",
+		})
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		return "12345", nil
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 && e.Code != ErrNoRoute {
+			t.Fatalf("unexpected error code: %d", e.Code)
+		}
+	})
+}
+
 func TestExtraQueryParams(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -280,6 +393,15 @@ func TestValidate(t *testing.T) {
 	ok := Validate(link)
 	if !ok {
 		t.Fatal("expected to validate link")
+	}
+}
+
+func TestValidateFallbackScheme(t *testing.T) {
+	link := "https://example.com/?lightning=LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"
+
+	ok := Validate(link)
+	if !ok {
+		t.Fatal("expected to validate link with fallback scheme")
 	}
 }
 

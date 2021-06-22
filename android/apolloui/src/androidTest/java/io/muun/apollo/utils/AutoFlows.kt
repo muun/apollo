@@ -515,10 +515,6 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
-    private fun dismissDialog() {
-        device.pressBack() // Pressing back should dismiss dialog ;)
-    }
-
     fun checkOperationDetails(amount: MonetaryAmount,
                               description: String? = null,
                               fee: MonetaryAmount? = null,
@@ -546,6 +542,53 @@ class AutoFlows(override val device: UiDevice,
         exitOpDetailAndReturnHome()
     }
 
+    fun lnUrlWithdrawViaReceive(seenLnurlFirstTime: Boolean = false) {
+        val lnurl = LappClient().generateWithdrawLnUrl()
+        Clipboard.write(lnurl)
+
+        homeScreen.goToReceive()
+        receiveScreen.goToScanLnUrl()
+
+        if (!seenLnurlFirstTime) {
+            pressMuunButton(R.id.lnurl_intro_action)
+        }
+
+        uriPaster.waitForExists().click()
+
+        // Let's wait a sec until withdraw suceeds
+        SystemClock.sleep(1800)
+    }
+
+    fun lnUrlWithdrawViaSend(variant: LappClient.LnUrlVariant = LappClient.LnUrlVariant.NORMAL) {
+        startLnUrlWithdrawViaSend(variant)
+
+        if (variant == LappClient.LnUrlVariant.SLOW) {
+
+            // Let's wait for taking too long state (+15 secs)
+            SystemClock.sleep(16_000)
+
+            muunButton(R.id.lnurl_withdraw_action).waitForExists()
+                .textEquals(MuunTexts.normalize(R.string.error_op_action))
+                .press()
+        } else {
+            // Let's wait a sec until withdraw suceeds
+            SystemClock.sleep(1800)
+        }
+    }
+
+    fun startLnUrlWithdrawViaSend(variant: LappClient.LnUrlVariant) {
+        val lnurl = LappClient().generateWithdrawLnUrl(variant)
+        Clipboard.write(lnurl)
+
+        println("Using lnurl: $lnurl")
+
+        homeScreen.goToSend()
+
+        uriPaster.waitForExists().click()
+
+        pressMuunButton(R.id.lnurl_withdraw_confirm_action)
+    }
+
     // PRIVATE, helper stuff
 
     private fun goToSettingsAndClickDeleteWallet() {
@@ -566,5 +609,9 @@ class AutoFlows(override val device: UiDevice,
 
     private fun backToHome() {
         id(R.id.home_fragment).click()
+    }
+
+    private fun dismissDialog() {
+        device.pressBack() // Pressing back should dismiss dialog ;)
     }
 }

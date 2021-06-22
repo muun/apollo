@@ -34,7 +34,7 @@ class SelectBitcoinUnitPresenter @Inject constructor(
         view.finishActivity()
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return AnalyticsEvent.S_BITCOIN_UNIT_PICKER()
     }
 }

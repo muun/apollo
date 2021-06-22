@@ -4,13 +4,7 @@ import io.muun.apollo.BaseTest
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.DecodedInvoice
-import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.FeeWindow
-import io.muun.apollo.domain.model.NextTransactionSize
-import io.muun.apollo.domain.model.PaymentContext
-import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.SubmarineSwap
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.*
 import io.muun.common.Rules
 import io.muun.common.bitcoinj.NetworkParametersHelper
 import io.muun.common.model.DebtType
@@ -793,7 +787,7 @@ class PaymentContextTest: BaseTest() {
                         invoice.description ?: "",
                         invoice.expirationTime,
                         invoice.destinationPubKey,
-                        invoice.id
+                        Sha256Hash.fromHex(invoice.id)
                 ),
                 swap = swap,
                 feeInSatoshisPerByte = defaultFeeCalculator.satoshisPerByte

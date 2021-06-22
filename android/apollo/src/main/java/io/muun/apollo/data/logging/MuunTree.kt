@@ -3,6 +3,8 @@ package io.muun.apollo.data.logging
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.domain.errors.*
+import io.muun.apollo.domain.model.report.CrashReport
+import io.muun.apollo.domain.model.report.CrashReportBuilder
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
 import timber.log.Timber
 

@@ -12,6 +12,7 @@ import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
 import io.muun.apollo.domain.model.IncomingSwap
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData
 import io.muun.apollo.domain.model.Operation
+import io.muun.apollo.domain.model.Preimage
 import io.muun.common.api.error.ErrorCode
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.exception.HttpException
@@ -60,7 +61,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
         whenever(incomingSwapDao.store(any()))
             .then { invocation -> Observable.just(
-                invocation.getArgument<io.muun.apollo.domain.model.IncomingSwap>(0)
+                invocation.getArgument<IncomingSwap>(0)
             ) }
 
         whenever(operationDao.store(any()))
@@ -97,12 +98,12 @@ class FulfillIncomingSwapActionTest: BaseTest() {
         whenever(houstonClient.fetchFulfillmentData(eq(swap.houstonUuid)))
             .thenReturn(Single.just(null))
 
-        whenever(houstonClient.expireInvoice(eq(swap.paymentHash)))
+        whenever(houstonClient.expireInvoice(eq(swap.getPaymentHash())))
             .thenReturn(Completable.complete())
 
         action.action(swap.houstonUuid).toBlocking().subscribe()
 
-        verify(houstonClient).expireInvoice(eq(swap.paymentHash))
+        verify(houstonClient).expireInvoice(eq(swap.getPaymentHash()))
         verify(houstonClient, never()).pushFulfillmentTransaction(
             any(), any()
         )
@@ -131,7 +132,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
         whenever(houstonClient.fetchFulfillmentData(eq(swap.houstonUuid)))
             .thenReturn(Single.just(fulfillmentData))
 
-        doReturn(IncomingSwap.FulfillmentResult(ByteArray(0), preimage))
+        doReturn(IncomingSwap.FulfillmentResult(ByteArray(0), Preimage.fromBytes(preimage)))
                 .`when`(swap).fulfill(eq(fulfillmentData), any(), any(), eq(params))
 
         whenever(houstonClient.pushFulfillmentTransaction(eq(swap.houstonUuid), any()))
@@ -139,7 +140,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
         action.action(swap.houstonUuid).toBlocking().subscribe()
 
-        verify(houstonClient, never()).expireInvoice(eq(swap.paymentHash))
+        verify(houstonClient, never()).expireInvoice(eq(swap.getPaymentHash()))
         verify(houstonClient).pushFulfillmentTransaction(
             eq(swap.houstonUuid), any()
         )
@@ -159,7 +160,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
             eq(params)
         )
 
-        doReturn(IncomingSwap.FulfillmentResult(byteArrayOf(), preimage))
+        doReturn(IncomingSwap.FulfillmentResult(byteArrayOf(), Preimage.fromBytes(preimage)))
                 .`when`(swap).fulfillFullDebt()
 
         whenever(houstonClient.fulfillIncomingSwap(eq(swap.houstonUuid), eq(preimage)))
@@ -168,7 +169,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
         action.action(swap.houstonUuid).toBlocking().subscribe()
 
         verify(houstonClient).fulfillIncomingSwap(eq(swap.houstonUuid), eq(preimage))
-        verify(houstonClient, never()).expireInvoice(eq(swap.paymentHash))
+        verify(houstonClient, never()).expireInvoice(eq(swap.getPaymentHash()))
         verify(houstonClient, never()).fetchFulfillmentData(eq(swap.houstonUuid))
         verify(houstonClient, never()).pushFulfillmentTransaction(
             eq(swap.houstonUuid), any()
@@ -193,7 +194,7 @@ class FulfillIncomingSwapActionTest: BaseTest() {
 
         action.action(swap.houstonUuid).toBlocking().subscribe()
 
-        verify(houstonClient, never()).expireInvoice(eq(swap.paymentHash))
+        verify(houstonClient, never()).expireInvoice(eq(swap.getPaymentHash()))
         verify(houstonClient, never()).pushFulfillmentTransaction(
             eq(swap.houstonUuid), any()
         )

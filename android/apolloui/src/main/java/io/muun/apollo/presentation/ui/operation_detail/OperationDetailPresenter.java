@@ -16,7 +16,6 @@ import io.muun.common.Optional;
 
 import android.os.Bundle;
 import icepick.State;
-import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -30,7 +29,6 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     private final OperationActions operationActions;
     private final CurrencyDisplayModeSelector currencyDisplayModeSel;
 
-    private final NetworkParameters networkParameters;
     private final LinkBuilder linkBuilder;
 
     @State
@@ -47,13 +45,11 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     @Inject
     public OperationDetailPresenter(OperationActions operationActions,
                                     CurrencyDisplayModeSelector currencyDisplayModeSel,
-                                    NetworkParameters networkParameters,
                                     LinkBuilder linkBuilder,
                                     BlockchainHeightRepository blockchainHeightRepository) {
 
         this.operationActions = operationActions;
         this.currencyDisplayModeSel = currencyDisplayModeSel;
-        this.networkParameters = networkParameters;
         this.linkBuilder = linkBuilder;
         this.blockchainHeightRepository = blockchainHeightRepository;
     }
@@ -75,12 +71,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         final Observable<UiOperation> observable = operationActions
                 .fetchOperationById(operationId)
                 .doOnNext(this::reportOperationDetail)
-                .map(operation -> UiOperation.fromOperation(
-                        operation,
-                        networkParameters,
-                        linkBuilder,
-                        currencyDisplayMode
-                ))
+                .map(op -> UiOperation.fromOperation(op, linkBuilder, currencyDisplayMode))
                 .compose(getAsyncExecutor())
                 .doOnNext(view::setOperation);
 
