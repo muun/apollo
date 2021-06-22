@@ -21,12 +21,6 @@ class PaymentContext(
     val minFeeRate: Double = Rules.OP_MINIMUM_FEE_RATE
 ) {
 
-    companion object {
-        // NOTE: this is a hack to ensure all operation-related screens share a preset payment
-        // context. Ideally, NewOperation would be an Activity with Fragments sharing this.
-        var currentlyInUse: PaymentContext? = null
-    }
-
     private val rateProvider = ExchangeRateProvider(exchangeRateWindow.rates)
 
     /** The total UI balance in the wallet, independent of fees, as calculated by NTS */

@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.base.di;
 import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
-import io.muun.apollo.presentation.ui.edit_fee.EditFeeActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
@@ -82,8 +81,6 @@ public interface ActivityComponent {
     void inject(V2SingleActionActivity v2SingleActionActivity);
 
     void inject(SetupP2PActivity setupP2PActivity);
-
-    void inject(EditFeeActivity editFeeActivity);
 
     void inject(RecoveryToolActivity recoveryToolActivity);
 

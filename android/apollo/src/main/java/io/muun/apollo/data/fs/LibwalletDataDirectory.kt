@@ -4,9 +4,7 @@ import android.content.Context
 import java.io.File
 import javax.inject.Inject
 
-class LibwalletDataDirectory
-@Inject
-constructor (context: Context) {
+class LibwalletDataDirectory @Inject constructor (context: Context) {
 
     val path: File =
         context.filesDir.resolve("libwallet")

@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.new_op_error;
 
-import io.muun.apollo.domain.model.WithPaymentContext;
+import io.muun.apollo.domain.model.PaymentContext;
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
@@ -8,6 +8,7 @@ import io.muun.apollo.presentation.ui.new_operation.NewOperationErrorType;
 import io.muun.common.utils.Preconditions;
 
 import android.os.Bundle;
+import rx.Observable;
 
 import javax.inject.Inject;
 
@@ -15,8 +16,7 @@ import static io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperation
 
 @PerFragment
 public class NewOperationErrorPresenter extends
-        SingleFragmentPresenter<NewOperationErrorView, NewOperationErrorParentPresenter> implements
-        WithPaymentContext {
+        SingleFragmentPresenter<NewOperationErrorView, NewOperationErrorParentPresenter> {
 
     private final CurrencyDisplayModeSelector currencyDisplayModeSel;
 
@@ -38,11 +38,18 @@ public class NewOperationErrorPresenter extends
         // filtering... For now, we're going with whitelisting the errors we know need these two.
         if (errorType == NewOperationErrorType.INSUFFICIENT_FUNDS) {
             view.setCurrencyDisplayMode(currencyDisplayModeSel.get());
-            view.setPaymentContextForError(
-                    getPaymentContext(),
-                    getParentPresenter().getPaymentRequest(),
-                    errorType
-            );
+
+            final Observable<PaymentContext> observable = getParentPresenter()
+                    .watchPaymentContext()
+                    .doOnNext(payCtx ->
+                            view.setPaymentContextForError(
+                                    payCtx,
+                                    getParentPresenter().getPaymentRequest(),
+                                    errorType
+                            )
+                    );
+
+            subscribeTo(observable);
         }
     }
 

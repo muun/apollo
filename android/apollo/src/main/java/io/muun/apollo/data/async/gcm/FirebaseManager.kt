@@ -4,6 +4,7 @@ import android.os.AsyncTask
 import com.google.android.gms.tasks.Task
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.iid.InstanceIdResult
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
 import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction
 import io.muun.apollo.domain.errors.FcmTokenCanceledError
 import io.muun.apollo.domain.errors.FcmTokenError
@@ -16,7 +17,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseManager @Inject constructor(private var updateFcmTokenAction: UpdateFcmTokenAction) {
+class FirebaseManager @Inject constructor(
+        private val updateFcmTokenAction: UpdateFcmTokenAction,
+        private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
+) {
 
     private val subject = BehaviorSubject.create<String>()
 

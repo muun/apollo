@@ -74,7 +74,7 @@ class SelectAmountPresenter @Inject constructor(
         }
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return S_AMOUNT_PICKER()
     }
 

@@ -178,6 +178,12 @@
         \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
     </string>
 
+    <string name="error_op_invalid_address_title_no_arg">This is not a BTC address</string>
+    <string name="error_op_invalid_address_desc_no_arg">
+        This is not a BTC address or a lightning invoice. Double-check its source and make sure
+        the address is properly formatted.
+    </string>
+
     <string name="error_invalid_lnurl_title">Is it a LNURL code?</string>
     <string name="error_invalid_lnurl_desc">
         It doesn\'t seem to be one. Please, double-check its source. Keep in mind you can only use
@@ -201,15 +207,38 @@
     <string name="error_lnurl_unknown_desc">
         Something failed and we aren\'t sure what it was. Please send us a report to help us find
         out what happened.
+        \n
+        \n<annotation fontStyle="bold">RECEIVED MESSAGE:</annotation>
+        \n<annotation arg="1">placeholder</annotation>
     </string>
 
-    <string name="error_lnurl_expired_title">@string/notification_ln_payment_failed</string>
-    <string name="error_lnurl_expired_desc">
+    <string name="error_lnurl_invoice_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_invoice_expired_desc">
         Your lightning invoice expired, and <annotation arg="0">placeholder</annotation> didn\'t
         complete the payment. Please, contact them for more information.
         \n
         \n<annotation fontStyle="bold">USED INVOICE:</annotation>
         \n<annotation arg="1">placeholder</annotation>
+    </string>
+
+    <string name="error_lnurl_expired_title">The withdrawal request expired</string>
+    <string name="error_lnurl_expired_desc">
+        The LNURL expired before the payment was made. Please, request a new one.
+    </string>
+
+    <string name="error_lnurl_no_balance_title">There are no funds to withdraw</string>
+    <string name="error_lnurl_no_balance_desc">
+        It seems you don\'t have any funds to withdraw from
+        <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation>. Please,
+        check that your balance isn\'t empty.
+    </string>
+
+    <string name="error_lnurl_no_route_title">There\'s no available route</string>
+    <string name="error_lnurl_no_route_desc">
+        It seems <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation>
+        couldn\'t find a route to send you the payment. We suggest you contact
+        <annotation fontStyle="bold"><annotation arg="1">service</annotation></annotation>
+        to let them know.
     </string>
 
     <string name="error_op_action">Go to home</string>
@@ -293,6 +322,12 @@
     <string name="notification_ln_payment_failed_desc">
         Your lightning invoice expired, and %s didn\'t complete the payment.
     </string>
+    <string name="notification_incoming_ln_payment_pending">Open Muun to receive a payment</string>
+    <string name="notification_incoming_ln_payment_pending_desc">
+        Someone sent you Bitcoin via lightning network. Tap here to receive it.
+    </string>
+    <string name="notification_incoming_ln_payment_pending_cta">RECEIVE PAYMENT</string>
+
 
     <!-- Generic strings -->
     <string name="slogan">Bitcoin and lightning wallet</string>

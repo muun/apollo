@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action.session
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.CurrencyActions
@@ -23,8 +24,8 @@ class CreateFirstSessionAction @Inject constructor(
     private val currencyActions: CurrencyActions,
     private val logoutActions: LogoutActions,
     private val getFcmToken: GetFcmTokenAction,
-    private val createBasePrivateKey: CreateBasePrivateKeyAction
-
+    private val createBasePrivateKey: CreateBasePrivateKeyAction,
+    private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
 ) : BaseAsyncAction0<CreateFirstSessionOk>() {
 
     /**
@@ -49,7 +50,8 @@ class CreateFirstSessionAction @Inject constructor(
                         Globals.INSTANCE.versionCode,
                         gcmToken,
                         basePrivateKey.publicKey,
-                        currencyActions.localCurrencies.iterator().next()
+                        currencyActions.localCurrencies.iterator().next(),
+                        firebaseInstalationIdRepository.getBigQueryPseudoId()
                     )
             }
             .doOnNext {

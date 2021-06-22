@@ -8,6 +8,8 @@ import io.muun.apollo.domain.model.PaymentAnalysis;
 import io.muun.apollo.domain.model.PaymentContext;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
+import io.muun.apollo.presentation.ui.new_operation.NewOpExtensionsKt;
+import io.muun.apollo.presentation.ui.new_operation.PaymentRequestCompanion;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.FeeManualInput;
@@ -19,17 +21,31 @@ import io.muun.apollo.presentation.ui.view.StatusMessage;
 import io.muun.common.Rules;
 import io.muun.common.model.SizeForAmount;
 
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import icepick.State;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 
+// TODO refactor, remove unused code and kotlinize
 public class ManualFeeFragment extends SingleFragment<ManualFeePresenter> implements ManualFeeView {
+
+    public static ManualFeeFragment create(@NonNull PaymentRequest payReq) {
+        final ManualFeeFragment fragment = new ManualFeeFragment();
+        fragment.setArguments(NewOpExtensionsKt.toBundle(payReq));
+        return fragment;
+    }
+
+    public static PaymentRequest getPaymentRequest(@NotNull Bundle bundle) {
+        return PaymentRequestCompanion.fromBundle(bundle);
+    }
 
     @BindView(R.id.fee_options_message)
     HtmlTextView message;
@@ -72,6 +88,7 @@ public class ManualFeeFragment extends SingleFragment<ManualFeePresenter> implem
         super.initializeUi(view);
 
         getParentActivity().getHeader().setNavigation(Navigation.BACK);
+        getParentActivity().getHeader().showTitle(R.string.edit_fee_title);
 
         final CharSequence content = TextUtils.concat(
                 messageText,

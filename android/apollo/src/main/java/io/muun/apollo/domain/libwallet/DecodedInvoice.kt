@@ -1,14 +1,15 @@
 package io.muun.apollo.domain.libwallet
 
+import io.muun.apollo.domain.model.Sha256Hash
 import org.threeten.bp.ZonedDateTime
 
-class DecodedInvoice(
+class DecodedInvoice constructor(
     val original: String,
     val amountInSat: Long?,
     val description: String,
     val expirationTime: ZonedDateTime,
     val destinationPublicKey: String,
-    val paymentHashHex: String
+    val paymentHash: Sha256Hash
 ) {
 
     fun remainingMillis(): Long {

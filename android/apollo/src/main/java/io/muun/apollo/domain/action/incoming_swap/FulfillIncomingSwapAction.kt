@@ -18,8 +18,7 @@ import rx.Observable
 import rx.Single
 import javax.inject.Inject
 
-open class FulfillIncomingSwapAction
-@Inject constructor(
+open class FulfillIncomingSwapAction @Inject constructor(
         private val houstonClient: HoustonClient,
         private val operationDao: OperationDao,
         private val keysRepository: KeysRepository,
@@ -49,7 +48,7 @@ open class FulfillIncomingSwapAction
             .andThen(persistPreimage(op))
             .onErrorResumeNext { e ->
                 if (e is UnfulfillableIncomingSwapError) {
-                    houstonClient.expireInvoice(op.incomingSwap.paymentHash)
+                    houstonClient.expireInvoice(op.incomingSwap.getPaymentHash())
                 } else {
                     Completable.error(e)
                 }
@@ -63,8 +62,8 @@ open class FulfillIncomingSwapAction
         checkNotNull(op.incomingSwap)
 
         return Completable.defer {
-            val result = op.incomingSwap.fulfillFullDebt()
-            houstonClient.fulfillIncomingSwap(op.incomingSwap.houstonUuid, result.preimage)
+            val preimage = op.incomingSwap.fulfillFullDebt().preimage
+            houstonClient.fulfillIncomingSwap(op.incomingSwap.houstonUuid, preimage.toBytes())
         }
     }
 

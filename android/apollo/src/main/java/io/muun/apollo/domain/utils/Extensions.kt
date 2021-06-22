@@ -3,7 +3,7 @@ package io.muun.apollo.domain.utils
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.Fragment
-import io.muun.apollo.data.logging.CrashReport
+import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.data.net.base.NetworkException
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.model.Currency

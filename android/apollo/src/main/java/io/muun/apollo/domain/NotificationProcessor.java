@@ -17,6 +17,7 @@ import io.muun.apollo.domain.errors.MessagePermissionsError;
 import io.muun.apollo.domain.errors.UnknownNotificationTypeError;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationUpdated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
@@ -39,7 +40,6 @@ import io.muun.common.api.messages.NewOperationMessage;
 import io.muun.common.api.messages.OperationUpdateMessage;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.SessionStatus;
-import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
 import rx.Completable;
@@ -176,9 +176,8 @@ public class NotificationProcessor {
                 .flatMapObservable(operation -> {
 
                     if (operation.isIncomingSwap()) {
-                        notificationService.cancelLnUrlNotification(
-                                Encodings.bytesToHex(operation.incomingSwap.getPaymentHash()
-                        ));
+                        final IncomingSwap swap = operation.incomingSwap;
+                        notificationService.cancelLnUrlNotification(swap.getPaymentHash());
                     }
 
                     // Everything works fine as long as createOperation calls onComplete
@@ -257,7 +256,9 @@ public class NotificationProcessor {
                 notificationJson.message
         );
 
-        return fulfillIncomingSwap.action(message.uuid).toCompletable();
+        return fulfillIncomingSwap.action(message.uuid)
+                .toCompletable()
+                .doOnError(throwable -> notificationService.showIncomingLightningPaymentPending());
     }
 
     private void verifyPermissions(NotificationJson notification, MessageSpec spec) {

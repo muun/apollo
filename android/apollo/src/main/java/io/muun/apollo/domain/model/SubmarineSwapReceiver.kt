@@ -7,9 +7,27 @@ import java.io.IOException
 import java.util.*
 
 class SubmarineSwapReceiver(
-        val alias: String?,
-        val serializedNetworkAddresses: String,
-        val publicKey: String) {
+    val alias: String?,
+    val serializedNetworkAddresses: String,
+    val publicKey: String
+) {
+
+    companion object {
+
+        private val JSON_MAPPER = ObjectMapper()
+
+        fun fromJson(receiver: SubmarineSwapReceiverJson): SubmarineSwapReceiver {
+            try {
+                return SubmarineSwapReceiver(
+                    receiver.alias,
+                    JSON_MAPPER.writeValueAsString(receiver.networkAddresses),
+                    receiver.publicKey
+                )
+            } catch (e: JsonProcessingException) {
+                throw RuntimeException(e)
+            }
+        }
+    }
 
     val formattedDestination by lazy {
         if (displayNetworkAddress.isNotBlank()) {
@@ -36,29 +54,9 @@ class SubmarineSwapReceiver(
 
     fun toJson(): SubmarineSwapReceiverJson {
         return SubmarineSwapReceiverJson(
-                alias,
-                networkAddresses,
-                publicKey
+            alias,
+            networkAddresses,
+            publicKey
         )
-    }
-
-    companion object {
-
-        private val JSON_MAPPER = ObjectMapper()
-
-        fun fromJson(receiver: SubmarineSwapReceiverJson): SubmarineSwapReceiver {
-
-            try {
-
-                return SubmarineSwapReceiver(
-                        receiver.alias,
-                        JSON_MAPPER.writeValueAsString(receiver.networkAddresses),
-                        receiver.publicKey
-                )
-
-            } catch (e: JsonProcessingException) {
-                throw RuntimeException(e)
-            }
-        }
     }
 }

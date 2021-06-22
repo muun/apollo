@@ -281,10 +281,10 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
         val newPayReq = payReq.withFeeRate(payCtx.feeWindow.getFeeRate(payReq.swap))
 
-        return if (payReq.swap.isLend()) {
+        return if (payReq.swap.isLend) {
             analyzeLendSubmarineSwap(newPayReq)
 
-        } else if (payReq.swap.isCollect()) {
+        } else if (payReq.swap.isCollect) {
             analyzeCollectSubmarineSwap(newPayReq)
 
         } else {

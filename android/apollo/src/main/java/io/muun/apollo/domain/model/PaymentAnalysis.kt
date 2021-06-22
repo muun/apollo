@@ -51,7 +51,7 @@ class PaymentAnalysis(
 
     /** Whether the payment requires an on-chain transaction */
     val hasOnChainTransaction =
-        !(payReq.swap?.isLend() ?: false) // only true for lend swaps (sorry for the logic)
+        !(payReq.swap?.isLend ?: false) // only true for lend swaps (sorry for the logic)
 
     /** Whether the amount entered (when an on-chain transaction is needed) is below dust. */
     val isAmountTooSmall =

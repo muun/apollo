@@ -20,13 +20,36 @@ data class SubmarineSwapFundingOutput(
         atVersion = Supports.SubmarineSwapsV2.FALCON
     )
     val userRefundAddress: MuunAddress,
-    val serverPaymentHashInHex: String,
+    private val serverPaymentHashInHex: String,
     val serverPublicKeyInHex: String,
     val scriptVersion: Int,
     val expirationInBlocks: Int? = null,    // for swaps v2 not nullable
     val userPublicKey: PublicKey? = null,   // for swaps v2 not nullable
     val muunPublicKey: PublicKey? = null    // for swaps v2 not nullable)
 ) {
+
+    companion object {
+        fun fromJson(output: SubmarineSwapFundingOutputJson): SubmarineSwapFundingOutput {
+            return SubmarineSwapFundingOutput(
+                output.outputAddress,
+                output.outputAmountInSatoshis,
+                output.debtType,
+                output.debtAmountInSats ?: 0,
+                output.confirmationsNeeded,
+                output.userLockTime,
+                MuunAddress.fromJson(output.userRefundAddress),
+                output.serverPaymentHashInHex,
+                output.serverPublicKeyInHex,
+                output.scriptVersion,
+                output.expirationInBlocks,
+                PublicKey.fromJson(output.userPublicKey),
+                PublicKey.fromJson(output.muunPublicKey)
+            )
+        }
+    }
+
+    val paymentHash: Sha256Hash
+        get() = Sha256Hash.fromHex(serverPaymentHashInHex)
 
     fun toJson() =
         SubmarineSwapFundingOutputJson(
@@ -62,25 +85,4 @@ data class SubmarineSwapFundingOutput(
             debtAmountInSatoshis =  params.debtAmountInSats,
             confirmationsNeeded = params.confirmationsNeeded
         )
-
-    companion object {
-
-        fun fromJson(output: SubmarineSwapFundingOutputJson): SubmarineSwapFundingOutput {
-            return SubmarineSwapFundingOutput(
-                output.outputAddress,
-                output.outputAmountInSatoshis,
-                output.debtType,
-                output.debtAmountInSats ?: 0,
-                output.confirmationsNeeded,
-                output.userLockTime,
-                MuunAddress.fromJson(output.userRefundAddress),
-                output.serverPaymentHashInHex,
-                output.serverPublicKeyInHex,
-                output.scriptVersion,
-                output.expirationInBlocks,
-                PublicKey.fromJson(output.userPublicKey),
-                PublicKey.fromJson(output.muunPublicKey)
-            )
-        }
-    }
 }

@@ -32,14 +32,11 @@ public class NeedRecoveryCodeFragment extends SingleActionFragment<NeedRecoveryC
 
         final Flow flow = Flow.valueOf(flowName);
 
-        switch (flow) {
-
-            case CHANGE_PASSWORD:
-                return getString(R.string.recovery_code_missing_message);
-
-            default:
-                throw new MissingCaseError(flow);
+        if (flow == Flow.CHANGE_PASSWORD) {
+            return getString(R.string.recovery_code_missing_message);
         }
+
+        throw new MissingCaseError(flow);
     }
 
     @Override
@@ -54,12 +51,12 @@ public class NeedRecoveryCodeFragment extends SingleActionFragment<NeedRecoveryC
 
     @Override
     protected int getImageWidth() {
-        return UiUtils.dpToPx(getContext(), 234);
+        return UiUtils.dpToPx(requireContext(), 234);
     }
 
     @Override
     protected int getImageHeight() {
-        return UiUtils.dpToPx(getContext(), 106);
+        return UiUtils.dpToPx(requireContext(), 106);
     }
 
     @Override

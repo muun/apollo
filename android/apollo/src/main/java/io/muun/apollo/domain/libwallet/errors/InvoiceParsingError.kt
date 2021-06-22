@@ -4,12 +4,9 @@ import io.muun.apollo.domain.errors.MuunError
 
 private var msg = "Libwallet failed to parse an invoice"
 
-class InvoiceParsingError : MuunError {
+class InvoiceParsingError(val invoice: String, cause: Throwable) : MuunError(msg, cause) {
 
-    val invoice: String
-
-    constructor(invoice: String, cause: Throwable): super(msg, cause) {
-        this.invoice = invoice
+    init {
         metadata["invoice"] = invoice
     }
 }

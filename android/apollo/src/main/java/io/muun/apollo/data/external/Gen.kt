@@ -429,7 +429,7 @@ object Gen {
             null,
             null,
             OperationStatus.BROADCASTED,
-            null,
+            ZonedDateTime.now(),
             0,
             null,
             incomingSwap,

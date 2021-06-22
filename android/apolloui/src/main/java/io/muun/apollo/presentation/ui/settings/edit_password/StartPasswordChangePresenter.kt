@@ -16,7 +16,7 @@ class StartPasswordChangePresenter @Inject constructor()
         navigateToStep(ChangePasswordStep.EXISTING_PASSWORD)
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return AnalyticsEvent.S_PASSWORD_CHANGE_START()
     }
 }

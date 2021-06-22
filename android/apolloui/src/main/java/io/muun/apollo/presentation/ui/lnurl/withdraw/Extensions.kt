@@ -17,6 +17,9 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
             is LnUrlError.InvalidCode -> ErrorViewKind.FINAL
             is LnUrlError.InvalidLnUrlTag -> ErrorViewKind.FINAL
             is LnUrlError.ExpiredInvoice -> ErrorViewKind.FINAL
+            is LnUrlError.ExpiredLnUrl -> ErrorViewKind.FINAL
+            is LnUrlError.NoWithdrawBalance -> ErrorViewKind.FINAL
+            is LnUrlError.NoRoute -> ErrorViewKind.FINAL
             // Made it an explicit and comprehensive list so we get a compiler hint when new enum
             // values are added (e.g instead of just using else)
         }
@@ -29,6 +32,9 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
             is LnUrlError.Unresponsive -> ERROR_TYPE.LNURL_UNRESPONSIVE
             is LnUrlError.Unknown -> ERROR_TYPE.LNURL_UNKNOWN_ERROR
             is LnUrlError.ExpiredInvoice -> ERROR_TYPE.LNURL_EXPIRED_INVOICE
+            is LnUrlError.ExpiredLnUrl -> ERROR_TYPE.LNURL_REQUEST_EXPIRED
+            is LnUrlError.NoWithdrawBalance -> ERROR_TYPE.LNURL_NO_BALANCE
+            is LnUrlError.NoRoute -> ERROR_TYPE.LNURL_NO_ROUTE
         }
     }
 
@@ -48,7 +54,16 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
                 ctx.getString(R.string.error_lnurl_unknown_title)
 
             is LnUrlError.ExpiredInvoice ->
+                ctx.getString(R.string.error_lnurl_invoice_expired_title)
+
+            is LnUrlError.ExpiredLnUrl ->
                 ctx.getString(R.string.error_lnurl_expired_title)
+
+            is LnUrlError.NoWithdrawBalance ->
+                ctx.getString(R.string.error_lnurl_no_balance_title)
+
+            is LnUrlError.NoRoute ->
+                ctx.getString(R.string.error_lnurl_no_route_title)
         }
     }
 
@@ -65,12 +80,27 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
                     StringResWithArgs(R.string.error_lnurl_service_unresponsive_desc)
 
                 is LnUrlError.Unknown ->
-                    StringResWithArgs(R.string.error_lnurl_unknown_desc)
+                    StringResWithArgs(
+                        R.string.error_lnurl_unknown_desc,
+                        arrayOf(this.event.truncatedMessage)
+                    )
 
                 is LnUrlError.ExpiredInvoice ->
                     StringResWithArgs(
-                        R.string.error_lnurl_expired_desc,
+                        R.string.error_lnurl_invoice_expired_desc,
                         arrayOf(this.domain, this.invoice)
+                    )
+
+                is LnUrlError.ExpiredLnUrl ->
+                    StringResWithArgs(R.string.error_lnurl_expired_desc)
+
+                is LnUrlError.NoWithdrawBalance ->
+                    StringResWithArgs(R.string.error_lnurl_no_balance_desc)
+
+                is LnUrlError.NoRoute ->
+                    StringResWithArgs(
+                        R.string.error_lnurl_no_route_desc,
+                        arrayOf(this.domain, this.domain)
                     )
             }
         }

@@ -23,7 +23,7 @@ public class MuunActionDrawer extends MuunView {
         void onActionClick(int actionId);
     }
 
-    @Nullable
+    @Nullable   // Subclasses may not have this view
     @BindView(R.id.muun_action_drawer_container)
     ViewGroup container;
 
@@ -74,6 +74,8 @@ public class MuunActionDrawer extends MuunView {
                           @Nullable @DrawableRes Integer maybeIconRes,
                           String label) {
 
+        Preconditions.checkNotNull(container);
+
         final MuunActionDrawerItem item = new MuunActionDrawerItem(getContext());
 
         if (maybeIcon != null) {
@@ -91,19 +93,27 @@ public class MuunActionDrawer extends MuunView {
     }
 
     public void setActionLabel(int actionId, String text) {
-        getItem(actionId).setLabel(text);
+        final MuunActionDrawerItem item = getItem(actionId);
+        if (item != null) {
+            item.setLabel(text);
+        }
     }
 
     public void setActionEnabled(int actionId, boolean enabled) {
-        getItem(actionId).setEnabled(enabled);
+        final MuunActionDrawerItem item = getItem(actionId);
+        if (item != null) {
+            item.setEnabled(enabled);
+        }
     }
 
     private MuunActionDrawerItem getItem(int actionId) {
+        Preconditions.checkNotNull(container);
+
         final Integer index = actionIdToViewIndex.get(actionId);
         if (index != null) {
             final View child = container.getChildAt(index);
 
-            Preconditions.checkState(child != null && child instanceof MuunActionDrawerItem);
+            Preconditions.checkState(child instanceof MuunActionDrawerItem);
 
             return (MuunActionDrawerItem) child;
         }

@@ -7,7 +7,6 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
-import org.javamoney.moneta.Money
 import javax.money.MonetaryAmount
 
 class FeeManualItem @JvmOverloads constructor(context: Context, a: AttributeSet? = null, s: Int = 0)

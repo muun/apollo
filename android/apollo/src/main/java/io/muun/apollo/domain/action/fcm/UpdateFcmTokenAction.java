@@ -2,7 +2,7 @@ package io.muun.apollo.domain.action.fcm;
 
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.AuthRepository;
-import io.muun.apollo.data.preferences.FcmTokenRepository;
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.LocalStorageIntegrityError;
@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
 
     private final HoustonClient houstonClient;
-    private final FcmTokenRepository fcmTokenRepository;
+    private final FirebaseInstalationIdRepository firebaseInstalationIdRepository;
     private final AuthRepository authRepository;
     private final NotificationActions notificationActions;
 
@@ -27,11 +27,11 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
      */
     @Inject
     public UpdateFcmTokenAction(HoustonClient houstonClient,
-                                FcmTokenRepository fcmTokenRepository,
+                                FirebaseInstalationIdRepository firebaseInstalationIdRepository,
                                 AuthRepository authRepository,
                                 NotificationActions notificationActions) {
         this.houstonClient = houstonClient;
-        this.fcmTokenRepository = fcmTokenRepository;
+        this.firebaseInstalationIdRepository = firebaseInstalationIdRepository;
         this.authRepository = authRepository;
         this.notificationActions = notificationActions;
     }
@@ -39,7 +39,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
     @Override
     public Observable<Void> action(String token) {
 
-        fcmTokenRepository.storeFcmToken(token);
+        firebaseInstalationIdRepository.storeFcmToken(token);
 
         final boolean hasValidSession = authRepository.getSessionStatus().isPresent()
                 && authRepository.getSessionStatus().get() != SessionStatus.EXPIRED;
@@ -48,9 +48,10 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
         // If anyone of these is true, we can't perform an http request to Houston (NOT_AUTHORIZED)
         if (!hasValidSession || !hasJwt) {
 
-            // As IDE will tell you, !hasJwt will always be true at this point, but we're leaving it
+            // As IDE might tell you, !hasJwt will always be true at this point. We're leaving it:
             // - for readability
             // - to explicitly state the policy, so that (possible) future changes don't miss this
+            @SuppressWarnings("ConstantConditions") // Don't warn about value guaranteed to be const
             final boolean hasValidSessionButNoJwt = hasValidSession && !hasJwt;
             final boolean hasJwtButInvalidSession = !hasValidSession && hasJwt;
 

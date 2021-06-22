@@ -260,14 +260,6 @@
                 android:windowSoftInputMode="adjustResize"
         />
 
-        <!-- EditFeeActivity -->
-
-        <activity
-                android:name=".presentation.ui.edit_fee.EditFeeActivity"
-                android:label="@string/edit_fee_title"
-                android:windowSoftInputMode="adjustResize"
-        />
-
         <activity
                 android:name=".presentation.ui.send.SendActivity"
                 android:windowSoftInputMode="adjustResize"

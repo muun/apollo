@@ -9,8 +9,7 @@ import rx.Completable
 import timber.log.Timber
 import javax.inject.Inject
 
-class VerifyFulfillableAction
-@Inject constructor(
+class VerifyFulfillableAction @Inject constructor(
     private val keysRepository: KeysRepository,
     private val houstonClient: HoustonClient,
     private val networkParameters: NetworkParameters,
@@ -25,7 +24,7 @@ class VerifyFulfillableAction
                 } catch (e: UnfulfillableIncomingSwapError) {
                     Timber.e("Will expire invoice due to unfulfillable swap", e)
 
-                    houstonClient.expireInvoice(swap.paymentHash)
+                    houstonClient.expireInvoice(swap.getPaymentHash())
                 }
 
                 Completable.complete()

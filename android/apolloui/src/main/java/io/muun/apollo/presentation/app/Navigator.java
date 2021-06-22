@@ -134,7 +134,6 @@ public class Navigator {
      * @param context an {Activity} context.
      */
     public void navigateToRequestRestart(@NotNull Context context) {
-        logoutActions.destroyRecoverableWallet(); // If user canLogout, wipe Local Storage early.
         navigateToSingleAction(context, SingleActionActivity.ActionType.REQUEST_RESTART, true);
     }
 

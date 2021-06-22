@@ -24,7 +24,6 @@ import io.muun.apollo.domain.model.PaymentAnalysis;
 import io.muun.apollo.domain.model.PaymentContext;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
-import io.muun.apollo.domain.model.WithPaymentContext;
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
 import io.muun.apollo.domain.selector.ExchangeRateSelector;
 import io.muun.apollo.domain.selector.PaymentContextSelector;
@@ -33,17 +32,21 @@ import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
+import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeParentPresenter;
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter;
+import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeParentPresenter;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.common.Optional;
 import io.muun.common.Rules;
 import io.muun.common.utils.Preconditions;
 
 import android.os.Bundle;
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import kotlin.Pair;
 import org.javamoney.moneta.Money;
 import rx.Observable;
+import rx.subjects.BehaviorSubject;
 import timber.log.Timber;
 
 import java.lang.reflect.Array;
@@ -58,8 +61,9 @@ import static io.muun.common.utils.Preconditions.checkNotNull;
 
 @PerActivity
 public class NewOperationPresenter extends BasePresenter<NewOperationView> implements
-        WithPaymentContext,
-        NewOperationErrorParentPresenter {
+        NewOperationErrorParentPresenter,
+        RecommendedFeeParentPresenter,
+        ManualFeeParentPresenter {
 
     private final SubmitPaymentAction submitPaymentAction;
 
@@ -79,6 +83,9 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
     NewOperationForm form;
 
     private NewOperationOrigin origin;
+
+    private BehaviorSubject<PaymentContext> payCtxSubject = BehaviorSubject.create();
+    private PaymentContext payCtx;
 
     /**
      * Creates a NewOperationPresenter.
@@ -187,7 +194,6 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
         final CurrencyDisplayMode currencyDisplayMode = currencyDisplayModeSel.get();
 
-        final PaymentContext payCtx = getPaymentContext();
         final MonetaryAmount balance = payCtx
                 .convert(payCtx.getUserBalance(), amount.getCurrency());
 
@@ -232,7 +238,7 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
     }
 
     public boolean canUseAllFunds() {
-        return getPaymentContext().getUserBalance() > 0;
+        return payCtx.getUserBalance() > 0;
     }
 
     /**
@@ -248,9 +254,9 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
     private void setUsingAllFunds() {
         final CurrencyUnit inputCurrency = form.amount.getCurrency();
-        final long totalBalanceInSatoshis = getPaymentContext().getUserBalance();
+        final long totalBalanceInSatoshis = payCtx.getUserBalance();
 
-        form.amount = getPaymentContext().convert(totalBalanceInSatoshis, inputCurrency);
+        form.amount = payCtx.convert(totalBalanceInSatoshis, inputCurrency);
         form.isUsingAllFunds = true;
     }
 
@@ -289,7 +295,7 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         final PaymentRequest updatedPayReq = getUpdatedPaymentRequest(form);
 
         try {
-            final PreparedPayment prepPayment = getPaymentContext().prepare(updatedPayReq);
+            final PreparedPayment prepPayment = payCtx.prepare(updatedPayReq);
             form.submitedPayReq = prepPayment.payReq;
             trackSubmit(prepPayment);
             submitPaymentAction.run(prepPayment);
@@ -314,6 +320,21 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
     }
 
     @Override
+    public Observable<PaymentContext> watchPaymentContext() {
+        return payCtxSubject.asObservable();
+    }
+
+    @Override
+    public void editFeeManually(@NonNull PaymentRequest payReq) {
+        view.editFeeManually(payReq);
+    }
+
+    @Override
+    public void confirmFee(double selectedFeeRate) {
+        view.confirmFee(selectedFeeRate);
+    }
+
+    @Override
     protected void onNetworkConnectionChange(boolean isConnected) {
         view.setConnectedToNetwork(isConnected);
     }
@@ -323,9 +344,8 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         // This is especially important if we landed here after the user clicked an external link,
         // since he skipped the home screen and didn't automatically fetch RTD.
 
-        // Note that RTD fetching is instantaneous if itwas already up to date.
+        // Note that RTD fetching is instantaneous if it was already up to date.
 
-        PaymentContext.Companion.setCurrentlyInUse(null); // invalidate payCtx to trigger re-fetch
         setUpPaymentContext();
 
         // Obtain the payment request (if not already done, this may not be the first RTD fetch):
@@ -365,15 +385,13 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         onPaymentDetailsChanged();
     }
 
-    private void onPaymentContextChanged(PaymentContext newPaymentContext) {
-        // Avoid changing paymentContext onResume but handle analysis
-        if (!hasPaymentContext()) {
-            PaymentContext.Companion.setCurrentlyInUse(newPaymentContext);
+    private void onPaymentContextChanged(PaymentContext newPayCtx) {
+        payCtx = newPayCtx;
+        payCtxSubject.onNext(newPayCtx);
 
-            // Without PaymentContext, we can't properly handle errors in the resolve action. So
-            // we subscribe now that it's available:
-            setUpResolveUriAction();
-        }
+        // Without PaymentContext, we can't properly handle errors in the resolve action. So
+        // we subscribe now that it's available:
+        setUpResolveUriAction();
 
         onPaymentDetailsChanged();
     }
@@ -390,13 +408,13 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
     @VisibleForTesting
     void onPaymentDetailsChanged() {
-        if (!hasPaymentContext() || form == null || form.payReq == null) {
+        if (payCtx == null || form == null || form.payReq == null) {
             return;
         }
 
         try {
             final PaymentRequest updatedPayReq = getUpdatedPaymentRequest(form);
-            final PaymentAnalysis analysis = getPaymentContext().analyze(updatedPayReq);
+            final PaymentAnalysis analysis = payCtx.analyze(updatedPayReq);
 
             onPaymentAnalysisChanged(analysis);
 
@@ -461,7 +479,7 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
             return form.payReq.getFeeInSatoshisPerByte(); // can be null for AmountLess Invoices
 
         } else {
-            return getPaymentContext().getFastFeeOption().getSatoshisPerByte();
+            return payCtx.getFastFeeOption().getSatoshisPerByte();
         }
     }
 
@@ -662,7 +680,6 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
 
     private AnalyticsEvent.E_FEE_OPTION_TYPE getFeeOptionTypeParam(double selectedFeeRate) {
 
-        final PaymentContext payCtx = getPaymentContext();
         final FeeOption fast = payCtx.getFastFeeOption();
         final FeeOption mid = payCtx.getMediumFeeOption();
         final FeeOption slow = payCtx.getSlowFeeOption();

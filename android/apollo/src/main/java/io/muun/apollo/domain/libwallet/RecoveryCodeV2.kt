@@ -30,10 +30,9 @@ class RecoveryCodeV2 private constructor(code: String) {
         }
     }
 
-    private val segments: List<String>
+    private val segments: List<String> = code.split(SEPARATOR)
 
     init {
-        this.segments = code.split(SEPARATOR)
         validate(code)
     }
 

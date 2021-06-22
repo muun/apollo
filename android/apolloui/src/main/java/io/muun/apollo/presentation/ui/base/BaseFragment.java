@@ -153,16 +153,8 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        // Avoid leaving soft keyboard shown. When coming back to lock screen it may be left hanging
-        // around. Every screen should handle showing it again on their onResume method.
-        UiUtils.lastResortHideKeyboard(getActivity());
-    }
-
-    @Override
     @CallSuper
-    public void onSaveInstanceState(@NotNull Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         Icepick.saveInstanceState(this, outState);
         presenter.saveState(outState);
@@ -217,7 +209,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         return getActivity();
     }
 
-    @Deprecated
+    @Deprecated // Use Fragment#requireContext() instead. Keeping to avoid re-use.
     @Nullable
     @Override
     public Context getContext() {
@@ -340,7 +332,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     protected void hideKeyboard(View view) {
-        UiUtils.tryHideKeyboard(getContext(), view);
+        UiUtils.tryHideKeyboard(requireContext(), view);
 
         UiUtils.lastResortHideKeyboard(getActivity());
     }

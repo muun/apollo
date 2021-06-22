@@ -1,5 +1,9 @@
-package io.muun.apollo.data.logging
+package io.muun.apollo.domain.model.report
 
+import io.muun.apollo.data.logging.LoggingRequestTracker
+import io.muun.apollo.data.logging.TraceErrorBuilder
+import io.muun.apollo.data.logging.TraceParser
+import io.muun.apollo.data.logging.TraceTransformer
 import io.muun.apollo.domain.errors.ApiError
 import io.muun.apollo.domain.errors.MissingCurrencyError
 import io.muun.apollo.domain.errors.MuunError

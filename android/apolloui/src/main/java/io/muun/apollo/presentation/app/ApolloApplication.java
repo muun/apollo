@@ -10,6 +10,7 @@ import io.muun.apollo.data.external.UserFacingErrorMessages;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
+import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
@@ -72,6 +73,9 @@ public abstract class ApolloApplication extends Application
     @Inject
     NightModeManager nightModeManager;
 
+    @Inject
+    FirebaseInstalationIdRepository firebaseInstalationIdRepository;
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -104,6 +108,8 @@ public abstract class ApolloApplication extends Application
 
         gcmKeepAlive();
 
+        loadBigQueryPseudoId();
+
         // Register lifecycle observer for app background/foreground/terminate tracking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new AppLifecycleListener(analytics));
 
@@ -114,6 +120,12 @@ public abstract class ApolloApplication extends Application
         if (lockManager.isLockConfigured()) {
             lockManager.setLock();
         }
+    }
+
+    private void loadBigQueryPseudoId() {
+        FirebaseAnalytics.getInstance(this)
+                .getAppInstanceId()
+                .addOnSuccessListener(firebaseInstalationIdRepository::storeBigQueryPseudoId);
     }
 
     private void setNightMode() {

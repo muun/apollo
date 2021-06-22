@@ -26,6 +26,7 @@ import butterknife.BindView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import timber.log.Timber;
 
 import java.util.Collections;
 import javax.validation.constraints.NotNull;
@@ -169,13 +170,27 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
 
     @Override
     public void onScanError(String text) {
-        showError(new ErrorViewModel.Builder()
-                .loggingName(AnalyticsEvent.ERROR_TYPE.INVALID_QR)
-                .title(getString(R.string.error_op_invalid_address_title))
-                .descriptionRes(R.string.error_op_invalid_address_desc)
-                .descriptionArgs(sanitizeScannedText(text))
-                .build()
-        );
+        try {
+            showError(new ErrorViewModel.Builder()
+                    .loggingName(AnalyticsEvent.ERROR_TYPE.INVALID_QR)
+                    .title(getString(R.string.error_op_invalid_address_title))
+                    .descriptionRes(R.string.error_op_invalid_address_desc)
+                    .descriptionArgs(sanitizeScannedText(text))
+                    .build()
+            );
+        } catch (Throwable error) {
+            Timber.e(new RuntimeException(
+                    "Could not serialize/handle scanned text: " + sanitizeScannedText(text),
+                    error
+            ));
+
+            showError(new ErrorViewModel.Builder()
+                    .loggingName(AnalyticsEvent.ERROR_TYPE.INVALID_QR)
+                    .title(getString(R.string.error_op_invalid_address_title_no_arg))
+                    .descriptionRes(R.string.error_op_invalid_address_desc_no_arg)
+                    .build()
+            );
+        }
     }
 
     @Override

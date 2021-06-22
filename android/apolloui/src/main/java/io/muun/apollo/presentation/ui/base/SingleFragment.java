@@ -45,6 +45,11 @@ public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
     }
 
     @Override
+    public void replaceFragmentNow(@NotNull Fragment fragment) {
+        getParentActivity().replaceFragmentNow(fragment);
+    }
+
+    @Override
     public void setLoading(boolean loading) {
 
     }

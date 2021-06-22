@@ -16,6 +16,7 @@ import io.muun.apollo.domain.action.operation.UpdateOperationAction;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.Optional;
 import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.api.messages.FulfillIncomingSwapMessage;
 import io.muun.common.api.messages.MessageOrigin;
 import io.muun.common.api.messages.MessageSpec;
 import io.muun.common.model.SessionStatus;
@@ -44,6 +45,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class NotificationActionsTest extends BaseTest {
 
@@ -113,6 +115,7 @@ public class NotificationActionsTest extends BaseTest {
 
         explodingMessageHandler = spy(new ExplodingMessageHandler());
         notificationProcessor.addHandler(EXPLODING_SPEC, explodingMessageHandler);
+        notificationProcessor.addHandler(FulfillIncomingSwapMessage.SPEC, explodingMessageHandler);
 
         // Provide realistic notificationRepository lastProcessedId, saving it to a variable:
         notificationActions = spy(new NotificationActions(
@@ -256,6 +259,26 @@ public class NotificationActionsTest extends BaseTest {
     }
 
     @Test
+    public void processNotificationList_fulfillIsNotSkippedOnError() {
+
+        final List<NotificationJson> list = Arrays.asList(
+                new TestNotification(1L),
+                new TestNotification(2L, FulfillIncomingSwapMessage.SPEC),
+                new TestNotification(3L) // will not be processed
+        );
+
+        notificationActions.onNotificationReport(reportOf(list));
+        executor.waitUntilFinished();
+
+        verify(testMessageHandler).call(list.get(0));
+        verify(explodingMessageHandler).call(list.get(1));
+        verifyNoMoreInteractions(testMessageHandler);
+
+        // Only the first notification is processed
+        verify(notificationRepository).setLastProcessedId(list.get(0).id);
+    }
+
+    @Test
     public void processNotificationList_confirmDelivery() {
 
         final List<NotificationJson> list = Arrays.asList(
@@ -323,7 +346,6 @@ public class NotificationActionsTest extends BaseTest {
             SessionStatus.CREATED,
             MessageOrigin.ANY
     );
-
 
     private NotificationReport reportOf(NotificationJson ...notifs) {
         return reportOf(Arrays.asList(notifs));

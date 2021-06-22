@@ -24,7 +24,7 @@ class SelectNightModePresenter @Inject constructor(
         subscribeTo(observable)
     }
 
-    override fun getEntryEvent(): AnalyticsEvent? {
+    override fun getEntryEvent(): AnalyticsEvent {
         return AnalyticsEvent.S_NIGHT_MODE_PICKER()
     }
 

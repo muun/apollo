@@ -24,27 +24,31 @@ type Response struct {
 
 type WithdrawResponse struct {
 	Response
-	Tag                string `json:"tag"`
-	K1                 string `json:"k1"`
-	Callback           string `json:"callback"`
-	MaxWithdrawable    float64  `json:"maxWithdrawable"`
-	MinWithdrawable    float64  `json:"minWithdrawable"`
-	DefaultDescription string `json:"defaultDescription"`
+	Tag                string  `json:"tag"`
+	K1                 string  `json:"k1"`
+	Callback           string  `json:"callback"`
+	MaxWithdrawable    float64 `json:"maxWithdrawable"`
+	MinWithdrawable    float64 `json:"minWithdrawable"`
+	DefaultDescription string  `json:"defaultDescription"`
 }
 
 // After adding new codes here, remember to export them in the root libwallet
 // module so that the apps can consume them.
 const (
-	ErrDecode            int = 1
-	ErrUnsafeURL         int = 2
-	ErrUnreachable       int = 3
-	ErrInvalidResponse   int = 4
-	ErrResponse          int = 5
-	ErrUnknown           int = 6
-	ErrWrongTag          int = 7
-	StatusContacting     int = 100
-	StatusInvoiceCreated int = 101
-	StatusReceiving      int = 102
+	ErrDecode             int = 1
+	ErrUnsafeURL          int = 2
+	ErrUnreachable        int = 3
+	ErrInvalidResponse    int = 4
+	ErrResponse           int = 5
+	ErrUnknown            int = 6
+	ErrWrongTag           int = 7
+	ErrNoAvailableBalance int = 8
+	ErrRequestExpired     int = 9
+	ErrNoRoute            int = 10
+	ErrTorNotSupported    int = 11
+	StatusContacting      int = 100
+	StatusInvoiceCreated  int = 101
+	StatusReceiving       int = 102
 )
 
 type Event struct {
@@ -63,11 +67,6 @@ var httpClient = http.Client{Timeout: 15 * time.Second}
 type CreateInvoiceFunction func(amt lnwire.MilliSatoshi, desc string, host string) (string, error)
 
 func Validate(qr string) bool {
-	// remove lightning prefix
-	if strings.HasPrefix(strings.ToLower(qr), "lightning:") {
-		qr = qr[len("lightning:"):]
-	}
-	// decode the qr
 	_, err := decode(qr)
 	return err == nil
 }
@@ -77,14 +76,14 @@ func Validate(qr string) bool {
 func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bool, notify func(e *Event)) {
 	notifier := notifier{notify: notify}
 
-	// remove lightning prefix
-	if strings.HasPrefix(strings.ToLower(qr), "lightning:") {
-		qr = qr[len("lightning:"):]
-	}
 	// decode the qr
 	qrUrl, err := decode(qr)
 	if err != nil {
 		notifier.Error(ErrDecode, err)
+		return
+	}
+	if strings.HasSuffix(qrUrl.Host, ".onion") {
+		notifier.Errorf(ErrTorNotSupported, "Tor onion links are not supported")
 		return
 	}
 	tag := qrUrl.Query().Get("tag")
@@ -106,6 +105,10 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Error(ErrUnreachable, err)
 		return
 	}
+	if resp.StatusCode >= 300 {
+		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", err)
+		return
+	}
 	// parse response
 	var wr WithdrawResponse
 	err = json.NewDecoder(resp.Body).Decode(&wr)
@@ -114,7 +117,11 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if wr.Status == StatusError {
-		notifier.Errorf(ErrResponse, wr.Reason)
+		if strings.Contains(strings.ToLower(wr.Reason), "expired") {
+			notifier.Errorf(ErrRequestExpired, wr.Reason)
+		} else {
+			notifier.Errorf(ErrResponse, wr.Reason)
+		}
 		return
 	}
 	if wr.Tag != "withdrawRequest" {
@@ -122,7 +129,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if wr.MaxWithdrawable <= 0 {
-		notifier.Errorf(ErrInvalidResponse, "invalid maxWithdrawable amount: %f", wr.MaxWithdrawable)
+		notifier.Errorf(ErrNoAvailableBalance, "no available balance to withdraw")
 		return
 	}
 	callbackURL, err := url.Parse(wr.Callback)
@@ -155,10 +162,16 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	query.Add("pr", invoice)
 
 	callbackURL.RawQuery = query.Encode()
-	// confirm withdraw with service
-	resp, err = httpClient.Get(callbackURL.String())
+	// Confirm withdraw with service
+	// Use an httpClient with a higher timeout for reliability with slow LNURL services
+	withdrawClient := http.Client{Timeout: 3 * time.Minute}
+	resp, err = withdrawClient.Get(callbackURL.String())
 	if err != nil {
 		notifier.Errorf(ErrUnreachable, "failed to get response from callback URL: %v", err)
+		return
+	}
+	if resp.StatusCode >= 300 {
+		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", err)
 		return
 	}
 	// parse response
@@ -169,13 +182,30 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if fr.Status == StatusError {
-		notifier.Errorf(ErrResponse, fr.Reason)
+		if strings.Contains(strings.ToLower(fr.Reason), "route") {
+			notifier.Errorf(ErrNoRoute, fr.Reason)
+		} else {
+			notifier.Errorf(ErrResponse, fr.Reason)
+		}
 		return
 	}
 	notifier.Status(StatusReceiving)
 }
 
 func decode(qr string) (*url.URL, error) {
+	// handle fallback scheme
+	if strings.HasPrefix(qr, "http://") || strings.HasPrefix(qr, "https://") {
+		u, err := url.Parse(qr)
+		if err != nil {
+			return nil, err
+		}
+		qr = u.Query().Get("lightning")
+	} else {
+		// remove lightning prefix
+		if strings.HasPrefix(strings.ToLower(qr), "lightning:") {
+			qr = qr[len("lightning:"):]
+		}
+	}
 	u, err := lnurl.LNURLDecode(qr)
 	if err != nil {
 		return nil, err

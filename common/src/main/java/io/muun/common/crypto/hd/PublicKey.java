@@ -58,20 +58,15 @@ public class PublicKey extends BaseKey {
                 networkParameters
         );
 
-        return new PublicKey(
-                absoluteDerivationPath,
-                deterministicKey,
-                networkParameters
-        );
+        return new PublicKey(absoluteDerivationPath, deterministicKey, networkParameters);
     }
 
     /**
      * Creates an extended public key.
      */
-    PublicKey(
-            @NotNull String absoluteDerivationPath,
-            @NotNull DeterministicKey deterministicKey,
-            @NotNull NetworkParameters networkParameters) {
+    PublicKey(@NotNull String absoluteDerivationPath,
+              @NotNull DeterministicKey deterministicKey,
+              @NotNull NetworkParameters networkParameters) {
 
         this.absoluteDerivationPath = absoluteDerivationPath;
         this.parsedAbsoluteDerivationPath = DerivationPathUtils.parsePath(absoluteDerivationPath);

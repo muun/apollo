@@ -1,4 +1,4 @@
-package io.muun.apollo.data.logging
+package io.muun.apollo.domain.model.report
 
 import android.util.Log
 import java.io.Serializable

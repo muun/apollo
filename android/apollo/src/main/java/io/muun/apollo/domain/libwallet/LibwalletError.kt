@@ -3,8 +3,7 @@ package io.muun.apollo.domain.libwallet
 import libwallet.Libwallet
 import io.muun.apollo.domain.errors.MuunError
 
-class LibwalletError(val kind: Kind, message: String, cause: Throwable) :
-        MuunError(message, cause) {
+class LibwalletError(val kind: Kind, msg: String, cause: Throwable) : MuunError(msg, cause) {
 
     enum class Kind(val code: Long) {
         UNKNOWN(1L),
@@ -16,14 +15,13 @@ class LibwalletError(val kind: Kind, message: String, cause: Throwable) :
         companion object {
 
             fun fromCode(code: Long): Kind? {
-                for (v in values()) {
-                    if (code == v.code) {
-                        return v
+                for (value in values()) {
+                    if (code == value.code) {
+                        return value
                     }
                 }
                 return null
             }
-
         }
     }
 
@@ -39,5 +37,4 @@ class LibwalletError(val kind: Kind, message: String, cause: Throwable) :
             return LibwalletError(kind ?: Kind.UNKNOWN, message, e)
         }
     }
-
 }

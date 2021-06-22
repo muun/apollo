@@ -26,10 +26,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.libwallet.Invoice
-import io.muun.apollo.domain.model.Contact
-import io.muun.apollo.domain.model.LnUrlWithdraw
-import io.muun.apollo.domain.model.Operation
-import io.muun.apollo.domain.model.PublicProfile
+import io.muun.apollo.domain.model.*
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -110,12 +107,12 @@ class NotificationServiceImpl @Inject constructor(
 
     /**
      * Cancel a previously shown LNURL withdraw notification.
-     * @param paymentHashHex the paymentHash (in hex) of invoice associated with the lnurl withdraw
+     * @param paymentHash the paymentHash of invoice associated with the lnurl withdraw
      */
-    override fun cancelLnUrlNotification(paymentHashHex: String) {
-        cancelNotification(paymentHashHex.hashCode())
+    override fun cancelLnUrlNotification(paymentHash: Sha256Hash) {
+        cancelNotification(paymentHash.hashCode())
 
-        WorkManager.getInstance(context).cancelAllWorkByTag(paymentHashHex)
+        WorkManager.getInstance(context).cancelAllWorkByTag(paymentHash.toString())
     }
 
     /**
@@ -171,7 +168,7 @@ class NotificationServiceImpl @Inject constructor(
             context.string(R.string.notification_receiving_ln_payment_desc, lnUrlWithdraw.service),
             LnUrlWithdrawActivity.getStartActivityIntent(context, lnUrlWithdraw),
             onGoing = true,
-            id = decodedInvoice.paymentHashHex.hashCode()
+            id = decodedInvoice.paymentHash.hashCode()
         )
 
         showWithDrawable(notification, R.drawable.lightning)
@@ -187,7 +184,7 @@ class NotificationServiceImpl @Inject constructor(
         val work = OneTimeWorkRequestBuilder<LnPaymentFailedNotificationWorker>()
             .setInitialDelay(decodedInvoice.remainingMillis(), TimeUnit.MILLISECONDS)
             .setInputData(data.build())
-            .addTag(decodedInvoice.paymentHashHex.hashCode().toString())
+            .addTag(decodedInvoice.paymentHash.hashCode().toString())
             .build()
 
         WorkManager.getInstance(context).enqueue(work)
@@ -197,7 +194,7 @@ class NotificationServiceImpl @Inject constructor(
 
         val decodedInvoice = Invoice.decodeInvoice(Globals.INSTANCE.network, lnUrlWithdraw.invoice)
 
-        cancelLnUrlNotification(decodedInvoice.paymentHashHex)
+        cancelLnUrlNotification(decodedInvoice.paymentHash)
 
         val notification = MuunNotification(
             context.string(R.string.notification_ln_payment_failed),
@@ -206,6 +203,20 @@ class NotificationServiceImpl @Inject constructor(
         )
 
         notification.actions.add(MuunNotification.Action(0, context.string(R.string.open_app)))
+
+        showWithDrawable(notification, R.drawable.lightning)
+    }
+
+    override fun showIncomingLightningPaymentPending() {
+        val notification = MuunNotification(
+                context.string(R.string.notification_incoming_ln_payment_pending),
+                context.string(R.string.notification_incoming_ln_payment_pending_desc),
+                HomeActivity.getStartActivityIntent(context)
+        )
+
+        notification.actions.add(MuunNotification.Action(
+                0, context.string(R.string.notification_incoming_ln_payment_pending_cta)
+        ))
 
         showWithDrawable(notification, R.drawable.lightning)
     }

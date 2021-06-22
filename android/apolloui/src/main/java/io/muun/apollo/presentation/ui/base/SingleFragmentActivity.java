@@ -9,6 +9,7 @@ import io.muun.common.utils.Preconditions;
 
 import android.os.Bundle;
 import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -73,29 +74,38 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
 
     private boolean hasFragments() {
         final List<Fragment> fragments = getSupportFragmentManager().getFragments();
-
-        // Some implementations return `null`, others an empty list. We check both:
-        return fragments != null && !fragments.isEmpty();
+        return !fragments.isEmpty();
     }
 
     @Override
     public void replaceFragment(@NotNull Fragment fragment, boolean canGoBackToCurrent) {
+        final FragmentTransaction transaction = getFragmentTx(fragment);
+        pushToBackStack(transaction, canGoBackToCurrent);
+        transaction.commit();
+    }
+
+    @Override
+    public void replaceFragmentNow(@NotNull Fragment fragment) {
+        final FragmentTransaction transaction = getFragmentTx(fragment);
+        transaction.commitNow();
+    }
+
+    @NonNull
+    private FragmentTransaction getFragmentTx(Fragment fragment) {
         final int fragmentsContainer = getFragmentsContainer();
         Preconditions.checkState(fragmentsContainer > 0);
 
-        final FragmentTransaction transaction = getSupportFragmentManager()
+        return getSupportFragmentManager()
                 .beginTransaction()
                 .replace(fragmentsContainer, fragment);
-
-        pushToBackStack(transaction, canGoBackToCurrent);
-        transaction.commit();
     }
 
     @Override
     public void clearFragmentBackStack() {
         final FragmentManager fragMan = getSupportFragmentManager();
 
-        for (int i = 0; i < fragMan.getBackStackEntryCount(); ++i) {
+        final int backStackEntryCount = fragMan.getBackStackEntryCount();
+        for (int i = 0; i < backStackEntryCount; ++i) {
             fragMan.popBackStackImmediate();
         }
     }

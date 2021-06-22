@@ -1,11 +1,10 @@
-package io.muun.apollo.data.logging
+package io.muun.apollo.domain.model.report
 
 import android.os.Build
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
-import java.util.*
 
 class EmailReport private constructor(val body: String) {
 
@@ -38,26 +37,20 @@ class EmailReport private constructor(val body: String) {
             checkNotNull(rootHint)
             checkNotNull(defaultRegion)
 
-            // TODO extract to constructor and this class could be a domain class (no android stuff)
-            val availableLocales = Arrays.toString(Locale.getAvailableLocales())
-
             val body =
-                """
-                Android version: ${Build.VERSION.SDK_INT}
-                App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
-                SupportId: ${if (supportId != null) "Not logged in" else supportId}
-                ScreenPresenter: $presenterName
-                FcmTokenHash: $fcmTokenHash
-                GooglePlayServices: $googlePlayServicesAvailable
-                Device: ${Globals.INSTANCE.deviceName}
-                DeviceModel: ${Globals.INSTANCE.deviceModel}
-                DeviceManufacturer: ${Globals.INSTANCE.deviceManufacturer}
-                Rooted (just a hint, no guarantees): $rootHint
-                Available Locales: $availableLocales
-                Unsupported Currencies: ${getUnsupportedCurrencies(report!!).contentToString()}
-                Default Region: $defaultRegion
-                ${report!!.print()}
-                """.trimIndent()
+                """|Android version: ${Build.VERSION.SDK_INT}
+                   |App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
+                   |SupportId: ${if (supportId != null) "Not logged in" else supportId}
+                   |ScreenPresenter: $presenterName
+                   |FcmTokenHash: $fcmTokenHash
+                   |GooglePlayServices: $googlePlayServicesAvailable
+                   |Device: ${Globals.INSTANCE.deviceName}
+                   |DeviceModel: ${Globals.INSTANCE.deviceModel}
+                   |DeviceManufacturer: ${Globals.INSTANCE.deviceManufacturer}
+                   |Rooted (just a hint, no guarantees): $rootHint
+                   |Unsupported Currencies: ${getUnsupportedCurrencies(report!!).contentToString()}
+                   |Default Region: $defaultRegion
+                   |${report!!.print()}""".trimMargin()
 
             return EmailReport(body)
         }

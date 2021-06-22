@@ -35,17 +35,14 @@ public abstract class IncomingSwapEntity implements IncomingSwapModel, BaseEntit
         final IncomingSwapModel.InsertIncomingSwap insertStatement =
                 new IncomingSwapModel.InsertIncomingSwap(db);
 
-        final byte[] sphinxPacket = swap.getSphinxPacket();
-        final byte[] preimage = swap.getPreimage();
-
         insertStatement.bind(
                 swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
                 swap.houstonUuid,
-                Encodings.bytesToHex(swap.getPaymentHash()),
-                sphinxPacket != null ? Encodings.bytesToHex(sphinxPacket) : null,
+                swap.getPaymentHash().toString(),
+                swap.getSphinxPacketHex(),
                 swap.getCollectInSats(),
                 swap.getPaymentAmountInSats(),
-                preimage != null ? Encodings.bytesToHex(preimage) : null
+                swap.getPreimage() == null ? null : swap.getPreimage().toString()
         );
 
         return insertStatement;

@@ -5,6 +5,8 @@ import io.muun.apollo.domain.model.PaymentAnalysis;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.presentation.ui.base.BaseView;
 
+import androidx.annotation.NonNull;
+
 public interface NewOperationView extends BaseView {
 
     void setCurrencyDisplayMode(CurrencyDisplayMode mode);
@@ -17,7 +19,12 @@ public interface NewOperationView extends BaseView {
 
     void setConnectedToNetwork(boolean isConnected);
 
-    void editFee(PaymentRequest paymentRequest);
+    void editFee(@NonNull PaymentRequest paymentRequest);
+
+    void editFeeManually(@NonNull PaymentRequest paymentRequest);
+
+    void confirmFee(double selectedFeeRate);
 
     void showErrorScreen(NewOperationErrorType type);
+
 }

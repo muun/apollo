@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import butterknife.BindView
 import io.muun.apollo.R
 

@@ -7,11 +7,7 @@ import io.muun.apollo.data.serialization.SerializationUtils
 class JsonListPreferenceAdapter<T>(private val valueClass: Class<T>) : Preference.Adapter<List<T>> {
 
     override fun get(key: String, preferences: SharedPreferences): List<T>? {
-        val json = preferences.getString(key, null)
-        if (json == null) {
-            return null
-        }
-
+        val json = preferences.getString(key, null) ?: return null
         return SerializationUtils.deserializeList(valueClass, json)
     }
 
