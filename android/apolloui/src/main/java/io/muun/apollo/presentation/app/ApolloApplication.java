@@ -125,7 +125,12 @@ public abstract class ApolloApplication extends Application
     private void loadBigQueryPseudoId() {
         FirebaseAnalytics.getInstance(this)
                 .getAppInstanceId()
-                .addOnSuccessListener(firebaseInstalationIdRepository::storeBigQueryPseudoId);
+                .addOnSuccessListener(id -> {
+                    // id can be null on platforms without google play services.
+                    if (id != null) {
+                        firebaseInstalationIdRepository.storeBigQueryPseudoId(id);
+                    }
+                });
     }
 
     private void setNightMode() {
