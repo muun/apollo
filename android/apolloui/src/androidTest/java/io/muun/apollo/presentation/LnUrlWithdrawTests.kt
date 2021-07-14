@@ -75,7 +75,16 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
 
         autoFlows.startLnUrlWithdrawViaSend(LappClient.LnUrlVariant.UNRESPONSIVE)
 
-        label(R.string.loading).assertExists()
+        // Let's wait for unresponsive service error (+15 secs)
+        SystemClock.sleep(16_000)
+
+        muunButton(R.id.primary_button).waitForExists()
+            .textEquals(MuunTexts.normalize(R.string.retry))
+            .press()
+
+        muunButton(R.id.primary_button).doesntExist()
+
+        labelWith(R.string.contacting).assertExists()
 
         // Let's wait for unresponsive service error (+15 secs)
         SystemClock.sleep(16_000)
@@ -84,17 +93,9 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
             .textEquals(MuunTexts.normalize(R.string.retry))
             .press()
 
-        label(R.string.loading).assertExists()
-
-        // Let's wait for unresponsive service error (+15 secs)
-        SystemClock.sleep(16_000)
-
-        muunButton(R.id.primary_button).waitForExists()
-            .textEquals(MuunTexts.normalize(R.string.retry))
-
         muunButton(R.id.primary_button).doesntExist()
 
-        label(R.string.loading).assertExists()
+        labelWith(R.string.contacting).assertExists()
 
         // Unfortunately this is as far as we go, we only test that the withdraw can be retried
     }
@@ -161,7 +162,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
 
         autoFlows.startLnUrlWithdrawViaSend(LappClient.LnUrlVariant.WRONT_TAG)
 
-        label(R.string.error_invalid_lnurl_title).assertExists()
+        label(R.string.error_invalid_lnurl_tag_title).assertExists()
 
         muunButton(R.id.primary_button).waitForExists()
             .textEquals(MuunTexts.normalize(R.string.error_op_action))

@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.show_qr
 
 import io.muun.apollo.R
-import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
@@ -13,7 +12,6 @@ import javax.inject.Inject
 
 @PerActivity
 class ShowQrPresenter @Inject constructor(
-    private val operationActions: OperationActions,
     private val userPreferencesSel: UserPreferencesSelector
 ): BasePresenter<BaseView>(), QrParentPresenter {
 
@@ -23,7 +21,7 @@ class ShowQrPresenter @Inject constructor(
     }
 
     override fun copyQrContent(content: String, origin: AnalyticsEvent.ADDRESS_ORIGIN) {
-        operationActions.copyQrContentToClipboard(content)
+        clipboardManager.copyQrContent(content)
         view.showTextToast(context.getString(R.string.show_qr_copied))
         analytics.report(AnalyticsEvent.E_ADDRESS_COPIED(origin))
     }

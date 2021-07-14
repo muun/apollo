@@ -1,5 +1,9 @@
 package libwallet
 
+import (
+	"runtime/debug"
+)
+
 // Listener is an interface implemented by the apps to receive notifications
 // of data changes from the libwallet code. Each change is reported with a
 // string tag identifying the type of change.
@@ -17,5 +21,6 @@ var cfg *Config
 
 // Init configures the libwallet
 func Init(c *Config) {
+	debug.SetTraceback("crash")
 	cfg = c
 }

@@ -319,7 +319,7 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
         super.onResume();
 
         if (step == NewOperationStep.ENTER_AMOUNT) {
-            amountInput.requestFocus();
+            UiUtils.focusInput(amountInput);
         }
     }
 
@@ -726,10 +726,7 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
         // otherwise you might cause the previous input to lose focus
         // which in turn causes the keyboard to hide.
         changeVisibility(amountEditableViews, View.VISIBLE);
-        amountInput.requestFocus();
-
-        // Post as sometimes requestFocus is called early and soft keyboard isn't shown
-        new Handler().post(() -> amountInput.requestFocus());
+        UiUtils.focusInput(amountInput);
 
         changeVisibility(amountSelectedViews, View.GONE);
         changeVisibility(noteEnteredViews, View.GONE);

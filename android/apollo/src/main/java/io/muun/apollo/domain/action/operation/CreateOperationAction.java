@@ -80,6 +80,39 @@ public class CreateOperationAction {
                     } else {
                         return continuation;
                     }
+                })
+                .doOnCompleted(() -> {
+                    // We have a bug where it seems sometimes operations are not persisted
+                    // but we get no error reports from it, so this adds a bit of sanity
+                    // checking to see if we can identify the bug properly.
+
+                    // First we verify the op exists
+                    final Throwable fetchOpError = operationDao.fetchByHid(operation.getHid())
+                            .first()
+                            .toCompletable()
+                            .get();
+                    if (fetchOpError != null) {
+                        Timber.e("Missing op after create with id = %i", operation.getHid());
+                    }
+
+                    if (operation.incomingSwap != null) {
+                        // Then if it's an incoming swap, we verify we can find it by uuid
+
+                        final String incomingSwapUuid = operation.incomingSwap.houstonUuid;
+                        final Throwable t = operationDao.fetchByIncomingSwapUuid(incomingSwapUuid)
+                                .first()
+                                .toCompletable()
+                                .get();
+
+                        if (t != null) {
+                            Timber.e(
+                                    "Failed to find op %i by incoming swap uuid %s",
+                                    operation.getHid(),
+                                    incomingSwapUuid
+                            );
+                        }
+
+                    }
                 });
     }
 

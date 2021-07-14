@@ -556,7 +556,7 @@ class AutoFlows(override val device: UiDevice,
         uriPaster.waitForExists().click()
 
         // Let's wait a sec until withdraw suceeds
-        SystemClock.sleep(1800)
+        SystemClock.sleep(10000)
     }
 
     fun lnUrlWithdrawViaSend(variant: LappClient.LnUrlVariant = LappClient.LnUrlVariant.NORMAL) {
@@ -572,7 +572,7 @@ class AutoFlows(override val device: UiDevice,
                 .press()
         } else {
             // Let's wait a sec until withdraw suceeds
-            SystemClock.sleep(1800)
+            SystemClock.sleep(10000)
         }
     }
 

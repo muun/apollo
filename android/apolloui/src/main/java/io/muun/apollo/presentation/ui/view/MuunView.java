@@ -160,7 +160,17 @@ public abstract class MuunView extends FrameLayout implements Caller, Permission
         return (ViewGroup) getChildAt(0);
     }
 
-    // Taken from Android Support Library: https://goo.gl/a8RM4a
+    // Ugly but taken from several other projects that resort to this:
+    // - Android Support Library:
+    //  https://android.googlesource.com/platform/frameworks/support/+/refs/heads/marshmallow-release/v7/mediarouter/src/android/support/v7/app/MediaRouteButton.java
+    // - Glide (one of our deps)
+    //  https://www.codota.com/web/assistant/code/rs/5c7cb62c2ef5570001df7f51#L309
+    // - FB's Litho
+    //  https://www.codota.com/web/assistant/code/rs/5c7cb38e2ef5570001df68a9#L65
+    // - FB's Android SDK
+    //  https://www.codota.com/web/assistant/code/rs/5c7c927f2f7dae000163adf4#L179
+    // - FB's Stetho
+    //  https://www.codota.com/web/assistant/code/rs/5c7cabe42ef5570001deea49#L46
     protected BaseActivity<?> getActivity() {
         Context context = getContext();
 

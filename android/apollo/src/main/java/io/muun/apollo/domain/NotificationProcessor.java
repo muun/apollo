@@ -44,7 +44,7 @@ import io.muun.common.model.SessionStatus;
 import androidx.annotation.VisibleForTesting;
 import rx.Completable;
 import rx.Single;
-import rx.functions.Func1;
+import rx.functions.Func2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -111,14 +111,14 @@ public class NotificationProcessor {
 
         addHandler(AuthorizeChallengeUpdateMessage.SPEC, this::handleAuthChallengeUpdate);
 
-        addHandler(FulfillIncomingSwapMessage.SPEC, this::handleFulfillincomingSwap);
+        addHandler(FulfillIncomingSwapMessage.SPEC, this::handleFulfillIncomingSwap);
 
     }
 
     /**
      * Process a notification, invoking the relevant handler.
      */
-    public Completable process(NotificationJson notification) {
+    public Completable process(NotificationJson notification, long retry) {
 
         return Completable.defer(() -> {
             final NotificationHandler notificationHandler = handlers.get(notification.messageType);
@@ -133,11 +133,11 @@ public class NotificationProcessor {
             verifyPermissions(notification, notificationHandler.spec);
             verifyOrigin(notification, notificationHandler.spec);
 
-            return notificationHandler.handler.call(notification);
+            return notificationHandler.handler.call(notification, retry);
         });
     }
 
-    private Completable handleNewContact(NotificationJson notification) {
+    private Completable handleNewContact(NotificationJson notification, long retry) {
         final NewContactMessage message = convert(
                 NewContactMessage.class,
                 notification.message
@@ -151,7 +151,7 @@ public class NotificationProcessor {
                 .toCompletable();
     }
 
-    private Completable handleContactUpdate(NotificationJson notification) {
+    private Completable handleContactUpdate(NotificationJson notification, long retry) {
         final ContactUpdateMessage message = convert(
                 ContactUpdateMessage.class,
                 notification.message
@@ -162,7 +162,7 @@ public class NotificationProcessor {
                 .toCompletable();
     }
 
-    private Completable handleNewOperation(NotificationJson notification) {
+    private Completable handleNewOperation(NotificationJson notification, long retry) {
         final NewOperationMessage message = convert(
                 NewOperationMessage.class,
                 notification.message
@@ -201,7 +201,7 @@ public class NotificationProcessor {
         return Single.just(mapper.mapOperation(operation));
     }
 
-    private Completable handleOperationUpdate(NotificationJson notification) {
+    private Completable handleOperationUpdate(NotificationJson notification, long retry) {
         final OperationUpdateMessage message = convert(
                 OperationUpdateMessage.class,
                 notification.message
@@ -225,19 +225,19 @@ public class NotificationProcessor {
                 .toCompletable();
     }
 
-    private Completable handleEmailVerified(NotificationJson notificationJson) {
+    private Completable handleEmailVerified(NotificationJson notificationJson, long retry) {
         userActions.verifyEmail();
 
         return Completable.complete();
     }
 
-    private Completable handleAuthorizedSignin(NotificationJson notificationJson) {
+    private Completable handleAuthorizedSignin(NotificationJson notificationJson, long retry) {
         signinActions.reportAuthorizedByEmail();
 
         return Completable.complete();
     }
 
-    private Completable handleAuthChallengeUpdate(NotificationJson notificationJson) {
+    private Completable handleAuthChallengeUpdate(NotificationJson notificationJson, long retry) {
         final AuthorizeChallengeUpdateMessage message = convert(
                 AuthorizeChallengeUpdateMessage.class,
                 notificationJson.message
@@ -250,7 +250,8 @@ public class NotificationProcessor {
         return Completable.complete();
     }
 
-    private Completable handleFulfillincomingSwap(final NotificationJson notificationJson) {
+    private Completable handleFulfillIncomingSwap(final NotificationJson notificationJson,
+                                                  long retry) {
         final FulfillIncomingSwapMessage message = convert(
                 FulfillIncomingSwapMessage.class,
                 notificationJson.message
@@ -258,7 +259,12 @@ public class NotificationProcessor {
 
         return fulfillIncomingSwap.action(message.uuid)
                 .toCompletable()
-                .doOnError(throwable -> notificationService.showIncomingLightningPaymentPending());
+                .doOnError(throwable -> {
+                    // Only show the notification the first time to avoid spam
+                    if (retry > 0) {
+                        notificationService.showIncomingLightningPaymentPending();
+                    }
+                });
     }
 
     private void verifyPermissions(NotificationJson notification, MessageSpec spec) {
@@ -295,7 +301,7 @@ public class NotificationProcessor {
     }
 
     @VisibleForTesting
-    public void addHandler(MessageSpec spec, Func1<NotificationJson, Completable> handler) {
+    public void addHandler(MessageSpec spec, Func2<NotificationJson, Long, Completable> handler) {
         handlers.put(spec.messageType, new NotificationHandler(spec, handler));
     }
 

@@ -20,19 +20,20 @@ type DebtType string
 
 const (
 	DebtTypeNone    DebtType = "NONE"
-	DebtTypeCollect          = "COLLECT"
-	DebtTypeLend             = "LEND"
+	DebtTypeCollect DebtType = "COLLECT"
+	DebtTypeLend    DebtType = "LEND"
 )
 
 type SwapFees struct {
 	RoutingFee          btcutil.Amount
-	SweepFee            btcutil.Amount
 	DebtType            DebtType
 	DebtAmount          btcutil.Amount
-	ConfirmationsNeeded uint32
+	OutputAmount        btcutil.Amount
+	OutputPadding       btcutil.Amount
+	ConfirmationsNeeded uint
 }
 
-func (p *FundingOutputPolicies) FundingConfirmations(paymentAmount, lightningFee btcutil.Amount) uint32 {
+func (p *FundingOutputPolicies) FundingConfirmations(paymentAmount, lightningFee btcutil.Amount) uint {
 	totalAmount := paymentAmount + lightningFee
 	if totalAmount <= p.MaxAmountFor0Conf {
 		return 0
@@ -87,14 +88,41 @@ func (p *FundingOutputPolicies) FundingOutputPadding(paymentAmount, lightningFee
 	return outputAmount - minAmount
 }
 
-func ComputeSwapFees(amount btcutil.Amount, bestRouteFees []BestRouteFees, policies *FundingOutputPolicies) *SwapFees {
+func ComputeSwapFees(amount btcutil.Amount, bestRouteFees []BestRouteFees, policies *FundingOutputPolicies, takeFeeFromAmount bool) *SwapFees {
+	if takeFeeFromAmount {
+		// Handle edge cases for TFFA swaps. We don't allow lend for TFFA. This impacts sub-dust
+		// swaps because we don't allow debt for output padding. Except, the very special case of
+		// sub-dust TFFA swaps, in which you cant have output padding > 0 since you are using all
+		// your balance and all your balance is < dust. In this case, since we can't use debt nor
+		// output padding, if its necessary, the payment is unpayable.
+		policies = &FundingOutputPolicies{
+			MaximumDebt:       0,
+			PotentialCollect:  policies.PotentialCollect,
+			MaxAmountFor0Conf: policies.MaxAmountFor0Conf,
+		}
+	}
+
 	lightningFee := computeLightningFee(amount, bestRouteFees)
+	outputPadding := policies.FundingOutputPadding(amount, lightningFee)
+
+	offchainFee := lightningFee + outputPadding
+	outputAmount := amount + offchainFee
+
+	debtType := policies.DebtType(amount, lightningFee)
+	debtAmount := policies.DebtAmount(amount, lightningFee)
+	if debtType == DebtTypeCollect {
+		outputAmount += debtAmount
+	} else if debtType == DebtTypeLend {
+		outputAmount = 0
+	}
+
 	return &SwapFees{
 		RoutingFee:          lightningFee,
-		SweepFee:            policies.FundingOutputPadding(amount, lightningFee),
-		DebtType:            policies.DebtType(amount, lightningFee),
-		DebtAmount:          policies.DebtAmount(amount, lightningFee),
+		OutputPadding:       outputPadding,
+		DebtType:            debtType,
+		DebtAmount:          debtAmount,
 		ConfirmationsNeeded: policies.FundingConfirmations(amount, lightningFee),
+		OutputAmount:        outputAmount,
 	}
 }
 

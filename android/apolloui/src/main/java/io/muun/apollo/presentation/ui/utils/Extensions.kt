@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Handler
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -67,6 +68,10 @@ fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
  */
 fun supportsDarkMode(): Boolean =
     UiUtils.supportsDarkMode()
+
+fun Activity.postDelayed(delayInMillis: Long, runnable: () -> Unit) {
+    Handler().postDelayed(runnable, delayInMillis)
+}
 
 /**
  * Returns whether night mode is active or not.

@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	fmt "fmt"
+	"fmt"
 	"strings"
 
 	"golang.org/x/crypto/scrypt"
@@ -125,8 +125,8 @@ func Validate(code string) error {
 
 // Version returns the version that this recovery code corresponds to.
 func Version(code string) (int, error) {
-	if len(code) != 39 {
-		return 0, errors.New("invalid recovery code length")
+	if len(code) != 39 { // code contains 32 RC chars + 7 separator chars
+		return 0, fmt.Errorf("invalid recovery code length %v", len(code))
 	}
 	if code[0] == 'L' { // version 2+ codes always start with L
 		idx := strings.IndexByte(Alphabet, code[1])

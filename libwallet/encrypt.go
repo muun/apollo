@@ -412,3 +412,34 @@ func randomBytes(count int) []byte {
 
 	return buf
 }
+
+// What follows are work arounds for https://github.com/golang/go/issues/46893
+
+type DecryptOperation struct {
+	d Decrypter
+	payload string
+}
+
+func NewDecryptOperation(key *HDPrivateKey, payload string) *DecryptOperation {
+	return &DecryptOperation{key.Decrypter(), payload}
+}
+func NewDecryptOperationFrom(sender *PublicKey, key *HDPrivateKey, payload string) *DecryptOperation {
+	return &DecryptOperation{key.DecrypterFrom(sender), payload}
+}
+
+func (o *DecryptOperation) Decrypt() ([]byte, error) {
+	return o.d.Decrypt(o.payload)
+}
+
+type EncryptOperation struct {
+	e Encrypter
+	payload []byte
+}
+
+func NewEncryptOperation(key *HDPrivateKey, payload []byte) *EncryptOperation {
+	return &EncryptOperation{key.Encrypter(), append([]byte{}, payload...)}
+}
+
+func (o *EncryptOperation) Encrypt() (string, error) {
+	return o.e.Encrypt(o.payload)
+}

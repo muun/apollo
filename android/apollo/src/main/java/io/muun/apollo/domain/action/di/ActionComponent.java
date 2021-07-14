@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.di;
 
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
-import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.OperationActions;
 import io.muun.apollo.domain.action.SigninActions;
@@ -22,6 +21,7 @@ import io.muun.apollo.domain.action.fcm.ForceFetchFcmAction;
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction;
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction;
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction;
+import io.muun.apollo.domain.action.integrity.IntegrityAction;
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
@@ -53,7 +53,7 @@ public interface ActionComponent {
 
     AsyncActionStore asyncActionStore();
 
-    IntegrityActions integrityActions();
+    IntegrityAction integrityAction();
 
     // Own-class actions:
     UpdateProfilePictureAction updateProfilePictureAction();

@@ -186,7 +186,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"
     // Kotlin serialization runtime library. Note that while the plugin has version the same as
     // the compiler one, runtime library has different coordinates, repository and versioning.
-    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0"
+    api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
 
     // Testing:
     androidTestImplementation 'androidx.test:runner:1.1.0'

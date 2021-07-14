@@ -13,6 +13,7 @@ import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.serialize
+import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.view.MuunAmountInput
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -85,7 +86,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
 
     override fun onResume() {
         super.onResume()
-        amountInput.requestFocus()
+        UiUtils.focusInput(amountInput)
     }
 
     override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
@@ -96,9 +97,8 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
     override fun setExchangeRateProvider(exchangeRateProvider: ExchangeRateProvider) {
         amountInput.setExchangeRateProvider(exchangeRateProvider)
         amountInput.setOnChangeListener { amount: MonetaryAmount -> onAmountChange(amount) }
-        amountInput.requestFocus()
         amountInput.isEnabled = true
-        amountInput.requestFocus()
+        UiUtils.focusInput(amountInput)
     }
 
     override fun initializeAmountInput(primaryCurrency: CurrencyUnit) {

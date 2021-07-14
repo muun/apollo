@@ -4,6 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.view.FeeManualInput;
+import io.muun.apollo.presentation.ui.view.MuunAmountInput;
 import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.common.utils.Preconditions;
 
@@ -209,6 +210,15 @@ public class UiUtils {
      */
     public static void focusInput(FeeManualInput input) {
         focusInput(input.getEditText());
+    }
+
+    /**
+     * Focus a MuunAmountInput and show the soft keyboard.
+     * WARNING: Never use directly as we have some rules for overriding requestFocus behaviour.
+     * See {@link BaseActivity#focusInput(MuunAmountInput)}.
+     */
+    public static void focusInput(MuunAmountInput input) {
+        focusInput(input.getInputAmount());
     }
 
     /**

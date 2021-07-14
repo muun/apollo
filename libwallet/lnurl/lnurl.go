@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,14 +23,37 @@ type Response struct {
 	Reason string `json:"reason,omitempty"`
 }
 
+// stringOrNumber is used to parse either a string or a number in a JSON object
+type stringOrNumber float64
+
+func (x *stringOrNumber) UnmarshalJSON(b []byte) error {
+	var v stringOrNumber
+	var f float64
+	err := json.Unmarshal(b, &f)
+	if err != nil {
+		var s string
+		ferr := json.Unmarshal(b, &s)
+		if ferr != nil {
+			return err
+		}
+		f, ferr = strconv.ParseFloat(s, 64)
+		if ferr != nil {
+			return err
+		}
+	}
+	v = stringOrNumber(f)
+	*x = v
+	return nil
+}
+
 type WithdrawResponse struct {
 	Response
-	Tag                string  `json:"tag"`
-	K1                 string  `json:"k1"`
-	Callback           string  `json:"callback"`
-	MaxWithdrawable    float64 `json:"maxWithdrawable"`
-	MinWithdrawable    float64 `json:"minWithdrawable"`
-	DefaultDescription string  `json:"defaultDescription"`
+	Tag                string         `json:"tag"`
+	K1                 string         `json:"k1"`
+	Callback           string         `json:"callback"`
+	MaxWithdrawable    stringOrNumber `json:"maxWithdrawable"`
+	MinWithdrawable    stringOrNumber `json:"minWithdrawable"`
+	DefaultDescription string         `json:"defaultDescription"`
 }
 
 // After adding new codes here, remember to export them in the root libwallet
@@ -87,7 +111,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	tag := qrUrl.Query().Get("tag")
-	if tag != "" && tag != "withdrawRequest" {
+	if tag != "" && !isWithdrawRequest(tag)  {
 		notifier.Errorf(ErrWrongTag, "QR is not a LNURL withdraw request")
 		return
 	}
@@ -106,7 +130,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if resp.StatusCode >= 300 {
-		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", err)
+		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", resp.StatusCode)
 		return
 	}
 	// parse response
@@ -124,7 +148,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		}
 		return
 	}
-	if wr.Tag != "withdrawRequest" {
+	if !isWithdrawRequest(wr.Tag) {
 		notifier.Errorf(ErrWrongTag, "QR is not a LNURL withdraw request")
 		return
 	}
@@ -171,7 +195,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if resp.StatusCode >= 300 {
-		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", err)
+		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", resp.StatusCode)
 		return
 	}
 	// parse response
@@ -211,6 +235,12 @@ func decode(qr string) (*url.URL, error) {
 		return nil, err
 	}
 	return url.Parse(string(u))
+}
+
+// We allow "withdraw" as a valid LNURL withdraw tag because, even though not in spec, there are
+// implementations in the wild using it and accepting it as valid (e.g azte.co)
+func isWithdrawRequest(tag string) bool {
+    return tag == "withdrawRequest" || tag == "withdraw"
 }
 
 type notifier struct {

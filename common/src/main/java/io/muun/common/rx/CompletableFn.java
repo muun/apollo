@@ -50,19 +50,17 @@ public final class CompletableFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Completable> resumeFunction) {
 
-        return completable -> completable.onErrorResumeNext(
-                error -> {
+        return completable -> completable.onErrorResumeNext(error -> {
 
-                    final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
+            final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
 
-                    if (cause.isPresent()) {
-                        return resumeFunction.call(errorClass.cast(cause.get()));
+            if (cause.isPresent()) {
+                return resumeFunction.call(errorClass.cast(cause.get()));
 
-                    } else {
-                        return Completable.error(error);
-                    }
-                }
-        );
+            } else {
+                return Completable.error(error);
+            }
+        });
     }
 
     /**
@@ -83,19 +81,19 @@ public final class CompletableFn {
             final ErrorCode code,
             final Func1<HttpException, Completable> resumeFunction) {
 
-        return completable -> completable.onErrorResumeNext(
-                error -> {
-                    final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
-                            error,
-                            HttpException.class
-                    );
+        return completable -> completable.onErrorResumeNext(error -> {
 
-                    if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
-                        return resumeFunction.call(cause.get());
+            final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
+                    error,
+                    HttpException.class
+            );
 
-                    } else {
-                        return Completable.error(error);
-                    }
-                });
+            if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                return resumeFunction.call(cause.get());
+
+            } else {
+                return Completable.error(error);
+            }
+        });
     }
 }

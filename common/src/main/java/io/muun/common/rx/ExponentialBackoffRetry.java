@@ -14,7 +14,7 @@ public class ExponentialBackoffRetry implements
         Func1<Observable<? extends Throwable>, Observable<?>> {
 
     private final long baseInterval;
-    private TimeUnit timeUnit;
+    private final TimeUnit timeUnit;
     private final int maxRetries;
     private final Class<? extends Throwable> retryErrorType;
 

@@ -75,10 +75,6 @@ class StyledStringRes(private val context: Context,
             Json.encodeToString(this)
     }
 
-    fun serializeWithArgs(vararg args: String): String =
-        StringResWithArgs(resId, arrayOf(*args)).serialize()
-
-
     private var sb: StyleBuilder = StyleBuilder("") // will be replaced
 
     fun toCharSequence(vararg args: String): CharSequence {

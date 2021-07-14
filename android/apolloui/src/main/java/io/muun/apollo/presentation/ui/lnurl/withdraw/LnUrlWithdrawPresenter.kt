@@ -130,6 +130,7 @@ class LnUrlWithdrawPresenter @Inject constructor(
     }
 
     private fun executeLnUrlWithdraw(arguments: Bundle) {
+        lnUrlWithdrawAction.reset()
         lnUrlWithdrawAction.run(getLnUrl(arguments))
     }
 

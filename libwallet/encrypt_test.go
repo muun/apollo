@@ -130,30 +130,32 @@ func TestPublicKeyDecryptV1(t *testing.T) {
 	}
 
 	alterAndCheck := func(msg string, alter func(data []byte)) {
-		encryptedData := base58.Decode(encrypted)
-		alter(encryptedData)
+		t.Run(msg, func(t *testing.T) {
+			encryptedData := base58.Decode(encrypted)
+			alter(encryptedData)
 
-		_, err = privKey.Decrypter().Decrypt(base58.Encode(encryptedData))
-		if err == nil {
-			t.Errorf("Got nil error for altered payload: %v", msg)
-		}
+			_, err = privKey.Decrypter().Decrypt(base58.Encode(encryptedData))
+			if err == nil {
+				t.Fatalf("Got nil error for altered payload: %v", msg)
+			}
 
-		t.Logf("Got error for altered payload %v: %v", msg, err)
+			t.Logf("Got error for altered payload %v: %v", msg, err)
+		})
 	}
 
 	alterAndCheck("big nonce size", func(data []byte) {
 		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen+2+pathLen] = 255
+		data[1+serializedPublicKeyLength+2+pathLen] = 255
 	})
 
 	alterAndCheck("bigger nonce size", func(data []byte) {
 		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen+2+pathLen+1] = 14
+		data[1+serializedPublicKeyLength+2+pathLen+1] = 14
 	})
 
 	alterAndCheck("smaller nonce size", func(data []byte) {
 		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen+2+pathLen+1] = 1
+		data[1+serializedPublicKeyLength+2+pathLen+1] = 1
 	})
 
 	alterAndCheck("big derivation path len", func(data []byte) {
@@ -182,7 +184,7 @@ func TestPublicKeyDecryptV1(t *testing.T) {
 		data[len(data)-1] = ^data[len(data)-1]
 	})
 
-	tamperCiphertextWithAEAD := func() {
+	t.Run("tamperCiphertextWithAEAD", func(t *testing.T) {
 		data := base58.Decode(encrypted)
 
 		additionalData := data[0 : 1+serializedPublicKeyLength+2+pathLen+2]
@@ -224,7 +226,27 @@ func TestPublicKeyDecryptV1(t *testing.T) {
 		}
 
 		t.Logf("Got error for altered payload tamper chiphertex recalculating AEAD: %v", err)
+	})
+}
+
+func TestEncDecOps(t *testing.T) {
+
+	const (
+		privHex = "xprv9s21ZrQH143K36uECEJcmTnxSXfHjT9jdb7FpMoUJpENDxeRgpscDF3g2w4ySH6G9uVsGKK7e6WgGp7Vc9VVnwC2oWdrr7a3taWiKW8jKnD"
+		path    = "m"
+		pathLen = 1
+	)
+	payload := []byte("Asado Viernes")
+
+	privKey, _ := NewHDPrivateKeyFromString(privHex, path, Mainnet())
+	encrypted, _ := NewEncryptOperation(privKey, payload).Encrypt()
+
+	decrypted, err := NewDecryptOperation(privKey, encrypted).Decrypt()
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	tamperCiphertextWithAEAD()
+	if !bytes.Equal(payload, decrypted) {
+		t.Fatal("decrypt is bad")
+	}
 }

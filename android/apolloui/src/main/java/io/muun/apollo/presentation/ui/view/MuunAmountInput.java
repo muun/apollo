@@ -327,4 +327,11 @@ public class MuunAmountInput extends MuunView {
     public void setEnabled(boolean enabled) {
         inputAmount.setEnabled(enabled);
     }
+
+    /**
+     * Only exposed to be use by  {@link UiUtils#focusInput(MuunAmountInput)}.
+     */
+    public MuunEditText getInputAmount() {
+        return inputAmount;
+    }
 }

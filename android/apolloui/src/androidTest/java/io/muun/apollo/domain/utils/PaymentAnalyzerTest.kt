@@ -246,6 +246,22 @@ class PaymentAnalyzerTest {
     }
 
     @Test
+    fun failure11Bis() {
+        run(proportionalFee = 1461,
+            baseFee = 3,
+            maxDebt = 147188,
+            potentialCollect = 221,
+            maxFor0Conf = 164563,
+            amount = 425,
+            useAllFunds = true,
+            nts = Gen.nextTransactionSize(
+                Gen.sizeForAmount(3165L to 400),
+                expectedDebtInSat = 2740
+            )
+        )
+    }
+
+    @Test
     fun failure12() {
         run(proportionalFee = 1457,
             baseFee = 2,

@@ -10,6 +10,11 @@ import rx.Observable;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
+/**
+ * This component CAN'T be injected into any component that can be initialized in background
+ * (e.g MuunWorkerFactory, NotificationProcessor, etc...), as it constructor depends on a system
+ * call that can only be made from the Main thread.
+ */
 public class ClipboardProvider {
 
     private final ClipboardManager clipboard;
@@ -22,8 +27,10 @@ public class ClipboardProvider {
     /**
      * Copy some text to the clipboard.
      *
-     * @param label User-visible label for the pasted data.
-     * @param text The actual text to copy.
+     * @param label a nullable NON user-visible label used mainly to identify the clip data. It is
+     *             usually null when Android components use clipboard. Disregard javadoc from
+     *             ClipData.newPlainText(). See https://stackoverflow.com/a/39504849/901465.
+     * @param text The actual text to copy, or null to clear clipboard.
      */
     public void copy(String label, String text) {
 

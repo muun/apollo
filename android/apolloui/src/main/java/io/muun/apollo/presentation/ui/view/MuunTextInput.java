@@ -502,6 +502,9 @@ public class MuunTextInput extends MuunView {
         editText.setFilters(newFilters);
     }
 
+    /**
+     * Only exposed to be use by  {@link UiUtils#focusInput(MuunTextInput)}.
+     */
     public EditText getEditText() {
         return editText;
     }

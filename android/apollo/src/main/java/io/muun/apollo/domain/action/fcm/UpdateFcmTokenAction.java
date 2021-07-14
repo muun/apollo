@@ -41,9 +41,10 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
 
         firebaseInstalationIdRepository.storeFcmToken(token);
 
-        final boolean hasValidSession = authRepository.getSessionStatus().isPresent()
-                && authRepository.getSessionStatus().get() != SessionStatus.EXPIRED;
         final boolean hasJwt = authRepository.getServerJwt().isPresent();
+        final boolean hasValidSession = authRepository.getSessionStatus()
+                .filter(status -> status != SessionStatus.EXPIRED)
+                .isPresent();
 
         // If anyone of these is true, we can't perform an http request to Houston (NOT_AUTHORIZED)
         if (!hasValidSession || !hasJwt) {
