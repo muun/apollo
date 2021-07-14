@@ -167,9 +167,18 @@ public class NotificationActions {
                 throw NotificationProcessingError.fromMissingIds(notification, lastProcessedId);
             }
 
-            return notificationProcessor.process(notification)
+            final long processingFailures = notificationRepository.getProcessingFailures();
+            return notificationProcessor.process(notification, processingFailures)
                     .onErrorComplete(cause -> {
+                        notificationRepository.increaseProcessingFailures();
+
                         Timber.e(NotificationProcessingError.fromCause(notification, cause));
+
+                        if (processingFailures > 3) {
+                            // Abort after 3 failed retries to avoid bricking clients
+                            return true;
+                        }
+
                         if (messageType.equals(FulfillIncomingSwapMessage.SPEC.messageType)) {
                             // We don't allow skipping fulfills
                             return false;
@@ -235,14 +244,28 @@ public class NotificationActions {
                         BackpressureOverflow.ON_OVERFLOW_DROP_OLDEST
                 )
                 .observeOn(scheduler)
-                .compose(forEach(this::processReport))
+                .compose(forEachSkipErrors(this::processReport))
                 .subscribe();
     }
 
     /**
-     * Transformer to run a task on each item of an Observable, logging and skipping errors.
+     * Transformer to run a task on each item of an Observable, logging errors if any.
      */
     private <T> Transformer<T, Void> forEach(Func1<T, Completable> createTask) {
+        return (items) -> items
+                .map(createTask)
+                .onBackpressureBuffer(200)
+                .concatMap(task -> task
+                        .doOnError(Timber::e)
+                        .toObservable()
+                );
+    }
+
+
+    /**
+     * Transformer to run a task on each item of an Observable, logging and skipping errors.
+     */
+    private <T> Transformer<T, Void> forEachSkipErrors(Func1<T, Completable> createTask) {
         return (items) -> items
                 .map(createTask)
                 .onBackpressureBuffer(200)

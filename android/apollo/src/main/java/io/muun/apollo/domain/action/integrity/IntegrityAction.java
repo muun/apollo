@@ -1,22 +1,29 @@
-package io.muun.apollo.domain.action;
+package io.muun.apollo.domain.action.integrity;
 
 
+import io.muun.apollo.data.db.base.ElementNotFoundException;
+import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.net.ApiObjectsMapper;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
+import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.errors.AddressRecordIntegrityError;
 import io.muun.apollo.domain.errors.BalanceIntegrityError;
 import io.muun.apollo.domain.errors.IntegrityError;
 import io.muun.apollo.domain.errors.PublicKeySetIntegrityError;
+import io.muun.apollo.domain.model.NextTransactionSize;
+import io.muun.apollo.domain.model.Operation;
+import io.muun.common.Optional;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.SessionStatus;
+import io.muun.common.rx.ObservableFn;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -26,14 +33,19 @@ import timber.log.Timber;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * Although this is a single "action", there's no need to extend BaseAsyncAction since its only
+ * usage does not warrant the complex behaviour that BaseAsyncAction provides/handles.
+ */
 @Singleton
-public class IntegrityActions {
-
-    private final OperationActions operationActions;
+public class IntegrityAction {
 
     private final KeysRepository keysRepository;
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
+    private final TransactionSizeRepository transactionSizeRepository;
+
+    private final OperationDao operationDao;
 
     private final HoustonClient houstonClient;
 
@@ -45,26 +57,28 @@ public class IntegrityActions {
      * Construct this class.
      */
     @Inject
-    public IntegrityActions(OperationActions operationActions,
-                            KeysRepository keysRepository,
-                            AuthRepository authRepository,
-                            UserRepository userRepository,
-                            HoustonClient houstonClient,
-                            ApiObjectsMapper apiObjectsMapper,
-                            ExecutionTransformerFactory transformerFactory) {
+    public IntegrityAction(KeysRepository keysRepository,
+                           AuthRepository authRepository,
+                           UserRepository userRepository,
+                           TransactionSizeRepository transactionSizeRepository,
+                           OperationDao operationDao,
+                           HoustonClient houstonClient,
+                           ApiObjectsMapper apiObjectsMapper,
+                           ExecutionTransformerFactory transformerFactory) {
 
-        this.operationActions = operationActions;
         this.keysRepository = keysRepository;
         this.authRepository = authRepository;
         this.userRepository = userRepository;
+        this.transactionSizeRepository = transactionSizeRepository;
+        this.operationDao = operationDao;
         this.houstonClient = houstonClient;
         this.apiObjectsMapper = apiObjectsMapper;
         this.transformerFactory = transformerFactory;
     }
 
     /**
-     * Perform an integrity check of the local data, comparing it with Houson's information. Log
-     * to Crahslytics if inconsistencies are found.
+     * Perform an integrity check of the local data, comparing it with Houston's information. Log
+     * to Crashlytics if inconsistencies are found.
      */
     public Observable<Void> checkIntegrity() {
         final PublicKey basePublicKey = keysRepository.getBasePublicKey();
@@ -74,7 +88,7 @@ public class IntegrityActions {
         // deal (and should return a Single) run in background and we DON'T want never-ending stuff
         // running on background. So, we use first().
         // TODO use Single
-        return operationActions.watchBalance().first().flatMap(balanceInSatoshis ->
+        return watchBalance().first().flatMap(balanceInSatoshis ->
             checkIntegrity(
                     basePublicKey,
                     externalMaxUsedIndex,
@@ -82,6 +96,9 @@ public class IntegrityActions {
             )
         );
     }
+
+    // ---------------------------------------------------------------------------------------------
+    // Private helpers
 
     private Observable<Void> checkIntegrity(final PublicKey basePublicKey,
                                             final Integer externalMaxUsedIndex,
@@ -140,6 +157,69 @@ public class IntegrityActions {
         }
 
         return Observable.just(null);
+    }
+
+    /**
+     * Watch the total balance of the wallet.
+     */
+    private Observable<Long> watchBalance() {
+        return watchValidNextTransactionSize()
+                .filter(validOrNull -> validOrNull != null) // waiting for update
+                .map(t -> {
+                    if (t.sizeProgression == null || t.sizeProgression.isEmpty()) {
+                        return 0L;
+                    }
+
+                    return t.sizeProgression.get(t.sizeProgression.size() - 1).amountInSatoshis;
+                });
+    }
+
+    /**
+     * Return the stored NextTransactionSize if available and up-to-date.
+     */
+    private Observable<NextTransactionSize> watchValidNextTransactionSize() {
+        return transactionSizeRepository
+                .watchNextTransactionSize()
+                .map(transactionSize -> {
+                    if (transactionSize == null) {
+                        return null; // no local value available
+                    }
+
+                    final long validAtOperationHid = Optional
+                            .ofNullable(transactionSize.validAtOperationHid)
+                            .orElse(0L);
+
+                    final long latestOperationHid = getLatestOperation()
+                            .map(Operation::getHid)
+                            .orElse(0L);
+
+                    // NOTE: if an Operation has been made, giving us new UTXOs (and thus
+                    // affecting the values of NextTransactionSize) but we haven't received the
+                    // notification yet, it may happen that validAtOperationHid >
+                    // latestOperationHid. In other words, nextTransactionSize may be more recent
+                    // than latestOperation if we pulled it manually.
+
+                    // We'll allow that, considering it valid. This is not ideal, but all of this
+                    // will go away once the wallet uses SPV. Good enough for now.
+
+                    if (validAtOperationHid < latestOperationHid) {
+                        return null; // local value outdated
+                    }
+
+                    return transactionSize;
+                });
+    }
+
+    private Optional<Operation> getLatestOperation() {
+        final Operation latestOperationOrNull = operationDao.fetchLatest()
+                .compose(ObservableFn.onTypedErrorResumeNext(
+                        ElementNotFoundException.class,
+                        error -> Observable.just(null)
+                ))
+                .toBlocking()
+                .first();
+
+        return Optional.ofNullable(latestOperationOrNull);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

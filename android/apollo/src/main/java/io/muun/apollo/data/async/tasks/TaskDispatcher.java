@@ -1,10 +1,10 @@
 package io.muun.apollo.data.async.tasks;
 
 import io.muun.apollo.domain.action.ContactActions;
-import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.address.SyncExternalAddressIndexesAction;
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction;
+import io.muun.apollo.domain.action.integrity.IntegrityAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.errors.PeriodicTaskOnMainThreadError;
 
@@ -29,10 +29,13 @@ public class TaskDispatcher {
     @Inject
     public TaskDispatcher(ContactActions contactActions,
                           NotificationActions notificationActions,
-                          IntegrityActions integrityActions,
+                          IntegrityAction integrityAction,
                           FetchRealTimeDataAction fetchRealTimeData,
                           SyncExternalAddressIndexesAction syncExternalAddressIndexes,
                           RegisterInvoicesAction registerInvoices) {
+
+        Timber.d("[TaskDispatcher] Execute Dependency Injection");
+
 
         registerTaskType("pullNotifications", notificationActions::pullNotifications);
 
@@ -41,7 +44,7 @@ public class TaskDispatcher {
         registerTaskType("syncExternalAddressesIndexes", syncExternalAddressIndexes::action);
         registerTaskType("registerInvoices", registerInvoices::action);
 
-        registerTaskType("checkIntegrity", integrityActions::checkIntegrity);
+        registerTaskType("checkIntegrity", integrityAction::checkIntegrity);
     }
 
     /**

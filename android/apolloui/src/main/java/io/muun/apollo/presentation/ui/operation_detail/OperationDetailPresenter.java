@@ -79,23 +79,23 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     }
 
     public void copyLnInvoiceToClipboard(String invoice) {
-        operationActions.copyLnInvoiceToClipboard(invoice);
+        clipboardManager.copy("Lightning invoice", invoice);
     }
 
     public void copySwapPreimageToClipboard(String preimage) {
-        operationActions.copySwapPreimageToClipboard(preimage);
+        clipboardManager.copy("Swap preimage", preimage);
     }
 
     public void copyTransactionIdToClipboard(String transactionId) {
-        operationActions.copyTransactionIdToClipboard(transactionId);
+        clipboardManager.copy("Transaction ID", transactionId);
     }
 
     public void copyNetworkFeeToClipboard(String fee) {
-        operationActions.copyNetworkFeeToClipboard(fee);
+        clipboardManager.copy("Network fee", fee);
     }
 
     public void copyAmountToClipboard(String amount) {
-        operationActions.copyAmountToClipboard(amount);
+        clipboardManager.copy("Amount", amount);
     }
 
     /**

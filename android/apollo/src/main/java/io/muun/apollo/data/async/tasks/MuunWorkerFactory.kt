@@ -11,6 +11,7 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.utils.Preconditions
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -34,6 +35,7 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
     lateinit var notificationService: NotificationService
 
     init {
+        Timber.d("[MuunWorkerFactory] Execute Dependency Injection")
         provider.dataComponent.inject(this)
     }
 

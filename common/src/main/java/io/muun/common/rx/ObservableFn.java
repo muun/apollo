@@ -65,22 +65,18 @@ public final class ObservableFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Observable<T>> resumeFunction) {
 
-        return observable -> observable.onErrorResumeNext(
+        return observable -> observable.onErrorResumeNext(error -> {
 
-                (Func1<Throwable, Observable<? extends T>>) error -> {
+            final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
 
-                    final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
+            if (cause.isPresent()) {
+                return resumeFunction.call(errorClass.cast(cause.get()));
 
-                    if (cause.isPresent()) {
-                        return resumeFunction.call(errorClass.cast(cause.get()));
+            } else {
+                return Observable.error(error);
+            }
 
-                    } else {
-                        return Observable.error(error);
-                    }
-
-                }
-
-        );
+        });
     }
 
     /**
@@ -108,18 +104,15 @@ public final class ObservableFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Observable<T>> resumeFunction) {
 
-        return observable -> observable.onErrorResumeNext(
+        return observable -> observable.onErrorResumeNext(error -> {
 
-                (Func1<Throwable, Observable<? extends T>>) error -> {
+            if (errorClass.isInstance(error)) {
+                return resumeFunction.call(errorClass.cast(error));
 
-                    if (errorClass.isInstance(error)) {
-                        return resumeFunction.call(errorClass.cast(error));
-
-                    } else {
-                        return Observable.error(error);
-                    }
-                }
-        );
+            } else {
+                return Observable.error(error);
+            }
+        });
     }
 
     public static <T, ErrorT extends Throwable> Transformer<T, T> onTypedErrorReturn(
@@ -161,23 +154,21 @@ public final class ObservableFn {
             final ErrorCode code,
             final Func1<HttpException, Observable<T>> resumeFunction) {
 
-        return observable -> observable.onErrorResumeNext(
+        return observable -> observable.onErrorResumeNext(error -> {
 
-                (Func1<Throwable, Observable<? extends T>>) error -> {
+            final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
+                    error,
+                    HttpException.class
 
-                    final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
-                            error,
-                            HttpException.class
-                    );
+            );
 
-                    if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
-                        return resumeFunction.call(cause.get());
+            if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                return resumeFunction.call(cause.get());
 
-                    } else {
-                        return Observable.error(error);
-                    }
+            } else {
+                return Observable.error(error);
+            }
 
-                }
-        );
+        });
     }
 }

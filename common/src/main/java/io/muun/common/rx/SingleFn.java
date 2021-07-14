@@ -25,11 +25,9 @@ public final class SingleFn {
     public static <T, U> Single.Transformer<T, T> flatDoOnSuccess(final Func1<T, Single<U>> func) {
 
         return single -> single.flatMap(
-                returnedItem -> {
-                    return func.call(returnedItem).map(
-                            ignoredItem -> returnedItem
-                    );
-                }
+                returnedItem -> func.call(returnedItem).map(
+                        ignoredItem -> returnedItem
+                )
         );
     }
 
@@ -54,21 +52,18 @@ public final class SingleFn {
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, Single<T>> resumeFunction) {
 
-        return single -> single.onErrorResumeNext(
+        return single -> single.onErrorResumeNext(error -> {
 
-                (Func1<Throwable, Single<? extends T>>) error -> {
+            final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
 
-                    final Optional<ErrorT> cause = ExceptionUtils.getTypedCause(error, errorClass);
+            if (cause.isPresent()) {
+                return resumeFunction.call(errorClass.cast(cause.get()));
 
-                    if (cause.isPresent()) {
-                        return resumeFunction.call(errorClass.cast(cause.get()));
+            } else {
+                return Single.error(error);
+            }
 
-                    } else {
-                        return Single.error(error);
-                    }
-
-                }
-        );
+        });
     }
 
     /**
@@ -92,23 +87,20 @@ public final class SingleFn {
             final ErrorCode code,
             final Func1<HttpException, Single<T>> resumeFunction) {
 
-        return single -> single.onErrorResumeNext(
+        return single -> single.onErrorResumeNext(error -> {
 
-                (Func1<Throwable, Single<? extends T>>) error -> {
+            final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
+                    error,
+                    HttpException.class
+            );
 
-                    final Optional<HttpException> cause = ExceptionUtils.getTypedCause(
-                            error,
-                            HttpException.class
-                    );
+            if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
+                return resumeFunction.call(cause.get());
 
-                    if (cause.isPresent() && code.equals(cause.get().getErrorCode())) {
-                        return resumeFunction.call(cause.get());
+            } else {
+                return Single.error(error);
+            }
 
-                    } else {
-                        return Single.error(error);
-                    }
-
-                }
-        );
+        });
     }
 }

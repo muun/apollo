@@ -34,12 +34,20 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
 
         passwordInput.setPasswordRevealEnabled(true)
         passwordInput.setOnChangeListener {
-            validatePassword()
+            // Ugly check needed for some convoluted scenario where we receive input and fragment
+            // is being re-created or something
+            if (::passwordInput.isInitialized) {
+                validatePassword()
+            }
         }
 
         passwordConfirmInput.setPasswordRevealEnabled(true)
         passwordConfirmInput.setOnChangeListener {
-            validatePassword()
+            // Ugly check needed for some convoluted scenario where we receive input and fragment
+            // is being re-created or something
+            if (::passwordConfirmInput.isInitialized) {
+                validatePassword()
+            }
         }
 
         confirmButton.isEnabled = false

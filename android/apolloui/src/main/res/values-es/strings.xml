@@ -17,6 +17,7 @@
     <string name="not_available">No disponible</string>
     <string name="open_app">Abrir app</string>
     <string name="loading">Cargando...</string>
+    <string name="contacting">Contactando</string>   <!-- Just used for UI test matching -->
 
     <string name="overflow_menu_hint">Menu de desborde</string>
 
@@ -209,7 +210,7 @@
         qué sucedió.
         \n
         \n<annotation fontStyle="bold">MENSAJE RECIBIDO:</annotation>
-        \n<annotation arg="1">placeholder</annotation>
+        \n<annotation arg="0">placeholder</annotation>
     </string>
 
     <string name="error_lnurl_invoice_expired_title">@string/notification_ln_payment_failed</string>

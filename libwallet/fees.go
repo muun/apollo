@@ -6,9 +6,9 @@ import (
 )
 
 type BestRouteFees struct {
-	MaxCapacity            int64
+	MaxCapacity              int64
 	FeeProportionalMillionth int64
-	FeeBase           int64
+	FeeBase                  int64
 }
 
 type BestRouteFeesList struct {
@@ -17,9 +17,9 @@ type BestRouteFeesList struct {
 
 func (l *BestRouteFeesList) Add(f *BestRouteFees) {
 	l.list = append(l.list, fees.BestRouteFees{
-		MaxCapacity:            btcutil.Amount(f.MaxCapacity),
+		MaxCapacity:              btcutil.Amount(f.MaxCapacity),
 		FeeProportionalMillionth: uint64(f.FeeProportionalMillionth),
-		FeeBase:           btcutil.Amount(f.FeeBase),
+		FeeBase:                  btcutil.Amount(f.FeeBase),
 	})
 }
 
@@ -31,7 +31,7 @@ type FundingOutputPolicies struct {
 
 type SwapFees struct {
 	RoutingFee          int64
-	SweepFee            int64
+	SweepFee            int64 // TODO: this should be called outputPadding, keeping name for retrocompat for now
 	DebtType            string
 	DebtAmount          int64
 	ConfirmationsNeeded int64
@@ -46,10 +46,11 @@ func ComputeSwapFees(amount int64, bestRouteFees *BestRouteFeesList, policies *F
 			PotentialCollect:  btcutil.Amount(policies.PotentialCollect),
 			MaxAmountFor0Conf: btcutil.Amount(policies.MaxAmountFor0Conf),
 		},
+		false,
 	)
 	return &SwapFees{
 		RoutingFee:          int64(swapFees.RoutingFee),
-		SweepFee:            int64(swapFees.SweepFee),
+		SweepFee:            int64(swapFees.OutputPadding),
 		DebtType:            string(swapFees.DebtType),
 		DebtAmount:          int64(swapFees.DebtAmount),
 		ConfirmationsNeeded: int64(swapFees.ConfirmationsNeeded),

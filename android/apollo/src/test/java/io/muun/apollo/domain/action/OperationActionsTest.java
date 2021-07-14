@@ -4,11 +4,7 @@ import io.muun.apollo.BaseTest;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
 import io.muun.apollo.data.net.HoustonClient;
-import io.muun.apollo.data.os.ClipboardProvider;
 import io.muun.apollo.data.preferences.KeysRepository;
-import io.muun.apollo.data.preferences.TransactionSizeRepository;
-import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
@@ -17,7 +13,6 @@ import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
-import io.muun.apollo.domain.model.User;
 import io.muun.apollo.template.TemplateHelpers;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
@@ -36,7 +31,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import rx.Observable;
-import rx.functions.Func1;
 
 import java.util.List;
 import javax.money.MonetaryAmount;
@@ -44,7 +38,6 @@ import javax.money.MonetaryAmount;
 import static io.muun.apollo.TestUtils.fetchItemFromObservable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -58,9 +51,6 @@ public class OperationActionsTest extends BaseTest {
     private static final String[] ALL_LABELS = {"incoming internal", "outgoing internal"};
 
     @Mock
-    private AsyncActionStore asyncActionStore;
-
-    @Mock
     private OperationDao operationDao;
 
     @Mock
@@ -70,25 +60,16 @@ public class OperationActionsTest extends BaseTest {
     private KeysRepository keysRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private ContactActions contactActions;
 
     @Mock
     private HoustonClient houstonClient;
 
     @Mock
-    private TransactionSizeRepository transactionSizeRepository;
-
-    @Mock
     private CreateOperationAction createOperationAction;
 
     @Mock
     private SubmitPaymentAction submitPaymentAction;
-
-    @Mock
-    private ClipboardProvider clipboardProvider;
 
     @Mock
     private OperationMetadataMapper operationMapper;
@@ -98,16 +79,10 @@ public class OperationActionsTest extends BaseTest {
     @Before
     public void setUp() {
 
-        doReturn(null).when(asyncActionStore).get(anyString(), any(Func1.class));
-
         operationActions = spy(new OperationActions(
                 createOperationAction,
                 operationDao,
-                userRepository,
-                transactionSizeRepository,
                 houstonClient,
-                clipboardProvider,
-                asyncActionStore,
                 operationMapper
         ));
     }
@@ -123,23 +98,15 @@ public class OperationActionsTest extends BaseTest {
         doReturn(Observable.just(0))
                 .when(operationDao).deleteAll();
 
-        //doReturn(Observable.just(null))
-        //        .when(operationActions).onRemoteOperationCreated(any(),
-        //        transactionSizeRepository.getNextTransactionSize());
-
         fetchItemFromObservable(operationActions.fetchReplaceOperations());
 
         verify(createOperationAction, times(remote.size()))
-                .action(
-                        argThat(remote::contains),
-                        transactionSizeRepository.getNextTransactionSize()
-                );
+                .saveOperation(argThat(remote::contains));
     }
 
     @Test
     public void buildPaymentToContact() {
 
-        final User user = Fixture.from(User.class).gimme("valid");
         final ExchangeRateWindow rates = Fixture.from(ExchangeRateWindow.class).gimme("valid");
 
         final Contact contact = Fixture.from(Contact.class).gimme("valid");
@@ -163,8 +130,6 @@ public class OperationActionsTest extends BaseTest {
 
         doReturn(contactAddress)
                 .when(contactActions).getAddressForContact(contact);
-
-        doReturn(user).when(userRepository).fetchOne();
 
         final PreparedPayment preparedPayment = new PreparedPayment(null,
                 null,
@@ -202,7 +167,6 @@ public class OperationActionsTest extends BaseTest {
     @Test
     public void buildPaymentToAddress() {
 
-        final User user = Fixture.from(User.class).gimme("valid");
         final ExchangeRateWindow rates = Fixture.from(ExchangeRateWindow.class).gimme("valid");
 
         final PaymentRequest payReq = PaymentRequest.toAddress(
@@ -213,8 +177,6 @@ public class OperationActionsTest extends BaseTest {
         );
 
         final long someFee = 123456;
-
-        doReturn(user).when(userRepository).fetchOne();
 
         final PreparedPayment preparedPayment = new PreparedPayment(null,
                 null,

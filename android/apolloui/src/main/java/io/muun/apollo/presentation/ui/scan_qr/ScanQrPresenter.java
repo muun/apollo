@@ -13,6 +13,7 @@ import icepick.State;
 import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -51,9 +52,15 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
         final Observable<OperationUri> observable = clipboardUriSel
                 .watch()
                 .compose(getAsyncExecutor())
-                .doOnNext(view::setClipboardUri);
+                .doOnNext(this::setClipboardUri);
 
         subscribeTo(observable);
+    }
+
+    private void setClipboardUri(OperationUri operationUri) {
+        if (operationUri.isLnUrl()) {
+            view.setClipboardUri(operationUri);
+        }
     }
 
     public void handleResult(String text) {
@@ -124,6 +131,7 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
             navigator.navigateToLnUrlWithdraw(getContext(), uri.getLnUrl().get());
         }
 
+        Timber.e(new RuntimeException("Non-LNURL Uri in LNURL UriPaster. This should not happen!"));
         view.finishActivity();
         return null;
     }

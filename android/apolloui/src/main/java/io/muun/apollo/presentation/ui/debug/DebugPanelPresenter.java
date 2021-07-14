@@ -1,9 +1,9 @@
 package io.muun.apollo.presentation.ui.debug;
 
 import io.muun.apollo.domain.action.ContactActions;
-import io.muun.apollo.domain.action.IntegrityActions;
 import io.muun.apollo.domain.action.OperationActions;
 import io.muun.apollo.domain.action.address.SyncExternalAddressIndexesAction;
+import io.muun.apollo.domain.action.integrity.IntegrityAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.BaseView;
@@ -18,7 +18,7 @@ public class DebugPanelPresenter extends BasePresenter<BaseView> {
 
     private final OperationActions operationActions;
     private final ContactActions contactActions;
-    private final IntegrityActions integrityActions;
+    private final IntegrityAction integrityAction;
 
     private final FetchRealTimeDataAction fetchRealTimeData;
     private final SyncExternalAddressIndexesAction syncExternalAddressIndexes;
@@ -29,13 +29,13 @@ public class DebugPanelPresenter extends BasePresenter<BaseView> {
     @Inject
     public DebugPanelPresenter(OperationActions operationActions,
                                ContactActions contactActions,
-                               IntegrityActions integrityActions,
+                               IntegrityAction integrityAction,
                                SyncExternalAddressIndexesAction syncExternalAddressIndexes,
                                FetchRealTimeDataAction fetchRealTimeData) {
 
         this.operationActions = operationActions;
         this.contactActions = contactActions;
-        this.integrityActions = integrityActions;
+        this.integrityAction = integrityAction;
         this.syncExternalAddressIndexes = syncExternalAddressIndexes;
         this.fetchRealTimeData = fetchRealTimeData;
     }
@@ -118,7 +118,7 @@ public class DebugPanelPresenter extends BasePresenter<BaseView> {
      * Perform a background integrity check with Houston.
      */
     public void checkIntegrity() {
-        final Observable<Void> observable = integrityActions.checkIntegrity()
+        final Observable<Void> observable = integrityAction.checkIntegrity()
                 .compose(getAsyncExecutor())
                 .doOnNext(ignored -> view.showTextToast("Integrity check complete, see log"));
 
