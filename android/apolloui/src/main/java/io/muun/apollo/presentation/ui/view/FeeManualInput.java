@@ -104,6 +104,9 @@ public class FeeManualInput extends MuunView {
         });
     }
 
+    /**
+     * Only exposed to be use by  {@link UiUtils#focusInput(FeeManualInput)}.
+     */
     public EditText getEditText() {
         return feeRateInput;
     }

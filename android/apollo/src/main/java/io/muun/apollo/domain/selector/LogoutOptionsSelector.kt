@@ -52,13 +52,22 @@ class LogoutOptionsSelector @Inject constructor(
     fun get(): LogoutOptions =
         watch().toBlocking().first()
 
-    fun isRecoverable(): Boolean =
+    fun isRecoverable(): Boolean {
         if (userSel.getOptional().isPresent) {
-            get().isRecoverable()
-        } else {
-            // If we don't have enough data to decide we'll assume its some early or inconsistent
-            // state and we default to false
-            // That is, if we're not sure don't delete anything just in case
-            false
+            try {
+                return get().isRecoverable()
+            } catch (e: Exception) {
+                // Turns there's a lot of reasons we can fail to fetch the options.
+                // 1. We have no user
+                // 2. We have no exchange rate windows
+                // Others could exist too and callers of this method should not be concerned with
+                // them.
+            }
         }
+
+        // If we don't have enough data to decide we'll assume its some early or inconsistent
+        // state and we default to false
+        // That is, if we're not sure don't delete anything just in case
+        return false
+    }
 }

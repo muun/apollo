@@ -28,7 +28,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import rx.Completable;
 import rx.Observable;
-import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
 import java.util.Arrays;
@@ -151,12 +151,12 @@ public class NotificationActionsTest extends BaseTest {
         executor.pause();
 
         notificationActions.onNotificationReport(reportOf(notif));
-        verify(testMessageHandler, never()).call(any()); // should be asynchronous
+        verify(testMessageHandler, never()).call(any(), anyLong()); // should be asynchronous
 
         executor.resume();
         executor.waitUntilFinished();
 
-        verify(testMessageHandler, times(1)).call(notif);
+        verify(testMessageHandler, times(1)).call(notif, 0L);
     }
 
     @Test
@@ -170,8 +170,8 @@ public class NotificationActionsTest extends BaseTest {
         executor.waitUntilFinished();
 
         final InOrder inOrder = inOrder(testMessageHandler);
-        inOrder.verify(testMessageHandler).call(notif1);
-        inOrder.verify(testMessageHandler).call(notif2);
+        inOrder.verify(testMessageHandler).call(notif1, 0L);
+        inOrder.verify(testMessageHandler).call(notif2, 0L);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(reportOf(notification));
         executor.waitUntilFinished();
 
-        verify(testMessageHandler, times(1)).call(notification);
+        verify(testMessageHandler, times(1)).call(notification, 0L);
     }
 
     @Test
@@ -251,9 +251,9 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(reportOf(list));
         executor.waitUntilFinished();
 
-        verify(testMessageHandler).call(list.get(0));
-        verify(explodingMessageHandler).call(list.get(1));
-        verify(testMessageHandler).call(list.get(2));
+        verify(testMessageHandler).call(list.get(0), 0L);
+        verify(explodingMessageHandler).call(list.get(1), 0L);
+        verify(testMessageHandler).call(list.get(2), 0L);
 
         verify(notificationRepository).setLastProcessedId(list.get(2).id);
     }
@@ -270,8 +270,8 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(reportOf(list));
         executor.waitUntilFinished();
 
-        verify(testMessageHandler).call(list.get(0));
-        verify(explodingMessageHandler).call(list.get(1));
+        verify(testMessageHandler).call(list.get(0), 0L);
+        verify(explodingMessageHandler).call(list.get(1), 0L);
         verifyNoMoreInteractions(testMessageHandler);
 
         // Only the first notification is processed
@@ -305,14 +305,15 @@ public class NotificationActionsTest extends BaseTest {
         verify(notificationRepository, times(1)).setLastProcessedId(notification.id);
     }
 
-    private static class TestMessageHandler implements Func1<NotificationJson, Completable> {
-        public Completable call(NotificationJson notificationJson) {
+    private static class TestMessageHandler implements Func2<NotificationJson, Long, Completable> {
+        public Completable call(NotificationJson notificationJson, Long retries) {
             return Completable.complete();
         }
     }
 
-    private static class ExplodingMessageHandler implements Func1<NotificationJson, Completable> {
-        public Completable call(NotificationJson json) {
+    private static class ExplodingMessageHandler
+            implements Func2<NotificationJson, Long, Completable> {
+        public Completable call(NotificationJson json, Long retries) {
             return Completable.error(new RuntimeException());
         }
     }

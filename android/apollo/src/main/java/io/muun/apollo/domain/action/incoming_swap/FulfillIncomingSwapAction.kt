@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.incoming_swap
 
+import io.muun.apollo.data.db.base.ElementNotFoundException
 import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao
 import io.muun.apollo.data.db.operation.OperationDao
 import io.muun.apollo.data.net.HoustonClient
@@ -7,6 +8,8 @@ import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
 import io.muun.apollo.domain.model.Operation
+import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
+import io.muun.common.Optional
 import io.muun.common.api.RawTransaction
 import io.muun.common.api.error.ErrorCode
 import io.muun.common.exception.HttpException
@@ -16,6 +19,7 @@ import org.bitcoinj.core.NetworkParameters
 import rx.Completable
 import rx.Observable
 import rx.Single
+import timber.log.Timber
 import javax.inject.Inject
 
 open class FulfillIncomingSwapAction @Inject constructor(
@@ -29,8 +33,24 @@ open class FulfillIncomingSwapAction @Inject constructor(
     override fun action(incomingSwapUuid: String): Observable<Unit> {
 
         return operationDao.fetchByIncomingSwapUuid(incomingSwapUuid).first().toSingle()
-            .flatMapCompletable(this::fulfill)
-            .toObservable()
+                .flatMapCompletable(this::fulfill)
+                .onErrorResumeNext { t ->
+                    if (t.isInstanceOrIsCausedByError<ElementNotFoundException>()) {
+                        return@onErrorResumeNext operationDao.fetchMaybeLatest()
+                                .flatMap{ maybeOp  ->
+                                    Timber.e(
+                                            "Failed fulfilled due to missing. Latest op id = %i",
+                                            maybeOp.map(Operation::hid).orElse(-1)
+                                    )
+
+                                    Observable.error<Optional<Operation>>(t)
+                                }
+                                .toCompletable()
+                    }
+
+                    Completable.error(t)
+                }
+                .toObservable()
     }
 
     private fun fulfill(op: Operation): Completable {

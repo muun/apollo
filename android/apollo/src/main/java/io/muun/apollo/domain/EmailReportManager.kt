@@ -1,11 +1,11 @@
 package io.muun.apollo.domain
 
-import io.muun.apollo.domain.model.report.CrashReport
-import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.TelephonyInfoProvider
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.report.CrashReport
+import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.domain.selector.UserSelector
 import io.muun.common.Optional
 import io.muun.common.utils.Encodings
@@ -26,12 +26,12 @@ class EmailReportManager @Inject constructor(
             .orElse(Optional.empty())
             .orElse(null)
 
-        val fcmToken = getFcmToken.actionNow() // Insta-return, token ready at this point
-
-        val fcmTokenHash = if (fcmToken != null) {
+        val fcmTokenHash: String = try {
+            val fcmToken: String = getFcmToken.actionNow()
             Encodings.bytesToHex(Hashes.sha256(Encodings.stringToBytes(fcmToken)))
-        } else {
-            "null"
+        } catch (e: Exception) {
+            // GetFcmTokenAction already logs the error
+            "unavailable"
         }
 
         val googlePlayServicesAvailable =

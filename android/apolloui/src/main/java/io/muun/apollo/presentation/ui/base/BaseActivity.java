@@ -22,6 +22,7 @@ import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.FeeManualInput;
 import io.muun.apollo.presentation.ui.view.FloatingOverflowMenu;
+import io.muun.apollo.presentation.ui.view.MuunAmountInput;
 import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
 import android.app.Activity;
@@ -227,6 +228,17 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * all request focus through this call (and BaseFragment's) and get lockManager behaviour :).
      */
     public void focusInput(FeeManualInput input) {
+        if (!lockManager.isLockSet()) {
+            UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
+        }
+    }
+
+    /**
+     * Request focus for specified input.
+     * This method is public so instances of MuunView can request focus with it. Thus centralizing
+     * all request focus through this call (and BaseFragment's) and get lockManager behaviour :).
+     */
+    public void focusInput(MuunAmountInput input) {
         if (!lockManager.isLockSet()) {
             UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
         }

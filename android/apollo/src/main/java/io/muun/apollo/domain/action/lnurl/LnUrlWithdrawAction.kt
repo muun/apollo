@@ -180,7 +180,9 @@ class LnUrlWithdrawAction @Inject constructor(
                     }
                 }
 
-                Timber.e("LNURL Withdraw Error: ${event.code}. Msg: ${event.message}")
+                // TODO: we may want to log only specific errors or add some to our crashlytics
+                //  noise reducing blacklist
+                Timber.e(error.toMuunError())
                 subject.onNext(LnUrlState.Failed(error = error))
             }
         }

@@ -12,6 +12,7 @@ import io.muun.apollo.domain.model.lnurl.LnUrlState
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
+import io.muun.apollo.presentation.ui.utils.postDelayed
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -92,6 +93,7 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
     }
 
     override fun handleRetry() {
+        hideError()
         presenter.handleRetry()
     }
 
@@ -130,8 +132,15 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
     }
 
     private fun showFailed(error: LnUrlError) {
-        showError(
-            error.asViewModel(this)
-        )
+        if (error is LnUrlError.Unresponsive) {
+            // Sometimes this error is triggered super quickly on retries, making the UI kinda
+            // glitchy, jumping from one state to another. So, we add a small delay to avoid
+            // glitches on retries
+            postDelayed(3000) {
+                showError(error.asViewModel(this))
+            }
+        }
+
+        showError(error.asViewModel(this))
     }
 }
