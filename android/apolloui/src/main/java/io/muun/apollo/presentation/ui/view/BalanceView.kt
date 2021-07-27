@@ -26,7 +26,11 @@ import io.muun.common.utils.BitcoinUtils
 import javax.money.CurrencyUnit
 import javax.money.Monetary
 
-class BalanceView : MuunView {
+class BalanceView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    style: Int = 0
+) : MuunView(context, attrs, style) {
 
     // Components:
     @BindView(R.id.balance_main_currency_amount)
@@ -79,13 +83,9 @@ class BalanceView : MuunView {
 
     private var rateProvider: ExchangeRateProvider? = null
 
-    @JvmOverloads
-    constructor(context: Context, attrs: AttributeSet? = null, style: Int = 0):
-        super(context, attrs, style)
+    override val layoutResource: Int
+        get() = R.layout.view_balance
 
-    override fun getLayoutResource(): Int {
-        return R.layout.view_balance
-    }
 
     fun setBalance(homeBalanceState: HomePresenter.HomeBalanceState) {
         val paymentContext = homeBalanceState.paymentContext

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.presentation.model.text_decoration.AutoSizeDecoration;
 import io.muun.apollo.presentation.model.text_decoration.DecorationTransformation;
@@ -18,6 +19,7 @@ import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -28,6 +30,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
 import javax.validation.constraints.NotNull;
@@ -69,6 +72,11 @@ public class MuunAmountInput extends MuunView {
     @BindColor(R.color.error_color)
     int errorColor;
 
+    // -----------------------------
+
+    @Inject
+    ApplicationLockManager lockManager;
+
     // State:
     @State
     float maxWidthPx;
@@ -109,8 +117,9 @@ public class MuunAmountInput extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        getComponent().inject(this);
 
         this.textMaxWidthPercent = 1f;
         viewProps.transfer(attrs, this);
@@ -329,9 +338,13 @@ public class MuunAmountInput extends MuunView {
     }
 
     /**
-     * Only exposed to be use by  {@link UiUtils#focusInput(MuunAmountInput)}.
+     * Focus on this MuunAmountInput and show the soft keyboard.
+     * Our own version of {@link View#requestFocus()} but renamed since that one is final and we
+     * can't override it.
      */
-    public MuunEditText getInputAmount() {
-        return inputAmount;
+    public void requestFocusInput() {
+        if (!lockManager.isLockSet()) {
+            UiUtils.focusInput(inputAmount); // Don't show soft keyboard if lock screen's showing
+        }
     }
 }

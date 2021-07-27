@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -78,11 +79,11 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     @Override
     protected void onResume() {
         super.onResume();
-        focusInput(feedbackContent);
+        feedbackContent.requestFocusInput();
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         onFeedbackContentChange();
     }

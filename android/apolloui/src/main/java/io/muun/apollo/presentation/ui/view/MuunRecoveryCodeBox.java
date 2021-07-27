@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.BindViews;
 import rx.functions.Action0;
@@ -66,21 +67,20 @@ public class MuunRecoveryCodeBox extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
         Preconditions.checkState(segmentInputs.size() == RecoveryCodeV2.SEGMENT_COUNT);
 
-        for (int i = 0; i < segmentInputs.size(); i++) {
-            final int index = i;
-            final MuunTextInput input = segmentInputs.get(i);
+        for (int index = 0; index < segmentInputs.size(); index++) {
+            final MuunTextInput input = segmentInputs.get(index);
 
             input.setHintEnabled(false); // remove extra margins
             input.addFilter(new InputFilter.AllCaps());
 
             input.disableErrorAndHelperTextTempFix(); // TODO replace this with reasonable API
 
-            input.setOnChangeListener(string -> onSegmentInputEdited(index));
+            input.setOnChangeListener(string -> onSegmentInputEdited());
             input.setOnKeyListener(new SegmentAutoReturnKeyListener(index));
 
             input.editText.addTextChangedListener(new SegmentAutoAdvanceToNextListener(index));
@@ -93,7 +93,7 @@ public class MuunRecoveryCodeBox extends MuunView {
     public void requestFocusOnFirstEditableSegment() {
         for (int i = 0; i < segmentInputs.size(); i++) {
             if (isSegmentEditable(i)) {
-                getActivity().focusInput(segmentInputs.get(i));
+                segmentInputs.get(i).requestFocusInput();
                 break;
             }
         }
@@ -199,7 +199,7 @@ public class MuunRecoveryCodeBox extends MuunView {
         this.editedListener = listener;
     }
 
-    private void onSegmentInputEdited(int index) {
+    private void onSegmentInputEdited() {
         if (editedListener != null) {
             editedListener.onEdited(getSegmentInputsContent());
         }

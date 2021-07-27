@@ -43,6 +43,8 @@ class SelectAmountPresenter @Inject constructor(
 
     private var isOnChainAmount: Boolean = true
 
+    private fun isInitialized(): Boolean = ::rateProvider.isInitialized
+
     override fun setUp(@NotNull arguments: Bundle) {
         super.setUp(arguments)
 
@@ -63,13 +65,14 @@ class SelectAmountPresenter @Inject constructor(
     }
 
     private fun onExchangeRatesChange(exchangeRateProvider: ExchangeRateProvider) {
-        val uninitialized = !::rateProvider.isInitialized
+        val isBeingInitialized = !isInitialized()
         rateProvider = exchangeRateProvider
         view.setExchangeRateProvider(exchangeRateProvider)
 
         // This needs to happen AFTER rateProvider init due to the side effects of
         // initializeAmountInput (e.g updateAmount())
-        if (uninitialized) {
+        // Also, initialize AmountInput just once and not on every exchangeRates change
+        if (isBeingInitialized) {
             view.initializeAmountInput(primaryCurrency)
         }
     }
@@ -114,13 +117,15 @@ class SelectAmountPresenter @Inject constructor(
     }
 
     fun confirmSelectedAmount() {
-        view.finishWithResult(
-            Activity.RESULT_OK,
-            BitcoinAmount(
-                BitcoinUtils.bitcoinsToSatoshis(rateProvider.convert(amount, "BTC")),
-                amount,
-                amount
+        if (isInitialized()) {
+            view.finishWithResult(
+                Activity.RESULT_OK,
+                BitcoinAmount(
+                    BitcoinUtils.bitcoinsToSatoshis(rateProvider.convert(amount, "BTC")),
+                    amount,
+                    amount
+                )
             )
-        )
+        }
     }
 }

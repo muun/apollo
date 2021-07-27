@@ -10,14 +10,14 @@ import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.addOnNextLayoutListener
 
-class MuunProgressBar @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunProgressBar @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     @BindView(R.id.progress)
     lateinit var progressView: View
 
-    override fun getLayoutResource() =
-        R.layout.muun_progress_bar
+    override val layoutResource: Int
+        get() = R.layout.muun_progress_bar
 
     var progress: Double = 0.0
         set(progress) {

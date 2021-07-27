@@ -10,12 +10,12 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 
-class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<MuunInfoBox> = ViewProps.Builder<MuunInfoBox>()
-            .addRef(R.attr.pictureDrawable) { v, resId -> v.setPicture(resId)}
+            .addRef(R.attr.pictureDrawable) { v, resId -> v.setPicture(resId) }
             .addString(R.attr.title) { v: MuunInfoBox, str: String? -> v.setTitle(str!!) }
             .addString(R.attr.description) { v: MuunInfoBox, str: String? ->
                 v.setDescription(str!!)
@@ -34,8 +34,8 @@ class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null,
 
     lateinit var onLinkClick: (linkId: String) -> Unit
 
-    override fun getLayoutResource() =
-        R.layout.muun_info_box
+    override val layoutResource: Int
+        get() = R.layout.muun_info_box
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

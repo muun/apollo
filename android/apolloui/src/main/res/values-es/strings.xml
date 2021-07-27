@@ -343,7 +343,12 @@
     <!-- Generic strings -->
 
     <string name="slogan">Monedero de custodia propia\npara bitcoin y lightning</string>
-    <string name="network_error_message">No se puede conectar con el servidor de Muun</string>
+    <string name="network_error_message">
+        No se puede conectar con el servidor de Muun. Esto es normalmente un problema temporario y
+        que suele repararse sin ninguna intervención extra. Aguarda unos segundos, verifica tu
+        conexión a Internet e intenta de nuevo. Si el problema persiste, escribinos a
+        <annotation fontStyle="bold">support@muun.com</annotation> para que podamos ayudarte.
+    </string>
 
     <!-- Landing -->
 

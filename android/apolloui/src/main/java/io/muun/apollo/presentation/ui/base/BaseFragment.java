@@ -8,7 +8,6 @@ import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension.PermissionRequester;
 import io.muun.apollo.presentation.ui.base.di.FragmentComponent;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.common.Optional;
 
 import android.app.Activity;
@@ -248,11 +247,25 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         showDialog.call(getParentActivity());
     }
 
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(String errorMsg) {
+        showErrorDialog(errorMsg, null, null);
+    }
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
     @Override
     public void showErrorDialog(String errorMsg, Action0 followupAction) {
         getParentActivity().showErrorDialog(errorMsg, followupAction);
     }
 
+    /**
+     * Show a simple, standard muun error dialog.
+     */
     @Override
     public void showErrorDialog(String errorMsg, Action0 followupAction, Action0 onDismissAction) {
         getParentActivity().showErrorDialog(errorMsg, followupAction, onDismissAction);
@@ -284,7 +297,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     @NotNull
-    protected ApplicationComponent getApplicationComponent() {
+    private ApplicationComponent getApplicationComponent() {
         return ((BaseActivity) getActivity()).getApplicationComponent();
     }
 
@@ -323,12 +336,6 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      */
     public void onPermissionsDenied(String[] deniedPermissions) {
         // Do nothing
-    }
-
-    protected void focusInput(MuunTextInput input) {
-        if (!lockManager.isLockSet()) {
-            UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
-        }
     }
 
     protected void hideKeyboard(View view) {

@@ -326,16 +326,13 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
         if (error instanceof UserFacingError) {
             view.showErrorDialog(
-                    error.getLocalizedMessage(),
+                    "" + error.getLocalizedMessage(),  // avoid null
                     () -> showErrorReportDialog(error, false)
             );
             return true;
 
         } else if (ExtensionsKt.isInstanceOrIsCausedByNetworkError(error)) {
-            view.showErrorDialog(
-                    getContext().getString(R.string.network_error_message),
-                    () -> showErrorReportDialog(error, false)
-            );
+            view.showErrorDialog(getContext().getString(R.string.network_error_message));
             return true;
 
         } else if (error instanceof TooManyRequestsError) {

@@ -319,7 +319,7 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
         super.onResume();
 
         if (step == NewOperationStep.ENTER_AMOUNT) {
-            UiUtils.focusInput(amountInput);
+            amountInput.requestFocusInput();
         }
     }
 
@@ -726,7 +726,7 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
         // otherwise you might cause the previous input to lose focus
         // which in turn causes the keyboard to hide.
         changeVisibility(amountEditableViews, View.VISIBLE);
-        UiUtils.focusInput(amountInput);
+        amountInput.requestFocusInput();
 
         changeVisibility(amountSelectedViews, View.GONE);
         changeVisibility(noteEnteredViews, View.GONE);

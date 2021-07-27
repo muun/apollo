@@ -332,7 +332,11 @@
 
     <!-- Generic strings -->
     <string name="slogan">Bitcoin and lightning wallet</string>
-    <string name="network_error_message">Can\'t connect to Muun\'s server</string>
+    <string name="network_error_message">
+        Can\'t connect to Muun\'s server. This is usually something temporary and self-healing. Wait
+        a couple of seconds, check your Internet connection and try again. If the problem persists,
+        please do contact <annotation fontStyle="bold">support@muun.com</annotation> for help.
+    </string>
 
     <!-- Landing -->
 

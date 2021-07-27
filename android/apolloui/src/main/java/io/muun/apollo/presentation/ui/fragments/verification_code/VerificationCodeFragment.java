@@ -102,7 +102,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     @Override
     public void onResume() {
         super.onResume();
-        focusInput(verificationCode);
+        verificationCode.requestFocusInput();
     }
 
     @Override
@@ -215,7 +215,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     @Override
     public void handleVerificationCodeError(Throwable error) {
         if (error != null) {
-            focusInput(verificationCode);
+            verificationCode.requestFocusInput();
         }
     }
 

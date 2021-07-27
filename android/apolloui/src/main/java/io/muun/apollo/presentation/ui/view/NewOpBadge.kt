@@ -46,8 +46,8 @@ class NewOpBadge @JvmOverloads constructor(
     @JvmField
     internal var incomingTxColor: Int = 0
 
-    override fun getLayoutResource(): Int =
-        R.layout.view_new_op_badge
+    override val layoutResource: Int
+        get() = R.layout.view_new_op_badge
 
     fun setAmount(amountInBtc: MonetaryAmount, mode: CurrencyDisplayMode) {
         Preconditions.checkArgument(!amountInBtc.isZero)

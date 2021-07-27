@@ -128,6 +128,13 @@ class PdfExporter(
             val signal = CancellationSignal()
 
             Timber.d("Starting write phase")
+
+            // NOTE:
+            // Running this next line again before the callback is invoked by the adapter will
+            // throw an IllegalStateException ("printing is already pending"). Solving at this layer
+            // doesn't bring much benefit (we could queue calls, but the UI would still have to
+            // avoid concurrent calls because we don't actually have a use-case for parallelism),
+            // so instead we let this knowingly fail and keep it simple.
             adapter.onWrite(arrayOf(PageRange.ALL_PAGES), fd, signal, OwnResultCallback())
         }
     }

@@ -74,7 +74,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     @Override
     protected void onResume() {
         super.onResume();
-        focusInput(firstName);
+        firstName.requestFocusInput();
     }
 
     @Override
@@ -120,7 +120,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         firstName.setError(error);
 
         if (error != null) {
-            focusInput(lastName);
+            lastName.requestFocusInput();
             toggleMenuButtonEnabled(saveMenuItem, true);
         }
     }
@@ -130,7 +130,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         lastName.setError(error);
 
         if (error != null) {
-            focusInput(lastName);
+            lastName.requestFocusInput();
             toggleMenuButtonEnabled(saveMenuItem, true);
         }
     }
@@ -157,7 +157,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         item.setEnabled(enabled);
 
         final View itemView = findViewById(item.getItemId());
-        if (itemView != null && itemView instanceof ActionMenuItemView) {
+        if (itemView instanceof ActionMenuItemView) {
 
             final int color = enabled ? getMenuItemEnabledColor() : disabledColor;
             ((ActionMenuItemView) itemView).setTextColor(color);

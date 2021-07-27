@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.exception.MissingCaseError;
@@ -22,10 +23,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 import butterknife.BindView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -35,9 +36,12 @@ import icepick.State;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.google.android.material.textfield.TextInputLayout.END_ICON_NONE;
+import static com.google.android.material.textfield.TextInputLayout.END_ICON_PASSWORD_TOGGLE;
 
 public class MuunTextInput extends MuunView {
 
@@ -121,7 +125,15 @@ public class MuunTextInput extends MuunView {
     @BindView(R.id.muun_helper_text)
     protected TextView helperText;
 
+    // -----------------------------
+
+    @Inject
+    ApplicationLockManager lockManager;
+
+    // -----------------------------
+
     private boolean notifyChanges = true;
+
     private OnChangeListener changesListener;
 
     private OnKeyboardNextListener keyboardNextListener;
@@ -146,12 +158,13 @@ public class MuunTextInput extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         // Setting defaults in here because setUp is called INSIDE the view constructor
         textStyle = Typeface.NORMAL;
         isEnabled = true;
 
         super.setUp(context, attrs);
+        getComponent().inject(this);
 
         editText.setImeOptions(FIXED_IME_OPTIONS);
 
@@ -169,7 +182,7 @@ public class MuunTextInput extends MuunView {
     }
 
     @Override
-    protected void onRestoreInstanceState(Parcelable parcelable) {
+    protected void onRestoreInstanceState(@NonNull Parcelable parcelable) {
         super.onRestoreInstanceState(parcelable);
         setEnabled(isEnabled);
     }
@@ -362,7 +375,7 @@ public class MuunTextInput extends MuunView {
     }
 
     public void setPasswordRevealEnabled(boolean isEnabled) {
-        layout.setPasswordVisibilityToggleEnabled(isEnabled);
+        layout.setEndIconMode(isEnabled ? END_ICON_PASSWORD_TOGGLE : END_ICON_NONE);
     }
 
     /**
@@ -503,10 +516,14 @@ public class MuunTextInput extends MuunView {
     }
 
     /**
-     * Only exposed to be use by  {@link UiUtils#focusInput(MuunTextInput)}.
+     * Focus on this MuunTextInput and show the soft keyboard.
+     * Our own version of {@link View#requestFocus()} but renamed since that one is final and we
+     * can't override it.
      */
-    public EditText getEditText() {
-        return editText;
+    public void requestFocusInput() {
+        if (!lockManager.isLockSet()) {
+            UiUtils.focusInput(editText); // Don't show soft keyboard if lock screen's showing
+        }
     }
 
     @Override

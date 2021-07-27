@@ -278,7 +278,16 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	}
 
 	now := time.Now()
-	dbInvoice.AmountSat = opts.AmountSat
+
+	// This is rounding down. Invoices with amount accept any amount larger
+	// but none smaller. So if we have non-integer sats amount, rounding down
+	// might accept a few msats less. But, rounding up would always fail the
+	// payment.
+	if invoice.MilliSat != nil {
+		dbInvoice.AmountSat = int64(invoice.MilliSat.ToSatoshis())
+	} else {
+		dbInvoice.AmountSat = 0
+	}
 	dbInvoice.State = walletdb.InvoiceStateUsed
 	dbInvoice.UsedAt = &now
 

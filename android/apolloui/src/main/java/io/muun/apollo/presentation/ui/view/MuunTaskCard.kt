@@ -30,8 +30,8 @@ class MuunTaskCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     @BindView(R.id.body)
     lateinit var bodyView: TextView
 
-    override fun getLayoutResource() =
-        R.layout.muun_task_card
+    override val layoutResource: Int
+        get() = R.layout.muun_task_card
 
     var icon: Drawable
         get() = iconView.drawable

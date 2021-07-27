@@ -15,7 +15,7 @@ import io.muun.apollo.presentation.ui.adapter.ItemAdapter
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory
 import io.muun.apollo.presentation.ui.adapter.viewmodel.ContactViewModel
 
-class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     @BindView(R.id.contact_list_empty)
@@ -38,8 +38,8 @@ class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = n
 
     private lateinit var listAdapter: ItemAdapter
 
-    override fun getLayoutResource() =
-        R.layout.muun_contact_list
+    override val layoutResource: Int
+        get() = R.layout.muun_contact_list
 
     var onGoToSettingsListener: () -> Unit = {}
     var onGoToP2PSetupListener: () -> Unit = {}
@@ -51,7 +51,7 @@ class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = n
             field = newState
         }
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
 
         goToP2PSetupView.setOnActionClickListener { onGoToP2PSetupListener() }
@@ -82,8 +82,8 @@ class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         // Pick the new visible view:
         val visibleView = when {
             newP2PState == null ||
-            !newP2PState.user.hasP2PEnabled ||
-            newP2PState.permissionState == ContactsPermissionState.DENIED ->
+                !newP2PState.user.hasP2PEnabled ||
+                newP2PState.permissionState == ContactsPermissionState.DENIED ->
                 goToP2PSetupView
 
             newP2PState.permissionState == ContactsPermissionState.PERMANENTLY_DENIED ->

@@ -13,8 +13,8 @@ class MuunButtonLayoutAnchor
     @BindView(R.id.muun_button_layout_anchor)
     lateinit var rootLayout: ViewGroup
 
-    override fun getLayoutResource(): Int =
-        R.layout.muun_button_layout_anchor
+    override val layoutResource: Int
+        get() = R.layout.muun_button_layout_anchor
 
     override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams) {
         if (child.id == R.id.muun_button_layout_anchor) {

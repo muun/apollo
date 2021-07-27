@@ -77,7 +77,7 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
         firstName.setError(error);
 
         if (error != null) {
-            focusInput(firstName);
+            firstName.requestFocusInput();
         }
     }
 
@@ -86,7 +86,7 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
         lastName.setError(error);
 
         if (error != null) {
-            focusInput(lastName);
+            lastName.requestFocusInput();
         }
     }
 
@@ -110,7 +110,7 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
         final TitleAndDescriptionDrawer dialog = new TitleAndDescriptionDrawer();
         dialog.setTitle(R.string.signup_profile_why_this_title);
         dialog.setDescription(getString(R.string.signup_profile_why_this_explanation));
-        dialog.show(getFragmentManager(), null);
+        dialog.show(getParentFragmentManager(), null);
 
         presenter.reportShowProfileInfo();
     }

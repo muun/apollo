@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.errors.InvalidPictureError;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.Device;
 import io.muun.common.Optional;
 import io.muun.common.exception.MissingCaseError;
@@ -21,6 +20,7 @@ import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ProgressBar;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import butterknife.BindString;
 import butterknife.BindView;
@@ -180,19 +180,12 @@ public class MuunPictureInput extends MuunView {
     }
 
     @Override
-    public void onPermissionsGranted(String[] grantedPermissions) {
+    public void onPermissionsGranted(@NonNull String[] grantedPermissions) {
         super.onPermissionsGranted(grantedPermissions);
         launchCameraIntent();
     }
 
     private void handleCameraIntent() {
-
-        final BaseActivity<?> activity = getActivity();
-
-        if (activity == null) {
-            return;
-        }
-
         if (!allPermissionsGranted(Manifest.permission.CAMERA)) {
             requestPermissions(Manifest.permission.CAMERA);
 

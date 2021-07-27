@@ -11,12 +11,12 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
-class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<NoticeBanner> = ViewProps.Builder<NoticeBanner>().run {
-            addString(android.R.attr.text) { v: NoticeBanner, str: String? -> v.setText(str!!)}
+            addString(android.R.attr.text) { v: NoticeBanner, str: String? -> v.setText(str!!) }
             addRef(android.R.attr.background) { v: NoticeBanner, resId: Int? ->
                 v.setBackgroundResource(resId!!)
             }
@@ -32,10 +32,10 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     @BindView(R.id.banner_text)
     lateinit var textView: TextView
 
-    override fun getLayoutResource(): Int =
-        R.layout.view_notice_banner
+    override val layoutResource: Int
+        get() = R.layout.view_notice_banner
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
 
         viewProps.transfer(attrs, this)

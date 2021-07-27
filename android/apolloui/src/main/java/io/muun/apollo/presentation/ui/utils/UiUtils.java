@@ -1,11 +1,8 @@
 package io.muun.apollo.presentation.ui.utils;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.utils.DateUtils;
-import io.muun.apollo.presentation.ui.base.BaseActivity;
-import io.muun.apollo.presentation.ui.view.FeeManualInput;
-import io.muun.apollo.presentation.ui.view.MuunAmountInput;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.common.utils.Preconditions;
 
 import android.app.Activity;
@@ -195,36 +192,11 @@ public class UiUtils {
     }
 
     /**
-     * Focus a MuunTextInput and show the soft keyboard.
-     * WARNING: Never use directly as we have some rules for overriding requestFocus behaviour.
-     * See {@link BaseActivity#focusInput(MuunTextInput)}.
-     */
-    public static void focusInput(MuunTextInput input) {
-        focusInput(input.getEditText());
-    }
-
-    /**
-     * Focus a MuunTextInput and show the soft keyboard.
-     * WARNING: Never use directly as we have some rules for overriding requestFocus behaviour.
-     * See {@link BaseActivity#focusInput(FeeManualInput)}.
-     */
-    public static void focusInput(FeeManualInput input) {
-        focusInput(input.getEditText());
-    }
-
-    /**
-     * Focus a MuunAmountInput and show the soft keyboard.
-     * WARNING: Never use directly as we have some rules for overriding requestFocus behaviour.
-     * See {@link BaseActivity#focusInput(MuunAmountInput)}.
-     */
-    public static void focusInput(MuunAmountInput input) {
-        focusInput(input.getInputAmount());
-    }
-
-    /**
      * Focus an EditText and show the soft keyboard.
+     * WARNING: always check if {@link ApplicationLockManager#isLockSet()} before calling to avoid
+     * showing keyboard when LockOverlay is shown.
      */
-    private static void focusInput(EditText input) {
+    public static void focusInput(EditText input) {
         input.requestFocus();
         input.setSelection(input.getText().length()); // move cursor to end
 
