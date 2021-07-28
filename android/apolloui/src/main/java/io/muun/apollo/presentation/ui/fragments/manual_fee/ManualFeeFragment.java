@@ -97,7 +97,7 @@ public class ManualFeeFragment extends SingleFragment<ManualFeePresenter> implem
         );
 
         message.setText(content);
-        getParentActivity().focusInput(feeInput);
+        feeInput.requestFocusInput();
 
         confirmButton.setEnabled(feeInput.getFeeRate() != null);
     }

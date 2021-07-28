@@ -9,7 +9,7 @@ import android.widget.ImageView
 import butterknife.BindView
 import io.muun.apollo.R
 
-class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     @BindView(R.id.text_input)
@@ -18,8 +18,8 @@ class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     @BindView(R.id.scan_qr_button)
     lateinit var scanQrButton: ImageView
 
-    override fun getLayoutResource() =
-        R.layout.muun_uri_input
+    override val layoutResource: Int
+        get() = R.layout.muun_uri_input
 
     var onChangeListener: (content: String) -> Unit = {}
     var onScanQrClickListener: () -> Unit = {}
@@ -31,10 +31,10 @@ class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null
             field = newUri
         }
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
 
-        textInput.addTextChangedListener(object: TextWatcher {
+        textInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 

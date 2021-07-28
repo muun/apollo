@@ -1,6 +1,5 @@
 package io.muun.apollo.presentation.ui.base;
 
-import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.presentation.app.ApolloApplication;
@@ -20,10 +19,7 @@ import io.muun.apollo.presentation.ui.activity.extension.SnackBarExtension;
 import io.muun.apollo.presentation.ui.base.di.ActivityComponent;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.FeeManualInput;
 import io.muun.apollo.presentation.ui.view.FloatingOverflowMenu;
-import io.muun.apollo.presentation.ui.view.MuunAmountInput;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
 import android.app.Activity;
 import android.content.Context;
@@ -84,9 +80,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Inject
     UserActions userActions;
-
-    @Inject
-    ApplicationLockManager lockManager;
 
     @Inject
     protected LinkBuilder linkBuilder;
@@ -209,39 +202,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         // Avoid leaving soft keyboard shown. When coming back to lock screen it may be left hanging
         // around. Every screen should handle showing it again on their onResume method.
         UiUtils.lastResortHideKeyboard(this);
-    }
-
-    /**
-     * Request focus for specified input.
-     * This method is public so instances of MuunView can request focus with it. Thus centralizing
-     * all request focus through this call (and BaseFragment's) and get lockManager behaviour :).
-     */
-    public void focusInput(MuunTextInput input) {
-        if (!lockManager.isLockSet()) {
-            UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
-        }
-    }
-
-    /**
-     * Request focus for specified input.
-     * This method is public so instances of MuunView can request focus with it. Thus centralizing
-     * all request focus through this call (and BaseFragment's) and get lockManager behaviour :).
-     */
-    public void focusInput(FeeManualInput input) {
-        if (!lockManager.isLockSet()) {
-            UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
-        }
-    }
-
-    /**
-     * Request focus for specified input.
-     * This method is public so instances of MuunView can request focus with it. Thus centralizing
-     * all request focus through this call (and BaseFragment's) and get lockManager behaviour :).
-     */
-    public void focusInput(MuunAmountInput input) {
-        if (!lockManager.isLockSet()) {
-            UiUtils.focusInput(input); // Don't show soft keyboard if lock screen's showing
-        }
     }
 
     private void setUpLayout() {
@@ -448,6 +408,15 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         showDialog.call(this);
     }
 
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(String errorMsg) {
+        showErrorDialog(errorMsg, null, null);
+    }
+
     /**
      * Show a simple, standard muun error dialog.
      */
@@ -456,6 +425,9 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         showErrorDialog(errorMsg, followupAction, null);
     }
 
+    /**
+     * Show a simple, standard muun error dialog.
+     */
     @Override
     public void showErrorDialog(String errorMsg, Action0 followupAction, Action0 onDismissAction) {
         alertDialogExtension.showErrorDialog(errorMsg, followupAction, onDismissAction);

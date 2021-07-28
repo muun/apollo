@@ -10,7 +10,6 @@ import android.os.Parcelable;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.widget.EditText;
 import androidx.annotation.NonNull;
 import icepick.State;
 
@@ -36,7 +35,7 @@ public class MuunPhoneInput extends MuunTextInput {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
         setHintEnabled(false);
@@ -55,7 +54,7 @@ public class MuunPhoneInput extends MuunTextInput {
     }
 
     private void setCountryHint(String countryCode) {
-        getEditText().setHint(
+        editText.setHint(
                 PhoneNumber.getExample(countryCode)
                         .map(PhoneNumber::toNationalPrettyString)
                         .orElse(getDefaultCountryHint())
@@ -78,8 +77,6 @@ public class MuunPhoneInput extends MuunTextInput {
         if (isInEditMode()) {
             return;
         }
-
-        final EditText editText = getEditText();
 
         editText.removeTextChangedListener(formatter);
 
@@ -104,7 +101,7 @@ public class MuunPhoneInput extends MuunTextInput {
     }
 
     @Override
-    protected void onRestoreInstanceState(Parcelable parcelable) {
+    protected void onRestoreInstanceState(@NonNull Parcelable parcelable) {
         super.onRestoreInstanceState(parcelable);
         setCountryCode(countryCode);
     }

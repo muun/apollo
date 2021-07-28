@@ -58,7 +58,7 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
     }
 
     private void setClipboardUri(OperationUri operationUri) {
-        if (operationUri.isLnUrl()) {
+        if (operationUri != null && operationUri.isLnUrl()) {
             view.setClipboardUri(operationUri);
         }
     }
@@ -129,9 +129,10 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
     public Unit selectFromUriPaster(@NotNull OperationUri uri) {
         if (uri.getLnUrl().isPresent()) {
             navigator.navigateToLnUrlWithdraw(getContext(), uri.getLnUrl().get());
+        } else {
+            Timber.e(new RuntimeException("Non-LNURL Uri in LNURL UriPaster. Should not happen!"));
         }
 
-        Timber.e(new RuntimeException("Non-LNURL Uri in LNURL UriPaster. This should not happen!"));
         view.finishActivity();
         return null;
     }

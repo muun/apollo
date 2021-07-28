@@ -26,9 +26,8 @@ class ExpirationTimeItem @JvmOverloads constructor(c: Context, a: AttributeSet? 
     @BindView(R.id.expiration_time_loading)
     lateinit var loadingView: LoadingView
 
-    override fun getLayoutResource(): Int {
-        return R.layout.expiration_time_item
-    }
+    override val layoutResource: Int
+        get() = R.layout.expiration_time_item
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

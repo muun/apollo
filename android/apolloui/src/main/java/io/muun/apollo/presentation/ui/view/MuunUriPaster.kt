@@ -19,10 +19,10 @@ class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
 
     var onSelectListener: (uri: OperationUri) -> Unit = {}
 
-    override fun getLayoutResource() =
-        R.layout.muun_uri_paster
+    override val layoutResource: Int
+        get() = R.layout.muun_uri_paster
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
         setOnClickListener { uri?.let(onSelectListener) }
     }

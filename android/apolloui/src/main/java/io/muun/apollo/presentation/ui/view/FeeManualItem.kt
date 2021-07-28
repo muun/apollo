@@ -20,8 +20,8 @@ class FeeManualItem @JvmOverloads constructor(context: Context, a: AttributeSet?
 
     var currencyDisplayMode = CurrencyDisplayMode.BTC
 
-    override fun getLayoutResource() =
-        R.layout.fee_manual_item
+    override val layoutResource: Int
+        get() = R.layout.fee_manual_item
 
     var title: String = ""
         set(value) {

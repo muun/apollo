@@ -75,14 +75,14 @@ public class ChangePasswordFragment extends BaseEditPasswordFragment<ChangePassw
 
         if (error != null) {
             password.setError(error);
-            focusInput(password);
+            password.requestFocusInput();
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        focusInput(password);
+        password.requestFocusInput();
     }
 
     @Override

@@ -65,7 +65,7 @@ public class EnterPasswordFragment extends SingleFragment<EnterPasswordPresenter
     @Override
     public void onResume() {
         super.onResume();
-        focusInput(password);
+        password.requestFocusInput();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class EnterPasswordFragment extends SingleFragment<EnterPasswordPresenter
         password.setError(error);
 
         if (error != null) {
-            focusInput(password);
+            password.requestFocusInput();
         }
     }
 

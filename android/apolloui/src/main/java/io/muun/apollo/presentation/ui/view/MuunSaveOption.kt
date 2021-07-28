@@ -9,12 +9,12 @@ import androidx.annotation.DrawableRes
 import butterknife.BindView
 import io.muun.apollo.R
 
-class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<MuunSaveOption> = ViewProps.Builder<MuunSaveOption>()
-            .addRef(R.attr.icon) { v: MuunSaveOption, resId: Int? -> v.icon = resId!!}
+            .addRef(R.attr.icon) { v: MuunSaveOption, resId: Int? -> v.icon = resId!! }
             .addString(R.attr.title) { v: MuunSaveOption, str: String? -> v.title = str!! }
             .addString(R.attr.description) { v: MuunSaveOption, str: String? ->
                 v.description = str!!
@@ -34,10 +34,10 @@ class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
     @BindView(R.id.label)
     lateinit var labelView: MuunSaveOptionLabel
 
-    override fun getLayoutResource() =
-        R.layout.muun_save_option
+    override val layoutResource: Int
+        get() = R.layout.muun_save_option
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
 
         viewProps.transfer(attrs, this)

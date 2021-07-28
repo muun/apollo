@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.LocaleNumberParsingError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
@@ -15,8 +16,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindString;
 import butterknife.BindView;
 import icepick.State;
@@ -28,6 +29,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.money.MonetaryAmount;
 
 public class FeeManualInput extends MuunView {
@@ -61,6 +63,13 @@ public class FeeManualInput extends MuunView {
     @State
     CurrencyDisplayMode currencyDisplayMode;
 
+    // -----------------------------
+
+    @Inject
+    ApplicationLockManager lockManager;
+
+    // -----------------------------
+
     private OnChangeListener onChangeListener;
 
     private boolean isSkippingListeners;
@@ -83,8 +92,9 @@ public class FeeManualInput extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        getComponent().inject(this);
 
         feeRateInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -105,10 +115,14 @@ public class FeeManualInput extends MuunView {
     }
 
     /**
-     * Only exposed to be use by  {@link UiUtils#focusInput(FeeManualInput)}.
+     * Focus on this FeeManualInput and show the soft keyboard.
+     * Our own version of {@link View#requestFocus()} but renamed since that one is final and we
+     * can't override it.
      */
-    public EditText getEditText() {
-        return feeRateInput;
+    public void requestFocusInput() {
+        if (!lockManager.isLockSet()) {
+            UiUtils.focusInput(feeRateInput); // Don't show soft keyboard if lock screen's showing
+        }
     }
 
     /**

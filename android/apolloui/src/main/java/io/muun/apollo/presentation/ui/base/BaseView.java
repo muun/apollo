@@ -17,6 +17,9 @@ public interface BaseView {
 
     void showTextToast(String text);
 
+    void showErrorDialog(String errorMessage);
+
+    // JAVAAAA Why don't u default arguments ??!!?
     void showErrorDialog(String errorMessage, Action0 followupAction);
 
     // JAVAAAA Why don't u default arguments ??!!?

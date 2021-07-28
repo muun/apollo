@@ -66,7 +66,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
 
     override fun onResume() {
         super.onResume()
-        focusInput(passwordInput)
+        passwordInput.requestFocusInput()
     }
 
     override fun setPasswordError(error: UserFacingError?) {
@@ -74,7 +74,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
 
         if (error != null) {
             passwordInput.setError(error)
-            focusInput(passwordInput)
+            passwordInput.requestFocusInput()
         }
     }
 
@@ -82,7 +82,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
         passwordConfirmInput.clearError()
 
         passwordConfirmInput.setError(error)
-        focusInput(passwordConfirmInput)
+        passwordConfirmInput.requestFocusInput()
         confirmButton.isEnabled = false
     }
 

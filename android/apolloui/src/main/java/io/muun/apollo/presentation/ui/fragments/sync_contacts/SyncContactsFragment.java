@@ -72,7 +72,7 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
         final TitleAndDescriptionDrawer dialog = new TitleAndDescriptionDrawer();
         dialog.setTitle(R.string.sync_contacts_how_it_works_title);
         dialog.setDescription(getString(R.string.sync_contacts_how_it_works_title_description));
-        dialog.show(getFragmentManager(), null);
+        dialog.show(getParentFragmentManager(), null);
 
         presenter.reportShowReadContactsInfo();
     }

@@ -59,7 +59,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         countryPicker.setOnChangeListener(this::onCountryPickerChange);
 
         countryPrefix.setHintEnabled(false);
-        countryPrefix.getEditText().setHint(R.string.default_country_prefix_hint);
+        countryPrefix.setHint(getString(R.string.default_country_prefix_hint));
 
         countryPrefix.setOnChangeListener(this::onCountryPrefixChange);
 
@@ -84,10 +84,10 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         super.onResume();
 
         if (TextUtils.isEmpty(countryPrefix.getText())) {
-            focusInput(countryPrefix);
+            countryPrefix.requestFocusInput();
 
         } else {
-            focusInput(nationalNumber);
+            nationalNumber.requestFocusInput();
         }
     }
 
@@ -110,7 +110,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         nationalNumber.setError(error);
 
         if (error != null) {
-            focusInput(nationalNumber);
+            nationalNumber.requestFocusInput();
         }
     }
 
@@ -125,7 +125,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         final TitleAndDescriptionDrawer dialog = new TitleAndDescriptionDrawer();
         dialog.setTitle(R.string.signup_phone_number_why_this_title);
         dialog.setDescription(getString(R.string.signup_phone_number_why_this_description));
-        dialog.show(getFragmentManager(), null);
+        dialog.show(getParentFragmentManager(), null);
 
         presenter.reportShowPhoneNumberInfo();
     }
@@ -137,17 +137,17 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         if (countryInfo != null) {
             countryPrefix.setTextSkipListener("+" + countryInfo.countryNumber);
             nationalNumber.setCountryCode(countryInfo.countryCode);
-            focusInput(nationalNumber);
+            nationalNumber.requestFocusInput();
 
         } else {
             countryPrefix.setTextSkipListener("");
             nationalNumber.setCountryCode(null);
-            focusInput(countryPrefix);
+            countryPrefix.requestFocusInput();
         }
     }
 
     private void onCountryPrefixChange(String prefix) {
-        Integer countryNumber;
+        int countryNumber;
 
         try {
             countryNumber = Integer.parseInt(prefix.replaceAll("[^\\d]", ""));

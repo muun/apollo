@@ -25,7 +25,6 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
     }
 
     companion object {
-
         val viewProps: ViewProps<EditAmountItem> = ViewProps.Builder<EditAmountItem>()
             .addString(R.attr.label) { us, labelText -> us.setLabel(labelText) }
             .build()
@@ -61,9 +60,8 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
 
     private lateinit var editAmountHandler: EditAmountHandler
 
-    override fun getLayoutResource(): Int {
-        return R.layout.edit_amount_item
-    }
+    override val layoutResource: Int
+        get() = R.layout.edit_amount_item
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

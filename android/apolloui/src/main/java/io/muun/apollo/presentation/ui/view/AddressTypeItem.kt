@@ -35,9 +35,8 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     @State
     lateinit var addressType: AddressType
 
-    override fun getLayoutResource(): Int {
-        return R.layout.edit_address_type_item
-    }
+    override val layoutResource: Int
+        get() = R.layout.edit_address_type_item
 
     fun show(addressType: AddressType) {
         this.addressType = addressType

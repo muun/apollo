@@ -39,7 +39,7 @@ open class FulfillIncomingSwapAction @Inject constructor(
                         return@onErrorResumeNext operationDao.fetchMaybeLatest()
                                 .flatMap{ maybeOp  ->
                                     Timber.e(
-                                            "Failed fulfilled due to missing. Latest op id = %i",
+                                            "Failed fulfilled due to missing. Latest op id = %d",
                                             maybeOp.map(Operation::hid).orElse(-1)
                                     )
 

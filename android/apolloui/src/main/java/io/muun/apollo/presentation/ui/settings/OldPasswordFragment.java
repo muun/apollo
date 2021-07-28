@@ -56,7 +56,7 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
 
         setLoading(false);
 
-        focusInput(password);
+        password.requestFocusInput();
     }
 
     @Override
@@ -84,7 +84,7 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
 
         if (error != null) {
             password.setError(error);
-            focusInput(password);
+            password.requestFocusInput();
         }
     }
 

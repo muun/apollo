@@ -36,6 +36,8 @@ class EmergencyKitSavePresenter @Inject constructor(
 
 ): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
+    var isExportingPdf = false
+
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
@@ -59,10 +61,12 @@ class EmergencyKitSavePresenter @Inject constructor(
         driveAuthenticator
 
     fun exportEmergencyKit() {
-        // Avoid re-running anything if we're already doing an export:
-        if (renderEmergencyKit.isRunning || addEmergencyKitMetadata.isRunning) {
+        // We want to avoid re-entry if we're already doing an export. This variable will be set
+        // to `false` in `onPdfExportFinished`.
+        if (isExportingPdf) {
             return
         }
+        isExportingPdf = true
 
         // Cool, proceed:
         renderEmergencyKit.run()
@@ -150,6 +154,8 @@ class EmergencyKitSavePresenter @Inject constructor(
     }
 
     private fun onPdfExportFinished(kitGen: GeneratedEmergencyKit, error: PdfExportError?) {
+        isExportingPdf = false
+
         if (error != null) {
             handleError(error)
             return

@@ -37,10 +37,10 @@ class HiddenSection @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
     @JvmField
     var expanded: Boolean = false
 
-    override fun getLayoutResource() =
-        R.layout.view_hidden_section
+    override val layoutResource: Int
+        get() = R.layout.view_hidden_section
 
-    override fun setUp(context: Context?, attrs: AttributeSet?) {
+    override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
         viewProps.transfer(attrs, this)
 

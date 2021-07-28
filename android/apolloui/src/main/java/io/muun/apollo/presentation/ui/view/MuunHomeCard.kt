@@ -8,7 +8,7 @@ import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
 
-class MuunHomeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class MuunHomeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     @BindView(R.id.icon)
@@ -17,8 +17,8 @@ class MuunHomeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     @BindView(R.id.body)
     lateinit var bodyView: TextView
 
-    override fun getLayoutResource() =
-        R.layout.view_muun_home_card
+    override val layoutResource: Int
+        get() = R.layout.view_muun_home_card
 
     var icon: Drawable
         get() = iconView.drawable

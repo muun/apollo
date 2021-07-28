@@ -11,7 +11,7 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.setTextAppearanceCompat
 
-class Picker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class Picker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     interface OnOptionChosenListener {
@@ -24,8 +24,8 @@ class Picker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: I
     @BindView(R.id.picker_radio_group)
     lateinit var radioGroup: RadioGroup
 
-    override fun getLayoutResource() =
-        R.layout.view_picker
+    override val layoutResource: Int
+        get() = R.layout.view_picker
 
     fun setTitle(@StringRes resId: Int) {
         titleView.setText(resId)
