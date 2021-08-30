@@ -45,10 +45,16 @@ public class ExchangeRateProvider extends AbstractRateProvider {
         }
     }
 
+    /**
+     * Convert an amount to a target currency given it's code.
+     */
     public MonetaryAmount convert(MonetaryAmount amount, String targetCurrencyCode) {
         return amount.with(getCurrencyConversion(targetCurrencyCode));
     }
 
+    /**
+     * Convert an amount to a target currency.
+     */
     public MonetaryAmount convert(MonetaryAmount amount, CurrencyUnit targetCurrency) {
         return amount.with(getCurrencyConversion(targetCurrency));
     }

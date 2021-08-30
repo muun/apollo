@@ -115,6 +115,9 @@ public final class ObservableFn {
         });
     }
 
+    /**
+     * Shortcut for onTypedErrorExactResumeNext returning a value directly.
+     */
     public static <T, ErrorT extends Throwable> Transformer<T, T> onTypedErrorReturn(
             final Class<ErrorT> errorClass,
             final Func1<ErrorT, T> produceFunction) {

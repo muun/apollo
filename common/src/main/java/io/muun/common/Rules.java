@@ -47,14 +47,23 @@ public class Rules {
     /** Added fee rate when the min fee is above 1 sat/vbyte. */
     public static final double OP_MIN_FEE_DELTA = 0.1d / VBYTE_TO_WEIGHT_UNIT_RATIO;
 
+    /**
+     * Convert sats/WU to sats/vbyte.
+     */
     public static double toSatsPerVbyte(double feeRateInSatsPerWeight) {
         return feeRateInSatsPerWeight * VBYTE_TO_WEIGHT_UNIT_RATIO;
     }
 
+    /**
+     * Convert sats/vbyte to sats/WU.
+     */
     public static double toSatsPerWeight(double feeRateInSatsPerVbyte) {
         return feeRateInSatsPerVbyte / VBYTE_TO_WEIGHT_UNIT_RATIO;
     }
 
+    /**
+     * Compare two fee rates to see if they are close enough to be considered equal.
+     */
     public static boolean feeRateEquals(double a, double b) {
         return Math.abs(a - b) < FEE_RATE_PRECISION;
     }

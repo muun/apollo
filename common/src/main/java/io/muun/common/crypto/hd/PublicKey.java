@@ -138,10 +138,16 @@ public class PublicKey extends BaseKey {
                 .toString();
     }
 
+    /**
+     * Serialize to base58.
+     */
     public String serializeBase58() {
         return deterministicKey.serializePubB58(networkParameters);
     }
 
+    /**
+     * Get the bytes representing this key.
+     */
     public byte[] getPublicKeyBytes() {
         return deterministicKey.getPubKey();
     }
@@ -177,6 +183,9 @@ public class PublicKey extends BaseKey {
 
     }
 
+    /**
+     * Derive child at given index.
+     */
     public PublicKey deriveChild(int childIndex) throws KeyDerivationException {
         return deriveFromRelativePath(String.valueOf(childIndex));
     }

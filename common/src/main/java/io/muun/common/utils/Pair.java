@@ -13,6 +13,7 @@ public class Pair<A, B> {
         this.snd = second;
     }
 
+    @Override
     public String toString() {
         return "Pair[" + this.fst + "," + this.snd + "]";
     }
@@ -40,6 +41,9 @@ public class Pair<A, B> {
         }
     }
 
+    /**
+     * Build a pair out of the given objects.
+     */
     public static <A, B> Pair<A, B> of(A first, B second) {
         return new Pair<>(first, second);
     }

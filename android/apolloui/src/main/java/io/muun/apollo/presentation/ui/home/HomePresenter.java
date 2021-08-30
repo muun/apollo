@@ -5,10 +5,8 @@ import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.SigninActions;
-import io.muun.apollo.domain.action.migration.MigrateChallengeKeysAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.selector.UserSelector;
-import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler;
@@ -37,8 +35,6 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
 
     private final TaskScheduler taskScheduler;
 
-    private final Analytics analytics;
-
     private final FetchRealTimeDataAction fetchRealTimeData;
 
     private final OperationsCache operationsCache;
@@ -57,9 +53,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
                          NotificationActions notificationActions,
                          UserSelector userSel,
                          SignupDraftManager signupDraftManager,
-                         MigrateChallengeKeysAction migrateChallengeKeys,
                          TaskScheduler taskScheduler,
-                         Analytics analytics,
                          FetchRealTimeDataAction fetchRealTimeData,
                          OperationsCache operationsCache) {
 
@@ -70,7 +64,6 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         this.fetchRealTimeData = fetchRealTimeData;
         this.notificationActions = notificationActions;
         this.taskScheduler = taskScheduler;
-        this.analytics = analytics;
         this.operationsCache = operationsCache;
     }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -484,6 +485,75 @@ func TestStringlyTypedNumberFields(t *testing.T) {
 	if err != "" {
 		t.Fatalf("expected withdraw to succeed, got: %v", err)
 	}
+}
+
+func TestErrorContainsResponseBody(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		w.Write([]byte("this is a custom error response"))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 {
+			if e.Code != ErrInvalidResponse {
+				t.Fatalf("unexpected error code: %v", e.Code)
+			}
+			if !strings.Contains(e.Message, "this is a custom error response") {
+				t.Fatalf("expected error message to contain response, got `%s`", e.Message)
+			}
+		}
+		if e.Code == StatusInvoiceCreated {
+			t.Fatal("should not reach invoice creation")
+		}
+	})
+}
+
+func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&WithdrawResponse{
+			K1:                 "foobar",
+			Callback:           "http://" + r.Host + "/withdraw/complete",
+			MaxWithdrawable:    1_000_000,
+			DefaultDescription: "Withdraw from Lapp",
+			Tag:                "withdrawRequest",
+		})
+	})
+	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		w.Write([]byte("this is a custom error response"))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		return "12345", nil
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 {
+			if e.Code != ErrInvalidResponse {
+				t.Fatalf("unexpected error code: %v", e.Code)
+			}
+			if !strings.Contains(e.Message, "this is a custom error response") {
+				t.Fatalf("expected error message to contain response, got `%s`", e.Message)
+			}
+		}
+		if e.Code == StatusReceiving {
+			t.Fatal("should not reach receiving status")
+		}
+	})
 }
 
 func TestValidate(t *testing.T) {

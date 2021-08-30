@@ -3,6 +3,7 @@ package io.muun.common.crypto.hd;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.utils.Preconditions;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.bitcoinj.core.NetworkParameters;
 
 public class PublicKeyTriple {
@@ -93,6 +94,12 @@ public class PublicKeyTriple {
                 swapServerPublicKey.deriveChild(childIndex));
     }
 
+    /**
+     * Downgrade to a key pair.
+     *
+     * <p>This most likely means legacy code. Consider migrating it instead of using this.
+     */
+    @VisibleForTesting
     public PublicKeyPair toPair() {
         return new PublicKeyPair(userPublicKey, muunPublicKey);
     }

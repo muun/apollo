@@ -155,3 +155,9 @@ func (p *HDPrivateKey) Encrypter() Encrypter {
 func (p *HDPrivateKey) EncrypterTo(receiver *HDPublicKey) Encrypter {
 	return &hdPubKeyEncrypter{receiver, p}
 }
+
+// What follows is a workaround for https://github.com/golang/go/issues/46893
+
+func SignWithPrivateKey(key *HDPrivateKey, data []byte) ([]byte, error) {
+	return key.Sign(data)
+}

@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 public class ByteArray {
 
+    /**
+     * Return a copy of bytes from start to end.
+     */
     public static byte[] slice(byte[] bytes, int start, int end) {
         return Arrays.copyOfRange(bytes, start, end);
     }

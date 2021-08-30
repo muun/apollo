@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.activity.extension
 
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.ExtensibleActivity
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -62,7 +63,7 @@ class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
             activity.supportFragmentManager
                 .beginTransaction()
                 .remove(errorFragment)
-                .commitNow()
+                .safelyCommitNow(activity)
         }
     }
 
@@ -70,6 +71,14 @@ class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
         activity.supportFragmentManager
             .beginTransaction()
             .replace(android.R.id.content, fragment, TAG)
-            .commitNow()
+            .safelyCommitNow(activity)
+    }
+
+    private fun FragmentTransaction.safelyCommitNow(activity: ExtensibleActivity) {
+        if (!activity.isFinishing && !activity.isDestroyed) {
+            if (!activity.supportFragmentManager.isDestroyed) {
+                commitNow()
+            }
+        }
     }
 }
