@@ -3,6 +3,7 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -111,7 +112,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	tag := qrUrl.Query().Get("tag")
-	if tag != "" && !isWithdrawRequest(tag)  {
+	if tag != "" && !isWithdrawRequest(tag) {
 		notifier.Errorf(ErrWrongTag, "QR is not a LNURL withdraw request")
 		return
 	}
@@ -129,7 +130,16 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Error(ErrUnreachable, err)
 		return
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 300 {
+		if resp.StatusCode >= 400 {
+			// try to obtain response body
+			if bytesBody, err := ioutil.ReadAll(resp.Body); err == nil {
+				notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v, body: %s", resp.StatusCode, string(bytesBody))
+				return
+			}
+		}
 		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", resp.StatusCode)
 		return
 	}
@@ -189,18 +199,27 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	// Confirm withdraw with service
 	// Use an httpClient with a higher timeout for reliability with slow LNURL services
 	withdrawClient := http.Client{Timeout: 3 * time.Minute}
-	resp, err = withdrawClient.Get(callbackURL.String())
+	fresp, err := withdrawClient.Get(callbackURL.String())
 	if err != nil {
 		notifier.Errorf(ErrUnreachable, "failed to get response from callback URL: %v", err)
 		return
 	}
-	if resp.StatusCode >= 300 {
-		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", resp.StatusCode)
+	defer fresp.Body.Close()
+
+	if fresp.StatusCode >= 300 {
+		if fresp.StatusCode >= 400 {
+			// try to obtain response body
+			if bytesBody, err := ioutil.ReadAll(fresp.Body); err == nil {
+				notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v, body: %s", fresp.StatusCode, string(bytesBody))
+				return
+			}
+		}
+		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", fresp.StatusCode)
 		return
 	}
 	// parse response
 	var fr Response
-	err = json.NewDecoder(resp.Body).Decode(&fr)
+	err = json.NewDecoder(fresp.Body).Decode(&fr)
 	if err != nil {
 		notifier.Errorf(ErrInvalidResponse, "failed to parse response: %v", err)
 		return
@@ -240,7 +259,7 @@ func decode(qr string) (*url.URL, error) {
 // We allow "withdraw" as a valid LNURL withdraw tag because, even though not in spec, there are
 // implementations in the wild using it and accepting it as valid (e.g azte.co)
 func isWithdrawRequest(tag string) bool {
-    return tag == "withdrawRequest" || tag == "withdraw"
+	return tag == "withdrawRequest" || tag == "withdraw"
 }
 
 type notifier struct {

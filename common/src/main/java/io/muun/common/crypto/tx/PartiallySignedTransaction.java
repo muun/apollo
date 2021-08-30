@@ -491,6 +491,10 @@ public class PartiallySignedTransaction {
     }
 
     public interface Signer {
+
+        /**
+         * Request a signature for swap refund.
+         */
         Single<Signature> signSwapRefund(
                 @Nullable String swapUuid,
                 Integer scriptVersion,

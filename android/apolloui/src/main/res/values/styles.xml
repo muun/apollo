@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="BaseAppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <item name="android:windowBackground">@color/background</item>
@@ -308,7 +308,8 @@
         <item name="android:layout_marginBottom">-4dp</item>
         <item name="android:fontFamily">monospace</item>
         <item name="android:gravity">center</item>
-        <item name="android:textSize">20sp</item>
+        <!--  Avoid RC to be cut-off for certain low-end, small-screen devices -->
+        <item name="android:textSize" tools:ignore="SpUsage">20dp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:imeOptions">actionNext</item>
         <item name="android:maxLines">1</item>

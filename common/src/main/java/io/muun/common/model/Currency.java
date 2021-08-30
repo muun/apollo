@@ -47,7 +47,7 @@ public class Currency {
         load(new Currency("BMD", "$", "Bermudan Dollar", "\uD83C\uDDE7\uD83C\uDDF2"));
         load(new Currency("BND", "$", "Brunei Dollar", "\uD83C\uDDE7\uD83C\uDDF3"));
         load(new Currency("BOB", "Bs", "Bolivian Boliviano", "\uD83C\uDDE7\uD83C\uDDF4"));
-        load(new Currency("BRL", "R$", "Brasilian Real", "\uD83C\uDDE7\uD83C\uDDF7"));
+        load(new Currency("BRL", "R$", "Brazilian Real", "\uD83C\uDDE7\uD83C\uDDF7"));
         load(new Currency("BSD", "$", "Bahamian Dollar", "\uD83C\uDDE7\uD83C\uDDF8"));
         load(new Currency("BTC", "", "Bitcoin", null));
         load(new Currency("BTN", "Nu", "Bhutanese Ngultrum", "\uD83C\uDDE7\uD83C\uDDF9"));
@@ -68,7 +68,7 @@ public class Currency {
         load(new Currency("DJF", "Fdj", "Djiboutian Franc", "\uD83C\uDDE9\uD83C\uDDEF"));
         load(new Currency("DKK", "kr", "Danish Krone", "\uD83C\uDDE9\uD83C\uDDF0"));
         load(new Currency("DOP", "RD$", "Dominican Peso", "\uD83C\uDDE9\uD83C\uDDF4"));
-        load(new Currency("DZD", "دج", "Algerian Dinar", "\uD83C\uDDE9\uD83C\uDDF4"));
+        load(new Currency("DZD", "دج", "Algerian Dinar", "\uD83C\uDDE9\uD83C\uDDFF"));
         // load(new Currency("EEK", "kr", "Estonian Kroon"));
         load(new Currency("EGP", "£", "Egyptian Pound", "\uD83C\uDDEA\uD83C\uDDEC"));
         load(new Currency("ETB", "Br", "Ethiopian Birr", "\uD83C\uDDEA\uD83C\uDDF9"));

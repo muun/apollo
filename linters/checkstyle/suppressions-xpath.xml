@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+"-//Checkstyle//DTD SuppressionXpathFilter Experimental Configuration 1.2//EN"
+"https://checkstyle.org/dtds/suppressions_1_2_xpath_experimental.dtd">
+
+<suppressions>
+    <!-- Dont requiere java doc for Retrofit service definition interfaces -->
+    <suppress-xpath checks="MissingJavadocMethod"
+        files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/].*[\\/].*Service\.java"
+        query="/INTERFACE_DEF//METHOD_DEF"/>
+
+    <!-- Dont requiere java doc for dagger component interfaces -->
+    <suppress-xpath checks="MissingJavadocMethod"
+        files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/].*[\\/].*Component\.java"
+        query="/INTERFACE_DEF//METHOD_DEF"/>
+
+    <!-- No java doc for supports* in Session/Client they are self-explanatory -->
+    <suppress-xpath checks="MissingJavadocMethod"
+        files="houston/src/main/java/io/muun/houston/domain/model/Session.java"
+        query="//CLASS_DEF[./IDENT[@text='Client']]//METHOD_DEF[./IDENT[starts-with(@text, 'supports')]]"/>
+
+    <!-- No need to document toJson/fromJson methods -->
+    <suppress-xpath checks="MissingJavadocMethod"
+        query="//METHOD_DEF[./IDENT[@text='toJson' or @text='fromJson']]" />
+
+    <suppress-xpath checks="MissingJavadocMethod"
+        query="//METHOD_DEF[./IDENT[@text='fromValue' or @text='toValue'] and ./MODIFIERS/ANNOTATION/IDENT[@text='JsonCreator' or @text='JsonValue']]" />
+
+</suppressions>

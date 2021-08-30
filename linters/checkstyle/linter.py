@@ -9,10 +9,11 @@ def get_git_root():
         strip()
 
 
-def run_checkstyle(jar_path, checks_path, suppressions_path, files):
+def run_checkstyle(jar_path, checks_path, suppressions_path, xpath_suppressions_path, files):
     command = [
         "java",
         "-DsuppressionFile={}".format(suppressions_path),
+        "-DsuppressionXpathFile={}".format(xpath_suppressions_path),
         "-jar",
         jar_path,
         "-c",
@@ -41,9 +42,10 @@ def lint(files):
     root = get_git_root()
 
     results = run_checkstyle(
-        root + "/linters/checkstyle/checkstyle-8.42-all.jar",
+        root + "/linters/checkstyle/checkstyle-8.45.1-all.jar",
         root + "/linters/checkstyle/config.xml",
         root + "/linters/checkstyle/suppressions.xml",
+        root + "/linters/checkstyle/suppressions-xpath.xml",
         files
     )
 

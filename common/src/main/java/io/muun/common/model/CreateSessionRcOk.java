@@ -27,6 +27,9 @@ public class CreateSessionRcOk {
         return keySet;
     }
 
+    /**
+     * Getter for hasEmailSetup.
+     */
     public boolean hasEmailSetup() {
         return hasEmailSetup;
     }

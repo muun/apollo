@@ -19,6 +19,9 @@ public class CreateSessionOk {
         return isExistingUser;
     }
 
+    /**
+     * Getter for can use recovery code.
+     */
     public boolean canUseRecoveryCode() {
         return canUseRecoveryCode;
     }

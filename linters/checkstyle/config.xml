@@ -47,6 +47,11 @@
     </module>
 
     <module name="TreeWalker">
+    <module name="SuppressionXpathFilter">
+        <property name="file" value="${suppressionXpathFile}"/>
+        <property name="optional" value="false"/>
+    </module>
+
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
             <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
@@ -196,6 +201,12 @@
             <property name="validateThrows" value="false"/>
             <property name="allowMissingReturnTag" value="true"/>
             <property name="allowedAnnotations" value="Override, Test"/>
+        </module>
+        <module name="MissingJavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="allowMissingPropertyJavadoc" value="true"/>
+            <property name="allowedAnnotations" value="Override, Test"/>
+            <property name="tokens" value="METHOD_DEF,ANNOTATION_FIELD_DEF"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>

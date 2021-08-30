@@ -21,18 +21,30 @@ public class BtcAmount {
         this.milliSats = milliSats;
     }
 
+    /**
+     * Build an amount from sats.
+     */
     public static BtcAmount fromSats(long satoshis) {
         return new BtcAmount(satoshis * MSATS_PER_SAT);
     }
 
+    /**
+     * Build an amount from BTC.
+     */
     public static BtcAmount fromBtc(double btc) {
         return new BtcAmount((long)(btc * MSATS_PER_BTC));
     }
 
+    /**
+     * Build an amount from msats.
+     */
     public static BtcAmount fromMilliSats(long milliSatoshis) {
         return new BtcAmount(milliSatoshis);
     }
 
+    /**
+     * Convert to msats.
+     */
     public long toMilliSats() {
         return milliSats;
     }
@@ -47,36 +59,60 @@ public class BtcAmount {
         return milliSats / MSATS_PER_SAT;
     }
 
+    /**
+     * Convert to sats using the specified rounding mode.
+     */
     public long toSats(final RoundingMode roundingMode) {
         return BigDecimal.valueOf(milliSats)
                 .divide(BigDecimal.valueOf(MSATS_PER_SAT), roundingMode)
                 .longValueExact();
     }
 
+    /**
+     * Conver to BTC.
+     */
     public double toBtc() {
         return ((double) milliSats) / MSATS_PER_BTC;
     }
 
+    /**
+     * Add this amount to another.
+     */
     public BtcAmount add(@NotNull BtcAmount other) {
         return new BtcAmount(milliSats + other.toMilliSats());
     }
 
+    /**
+     * Substract another amount from this one.
+     */
     public BtcAmount sub(@NotNull BtcAmount other) {
         return new BtcAmount(milliSats - other.toMilliSats());
     }
 
+    /**
+     * Check whether this amount is greater than the other.
+     */
     public boolean greaterThan(@NotNull BtcAmount other) {
         return milliSats > other.milliSats;
     }
 
+    /**
+     * Check whether this amount is less than the other.
+     */
     public boolean lessThan(@NotNull BtcAmount other) {
         return milliSats < other.milliSats;
     }
 
+    /**
+     * Check whether this amount is greater than or equal to the other.
+     */
     public boolean greaterOrEqualThan(@NotNull BtcAmount other) {
         return milliSats >= other.milliSats;
     }
 
+    /**
+     * Check whether this amount is less than or equal to the other.
+     */
     public boolean lessOrEqualThan(@NotNull BtcAmount other) {
         return milliSats <= other.milliSats;
     }
@@ -85,10 +121,16 @@ public class BtcAmount {
         return milliSats == 0;
     }
 
+    /**
+     * Return the biggest of this amount and the other.
+     */
     public BtcAmount max(@NotNull BtcAmount other) {
         return BtcAmount.fromMilliSats(Math.max(milliSats, other.milliSats));
     }
 
+    /**
+     * Return the smaller of this amount and the other.
+     */
     public BtcAmount min(@NotNull BtcAmount other) {
         return BtcAmount.fromMilliSats(Math.min(milliSats, other.milliSats));
     }

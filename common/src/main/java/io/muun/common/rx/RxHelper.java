@@ -8,6 +8,7 @@ import rx.functions.Func4;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 public class RxHelper {
 
     public static <T1, T2, R> Observable<R> flatZip(

@@ -404,6 +404,13 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun UiObject.assertDoesntExist() {
+
+        // Consider that obj may take some time to disappear. We loop until obj is gone or timeout
+        val exitCondition = { !this.exists() }
+        doUntil(3000, exitCondition) {
+            // Do nothing
+        }
+
         assertThat(this.exists()).isFalse()
     }
     fun UiObject.assertTextEquals(expectedText: String) {

@@ -294,6 +294,11 @@ public final class Cryptography {
         }
     }
 
+    /**
+     * Extract an AES IV from a pub key.
+     *
+     * <p>The IV is extrated out of the end of the pub key, with AES_BLOCK_SIZE bytes.
+     */
     public static byte[] extractDeterministicIvFromPublicKeyBytes(byte[] publicKeyBytes) {
         final int length = publicKeyBytes.length;
         return ByteUtils.subArray(publicKeyBytes, length - AES_BLOCK_SIZE, length);

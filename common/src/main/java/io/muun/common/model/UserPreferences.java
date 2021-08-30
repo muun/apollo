@@ -46,6 +46,11 @@ public class UserPreferences {
         this.seenLnurlFirstTime = seenLnurlFirstTime;
     }
 
+    /**
+     * Merge the other preferences into these.
+     *
+     * <p>Replaces current values with non-null values from other.
+     */
     public void merge(final UserPreferences other) {
 
         /*

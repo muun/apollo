@@ -76,7 +76,7 @@ class LappClient : SimpleHttpClient() {
                 "M0D5LHXETRWFJHG0F3XGENGDGQ8EH52"
         }
 
-        val request = get("$url/lnurl/withdrawStart?variant=${variant.value}")
+        val request = get("$url/lnurl/withdrawStart?variant=${variant.value}&block=true")
         val response = executeNow(request)
 
         return response.trim()

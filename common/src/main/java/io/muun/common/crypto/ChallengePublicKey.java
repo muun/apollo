@@ -106,6 +106,9 @@ public class ChallengePublicKey {
         return Bytes.concat(parts);
     }
 
+    /**
+     * Get the bytes of the pub key itself.
+     */
     public byte[] toBytes() {
         return key;
     }

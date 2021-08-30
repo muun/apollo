@@ -8,12 +8,12 @@
     <suppress checks="Indentation" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
     <suppress checks="RightCurly" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
     <!-- Suppress errors caused by missing comments in tests -->
-    <suppress checks="JavadocMethod" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
+    <suppress checks="MissingJavadocMethod" files=".*[\\/]src[\\/]test[\\/]java[\\/]io[\\/]muun[\\/].*"/>
     <!-- Suppress errors caused by missing comments in resources -->
-    <suppress checks="JavadocMethod"
+    <suppress checks="MissingJavadocMethod"
             files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/].*[\\/].*Resource\.java"/>
     <!-- Suppress errors caused by missing comments in api models -->
-    <suppress checks="JavadocMethod"
+    <suppress checks="MissingJavadocMethod"
             files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/]common[\\/]api[\\/].*"/>
     <suppress checks="LineLength" files=".*[\\/]migrations(-[^.\\/]+)?\.xml" />
     <suppress checks="LineLength" files=".*[\\/]logback[^.\\/]*\.xml" />

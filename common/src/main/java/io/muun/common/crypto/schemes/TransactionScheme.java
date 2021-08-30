@@ -30,46 +30,79 @@ public interface TransactionScheme {
             TransactionScheme::getVersion
     );
 
+    /**
+     * Get the scheme matching a given version.
+     */
     static Optional<TransactionScheme> get(int version) {
         return Optional.ofNullable(ALL_SCHEMES.get(version));
     }
 
+    /**
+     * Get all existing schemes.
+     */
     static Collection<TransactionScheme> getAll() {
         return ALL_SCHEMES.values();
     }
 
+    /**
+     * Get the version of this scheme.
+     */
     int getVersion();
 
+    /**
+     * Check whether this scheme needs a muun signature.
+     */
     default boolean needsMuunSignature() {
         return true;
     }
 
+    /**
+     * Check whether this scheme needs a swap server signature.
+     */
     default boolean needsSwapServerSignature() {
         return false;
     }
 
+    /**
+     * Create an address.
+     */
     MuunAddress createAddress(PublicKeyTriple publicKeyTriple, NetworkParameters network);
 
+    /**
+     * Create the input script given signatures of the TX.
+     */
     Script createInputScript(
             PublicKeyTriple publicKeyTriple,
             @Nullable Signature userSignature,
             @Nullable Signature muunSignature,
             @Nullable Signature swapServerSignature);
 
+    /**
+     * Create the script to use when sending to an address of this scheme.
+     */
     Script createOutputScript(MuunAddress address);
 
+    /**
+     * Create the script to use for an output with this scheme given the pub keys.
+     */
     default Script createOutputScript(PublicKeyTriple publicKeyTriple) {
         // the network doesn't matter, since it will be ignored
         final MuunAddress address = createAddress(publicKeyTriple, MainNetParams.get());
         return createOutputScript(address);
     }
 
+    /**
+     * Create the witness script and stack for segwit spends.
+     */
     TransactionWitness createWitness(
             PublicKeyTriple publicKeyTriple,
             @Nullable Signature userSignature,
             @Nullable Signature muunSignature,
             @Nullable Signature swapServerSignature);
 
+    /**
+     * Create the digest to sign for a spend.
+     */
     byte[] createDataToSignInput(
             Transaction transaction,
             int inputIndex,

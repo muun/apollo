@@ -251,6 +251,9 @@ public class PrivateKey extends BaseKey {
         return new Signature(sigData);
     }
 
+    /**
+     * Serialize to base 58.
+     */
     public String serializeBase58() {
         return deterministicKey.serializePrivB58(networkParameters);
     }

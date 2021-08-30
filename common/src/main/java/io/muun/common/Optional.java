@@ -22,23 +22,38 @@ public final class Optional<ValueT> {
         this.value = Preconditions.checkNotNull(value);
     }
 
+    /**
+     * Empty optional.
+     */
     @SuppressWarnings("unchecked")
     public static <ValueT> Optional<ValueT> empty() {
         return (Optional<ValueT>) EMPTY;
     }
 
+    /**
+     * Optional with given value.
+     */
     public static <ValueT> Optional<ValueT> of(ValueT value) {
         return new Optional<>(value);
     }
 
+    /**
+     * Optional with the given value if it's not null or empty optional otherwise.
+     */
     public static <ValueT> Optional<ValueT> ofNullable(ValueT value) {
         return value == null ? Optional.empty() : of(value);
     }
 
+    /**
+     * Optional with the given value if it's non-negative, emtpy otherwise.
+     */
     public static Optional<Double> ifNonNegative(double value) {
         return (value >= 0) ? Optional.of(value) : Optional.empty();
     }
 
+    /**
+     * Optional with the given string if it's not empty.
+     */
     public static Optional<String> ifNotEmpty(String value) {
         return (value.isEmpty()) ? Optional.empty() : Optional.of(value);
     }
@@ -75,6 +90,9 @@ public final class Optional<ValueT> {
 
     public interface Conditional {
 
+        /**
+         * Action to execute if the optional is empty.
+         */
         void orElse(Action action);
     }
 
@@ -222,26 +240,41 @@ public final class Optional<ValueT> {
 
     public interface Action {
 
+        /**
+         * Callback to execute.
+         */
         void run();
     }
 
     public interface Producer<ProducedT> {
 
+        /**
+         * Produce a result.
+         */
         ProducedT produce();
     }
 
     public interface Predicate<TestedT> {
 
+        /**
+         * Test the given object.
+         */
         boolean test(TestedT toTest);
     }
 
     public interface Consumer<ConsumedT> {
 
+        /**
+         * Consume an object.
+         */
         void consume(ConsumedT toConsume);
     }
 
     public interface Mapper<SourceT, ResultT> {
 
+        /**
+         * Transform an object to another.
+         */
         ResultT map(SourceT source);
     }
 }
