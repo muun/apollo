@@ -1,7 +1,9 @@
 package io.muun.apollo.presentation.ui.base;
 
+import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.BugDetected;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.ApolloApplication;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.ui.activity.extension.AlertDialogExtension;
@@ -175,6 +177,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @CallSuper
     protected void onResume() {
         super.onResume();
+        LoggingContext.setLocale(ExtensionsKt.locale(this).toString());
         if (blockScreenshots()) {
             screenshotBlockExtension.startBlockingScreenshots();
         }
@@ -367,20 +370,46 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Convenience method to show one of our @code{DrawerDialogFragment}.
+     */
     public void showDrawerDialog(DialogFragment dialog) {
         dialog.show(getSupportFragmentManager(), null);
     }
 
+    /**
+     * Request an External Result. A caller to handle it is required. This is a clever way to
+     * handle "external job" (e.g startActivityForResult) scenarios, while also being resilient
+     * to activity and/or app destruction while on background.
+     */
     public void requestExternalResult(Caller view, int requestCode, Intent intent) {
         getExtension(ExternalResultExtension.class)
                 .startActivityForResult(view, requestCode, intent);
     }
 
+    /**
+     * Request a result from a DialogFragment. Although it's not super clear why this needs to
+     * make use of out ExternalResultExtension#Caller mechanism, we handle a DialogFragment result
+     * as if it were an Activity result (its convenient). This pattern is recommended by the Android
+     * docs. Cool, I guess.
+     */
     public String requestExternalResult(Caller caller, int requestCode, DialogFragment dialog) {
         return getExtension(ExternalResultExtension.class)
                 .showDialogForResult(caller, requestCode, dialog);
     }
 
+    /**
+     * Request an External Result but without specifying a Caller to handle it. This allows us
+     * to set the current activity as the Caller and allows some activities to be designated as
+     * "Delegates" of the Extenernal Result (to be in charge of handling and/or possibly
+     * dispatching it to the appropriate call site).
+     *
+     * <p>A slightly hackish way around for our ExternalResultExtension#Caller mechanism to work
+     * with viewPager fragments. This is needed because apparently, fragments id are not necessarily
+     * unique and, in the case of a viewPager, all fragments have the same id
+     * (the id of the container of the fragments).
+     * </p>
+     */
     public void requestDelegatedExternalResult(int requestCode, Intent intent) {
         requestExternalResult(this, requestCode, intent);
     }
@@ -446,14 +475,23 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         alertDialogExtension.dismissDialog();
     }
 
+    /**
+     * Show an indefinite snack bar.
+     */
     public void showSnackBar(int messageResId) {
         snackBarExtension.showSnackBarIndefinite(messageResId);
     }
 
+    /**
+     * Show an indefinite snack bar, of custom height.
+     */
     public void showSnackBar(int messageResId, boolean dismissable, Float height) {
         snackBarExtension.showSnackBarIndefinite(messageResId, dismissable, height);
     }
 
+    /**
+     * Dismiss the snack bar being displayed (or do nothing if none is being displayed).
+     */
     public void dismissSnackBar() {
         snackBarExtension.dismissSnackBar();
     }

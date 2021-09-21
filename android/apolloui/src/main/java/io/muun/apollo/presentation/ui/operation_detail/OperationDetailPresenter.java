@@ -71,29 +71,49 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         final Observable<UiOperation> observable = operationActions
                 .fetchOperationById(operationId)
                 .doOnNext(this::reportOperationDetail)
-                .map(op -> UiOperation.fromOperation(op, linkBuilder, currencyDisplayMode))
+                .map(op -> UiOperation.fromOperation(
+                        op,
+                        linkBuilder,
+                        currencyDisplayMode,
+                        getContext())
+                )
                 .compose(getAsyncExecutor())
                 .doOnNext(view::setOperation);
 
         subscribeTo(observable);
     }
 
+    /**
+     * Copy LN invoice to the clipboard.
+     */
     public void copyLnInvoiceToClipboard(String invoice) {
         clipboardManager.copy("Lightning invoice", invoice);
     }
 
+    /**
+     * Copy swap preimage to the clipboard.
+     */
     public void copySwapPreimageToClipboard(String preimage) {
         clipboardManager.copy("Swap preimage", preimage);
     }
 
+    /**
+     * Copy transaction id/hash to the clipboard.
+     */
     public void copyTransactionIdToClipboard(String transactionId) {
         clipboardManager.copy("Transaction ID", transactionId);
     }
 
+    /**
+     * Copy fee amount to the clipboard.
+     */
     public void copyNetworkFeeToClipboard(String fee) {
         clipboardManager.copy("Network fee", fee);
     }
 
+    /**
+     * Copy amount to the clipboard.
+     */
     public void copyAmountToClipboard(String amount) {
         clipboardManager.copy("Amount", amount);
     }
@@ -108,7 +128,6 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         navigator.shareText(getContext(), text, title);
     }
 
-
     public int getBlockchainHeight() {
         return blockchainHeightRepository.fetchLatest();
     }
@@ -117,6 +136,10 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         analytics.report(new AnalyticsEvent.S_OPERATION_DETAIL((int) operationId, op.direction));
     }
 
+    /**
+     * Report analytics event of screen view event of Lightning "Confirmation Needed, why this?"
+     * dialog.
+     */
     public void reportShowConfirmationNeededInfo() {
         analytics.report(new AnalyticsEvent.S_MORE_INFO(S_MORE_INFO_TYPE.CONFIRMATION_NEEDED));
     }

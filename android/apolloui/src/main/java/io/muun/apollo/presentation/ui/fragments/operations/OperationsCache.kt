@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.operations
 
+import android.content.Context
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.Operation
@@ -22,7 +23,8 @@ class OperationsCache @Inject constructor(
     private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
     private val userSel: UserSelector,
     private val linkBuilder: LinkBuilder,
-    private val transformerFactory: ExecutionTransformerFactory
+    private val transformerFactory: ExecutionTransformerFactory,
+    private val context: Context
 ) {
 
     private var subscription: Subscription? = null
@@ -74,7 +76,7 @@ class OperationsCache @Inject constructor(
 
     private fun mapOperations(operations: List<Operation>, displayMode: CurrencyDisplayMode) =
         Observable.from(operations)
-            .map { operation -> UiOperation.fromOperation(operation, linkBuilder, displayMode) }
+            .map { op -> UiOperation.fromOperation(op, linkBuilder, displayMode, context) }
             .map(::OperationViewModel)
             .toList()
 }

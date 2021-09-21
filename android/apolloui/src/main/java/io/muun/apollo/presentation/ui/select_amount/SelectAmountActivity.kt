@@ -10,6 +10,7 @@ import io.muun.apollo.R
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.serialize
@@ -121,7 +122,8 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         amountInput.setSecondaryAmount(MoneyHelper.formatLongMonetaryAmount(
             amount,
             true,
-            currencyDisplayMode
+            currencyDisplayMode!!,
+            locale()
         ))
     }
 

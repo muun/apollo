@@ -7,10 +7,14 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.utils.locale
 import javax.money.MonetaryAmount
 
-class FeeManualItem @JvmOverloads constructor(context: Context, a: AttributeSet? = null, s: Int = 0)
-    : MuunView(context, a, s) {
+class FeeManualItem @JvmOverloads constructor(
+    context: Context,
+    a: AttributeSet? = null,
+    s: Int = 0
+) : MuunView(context, a, s) {
 
     @BindView(R.id.title)
     lateinit var titleView: TextView
@@ -32,7 +36,11 @@ class FeeManualItem @JvmOverloads constructor(context: Context, a: AttributeSet?
     var amount: MonetaryAmount? = null
         set(value) {
             field = value
-            amountView.text = MoneyHelper.formatLongMonetaryAmount(value, currencyDisplayMode)
+            amountView.text = MoneyHelper.formatLongMonetaryAmount(
+                value!!,
+                currencyDisplayMode,
+                locale()
+            )
         }
 
     override fun setSelected(selected: Boolean) {

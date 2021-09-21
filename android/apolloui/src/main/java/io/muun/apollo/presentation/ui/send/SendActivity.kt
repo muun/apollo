@@ -83,7 +83,7 @@ class SendActivity: SingleFragmentActivity<SendPresenter>(), SendView {
         buttonLayout.setButtonsVisible(false)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         onUriInputChange(uriInput.content)
     }

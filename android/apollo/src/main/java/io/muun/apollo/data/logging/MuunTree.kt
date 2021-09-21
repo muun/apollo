@@ -80,6 +80,7 @@ class MuunTree: Timber.DebugTree() {
 
         crashlytics.setCustomKey("tag", report.tag)
         crashlytics.setCustomKey("message", report.message)
+        crashlytics.setCustomKey("locale", LoggingContext.locale)
 
         for (entry in report.metadata.entries) {
             crashlytics.setCustomKey(entry.key, entry.value.toString())

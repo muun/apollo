@@ -173,6 +173,12 @@ class LnUrlWithdrawAction @Inject constructor(
                     Libwallet.LNURLErrNoRoute ->
                         LnUrlError.NoRoute(event.message, event.metadata.host)
 
+                    Libwallet.LNURLErrForbidden ->
+                        LnUrlError.Forbidden(event.message, event.metadata.host)
+
+                    Libwallet.LNURLErrAlreadyUsed ->
+                        LnUrlError.AlreadyUsed(event.message, event.metadata.host)
+
                     else -> {
                         LnUrlError.Unknown(
                             LnUrlEvent(event.code.toInt(), event.message, event.metadata.toString())

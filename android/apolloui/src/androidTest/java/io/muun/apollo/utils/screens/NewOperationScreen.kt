@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.new_operation.NewOperationStep
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.common.model.DebtType
@@ -18,16 +19,16 @@ class NewOperationScreen(
 ): WithMuunInstrumentationHelpers {
 
     val confirmedAmount get() =
-        id(R.id.selected_amount).text.toMoney()
+        id(R.id.selected_amount).text.toMoney(locale)
 
     val confirmedFee get() =
-        id(R.id.fee_amount).text.toMoney()
+        id(R.id.fee_amount).text.toMoney(locale)
 
     val confirmedDescription get() =
         id(R.id.notes_content).text
 
     val confirmedTotal get() =
-        id(R.id.total_amount).text.toMoney()
+        id(R.id.total_amount).text.toMoney(locale)
 
     fun waitUntilVisible() {
         id(R.id.muun_next_step_button).waitForExists(15000)
@@ -139,7 +140,7 @@ class NewOperationScreen(
         checkStep(NewOperationStep.CONFIRM)
 
         // Ensure amounts in BTC (needed for checks using satoshis amounts)
-        if (!MoneyHelper.isBtc(newOpScreen.confirmedAmount.currency)) {
+        if (!newOpScreen.confirmedAmount.currency.isBtc()) {
             rotateAmountCurrencies()
         }
 

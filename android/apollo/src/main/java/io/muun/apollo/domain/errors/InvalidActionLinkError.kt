@@ -1,8 +1,11 @@
 package io.muun.apollo.domain.errors
 
-class InvalidActionLinkError(): MuunError() {
+class InvalidActionLinkError : MuunError {
 
-    constructor(uri: String): this() {
+    constructor() : super()
+
+    constructor(uri: String, expected: String) : super("Invalid Deeplink clicked") {
         metadata["uri"] = uri
+        metadata["expected"] = expected
     }
 }

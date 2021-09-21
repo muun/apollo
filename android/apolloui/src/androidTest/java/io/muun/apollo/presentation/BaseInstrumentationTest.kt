@@ -76,7 +76,7 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         val resolveInfo = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
 
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        device.wait(Until.hasObject(By.pkg(resolveInfo.activityInfo.packageName).depth(0)), 1000)
+        device.wait(Until.hasObject(By.pkg(resolveInfo!!.activityInfo.packageName).depth(0)), 1000)
 
         autoFlows = AutoFlows(device, context)
 

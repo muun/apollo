@@ -60,6 +60,7 @@ type WithdrawResponse struct {
 // After adding new codes here, remember to export them in the root libwallet
 // module so that the apps can consume them.
 const (
+	ErrNone				  int = 0
 	ErrDecode             int = 1
 	ErrUnsafeURL          int = 2
 	ErrUnreachable        int = 3
@@ -71,6 +72,9 @@ const (
 	ErrRequestExpired     int = 9
 	ErrNoRoute            int = 10
 	ErrTorNotSupported    int = 11
+	ErrAlreadyUsed        int = 12
+	ErrForbidden          int = 13
+
 	StatusContacting      int = 100
 	StatusInvoiceCreated  int = 101
 	StatusReceiving       int = 102
@@ -132,17 +136,11 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 300 {
-		if resp.StatusCode >= 400 {
-			// try to obtain response body
-			if bytesBody, err := ioutil.ReadAll(resp.Body); err == nil {
-				notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v, body: %s", resp.StatusCode, string(bytesBody))
-				return
-			}
-		}
-		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", resp.StatusCode)
+	if code, reason := validateHttpResponse(resp); code != ErrNone {
+		notifier.Errorf(code, reason)
 		return
 	}
+
 	// parse response
 	var wr WithdrawResponse
 	err = json.NewDecoder(resp.Body).Decode(&wr)
@@ -150,22 +148,11 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Errorf(ErrInvalidResponse, "failed to parse response: %v", err)
 		return
 	}
-	if wr.Status == StatusError {
-		if strings.Contains(strings.ToLower(wr.Reason), "expired") {
-			notifier.Errorf(ErrRequestExpired, wr.Reason)
-		} else {
-			notifier.Errorf(ErrResponse, wr.Reason)
-		}
+	if code, reason := wr.Validate(); code != ErrNone {
+		notifier.Errorf(code, reason)
 		return
 	}
-	if !isWithdrawRequest(wr.Tag) {
-		notifier.Errorf(ErrWrongTag, "QR is not a LNURL withdraw request")
-		return
-	}
-	if wr.MaxWithdrawable <= 0 {
-		notifier.Errorf(ErrNoAvailableBalance, "no available balance to withdraw")
-		return
-	}
+
 	callbackURL, err := url.Parse(wr.Callback)
 	if err != nil {
 		notifier.Errorf(ErrInvalidResponse, "invalid callback URL: %v", err)
@@ -206,17 +193,11 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	}
 	defer fresp.Body.Close()
 
-	if fresp.StatusCode >= 300 {
-		if fresp.StatusCode >= 400 {
-			// try to obtain response body
-			if bytesBody, err := ioutil.ReadAll(fresp.Body); err == nil {
-				notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v, body: %s", fresp.StatusCode, string(bytesBody))
-				return
-			}
-		}
-		notifier.Errorf(ErrInvalidResponse, "unexpected status code in response: %v", fresp.StatusCode)
+	if code, reason := validateHttpResponse(fresp); code != ErrNone {
+		notifier.Errorf(code, reason)
 		return
 	}
+
 	// parse response
 	var fr Response
 	err = json.NewDecoder(fresp.Body).Decode(&fr)
@@ -224,15 +205,93 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Errorf(ErrInvalidResponse, "failed to parse response: %v", err)
 		return
 	}
-	if fr.Status == StatusError {
-		if strings.Contains(strings.ToLower(fr.Reason), "route") {
-			notifier.Errorf(ErrNoRoute, fr.Reason)
-		} else {
-			notifier.Errorf(ErrResponse, fr.Reason)
-		}
+
+	if code, reason := fr.Validate(); code != ErrNone {
+		notifier.Errorf(code, reason)
 		return
 	}
+
 	notifier.Status(StatusReceiving)
+}
+
+func validateHttpResponse(resp *http.Response) (int, string) {
+
+
+	if resp.StatusCode >= 400 {
+		// try to obtain response body
+		if bytesBody, err := ioutil.ReadAll(resp.Body); err == nil {
+			code := ErrInvalidResponse
+			if resp.StatusCode == 403 {
+				code = ErrForbidden
+			}
+
+			return code, fmt.Sprintf("unexpected status code in response: %v, body: %s", resp.StatusCode, string(bytesBody))
+		}
+	}
+
+	if resp.StatusCode >= 300 {
+		return ErrInvalidResponse, fmt.Sprintf("unexpected status code in response: %v", resp.StatusCode)
+	}
+
+	return ErrNone, ""
+}
+
+func (wr *WithdrawResponse) Validate() (int, string) {
+
+	if wr.Status == StatusError {
+		return mapReasonToErrorCode(wr.Reason), wr.Reason
+	}
+
+	if !isWithdrawRequest(wr.Tag) {
+		return ErrWrongTag, "QR is not a LNURL withdraw request"
+	}
+
+	if wr.MaxWithdrawable <= 0 {
+		return ErrNoAvailableBalance, "no available balance to withdraw"
+	}
+
+	return ErrNone, ""
+}
+
+func (fr *Response) Validate() (int, string) {
+
+	if fr.Status == StatusError {
+		return mapReasonToErrorCode(fr.Reason), fr.Reason
+	}
+
+	return ErrNone, ""
+}
+
+// reasons maps from parts of responses to the error code. The string can be in
+// any part of the response, and has to be lowercased to simplify matching.
+// Try to also document the original error string above the pattern.
+var reasons = map[string]int {
+	"route": ErrNoRoute,
+	"expired": ErrRequestExpired,
+	// This Withdrawal Request is already being processed by another wallet. (zebedee)
+	"already being processed": ErrAlreadyUsed,
+	// This Withdrawal Request can only be processed once (zebedee)
+	"request can only be processed once": ErrAlreadyUsed,
+	// Withdraw is spent (lnbits)
+	"withdraw is spent": ErrAlreadyUsed,
+	// Withdraw link is empty (lnbits)
+	"withdraw link is empty": ErrAlreadyUsed,
+	// This LNURL has already been used (thndr.io)
+	"has already been used": ErrAlreadyUsed,
+}
+
+func mapReasonToErrorCode(reason string) int {
+
+	reason = strings.ToLower(reason)
+
+	for pattern, code := range reasons {
+		if strings.Contains(reason, pattern) {
+			return code
+		}
+	}
+
+	// Simply an invalid response for some unknown reason
+	return ErrResponse
 }
 
 func decode(qr string) (*url.URL, error) {

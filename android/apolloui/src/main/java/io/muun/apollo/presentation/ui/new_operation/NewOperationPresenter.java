@@ -28,6 +28,7 @@ import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
 import io.muun.apollo.domain.selector.ExchangeRateSelector;
 import io.muun.apollo.domain.selector.PaymentContextSelector;
 import io.muun.apollo.domain.selector.UserSelector;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
@@ -200,13 +201,16 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         final String renderedAmount = MoneyHelper.formatLongMonetaryAmount(
                 amount,
                 false,
-                currencyDisplayMode
+                currencyDisplayMode,
+                ExtensionsKt.locale(getContext())
         );
 
         final String renderedBalance = MoneyHelper.formatLongMonetaryAmount(
                 balance,
                 false,
-                currencyDisplayMode
+                currencyDisplayMode,
+                ExtensionsKt.locale(getContext())
+
         );
 
         // NOTE: when the user manually enters the same number he sees as "available balance", we
@@ -237,6 +241,9 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         onPaymentDetailsChanged();
     }
 
+    /**
+     * Whether this user can spend all her funds.
+     */
     public boolean canUseAllFunds() {
         return payCtx.getUserBalance() > 0;
     }
@@ -272,16 +279,26 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         onPaymentDetailsChanged();
     }
 
+    /**
+     * Confirm inputted description.
+     */
     public void setDescriptionConfirmed(boolean isConfirmed) {
         form.isDescriptionConfirmed = isConfirmed;
         onPaymentDetailsChanged();
     }
 
+    /**
+     * Change selected fee rate.
+     */
     public void updateFeeRate(double satoshisPerByte) {
         form.selectedFeeRate = satoshisPerByte;
         onPaymentDetailsChanged();
     }
 
+    /**
+     * Cycle through amount currencies to show in alternate currency. This effectively changes all
+     * displayed amounts to an alternate currency, either primary currency or the input currency.
+     */
     public void setDisplayInAlternateCurrency(boolean displayInAlternateCurrency) {
         form.displayInAlternateCurrency = displayInAlternateCurrency;
         onPaymentDetailsChanged(); // this is overkill to re-display, but current flow requires it
@@ -572,6 +589,9 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         view.showErrorScreen(errorType);
     }
 
+    /**
+     * Finish this activity. Go back to home.
+     */
     public void goHomeInDefeat() {
         view.finishActivity();
     }
@@ -587,6 +607,9 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         }
     }
 
+    /**
+     * Report analytics event of a new opertion error.
+     */
     public void reportError(NewOperationErrorType type) {
         analytics.report(getErrorEvent(type));
     }
@@ -729,10 +752,16 @@ public class NewOperationPresenter extends BasePresenter<NewOperationView> imple
         return (Pair<String, ?>[]) pairs.toArray(a);
     }
 
+    /**
+     * Report analytics event of screen view event of "new operation destination more info" dialog.
+     */
     public void reportShowDestinationInfo() {
         analytics.report(new AnalyticsEvent.S_MORE_INFO(S_MORE_INFO_TYPE.NEW_OP_DESTINATION));
     }
 
+    /**
+     * Navigate to LNURL Withdraw flow.
+     */
     public void handleLnUrl(String lnurl) {
         navigator.navigateToLnUrlWithdraw(getContext(), lnurl);
     }

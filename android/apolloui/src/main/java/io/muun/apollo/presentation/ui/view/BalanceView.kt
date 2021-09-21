@@ -18,7 +18,9 @@ import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler
 import io.muun.apollo.presentation.ui.fragments.home.HomePresenter
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.utils.UiUtils
+import io.muun.apollo.presentation.ui.utils.locale
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.Currency
 import io.muun.common.model.ExchangeRateProvider
@@ -119,13 +121,18 @@ class BalanceView @JvmOverloads constructor(
     }
 
     private fun drawViewState() {
-        mainAmount.text = BitcoinHelper.formatShortBitcoinAmount(balanceInSatoshis, false, mode)
-        mainCurrencyCode.text = MoneyHelper.formatCurrency(Currency.BTC.code, mode)
+        mainAmount.text = BitcoinHelper.formatShortBitcoinAmount(
+            balanceInSatoshis,
+            false,
+            mode!!,
+            locale()
+        )
+        mainCurrencyCode.text = MoneyHelper.formatCurrency(Currency.BTC.code, mode!!)
 
-        if (!MoneyHelper.isBtc(primaryCurrency)) {
-            val balance = BitcoinUtils.satoshisToBitcoins(balanceInSatoshis)
-            val balanceInPrimaryCurr = rateProvider!!.convert(balance, primaryCurrency)
-            secondaryAmount.text = MoneyHelper.formatLongMonetaryAmount(balanceInPrimaryCurr, mode)
+        if (!primaryCurrency.isBtc()) {
+            val balanceInSat = BitcoinUtils.satoshisToBitcoins(balanceInSatoshis)
+            val balance = rateProvider!!.convert(balanceInSat, primaryCurrency)
+            secondaryAmount.text = MoneyHelper.formatLongMonetaryAmount(balance, mode!!, locale())
 
         } else {
             // Avoid changing this widget's height to avoid a layout readjustment

@@ -28,6 +28,7 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.*
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.home.HomeActivity
@@ -224,7 +225,8 @@ class NotificationServiceImpl @Inject constructor(
     private fun showNewOperationFromNetworkNotification(op: Operation) {
         val amount = BitcoinHelper.formatShortBitcoinAmount(
             op.amount.inSatoshis,
-            currencyDisplayModeSel.get()
+            currencyDisplayModeSel.get(),
+            context.locale()
         )
 
         val contentResId = if (op.isIncomingSwap) {
@@ -282,7 +284,8 @@ class NotificationServiceImpl @Inject constructor(
     private fun getNotificationContentMessage(operation: Operation): String {
         val amount = MoneyHelper.formatShortMonetaryAmount(
             operation.amount.inInputCurrency,
-            currencyDisplayModeSel.get()
+            currencyDisplayModeSel.get(),
+            context.locale()
         )
         val senderName = operation.senderProfile!!.firstName
         return context.string(R.string.notifications_amount_received_from, senderName, amount)

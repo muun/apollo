@@ -23,6 +23,7 @@ import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtens
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.di.FragmentComponent
 import io.muun.apollo.presentation.ui.base.di.ViewComponent
+import io.muun.apollo.presentation.ui.utils.locale
 import timber.log.Timber
 import java.util.*
 import javax.validation.constraints.NotNull
@@ -85,6 +86,9 @@ abstract class MuunView : FrameLayout,
     // This is here for easy access of child views that need it. Let's try to avoid injection in
     // this base class so we don't perform unnecessary DI on all our views.
     protected val component: ViewComponent by lazy { activity.applicationComponent.viewComponent() }
+
+    // For convenience in Java subclasses
+    protected val locale = this.locale()
 
     @CallSuper
     protected open fun setUp(context: Context, attrs: AttributeSet?) {

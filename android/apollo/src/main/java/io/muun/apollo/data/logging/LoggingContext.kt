@@ -12,6 +12,9 @@ object LoggingContext {
     var sendToLogcat = false // default for production
 
     @JvmStatic
+    var locale: String = "UNSET" // easily track and attach user's locale to muun errors and reports
+
+    @JvmStatic
     fun configure(email: String?, userId: String) {
         val crashlytics = FirebaseCrashlytics.getInstance()
         crashlytics.setUserId(userId)

@@ -6,6 +6,7 @@ import io.muun.apollo.domain.errors.LocaleNumberParsingError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
+import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.utils.Preconditions;
@@ -38,6 +39,11 @@ public class FeeManualInput extends MuunView {
     private static final long HOUR_IN_SECONDS = MINUTE_IN_SECONDS * 60;
 
     public interface OnChangeListener {
+
+        /**
+         * This method is called to notify you that the fee rate in this input has changed. The
+         * param value holds the new fee rate.
+         */
         void onChange(Double feeRateInSatsPerVbyte);
     }
 
@@ -192,7 +198,7 @@ public class FeeManualInput extends MuunView {
         setFeeInBtc(fee.inSatoshis);
 
         // Don't show fee in btc twice! If input currency is btc, show fee in primary currency
-        if (MoneyHelper.isBtc(fee.inInputCurrency)) {
+        if (MoneyExtensionsKt.isBtc(fee.inInputCurrency)) {
             setFeeInSecondaryCurrency(fee.inPrimaryCurrency);
 
         } else {
@@ -204,9 +210,9 @@ public class FeeManualInput extends MuunView {
 
     }
 
-    private void setFeeInBtc(long feeInSatoshis) {
+    private void setFeeInBtc(long feeInSat) {
         mainValue.setText(
-                BitcoinHelper.formatLongBitcoinAmount(feeInSatoshis, currencyDisplayMode)
+                BitcoinHelper.formatLongBitcoinAmount(feeInSat, currencyDisplayMode, getLocale())
         );
     }
 
@@ -216,7 +222,7 @@ public class FeeManualInput extends MuunView {
     private void setFeeInSecondaryCurrency(MonetaryAmount feeAmount) {
         secondaryValue.setText(TextUtils.concat(
                 "(",
-                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode),
+                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode, getLocale()),
                 ")"
         ));
     }

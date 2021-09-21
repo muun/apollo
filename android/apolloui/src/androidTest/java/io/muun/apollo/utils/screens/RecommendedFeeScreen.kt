@@ -48,9 +48,9 @@ class RecommendedFeeScreen(
     private fun readFeeOption(@IdRes resId: Int) =
         id(resId).let {
             OnScreenFeeOption(
-                it.child(R.id.fee_option_fee_rate).text.dropUnit().toDouble(),
-                it.child(R.id.fee_option_main_value).text.toMoney(),
-                it.child(R.id.fee_option_secondary_value).text.dropParenthesis().toMoney()
+                it.child(R.id.fee_option_fee_rate).text.dropUnit().parseDecimal(locale),
+                it.child(R.id.fee_option_main_value).text.toMoney(locale),
+                it.child(R.id.fee_option_secondary_value).text.dropParenthesis().toMoney(locale)
             )
         }
 }

@@ -1,7 +1,9 @@
 package io.muun.apollo.domain.utils
 
+import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
+import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.Fragment
 import io.muun.apollo.data.net.base.NetworkException
 import io.muun.apollo.domain.errors.MuunError
@@ -99,3 +101,6 @@ private fun getUnsupportedCurrencies(metadata: MutableMap<String, Serializable>)
 
 fun String?.isEmpty(): Boolean =
     this == null || TextUtils.isEmpty(this)
+
+fun Context.locale(): Locale =
+    ConfigurationCompat.getLocales(resources.configuration)[0]

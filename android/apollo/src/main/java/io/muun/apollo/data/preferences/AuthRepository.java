@@ -18,7 +18,7 @@ public class AuthRepository extends BaseRepository {
 
     private static final String KEY_SESSION_STATUS = "session_status";
 
-    private final Preference<SessionStatus> sessionStatusPreference;
+    private final Preference<Optional<SessionStatus>> sessionStatusPreference;
 
     private final SecureStorageProvider secureStorageProvider;
 
@@ -32,9 +32,8 @@ public class AuthRepository extends BaseRepository {
         super(context, repositoryRegistry);
 
         this.secureStorageProvider = secureStorageProvider;
-        this.sessionStatusPreference = rxSharedPreferences.getEnum(
+        this.sessionStatusPreference = rxSharedPreferences.getOptionalEnum(
                 KEY_SESSION_STATUS,
-                null,
                 SessionStatus.class
         );
     }
@@ -65,8 +64,11 @@ public class AuthRepository extends BaseRepository {
         this.secureStorageProvider.put(KEY_SERVER_JWT, Encodings.stringToBytes(serverJwt));
     }
 
+    /**
+     * Store the current session status on shared preferences.
+     */
     public void storeSessionStatus(SessionStatus sessionStatus) {
-        sessionStatusPreference.set(sessionStatus);
+        sessionStatusPreference.set(Optional.ofNullable(sessionStatus));
     }
 
     @Override
@@ -82,9 +84,12 @@ public class AuthRepository extends BaseRepository {
         return watchSessionStatus().toBlocking().first();
     }
 
+    /**
+     * Returns an observable to watch changes of the session status.
+     */
     public Observable<Optional<SessionStatus>> watchSessionStatus() {
         return sessionStatusPreference.asObservable()
-                .map(Optional::ofNullable);
+                .map(value -> value != null ? value : Optional.empty());
     }
 
     /**

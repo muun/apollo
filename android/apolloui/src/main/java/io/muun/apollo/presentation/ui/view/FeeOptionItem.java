@@ -4,6 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
+import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.utils.ConfirmationTimeFormatter;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
@@ -105,7 +106,7 @@ public class FeeOptionItem extends MuunView {
         setFeeInBtc(fee.inSatoshis);
 
         // Don't show fee in btc twice! If input currency is btc, show fee in primary currency
-        if (MoneyHelper.isBtc(fee.inInputCurrency)) {
+        if (MoneyExtensionsKt.isBtc(fee.inInputCurrency)) {
             setFeeInSecondaryCurrency(fee.inPrimaryCurrency);
 
         } else {
@@ -114,9 +115,9 @@ public class FeeOptionItem extends MuunView {
 
     }
 
-    private void setFeeInBtc(long feeInSatoshis) {
+    private void setFeeInBtc(long feeInSat) {
         mainValue.setText(
-                BitcoinHelper.formatLongBitcoinAmount(feeInSatoshis, currencyDisplayMode)
+                BitcoinHelper.formatLongBitcoinAmount(feeInSat, currencyDisplayMode, getLocale())
         );
     }
 
@@ -126,7 +127,7 @@ public class FeeOptionItem extends MuunView {
     private void setFeeInSecondaryCurrency(MonetaryAmount feeAmount) {
         secondaryValue.setText(TextUtils.concat(
                 "(",
-                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode),
+                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode, getLocale()),
                 ")"
         ));
     }

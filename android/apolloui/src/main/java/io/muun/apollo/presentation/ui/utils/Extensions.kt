@@ -22,7 +22,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import io.muun.apollo.R
+import io.muun.apollo.domain.utils.locale
 import timber.log.Timber
+import java.util.*
 
 val ViewGroup.children get() =
     (0 until childCount).map { getChildAt(it) }
@@ -47,6 +49,9 @@ fun View.setUserInteractionEnabled(enabled: Boolean) {
         }
     }
 }
+
+fun View.locale(): Locale =
+    context.locale()
 
 fun Fragment.getDrawable(@DrawableRes resId: Int) =
     ContextCompat.getDrawable(activity!!, resId)!!

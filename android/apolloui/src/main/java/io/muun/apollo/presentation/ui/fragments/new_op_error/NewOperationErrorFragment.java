@@ -24,6 +24,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import icepick.State;
 
+import java.util.Locale;
 import javax.money.MonetaryAmount;
 
 public class NewOperationErrorFragment
@@ -64,6 +65,8 @@ public class NewOperationErrorFragment
 
     @State
     CurrencyDisplayMode mode;
+
+    Locale locale = io.muun.apollo.domain.utils.ExtensionsKt.locale(requireContext());
 
     @Override
     protected void inject() {
@@ -156,8 +159,8 @@ public class NewOperationErrorFragment
 
         final MonetaryAmount balance = analysis.getTotalBalance().inInputCurrency;
 
-        insufficientFundsAmount.setText(MoneyHelper.formatLongMonetaryAmount(minBalance, mode));
-        insufficientFundsBalance.setText(MoneyHelper.formatLongMonetaryAmount(balance, mode));
+        insufficientFundsAmount.setText(formatLongMonetaryAmount(minBalance));
+        insufficientFundsBalance.setText(formatLongMonetaryAmount(balance));
         insufficientFundsExtras.setVisibility(View.VISIBLE);
     }
 
@@ -286,6 +289,10 @@ public class NewOperationErrorFragment
             default:
                 throw new MissingCaseError(errorType);
         }
+    }
+
+    private String formatLongMonetaryAmount(MonetaryAmount amount) {
+        return MoneyHelper.formatLongMonetaryAmount(amount, mode, locale);
     }
 
     @OnClick(R.id.exit)

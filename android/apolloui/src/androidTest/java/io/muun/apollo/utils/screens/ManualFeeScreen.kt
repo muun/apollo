@@ -3,6 +3,7 @@ package io.muun.apollo.utils.screens
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
+import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import javax.money.MonetaryAmount
 
@@ -12,9 +13,9 @@ class ManualFeeScreen(
 ): WithMuunInstrumentationHelpers {
 
     inner class OnScreenFeeOption(
-        public val feeRate: Double,
-        public val primaryAmount: MonetaryAmount,
-        public val secondaryAmount: MonetaryAmount
+        val feeRate: Double,
+        val primaryAmount: MonetaryAmount,
+        val secondaryAmount: MonetaryAmount
     )
 
     fun editFeeRate(feeRate: Double): OnScreenFeeOption {
@@ -28,9 +29,9 @@ class ManualFeeScreen(
 
     private val feeOption get() =
         OnScreenFeeOption(
-            feeInput.text.toDouble(),
-            id(R.id.fee_main_value).text.toMoney(),
-            id(R.id.fee_secondary_value).text.dropParenthesis().toMoney()
+            feeInput.text.parseDecimal(locale),
+            id(R.id.fee_main_value).text.toMoney(context.locale()),
+            id(R.id.fee_secondary_value).text.dropParenthesis().toMoney(locale)
         )
 
     private val feeInput get() =

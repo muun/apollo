@@ -14,6 +14,7 @@ import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.bundler.LnUrlWithdrawBundler
 import io.muun.apollo.presentation.ui.bundler.LnUrlWithdrawErrorBundler
+import io.muun.apollo.presentation.ui.utils.UiNotificationPoller
 import rx.Observable
 import javax.inject.Inject
 
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class LnUrlWithdrawPresenter @Inject constructor(
     private val lnUrlWithdrawAction: LnUrlWithdrawAction,
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val notificationPoller: UiNotificationPoller
 ): BasePresenter<LnUrlWithdrawView>() {
 
     @State(LnUrlWithdrawErrorBundler::class)
@@ -37,6 +39,9 @@ class LnUrlWithdrawPresenter @Inject constructor(
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
+
+        // Pull notifications to speed up the LN payment reception
+        notificationPoller.start()
 
         val observable: Observable<LnUrlState> = lnUrlWithdrawAction
             .state
@@ -139,14 +144,22 @@ class LnUrlWithdrawPresenter @Inject constructor(
     }
 
     fun handleErrorDescriptionClicked() {
-        if (error != null && error is LnUrlError.ExpiredInvoice) {
-            clipboardManager.copy("LNURL Expired Invoice", lnUrlWithdraw.invoice)
-            view.showTextToast(context.getString(R.string.operation_detail_invoice_copied))
+
+        // Assigning to a local variable makes error "inmutable" to kotlin and allows smart casts
+        val error = error
+        when {
+            error == null -> {}
+            error is LnUrlError.ExpiredInvoice -> {
+                clipboardManager.copy("LNURL Expired Invoice", lnUrlWithdraw.invoice)
+                view.showTextToast(context.getString(R.string.operation_detail_invoice_copied))
+            }
         }
     }
 
     override fun tearDown() {
         super.tearDown()
+
+        notificationPoller.stop()
 
         if (!success && waitingForPayment() && error == null) {
             notificationService.showWaitingForLnPaymentNotification(lnUrlWithdraw)

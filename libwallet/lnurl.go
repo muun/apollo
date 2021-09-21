@@ -28,6 +28,8 @@ const (
 	LNURLErrRequestExpired     = lnurl.ErrRequestExpired
 	LNURLErrNoRoute            = lnurl.ErrNoRoute
 	LNURLErrTorNotSupported    = lnurl.ErrTorNotSupported
+	LNURLErrAlreadyUsed        = lnurl.ErrAlreadyUsed
+	LNURLErrForbidden          = lnurl.ErrForbidden
 	LNURLStatusContacting      = lnurl.StatusContacting
 	LNURLStatusInvoiceCreated  = lnurl.StatusInvoiceCreated
 	LNURLStatusReceiving       = lnurl.StatusReceiving
@@ -60,7 +62,7 @@ func LNURLWithdraw(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 
 	allowUnsafe := net != Mainnet()
 
-	lnurl.Withdraw(qr, createInvoiceFunc, allowUnsafe, func(e *lnurl.Event) {
+	go lnurl.Withdraw(qr, createInvoiceFunc, allowUnsafe, func(e *lnurl.Event) {
 		event := &LNURLEvent{
 			Code:    e.Code,
 			Message: e.Message,
