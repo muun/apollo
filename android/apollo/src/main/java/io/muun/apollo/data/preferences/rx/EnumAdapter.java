@@ -2,6 +2,7 @@ package io.muun.apollo.data.preferences.rx;
 
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
+import kotlin.NotImplementedError;
 
 final class EnumAdapter<T extends Enum<T>> implements Preference.Adapter<T> {
     private final Class<T> enumClass;
@@ -11,10 +12,22 @@ final class EnumAdapter<T extends Enum<T>> implements Preference.Adapter<T> {
     }
 
     @Override
-    public T get(@NonNull String key, @NonNull SharedPreferences preferences) {
+    public T get(@NonNull String key,
+                 @NonNull SharedPreferences preferences,
+                 @NonNull T defaultValue) {
         final String value = preferences.getString(key, null);
-        assert value != null; // Not called unless key is present.
+
+        if (value == null) {
+            return defaultValue;
+        }
+
         return Enum.valueOf(enumClass, value);
+    }
+
+    @Override
+    public T get(@NonNull String key, @NonNull SharedPreferences preferences) {
+        // Should never be really used.
+        throw new NotImplementedError();
     }
 
     @Override

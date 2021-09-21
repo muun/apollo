@@ -76,7 +76,8 @@ class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
 
     private fun FragmentTransaction.safelyCommitNow(activity: ExtensibleActivity) {
         if (!activity.isFinishing && !activity.isDestroyed) {
-            if (!activity.supportFragmentManager.isDestroyed) {
+            val fragmentManager = activity.supportFragmentManager
+            if (!fragmentManager.isDestroyed && !fragmentManager.isStateSaved) {
                 commitNow()
             }
         }

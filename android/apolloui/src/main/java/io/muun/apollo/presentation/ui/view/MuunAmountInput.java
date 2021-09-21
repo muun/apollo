@@ -3,10 +3,12 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.model.text_decoration.AutoSizeDecoration;
 import io.muun.apollo.presentation.model.text_decoration.DecorationTransformation;
 import io.muun.apollo.presentation.model.text_decoration.MoneyDecoration;
 import io.muun.apollo.presentation.model.text_decoration.TextDecorator;
+import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
@@ -28,7 +30,6 @@ import org.javamoney.moneta.Money;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
@@ -41,6 +42,11 @@ import static android.app.Activity.RESULT_OK;
 public class MuunAmountInput extends MuunView {
 
     public interface OnChangeListener {
+
+        /**
+         * This method is called to notify you that the amount in this input has changed. The
+         * param value holds the new amount.
+         */
         void onChange(MonetaryAmount value);
     }
 
@@ -128,9 +134,12 @@ public class MuunAmountInput extends MuunView {
     }
 
     private void setUpNumberInput() {
-        final Locale locale = getResources().getConfiguration().locale;
 
-        this.symbols = new DecimalFormatSymbols(locale);
+        // Initial value needed to avoid NPEs in view initialization. User pref will be set and view
+        // state updated correctly later.
+        currencyDisplayMode = CurrencyDisplayMode.BTC;
+
+        this.symbols = new DecimalFormatSymbols(getLocale());
         symbols.setCurrencySymbol("");
 
         this.autoSizeDecoration = new AutoSizeDecoration(
@@ -139,7 +148,7 @@ public class MuunAmountInput extends MuunView {
                 UiUtils.dpToPx(getContext(), MIN_TEXT_SIZE_IN_DP)
         );
 
-        this.moneyDecoration = new MoneyDecoration(locale);
+        this.moneyDecoration = new MoneyDecoration(getLocale());
 
         new TextDecorator<>(inputAmount, new DecorationTransformation[]{
                 moneyDecoration,
@@ -176,15 +185,25 @@ public class MuunAmountInput extends MuunView {
         }
     }
 
+    /**
+     * Set secondary amount's value and make it visible.
+     */
     public void setSecondaryAmount(CharSequence amount) {
         this.secondaryAmount.setText(amount);
         this.secondaryAmount.setVisibility(View.VISIBLE);
     }
 
+
+    /**
+     * Make secondary amount disappear.
+     */
     public void hideSecondaryAmount() {
         this.secondaryAmount.setVisibility(View.GONE);
     }
 
+    /**
+     * Set amount error state.
+     */
     public void setAmountError(boolean hasError) {
         inputAmount.setTextColor(hasError ? errorColor : normalNumberColor);
     }
@@ -197,6 +216,9 @@ public class MuunAmountInput extends MuunView {
         this.onChangeListener = onChangeListener;
     }
 
+    /**
+     * Change bitcoin unit.
+     */
     public void setCurrencyDisplayMode(CurrencyDisplayMode currencyDisplayMode) {
         this.currencyDisplayMode = currencyDisplayMode;
         updateCurrencyCodeText();
@@ -240,7 +262,7 @@ public class MuunAmountInput extends MuunView {
 
         MonetaryAmount newValue = Money.of(parseNumber(numberString), value.getCurrency());
 
-        if (MoneyHelper.isBtc(newValue) && currencyDisplayMode == CurrencyDisplayMode.SATS) {
+        if (MoneyExtensionsKt.isBtc(newValue) && currencyDisplayMode == CurrencyDisplayMode.SATS) {
             newValue = newValue.divide(BitcoinUtils.SATOSHIS_PER_BITCOIN);
         }
 
@@ -309,7 +331,11 @@ public class MuunAmountInput extends MuunView {
         isCurrentyChangingCurrency = isDueToCurrencyChange;
 
         if (value.isPositive()) {
-            final String text = MoneyHelper.formatInputMonetaryAmount(value, currencyDisplayMode);
+            final String text = MoneyHelper.formatInputMonetaryAmount(
+                    value,
+                    currencyDisplayMode,
+                    ExtensionsKt.locale(getContext())
+            );
 
             inputAmount.setText(text);
             inputAmount.setSelection(inputAmount.getText().length());

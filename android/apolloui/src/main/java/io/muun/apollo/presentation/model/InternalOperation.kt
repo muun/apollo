@@ -13,8 +13,9 @@ import org.bitcoinj.core.NetworkParameters
 class InternalOperation(
     operation: Operation,
     linkBuilder: LinkBuilder,
-    currencyDisplayMode: CurrencyDisplayMode
-) : UiOperation(operation, linkBuilder, currencyDisplayMode) {
+    currencyDisplayMode: CurrencyDisplayMode,
+    context: Context
+) : UiOperation(operation, linkBuilder, currencyDisplayMode, context) {
 
     private val contact: PublicProfile = if (operation.direction == OperationDirection.OUTGOING)
         checkNotNull(operation.receiverProfile)

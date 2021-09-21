@@ -7,6 +7,7 @@ import io.muun.apollo.R
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
@@ -290,7 +291,7 @@ class AutoFlows(override val device: UiDevice,
         newOpScreen.fillFormUsingAllFunds(descriptionToEnter)
 
         // Ensure amounts in BTC (needed for post submit checks in balance and opDetail)
-        if (!MoneyHelper.isBtc(newOpScreen.confirmedAmount.currency)) {
+        if (!newOpScreen.confirmedAmount.currency.isBtc()) {
             newOpScreen.rotateAmountCurrencies()
         }
 

@@ -14,7 +14,8 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
+import io.muun.apollo.presentation.ui.utils.locale
 import io.muun.apollo.presentation.ui.utils.setOnEndListener
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
@@ -51,10 +52,10 @@ class NewOpBadge @JvmOverloads constructor(
 
     fun setAmount(amountInBtc: MonetaryAmount, mode: CurrencyDisplayMode) {
         Preconditions.checkArgument(!amountInBtc.isZero)
-        Preconditions.checkArgument(MoneyHelper.isBtc(amountInBtc))
+        Preconditions.checkArgument(amountInBtc.isBtc())
 
         val amountInSats = BitcoinUtils.bitcoinsToSatoshis(amountInBtc)
-        var content = BitcoinHelper.formatFlexBitcoinAmount(amountInSats, true, mode)
+        var content = BitcoinHelper.formatFlexBitcoinAmount(amountInSats, true, mode, locale())
 
         if (amountInBtc.isPositive) {
             background = incomingTxBkg

@@ -7,6 +7,7 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
@@ -18,7 +19,7 @@ class HomeScreen(
     override val context: Context
 ): WithMuunInstrumentationHelpers {
 
-    val balanceInBtc get() = id(R.id.balance_main_currency_amount).text.toBtcMoney()
+    val balanceInBtc get() = id(R.id.balance_main_currency_amount).text.toBtcMoney(locale)
 
     fun waitUntilVisible(): Boolean {
         return id(R.id.home_balance_view).waitForExists(5000)
@@ -125,7 +126,7 @@ class HomeScreen(
     }
 
     private fun balanceEquals(expectedBalance: MonetaryAmount): Boolean {
-        Preconditions.checkArgument(MoneyHelper.isBtc(expectedBalance))
+        Preconditions.checkArgument(expectedBalance.isBtc())
         return maybeViewId(R.id.balance_main_currency_amount)
             .wait(Until.textContains(expectedBalance.toShortText()), 1000)
     }

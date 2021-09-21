@@ -12,8 +12,9 @@ import org.bitcoinj.core.NetworkParameters
 class ExternalOperation(
     operation: Operation,
     linkBuilder: LinkBuilder,
-    currencyDisplayMode: CurrencyDisplayMode
-) : UiOperation(operation, linkBuilder, currencyDisplayMode) {
+    currencyDisplayMode: CurrencyDisplayMode,
+    context: Context
+) : UiOperation(operation, linkBuilder, currencyDisplayMode, context) {
 
     override fun getFormattedTitle(context: Context, shortName: Boolean): CharSequence =
         if (isCyclical) {

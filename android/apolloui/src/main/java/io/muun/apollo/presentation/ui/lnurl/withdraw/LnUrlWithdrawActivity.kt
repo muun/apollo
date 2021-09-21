@@ -37,6 +37,7 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
                 .putExtra(LnUrlWithdrawView.ARG_LNURL_WITHDRAW, withdraw.serialize())
                 .putExtra(LnUrlWithdrawView.ARG_LN_PAYMENT_FAILED, fail)
 
+        val zebedeeCountryLink = "https://zebedee.io/countries/"
     }
 
     @BindView(R.id.lnurl_withdraw_header)

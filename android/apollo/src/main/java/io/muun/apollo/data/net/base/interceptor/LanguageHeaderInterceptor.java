@@ -1,10 +1,10 @@
 package io.muun.apollo.data.net.base.interceptor;
 
 import io.muun.apollo.data.net.base.BaseInterceptor;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.net.HeaderUtils;
 
 import android.content.Context;
-import androidx.core.os.ConfigurationCompat;
 import okhttp3.Request;
 
 import javax.inject.Inject;
@@ -21,9 +21,7 @@ public class LanguageHeaderInterceptor extends BaseInterceptor {
     @Override
     protected Request processRequest(Request request) {
 
-        final String lang = ConfigurationCompat.getLocales(
-                applicationContext.getResources().getConfiguration()
-        ).get(0).getLanguage();
+        final String lang = ExtensionsKt.locale(applicationContext).getLanguage();
 
         return request.newBuilder()
                 .addHeader(

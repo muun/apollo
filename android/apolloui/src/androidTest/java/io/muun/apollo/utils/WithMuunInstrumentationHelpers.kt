@@ -6,12 +6,18 @@ import androidx.test.uiautomator.*
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.utils.screens.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.javamoney.moneta.Money
+import java.text.DecimalFormatSymbols
+import java.text.NumberFormat
+import java.text.ParseException
+import java.text.ParsePosition
+import java.util.*
 import javax.money.MonetaryAmount
 
 /**
@@ -28,6 +34,9 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     val device: UiDevice
+
+    val locale get() =
+        context.locale()
 
     // UI Components:
 
@@ -367,21 +376,41 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     /* Extension functions */
 
-    fun String.toMoney(): Money {
+    fun String.toMoney(locale: Locale): Money {
         val t = this.split(" ")
-        return Money.of(t[0].toDouble(), t[1])
+        return Money.of(t[0].parseDecimal(locale), t[1])
     }
 
-    fun String.toBtcMoney(): Money {
-        return Money.of(this.toDouble(), "BTC")
+    fun String.toBtcMoney(locale: Locale): Money {
+        return Money.of(this.parseDecimal(locale), "BTC")
     }
 
     fun MonetaryAmount.toShortText(mode: CurrencyDisplayMode = CurrencyDisplayMode.BTC): String {
-        return MoneyHelper.formatShortMonetaryAmount(this, false, mode)
+        return MoneyHelper.formatShortMonetaryAmount(this, false, mode, locale)
+    }
+
+    /**
+     * Parse string into a number.
+     * Turns out it's not so easy to convert a string to a number when taking into account locale
+     * specific formatting. Apparently, NumberFormat.parse(String) parse "1,23abc" as 1.23.
+     * Based on https://stackoverflow.com/a/16879667/901465.
+     */
+    @kotlin.jvm.Throws(ParseException::class)
+    fun String.parseDecimal(locale: Locale): Double {
+        val numberFormat: NumberFormat = NumberFormat.getNumberInstance(locale)
+        val parsePosition = ParsePosition(0)
+
+        val number: Number = numberFormat.parse(this, parsePosition)!!
+
+        if (parsePosition.index != this.length) {
+            throw ParseException("Invalid input", parsePosition.index)
+        }
+
+        return number.toDouble()
     }
 
     fun MonetaryAmount.toText(mode: CurrencyDisplayMode = CurrencyDisplayMode.BTC): String {
-        return MoneyHelper.formatLongMonetaryAmount(this, mode)
+        return MoneyHelper.formatLongMonetaryAmount(this, mode, locale)
     }
 
     fun String.dropParenthesis() =

@@ -373,7 +373,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         LNURL_EXPIRED_INVOICE,
         LNURL_REQUEST_EXPIRED,
         LNURL_NO_BALANCE,
-        LNURL_NO_ROUTE
+        LNURL_NO_ROUTE,
+        LNURL_FORBIDDEN,
+        LNURL_ALREADY_USED
     }
 
     class E_ERROR(val type: ERROR_TYPE, vararg extras: Any): AnalyticsEvent(listOf(

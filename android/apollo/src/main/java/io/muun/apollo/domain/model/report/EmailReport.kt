@@ -5,6 +5,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
+import java.util.*
 
 class EmailReport private constructor(val body: String) {
 
@@ -16,6 +17,7 @@ class EmailReport private constructor(val body: String) {
         var googlePlayServicesAvailable: Boolean? = null,
         var defaultRegion: String? = null,
         var rootHint: Boolean? = null,
+        var locale: Locale? = null
     ) {
 
         fun report(report: CrashReport) = apply { this.report = report }
@@ -27,6 +29,7 @@ class EmailReport private constructor(val body: String) {
             this.googlePlayServicesAvailable = available
         }
         fun rootHint(rootHint: Boolean) = apply { this.rootHint = rootHint }
+        fun locale(locale: Locale) = apply { this.locale = locale }
 
         fun build(): EmailReport {
 
@@ -36,10 +39,12 @@ class EmailReport private constructor(val body: String) {
             checkNotNull(googlePlayServicesAvailable)
             checkNotNull(rootHint)
             checkNotNull(defaultRegion)
+            checkNotNull(locale)
 
             val body =
                 """|Android version: ${Build.VERSION.SDK_INT}
                    |App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
+                   |Locale: ${locale.toString()}
                    |SupportId: ${if (supportId != null) "Not logged in" else supportId}
                    |ScreenPresenter: $presenterName
                    |FcmTokenHash: $fcmTokenHash

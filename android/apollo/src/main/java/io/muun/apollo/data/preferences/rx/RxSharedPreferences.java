@@ -1,5 +1,7 @@
 package io.muun.apollo.data.preferences.rx;
 
+import io.muun.common.Optional;
+
 import android.annotation.TargetApi;
 import android.content.SharedPreferences;
 import androidx.annotation.CheckResult;
@@ -74,13 +76,16 @@ public final class RxSharedPreferences {
     }
 
     /**
-     * Create an enum preference for {@code key}. Default is {@code null}.
+     * Create an enum preference for {@code key} that allows null values.
      */
     @CheckResult
     @NonNull
-    public <T extends Enum<T>> Preference<T> getEnum(@NonNull String key,
-                                                     @NonNull Class<T> enumClass) {
-        return getEnum(key, null, enumClass);
+    public <T extends Enum<T>> Preference<Optional<T>> getOptionalEnum(@NonNull String key,
+                                                                       @NonNull Class<T> enumClss) {
+        checkNotNull(key, "key == null");
+        checkNotNull(enumClss, "enumClass == null");
+        final Preference.Adapter<Optional<T>> adapter = new OptionalEnumAdapter<T>(enumClss);
+        return new Preference<>(preferences, key, null, adapter, keyChanges);
     }
 
     /**
@@ -88,7 +93,8 @@ public final class RxSharedPreferences {
      */
     @CheckResult
     @NonNull
-    public <T extends Enum<T>> Preference<T> getEnum(@NonNull String key, @Nullable T defaultValue,
+    public <T extends Enum<T>> Preference<T> getEnum(@NonNull String key,
+                                                     @NonNull T defaultValue,
                                                      @NonNull Class<T> enumClass) {
         checkNotNull(key, "key == null");
         checkNotNull(enumClass, "enumClass == null");
@@ -121,7 +127,6 @@ public final class RxSharedPreferences {
     @CheckResult
     @NonNull
     public Preference<Integer> getInteger(@NonNull String key) {
-        //noinspection UnnecessaryBoxing
         return getInteger(key, DEFAULT_INTEGER);
     }
 
@@ -145,7 +150,6 @@ public final class RxSharedPreferences {
     @CheckResult
     @NonNull
     public Preference<Long> getLong(@NonNull String key) {
-        //noinspection UnnecessaryBoxing
         return getLong(key, DEFAULT_LONG);
     }
 
@@ -209,7 +213,7 @@ public final class RxSharedPreferences {
     @CheckResult
     @NonNull
     public Preference<Set<String>> getStringSet(@NonNull String key) {
-        return getStringSet(key, Collections.<String>emptySet());
+        return getStringSet(key, Collections.emptySet());
     }
 
     /**

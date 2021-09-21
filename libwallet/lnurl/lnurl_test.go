@@ -574,6 +574,124 @@ func TestValidateFallbackScheme(t *testing.T) {
 	}
 }
 
+func TestForbidden(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(403)
+		w.Write([]byte("Forbidden"))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 {
+			if e.Code != ErrForbidden {
+				t.Fatalf("unexpected error code: %v", e.Code)
+			}
+		}
+		if e.Code == StatusInvoiceCreated {
+			t.Fatal("should not reach invoice creation")
+		}
+	})
+}
+
 func encode(url string) (string, error) {
 	return lnurl.LNURLEncode(url)
+}
+
+func TestWithdrawResponse_Validate(t *testing.T) {
+	
+	type fields struct {
+		Response           Response
+		Tag                string
+		K1                 string
+		Callback           string
+		MaxWithdrawable    stringOrNumber
+		MinWithdrawable    stringOrNumber
+		DefaultDescription string
+	}
+	errorResponse := func (reason string) fields {
+		return fields{
+			Response: Response{
+				Status: StatusError,
+				Reason: reason,
+			},
+		}
+	}
+	
+	tests := []struct {
+		name   string
+		fields fields
+		want   int
+	}{
+		{
+			"invalid tag",
+			fields{Tag: "blebidy"},
+			ErrWrongTag,
+		},
+		{
+			"negative withdraw",
+			fields{MaxWithdrawable: -1, Tag: "withdraw"},
+			ErrNoAvailableBalance,
+		},
+		{
+			"valid",
+			fields{
+				Response: Response{
+					Status: StatusOK,
+				},
+				Tag: "withdraw",
+				MaxWithdrawable: 10,
+			},
+			ErrNone,
+		},
+		{
+			"already being processed",
+			errorResponse("This Withdrawal Request is already being processed by another wallet"),
+			ErrAlreadyUsed,
+		},
+		{
+			"can only be processed only once",
+			errorResponse("This Withdrawal Request can only be processed once"),
+			ErrAlreadyUsed,
+		},
+		{
+			"withdraw is spent",
+			errorResponse("Withdraw is spent"),
+			ErrAlreadyUsed,
+		},
+		{
+			"withdraw link is empty",
+			errorResponse("Withdraw link is empty"),
+			ErrAlreadyUsed,
+		},
+		{
+			"has already been used",
+			errorResponse("This LNURL has already been used"),
+			ErrAlreadyUsed,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			wr := &WithdrawResponse{
+				Response:           tt.fields.Response,
+				Tag:                tt.fields.Tag,
+				K1:                 tt.fields.K1,
+				Callback:           tt.fields.Callback,
+				MaxWithdrawable:    tt.fields.MaxWithdrawable,
+				MinWithdrawable:    tt.fields.MinWithdrawable,
+				DefaultDescription: tt.fields.DefaultDescription,
+			}
+			got, _ := wr.Validate()
+			if got != tt.want {
+				t.Errorf("Validate() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

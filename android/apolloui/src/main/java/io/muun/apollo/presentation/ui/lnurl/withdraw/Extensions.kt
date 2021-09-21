@@ -20,6 +20,8 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
             is LnUrlError.ExpiredLnUrl -> ErrorViewKind.FINAL
             is LnUrlError.NoWithdrawBalance -> ErrorViewKind.FINAL
             is LnUrlError.NoRoute -> ErrorViewKind.FINAL
+            is LnUrlError.Forbidden -> ErrorViewKind.FINAL
+            is LnUrlError.AlreadyUsed -> ErrorViewKind.FINAL
             // Made it an explicit and comprehensive list so we get a compiler hint when new enum
             // values are added (e.g instead of just using else)
         }
@@ -35,6 +37,8 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
             is LnUrlError.ExpiredLnUrl -> ERROR_TYPE.LNURL_REQUEST_EXPIRED
             is LnUrlError.NoWithdrawBalance -> ERROR_TYPE.LNURL_NO_BALANCE
             is LnUrlError.NoRoute -> ERROR_TYPE.LNURL_NO_ROUTE
+            is LnUrlError.Forbidden -> ERROR_TYPE.LNURL_FORBIDDEN
+            is LnUrlError.AlreadyUsed -> ERROR_TYPE.LNURL_ALREADY_USED
         }
     }
 
@@ -64,6 +68,12 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
 
             is LnUrlError.NoRoute ->
                 ctx.getString(R.string.error_lnurl_no_route_title)
+
+            is LnUrlError.Forbidden ->
+                ctx.getString(R.string.error_lnurl_forbidden_title)
+
+            is LnUrlError.AlreadyUsed ->
+                ctx.getString(R.string.error_lnurl_already_used_title)
         }
     }
 
@@ -102,6 +112,12 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
                         R.string.error_lnurl_no_route_desc,
                         arrayOf(this.domain, this.domain)
                     )
+
+                is LnUrlError.Forbidden ->
+                    StringResWithArgs(R.string.error_lnurl_forbidden_desc)
+
+                is LnUrlError.AlreadyUsed ->
+                    StringResWithArgs(R.string.error_lnurl_already_used_desc)
             }
         }
 }

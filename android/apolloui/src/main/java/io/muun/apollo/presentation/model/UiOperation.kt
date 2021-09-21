@@ -10,8 +10,10 @@ import io.muun.apollo.domain.libwallet.Invoice.decodeInvoice
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.utils.isEmpty
+import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.utils.LinkBuilder
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.view.RichText
@@ -21,13 +23,15 @@ import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.OperationStatus
 import io.muun.common.utils.Preconditions
+import java.util.*
 import java.util.regex.Pattern
 import javax.money.MonetaryAmount
 
 abstract class UiOperation(
     @JvmField internal val operation: Operation,
     private val linkBuilder: LinkBuilder,
-    private val currencyDisplayMode: CurrencyDisplayMode
+    private val currencyDisplayMode: CurrencyDisplayMode,
+    private val context: Context
 ) {
 
     companion object {
@@ -39,14 +43,22 @@ abstract class UiOperation(
          * Build a UiOperation from an ExternalOperation.
          */
         @JvmStatic
-        fun fromOperation(op: Operation, lb: LinkBuilder, cdm: CurrencyDisplayMode): UiOperation {
-            return if (op.isExternal) {
-                ExternalOperation(op, lb, cdm)
+        fun fromOperation(
+            operation: Operation,
+            linkBuilder: LinkBuilder,
+            cdm: CurrencyDisplayMode,
+            context: Context
+        ): UiOperation {
+            return if (operation.isExternal) {
+                ExternalOperation(operation, linkBuilder, cdm, context)
             } else {
-                InternalOperation(op, lb, cdm)
+                InternalOperation(operation, linkBuilder, cdm, context)
             }
         }
     }
+
+    val locale: Locale
+        get() = context.locale()
 
     /**
      * Get the id of the underlying operation.
@@ -102,7 +114,7 @@ abstract class UiOperation(
     val copyableNetworkFee: String
         get() {
             val feeInSats = operation.fee.inSatoshis
-            return BitcoinHelper.formatLongBitcoinAmount(feeInSats, currencyDisplayMode)
+            return BitcoinHelper.formatLongBitcoinAmount(feeInSats, currencyDisplayMode, locale)
         }
 
     /**
@@ -111,7 +123,7 @@ abstract class UiOperation(
     val copyableAmount: String
         get() {
             val amountInSats = operation.amount.inSatoshis
-            return BitcoinHelper.formatLongBitcoinAmount(amountInSats, currencyDisplayMode)
+            return BitcoinHelper.formatLongBitcoinAmount(amountInSats, currencyDisplayMode, locale)
         }
 
     /**
@@ -323,23 +335,25 @@ abstract class UiOperation(
         if (longFormat) {
             MoneyHelper.formatLongMonetaryAmount(
                 operation.amount.inInputCurrency,
-                currencyDisplayMode
+                currencyDisplayMode,
+                locale
             )
         } else {
             MoneyHelper.formatShortMonetaryAmount(
                 operation.amount.inInputCurrency,
-                currencyDisplayMode
+                currencyDisplayMode,
+                locale
             )
         }
 
-    private fun getFormattedAmount(amountInSat: Long, amountInPrimaryCurr: MonetaryAmount): String =
-        if (MoneyHelper.isBtc(amountInPrimaryCurr)) {
-            BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode)
+    private fun getFormattedAmount(amountInSat: Long, amountInPrimary: MonetaryAmount): String =
+        if (amountInPrimary.isBtc()) {
+            BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode, locale)
         } else {
             String.format(
                 "%s (%s)",
-                BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode),
-                MoneyHelper.formatLongMonetaryAmount(amountInPrimaryCurr, currencyDisplayMode)
+                BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode, locale),
+                MoneyHelper.formatLongMonetaryAmount(amountInPrimary, currencyDisplayMode, locale)
             )
         }
 

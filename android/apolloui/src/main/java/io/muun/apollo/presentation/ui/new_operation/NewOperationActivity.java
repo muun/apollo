@@ -19,6 +19,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeFragment;
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorFragment;
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeFragment;
+import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
 import io.muun.apollo.presentation.ui.listener.SimpleTextWatcher;
@@ -421,7 +422,9 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
                 MoneyHelper.formatLongMonetaryAmount(
                         balance,
                         true,
-                        currencyDisplayMode
+                        currencyDisplayMode,
+                        io.muun.apollo.domain.utils.ExtensionsKt.locale(this)
+
                 )
         );
 
@@ -878,7 +881,7 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
 
         } else if (form.displayInAlternateCurrency) {
             // Show BTC if current display is in FIAT, and the other way around.
-            if (MoneyHelper.isBtc(form.amount)) {
+            if (MoneyExtensionsKt.isBtc(form.amount)) {
                 amountToDisplay = amount.inPrimaryCurrency;
             } else {
                 amountToDisplay = BitcoinUtils.satoshisToBitcoins(amount.inSatoshis);
@@ -901,7 +904,8 @@ public class NewOperationActivity extends SingleFragmentActivity<NewOperationPre
                 amount,
                 isValid ? amountNumberTextColor : errorColor,
                 isValid ? currencyTextColor : errorColor,
-                currencyDisplayMode
+                currencyDisplayMode,
+                io.muun.apollo.domain.utils.ExtensionsKt.locale(this)
         );
     }
 

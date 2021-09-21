@@ -23,8 +23,9 @@
 
     <!-- FCM -->
     <string name="google_play_services_not_available">
-        Al parecer Google Play Services no está disponible en este dispositivo. Muun lo necesita
-        para funcionar correctamente. Por favor, instala Google Play Services e intenta nuevamente.
+        Al parecer, Google Play Services no está disponible en este dispositivo móvil. Muun lo
+        necesita para enviar notificaciones para pagos Lightning. Instala Google Play Services y
+        vuelve a intentarlo.
     </string>
     <string name="fcm_token_not_available">
         El servicio de notificaciones de Android no responde. Por favor, intenta nuevamente.
@@ -1446,4 +1447,12 @@
         <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
     </string>
     <string name="lnurl_withdraw_uri_paster_title">Usar LNURL del portapapeles</string>
+    <string name="error_lnurl_forbidden_title">País sin soporte</string>
+    <string name="error_lnurl_forbidden_desc">
+        El servicio que creó éste código no está disponible en tu país.
+    </string>
+    <string name="error_lnurl_already_used_title">Código ya usado</string>
+    <string name="error_lnurl_already_used_desc">
+        Éste código ya fue usado por otro monedero, y no puede ser usado nuevamente.
+    </string>
 </resources>

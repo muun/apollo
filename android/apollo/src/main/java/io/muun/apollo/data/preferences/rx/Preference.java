@@ -18,6 +18,16 @@ public final class Preference<T> {
     public interface Adapter<T> {
 
         /**
+         *  Retrieve the value for {@code key} from {@code preferences} or {@code defaultValue}
+         *  if the preference is unset, or was set to {@code null}.
+         */
+        default T get(@NonNull String key,
+                      @NonNull SharedPreferences preferences,
+                      @NonNull T defaultValue) {
+            return get(key, preferences); // Default impl, subclasses that need it can override
+        }
+
+        /**
          *  Retrieve the value for {@code key} from {@code preferences}.
          */
         T get(@NonNull String key, @NonNull SharedPreferences preferences);
@@ -75,7 +85,7 @@ public final class Preference<T> {
         if (!preferences.contains(key)) {
             return defaultValue;
         }
-        return adapter.get(key, preferences);
+        return adapter.get(key, preferences, defaultValue);
     }
 
     /**
