@@ -24,7 +24,6 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import icepick.State;
 
-import java.util.Locale;
 import javax.money.MonetaryAmount;
 
 public class NewOperationErrorFragment
@@ -65,8 +64,6 @@ public class NewOperationErrorFragment
 
     @State
     CurrencyDisplayMode mode;
-
-    Locale locale = io.muun.apollo.domain.utils.ExtensionsKt.locale(requireContext());
 
     @Override
     protected void inject() {
@@ -292,7 +289,11 @@ public class NewOperationErrorFragment
     }
 
     private String formatLongMonetaryAmount(MonetaryAmount amount) {
-        return MoneyHelper.formatLongMonetaryAmount(amount, mode, locale);
+        return MoneyHelper.formatLongMonetaryAmount(
+                amount,
+                mode,
+                io.muun.apollo.domain.utils.ExtensionsKt.locale(requireContext())
+        );
     }
 
     @OnClick(R.id.exit)
