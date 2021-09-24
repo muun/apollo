@@ -25,7 +25,7 @@ mkdir -p "$tmp/to_verify" "$tmp/baseline"
 echo "Building the APK from source. This might take a while (10-20 minutes)..."
 
 mkdir -p apk
-docker build -f android/Dockerfile -o apk .
+DOCKER_BUILDKIT=1 docker build -f android/Dockerfile -o apk .
 
 unzip -q -d "$tmp/to_verify" "$apk_to_verify"
 unzip -q -d "$tmp/baseline" "apk/apolloui-prod-release-unsigned.apk"
