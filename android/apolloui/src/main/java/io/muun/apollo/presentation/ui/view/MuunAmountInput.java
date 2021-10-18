@@ -337,7 +337,11 @@ public class MuunAmountInput extends MuunView {
                     ExtensionsKt.locale(getContext())
             );
 
-            inputAmount.setText(text);
+            // Replace group separator with THIN_SPACE to play nice to MoneyDecoration and our
+            // handleAndroidSupremeLocalizationBug. The idea is to avoid grouping separators to
+            // behave "like the android textInput component" (which doesn't allow group separators).
+            final char groupingSeparator = symbols.getGroupingSeparator();
+            inputAmount.setText(text.replace(groupingSeparator, MoneyDecoration.THIN_SPACE));
             inputAmount.setSelection(inputAmount.getText().length());
 
         } else {

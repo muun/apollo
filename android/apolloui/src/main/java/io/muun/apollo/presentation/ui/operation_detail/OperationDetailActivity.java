@@ -188,17 +188,17 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         feeItem.setVisibility(View.GONE);
 
         if (operation.isSwap()) {
-            setSwapOperation(context, operation);
+            setSwapOperation(operation);
 
         } else if (operation.isIncomingSwap()) {
-            setIncomingSwapOperation(context, operation);
+            setIncomingSwapOperation(operation);
 
         } else {
             setNormalOperation(context, operation);
         }
     }
 
-    private void setSwapOperation(Context context, UiOperation operation) {
+    private void setSwapOperation(UiOperation operation) {
         // Sections involved:
         swapSection.setVisibility(View.VISIBLE);
         feeItem.setVisibility(View.VISIBLE);
@@ -231,7 +231,6 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         normalSection.setVisibility(View.VISIBLE);
 
         // On-chain transaction details:
-        confirmationsItem.setDescription(operation.getConfirmations());
 
         if (operation.isIncoming()) {
             feeItem.setVisibility(View.GONE);
@@ -245,6 +244,12 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
             );
         }
 
+        addressItem.setVisibility(View.VISIBLE);
+        addressItem.setDescription(operation.getFormattedReceiverAddress(context));
+        addressItem.setOnIconClickListener(
+                view -> onCopyAddressToClipboard(operation.getReceiverAddress())
+        );
+
         if (!operation.isFailed()) {
             transactionIdItem.setVisibility(View.VISIBLE);
             transactionIdItem.setDescription(operation.getFormattedTransactionId(context));
@@ -255,25 +260,23 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
                 onCopyTransactionIdToClipboard(operation.getTransactionId());
                 return true; // long click handled
             });
-            
+
+            confirmationsItem.setDescription(operation.getConfirmations());
+
+            if (operation.isIncoming() || operation.isCyclical()) {
+                addressItem.setTitle(getString(R.string.operation_detail_address_incoming));
+            } else {
+                addressItem.setTitle(getString(R.string.operation_detail_address_outgoing));
+            }
+
         } else {
+            // If is Tx FAILED, then we don't show these pieces of data
             transactionIdItem.setVisibility(View.GONE);
-        }
-
-        addressItem.setVisibility(View.VISIBLE);
-        addressItem.setDescription(operation.getFormattedReceiverAddress(context));
-        addressItem.setOnIconClickListener(
-                view -> onCopyAddressToClipboard(operation.getReceiverAddress())
-        );
-
-        if (operation.isIncoming() || operation.isCyclical()) {
-            addressItem.setTitle(getString(R.string.operation_detail_address_incoming));
-        } else {
-            addressItem.setTitle(getString(R.string.operation_detail_address_outgoing));
+            confirmationsItem.setVisibility(View.GONE);
         }
     }
 
-    private void setIncomingSwapOperation(final Context context, final UiOperation operation) {
+    private void setIncomingSwapOperation(final UiOperation operation) {
         // Sections involved:
         swapSection.setVisibility(View.VISIBLE);
 

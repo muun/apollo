@@ -8,6 +8,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/fiatjaf/go-lnurl v1.3.1
 	github.com/golang/protobuf v1.4.2
+	github.com/google/uuid v1.1.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/lightningnetwork/lightning-onion v1.0.1
 	github.com/lightningnetwork/lnd v0.10.4-beta
