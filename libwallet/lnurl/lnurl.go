@@ -3,6 +3,7 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -87,8 +88,9 @@ type Event struct {
 }
 
 type EventMetadata struct {
-	Host    string
-	Invoice string
+	Host    	string
+	Invoice 	string
+	RequestId	string
 }
 
 var httpClient = http.Client{Timeout: 15 * time.Second}
@@ -126,8 +128,15 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	}
 	host := qrUrl.Hostname()
 	notifier.SetHost(host)
+
 	// update contacting
 	notifier.Status(StatusContacting)
+
+	// add request id to enhance error reports and troubleshooting with LNURL service providers
+	requestId := uuid.New().String()
+	qrUrl.Query().Add("requestId", requestId)
+	notifier.SetRequestId(requestId)
+
 	// start withdraw with service
 	resp, err := httpClient.Get(qrUrl.String())
 	if err != nil {
@@ -215,7 +224,6 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 }
 
 func validateHttpResponse(resp *http.Response) (int, string) {
-
 
 	if resp.StatusCode >= 400 {
 		// try to obtain response body
@@ -328,6 +336,10 @@ type notifier struct {
 
 func (n *notifier) SetHost(host string) {
 	n.metadata.Host = host
+}
+
+func (n *notifier) SetRequestId(requestId string) {
+	n.metadata.RequestId = requestId
 }
 
 func (n *notifier) SetInvoice(invoice string) {

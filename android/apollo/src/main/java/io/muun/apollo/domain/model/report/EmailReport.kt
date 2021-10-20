@@ -5,6 +5,10 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
+import org.threeten.bp.Instant
+import org.threeten.bp.ZoneOffset
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.*
 
 class EmailReport private constructor(val body: String) {
@@ -41,11 +45,15 @@ class EmailReport private constructor(val body: String) {
             checkNotNull(defaultRegion)
             checkNotNull(locale)
 
+            val instant = Instant.ofEpochMilli(System.currentTimeMillis())
+            val now = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC)
+
             val body =
                 """|Android version: ${Build.VERSION.SDK_INT}
                    |App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
+                   |Date: ${now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss z")) }
                    |Locale: ${locale.toString()}
-                   |SupportId: ${if (supportId != null) "Not logged in" else supportId}
+                   |SupportId: ${if (supportId != null) supportId else "Not logged in"}
                    |ScreenPresenter: $presenterName
                    |FcmTokenHash: $fcmTokenHash
                    |GooglePlayServices: $googlePlayServicesAvailable

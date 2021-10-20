@@ -91,6 +91,15 @@ public enum TransactionStatus {
     }
 
     /**
+     * Whether the transaction has been broadcasted, but doesn't have enough confirmations to be
+     * considered settled.
+     */
+    public boolean isUnsettled() {
+
+        return this == BROADCASTED || this == CONFIRMED;
+    }
+
+    /**
      * Convert to a json-serializable representation.
      */
     public TransactionStatusJson toJson() {

@@ -25,8 +25,7 @@ class EmailReportManager @Inject constructor(
     fun buildEmailReport(report: CrashReport, presenter: String, rootHint: Boolean): EmailReport {
 
         val supportId = userSel.getOptional()
-            .map { obj: User -> obj.supportId }
-            .orElse(Optional.empty())
+            .flatMap { obj: User -> obj.supportId }
             .orElse(null)
 
         val fcmTokenHash: String = try {
