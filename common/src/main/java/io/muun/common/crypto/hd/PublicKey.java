@@ -9,6 +9,7 @@ import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
+import io.muun.common.utils.ByteArray;
 import io.muun.common.utils.Hashes;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -150,6 +151,15 @@ public class PublicKey extends BaseKey {
      */
     public byte[] getPublicKeyBytes() {
         return deterministicKey.getPubKey();
+    }
+
+    /**
+     * Get X-Only key bytes.
+     */
+    public byte[] getXOnlyBytes() {
+        // The first byte of a compressed pub key is the Y coordinate. Removing it gets us
+        // the 32 bytes of the X coordinate.
+        return ByteArray.slice(deterministicKey.getPubKey(), 1);
     }
 
     /**

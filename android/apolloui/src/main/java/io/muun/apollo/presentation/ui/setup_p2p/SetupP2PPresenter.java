@@ -4,9 +4,9 @@ import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.model.P2PSetupStep;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BaseFragment;
@@ -179,6 +179,9 @@ public class SetupP2PPresenter extends BasePresenter<SingleFragmentView> impleme
         view.finishActivity();
     }
 
+    /**
+     * Get initial P2PSetupStep, depending on the current state of the user.
+     */
     public BaseFragment getInitialStep() {
         currentStep = getInitialP2PSetupStep(); // TODO this shouldn't be a side-effect
         return createStepFragment(currentStep);

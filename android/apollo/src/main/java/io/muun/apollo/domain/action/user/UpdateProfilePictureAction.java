@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.user;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.UserProfile;
 
 import android.net.Uri;
 import rx.Observable;

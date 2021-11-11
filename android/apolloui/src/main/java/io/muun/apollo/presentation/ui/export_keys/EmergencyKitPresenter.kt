@@ -3,46 +3,46 @@ package io.muun.apollo.presentation.ui.export_keys
 import android.os.Bundle
 import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.apis.DriveUploader
-import io.muun.apollo.domain.action.ek.ReportEmergencyKitExportedAction
-import io.muun.apollo.domain.action.migration.MigrateChallengeKeysAction
 import io.muun.apollo.domain.errors.ChallengeKeyMigrationError
+import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
-import io.muun.apollo.presentation.ui.fragments.ek_intro.EmergencyKitIntroParentPresenter
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveParentPresenter
 import io.muun.apollo.presentation.ui.fragments.ek_verify.EmergencyKitVerifyParentPresenter
 import io.muun.apollo.presentation.ui.fragments.ek_verify_cloud.EmergencyKitCloudVerifyParentPresenter
 import io.muun.apollo.presentation.ui.fragments.ek_verify_help.EmergencyKitVerifyHelpParentPresenter
+import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroParentPresenter
 import javax.inject.Inject
 
 @PerActivity
 class EmergencyKitPresenter @Inject constructor(
-    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
     private val driveUploader: DriveUploader
 ):
     BasePresenter<EmergencyKitView>(),
-    EmergencyKitIntroParentPresenter,
+    FlowIntroParentPresenter,
     EmergencyKitSaveParentPresenter,
     EmergencyKitVerifyParentPresenter,
     EmergencyKitVerifyHelpParentPresenter,
     EmergencyKitCloudVerifyParentPresenter {
 
-    var step = EmergencyKeysStep.LOADING
+    var step = EmergencyKitStep.LOADING
 
     var uploadedFile: DriveFile? = null
+
+    private var generatedEK: GeneratedEmergencyKit? = null
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        if (step === EmergencyKeysStep.LOADING) {
+        if (step === EmergencyKitStep.LOADING) {
             // There used to be async behavior here. Now, it's immediate. We still keep this
             // default LOADING state (instead of `null`) to navigate. This could be done better,
             // but at the time of writing we were hard-pressed for time.
-            goToStep(EmergencyKeysStep.INTRO)
+            goToStep(EmergencyKitStep.INTRO)
         }
     }
 
-    private fun goToStep(step: EmergencyKeysStep) {
+    private fun goToStep(step: EmergencyKitStep) {
         this.step = step
         view!!.goToStep(step)
     }
@@ -51,31 +51,36 @@ class EmergencyKitPresenter @Inject constructor(
         view.refreshToolbar()
     }
 
+    override fun setGeneratedEmergencyKit(kitGen: GeneratedEmergencyKit) {
+        generatedEK = kitGen
+    }
+
+    override fun getGeneratedEmergencyKit(): GeneratedEmergencyKit =
+        generatedEK!!
+
     override fun reportEmergencyKitUploaded(driveFile: DriveFile) {
         this.uploadedFile = driveFile
-        view!!.goToStep(EmergencyKeysStep.CLOUD_VERIFY)
+        view!!.goToStep(EmergencyKitStep.CLOUD_VERIFY)
     }
 
     override fun reportEmergencyKitShared() {
-        view!!.goToStep(EmergencyKeysStep.VERIFY)
+        view!!.goToStep(EmergencyKitStep.VERIFY)
     }
 
-    override fun confirmEmergencyKitIntro() {
-        goToStep(EmergencyKeysStep.SAVE)
+    override fun confirmIntroduction() {
+        goToStep(EmergencyKitStep.SAVE)
     }
 
     override fun confirmEmergencyKitVerify() {
-        reportEmergencyKitExported.run(true)
-        goToStep(EmergencyKeysStep.SUCCESS)
+        goToStep(EmergencyKitStep.SUCCESS)
     }
 
     override fun confirmEmergencyKitCloudVerify() {
-        reportEmergencyKitExported.run(true)
-        goToStep(EmergencyKeysStep.SUCCESS)
+        goToStep(EmergencyKitStep.SUCCESS)
     }
 
     override fun cancelEmergencyKitCloudVerify() {
-        goToStep(EmergencyKeysStep.SAVE)
+        goToStep(EmergencyKitStep.SAVE)
     }
 
     override fun openEmergencyKitCloudFile() {
@@ -83,28 +88,28 @@ class EmergencyKitPresenter @Inject constructor(
     }
 
     override fun saveEmergencyKitAgain() {
-        goToStep(EmergencyKeysStep.SAVE)
+        goToStep(EmergencyKitStep.SAVE)
     }
 
     override fun showEmergencyKitVerifyHelp() {
-        goToStep(EmergencyKeysStep.VERIFY_HELP)
+        goToStep(EmergencyKitStep.VERIFY_HELP)
     }
 
     override fun cancelEmergencyKitSave() {
-        view!!.finishActivity()
+        view.showSaveAbortDialog()
     }
 
     override fun cancelEmergencyKitVerify() {
-        goToStep(EmergencyKeysStep.SAVE)
+        goToStep(EmergencyKitStep.SAVE)
     }
 
     override fun cancelEmergencyKitVerifyHelp() {
-        goToStep(EmergencyKeysStep.VERIFY)
+        goToStep(EmergencyKitStep.VERIFY)
     }
 
     override fun handleError(error: Throwable) {
         if (error is ChallengeKeyMigrationError) {
-            goToStep(EmergencyKeysStep.ERROR)
+            goToStep(EmergencyKitStep.ERROR)
         } else {
             super.handleError(error)
         }

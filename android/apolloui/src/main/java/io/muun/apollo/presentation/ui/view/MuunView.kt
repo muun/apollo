@@ -17,16 +17,13 @@ import androidx.fragment.app.DialogFragment
 import butterknife.ButterKnife
 import icepick.Icepick
 import io.muun.apollo.domain.errors.BugDetected
-import io.muun.apollo.presentation.app.di.ApplicationComponent
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension
 import io.muun.apollo.presentation.ui.base.BaseActivity
-import io.muun.apollo.presentation.ui.base.di.FragmentComponent
 import io.muun.apollo.presentation.ui.base.di.ViewComponent
 import io.muun.apollo.presentation.ui.utils.locale
 import timber.log.Timber
 import java.util.*
-import javax.validation.constraints.NotNull
 
 abstract class MuunView : FrameLayout,
     ExternalResultExtension.Caller,

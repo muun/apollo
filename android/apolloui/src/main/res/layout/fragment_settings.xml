@@ -148,6 +148,11 @@
                     style="@style/settings_section_header" />
 
             <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_bitcoin"
+                    muun:label="@string/settings_bitcoin"
+                    style="@style/settings_item" />
+
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
                     android:id="@+id/settings_lightning"
                     muun:label="@string/settings_lightning"
                     style="@style/settings_item" />

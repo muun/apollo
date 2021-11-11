@@ -5,17 +5,24 @@ import icepick.State
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.address.CreateAddressAction
 import io.muun.apollo.domain.model.BitcoinAmount
+import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
 import io.muun.common.bitcoinj.BitcoinUri
-import io.muun.common.crypto.MuunAddressGroup
+import io.muun.apollo.domain.model.MuunAddressGroup
+import io.muun.apollo.domain.model.MuunFeature
+import libwallet.Libwallet
+import rx.Observable
 import javax.inject.Inject
 
 open class BitcoinAddressQrPresenter @Inject constructor(
     private val createAddress: CreateAddressAction,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
+    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
+    private val blockchainHeightSel: BlockchainHeightSelector,
+    private val featureStatusSel: FeatureStatusSelector
 ) : QrPresenter<BitcoinAddressView>() {
 
     @State
@@ -23,6 +30,9 @@ open class BitcoinAddressQrPresenter @Inject constructor(
 
     @State
     lateinit var segwitAddress: String
+
+    @State
+    lateinit var taprootAddress: String
 
     @State
     @JvmField
@@ -53,6 +63,12 @@ open class BitcoinAddressQrPresenter @Inject constructor(
         } catch (error: Throwable) {
             handleError(error)
         }
+
+        Observable.combineLatest(
+            blockchainHeightSel.watchBlocksToTaproot(),
+            featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+            view::setTaprootState
+        ).let(this::subscribeTo)
     }
 
     override fun getQrContent(): String = if (amount != null) {
@@ -88,6 +104,10 @@ open class BitcoinAddressQrPresenter @Inject constructor(
             segwitAddress = newAddresses.segwit.address
         }
 
+        if (!::taprootAddress.isInitialized) {
+            taprootAddress = newAddresses.taproot.address
+        }
+
         updateView()
     }
 
@@ -107,6 +127,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
 
     private fun getAddress() =
         when (addressType) {
+            AddressType.TAPROOT -> taprootAddress
             AddressType.SEGWIT -> segwitAddress
             AddressType.LEGACY -> legacyAddress
         }
@@ -116,9 +137,9 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     }
 
     private fun getTrackingParam() =
-        if (addressType == AddressType.SEGWIT) {
-            AnalyticsEvent.S_RECEIVE_TYPE.SEGWIT_ADDRESS
-        } else {
-            AnalyticsEvent.S_RECEIVE_TYPE.LEGACY_ADDRESS
+        when (addressType) {
+            AddressType.TAPROOT -> AnalyticsEvent.S_RECEIVE_TYPE.TAPROOT_ADDRESS
+            AddressType.SEGWIT -> AnalyticsEvent.S_RECEIVE_TYPE.SEGWIT_ADDRESS
+            AddressType.LEGACY -> AnalyticsEvent.S_RECEIVE_TYPE.LEGACY_ADDRESS
         }
 }

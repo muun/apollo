@@ -51,6 +51,10 @@ class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
         return true
     }
 
+    override fun setLoading(isLoading: Boolean) {
+        verifyButton.isLoading = isLoading
+    }
+
     override fun setVerificationError(error: UserFacingError) {
         verificationCodeInput.setError(error)
     }

@@ -16,6 +16,12 @@ jar {
     archiveFileName = "_lib_${project.name}.jar"
 }
 
+ext {
+    // TODO this currently needs to match apollo's retrofit version. We should refactor to avoid
+    // this discipline on our part. We probably need to extract it to a constant in top-level gradle
+    version_retrofit = '2.5.0'
+}
+
 dependencies {
     api 'javax.validation:validation-api:1.1.0.Final'
     api 'org.hibernate:hibernate-validator:5.4.2.Final'
@@ -23,13 +29,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.4'
 
     // networking
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
 
     // rx
     implementation 'io.reactivex:rxjava:1.3.8'
 
     // bitcoin
-    api 'com.github.acrespo:bitcoinj:0.15.4-patch'
+    api 'com.github.acrespo:bitcoinj:0.15.4-taproot-patch'
 
     // Previously bundled with bitcoinj, no longer so we manually add it
     api 'com.google.code.findbugs:jsr305:3.0.2'

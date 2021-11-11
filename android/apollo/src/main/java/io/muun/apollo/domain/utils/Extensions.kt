@@ -12,6 +12,9 @@ import io.muun.common.model.Currency
 import io.muun.common.rx.ObservableFn
 import io.muun.common.rx.RxHelper
 import io.muun.common.utils.ExceptionUtils
+import libwallet.IntList
+import libwallet.Libwallet
+import libwallet.StringList
 import rx.Observable
 import java.io.Serializable
 import java.util.*
@@ -104,3 +107,12 @@ fun String?.isEmpty(): Boolean =
 
 fun Context.locale(): Locale =
     ConfigurationCompat.getLocales(resources.configuration)[0]
+
+fun List<String>.toLibwalletModel(): StringList =
+    Libwallet.newStringList().also { this.forEach(it::add) }
+
+fun Set<Int>.toLibwalletIntList(): IntList =
+    Libwallet.newIntList().also { this.forEach { v -> it.add(v.toLong()) } }
+
+fun List<Int>.toLibwalletModel(): IntList =
+    Libwallet.newIntList().also { this.forEach { v -> it.add(v.toLong()) } }

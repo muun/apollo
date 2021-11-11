@@ -46,11 +46,11 @@ public class PublicKeyTriple {
         return userPublicKey.getLastLevelIndex();
     }
 
-    /**
-     * Deprecated and commented out as a deterrent. This method "falls short" for regtest addresses:
-     * as it uses the base58 serialization to read the data, it does not distinguish between testnet
-     * and regtest addresses. Leaving the code commented in case someone in the future has the same
-     * idea.
+    /*
+      Deprecated and commented out as a deterrent. This method "falls short" for regtest addresses:
+      as it uses the base58 serialization to read the data, it does not distinguish between testnet
+      and regtest addresses. Leaving the code commented in case someone in the future has the same
+      idea.
      */
     //public NetworkParameters getNetworkParameters() {
     //    return userPublicKey.getNetworkParameters();

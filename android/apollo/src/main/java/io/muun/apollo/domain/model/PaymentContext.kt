@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.model
 
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.utils.FeeCalculator
 import io.muun.common.Rules
 import io.muun.common.model.ExchangeRateProvider

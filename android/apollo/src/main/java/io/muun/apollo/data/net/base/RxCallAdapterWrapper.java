@@ -28,6 +28,8 @@ import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
 import io.muun.common.exception.HttpException;
 import io.muun.common.net.HeaderUtils;
+import io.muun.common.net.NetworkRetry;
+import io.muun.common.net.ServerRetry;
 import io.muun.common.rx.ObservableFn;
 
 import androidx.annotation.NonNull;
@@ -35,6 +37,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.CallAdapter;
+import retrofit2.Invocation;
 import rx.Completable;
 import rx.Observable;
 import rx.Observable.Transformer;
@@ -42,15 +45,13 @@ import rx.Single;
 import timber.log.Timber;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 
 public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
-
-    // TODO move this to external configuration:
-    private static final long CALL_TIMEOUT_SECONDS = 60;
 
     private static final Transformer HTTP_EXCEPTION_TRANSFORMER;
     private static final Transformer JSON_DESERIALIZATION_TRANSFORMER;
@@ -245,7 +246,12 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         // idempotency key. Since we know that the interceptor will be run in the same thread, we
         // can ask for the key annotated for the thread in which the interceptor is being run.
 
-        final HttpRetryTransformer retryTransformer = new HttpRetryTransformer();
+        final NetworkRetry networkRetryConfig = getAnnotation(call, NetworkRetry.class);
+        final ServerRetry serverRetryConfig = getAnnotation(call, ServerRetry.class);
+        final HttpRetryTransformer retryTransformer = new HttpRetryTransformer(
+                networkRetryConfig,
+                serverRetryConfig
+        );
 
         final Transformer attachUrlTransformer = ObservableFn.replaceTypedError(
                 NetworkException.class,
@@ -297,5 +303,15 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         }
 
         return result;
+    }
+
+    private <T extends Annotation> T getAnnotation(final Call<R> call, final Class<T> aClass) {
+
+        final Invocation invocation = call.request().tag(Invocation.class);
+        if (invocation != null) {
+            return invocation.method().getAnnotation(aClass);
+        }
+
+        return null;
     }
 }

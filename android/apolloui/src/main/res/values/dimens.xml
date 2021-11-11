@@ -4,7 +4,6 @@
     <dimen name="muun_screen_margin">16dp</dimen>
     <dimen name="muun_menu_offset">16dp</dimen>
 
-    <dimen name="muun_text_size_help">12sp</dimen>
     <dimen name="muun_text_size_body">16sp</dimen>
     <dimen name="muun_text_size_h1">20sp</dimen>
     <dimen name="muun_text_size_h2">24sp</dimen>

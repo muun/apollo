@@ -53,7 +53,6 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
         }
 
         parentActivity.header.apply {
-            attachToActivity(parentActivity)
             showTitle(R.string.settings_lightning)
             setNavigation(MuunHeader.Navigation.BACK)
         }

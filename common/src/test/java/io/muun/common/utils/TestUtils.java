@@ -2,9 +2,6 @@ package io.muun.common.utils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bitcoinj.core.Context;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.params.Networks;
 import rx.Observable;
 import rx.Single;
 import rx.observers.TestSubscriber;
@@ -25,12 +22,6 @@ import java.util.List;
 public class TestUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    public static void setBitcoinjContext(final NetworkParameters networkParameters) {
-        final Context ctx = new Context(networkParameters);
-        Context.propagate(ctx);
-        Networks.register(networkParameters);
-    }
 
     /**
      * Load a JSON file with a list of test cases.

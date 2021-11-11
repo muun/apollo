@@ -13,17 +13,13 @@ import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.GeneratedEmergencyKit;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
+import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.common.Optional;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.MuunInput;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
-import io.muun.common.crypto.schemes.TransactionSchemeV1;
-import io.muun.common.crypto.schemes.TransactionSchemeV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV3;
-import io.muun.common.crypto.schemes.TransactionSchemeV4;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
@@ -34,6 +30,7 @@ import libwallet.EKOutput;
 import libwallet.HDPrivateKey;
 import libwallet.HDPublicKey;
 import libwallet.Libwallet;
+import libwallet.MusigNonces;
 import libwallet.MuunPaymentURI;
 import libwallet.Network;
 import libwallet.SigningExpectations;
@@ -83,7 +80,8 @@ public class LibwalletBridge {
             return new GeneratedEmergencyKit(
                     ekOutput.getHTML(),
                     ekOutput.getVerificationCode(),
-                    ekOutput.getMetadata()
+                    ekOutput.getMetadata(),
+                    (int) ekOutput.getVersion()
             );
 
         } catch (Exception e) {
@@ -98,18 +96,21 @@ public class LibwalletBridge {
         try {
             return toLibwalletModel(userKey, params).sign(message);
         } catch (Exception e) {
-            throw new LibwalletSigningError(Arrays.toString(message),e);
+            throw new LibwalletSigningError(Arrays.toString(message), e);
         }
     }
 
     /**
      * Sign a partially signed transaction.
      */
-    public static Transaction sign(Operation userCraftedOp,
-                                   PrivateKey userPrivateKey,
-                                   PublicKey muunPublicKey,
-                                   PartiallySignedTransaction pst,
-                                   NetworkParameters network) {
+    public static Transaction sign(
+            final Operation userCraftedOp,
+            final PrivateKey userPrivateKey,
+            final PublicKey muunPublicKey,
+            final PartiallySignedTransaction pst,
+            final NetworkParameters network,
+            final MusigNonces musigNonces
+    ) {
 
         final byte[] unsignedTx = pst.getTransaction().bitcoinSerialize();
 
@@ -117,12 +118,12 @@ public class LibwalletBridge {
         final HDPublicKey muunKey = toLibwalletModel(muunPublicKey, network);
 
         final libwallet.InputList inputList = new libwallet.InputList();
-        for (final MuunInput input: pst.getInputs()) {
+        for (final MuunInput input : pst.getInputs()) {
             inputList.add(new Input(input));
         }
 
         final libwallet.PartiallySignedTransaction libwalletPst =
-                new libwallet.PartiallySignedTransaction(inputList, unsignedTx);
+                new libwallet.PartiallySignedTransaction(inputList, unsignedTx, musigNonces);
 
         // Attempt client-side verification (log-only for now):
         // We have some cases that aren't considered in libwallet yet, so keep this advisory
@@ -137,7 +138,7 @@ public class LibwalletBridge {
     }
 
     /**
-     * Create a V1 MuunAddress.
+     * Create a V1 (Legacy single sig aka P2PKH)  MuunAddress.
      */
     public static MuunAddress createAddressV1(PublicKey pubKey, NetworkParameters params) {
 
@@ -146,12 +147,15 @@ public class LibwalletBridge {
             return fromLibwalletModel(Libwallet.createAddressV1(userKey));
         } catch (Exception e) {
             throw new AddressDerivationError(
-                    TransactionSchemeV1.ADDRESS_VERSION, pubKey.getAbsoluteDerivationPath(), e);
+                    (int) Libwallet.AddressVersionV1,
+                    pubKey.getAbsoluteDerivationPath(),
+                    e
+            );
         }
     }
-    
+
     /**
-     * Create a V2 MuunAddress.
+     * Create a V2 (Legacy Multisig aka P2SH) MuunAddress.
      */
     public static MuunAddress createAddressV2(PublicKeyPair pubKeyPair, NetworkParameters params) {
 
@@ -162,12 +166,15 @@ public class LibwalletBridge {
             return fromLibwalletModel(Libwallet.createAddressV2(userKey, muunKey));
         } catch (Exception e) {
             throw new AddressDerivationError(
-                    TransactionSchemeV2.ADDRESS_VERSION, pubKeyPair.getAbsoluteDerivationPath(), e);
+                    (int) Libwallet.AddressVersionV2,
+                    pubKeyPair.getAbsoluteDerivationPath(),
+                    e
+            );
         }
     }
 
     /**
-     * Create a V3 MuunAddress.
+     * Create a V3 (Retro-compat Segwit Multisig aka P2SH-P2WSH) MuunAddress.
      */
     public static MuunAddress createAddressV3(PublicKeyPair pubKeyPair, NetworkParameters params) {
 
@@ -178,12 +185,15 @@ public class LibwalletBridge {
             return fromLibwalletModel(Libwallet.createAddressV3(userKey, muunKey));
         } catch (Exception e) {
             throw new AddressDerivationError(
-                    TransactionSchemeV3.ADDRESS_VERSION, pubKeyPair.getAbsoluteDerivationPath(), e);
+                    (int) Libwallet.AddressVersionV3,
+                    pubKeyPair.getAbsoluteDerivationPath(),
+                    e
+            );
         }
     }
 
     /**
-     * Create a V4 MuunAddress.
+     * Create a V4 (Native Segwit Multisig aka P2WSH) MuunAddress.
      */
     public static MuunAddress createAddressV4(PublicKeyPair pubKeyPair, NetworkParameters params) {
 
@@ -194,7 +204,29 @@ public class LibwalletBridge {
             return fromLibwalletModel(Libwallet.createAddressV4(userKey, muunKey));
         } catch (Exception e) {
             throw new AddressDerivationError(
-                    TransactionSchemeV4.ADDRESS_VERSION, pubKeyPair.getAbsoluteDerivationPath(), e);
+                    (int) Libwallet.AddressVersionV4,
+                    pubKeyPair.getAbsoluteDerivationPath(),
+                    e
+            );
+        }
+    }
+
+    /**
+     * Create a V5 (Taproot Multisig aka P2TR) MuunAddress.
+     */
+    public static MuunAddress createAddressV5(PublicKeyPair pubKeyPair, NetworkParameters params) {
+
+        final HDPublicKey userKey = toLibwalletModel(pubKeyPair.getUserPublicKey(), params);
+        final HDPublicKey muunKey = toLibwalletModel(pubKeyPair.getMuunPublicKey(), params);
+
+        try {
+            return fromLibwalletModel(Libwallet.createAddressV5(userKey, muunKey));
+        } catch (Exception e) {
+            throw new AddressDerivationError(
+                    (int) Libwallet.AddressVersionV5,
+                    pubKeyPair.getAbsoluteDerivationPath(),
+                    e
+            );
         }
     }
 
@@ -328,6 +360,9 @@ public class LibwalletBridge {
         );
     }
 
+    /**
+     * Map Java model to Libwallet (Go) Model.
+     */
     private static MuunAddress fromLibwalletModel(libwallet.MuunAddress address) {
         return new MuunAddress(
                 (int) address.version(),
@@ -336,7 +371,10 @@ public class LibwalletBridge {
         );
     }
 
-    public static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
+    /**
+     * Map Java model to Libwallet (Go) Model.
+     */
+    private static HDPublicKey toLibwalletModel(PublicKey pubKey, NetworkParameters params) {
         return new HDPublicKey(
                 pubKey.serializeBase58(),
                 pubKey.getAbsoluteDerivationPath(),
@@ -344,7 +382,10 @@ public class LibwalletBridge {
         );
     }
 
-    public static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
+    /**
+     * Map Java model to Libwallet (Go) Model.
+     */
+    private static HDPrivateKey toLibwalletModel(PrivateKey privKey, NetworkParameters params) {
         return new HDPrivateKey(
                 privKey.serializeBase58(),
                 privKey.getAbsoluteDerivationPath(),
@@ -368,7 +409,10 @@ public class LibwalletBridge {
         };
     }
 
-    public static Network toLibwalletModel(NetworkParameters networkParameters) {
+    /**
+     * Map Java model to Libwallet (Go) Model.
+     */
+    private static Network toLibwalletModel(NetworkParameters networkParameters) {
         if (NetworkParameters.ID_MAINNET.equals(networkParameters.getId())) {
             return Libwallet.mainnet();
 

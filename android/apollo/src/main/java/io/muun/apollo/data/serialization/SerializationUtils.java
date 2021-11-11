@@ -13,6 +13,7 @@ import io.muun.common.model.PhoneNumber;
 import android.util.Base64;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -65,6 +66,10 @@ public final class SerializationUtils {
                 .registerModule(simpleModule)
                 .registerModule(new MoneyModule());
 
+        // Allows unknown Enum values to be ignored and a predefined value specified through
+        // @JsonEnumDefaultValue annotation. If enabled, but no predefined default Enum value is
+        // specified, an exception will be thrown (default behaviour for unknown enums values).
+        JSON_MAPPER.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
         TYPE_FACTORY = JSON_MAPPER.getTypeFactory();
     }
 
@@ -160,9 +165,13 @@ public final class SerializationUtils {
         }
     }
 
+    /**
+     * Convenience method for doing two-step conversion from given value into instance of given
+     * value type (only if needed). If conversion is needed, this involves serialization and
+     * deserialization.
+     */
     @NotNull
-    public static <T> T convertUsingMapper(Class<? extends T> jsonType,
-                                           Object source) {
+    public static <T> T convertUsingMapper(Class<? extends T> jsonType, Object source) {
 
         return JSON_MAPPER.convertValue(source, jsonType);
     }

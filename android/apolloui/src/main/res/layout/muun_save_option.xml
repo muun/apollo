@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:foreground="?android:attr/selectableItemBackground"
         android:paddingLeft="16dp"
         android:paddingTop="20dp"
         android:paddingRight="16dp"
@@ -42,6 +43,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toRightOf="@id/title"
+            android:layout_marginTop="2dp"
             android:layout_marginStart="8dp"
             android:visibility="gone" />
 

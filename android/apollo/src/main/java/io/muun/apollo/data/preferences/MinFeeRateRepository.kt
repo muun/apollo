@@ -5,6 +5,7 @@ import io.muun.apollo.data.preferences.adapter.DoublePreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
 import javax.inject.Inject
 
+// Open for mockito to mock/spy
 open class MinFeeRateRepository @Inject constructor(
     context: Context,
     repositoryRegistry: RepositoryRegistry

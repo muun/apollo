@@ -8,6 +8,7 @@ import io.muun.common.utils.Preconditions
 import java.util.*
 import javax.inject.Inject
 
+// Open for mockito to mock/spy
 open class ForwardingPoliciesRepository @Inject constructor(
     context: Context,
     repositoryRegistry: RepositoryRegistry

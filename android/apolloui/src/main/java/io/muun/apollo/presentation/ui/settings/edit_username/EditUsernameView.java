@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.settings.edit_username;
 
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.presentation.ui.base.BaseView;
 
 interface EditUsernameView extends BaseView {

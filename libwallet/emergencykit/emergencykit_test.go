@@ -65,6 +65,9 @@ func TestGenerateHTMLWithFingerprints(t *testing.T) {
 	if !strings.Contains(out.HTML, `<span class="f">wsh</span>`) {
 		t.Fatal("expected output html to contain output descriptor scripts")
 	}
+	if !strings.Contains(out.HTML, `<span class="f">musig</span>`) {
+		t.Fatal("expected output html to contain musig output descriptor scripts")
+	}
 	if !strings.Contains(out.HTML, data.FirstFingerprint) {
 		t.Fatal("expected output html to contain FirstFingerprint")
 	}
@@ -74,17 +77,29 @@ func TestGenerateHTMLWithFingerprints(t *testing.T) {
 }
 
 func TestGenerateDeterministicCode(t *testing.T) {
-	mockFirstKey := "foo"
-	mockSecondKey := "bar"
-	expectedCode := "223695"
-
-	mockInputs := &Input{
-		FirstEncryptedKey:  mockFirstKey,
-		SecondEncryptedKey: mockSecondKey,
+	// Create a base Input, without version, which we'll set for each case below:
+	input := &Input{
+		FirstEncryptedKey:  "foo",
+		SecondEncryptedKey: "bar",
 	}
 
-	code := generateDeterministicCode(mockInputs)
-	if code != expectedCode {
-		t.Fatalf("expected code from (%s, %s) to be %s, not %s", mockFirstKey, mockSecondKey, expectedCode, code)
+	// List our cases for each version:
+	versionExpectedCodes := []struct {
+		version      int
+		expectedCode string
+	}{
+		{1, "190981"},
+		{2, "257250"},
+		{3, "494327"},
+	}
+
+	// Do the thing:
+	for _, testCase := range versionExpectedCodes {
+		input.Version = testCase.version
+		code := generateDeterministicCode(input)
+
+		if code != testCase.expectedCode {
+			t.Fatalf("expected code from %+v to be %s, not %s", input, testCase.expectedCode, code)
+		}
 	}
 }

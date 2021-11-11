@@ -79,7 +79,6 @@
     <color name="muun_ek_save_separator">@color/gray_lightest</color>
 
     <!--  Drawable res colors. Named after the drawable name and state/item  -->
-    <color name="muun_dialog_border_rounded">@color/white</color>
     <color name="cursor">@color/black</color>
     <color name="muun_button_covered_bg">@color/gray_dark</color>
     <color name="muun_button_floating_bg_enabled">@color/blue</color>
@@ -108,7 +107,7 @@
     <color name="muun_save_option_label_disabled_bg">@color/gray_light</color>
     <color name="muun_save_option_label_recommended_bg">@color/blue_lightest</color>
     <color name="muun_task_card_active_bg">@color/white</color>
-    <color name="muun_task_card_active_bg_border">@color/blue</color>
+    <color name="muun_task_card_active_bg_border">@color/blue_light</color>
     <color name="muun_task_card_default_bg">@color/white</color>
     <color name="muun_task_card_default_bg_border">@color/gray_lightest</color>
     <color name="muun_task_card_done_bg">@color/green_lightest</color>
@@ -124,7 +123,7 @@
     <color name="pre_lollipop_popup_background">@color/white</color>
     <color name="ripple_gray">@color/gray_dark</color>
     <color name="slider_dot_active">@color/blue</color>
-    <color name="slider_dot_inactive">@color/gray_light</color>
+    <color name="slider_dot_inactive">@color/blue_light</color>
     <color name="muun_ripple_circle_bg">@color/white</color>
 
     <!-- Code References -->
@@ -137,4 +136,6 @@
     <color name="new_home_tooltip">@color/blue_lightest</color>
     <color name="invoice_qr_loading_background">@color/gray_lightest</color>
 
+    <!-- Temporary while fixing taproot -->
+    <color name="address_picker_disabled_color">@color/gray_light</color>
 </resources>

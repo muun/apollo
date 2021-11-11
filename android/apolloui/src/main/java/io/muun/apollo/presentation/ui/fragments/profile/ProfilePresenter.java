@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.profile;
 
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.errors.EmptyFieldError;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
@@ -73,6 +73,9 @@ public class ProfilePresenter extends SingleFragmentPresenter<ProfileView, Profi
         return new AnalyticsEvent.S_P2P_SETUP_PROFILE();
     }
 
+    /**
+     * Report show profile info analytics event.
+     */
     public void reportShowProfileInfo() {
         analytics.report(new AnalyticsEvent.S_MORE_INFO(S_MORE_INFO_TYPE.PROFILE));
     }

@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.selector
 
 import io.muun.apollo.data.preferences.UserPreferencesRepository
-import io.muun.apollo.domain.model.UserPreferences
+import io.muun.apollo.domain.model.user.UserPreferences
 import rx.Observable
 import javax.inject.Inject
 

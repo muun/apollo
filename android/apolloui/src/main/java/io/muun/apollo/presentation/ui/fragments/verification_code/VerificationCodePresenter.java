@@ -55,7 +55,7 @@ public class VerificationCodePresenter
     }
 
     /**
-     * Asks for a new verification code to Houston via sms or phone call.
+     * Asks Houston for a new verification code, to be sent via sms or phone call.
      * @param verificationType the way to deliver the verification code, either sms or phone call
      */
     public void resendVerification(VerificationType verificationType) {
@@ -70,6 +70,9 @@ public class VerificationCodePresenter
         getParentPresenter().submitVerificationCode(verificationCode);
     }
 
+    /**
+     * Go back to previous step to input another phone number.
+     */
     public void changePhoneNumber() {
         getParentPresenter().changePhoneNumber();
     }

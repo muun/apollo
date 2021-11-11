@@ -89,17 +89,17 @@ class BalanceView @JvmOverloads constructor(
         get() = R.layout.view_balance
 
 
-    fun setBalance(homeBalanceState: HomePresenter.HomeBalanceState) {
-        val paymentContext = homeBalanceState.paymentContext
+    fun setBalance(homeState: HomePresenter.HomeState) {
+        val paymentContext = homeState.paymentContext
 
         this.rateProvider = ExchangeRateProvider(paymentContext.exchangeRateWindow.rates)
         this.balanceInSatoshis = paymentContext.userBalance
-        this.mode = homeBalanceState.currencyDisplayMode
+        this.mode = homeState.currencyDisplayMode
 
         this.primaryCurrency = paymentContext.user
             .getPrimaryCurrency(paymentContext.exchangeRateWindow)
 
-        this.clockState = homeBalanceState.utxoSetState
+        this.clockState = homeState.utxoSetState
 
         clockIcon.visibility = if (clockState == UtxoSetStateSelector.UtxoSetState.CONFIRMED) View.GONE else View.VISIBLE
 
@@ -108,7 +108,7 @@ class BalanceView @JvmOverloads constructor(
             clockIcon.setImageDrawable(clockDrawable)
         }
 
-        this.hidden = homeBalanceState.balanceHidden
+        this.hidden = homeState.balanceHidden
         setHidden(hidden)
     }
 

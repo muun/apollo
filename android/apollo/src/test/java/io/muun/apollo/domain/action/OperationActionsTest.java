@@ -13,11 +13,11 @@ import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
+import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.apollo.template.TemplateHelpers;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
@@ -37,7 +37,6 @@ import javax.money.MonetaryAmount;
 
 import static io.muun.apollo.TestUtils.fetchItemFromObservable;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -259,8 +258,8 @@ public class OperationActionsTest extends BaseTest {
         doReturn(Observable.just(privateKey))
                 .when(keysRepository).getBasePrivateKey();
 
-        doReturn(Observable.just(newOperationRes))
-                .when(houstonClient).newOperation(any(), any());
+//        doReturn(Observable.just(newOperationRes))
+//                .when(houstonClient).newOperation(any(), any(), any());
 
 //        doReturn(signedTx)
 //                .when(bitcoinActions).signTransaction(privateKey, unsignedTx);

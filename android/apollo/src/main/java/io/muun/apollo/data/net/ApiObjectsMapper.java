@@ -4,11 +4,12 @@ import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BitcoinAmount;
+import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyJson;
 import io.muun.common.api.ChallengeSetupJson;
@@ -19,6 +20,7 @@ import io.muun.common.api.ClientTypeJson;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
+import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.IncomingSwapFulfillmentDataJson;
@@ -33,15 +35,20 @@ import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
+import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.Encodings;
 
+import libwallet.MusigNonces;
+
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
@@ -106,12 +113,20 @@ public class ApiObjectsMapper {
      * Create an API operation.
      */
     @NotNull
-    public OperationJson mapOperation(@NotNull OperationWithMetadata operation,
-                                      List<String> outpoints) {
+    public OperationJson mapOperation(
+            final @NotNull OperationWithMetadata operation,
+            final List<String> outpoints,
+            final MusigNonces musigNonces
+    ) {
 
         final Long outputAmountInSatoshis = operation.getSwap() != null
                 ? operation.getSwap().getFundingOutput().getOutputAmountInSatoshis()
                 : operation.getAmount().inSatoshis;
+
+        final List<String> userPublicNoncesHex = new LinkedList<>();
+        for (int i = 0; i < outpoints.size(); i++) {
+            userPublicNoncesHex.add(musigNonces.getPubnonceHex(i));
+        }
 
         return new OperationJson(
                 UUID.randomUUID().toString(),
@@ -136,7 +151,8 @@ public class ApiObjectsMapper {
                 operation.getSenderMetadata(),
                 operation.getReceiverMetadata(),
                 outpoints,
-                false // TODO: Set it to proper value.
+                false, // TODO: Set it to proper value.
+                userPublicNoncesHex
         );
     }
 
@@ -287,7 +303,7 @@ public class ApiObjectsMapper {
      * Create a Feedback.
      */
     public FeedbackJson mapFeedback(String content) {
-        return new FeedbackJson(content);
+        return new FeedbackJson(content, FeedbackJson.Type.SUPPORT);
     }
 
     /**
@@ -315,12 +331,37 @@ public class ApiObjectsMapper {
      */
     public IncomingSwapFulfillmentData mapFulfillmentData(
             final IncomingSwapFulfillmentDataJson json) {
-        
+
         return new IncomingSwapFulfillmentData(
                 Encodings.hexToBytes(json.fulfillmentTxHex),
                 Encodings.hexToBytes(json.muunSignatureHex),
                 json.outputPath,
                 json.outputVersion
         );
+    }
+
+    /**
+     * Map information about an exported emergency kit.
+     */
+    public ExportEmergencyKitJson mapEmergencyKitExport(EmergencyKitExport export) {
+        return new ExportEmergencyKitJson(
+                ApolloZonedDateTime.of(export.getExportedAt()),
+                export.isVerified(),
+                export.getGeneratedKit().getVerificationCode(),
+                export.getGeneratedKit().getVersion(),
+                mapExportMethod(export.getMethod())
+        );
+    }
+
+    @Nullable
+    private ExportEmergencyKitJson.Method mapExportMethod(@NotNull EmergencyKitExport.Method meth) {
+        switch (meth) {
+            case UNKNOWN: return null;
+            case DRIVE: return ExportEmergencyKitJson.Method.DRIVE;
+            case MANUAL: return ExportEmergencyKitJson.Method.MANUAL;
+            case ICLOUD: return ExportEmergencyKitJson.Method.ICLOUD;
+            default:
+                throw new MissingCaseError(meth);
+        }
     }
 }

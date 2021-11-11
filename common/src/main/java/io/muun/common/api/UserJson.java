@@ -8,6 +8,7 @@ import io.muun.common.utils.Since;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
 
@@ -24,7 +25,21 @@ public class UserJson {
     public boolean hasExportedKeys;
 
     @Nullable
+    @Deprecated // Keeping it for legacy users/clients. New ones should use emergencyKit field
     public MuunZonedDateTime emergencyKitLastExportedAt;
+
+    @Nullable
+    @Since(
+            apolloVersion = Supports.Taproot.APOLLO,
+            falconVersion = Supports.Taproot.FALCON
+    )
+    public ExportEmergencyKitJson emergencyKit;
+
+    @Since(
+            apolloVersion = Supports.Taproot.APOLLO,
+            falconVersion = Supports.Taproot.FALCON
+    )
+    public List<Integer> exportedKitVersions;
 
     public PublicProfileJson publicProfile;
     public PhoneNumberJson phoneNumber;
@@ -57,7 +72,8 @@ public class UserJson {
                     @Nullable String email,
                     boolean isEmailVerified,
                     boolean hasExportedKeys,
-                    @Nullable MuunZonedDateTime emergencyKitLastExportedAt,
+                    @Nullable ExportEmergencyKitJson emergencyKit,
+                    List<Integer> exportedKitVersions,
                     PublicProfileJson publicProfile,
                     PhoneNumberJson phoneNumber,
                     CurrencyUnit primaryCurrency,
@@ -71,7 +87,9 @@ public class UserJson {
         this.email = email;
         this.isEmailVerified = isEmailVerified;
         this.hasExportedKeys = hasExportedKeys;
-        this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
+        this.emergencyKitLastExportedAt = emergencyKit != null ? emergencyKit.lastExportedAt : null;
+        this.emergencyKit = emergencyKit;
+        this.exportedKitVersions = exportedKitVersions;
         this.publicProfile = publicProfile;
         this.phoneNumber = phoneNumber;
         this.primaryCurrency = primaryCurrency;

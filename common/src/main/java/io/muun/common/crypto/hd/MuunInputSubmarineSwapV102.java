@@ -1,7 +1,6 @@
 package io.muun.common.crypto.hd;
 
 import io.muun.common.api.MuunInputSubmarineSwapV102Json;
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2;
 import io.muun.common.utils.Encodings;
 
 import javax.annotation.Nullable;
@@ -83,20 +82,6 @@ public class MuunInputSubmarineSwapV102 {
 
     public void setSwapServerSignature(@Nullable Signature swapServerSignature) {
         this.swapServerSignature = swapServerSignature;
-    }
-
-    /**
-     * Produce the witness script for this input.
-     */
-    public byte[] getWitnessScript() {
-
-        return TransactionSchemeSubmarineSwapV2.createWitnessScript(
-                swapPaymentHash256,
-                userPublicKey,
-                muunPublicKey,
-                swapServerPublicKey,
-                numBlocksForExpiration
-        );
     }
 
     /**

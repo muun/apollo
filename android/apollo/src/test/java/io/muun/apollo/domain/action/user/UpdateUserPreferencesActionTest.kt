@@ -8,7 +8,7 @@ import org.junit.Test
 import io.muun.apollo.BaseTest
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserPreferencesRepository
-import io.muun.apollo.domain.model.UserPreferences
+import io.muun.apollo.domain.model.user.UserPreferences
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -31,20 +31,25 @@ class UpdateUserPreferencesActionTest: BaseTest() {
     @Before
     fun before() {
         doReturn(Observable.just(
-                UserPreferences(strictMode = false, seenNewHome = false, seenLnurlFirstTime = false)
+                UserPreferences(
+                        strictMode = false,
+                        seenNewHome = false,
+                        seenLnurlFirstTime = false,
+                        defaultAddressType = "segwit"
+                )
         )).whenever(repository).watch()
     }
 
     @Test
     fun update() {
 
-        whenever(houstonClient.updateUserPreferences(argThat { prefs ->
+        whenever(houstonClient.updateUserPreferences(argThat { prefs: UserPreferences ->
             assertTrue(prefs.strictMode)
             assertFalse(prefs.seenNewHome)
             true
         })).thenReturn(Completable.complete())
 
-        doNothing().whenever(repository).update(argThat { prefs ->
+        doNothing().whenever(repository).update(argThat { prefs: UserPreferences ->
             assertTrue(prefs.strictMode)
             assertFalse(prefs.seenNewHome)
             true

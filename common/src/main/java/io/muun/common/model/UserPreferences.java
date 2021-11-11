@@ -29,6 +29,8 @@ public class UserPreferences {
 
     public Boolean seenLnurlFirstTime = false;
 
+    public String defaultAddressType = "segwit";
+
     /**
      * JSON constructor.
      */
@@ -40,10 +42,12 @@ public class UserPreferences {
      */
     public UserPreferences(final boolean receiveStrictMode,
                            final boolean seenNewHome,
-                           final boolean seenLnurlFirstTime) {
+                           final boolean seenLnurlFirstTime,
+                           final String defaultAddressType) {
         this.receiveStrictMode = receiveStrictMode;
         this.seenNewHome = seenNewHome;
         this.seenLnurlFirstTime = seenLnurlFirstTime;
+        this.defaultAddressType = defaultAddressType;
     }
 
     /**
@@ -68,6 +72,12 @@ public class UserPreferences {
 
         if (other.seenLnurlFirstTime != null) {
             this.seenLnurlFirstTime = other.seenLnurlFirstTime;
+        }
+
+        if (other.defaultAddressType != null) {
+            this.defaultAddressType = other.defaultAddressType.substring(
+                    0, Math.min(10, other.defaultAddressType.length())
+            );
         }
 
     }

@@ -2,19 +2,12 @@ package io.muun.apollo.presentation.ui.fragments.operations
 
 import android.os.Bundle
 import io.muun.apollo.domain.model.CurrencyDisplayMode
-import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.SecurityCenter
-import io.muun.apollo.domain.model.User
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
-import io.muun.apollo.domain.selector.OperationSelector
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.model.UiOperation
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
-import io.muun.apollo.presentation.ui.utils.LinkBuilder
-import org.bitcoinj.core.NetworkParameters
-import rx.Observable
 import javax.inject.Inject
 import javax.validation.constraints.NotNull
 

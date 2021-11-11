@@ -1,5 +1,6 @@
 package io.muun.common.api;
 
+import io.muun.common.MuunFeatureJson;
 import io.muun.common.Supports;
 import io.muun.common.utils.Since;
 
@@ -37,6 +38,9 @@ public class RealTimeData {
     @NotNull
     public double minFeeRateInWeightUnits;
 
+    @NotNull
+    public List<MuunFeatureJson> features;
+
     /**
      * Json constructor.
      */
@@ -46,17 +50,21 @@ public class RealTimeData {
     /**
      * Houston constructor.
      */
-    public RealTimeData(FeeWindowJson feeWindow,
-                        ExchangeRateWindow exchangeRateWindow,
-                        int currentBlockchainHeight,
-                        List<ForwardingPolicyJson> forwardingPolicies,
-                        MinFeeRateIncrementToBumpJson minFeeRateIncrementToBumpJson,
-                        double minFeeRateInWeightUnits) {
+    public RealTimeData(
+            FeeWindowJson feeWindow,
+            ExchangeRateWindow exchangeRateWindow,
+            int currentBlockchainHeight,
+            List<ForwardingPolicyJson> forwardingPolicies,
+            MinFeeRateIncrementToBumpJson minFeeRateIncrementToBumpJson,
+            double minFeeRateInWeightUnits,
+            List<MuunFeatureJson> features
+    ) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
         this.currentBlockchainHeight = currentBlockchainHeight;
         this.forwardingPolicies = forwardingPolicies;
         this.minFeeRateIncrementToBumpJson = minFeeRateIncrementToBumpJson;
         this.minFeeRateInWeightUnits = minFeeRateInWeightUnits;
+        this.features = features;
     }
 }

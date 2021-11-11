@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="242dp"
+            android:layout_height="208dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="-8dp"
+            android:src="@drawable/taproot_rocket3" />
+
+        <io.muun.apollo.presentation.ui.view.BlockClock
+            android:id="@+id/dialog_block_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_horizontal"
+            android:lineSpacingExtra="6dp"
+            android:text="@string/tr_celebration_user_native_title"
+            android:textColor="@color/text_primary_color"
+            android:textSize="24sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:lineSpacingExtra="4sp"
+            android:text="@string/tr_celebration_desc"
+            android:textColor="@color/text_secondary_color"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+        android:id="@+id/dialog_confirm"
+        style="@style/muun_button_primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/tr_celebration_action" />
+
+</LinearLayout>

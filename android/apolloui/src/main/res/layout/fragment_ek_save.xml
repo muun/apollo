@@ -14,6 +14,7 @@
             android:visibility="gone" />
 
     <TextView
+            android:id="@+id/save_emergency_kit_title"
             style="@style/explanation_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,23 +46,22 @@
     <View style="@style/muun_ek_save_separator" />
 
     <io.muun.apollo.presentation.ui.view.MuunSaveOption
-            android:id="@+id/save_option_email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:description="@string/save_option_email_description"
-            app:title="@string/save_option_email_title"
-            app:icon="@drawable/mail_48" />
+        android:id="@+id/save_option_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:description="@string/save_option_feedback_description"
+        app:title="@string/save_option_feedback_title"
+        app:icon="@drawable/ic_suggest_cloud" />
 
     <View style="@style/muun_ek_save_separator" />
 
-    <io.muun.apollo.presentation.ui.view.MuunSaveOption
-            android:id="@+id/save_option_manual"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:description="@string/save_option_manual_description"
-            app:title="@string/save_option_manual_title"
-            app:icon="@drawable/appdrawer_48" />
-
-    <View style="@style/muun_ek_save_separator" />
+    <io.muun.apollo.presentation.ui.view.HtmlTextView
+        android:id="@+id/save_link_manual"
+        style="@style/explanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:textSize="16sp"
+        android:text="@string/save_link_manual" />
 
 </LinearLayout>

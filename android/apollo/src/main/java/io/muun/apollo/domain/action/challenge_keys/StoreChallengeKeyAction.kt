@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.challenge_keys
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.ChallengeType

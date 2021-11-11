@@ -238,6 +238,12 @@
                 android:name="io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity"
         />
 
+        <!-- TaprootSetupActivity -->
+
+        <activity
+            android:name="io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity"
+            />
+
 
         <!-- SelectBitcoinUnitActivity -->
 

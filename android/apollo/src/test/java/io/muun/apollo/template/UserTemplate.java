@@ -1,8 +1,8 @@
 package io.muun.apollo.template;
 
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
 
 import br.com.six2six.fixturefactory.Fixture;

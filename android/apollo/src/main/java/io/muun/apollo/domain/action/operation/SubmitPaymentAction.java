@@ -23,6 +23,8 @@ import io.muun.common.model.OperationStatus;
 import io.muun.common.utils.Encodings;
 
 import androidx.annotation.VisibleForTesting;
+import libwallet.Libwallet;
+import libwallet.MusigNonces;
 import libwallet.Transaction;
 import rx.Observable;
 
@@ -75,22 +77,26 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
 
     private Observable<Operation> submitPayment(PreparedPayment prepPayment) {
 
-        final Operation operation = buildOperation(prepPayment);
-        final OperationWithMetadata operationWithMetadata =
-                buildOperationWithMetadata(prepPayment.payReq, operation);
+        final Operation op = buildOperation(prepPayment);
+        final OperationWithMetadata opWithMetadata =
+                buildOperationWithMetadata(prepPayment.payReq, op);
+
+        // TODO: probably not final version of how nonces are generated
+        final int nonceCount = prepPayment.nextTransactionSize.extractOutpoints().size();
+        final MusigNonces musigNonces = Libwallet.generateMusigNonces(nonceCount);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
-                .flatMap(baseUserPrivateKey -> newOperation(operationWithMetadata, prepPayment)
-                        .flatMap(operationCreated -> {
+                .flatMap(baseUserPrivKey -> newOperation(opWithMetadata, prepPayment, musigNonces)
+                        .flatMap(opCreated -> {
                             final Operation houstonOp =
-                                    operationMapper.mapFromMetadata(operationCreated.operation);
+                                    operationMapper.mapFromMetadata(opCreated.operation);
 
-                            final String transactionHex = operation.isLendingSwap()
+                            final String transactionHex = op.isLendingSwap()
                                     ? null // money was lent, involves no actual transaction
-                                    : signToHex(operation, baseUserPrivateKey, operationCreated);
+                                    : signToHex(op, baseUserPrivKey, opCreated, musigNonces);
 
                             // Maybe Houston identified the receiver for us:
-                            final Operation mergedOperation = operation.mergeWithUpdate(houstonOp);
+                            final Operation mergedOperation = op.mergeWithUpdate(houstonOp);
 
                             return houstonClient
                                     .pushTransaction(transactionHex, houstonOp.getHid())
@@ -105,13 +111,18 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                         }));
     }
 
-    private Observable<OperationCreated> newOperation(OperationWithMetadata operationWithMetadata,
-                                                      PreparedPayment prepPayment) {
-        return houstonClient.newOperation(operationWithMetadata, prepPayment);
+    private Observable<OperationCreated> newOperation(
+            final OperationWithMetadata operationWithMetadata,
+            final PreparedPayment prepPayment,
+            final MusigNonces musigNonces
+    ) {
+        return houstonClient.newOperation(operationWithMetadata, prepPayment, musigNonces);
     }
 
-    private OperationWithMetadata buildOperationWithMetadata(final PaymentRequest payReq,
-                                                             final Operation operation) {
+    private OperationWithMetadata buildOperationWithMetadata(
+            final PaymentRequest payReq,
+            final Operation operation
+    ) {
 
         if (payReq.getType() == PaymentRequest.Type.TO_CONTACT) {
 
@@ -125,9 +136,12 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
     }
 
     @NotNull
-    private String signToHex(Operation operation,
-                             PrivateKey baseUserPrivateKey,
-                             OperationCreated operationCreated) {
+    private String signToHex(
+            final Operation operation,
+            final PrivateKey baseUserPrivateKey,
+            final OperationCreated operationCreated,
+            final MusigNonces musigNonces
+    ) {
 
         final PublicKey baseMuunPublicKey = keysRepository
                 .getBaseMuunPublicKey();
@@ -144,7 +158,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                 baseUserPrivateKey,
                 baseMuunPublicKey,
                 operationCreated.partiallySignedTransaction,
-                Globals.INSTANCE.getNetwork()
+                Globals.INSTANCE.getNetwork(),
+                musigNonces
         );
 
         // Update the Operation after signing:

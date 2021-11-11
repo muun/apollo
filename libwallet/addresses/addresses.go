@@ -12,6 +12,7 @@ const (
 	V2              = 2
 	V3              = 3
 	V4              = 4
+	V5              = 5
 	SubmarineSwapV1 = 101
 	SubmarineSwapV2 = 102
 	IncomingSwap    = 201

@@ -5,7 +5,7 @@ import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.model.*
-import io.muun.common.Rules
+import io.muun.apollo.domain.model.user.User
 import io.muun.common.bitcoinj.NetworkParametersHelper
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils

@@ -36,6 +36,9 @@ import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity
 import io.muun.apollo.presentation.ui.utils.notificationManager
 import io.muun.apollo.presentation.ui.utils.string
+import io.muun.common.api.messages.EventCommunicationMessage
+import io.muun.common.api.messages.EventCommunicationMessage.Event.TAPROOT_ACTIVATED
+import io.muun.common.api.messages.EventCommunicationMessage.Event.TAPROOT_PREACTIVATION
 import io.muun.common.model.OperationDirection
 import io.muun.common.utils.Preconditions
 import rx.Observable
@@ -279,6 +282,26 @@ class NotificationServiceImpl @Inject constructor(
             .load(contact.profilePictureUrl)
 
         showWithBitmapRequest(noti, requestBuilder)
+    }
+
+    override fun showEventCommunication(event: EventCommunicationMessage.Event) {
+        val titleRes = when (event) {
+            TAPROOT_PREACTIVATION -> R.string.notification_tr_preactivate_title
+            TAPROOT_ACTIVATED -> R.string.notification_tr_activated_title
+        }
+
+        val descRes = when (event) {
+            TAPROOT_PREACTIVATION -> R.string.notification_tr_preactivate_desc
+            TAPROOT_ACTIVATED -> R.string.notification_tr_activated_desc
+        }
+
+        val notification = MuunNotification(
+            context.string(titleRes),
+            context.getString(descRes),
+            HomeActivity.getStartActivityIntent(context)
+        )
+
+        showNotification(notification)
     }
 
     private fun getNotificationContentMessage(operation: Operation): String {

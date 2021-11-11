@@ -1,6 +1,6 @@
 package io.muun.apollo.utils
 
-import io.muun.apollo.domain.model.UserPhoneNumber
+import io.muun.apollo.domain.model.user.UserPhoneNumber
 import io.muun.apollo.data.external.Gen
 
 data class RandomUser(

@@ -2,6 +2,7 @@ package io.muun.common.crypto.hd;
 
 
 import io.muun.common.api.MuunInputJson;
+import io.muun.common.utils.Encodings;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -32,6 +33,16 @@ public class MuunInput {
     @Nullable
     private MuunInputIncomingSwap incomingSwap; // for incoming swap inputs only
 
+    @Nullable
+    private byte[] rawUserPublicNonce; // musig inputs only. Set by user.
+
+    @Nullable
+    private byte[] rawMuunPublicNonce; // musig inputs only. Set by houston.
+
+    // NOTE: exists only for testing capabilities. DO NOT EVER assume its existence or try to use it
+    @Nullable
+    private byte[] userSessionId; // musig inputs only
+
     /**
      * Build from a json-serializable representation.
      */
@@ -51,7 +62,12 @@ public class MuunInput {
                 json.submarineSwapV102 == null ? null : MuunInputSubmarineSwapV102.fromJson(
                         json.submarineSwapV102
                 ),
-                json.incomingSwap == null ? null : MuunInputIncomingSwap.fromJson(json.incomingSwap)
+                json.incomingSwap == null ? null : MuunInputIncomingSwap.fromJson(
+                        json.incomingSwap
+                ),
+                json.rawMuunPublicNonceHex == null ? null : Encodings.hexToBytes(
+                        json.rawMuunPublicNonceHex
+                )
         );
     }
 
@@ -73,7 +89,8 @@ public class MuunInput {
                      @Nullable Signature swapServerSignature,
                      @Nullable MuunInputSubmarineSwapV101 submarineSwap,
                      @Nullable MuunInputSubmarineSwapV102 submarineSwapV102,
-                     @Nullable MuunInputIncomingSwap incomingSwap) {
+                     @Nullable MuunInputIncomingSwap incomingSwap,
+                     @Nullable byte[] rawMuunPublicNonce) {
 
         this.prevOut = prevOut;
         this.address = address;
@@ -83,6 +100,7 @@ public class MuunInput {
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
         this.incomingSwap = incomingSwap;
+        this.rawMuunPublicNonce = rawMuunPublicNonce;
     }
 
     public MuunOutput getPrevOut() {
@@ -155,6 +173,33 @@ public class MuunInput {
         this.incomingSwap = incomingSwap;
     }
 
+    @Nullable
+    public byte[] getRawUserPublicNonce() {
+        return rawUserPublicNonce;
+    }
+
+    public void setRawMuunPublicNonce(@Nullable byte[] rawMuunPublicNonce) {
+        this.rawMuunPublicNonce = rawMuunPublicNonce;
+    }
+
+    @Nullable
+    public byte[] getRawMuunPublicNonce() {
+        return rawMuunPublicNonce;
+    }
+
+    public void setRawUserPublicNonce(@Nullable byte[] rawUserPublicNonce) {
+        this.rawUserPublicNonce = rawUserPublicNonce;
+    }
+
+    @Nullable
+    public byte[] getUserSessionId() {
+        return userSessionId;
+    }
+
+    public void setUserSessionId(@Nullable byte[] userSessionId) {
+        this.userSessionId = userSessionId;
+    }
+
     /**
      * Convert to a json-serializable representation.
      */
@@ -168,7 +213,8 @@ public class MuunInput {
                 swapServerSignature == null ? null : swapServerSignature.toJson(),
                 submarineSwap == null ? null : submarineSwap.toJson(),
                 submarineSwapV102 == null ? null : submarineSwapV102.toJson(),
-                incomingSwap == null ? null : incomingSwap.toJson()
+                incomingSwap == null ? null : incomingSwap.toJson(),
+                rawMuunPublicNonce == null ? null : Encodings.bytesToHex(rawMuunPublicNonce)
         );
     }
 

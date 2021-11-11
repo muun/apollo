@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/muun/libwallet/btcsuitew/btcutilw"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
@@ -113,7 +114,7 @@ func CreateWitnessScriptSubmarineSwapV1(refundAddress string, paymentHash []byte
 	// payment preimage, so we still have to do a pass of RIPEMD160 before pushing it to the
 	// script
 	paymentHash160 := ripemd160(paymentHash)
-	decodedRefundAddress, err := btcutil.DecodeAddress(refundAddress, network)
+	decodedRefundAddress, err := btcutilw.DecodeAddress(refundAddress, network)
 	if err != nil {
 		return nil, fmt.Errorf("refund address is invalid: %w", err)
 	}

@@ -6,11 +6,13 @@ import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
+import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.ForwardingPolicy;
 import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.IncomingSwapHtlc;
+import io.muun.apollo.domain.model.MuunFeature;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.domain.model.OperationCreated;
@@ -21,10 +23,13 @@ import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.TransactionPushed;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserPreferences;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
+import io.muun.apollo.domain.model.user.EmergencyKit;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserPreferences;
+import io.muun.apollo.domain.model.user.UserProfile;
+import io.muun.common.MuunFeatureJson;
 import io.muun.common.Optional;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
@@ -32,6 +37,7 @@ import io.muun.common.api.CommonModelObjectsMapper;
 import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.CreateSessionRcOkJson;
+import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.FeeWindowJson;
 import io.muun.common.api.ForwardingPolicyJson;
 import io.muun.common.api.IncomingSwapHtlcJson;
@@ -50,12 +56,13 @@ import io.muun.common.api.UserJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyTriple;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
 import io.muun.common.dates.MuunZonedDateTime;
+import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.SizeForAmount;
 import io.muun.common.model.UtxoStatus;
+import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Pair;
 import io.muun.common.utils.Preconditions;
@@ -64,7 +71,9 @@ import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -120,7 +129,22 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         final Optional<UserPhoneNumber> maybePhoneNumber = Optional.ofNullable(apiUser.phoneNumber)
                 .map(this::mapUserPhoneNumber);
 
-        return new User(
+        EmergencyKit emergencyKit = null;
+        if (apiUser.emergencyKitLastExportedAt != null) {
+            final ExportEmergencyKitJson ek = apiUser.emergencyKit;
+            Preconditions.checkNotNull(apiUser.emergencyKit);
+
+            final Optional<EmergencyKitExport.Method> maybeMethod = Optional.ofNullable(ek.method)
+                    .map(this::mapExportMethod);
+
+            emergencyKit = new EmergencyKit(
+                    Preconditions.checkNotNull(mapZonedDateTime(ek.lastExportedAt)),
+                    Preconditions.checkNotNull(ek.version),
+                    maybeMethod.isPresent() ? maybeMethod.get() : null
+            );
+        }
+
+        return User.fromHouston(
                 apiUser.id,
                 Optional.ofNullable(apiUser.email),
                 apiUser.isEmailVerified,
@@ -131,26 +155,15 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 apiUser.hasPasswordChallengeKey,
                 apiUser.hasP2PEnabled,
                 apiUser.hasExportedKeys,
-                Optional.ofNullable(apiUser.emergencyKitLastExportedAt).map(this::mapZonedDateTime),
-                Optional.ofNullable(apiUser.createdAt).map(this::mapZonedDateTime)
+                Optional.ofNullable(emergencyKit),
+                Optional.ofNullable(apiUser.createdAt).map(this::mapZonedDateTime),
+                new TreeSet<>(apiUser.exportedKitVersions)
         );
     }
 
     /**
-     * Create a public profile.
+     * Create a UserProfile.
      */
-    @NotNull
-    private PublicProfile mapPublicProfile(@NotNull PublicProfileJson publicProfile) {
-
-        return new PublicProfile(
-                null,
-                publicProfile.userId,
-                publicProfile.firstName,
-                publicProfile.lastName,
-                publicProfile.profilePictureUrl
-        );
-    }
-
     public UserProfile mapUserProfile(@NotNull PublicProfileJson profile) {
         return new UserProfile(profile.firstName, profile.lastName, profile.profilePictureUrl);
     }
@@ -163,6 +176,25 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
             return new UserPhoneNumber(phoneNumber.number, phoneNumber.isVerified);
         } catch (IllegalArgumentException e) {
             throw new InvalidPhoneNumberError(e);
+        }
+    }
+
+    /**
+     * Create an EmergencyKit export method.
+     */
+    public EmergencyKitExport.Method mapExportMethod(@NotNull ExportEmergencyKitJson.Method meth) {
+        switch (meth) {
+            case MANUAL:
+                return EmergencyKitExport.Method.MANUAL;
+
+            case DRIVE:
+                return EmergencyKitExport.Method.DRIVE;
+
+            case ICLOUD:
+                return EmergencyKitExport.Method.ICLOUD;
+
+            default:
+                throw new MissingCaseError(meth);
         }
     }
 
@@ -180,6 +212,21 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 mapPublicKey(contact.publicKey),
                 mapPublicKey(contact.cosigningPublicKey),
                 contact.lastDerivationIndex
+        );
+    }
+
+    /**
+     * Create a public profile.
+     */
+    @NotNull
+    private PublicProfile mapPublicProfile(@NotNull PublicProfileJson publicProfile) {
+
+        return new PublicProfile(
+                null,
+                publicProfile.userId,
+                publicProfile.firstName,
+                publicProfile.lastName,
+                publicProfile.profilePictureUrl
         );
     }
 
@@ -256,6 +303,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         return SubmarineSwap.Companion.fromJson(swap);
     }
 
+    /**
+     * Create an IncomingSwap.
+     */
     @NotNull
     public IncomingSwap mapIncomingSwap(@NotNull final IncomingSwapJson swap) {
 
@@ -350,11 +400,14 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 mapExchangeRateWindow(realTimeData.exchangeRateWindow),
                 realTimeData.currentBlockchainHeight,
                 mapForwadingPolicies(realTimeData.forwardingPolicies),
-                realTimeData.minFeeRateInWeightUnits);
+                realTimeData.minFeeRateInWeightUnits,
+                mapMuunFeatures(realTimeData.features)
+        );
     }
 
     private List<ForwardingPolicy> mapForwadingPolicies(
-            final List<ForwardingPolicyJson> forwardingPolicies) {
+            final List<ForwardingPolicyJson> forwardingPolicies
+    ) {
 
         final List<ForwardingPolicy> result = new ArrayList<>();
         for (final ForwardingPolicyJson json : forwardingPolicies) {
@@ -367,6 +420,11 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         }
 
         return result;
+    }
+
+    private List<MuunFeature> mapMuunFeatures(List<MuunFeatureJson> features) {
+        features.removeAll(Collections.singletonList(MuunFeatureJson.UNSUPPORTED_FEATURE));
+        return CollectionUtils.mapList(features, MuunFeature.Companion::fromJson);
     }
 
     /**
@@ -430,6 +488,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         );
     }
 
+    /**
+     * Create a PendingChallengeUpdate.
+     */
     public PendingChallengeUpdate mapPendingChallengeUpdate(PendingChallengeUpdateJson json) {
         return new PendingChallengeUpdate(json.uuid, json.type);
     }
@@ -444,6 +505,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         );
     }
 
+    /**
+     * Create a CreateSessionRcOk.
+     */
     public CreateSessionRcOk mapCreateSessionRcOk(CreateSessionRcOkJson json) {
         return new CreateSessionRcOk(json.keySet, json.hasEmailSetup, json.obfuscatedEmail);
     }
@@ -452,7 +516,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create a ChallengeKeyUpdateMigration.
      */
     public ChallengeKeyUpdateMigration mapChalengeKeyUpdateMigration(
-            final ChallengeKeyUpdateMigrationJson json) {
+            final ChallengeKeyUpdateMigrationJson json
+    ) {
 
         final byte[] passwordKeySalt = Encodings.hexToBytes(json.passwordKeySaltInHex);
 

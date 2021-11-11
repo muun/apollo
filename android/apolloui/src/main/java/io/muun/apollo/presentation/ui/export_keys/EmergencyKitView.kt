@@ -6,6 +6,7 @@ interface EmergencyKitView: BaseView {
 
     fun refreshToolbar()
 
-    fun goToStep(step: EmergencyKeysStep)
+    fun goToStep(step: EmergencyKitStep)
 
+    fun showSaveAbortDialog()
 }

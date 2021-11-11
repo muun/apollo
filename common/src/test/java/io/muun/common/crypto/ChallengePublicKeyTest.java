@@ -1,13 +1,8 @@
 package io.muun.common.crypto;
 
-import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.schemes.TransactionSchemeYpub;
 import io.muun.common.utils.Encodings;
 
 import com.google.common.primitives.Bytes;
-import org.bitcoinj.core.Address;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.script.Script;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,8 +18,6 @@ public class ChallengePublicKeyTest {
 
     @Test
     public void deserializeLegacy() {
-
-
 
         final byte[] legacySerialization = Bytes.concat(serializedPublicKey, salt);
 
@@ -66,58 +59,4 @@ public class ChallengePublicKeyTest {
 
         assertThat(passwordPublicKey.verify(data, signedData)).isTrue();
     }
-
-    @Test
-    public void name() {
-
-        final String rootPubkey = "ypub6Wo18mZJ6uAUGcccrq4QpdeApEahMwG26wi2AjYnbPREQ1Rigf6AtBFVJBu5"
-                + "rXwtPqMZpi8K4FgGgMvadzHV7fBpqmAGC2kZQhYq23ALk8f";
-
-        final String rootPath = "m/49'/0'/0'";
-
-        final PublicKey publicKey = PublicKey.deserializeFromBase58(rootPath, rootPubkey);
-
-        publicKey.networkParameters = MainNetParams.get();
-
-        System.out.println(publicKey.serializeBase58());
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i);
-            System.out.println(TransactionSchemeYpub.createAddress(publicKey.deriveChild(0)
-                    .deriveChild(i)));
-        }
-    }
-
-    @Test
-    public void electrumx() {
-
-        final String rootPubkey = "ypub6Wo18mZJ6uAUGcccrq4QpdeApEahMwG26wi2AjYnbPREQ1Rigf6AtBFVJBu5"
-                + "rXwtPqMZpi8K4FgGgMvadzHV7fBpqmAGC2kZQhYq23ALk8f";
-
-        final String rootPath = "m/49'/0'/0'";
-
-        final PublicKey publicKey = PublicKey.deserializeFromBase58(rootPath, rootPubkey);
-
-        publicKey.networkParameters = MainNetParams.get();
-
-        System.out.println(publicKey.serializeBase58());
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i);
-
-            final Address address = TransactionSchemeYpub
-                    .createAddress(publicKey.deriveChild(0).deriveChild(i));
-
-            final Script scriptPubKey = TransactionSchemeYpub
-                    .createOutputScript(address);
-
-            System.out.println(address);
-            final String scriptHash = TransactionSchemeYpub.obtainScriptHash(scriptPubKey);
-
-            System.out.println(scriptHash);
-            System.out.println("\n ============================="
-                    + "=================================== \n");
-        }
-    }
-
 }

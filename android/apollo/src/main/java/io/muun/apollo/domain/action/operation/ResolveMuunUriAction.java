@@ -9,7 +9,7 @@ import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.ExchangeRateSelector;
 
 import org.javamoney.moneta.Money;

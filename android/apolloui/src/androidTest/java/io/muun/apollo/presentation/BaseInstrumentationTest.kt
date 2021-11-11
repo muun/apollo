@@ -9,7 +9,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.muun.apollo.data.preferences.AuthRepository
-import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.SignupDraftManager
 import io.muun.apollo.domain.action.LogoutActions
@@ -20,7 +19,6 @@ import io.muun.apollo.presentation.app.Navigator
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity
 import io.muun.apollo.utils.AutoFlows
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
-import io.muun.common.model.SessionStatus
 import org.junit.Before
 import org.junit.Rule
 
@@ -44,7 +42,6 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
 
     private lateinit var authRepository: AuthRepository
     private lateinit var userRepository: UserRepository
-    private lateinit var keysRepository: KeysRepository
     private lateinit var logoutActions: LogoutActions
     private lateinit var signupDraftManager: SignupDraftManager
 
@@ -66,7 +63,6 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         logoutActions = dataComponent.logoutActions()
         userRepository = dataComponent.userRepository()
         authRepository = dataComponent.authRepository()
-        keysRepository = dataComponent.keysRepository()
         signupDraftManager = dataComponent.signupDraftManager()
         navigator = Navigator(logoutActions, UserSelector(userRepository))
 
@@ -84,7 +80,7 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
     }
 
     protected fun sniffActivationCode(): String? {
-        return keysRepository.watchEmergencyKitVerificationCodes().toBlocking().first().getNewest()
+        return userRepository.fetchOne().emergencyKitVerificationCodes.getNewest()
     }
 
     private fun clearData() {

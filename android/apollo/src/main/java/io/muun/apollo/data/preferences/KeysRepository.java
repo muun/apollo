@@ -1,10 +1,8 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
-import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
-import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.MissingMigrationError;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -19,13 +17,11 @@ import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
-import android.text.TextUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -57,8 +53,6 @@ public class KeysRepository extends BaseRepository {
     private static final String KEY_MAX_WATCHING_EXTERNAL_ADDRESS_INDEX =
             "key_max_watching_external_address_index";
 
-    private static final String KEY_EK_RECENT_VERIFICATION_CODES = "ek_recent_verification_codes";
-
     // Reactive preferences:
     private final Preference<String> basePrivateKeyPathPreference;
 
@@ -71,8 +65,6 @@ public class KeysRepository extends BaseRepository {
 
     private final Preference<Integer> maxUsedExternalAddressIndexPreference;
     private final Preference<Integer> maxWatchingExternalAddressIndexPreference;
-
-    private final Preference<StoredEkVerificationCodes> emergencyKitVerificationCodes;
 
     // Dependencies:
     private final NetworkParameters networkParameters;
@@ -120,12 +112,6 @@ public class KeysRepository extends BaseRepository {
         baseSwapServerPublicKeyPreference = rxSharedPreferences.getObject(
                 KEY_BASE_SWAP_SERVER_PUBLIC_KEY,
                 PublicKeyPreferenceAdapter.INSTANCE
-        );
-
-        emergencyKitVerificationCodes = rxSharedPreferences.getObject(
-                KEY_EK_RECENT_VERIFICATION_CODES,
-                new StoredEkVerificationCodes(),
-                new JsonPreferenceAdapter<>(StoredEkVerificationCodes.class)
         );
 
         muunKeyFingerprintPreference = rxSharedPreferences
@@ -269,17 +255,6 @@ public class KeysRepository extends BaseRepository {
                 });
     }
 
-    public void storeEmergencyKitVerificationCode(String verificationCode) {
-        final StoredEkVerificationCodes storedCodes = emergencyKitVerificationCodes.get();
-        storedCodes.addNewest(verificationCode);
-
-        emergencyKitVerificationCodes.set(storedCodes);
-    }
-
-    public Observable<StoredEkVerificationCodes> watchEmergencyKitVerificationCodes() {
-        return emergencyKitVerificationCodes.asObservable();
-    }
-
     private long getWalletBirthdaySinceGenesis() {
 
         final ZonedDateTime createdAt = userRepository.fetchOneOptional()
@@ -379,6 +354,9 @@ public class KeysRepository extends BaseRepository {
                 .map(String::new);
     }
 
+    /**
+     * Save a fingerprint corresponding to Muun's private key.
+     */
     public void storeMuunKeyFingerprint(String muunKeyFingerprint) {
         muunKeyFingerprintPreference.set(muunKeyFingerprint);
     }
@@ -387,6 +365,9 @@ public class KeysRepository extends BaseRepository {
         return muunKeyFingerprintPreference.asObservable();
     }
 
+    /**
+     * Save a fingerprint corresponding to the user private key.
+     */
     public void storeUserKeyFingerprint(String userKeyFingerprint) {
         userKeyFingerprintPreference.set(userKeyFingerprint);
     }
@@ -487,29 +468,19 @@ public class KeysRepository extends BaseRepository {
         return maxWatchingExternalAddressIndexPreference.get();
     }
 
+    /**
+     * Save a new max used external address index. This means the maximum index which we have
+     * used to generate an address.
+     */
     public void setMaxUsedExternalAddressIndex(@Nullable Integer maxUsedExternalAddressIndex) {
         this.maxUsedExternalAddressIndexPreference.set(maxUsedExternalAddressIndex);
     }
 
+    /**
+     * Save a new max watching external address index. This means the maximum index which we will
+     * using for scanning address for incoming transactions.
+     */
     public void setMaxWatchingExternalAddressIndex(Integer maxWatchingExternalAddressIndex) {
         this.maxWatchingExternalAddressIndexPreference.set(maxWatchingExternalAddressIndex);
-    }
-
-    /**
-     * Move the old, single-value Emergency Kit verification code preference to the "most recent"
-     * list format.
-     */
-    public void migrateToRecentEmergencyKitVerificationCodes() {
-        final String storedCode = sharedPreferences.getString("ek_activation_code", null);
-
-        final StoredEkVerificationCodes storedCodes;
-
-        if (TextUtils.isEmpty(storedCode)) {
-            storedCodes = new StoredEkVerificationCodes();
-        } else {
-            storedCodes = new StoredEkVerificationCodes(Collections.singletonList(storedCode));
-        }
-
-        emergencyKitVerificationCodes.set(storedCodes);
     }
 }

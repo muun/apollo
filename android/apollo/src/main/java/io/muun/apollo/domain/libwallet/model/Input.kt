@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.libwallet.model
 
+import io.muun.common.Temporary
 import io.muun.common.crypto.hd.MuunInput
 
 class Input(val input: MuunInput) : libwallet.Input {
@@ -9,6 +10,9 @@ class Input(val input: MuunInput) : libwallet.Input {
 
     override fun muunSignature(): ByteArray =
         input.muunSignature?.bytes ?: ByteArray(0)
+
+    override fun muunPublicNonce() =
+        input.rawMuunPublicNonce
 
     override fun address(): Address =
         Address(input.address)
@@ -24,5 +28,6 @@ class Input(val input: MuunInput) : libwallet.Input {
 
     override fun incomingSwap(): InputIncomingSwap? =
         input.incomingSwap?.let { InputIncomingSwap(it) }
+
 }
 

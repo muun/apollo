@@ -27,6 +27,7 @@
             <TextView
                     android:id="@+id/title"
                     style="@style/explanation_title"
+                    android:fontFamily="sans-serif-medium"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
@@ -43,7 +44,11 @@
                     android:textColor="@color/text_secondary_color"
                     android:textSize="16sp"
                     android:typeface="normal"
-                    tools:text="This is the body of the explanation" />
+                    tools:text="This is the body of the explanation. Taproot es una
+                     de las actualizaciones más esperadas en bitcoin.
+                     Empezando por pagos más baratos y menos
+                     rastreables, Taproot está sentando las bases para
+                     una innovación masiva en bitcoin." />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

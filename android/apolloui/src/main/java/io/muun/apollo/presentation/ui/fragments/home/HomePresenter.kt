@@ -5,7 +5,11 @@ import icepick.State
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.PaymentContext
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.domain.selector.LatestOperationSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
@@ -13,44 +17,56 @@ import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
+import io.muun.apollo.presentation.ui.fragments.tr_clock_detail.TaprootClockDetailFragment
+import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
 
 
 @PerFragment
 class HomePresenter @Inject constructor(
-        private val paymentContextSel: PaymentContextSelector,
-        private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
-        private val userPreferencesSelector: UserPreferencesSelector,
-        private val updateUserPreferencesAction: UpdateUserPreferencesAction,
-        private val latestOperationSelector: LatestOperationSelector,
-        private val utxoSetStateSelector: UtxoSetStateSelector
+    private val paymentContextSel: PaymentContextSelector,
+    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
+    private val userPreferencesSelector: UserPreferencesSelector,
+    private val updateUserPreferencesAction: UpdateUserPreferencesAction,
+    private val latestOperationSelector: LatestOperationSelector,
+    private val utxoSetStateSelector: UtxoSetStateSelector,
+    private val featureStatusSel: FeatureStatusSelector,
+    private val blockchainHeightSel: BlockchainHeightSelector
 ) : SingleFragmentPresenter<HomeView, HomeParentPresenter>() {
 
     @State
     @JvmField
     var lastOpId: Long? = null
 
-    class HomeBalanceState(
-            val paymentContext: PaymentContext,
-            val currencyDisplayMode: CurrencyDisplayMode,
-            val utxoSetState: UtxoSetStateSelector.UtxoSetState,
-            val balanceHidden: Boolean
+    class HomeState(
+        val paymentContext: PaymentContext,
+        val currencyDisplayMode: CurrencyDisplayMode,
+        val utxoSetState: UtxoSetStateSelector.UtxoSetState,
+        val balanceHidden: Boolean,
+        val user: User,
+        val taprootFeatureStatus: UserActivatedFeatureStatus,
+        val blocksToTaproot: Int,
+        val hasUpdatedEkToTaproot: Boolean
     )
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        Observable.combineLatest(
-            paymentContextSel.watch(),
-            currencyDisplayModeSel.watch(),
-            utxoSetStateSelector.watch(),
-            userSel.watchBalanceHidden(),
-            ::HomeBalanceState)
+        Observable
+            .combineLatest(
+                paymentContextSel.watch(),
+                currencyDisplayModeSel.watch(),
+                utxoSetStateSelector.watch(),
+                userSel.watchBalanceHidden(),
+                userSel.watch(),
+                featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                blockchainHeightSel.watchBlocksToTaproot(),
+                userSel.watchPendingTaprootCelebration(),
+                ::HomeState
+            )
             .compose(getAsyncExecutor())
-            .doOnNext { homeBalance ->
-                view.setBalance(homeBalance)
-            }
+            .doOnNext(view::setState)
             .let(this::subscribeTo)
 
         latestOperationSelector.watch()
@@ -73,13 +89,6 @@ class HomePresenter @Inject constructor(
             }
             .let(this::subscribeTo)
 
-        userSel.watch()
-            .compose(getAsyncExecutor())
-            .doOnNext { user ->
-                view.setUserRecoverable(user.isRecoverable)
-            }
-            .let(this::subscribeTo)
-
         subscribeTo(userPreferencesSelector.watch()) { prefs ->
             if (!prefs.seenNewHome) {
                 view.showTooltip()
@@ -96,6 +105,10 @@ class HomePresenter @Inject constructor(
         navigator.navigateToShowQr(context, AnalyticsEvent.RECEIVE_ORIGIN.RECEIVE_BUTTON)
     }
 
+    fun navigateToTaprootSetup() {
+        navigator.navigateToTaprootSetup(context)
+    }
+
     fun navigateToSendScreen() {
         navigator.navigateToSend(context)
     }
@@ -110,5 +123,9 @@ class HomePresenter @Inject constructor(
 
     fun navigateToOperations() {
         parentPresenter.navigateToOperations()
+    }
+
+    fun navigateToClockDetail() {
+        navigator.navigateToFragment(context, TaprootClockDetailFragment::class.java)
     }
 }

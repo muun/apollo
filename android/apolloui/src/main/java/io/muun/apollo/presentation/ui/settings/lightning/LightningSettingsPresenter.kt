@@ -3,8 +3,9 @@ package io.muun.apollo.presentation.ui.settings.lightning
 import android.os.Bundle
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
-import io.muun.apollo.domain.model.UserPreferences
+import io.muun.apollo.domain.model.user.UserPreferences
 import io.muun.apollo.domain.selector.UserPreferencesSelector
+import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import rx.Observable
@@ -49,4 +50,7 @@ class LightningSettingsPresenter
             prefs.copy(strictMode = !prefs.strictMode)
         }
     }
+
+    override fun getEntryEvent() =
+        AnalyticsEvent.S_SETTINGS_LIGHTNING_NETWORK()
 }

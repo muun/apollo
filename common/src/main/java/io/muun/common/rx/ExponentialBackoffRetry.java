@@ -27,15 +27,15 @@ public class ExponentialBackoffRetry implements
     /**
      * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
      *
-     * @param baseInterval   the initial delay magnitude in seconds
-     * @param maxRetries     the maximum amount of retries before failing
-     * @param retryErrorType the error type that will trigger a retry
+     * @param baseIntervalInSecs    the initial delay magnitude in seconds
+     * @param maxRetries            the maximum amount of retries before failing
+     * @param retryErrorType        the error type that will trigger a retry
      */
     public ExponentialBackoffRetry(
-            long baseInterval,
+            long baseIntervalInSecs,
             int maxRetries,
             Class<? extends Throwable> retryErrorType) {
-        this(baseInterval, TimeUnit.SECONDS, maxRetries, retryErrorType);
+        this(baseIntervalInSecs, TimeUnit.SECONDS, maxRetries, retryErrorType);
     }
 
     /**

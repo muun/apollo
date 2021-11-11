@@ -1,12 +1,14 @@
 package io.muun.apollo.domain.model
 
+import io.muun.apollo.domain.model.user.User
+
 class SecurityCenter(private val user: User, private val emailSetupSkipped: Boolean) {
 
     fun getLevel(): SecurityLevel {
 
         val hasSkippedEmailSetup = emailSetupSkipped || (user.hasRecoveryCode && !user.hasPassword)
 
-        val hasEmergencyKit = user.emergencyKitLastExportedAt.isPresent
+        val hasEmergencyKit = user.emergencyKit.isPresent
         val didExportKeys = hasEmergencyKit || user.hasExportedKeys // retroCompat
 
 

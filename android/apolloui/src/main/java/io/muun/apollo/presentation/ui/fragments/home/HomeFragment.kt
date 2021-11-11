@@ -9,23 +9,30 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.OnClick
 import com.airbnb.lottie.LottieAnimationView
-import com.skydoves.balloon.*
+import com.skydoves.balloon.ArrowConstraints
+import com.skydoves.balloon.ArrowOrientation
+import com.skydoves.balloon.Balloon
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.OnBalloonClickListener
+import com.skydoves.balloon.createBalloon
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.Operation
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
+import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getDrawable
 import io.muun.apollo.presentation.ui.view.BalanceView
+import io.muun.apollo.presentation.ui.view.BlockClock
 import io.muun.apollo.presentation.ui.view.MuunHomeCard
 import io.muun.apollo.presentation.ui.view.NewOpBadge
 import io.muun.common.utils.BitcoinUtils
 import org.threeten.bp.ZonedDateTime
 import kotlin.math.abs
 
-
-class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
+class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
 
     companion object {
         private const val NEW_OP_ANIMATION_WINDOW = 15L   // In Seconds
@@ -43,8 +50,14 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
     @BindView(R.id.home_balance_view)
     lateinit var balanceView: BalanceView
 
-    @BindView(R.id.home_security_center_card)
+    @BindView(R.id.home_taproot_card)
     lateinit var securityCenterCard: MuunHomeCard
+
+    @BindView(R.id.home_security_center_card)
+    lateinit var taprootCard: MuunHomeCard
+
+    @BindView(R.id.home_block_clock)
+    lateinit var blockClock: BlockClock
 
     var balloon: Balloon? = null
 
@@ -64,16 +77,6 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
             setElevated(false)
         }
 
-        securityCenterCard.let {
-            it.icon = getDrawable(R.drawable.ic_lock)
-            it.body = StyledStringRes(requireContext(), R.string.home_security_center_card_body)
-                .toCharSequence()
-        }
-
-        securityCenterCard.setOnClickListener {
-            presenter.navigateToSecurityCenter()
-        }
-
         // The detector detect the fling gesture for the chevron
         // The first detects the fling in the horizontal area around the chevron.
         // The second detects the fling in the chevron itself.
@@ -89,6 +92,33 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
         )
         chevron.setOnTouchListener { _, event -> chevronDetector.onTouchEvent(event) }
 
+        initializeCards()
+
+        blockClock.setOnClickListener {
+            presenter.navigateToClockDetail()
+        }
+    }
+
+    private fun initializeCards() {
+        securityCenterCard.let {
+            it.icon = getDrawable(R.drawable.ic_lock)
+            it.body = StyledStringRes(requireContext(), R.string.home_security_center_card_body)
+                .toCharSequence()
+
+            it.setOnClickListener {
+                presenter.navigateToSecurityCenter()
+            }
+        }
+
+        taprootCard.let {
+            it.icon = getDrawable(R.drawable.ic_star)
+            it.body = StyledStringRes(requireContext(), R.string.taproot_card_body)
+                .toCharSequence()
+
+            taprootCard.setOnClickListener {
+                presenter.navigateToTaprootSetup()
+            }
+        }
     }
 
     class GestureListener(private val chevron: View, context: Context, private val down: Boolean):
@@ -167,16 +197,36 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
             // layout. If we set max width, they seem to solve themselves. But, we can't set a fixed
             // value in the xml so we do this lovely thing here.
             // https://github.com/skydoves/Balloon/issues/55
-            val textView = balloon!!.getContentView().findViewById<TextView>(R.id.new_home_tooltip_text)
+            val textView =
+                balloon!!.getContentView().findViewById<TextView>(R.id.new_home_tooltip_text)
             textView.maxWidth = requireView().width - 56 * 2
 
             balloon!!.showAlignTop(chevron)
         }
     }
 
-    override fun setBalance(homeBalanceState: HomePresenter.HomeBalanceState) {
-        balanceView.setBalance(homeBalanceState)
-        setChevronAnimation(homeBalanceState.utxoSetState)
+    override fun setState(homeState: HomePresenter.HomeState) {
+        balanceView.setBalance(homeState)
+        setChevronAnimation(homeState.utxoSetState)
+
+        securityCenterCard.visibility = View.GONE
+        taprootCard.visibility = View.GONE
+        blockClock.visibility = View.GONE
+
+        val taprootStatus = homeState.taprootFeatureStatus
+        if (!homeState.user.isRecoverable) {
+            securityCenterCard.visibility = View.VISIBLE
+
+        } else when (taprootStatus) {
+            UserActivatedFeatureStatus.OFF -> { } // Do nothing
+            UserActivatedFeatureStatus.CAN_PREACTIVATE -> taprootCard.visibility = View.VISIBLE
+            UserActivatedFeatureStatus.CAN_ACTIVATE -> taprootCard.visibility = View.VISIBLE
+            UserActivatedFeatureStatus.PREACTIVATED -> blockClock.visibility = View.VISIBLE
+            UserActivatedFeatureStatus.SCHEDULED_ACTIVATION -> {} // Do nothing
+            UserActivatedFeatureStatus.ACTIVE -> { } // Do nothing
+        }
+
+        blockClock.value = homeState.blocksToTaproot
     }
 
     override fun setNewOp(newOp: Operation, mode: CurrencyDisplayMode) {
@@ -205,15 +255,6 @@ class HomeFragment : SingleFragment<HomePresenter>(), HomeView {
         // Only show animation for recently received or sent ops
         if (newOp.creationDate.isAfter(ZonedDateTime.now().minusSeconds(NEW_OP_ANIMATION_WINDOW))) {
             newOpBadge.startAnimation(animRes)
-        }
-    }
-
-    override fun setUserRecoverable(recoverable: Boolean) {
-        if (recoverable) {
-            securityCenterCard.visibility = View.GONE
-
-        } else {
-            securityCenterCard.visibility = View.VISIBLE
         }
     }
 

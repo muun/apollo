@@ -1,14 +1,14 @@
 package io.muun.apollo.presentation.ui.recovery_code.priming;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
+import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
 import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 public class PrimingRecoveryCodeFragment extends SingleFragment<PrimingRecoveryCodePresenter>
         implements PrimingRecoveryCodeView {
@@ -18,6 +18,9 @@ public class PrimingRecoveryCodeFragment extends SingleFragment<PrimingRecoveryC
 
     @BindView(R.id.priming_recovery_code_desc)
     TextView description;
+
+    @BindView(R.id.priming_recovery_code_start)
+    MuunButton startButton;
 
     @Override
     protected void inject() {
@@ -36,6 +39,8 @@ public class PrimingRecoveryCodeFragment extends SingleFragment<PrimingRecoveryC
         final MuunHeader header = getParentActivity().getHeader();
         header.setElevated(true);
         header.setNavigation(MuunHeader.Navigation.BACK);
+
+        startButton.setOnClickListener(v -> presenter.continueToShowRecoveryCode());
     }
 
     @Override
@@ -44,11 +49,6 @@ public class PrimingRecoveryCodeFragment extends SingleFragment<PrimingRecoveryC
             title.setText(R.string.priming_recovery_code_email_skipped_title);
             description.setText(R.string.priming_recovery_code_email_skipped_desc);
         }
-    }
-
-    @OnClick(R.id.priming_recovery_code_start)
-    public void onStartClick() {
-        presenter.continueToShowRecoveryCode();
     }
 }
 

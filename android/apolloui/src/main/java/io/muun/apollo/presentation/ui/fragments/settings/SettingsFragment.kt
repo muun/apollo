@@ -8,18 +8,32 @@ import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.errors.UserFacingError
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.NightMode
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.ACTIVE
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_ACTIVATE
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_PREACTIVATE
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.OFF
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.PREACTIVATED
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus.SCHEDULED_ACTIVATION
+import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.model.user.UserProfile
+import io.muun.apollo.domain.selector.BlockchainHeightSelector
+import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
+import io.muun.apollo.presentation.ui.fragments.settings.SettingsPresenter.SettingsState
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.utils.supportsDarkMode
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
+import io.muun.apollo.presentation.ui.view.MuunIconButton
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 import io.muun.common.model.Currency
@@ -40,6 +54,12 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     @BindView(R.id.wallet_details_section)
     lateinit var wallet_details_section: View
 
+    @BindView(R.id.settings_edit_username)
+    lateinit var usernameItem: MuunIconButton
+
+    @BindView(R.id.settings_password)
+    lateinit var passwordItem: MuunSettingItem
+
     @BindView(R.id.settings_phone_number)
     lateinit var phoneNumberItem: MuunSettingItem
 
@@ -51,6 +71,15 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
 
     @BindView(R.id.settings_dark_mode)
     lateinit var darkModeItem: MuunSettingItem
+
+    @BindView(R.id.settings_bitcoin)
+    lateinit var bitcoinSettingsItem: MuunSettingItem
+
+    @BindView(R.id.settings_lightning)
+    lateinit var lightningSettingsItem: MuunSettingItem
+
+    @BindView(R.id.settings_logout)
+    lateinit var logoutItem: View
 
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
@@ -80,6 +109,18 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         muunPictureInput.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
         muunPictureInput.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
         versionCode.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+
+        usernameItem.setOnClickListener { editUsername() }
+        passwordItem.setOnClickListener { editPassword() }
+        darkModeItem.setOnClickListener { editDarkMode() }
+        bitcoinUnitItem.setOnClickListener { editBitcoinUnit() }
+        currencyItem.setOnClickListener { editPrimaryCurrency() }
+        logoutItem.setOnClickListener { goToLogout() }
+        bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
+        lightningSettingsItem.setOnClickListener { goToLightningSettings() }
+
+        // TEMP: code for Taproot QA:
+        versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -97,11 +138,13 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         settingsHeaderSection.visibility = View.GONE
     }
 
-    override fun setUser(user: User, mode: CurrencyDisplayMode, rateWindow: ExchangeRateWindow) {
-        setUpRecoveryAndLogoutSection(user)
-        setUpPublicProfileSection(user)
-        setUpWalletDetailsSection(user)
-        setUpGeneralSection(user, mode, rateWindow)
+    override fun setState(state: SettingsState) {
+        setUpRecoveryAndLogoutSection(state.user)
+        setUpPublicProfileSection(state.user)
+        setUpWalletDetailsSection(state.user)
+        setUpGeneralSection(state.user, state.currencyDisplayMode, state.exchangeRateWindow)
+
+        bitcoinSettingsItem.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
     }
 
     override fun setNightMode(mode: NightMode) {
@@ -202,31 +245,26 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         muunPictureInput.resetPicture()
     }
 
-    @OnClick(R.id.settings_edit_username)
-    fun editUsername() {
+    private fun editUsername() {
         presenter.navigateToEditUsername()
     }
 
-    @OnClick(R.id.settings_password)
-    fun editPassword() {
+    private fun editPassword() {
         presenter.navigateToEditPassword()
     }
 
-    @OnClick(R.id.settings_bitcoin_unit)
-    fun editBitcoinUnit() {
+    private fun editBitcoinUnit() {
         presenter.navigateToSelectBitcoinUnit()
     }
 
-    @OnClick(R.id.settings_dark_mode)
-    fun editDarkMode() {
+    private fun editDarkMode() {
         presenter.navigateToSelectDarkMode()
     }
 
     /**
      * Open Select Currency Activity, to change the user's primary currency.
      */
-    @OnClick(R.id.settings_primary_currency)
-    fun editPrimaryCurrency() {
+    private fun editPrimaryCurrency() {
         startActivityForResult(
             SelectCurrencyActivity.getStartSelectPrimaryCurrencyActivityIntent(parentActivity),
             REQUEST_NEW_PRIMARY_CURRENCY
@@ -244,14 +282,24 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     /**
      * Called when the user taps on the log out or delete wallet button.
      */
-    @OnClick(R.id.settings_logout)
-    fun logout() {
+    private fun goToLogout() {
         presenter.handleDeleteWalletRequest()
     }
 
-    @OnClick(R.id.settings_lightning)
-    fun lighting() {
+    private fun goToLightningSettings() {
         presenter.navigateToLightningSettings()
+    }
+
+    private fun showBitcoinSettings(state: SettingsState): Boolean =
+        when (state.taprootFeatureStatus) {
+            UserActivatedFeatureStatus.PREACTIVATED,
+            UserActivatedFeatureStatus.SCHEDULED_ACTIVATION,
+            UserActivatedFeatureStatus.ACTIVE -> true
+            else -> false
+        }
+
+    private fun goToBitcoinSettings() {
+        presenter.navigateToBitcoinSettings()
     }
 
     /**
@@ -284,9 +332,6 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         showDialog(muunDialog)
     }
 
-    /**
-     * Handle the delete wallet tap action.
-     */
     override fun handleDeleteWallet(displayExplanation: Boolean) {
         if (displayExplanation) {
             val muunDialog = MuunDialog.Builder()
@@ -318,5 +363,44 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     private fun onPictureChange(uri: Uri) {
         showTextToast(getString(R.string.uploading_picture))
         presenter.reportPictureChange(uri)
+    }
+
+    private fun rotateDebugTaprootStatusForQa() {
+        val nextStatus = when (FeatureStatusSelector.DEBUG_TAPROOT_STATUS) {
+            null -> OFF
+            OFF -> CAN_PREACTIVATE
+            CAN_PREACTIVATE -> CAN_ACTIVATE
+            CAN_ACTIVATE -> PREACTIVATED
+            PREACTIVATED -> SCHEDULED_ACTIVATION
+            SCHEDULED_ACTIVATION -> ACTIVE
+            ACTIVE -> null
+        }
+
+        val nextBlocksToTaproot = when (nextStatus) {
+            null -> null
+            OFF -> 1111
+            CAN_PREACTIVATE -> 1112
+            CAN_ACTIVATE -> 1113
+            PREACTIVATED -> 1114
+            SCHEDULED_ACTIVATION -> 1115
+            ACTIVE -> 0
+        }
+
+        val nextToast = if (nextStatus != null) {
+            "Taproot: ${nextStatus.name} / $nextBlocksToTaproot blocks"
+        } else {
+            "Taproot debug disabled"
+        }
+
+        FeatureStatusSelector.DEBUG_TAPROOT_STATUS = nextStatus
+        BlockchainHeightSelector.DEBUG_BLOCKS_TO_TAPROOT = nextBlocksToTaproot
+
+        showTextToast(nextToast)
+
+        when (nextStatus) {
+            CAN_PREACTIVATE -> presenter.showPreactivationNotification()
+            ACTIVE -> presenter.showActivatedNotification()
+            else -> {}
+        }
     }
 }

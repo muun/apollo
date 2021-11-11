@@ -57,6 +57,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_NEW_OP_DESCRIPTION: AnalyticsEvent()
     class S_NEW_OP_CONFIRMATION: AnalyticsEvent()
     class S_SETTINGS: AnalyticsEvent()
+    class S_SETTINGS_BITCOIN_NETWORK: AnalyticsEvent()
+    class S_SETTINGS_LIGHTNING_NETWORK: AnalyticsEvent()
     class S_CURRENCY_PICKER: AnalyticsEvent()
     class S_SET_UP_RECOVERY_CODE_GENERATE: AnalyticsEvent()
     class S_SET_UP_RECOVERY_CODE_VERIFY: AnalyticsEvent()
@@ -66,6 +68,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         EMAIL_SETUP_SUCCESS,
         RECOVERY_CODE_SUCCESS,
         EMERGENCY_KIT_SUCCESS,
+        TAPROOT_PREACTIVATION_SUCCESS,
+        TAPROOT_ACTIVATION_SUCCESS, // TODO this screen should be separate
+        TAPROOT_PREACTIVATION_COUNTDOWN,
         DELETE_WALLET
     }
 
@@ -98,6 +103,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_EMERGENCY_KIT_VERIFY: AnalyticsEvent()
     class S_EMERGENCY_KIT_CLOUD_VERIFY: AnalyticsEvent()
     class S_EMERGENCY_KIT_HELP: AnalyticsEvent()
+    class S_EMERGENCY_KIT_MANUAL_ADVICE: AnalyticsEvent()
+    class S_TAPROOT_SLIDES(step: Int): AnalyticsEvent(listOf("step" to step))
     class S_EXPORT_KEYS_RECOVERY_TOOL: AnalyticsEvent()
     class S_BITCOIN_UNIT_PICKER: AnalyticsEvent()
     class S_NIGHT_MODE_PICKER: AnalyticsEvent()
@@ -105,6 +112,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     enum class S_RECEIVE_TYPE {
         SEGWIT_ADDRESS,
         LEGACY_ADDRESS,
+        TAPROOT_ADDRESS,
         LN_INVOICE
     }
 
@@ -269,6 +277,12 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_EMERGENCY_KIT_EXPORTED(option: String): AnalyticsEvent(listOf("share_option" to option))
     class E_EMERGENCY_KIT_ABORTED: AnalyticsEvent()
 
+    class E_TAPROOT_SLIDES_ABORTED: AnalyticsEvent()
+
+    class S_EMERGENCY_KIT_CLOUD_FEEDBACK: AnalyticsEvent()
+    class E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT(cloudName: String):
+        AnalyticsEvent(listOf("cloud_name" to cloudName))
+
     class E_OPEN_WEB(val name: String, val url: String): AnalyticsEvent(listOf(
         "name" to name,
         "url" to url
@@ -337,7 +351,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     enum class E_EK_SAVE_OPTION {
         DRIVE,
-        EMAIL,
         MANUAL,
         ICLOUD; // not gonna happen in Apollo, just documenting
     }
@@ -358,9 +371,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         AnalyticsEvent(listOf("type" to type.name.toLowerCase(), "error" to error))
 
     class E_EK_SHARE(app: String):
-        AnalyticsEvent(listOf("app" to app))
-
-    class E_EK_EMAIL(app: String):
         AnalyticsEvent(listOf("app" to app))
 
     enum class ERROR_TYPE {
@@ -394,5 +404,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     class E_LNURL_WITHDRAW_STATE(val type: LNURL_WITHDRAW_STATE_TYPE): AnalyticsEvent(listOf(
         "type" to type.name.toLowerCase()
+    ))
+
+    class E_EASTER_EGG(val easterEgg: String): AnalyticsEvent(listOf(
+        "type" to easterEgg
     ))
 }

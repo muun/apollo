@@ -1,6 +1,5 @@
 package io.muun.apollo.data.apis
 
-import android.app.Activity
 import android.content.Context
 import rx.Observable
 import java.io.File
@@ -10,8 +9,8 @@ import java.io.File
  */
 interface DriveUploader {
 
-    fun upload(file: File, mimeType: String): Observable<DriveFile>
-
     fun open(activityContext: Context, driveFile: DriveFile)
 
+    fun upload(file: File, mimeType: String, uniqueProp: String, props: Map<String, String>):
+        Observable<DriveFile>
 }

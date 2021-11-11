@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.recovery_code.accept;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.view.MuunButton;
@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.CheckBox;
 import butterknife.BindView;
 import butterknife.OnCheckedChanged;
-import butterknife.OnClick;
 
 public class AcceptRecoveryCodeFragment extends SingleFragment<AcceptRecoveryCodePresenter>
         implements AcceptRecoveryCodeView {
@@ -56,6 +55,8 @@ public class AcceptRecoveryCodeFragment extends SingleFragment<AcceptRecoveryCod
         header.setIndicatorText(indicatorText);
         header.setElevated(true);
         header.setNavigation(MuunHeader.Navigation.EXIT);
+
+        acceptButton.setOnClickListener(v -> presenter.finishSetup());
     }
 
     @Override
@@ -79,11 +80,7 @@ public class AcceptRecoveryCodeFragment extends SingleFragment<AcceptRecoveryCod
         updateAcceptButtonState();
     }
 
-    @OnClick(R.id.recovery_code_accept)
-    void onAcceptClick() {
-        presenter.finishSetup();
-    }
-
+    @Override
     public void setLoading(boolean isLoading) {
         acceptButton.setLoading(isLoading);
     }

@@ -7,6 +7,8 @@ import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
+import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.LogoutActions;
@@ -16,9 +18,11 @@ import io.muun.common.model.SessionStatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 import timber.log.Timber;
 
 import java.util.Collections;
+import java.util.List;
 import javax.inject.Inject;
 
 /**
@@ -101,7 +105,10 @@ public class PreferencesMigrationManager {
             this::moveSignupDraftToSecureStorage,
 
             // Nov 2020, Apollo 77 now remembers many Emergency Kit verification codes
-            this::migrateToRecentEmergencyKitVerificationCodes
+            this::migrateToRecentEmergencyKitVerificationCodes,
+
+            // Sept 2021, Apollo 700 introduces EmergencKit version and its own model
+            this::addEmergencyKitVersion
     };
 
     /**
@@ -275,7 +282,53 @@ public class PreferencesMigrationManager {
         signupDraftManager.moveSignupDraftToSecureStorage();
     }
 
+    /**
+     * Move the old, single-value Emergency Kit verification code preference to the "most recent"
+     * list format.
+     */
     private void migrateToRecentEmergencyKitVerificationCodes() {
-        keysRepository.migrateToRecentEmergencyKitVerificationCodes();
+        final SharedPreferences keysRepositoryPrefs = context
+                .getSharedPreferences("keys", Context.MODE_PRIVATE);
+
+        final String storedCode = keysRepositoryPrefs.getString("ek_activation_code", null);
+
+        final StoredEkVerificationCodes storedCodes;
+
+        if (TextUtils.isEmpty(storedCode)) {
+            storedCodes = new StoredEkVerificationCodes();
+        } else {
+            storedCodes = new StoredEkVerificationCodes(Collections.singletonList(storedCode));
+        }
+
+        new JsonPreferenceAdapter<>(StoredEkVerificationCodes.class)
+                .set("ek_recent_verification_codes", storedCodes, keysRepositoryPrefs.edit());
+    }
+
+    private void addEmergencyKitVersion() {
+        userRepository.initEmergencyKitVersion();
+
+        // Let's also move EK verification codes here too, shall we? We like related things to be
+        // in one same place.
+
+        final SharedPreferences keysRepositoryPrefs = context
+                .getSharedPreferences("keys", Context.MODE_PRIVATE);
+
+        final boolean hasRecentCodes = keysRepositoryPrefs.contains("ek_recent_verification_codes");
+
+        if (hasRecentCodes) {
+
+            final StoredEkVerificationCodes storedCodes =
+                    new JsonPreferenceAdapter<>(StoredEkVerificationCodes.class)
+                            .get("ek_recent_verification_codes", keysRepositoryPrefs);
+
+            final List<String> fromOldestToNewest = storedCodes.getFromNewestToOldest();
+            Collections.reverse(fromOldestToNewest);
+
+            for (String ekCode : fromOldestToNewest) {
+                userRepository.storeEmergencyKitVerificationCode(ekCode);
+            }
+
+            keysRepositoryPrefs.edit().remove("ek_recent_verification_codes").apply();
+        }
     }
 }

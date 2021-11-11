@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.fragments.ek_verify
 
 import android.os.Bundle
 import io.muun.apollo.domain.action.ek.VerifyEmergencyKitAction
-import io.muun.apollo.domain.errors.EmergencyKitInvalidCodeError
 import io.muun.apollo.domain.errors.EmergencyKitVerificationError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -21,7 +20,7 @@ class EmergencyKitVerifyPresenter @Inject constructor(
         parentPresenter.refreshToolbar()
 
         verifyEmergencyKit.state
-            .compose(handleStates(null, this::handleError))
+            .compose(handleStates(view::setLoading, this::handleError))
             .doOnNext { onVerificationSuccess() }
             .let(this::subscribeTo)
     }
@@ -46,7 +45,7 @@ class EmergencyKitVerifyPresenter @Inject constructor(
         AnalyticsEvent.S_EMERGENCY_KIT_VERIFY()
 
     fun verifyCode(code: String) {
-        verifyEmergencyKit.run(code)
+        verifyEmergencyKit.run(code, parentPresenter.getGeneratedEmergencyKit())
     }
 
     fun goBack() {

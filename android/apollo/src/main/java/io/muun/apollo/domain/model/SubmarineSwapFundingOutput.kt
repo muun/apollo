@@ -4,7 +4,6 @@ import io.muun.common.Supports
 import io.muun.common.api.SubmarineSwapFundingOutputJson
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.crypto.hd.PublicKey
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwap
 import io.muun.common.model.DebtType
 import io.muun.common.utils.Deprecated
 

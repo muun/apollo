@@ -9,15 +9,20 @@ import (
 	"strings"
 
 	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/errors"
 
 	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcutil"
 	"google.golang.org/protobuf/proto"
 )
 
 // These constants are here for clients usage.
 const (
+	AddressVersionV1      = addresses.V1
+	AddressVersionV2      = addresses.V2
+	AddressVersionV3      = addresses.V3
+	AddressVersionV4      = addresses.V4
+	AddressVersionV5      = addresses.V5
 	AddressVersionSwapsV1 = addresses.SubmarineSwapV1
 	AddressVersionSwapsV2 = addresses.SubmarineSwapV2
 )
@@ -109,7 +114,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	}
 
 	// Bech32 check
-	decodedAddress, err := btcutil.DecodeAddress(address, network.network)
+	decodedAddress, err := btcutilw.DecodeAddress(address, network.network)
 	if err != nil {
 		return nil, fmt.Errorf("invalid address: %w", err)
 	}

@@ -37,6 +37,11 @@ class SingleFragmentActivityImpl:
     override fun getHeader(): MuunHeader =
             headerView
 
+    override fun initializeUi() {
+        super.initializeUi()
+        headerView.attachToActivity(this)
+    }
+
     override fun getInitialFragment(): BaseFragment<out Presenter<*>> {
         val fragmentClass: Class<*> = argumentsBundle.getSerializable(FRAGMENT_CLASS) as Class<*>
         try {

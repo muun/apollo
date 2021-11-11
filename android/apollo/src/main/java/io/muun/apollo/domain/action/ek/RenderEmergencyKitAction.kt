@@ -1,18 +1,25 @@
 package io.muun.apollo.domain.action.ek
 
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.preferences.KeysRepository
+import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.libwallet.LibwalletBridge
+import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import rx.Observable
+import rx.schedulers.Schedulers
 import java.util.*
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RenderEmergencyKitAction @Inject constructor(
+    private val userRepository: UserRepository,
     private val keysRepository: KeysRepository,
-    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction
+    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
+    private val transformerFactory: ExecutionTransformerFactory
 
 ): BaseAsyncAction0<GeneratedEmergencyKit>() {
 
@@ -30,8 +37,16 @@ class RenderEmergencyKitAction @Inject constructor(
         Observable.defer {
             watchData().first()
                 .map { renderSave(it) }
-                .doOnNext {
-                    reportEmergencyKitExported.run(false) // fire and forget
+                .doOnNext { ek ->
+                    val export = EmergencyKitExport(ek, false, EmergencyKitExport.Method.UNKNOWN)
+
+                    // NOTE:
+                    // Rather than use `run()`, we subscribe to this action() in background to avoid
+                    // competing with other callers for the Action concurrency check.
+                    // Remember: this is a fire-and-forget call
+                    reportEmergencyKitExported.action(export)
+                        .subscribeOn(transformerFactory.backgroundScheduler)
+                        .subscribe()
                 }
         }
 
@@ -44,7 +59,7 @@ class RenderEmergencyKitAction @Inject constructor(
             Locale.getDefault()
         )
 
-        keysRepository.storeEmergencyKitVerificationCode(kitGen.verificationCode)
+        userRepository.storeEmergencyKitVerificationCode(kitGen.verificationCode)
 
         return kitGen
     }

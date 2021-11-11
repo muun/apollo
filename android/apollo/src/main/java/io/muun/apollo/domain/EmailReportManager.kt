@@ -4,12 +4,11 @@ import android.content.Context
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.TelephonyInfoProvider
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.domain.selector.UserSelector
 import io.muun.apollo.domain.utils.locale
-import io.muun.common.Optional
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import javax.inject.Inject
@@ -31,7 +30,7 @@ class EmailReportManager @Inject constructor(
         val fcmTokenHash: String = try {
             val fcmToken: String = getFcmToken.actionNow()
             Encodings.bytesToHex(Hashes.sha256(Encodings.stringToBytes(fcmToken)))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {  // Avoid crash, we're already processing an error (report).
             // GetFcmTokenAction already logs the error
             "unavailable"
         }

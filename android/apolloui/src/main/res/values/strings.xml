@@ -8,6 +8,8 @@
     <!-- General-purpose strings -->
     <string name="cancel">Cancel</string>
     <string name="dismiss">Dismiss</string>
+    <string name="stay">Stay</string>
+    <string name="leave">Leave</string>
     <string name="retry">Retry</string>
     <string name="send_report">Send report</string>
     <string name="abort">Abort</string>
@@ -1056,6 +1058,7 @@
     <string name="legacy_address_info">Bitcoin legacy address</string>
     <string name="your_bitcoin_address">Your bitcoin address</string>
     <string name="your_compat_bitcoin_address">Your legacy address</string>
+    <string name="your_taproot_bitcoin_address">Your bitcoin address</string>
     <string name="your_ln_invoice">Your lightning invoice</string>
     <string name="show_qr_invoice_loading">Generating invoice</string>
     <string name="show_qr_invoice_expired">
@@ -1064,22 +1067,6 @@
     <string name="show_qr_invoice_create_other">Create invoice</string>
 
     <string name="address_share_title">Send to...</string>
-
-    <string name="bitcoin_address_help_title">Segwit and legacy addresses</string>
-    <string name="bitcoin_address_help_content">
-        <annotation role="p">
-           Segwit and legacy are two different types of bitcoin addresses.
-        </annotation>
-
-        <annotation role="p">
-            Legacy addresses are more widely adopted but create larger transactions.
-            Using them will result in higher fees on your future transactions.
-        </annotation>
-
-        To make your transactions more cost-effective, Muun displays Segwit addresses by
-        default. Some services haven\'t upgraded to Segwit yet. If you are having trouble using
-        a Segwit address, try a legacy address instead.
-    </string>
 
     <string name="secure_storage_error">
         Your phone\'s secure storage has been corrupted or compromised. For security reasons,
@@ -1217,11 +1204,31 @@
     <string name="ek_uploading_body">
         Uploading your Emergency Kit
     </string>
+    <string name="ek_updating_body">
+        Updating your Emergency Kit
+    </string>
     <string name="ek_upload_error_title">Your Emergency Kit could not be saved</string>
     <string name="ek_upload_error_body">
         We couldn\’t upload your Emergency Kit to the cloud. Please, check your connection and
         try again.
     </string>
+
+    <string name="ek_manual_advice_title">
+        Saving the kit manually?\nHere\’s some advice.
+    </string>
+    <string name="ek_manual_advice_1">
+        <annotation fontStyle="bold">Make it accesible</annotation>. You should be able to access
+        your Kit at all times, even if your phone is lost, stolen or stops working.
+    </string>
+    <string name="ek_manual_advice_2">
+        <annotation fontStyle="bold">Don\’t prioritize secrecy</annotation>. Remember, your kit is
+        encrypted. Without your Recovery Code, the Kit is harmless.
+    </string>
+    <string name="ek_manual_advice_3">
+        <annotation fontStyle="bold">Make it easy to update</annotation>. You should always have
+        the latest Kit at hand, an old Kit won\’t work.
+    </string>
+    <string name="ek_manual_advice_action">Save manually</string>
 
     <!-- Email DeepLink errors -->
 
@@ -1293,14 +1300,18 @@
         Use your Google account to save and access your kit.
     </string>
 
-    <string name="save_option_email_title">Send yourself an email</string>
-    <string name="save_option_email_description">
-        Use your email account to save and access your kit.
+    <string name="save_option_feedback_title">Suggest another cloud</string>
+    <string name="save_option_feedback_description">
+        Tell us which cloud service you would like us to support.
     </string>
+    <string name="save_option_feedback_dialog_body">
+        We plan to support more cloud services. Which one would you like to see added?
+    </string>
+    <string name="save_option_feedback_dialog_action">Send feedback</string>
+    <string name="save_option_feedback_dialog_success">Thank you for your feedback!</string>
 
-    <string name="save_option_manual_title">Save manually</string>
-    <string name="save_option_manual_description">
-        Choose an application to save and access your kit.
+    <string name="save_link_manual">
+        <annotation link="no_cloud">I don\’t want to use cloud storage</annotation>
     </string>
 
     <string name="migration_title">Updating your wallet</string>
@@ -1341,6 +1352,7 @@
     <string name="turbo_channels_disable">DISABLE</string>
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
+    <string name="settings_bitcoin">Bitcoin Network</string>
     <string name="dark_mode">Appearance</string>
     <string name="dark_mode_dark">Dark mode</string>
     <string name="dark_mode_light">Light mode</string>
@@ -1352,7 +1364,7 @@
     <string name="edit_address_type">Address type</string>
     <string name="segwit">Segwit</string>
     <string name="legacy">Legacy</string>
-    <string name="choose_address_type">Choose your address type</string>
+    <string name="taproot">Taproot</string>
 
     <string name="invoice_settings">Invoice settings</string>
     <string name="invoice_settings_hide">Hide settings</string>
@@ -1403,4 +1415,123 @@
         This code was used by another wallet, and can\'t be used again.
     </string>
 
+    <string name="tr_setup_intro_1_title">A giant leap for bitcoin</string>
+    <string name="tr_setup_intro_1_desc">
+        Taproot is one of the most anticipated upgrades in bitcoin.
+        \n\n
+        Starting with cheaper and less traceable payments, Taproot is setting the stage for
+        massive innovation in bitcoin.
+    </string>
+    <string name="tr_setup_intro_2_title">Enabled by powerful scripts</string>
+    <string name="tr_setup_intro_2_desc">
+        Taproot uses new scripts to create the addresses where you\'ll receive funds.
+        \n\n
+        To recover those funds in an emergency, these scripts need to be included in your Emergency
+        Kit.
+    </string>
+    <string name="tr_setup_intro_3_title">Completely secure</string>
+    <string name="tr_setup_intro_3_desc">
+        Keep total control over your funds by updating your Emergency Kit before ever using Taproot.
+        \n\n
+        The updated Kit replaces the one you already have, but your Recovery Code doesn\'t change.
+    </string>
+    <string name="tr_setup_intro_action">Update your Kit</string>
+    <string name="tr_setup_intro_abort_title">Leave activation?</string>
+    <string name="tr_setup_intro_abort_desc">
+        You haven\'t activated Taproot yet. You can restart this process later.
+    </string>
+
+    <string name="tr_setup_update_kit_title">Update your Emergency Kit</string>
+    <string name="tr_setup_update_kit_desc">
+        Choose your preferred cloud service to ensure your Kit is never lost.
+    </string>
+
+    <string name="tr_celebration_user_native_title">Taproot is live!</string>
+    <string name="tr_celebration_desc">
+        You can now send and receive payments using Taproot addresses. Your payments will be cheaper
+        and less traceable.
+    </string>
+    <string name="tr_celebration_action">
+        Excellent
+    </string>
+
+    <string name="tr_setting_title">Default to Taproot addresses</string>
+    <string name="tr_setting_desc">
+        Taproot is a new address type that makes your payments cheaper and less traceable.
+        \n
+        \nMany services are not yet compatible with Taproot and may label your addresses as invalid.
+        If you make Taproot the default, you\'ll need to manually change the address type to Segwit
+        or Legacy every time this happens.
+    </string>
+    <string name="tr_setting_timer">Activates in ~<annotation arg="0">3</annotation> hours</string>
+
+    <string name="address_picker_title">Choose your address type</string>
+    <string name="address_picker_legacy_title">Legacy</string>
+    <string name="address_picker_legacy_desc">
+        The most widely accepted address type. Use it only when a service labels your Segwit
+        addresses as invalid.
+    </string>
+    <string name="address_picker_segwit_title">Segwit</string>
+    <string name="address_picker_segwit_desc">
+        A relatively new address type, already widely accepted. It creates lighter transactions
+        and saves you money on future network fees.
+    </string>
+    <string name="address_picker_taproot_title">Taproot</string>
+    <string name="address_picker_taproot_desc_before_activation">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Activates in
+        ~<annotation arg="0">x</annotation> hours</annotation></annotation>. The newest and most
+        powerful address type. Many services are not yet compatible and may label it as invalid.
+    </string>
+    <string name="address_picker_taproot_desc_after_activation">
+        The newest and most powerful address type. Many services are not yet compatible and may
+        label it as invalid.
+    </string>
+    <string name="taproot_card_body">
+        <annotation fontColor="muunBlue"><annotation fontStyle="bold">Level-up your payments
+        </annotation></annotation>. Save with each payment by activating Taproot.
+    </string>
+    <string name="taproot_success_title">
+        You\'re ready for Taproot!
+    </string>
+    <string name="taproot_success_preactivated_desc">
+        <annotation role="p">
+            In <annotation arg="0">123</annotation> blocks (~<annotation arg="1">4</annotation>
+            hours), the Bitcoin Network will activate Taproot globally.
+        </annotation>
+
+        <annotation role="p">
+            When this happens, you\'ll be able to receive funds in Taproot addresses.
+        </annotation>
+    </string>
+    <string name="taproot_success_active_desc">
+        You can now send and receive payments using Taproot addresses.
+        Your payments will be cheaper and less traceable.
+    </string>
+    <string name="taproot_success_action">Excellent</string>
+
+    <string name="tr_clock_detail_title">It\'s the final countdown!</string>
+    <string name="tr_clock_detail_desc">
+        <annotation role="p">
+            When the Bitcoin Network mines block 709,632 Taproot will activate globally.
+        </annotation>
+
+        <annotation role="p">
+            To protect you from potential blockchain reorganizations, you\'ll be able to start
+            using Taproot addresses 12 blocks later
+        </annotation>
+
+        <annotation role="p">
+            We have <annotation arg="0">210</annotation> blocks to go!
+        </annotation>
+    </string>
+
+    <string name="notification_tr_preactivate_title">Level-up your payments</string>
+    <string name="notification_tr_preactivate_desc">
+        Save with each payment by activating Taproot.
+    </string>
+
+    <string name="notification_tr_activated_title">Taproot is live 🎉</string>
+    <string name="notification_tr_activated_desc">
+        The Bitcoin Network activated Taproot. You can now enjoy cheaper payments.
+    </string>
 </resources>

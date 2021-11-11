@@ -2,26 +2,33 @@ package io.muun.apollo.presentation.ui.fragments.settings
 
 import android.net.Uri
 import android.os.Bundle
+import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.domain.NightModeManager
-import kotlin.Triple
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
 import io.muun.apollo.domain.errors.MuunError
+import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
+import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.*
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
+import io.muun.apollo.presentation.ui.fragments.settings.SettingsPresenter.SettingsState
+import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
+import io.muun.common.api.messages.EventCommunicationMessage
+import io.muun.common.api.messages.EventCommunicationMessage.Event
 import rx.Observable
 import timber.log.Timber
 import javax.inject.Inject
 import javax.money.CurrencyUnit
-import javax.validation.constraints.NotNull
 
 @PerFragment
 class SettingsPresenter @Inject constructor(
@@ -29,9 +36,18 @@ class SettingsPresenter @Inject constructor(
     private val updateProfilePictureAction: UpdateProfilePictureAction,
     private val userActions: UserActions,
     private val exchangeRateSelector: ExchangeRateSelector,
-    private val nightModeManager: NightModeManager
+    private val featuresStatusSel: FeatureStatusSelector,
+    private val nightModeManager: NightModeManager,
+    private val notificationService: NotificationService
 
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
+
+    class SettingsState(
+        val user: User,
+        val currencyDisplayMode: CurrencyDisplayMode,
+        val exchangeRateWindow: ExchangeRateWindow,
+        val taprootFeatureStatus: UserActivatedFeatureStatus
+    )
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -47,11 +63,11 @@ class SettingsPresenter @Inject constructor(
                 userSel.watch(),
                 currencyDisplayModeSel.watch(),
                 exchangeRateSelector.watchWindow(),
-                ::Triple
+                featuresStatusSel.watch(UAF_TAPROOT),
+                ::SettingsState
             )
-            .doOnNext { data: Triple<User, CurrencyDisplayMode, ExchangeRateWindow> ->
-                val (user, mode, rateWindow) = data
-                view.setUser(user, mode, rateWindow)
+            .doOnNext { state ->
+                view.setState(state)
             }
 
         subscribeTo(observable)
@@ -169,6 +185,7 @@ class SettingsPresenter @Inject constructor(
         val shouldBlockAndExplain = options.isBlocked()
         if (options.isRecoverable()) {
             view.handleLogout(shouldBlockAndExplain)
+
         } else {
             view.handleDeleteWallet(shouldBlockAndExplain)
         }
@@ -189,5 +206,17 @@ class SettingsPresenter @Inject constructor(
 
     fun navigateToLightningSettings() {
         navigator.navigateToFragment(context, LightningSettingsFragment::class.java)
+    }
+
+    fun navigateToBitcoinSettings() {
+        navigator.navigateToFragment(context, BitcoinSettingsFragment::class.java)
+    }
+
+    fun showPreactivationNotification() {
+        notificationService.showEventCommunication(Event.TAPROOT_PREACTIVATION)
+    }
+
+    fun showActivatedNotification() {
+        notificationService.showEventCommunication(Event.TAPROOT_ACTIVATED)
     }
 }

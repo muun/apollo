@@ -20,18 +20,25 @@ public class RealTimeData {
     @NotNull
     public final double minFeeRateInWeightUnits;
 
+    @NotNull
+    public final List<MuunFeature> features;
+
     /**
      * Constructor.
      */
-    public RealTimeData(final FeeWindow feeWindow,
-                        final ExchangeRateWindow exchangeRateWindow,
-                        final int currentBlockchainHeight,
-                        final List<ForwardingPolicy> forwardingPolicies,
-                        double minFeeRateInWeightUnits) {
+    public RealTimeData(
+            final FeeWindow feeWindow,
+            final ExchangeRateWindow exchangeRateWindow,
+            final int currentBlockchainHeight,
+            final List<ForwardingPolicy> forwardingPolicies,
+            final double minFeeRateInWeightUnits,
+            final List<MuunFeature> features
+    ) {
         this.feeWindow = feeWindow;
         this.exchangeRateWindow = exchangeRateWindow;
         this.currentBlockchainHeight = currentBlockchainHeight;
         this.forwardingPolicies = forwardingPolicies;
         this.minFeeRateInWeightUnits = minFeeRateInWeightUnits;
+        this.features = features;
     }
 }
