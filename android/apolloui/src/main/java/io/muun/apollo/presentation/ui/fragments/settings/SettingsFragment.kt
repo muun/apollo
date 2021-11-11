@@ -120,7 +120,7 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
 
         // TEMP: code for Taproot QA:
-        versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
+//        versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

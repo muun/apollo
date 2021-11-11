@@ -9,5 +9,6 @@ import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 public enum MuunFeatureJson {
     @JsonEnumDefaultValue
     UNSUPPORTED_FEATURE,
-    TAPROOT
+    TAPROOT,
+    TAPROOT_PREACTIVATION
 }

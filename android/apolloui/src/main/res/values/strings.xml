@@ -1464,6 +1464,11 @@
         or Legacy every time this happens.
     </string>
     <string name="tr_setting_timer">Activates in ~<annotation arg="0">3</annotation> hours</string>
+    <string name="tr_setting_confirm_title">Set Taproot as default?</string>
+    <string name="tr_setting_confirm_desc">
+        Some services may label your addresses as invalid.
+    </string>
+    <string name="tr_setting_confirm">CONFIRM</string>
 
     <string name="address_picker_title">Choose your address type</string>
     <string name="address_picker_legacy_title">Legacy</string>
@@ -1517,7 +1522,7 @@
 
         <annotation role="p">
             To protect you from potential blockchain reorganizations, you\'ll be able to start
-            using Taproot addresses 12 blocks later
+            using Taproot addresses 6 blocks later
         </annotation>
 
         <annotation role="p">

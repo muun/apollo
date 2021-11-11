@@ -81,8 +81,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 700
-        versionName "47.0"
+        versionCode 701
+        versionName "47.1"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/

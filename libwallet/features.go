@@ -6,6 +6,7 @@ import (
 
 const (
 	BackendFeatureTaproot = "TAPROOT"
+	BackendFeatureTaprootPreactivation = "TAPROOT_PREACTIVATION"
 
 	UserActivatedFeatureStatusOff                 = "off"
 	UserActivatedFeatureStatusCanPreactivate      = "can_preactivate"
@@ -21,6 +22,7 @@ type UserActivatedFeature interface {
 	Blockheight(*Network) int
 	RequiredKitVersion() int
 	BackendFeature() string
+	BackendPreactivationFeature() string
 }
 
 type taprootUserActivatedFeature struct {}
@@ -52,6 +54,10 @@ func (t *taprootUserActivatedFeature) BackendFeature() string {
 	return BackendFeatureTaproot
 }
 
+func (t *taprootUserActivatedFeature) BackendPreactivationFeature() string {
+	return BackendFeatureTaprootPreactivation
+}
+
 func DetermineUserActivatedFeatureStatus(
 	feature UserActivatedFeature,
 	blockHeight int,
@@ -61,9 +67,15 @@ func DetermineUserActivatedFeatureStatus(
 ) string {
 
 	// If the feature is turned off by houston, two things can happen:
-	// 1. The (pre)activation event is not enabled
+	// 1. The (pre)activation event is not enabled: ie kill switch
 	// 2. Activation is held-off and the status is frozen as if the network
-	//   never activated.
+	//   never activated.: ie backend feature toggle
+
+	if len(feature.BackendFeature()) > 0 &&
+		!backendFeatures.Contains(feature.BackendPreactivationFeature()) {
+		return UserActivatedFeatureStatusOff
+	}
+
 	activatedByHouston := len(feature.BackendFeature()) > 0 &&
 		backendFeatures.Contains(feature.BackendFeature())
 

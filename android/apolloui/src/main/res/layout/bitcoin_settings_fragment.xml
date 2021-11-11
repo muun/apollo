@@ -71,6 +71,13 @@
                 android:textSize="16sp" />
 
         </LinearLayout>
+
+        <io.muun.apollo.presentation.ui.view.LoadingView
+                android:id="@+id/bitcoin_settings_loading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

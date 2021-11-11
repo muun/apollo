@@ -46,8 +46,7 @@ class HomePresenter @Inject constructor(
         val balanceHidden: Boolean,
         val user: User,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
-        val blocksToTaproot: Int,
-        val hasUpdatedEkToTaproot: Boolean
+        val blocksToTaproot: Int
     )
 
     override fun setUp(arguments: Bundle) {
@@ -62,7 +61,6 @@ class HomePresenter @Inject constructor(
                 userSel.watch(),
                 featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
                 blockchainHeightSel.watchBlocksToTaproot(),
-                userSel.watchPendingTaprootCelebration(),
                 ::HomeState
             )
             .compose(getAsyncExecutor())

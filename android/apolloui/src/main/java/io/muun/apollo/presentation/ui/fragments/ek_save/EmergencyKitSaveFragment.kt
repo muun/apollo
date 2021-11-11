@@ -6,9 +6,11 @@ import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.FrameLayout
 import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.data.apis.DriveError
 import io.muun.apollo.data.fs.LocalFile
 import io.muun.apollo.data.os.sharer.FileSharer
 import io.muun.apollo.domain.utils.applyArgs
@@ -29,7 +31,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     EmergencyKitSaveView {
 
     companion object {
-        private const val FEEDBACK_DIALOG_AUTO_DISMISS_MS = 1800L // developer-quality UX choice
+        private const val FEEDBACK_DIALOG_AUTO_DISMISS_MS = 2800L // developer-quality UX choice
 
         private const val ARG_UPDATE_KIT = "update_kit"
 
@@ -128,10 +130,16 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     }
 
     override fun setDriveError(error: Throwable) {
+
+        if (error is DriveError && error.isMissingPermissions()) {
+            retrySaveToDrive()
+            return
+        }
+
         val dialog = MuunDialog.Builder()
             .title(R.string.ek_upload_error_title)
             .message(R.string.ek_upload_error_body)
-            .positiveButton(R.string.retry, Action0 { selectOption(EmergencyKitSaveOption.SAVE_TO_DRIVE) })
+            .positiveButton(R.string.retry, Action0 { retrySaveToDrive() })
             .negativeButton(R.string.cancel, null)
             .build()
 
@@ -150,6 +158,10 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
 
     private fun onSaveToDriveClick() {
         selectOption(EmergencyKitSaveOption.SAVE_TO_DRIVE)
+    }
+
+    private fun retrySaveToDrive() {
+        onSaveToDriveClick() // just faking this is enough, no special treatment needed
     }
 
     private fun onCloudFeedbackClick() {
@@ -250,13 +262,17 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         }
 
         feedbackInput.setText("")
+        feedbackInput.requestFocusInput()
 
         confirmButton.setOnClickListener {
             presenter.reportCloudFeedback(feedbackInput.text.toString())
 
+            hideKeyboard(feedbackInput)
+
             // Absent some animation, this is really sudden. So we set height to 0 rather than
             // visibility = GONE to at least avoid an abrupt resizing of the dialog.
-            formGroup.layoutParams = ViewGroup.LayoutParams(formGroup.width, 0)
+            // Note: this LPs need to be FrameLayout.LayoutParams (depends on view's parent)
+            formGroup.layoutParams = FrameLayout.LayoutParams(formGroup.width, 0)
             successGroup.visibility = View.VISIBLE
 
             // Auto-dismiss after some time (minding the fragment life-cycle):

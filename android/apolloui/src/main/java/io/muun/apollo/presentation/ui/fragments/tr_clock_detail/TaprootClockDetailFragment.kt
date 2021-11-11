@@ -49,7 +49,7 @@ class TaprootClockDetailFragment: SingleFragment<TaprootClockDetailPresenter>(),
     private fun finalCountdownEasterEgg() {
         val context = requireContext()
         val spotifyIntent = Intent(Intent.ACTION_VIEW)
-        spotifyIntent.data = Uri.parse("spotify:track/3MrRksHupTVEQ7YbA0FsZK?si=123efa0a9d6d4e7c")
+        spotifyIntent.data = Uri.parse("spotify:track/3MrRksHupTVEQ7YbA0FsZK?si=123efa0a9d6d4e7c#0:13")
         spotifyIntent.putExtra(
             Intent.EXTRA_REFERRER,
             Uri.parse("android-app://" + context.applicationContext.packageName)
@@ -66,10 +66,10 @@ class TaprootClockDetailFragment: SingleFragment<TaprootClockDetailPresenter>(),
         }
 
         val youtubeAppIntent = Intent(Intent.ACTION_VIEW)
-        youtubeAppIntent.data = Uri.parse("vnd.youtube:9jK-NcRmVcw")
+        youtubeAppIntent.data = Uri.parse("vnd.youtube:9jK-NcRmVcw?t=14")
 
         val webIntent = Intent(Intent.ACTION_VIEW)
-        webIntent.data = Uri.parse("https://www.youtube.com/watch?v=9jK-NcRmVcw")
+        webIntent.data = Uri.parse("https://www.youtube.com/watch?v=9jK-NcRmVcw?t=14")
 
         try {
             startActivity(youtubeAppIntent)

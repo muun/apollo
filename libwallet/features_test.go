@@ -5,7 +5,12 @@ import (
 )
 
 func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
-	backendFeaturesWithTaproot := newStringList([]string{BackendFeatureTaproot})
+	backendFeaturesWithTaproot := newStringList([]string{
+		BackendFeatureTaproot, BackendFeatureTaprootPreactivation,
+	})
+	backendFeaturesWithTaprootPreactivation := newStringList([]string{
+		BackendFeatureTaprootPreactivation,
+	})
 	backendFeaturesWithoutTaproot := newStringList([]string{})
 	neverExportedKit := newIntList([]int{})
 	exportedPreviousKit := newIntList([]int{EKVersionDescriptors})
@@ -130,6 +135,39 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 			UserActivatedFeatureStatusScheduledActivation,
 		},
 		{
+			"backend only preactivation for pre-activated user",
+			args{
+				feature: UserActivatedFeatureTaproot,
+				height: postTaprootActivationHeight,
+				kitVersion: exportedBoth,
+				backendFeatures: backendFeaturesWithTaprootPreactivation,
+				network: Mainnet(),
+			},
+			UserActivatedFeatureStatusPreactivated,
+		},
+		{
+			"backend only preactivation for scheduled activated user with no kit",
+			args{
+				feature: UserActivatedFeatureTaproot,
+				height: postTaprootActivationHeight,
+				kitVersion: neverExportedKit,
+				backendFeatures: backendFeaturesWithTaprootPreactivation,
+				network: Mainnet(),
+			},
+			UserActivatedFeatureStatusOff,
+		},
+		{
+			"backend only preactivation for scheduled activated user with latest kit",
+			args{
+				feature: UserActivatedFeatureTaproot,
+				height: postTaprootActivationHeight,
+				kitVersion: exportedOnlyLatest,
+				backendFeatures: backendFeaturesWithTaprootPreactivation,
+				network: Mainnet(),
+			},
+			UserActivatedFeatureStatusScheduledActivation,
+		},
+		{
 			"backend turned off for pre-activated user",
 			args{
 				feature: UserActivatedFeatureTaproot,
@@ -138,7 +176,7 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 				backendFeatures: backendFeaturesWithoutTaproot,
 				network: Mainnet(),
 			},
-			UserActivatedFeatureStatusPreactivated,
+			UserActivatedFeatureStatusOff,
 		},
 		{
 			"backend turned off for scheduled activated user with no kit",
@@ -160,7 +198,7 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 				backendFeatures: backendFeaturesWithoutTaproot,
 				network: Mainnet(),
 			},
-			UserActivatedFeatureStatusScheduledActivation,
+			UserActivatedFeatureStatusOff,
 		},
 	}
 	for _, tt := range tests {

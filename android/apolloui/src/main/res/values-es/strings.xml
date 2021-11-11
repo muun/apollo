@@ -1355,7 +1355,9 @@
     <string name="save_option_feedback_dialog_action">Enviar comentario</string>
     <string name="save_option_feedback_dialog_success">¡Gracias por tu comentario!</string>
 
-    <string name="save_link_manual">No quiero almacenarlo en la nube</string>
+    <string name="save_link_manual">
+        <annotation link="no_cloud">No quiero almacenarlo en la nube</annotation>
+    </string>
 
     <string name="migration_title">Actualizando tu monedero</string>
 
@@ -1479,7 +1481,7 @@
     </string>
     <string name="tr_setup_intro_3_title">Completamente seguro</string>
     <string name="tr_setup_intro_3_desc">
-        Mantiene el control total de tus fondos actualizando tu Kit de Emergencia antes de usar
+        Mantén el control total de tus fondos actualizando tu Kit de Emergencia antes de usar
         Taproot por primera vez.
         \n\n
         El Kit actualizado reemplaza al que ya tienes, pero tu Código de Recuperación no cambia.
@@ -1492,7 +1494,7 @@
 
     <string name="tr_setup_update_kit_title">Actualiza tu Kit de Emergencia</string>
     <string name="tr_setup_update_kit_desc">
-        Elije tu servicio en la nube preferido para asegurarte de que tu Kit nunca se pierda.
+        Elige tu servicio en la nube preferido para asegurarte de que tu Kit nunca se pierda.
     </string>
 
     <string name="tr_celebration_user_native_title">¡Se activó Taproot!</string>
@@ -1501,7 +1503,7 @@
         y menos rastreables.
     </string>
     <string name="tr_celebration_action">
-        Excellente
+        Excelente
     </string>
 
     <string name="tr_setting_title">Predeterminar a direcciones Taproot</string>
@@ -1510,10 +1512,15 @@
         rastreables.
         \n\n
         Muchos servicios aún no son compatibles con Taproot y pueden marcar tus direcciones como
-        inválidas. Si elijes a Taproot como tipo predeterminado, deberás cambiar manualmente el
+        inválidas. Si eliges a Taproot como tipo predeterminado, deberás cambiar manualmente el
         tipo de dirección a Segwit o Legacy cada vez que esto suceda.
     </string>
     <string name="tr_setting_timer">Se activa en ~~<annotation arg="0">3</annotation> horas</string>
+    <string name="tr_setting_confirm_title">¿Predeterminar a Taproot?</string>
+    <string name="tr_setting_confirm_desc">
+        Algunos servicios pueden marcar tus direcciones como inválidas.
+    </string>
+    <string name="tr_setting_confirm">CONFIRMAR</string>
 
     <string name="address_picker_title">Elige tu tipo de dirección</string>
     <string name="address_picker_legacy_title">Compatibilidad</string>
@@ -1538,8 +1545,8 @@
         y pueden marcarlas como inválidas.
     </string>
     <string name="taproot_card_body">
-        <annotation fontColor="muunBlue"><annotation fontStyle="bold">Mejora tus pagos</annotation>
-        </annotation>. Ahorra con cada pago activando Taproot.
+        <annotation fontColor="muunBlue"><annotation fontStyle="bold">
+            Mejora tus pagos</annotation></annotation>. Ahorra con cada pago activando Taproot.
     </string>
     <string name="taproot_success_title">
         ¡Estás listo para Taproot!
@@ -1568,7 +1575,7 @@
 
         <annotation role="p">
             Para protegerte de posibles reorganizaciones de la blockchain, podrás comenzar a usar
-            direcciones Taproot 12 bloques después.
+            direcciones Taproot 6 bloques después.
         </annotation>
 
         <annotation role="p">

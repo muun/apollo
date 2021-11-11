@@ -8,9 +8,11 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.getStyledString
-import io.muun.apollo.presentation.ui.utils.postDelayed
+import io.muun.apollo.presentation.ui.utils.setUserInteractionEnabled
+import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), BitcoinSettingsView {
@@ -23,6 +25,12 @@ class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), Bitco
 
     @BindView(R.id.taproot_timer_text)
     lateinit var taprootTimerText: TextView
+
+    @BindView(R.id.bitcoin_settings_loading)
+    lateinit var loadingView: LoadingView
+
+    @BindView(R.id.taproot_section)
+    lateinit var taprootSection: ViewGroup
 
     @State
     @JvmField
@@ -71,6 +79,28 @@ class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), Bitco
             return // we triggered this by changing the value internally
         }
 
-        presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+        if (newTaprootByDefault) {
+            val dialog = MuunDialog.Builder()
+                    .title(R.string.tr_setting_confirm_title)
+                    .message(R.string.tr_setting_confirm_desc)
+                    .positiveButton(R.string.tr_setting_confirm) {
+                        presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+                    }
+                    .negativeButton(R.string.cancel) {
+                        taprootByDefaultSwitch.isChecked = false
+                    }
+                    .layout(R.layout.dialog_custom_layout)
+                    .build()
+
+            showDialog(dialog)
+
+        } else {
+            presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+        }
+    }
+
+    override fun setLoading(loading: Boolean) {
+        taprootSection.visibility = if (loading) { View.GONE } else { View.VISIBLE }
+        loadingView.visibility = if (loading) { View.VISIBLE } else { View.GONE }
     }
 }
