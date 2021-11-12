@@ -16,8 +16,6 @@ import io.muun.apollo.data.os.sharer.FileSharer
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
-import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.postDelayed
 import io.muun.apollo.presentation.ui.utils.setStyledText
 import io.muun.apollo.presentation.ui.view.HtmlTextView
@@ -320,17 +318,5 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     private fun clearSelectedOption() {
         selectedOption = null
         chosenShareTarget = null
-    }
-
-    private fun onWhyCloudClick(linkId: String) {
-        val drawer = TitleAndDescriptionDrawer().also {
-            it.setTitle(R.string.ek_save_cloud_drawer_title)
-
-            StyledStringRes(requireContext(), R.string.ek_save_cloud_drawer_description)
-                .toCharSequence()
-                .let(it::setDescription)
-        }
-
-        showDrawerDialog(drawer)
     }
 }

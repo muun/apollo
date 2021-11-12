@@ -107,5 +107,5 @@
     <color name="invoice_qr_loading_background">@color/gray_darkest</color>
 
     <!-- Temporary while fixing taproot -->
-    <color name="address_picker_disabled_color">@color/gray_light</color>
+    <color name="address_picker_disabled_color">@color/gray_dark</color>
 </resources>
