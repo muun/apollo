@@ -1185,16 +1185,7 @@
     <string name="ek_save_explanation">
         Recomendamos usar Google Drive, Dropbox, iCloud, o un email a tu propia cuenta.
     </string>
-    <string name="ek_save_cloud_drawer_title">
-        ¿Es seguro guardar en la nube?
-    </string>
-    <string name="ek_save_cloud_drawer_description">
-        <annotation role="p">Los datos en tu Kit de Emergencia están encriptados de forma segura
-        con tu Código de Recuperación. Sin acceso a ese código, el Kit es inofensivo.</annotation>
 
-        Como tu Código de Recuperación está escrito en papel, puedes guardar tu Kit de Emergencia
-        en la nube sin correr riesgos. Estará seguro y disponible a largo plazo.
-    </string>
     <string name="ek_save_drive_no_internet">
         No puede usarse Drive: no hay conexión a internet
     </string>

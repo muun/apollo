@@ -1,10 +1,8 @@
 package io.muun.apollo.data.os.sharer
 
 import android.app.PendingIntent
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -17,17 +15,6 @@ class FileSharer(val context: Context) {
      */
     class Selection(val className: String?)
 
-    /**
-     * Information about an installed application that can receive an Intent.
-     */
-    class Target(
-        val label: String,
-        val icon: Drawable,
-        val component: ComponentName
-    ) {
-        val id = component.hashCode() // whatever, I need a number, this will do
-    }
-
     companion object {
         /**
          * Function to report results from the share dialog. This could be much more sophisticated
@@ -35,15 +22,6 @@ class FileSharer(val context: Context) {
          * so it's not necessary.
          */
         var onSelectionListener = { _: Selection -> }
-
-        val emailAppBlacklist = listOf(
-            // Required for UI testing in Android emulators (doesn't show up in actual phones):
-            "com.android.fallback",
-
-            // Applications that handle mailto links but c'mon:
-            "com.mercadopago.wallet",
-            "com.paypal.android.p2pmobile"
-        )
     }
 
     /**

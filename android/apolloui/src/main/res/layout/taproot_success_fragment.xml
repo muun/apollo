@@ -18,19 +18,28 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"
             android:layout_gravity="center"
+            android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/taproot_success_illustration"
+                android:id="@+id/taproot_success_illustration_default"
                 android:contentDescription="@null"
-                android:layout_width="196dp"
-                android:layout_height="231dp"
+                android:layout_width="164dp"
+                android:layout_height="192dp"
                 android:src="@drawable/taproot_rocket" />
+
+            <ImageView
+                    android:id="@+id/taproot_success_illustration_active"
+                    android:contentDescription="@null"
+                    android:layout_width="242dp"
+                    android:layout_height="208dp"
+                    android:visibility="gone"
+                    android:src="@drawable/taproot_rocket3" />
 
             <io.muun.apollo.presentation.ui.view.BlockClock
                 android:id="@+id/block_clock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="172dp"
+                android:layout_height="56dp"
                 android:layout_gravity="bottom|center_horizontal"
                 android:visibility="gone"
                 tools:visibility="visible" />

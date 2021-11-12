@@ -1150,18 +1150,6 @@
         We recommend using cloud storage, to ensure your kit is never lost.
         <annotation link="why">Is that safe?</annotation>
     </string>
-    <string name="ek_save_cloud_drawer_title">
-        Is cloud storage safe?
-    </string>
-    <string name="ek_save_cloud_drawer_description">
-        <annotation role="p">
-            Data inside your Emergency Kit is securely encrypted with your Recovery Code.
-        Without access to that code, the kit is harmless.
-        </annotation>
-
-        Since your Recovery Code is written in paper, you can save your Emergency Kit in the cloud
-        without risk. It will be safe and available in the long term.
-    </string>
 
     <string name="ek_save_drive_no_internet">
         Can\'t use Drive: no internet connection

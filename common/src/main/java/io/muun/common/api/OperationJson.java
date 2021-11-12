@@ -170,7 +170,7 @@ public class OperationJson {
         this.receiverMetadata = receiverMetadata;
         this.outpoints = outpoints;
         this.markItAsReplaceableByFee = markItAsReplaceableByFee;
-        // TODO: assign to property (leaving it for now as its already in other branch/commit)
+        this.userPublicNoncesHex = userPublicNoncesHex;
     }
 
     /**
