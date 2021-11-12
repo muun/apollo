@@ -17,6 +17,8 @@ var descriptorFormats = []string{
 	"sh(wsh(multi(2, %s/1'/1'/1/*, %s/1'/1'/1/*)))", // V3 external
 	"wsh(multi(2, %s/1'/1'/0/*, %s/1'/1'/0/*))",     // V4 change
 	"wsh(multi(2, %s/1'/1'/1/*, %s/1'/1'/1/*))",     // V4 external
+	"tr(musig(%s/1'/1'/0/*, %s/1'/1'/0/*))", // V5 change
+	"tr(musig(%s/1'/1'/1/*, %s/1'/1'/1/*))", // V5 external
 }
 
 // GetDescriptors returns an array of raw output descriptors.
@@ -48,6 +50,8 @@ func GetDescriptorsHTML(data *DescriptorsData) string {
 		html = strings.ReplaceAll(html, "wsh(", renderScriptType("wsh")+"(")
 		html = strings.ReplaceAll(html, "sh(", renderScriptType("sh")+"(")
 		html = strings.ReplaceAll(html, "multi(", renderScriptType("multi")+"(")
+		html = strings.ReplaceAll(html, "tr(", renderScriptType("tr")+"(")
+		html = strings.ReplaceAll(html, "musig(", renderScriptType("musig")+"(")
 
 		// Replace fingerprint expressions:
 		html = strings.ReplaceAll(html, data.FirstFingerprint, renderFingerprint(data.FirstFingerprint))

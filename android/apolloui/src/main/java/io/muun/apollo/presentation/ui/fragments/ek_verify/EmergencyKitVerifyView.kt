@@ -5,4 +5,6 @@ import io.muun.apollo.presentation.ui.base.BaseView
 
 interface EmergencyKitVerifyView: BaseView {
     fun setVerificationError(error: UserFacingError)
+
+    fun setLoading(isLoading: Boolean)
 }

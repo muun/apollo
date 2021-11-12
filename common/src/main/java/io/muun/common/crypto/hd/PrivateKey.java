@@ -8,7 +8,6 @@ import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
-import io.muun.common.crypto.tx.TransactionHelpers;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
 
@@ -36,6 +35,10 @@ public class PrivateKey extends BaseKey {
 
     private static final int PRIVATE_KEY_LENGTH_IN_BYTES = 32;
     private static final int FINGERPRINT_LENGTH_IN_BYTES = 4;
+
+    // TODO this should live in bitcoin lib (signTransactionHash could receive this as param).
+    // If only we had default arguments...
+    private static final int SIGHASH_ALL = 0x01;
 
     @NotNull
     private final String absoluteDerivationPath;
@@ -237,7 +240,6 @@ public class PrivateKey extends BaseKey {
      * Compute the Bitcoin signature of a transaction hash.
      */
     public Signature signTransactionHash(byte[] txHash) {
-        final int hashType = TransactionHelpers.SIGHASH_ALL;
 
         final byte[] derSignature = deterministicKey
                 .sign(Sha256Hash.wrap(txHash))
@@ -245,7 +247,7 @@ public class PrivateKey extends BaseKey {
 
         final byte[] sigData = ByteBuffer.allocate(derSignature.length + 1)
                 .put(derSignature)
-                .put((byte) hashType)
+                .put((byte) SIGHASH_ALL)
                 .array();
 
         return new Signature(sigData);

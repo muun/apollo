@@ -15,6 +15,7 @@ type Input struct {
 	FirstFingerprint   string
 	SecondEncryptedKey string
 	SecondFingerprint  string
+	Version            int
 }
 
 // Output with the html as string and the verification code
@@ -108,7 +109,7 @@ func generateDeterministicCode(params *Input) string {
 	// to be recreated each time the kit is rendered (making this deterministic approach useless).
 
 	// Create a deterministic serialization of the input:
-	inputMaterial := params.SecondEncryptedKey
+	inputMaterial := params.SecondEncryptedKey + strconv.Itoa(params.Version)
 
 	// Compute a cryptographically secure hash of the material (critical, these are keys):
 	inputHash := sha256.Sum256([]byte(inputMaterial))

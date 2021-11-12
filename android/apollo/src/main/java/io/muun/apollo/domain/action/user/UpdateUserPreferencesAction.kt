@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.user
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.domain.model.UserPreferences
+import io.muun.apollo.domain.model.user.UserPreferences
 import rx.Completable
 import rx.Observable
 import rx.Single

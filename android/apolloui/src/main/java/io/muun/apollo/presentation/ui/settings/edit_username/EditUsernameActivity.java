@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.settings.edit_username;
 
 import io.muun.apollo.R;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
@@ -39,6 +39,9 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
 
     private MenuItem saveMenuItem;
 
+    /**
+     * Creates an intent to launch this activity.
+     */
     public static Intent getStartActivityIntent(@NotNull Context context) {
         return new Intent(context, EditUsernameActivity.class);
     }

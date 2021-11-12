@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.model;
 
+import io.muun.apollo.domain.model.user.User;
 import io.muun.common.crypto.hd.PublicKey;
 
 public class CreateFirstSessionOk {

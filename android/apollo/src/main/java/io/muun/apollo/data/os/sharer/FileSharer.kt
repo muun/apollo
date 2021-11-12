@@ -18,17 +18,6 @@ class FileSharer(val context: Context) {
     class Selection(val className: String?)
 
     /**
-     * The parameters to fill an email form via Intent.
-     */
-    class Email(
-        val recipient: String? = null,
-        val subject: String? = null,
-        val body: String? = null,
-        val attachment: Uri? = null,
-        val attachmentType: String? = null
-    )
-
-    /**
      * Information about an installed application that can receive an Intent.
      */
     class Target(
@@ -55,45 +44,6 @@ class FileSharer(val context: Context) {
             "com.mercadopago.wallet",
             "com.paypal.android.p2pmobile"
         )
-    }
-
-    fun getEmailTargets(): List<Target> {
-        // Create an Intent that only email applications can handle:
-        val dummyEmailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
-
-        // Query the Package Manager for handlers:
-        val pm = context.packageManager
-        val intentResolvers = pm.queryIntentActivities(dummyEmailIntent, 0)
-
-        // Create a list of viable Targets based on the results:
-        return intentResolvers
-            .filter {
-                !emailAppBlacklist.contains(it.activityInfo.packageName)
-            }
-            .map {
-                Target(
-                    it.loadLabel(pm).toString(),
-                    it.loadIcon(pm),
-                    ComponentName(it.activityInfo.packageName, it.activityInfo.name)
-                )
-            }
-    }
-
-    /**
-     * Create an Intent to send an email with an attached file.
-     */
-    fun getEmailIntent(email: Email, target: Target): Intent {
-        val intent = Intent(Intent.ACTION_SEND)
-            .setComponent(target.component)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        email.recipient?.let { intent.putExtra(Intent.EXTRA_EMAIL, it) }
-        email.subject?.let { intent.putExtra(Intent.EXTRA_SUBJECT, it) }
-        email.body?.let { intent.putExtra(Intent.EXTRA_SUBJECT, it) }
-        email.attachment?.let { intent.putExtra(Intent.EXTRA_STREAM, it) }
-        email.attachmentType?.let { intent.setType(it) }
-
-        return intent
     }
 
     /**

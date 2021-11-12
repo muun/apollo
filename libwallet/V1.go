@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/btcsuitew/txscriptw"
 )
 
 // CreateAddressV1 returns a P2PKH MuunAddress from a publicKey for use in TransactionSchemeV1
@@ -56,7 +57,7 @@ func (c *coinV1) createRedeemScript(publicKey *HDPublicKey) ([]byte, error) {
 		return nil, fmt.Errorf("failed to generate address for user: %w", err)
 	}
 
-	return txscript.PayToAddrScript(userAddress.AddressPubKeyHash())
+	return txscriptw.PayToAddrScript(userAddress.AddressPubKeyHash())
 }
 
 func (c *coinV1) signature(index int, tx *wire.MsgTx, userKey *HDPrivateKey) ([]byte, error) {

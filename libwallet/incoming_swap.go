@@ -11,6 +11,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"github.com/lightningnetwork/lnd/lnwire"
+	"github.com/muun/libwallet/btcsuitew/txscriptw"
 	"github.com/muun/libwallet/hdpath"
 	"github.com/muun/libwallet/sphinx"
 	"github.com/muun/libwallet/walletdb"
@@ -428,7 +429,7 @@ func (c *coinIncomingSwap) findHtlcOutputIndex(htlcTx *wire.MsgTx, htlcScript []
 		return 0, fmt.Errorf("could not create htlc address: %w", err)
 	}
 
-	pkScript, err := txscript.PayToAddrScript(address)
+	pkScript, err := txscriptw.PayToAddrScript(address)
 	if err != nil {
 		return 0, fmt.Errorf("could not create pk script: %w", err)
 	}

@@ -35,6 +35,9 @@ public class MuunInputJson {
     @Nullable
     public MuunInputIncomingSwapJson incomingSwap;
 
+    @Nullable
+    public String rawMuunPublicNonceHex;
+
     /**
      * Json constructor.
      */
@@ -51,7 +54,8 @@ public class MuunInputJson {
                          @Nullable SignatureJson swapServerSignature,
                          @Nullable MuunInputSubmarineSwapV101Json submarineSwap,
                          @Nullable MuunInputSubmarineSwapV102Json submarineSwapV102,
-                         @Nullable MuunInputIncomingSwapJson incomingSwap) {
+                         @Nullable MuunInputIncomingSwapJson incomingSwap,
+                         @Nullable String rawMuunPublicNonceHex) {
 
         this.prevOut = prevOut;
         this.address = address;
@@ -61,5 +65,6 @@ public class MuunInputJson {
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
         this.incomingSwap = incomingSwap;
+        this.rawMuunPublicNonceHex = rawMuunPublicNonceHex;
     }
 }

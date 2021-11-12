@@ -2,10 +2,8 @@ package io.muun.common.crypto.hd;
 
 
 import io.muun.common.api.MuunAddressJson;
-import io.muun.common.crypto.schemes.TransactionScheme;
 
 import org.bitcoinj.core.Address;
-import org.bitcoinj.core.NetworkParameters;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,8 +13,9 @@ public class MuunAddress {
     public static final int VERSION_COSIGNED_P2SH = 2;
     public static final int VERSION_COSIGNED_P2SH_P2WSH = 3;
     public static final int VERSION_COSIGNED_P2WSH = 4;
-    public static final int VERSION_FUNDING_P2SH_P2WSH = 5; // reserved
-    public static final int VERSION_FUNDING_P2WSH = 6;
+    public static final int VERSION_COSIGNED_P2TR = 5;
+    public static final int VERSION_FUNDING_P2SH_P2WSH = 6; // reserved
+    public static final int VERSION_FUNDING_P2WSH = 7;
 
     public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
     public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
@@ -47,18 +46,6 @@ public class MuunAddress {
         }
 
         return new MuunAddress(json.version, json.derivationPath, json.address);
-    }
-
-    /**
-     * Create MuunAddress from a pair of PublicKeys.
-     */
-    public static MuunAddress create(Integer addressVersion,
-                                     PublicKeyTriple publicKeyTriple,
-                                     NetworkParameters params) {
-
-        return TransactionScheme.get(addressVersion)
-                .orElseThrow(() -> new IllegalArgumentException("this address can't be built"))
-                .createAddress(publicKeyTriple, params);
     }
 
     /**
@@ -105,12 +92,18 @@ public class MuunAddress {
     //    return toBitcoinJ().getParameters();
     //}
 
-    private org.bitcoinj.core.Address toBitcoinJ() {
+    /**
+     * Map this model to BitcoinJ's model.
+     */
+    public org.bitcoinj.core.Address toBitcoinJ() {
         // NOTE: we provide `null` NetworkParameters. The information is already contained in the
         // base58 serialization, and we don't need to validate it.
         return Address.fromString(null, address);
     }
 
+    /**
+     * Map this model to json.
+     */
     public MuunAddressJson toJson() {
         return new MuunAddressJson(version, derivationPath, address);
     }

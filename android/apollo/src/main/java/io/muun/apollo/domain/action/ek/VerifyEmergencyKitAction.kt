@@ -1,44 +1,51 @@
 package io.muun.apollo.domain.action.ek
 
-import io.muun.apollo.data.preferences.KeysRepository
+import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.errors.EmergencyKitInvalidCodeError
 import io.muun.apollo.domain.errors.EmergencyKitOldCodeError
-import io.muun.apollo.domain.utils.toVoid
+import io.muun.apollo.domain.model.EmergencyKitExport
+import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import rx.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class VerifyEmergencyKitAction @Inject constructor(
-    private val keysRepository: KeysRepository
-
-): BaseAsyncAction1<String, Void>() {
+    private val userRepository: UserRepository,
+    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction
+): BaseAsyncAction2<String, GeneratedEmergencyKit, Void>() {
 
     /**
      * Verify a given EK verification code matches expectations.
      */
-    override fun action(providedCode: String): Observable<Void> =
-        Observable.defer {
-            keysRepository
-                .watchEmergencyKitVerificationCodes()
-                .first()
-                .doOnNext {
-                    val newestCode = it.getNewest()
-                    checkNotNull(newestCode)
+    override fun action(providedCode: String, kitGen: GeneratedEmergencyKit): Observable<Void> =
+        Observable.fromCallable {
 
-                    if (providedCode == newestCode) {
-                        // Success! Nothing to do.
+            val storedCodes = userRepository.fetchOne().emergencyKitVerificationCodes
 
-                    } else if (it.containsOld(providedCode)) {
-                        // It's an old code. Raise an error with a hint using the first 2 chars:
-                        throw EmergencyKitOldCodeError(newestCode.take(2))
+            val newestCode = storedCodes.getNewest()
+            checkNotNull(newestCode)
 
-                    } else {
-                        // Not even an old code, just plain invalid:
-                        throw EmergencyKitInvalidCodeError()
-                    }
-                }
-                .toVoid()
+            if (providedCode == newestCode) {
+                // Success! Nothing to do.
+                return@fromCallable null
+
+            } else if (storedCodes.containsOld(providedCode)) {
+                // It's an old code. Raise an error with a hint using the first 2 chars:
+                throw EmergencyKitOldCodeError(newestCode.take(2))
+
+            } else {
+                // Not even an old code, just plain invalid:
+                throw EmergencyKitInvalidCodeError()
+            }
+        }
+        .flatMap {
+            reportEmergencyKitExported.actionNow(
+                EmergencyKitExport(kitGen, true, EmergencyKitExport.Method.MANUAL)
+            )
+
+            Observable.just(null)
         }
 }

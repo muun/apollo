@@ -1,91 +1,21 @@
 package io.muun.apollo.presentation.ui.fragments.ek_intro
 
-import android.view.View
-import android.widget.TextView
-import androidx.viewpager.widget.ViewPager
-import butterknife.BindView
-import butterknife.OnClick
-import com.google.android.material.tabs.TabLayout
-import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
+import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroFragment
+import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroParentPresenter
+import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroView
 
-class EmergencyKitIntroFragment: SingleFragment<EmergencyKitIntroPresenter>(),
-                                 EmergencyKitIntroView {
-
-    @BindView(R.id.pager)
-    lateinit var viewPager: ViewPager
-
-    @BindView(R.id.pagerDots)
-    lateinit var viewPagerDots: TabLayout
-
-    @BindView(R.id.pager_footnote)
-    lateinit var footnoteView: TextView
-
-    @BindView(R.id.accept)
-    lateinit var acceptButton: MuunButton
-
-    @State
-    @JvmField
-    var currentPosition: Int = 0
+class EmergencyKitIntroFragment: FlowIntroFragment<
+    FlowIntroView,
+    EmergencyKitIntroPresenter,
+    FlowIntroParentPresenter>() {
 
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_export_keys_intro
+    override fun getPager() =
+        EmergencyKitIntroPager(childFragmentManager)
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
-        viewPager.adapter = EmergencyKitIntroPager(childFragmentManager)
-        viewPager.currentItem = currentPosition
-        viewPager.addOnPageChangeListener(pageChangeListener)
-
-        viewPagerDots.setupWithViewPager(viewPager)
-
-        onPagerPositionChanged(viewPager.currentItem)
-    }
-
-    override fun setLoading(isLoading: Boolean) {
-        acceptButton.isLoading = isLoading
-    }
-
-    @OnClick(R.id.accept)
-    fun onConfirmClick() {
-        presenter.confirmIntro()
-    }
-
-    override fun onBackPressed(): Boolean {
-        if (currentPosition > 0) {
-            viewPager.currentItem = currentPosition - 1
-            return true
-
-        } else {
-            return false
-        }
-    }
-
-    private fun onPagerPositionChanged(position: Int) {
-        this.currentPosition = position
-
-        presenter.reportExportKeysIntroStep(position)
-
-        val inFirstStep = (position == 0)
-        val inLastStep = (position == viewPager.adapter!!.count - 1)
-
-        footnoteView.visibility = if (inFirstStep) View.VISIBLE else View.INVISIBLE
-        acceptButton.visibility = if (inLastStep) View.VISIBLE else View.INVISIBLE
-    }
-
-    // Listener to show action buttons on final slide:
-    private val pageChangeListener = object: ViewPager.OnPageChangeListener {
-        override fun onPageScrollStateChanged(state: Int) {}
-        override fun onPageScrolled(position: Int, posOffset: Float, posOffsetPx: Int) {}
-
-        override fun onPageSelected(position: Int) {
-            onPagerPositionChanged(position)
-        }
-    }
+    override fun getConfirmLabel() =
+        R.string.export_keys_intro_action
 }

@@ -5,9 +5,12 @@ import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -74,8 +77,8 @@ fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
 fun supportsDarkMode(): Boolean =
     UiUtils.supportsDarkMode()
 
-fun Activity.postDelayed(delayInMillis: Long, runnable: () -> Unit) {
-    Handler().postDelayed(runnable, delayInMillis)
+fun postDelayed(delayInMillis: Long, runnable: () -> Unit) {
+    Handler(Looper.getMainLooper()).postDelayed(runnable, delayInMillis)
 }
 
 /**
@@ -227,3 +230,16 @@ fun TextView.setTextAppearanceCompat(@StyleRes resId: Int) {
 fun TextView.setDrawableTint(@ColorInt color: Int) {
     UiUtils.setDrawableTint(this, color)
 }
+
+fun TextView.setStyledText(@StringRes resId: Int, vararg args: Any) {
+    setStyledText(resId, {}, *args)
+}
+
+fun TextView.setStyledText(@StringRes resId: Int, onLinkClick: (String) -> Unit = {}, vararg args: Any) {
+    StyledStringRes(context, resId, onLinkClick)
+        .toCharSequence(*args.map { it.toString() }.toTypedArray())
+        .let(::setText)
+}
+
+fun PackageManager.hasAppInstalled(intent: Intent) =
+    queryIntentActivities(intent, 0).size != 0

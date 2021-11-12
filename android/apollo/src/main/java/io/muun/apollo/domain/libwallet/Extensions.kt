@@ -6,6 +6,7 @@ import libwallet.HDPrivateKey
 import libwallet.HDPublicKey
 import libwallet.Libwallet
 import libwallet.Network
+import libwallet.UserActivatedFeature
 import org.bitcoinj.core.NetworkParameters
 
 fun NetworkParameters.toLibwalletModel(): Network =
@@ -28,6 +29,25 @@ fun PublicKey.toLibwalletModel(params: NetworkParameters): HDPublicKey =
         absoluteDerivationPath,
         params.toLibwalletModel()
     )
+
+val UAF_TAPROOT: UserActivatedFeature = Libwallet.getUserActivatedFeatureTaproot()
+
+/**
+ * Would LOVE to override equals but we can't override methods with an extension function :'(.
+ */
+fun UserActivatedFeature.isEqualTo(other: Any?): Boolean {
+    if (this === other) {
+        return true
+    }
+
+    if (javaClass != other?.javaClass) {
+        return false
+    }
+
+    other as UserActivatedFeature
+
+    return backendFeature().equals(other.backendFeature())
+}
 
 object Extensions {
 

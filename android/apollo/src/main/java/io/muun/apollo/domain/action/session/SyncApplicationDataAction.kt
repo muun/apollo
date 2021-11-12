@@ -5,7 +5,6 @@ import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.ApiMigrationsManager
 import io.muun.apollo.domain.action.ContactActions
-import io.muun.apollo.domain.action.LogoutActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction3
@@ -17,7 +16,6 @@ import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
 import io.muun.apollo.domain.errors.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.errors.InitialSyncError
 import io.muun.apollo.domain.model.LoginWithRc
-import io.muun.apollo.domain.model.User
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.rx.RxHelper
 import rx.Observable

@@ -4,6 +4,7 @@ import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
+import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
@@ -75,6 +76,8 @@ public interface ActivityComponent {
     void inject(EditPasswordActivity editPasswordActivity);
 
     void inject(EmergencyKitActivity emergencyKitActivity);
+
+    void inject(TaprootSetupActivity taprootSetupActivity);
 
     void inject(SelectCountryActivity activity);
 

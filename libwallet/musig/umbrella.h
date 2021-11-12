@@ -1,0 +1,5 @@
+#include "secp256k1.h"
+#include "secp256k1_extrakeys.h"
+#include "secp256k1_schnorrsig.h"
+#include "secp256k1_musig.h"
+#include "util.h"

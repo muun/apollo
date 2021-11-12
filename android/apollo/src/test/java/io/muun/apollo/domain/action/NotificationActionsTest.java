@@ -6,6 +6,7 @@ import io.muun.apollo.data.external.AppStandbyBucketProvider;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.NotificationRepository;
 import io.muun.apollo.domain.NotificationProcessor;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
@@ -13,6 +14,7 @@ import io.muun.apollo.domain.action.incoming_swap.FulfillIncomingSwapAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
+import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.Optional;
 import io.muun.common.api.beam.notification.NotificationJson;
@@ -65,6 +67,9 @@ public class NotificationActionsTest extends BaseTest {
     private UpdateOperationAction updateOperationAction;
 
     @Mock
+    private FetchRealTimeDataAction fetchRealTimeDataAction;
+
+    @Mock
     private NotificationRepository notificationRepository;
 
     @Mock
@@ -101,6 +106,7 @@ public class NotificationActionsTest extends BaseTest {
         notificationProcessor = spy(new NotificationProcessor(
                 updateOperationAction,
                 createOperationAction,
+                fetchRealTimeDataAction,
                 contactActions,
                 userActions,
                 signinActions,

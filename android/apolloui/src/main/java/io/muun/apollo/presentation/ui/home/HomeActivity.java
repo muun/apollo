@@ -5,13 +5,18 @@ import io.muun.apollo.presentation.analytics.AnalyticsEvent.SECURITY_CENTER_ORIG
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragmentArgs;
+import io.muun.apollo.presentation.ui.view.BlockClock;
+import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -48,6 +53,8 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     int currentNavItem = R.id.home_fragment;
 
     private NavController navController;
+
+    private boolean hasShownTaprootCelebration;
 
     @Override
     protected void inject() {
@@ -159,5 +166,29 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
             navController.navigate(itemId, bundle, null);
             currentNavItem = itemId;
         }
+    }
+
+    public void showTaprootCelebration() {
+        if (applicationLockExtension.isShowingLockOverlay()) {
+            new Handler(Looper.getMainLooper()).postDelayed(this::showTaprootCelebration, 100);
+            return;
+        }
+
+        presenter.reportTaprootCelebrationShown();
+
+        new MuunDialog.Builder()
+            .layout(R.layout.dialog_taproot_celebration, (view, dialog) -> {
+                BlockClock blockClock = view.findViewById(R.id.dialog_block_clock);
+                MuunButton confirmButton = view.findViewById(R.id.dialog_confirm);
+                TextView title = view.findViewById(R.id.dialog_title);
+
+                blockClock.setValue(0);
+                confirmButton.setOnClickListener(v -> dialog.dismiss());
+                title.setText(R.string.tr_celebration_user_native_title);
+
+                return null;
+            })
+            .build()
+            .show(this);
     }
 }

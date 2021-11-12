@@ -19,10 +19,10 @@ import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.common.bitcoinj.BlockHelpers
 import io.muun.common.bitcoinj.NetworkParametersHelper
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.OperationStatus
 import io.muun.common.utils.Preconditions
+import libwallet.Libwallet
 import java.util.*
 import java.util.regex.Pattern
 import javax.money.MonetaryAmount
@@ -389,7 +389,7 @@ abstract class UiOperation(
     fun getRefundMessage(context: Context, blockchainHeight: Int): String {
         Preconditions.checkNotNull(operation.swap)
         val fundingOutput = operation.swap!!.fundingOutput
-        return if (fundingOutput.scriptVersion == TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION) {
+        return if (fundingOutput.scriptVersion == Libwallet.AddressVersionSwapsV2.toInt()) {
             context.getString(R.string.operation_swap_expired_desc)
         } else {
             getRefundMessageForSwapV1(context, blockchainHeight)

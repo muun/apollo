@@ -85,7 +85,9 @@ android {
 }
 
 ext {
-    version_retrofit = '2.3.0'
+    // TODO this currently needs to match common's retrofit version. We should refactor to avoid
+    // this discipline on our part. We probably need to extract it to a constant in top-level gradle
+    version_retrofit = '2.5.0'
     version_workmanager = '2.4.0'
 }
 
@@ -122,7 +124,7 @@ preBuild.dependsOn "libwallet"
 
 dependencies {
     api project(':common')
-    implementation files('libs/libwallet.aar')
+    api files('libs/libwallet.aar')
 
     // Android support:
     api 'androidx.appcompat:appcompat:1.2.0'

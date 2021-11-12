@@ -5,103 +5,144 @@ import android.content.Intent
 import android.util.AttributeSet
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.AddressType
-import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.common.exception.MissingCaseError
+import io.muun.apollo.presentation.ui.utils.getStyledString
+import io.muun.apollo.presentation.ui.view.AddressTypeCard.Status
 
-class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
+class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
     MuunView(c, a, s) {
 
     companion object {
         const val REQUEST_ADDRESS_TYPE = 1
-
-        const val SEGWIT_OPTION = 1
-        const val LEGACY_OPTION = 2
     }
 
-    interface AddresTypeChangedListener {
+    interface AddressTypeChangedListener {
         fun onAddressTypeChanged(newType: AddressType)
     }
 
-    private lateinit var listener: AddresTypeChangedListener
+    private lateinit var listener: AddressTypeChangedListener
 
     @BindView(R.id.edit_address_type)
     lateinit var editAddressTypeButton: TextView
 
+    @BindView(R.id.address_type_label)
+    lateinit var editAddressTypeLabel: TextView
+
     @State
     lateinit var addressType: AddressType
+
+    @State
+    @JvmField
+    var taprootStatus: UserActivatedFeatureStatus = UserActivatedFeatureStatus.OFF
+
+    @State
+    @JvmField
+    var hoursToTaproot: Int = 0
 
     override val layoutResource: Int
         get() = R.layout.edit_address_type_item
 
+    override fun setUp(context: Context, attrs: AttributeSet?) {
+        super.setUp(context, attrs)
+
+        editAddressTypeButton.setOnClickListener { onAddressTypeClick() }
+    }
+
     fun show(addressType: AddressType) {
-        this.addressType = addressType
-        when(addressType) {
-            AddressType.SEGWIT -> editAddressTypeButton.setText(R.string.segwit)
-            AddressType.LEGACY -> editAddressTypeButton.setText(R.string.legacy)
+        updateAddressType(addressType)
+    }
+
+    fun setOnAddressTypeChangedListener(listener: AddressTypeChangedListener) {
+        this.listener = listener
+    }
+
+    private fun onAddressTypeClick() {
+        val options = mutableListOf(
+            getLegacyOption(),
+            getSegwitOption()
+        )
+
+        if (isTaprootOptionIncluded()) {
+            options.add(getTaprootOption())
         }
-    }
-
-    fun setOnAddressTypeChangedListener(listener: AddresTypeChangedListener) {
-        this.listener = listener;
-    }
-
-    @OnClick(R.id.address_type_label)
-    fun onLabelClick() {
-
-        val dialog = TitleAndDescriptionDrawer()
-        dialog.setTitle(R.string.bitcoin_address_help_title)
-
-        StyledStringRes(context, R.string.bitcoin_address_help_content)
-            .toCharSequence()
-            .let(dialog::setDescription)
-
-        showDrawerDialog(dialog)
-    }
-
-    @OnClick(R.id.edit_address_type)
-    fun onAddressTypeClick() {
 
         val dialog = PickerDialogFragment()
 
-        dialog.setTitle(R.string.choose_address_type)
-
-        val segwitSelected = addressType == AddressType.SEGWIT
-        dialog.addOption(SEGWIT_OPTION, context.getString(R.string.segwit), segwitSelected)
-        dialog.addOption(LEGACY_OPTION, context.getString(R.string.legacy), !segwitSelected)
+        dialog.setPickerFactory {
+            AddressTypePicker(context).also { options.forEach(it::addOption) }
+        }
 
         requestExternalResult(REQUEST_ADDRESS_TYPE, dialog)
     }
 
     override fun onExternalResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        when (requestCode) {
-            REQUEST_ADDRESS_TYPE -> handleNewAddressType(resultCode)
-
-            else -> {
-                // Ignore
-            }
+        if (requestCode != REQUEST_ADDRESS_TYPE) {
+            return // ignore
         }
+
+        val newAddressType = AddressType.values()[resultCode] // can't fail, we gave the IDs above
+
+        updateAddressType(newAddressType)
+        listener.onAddressTypeChanged(addressType)
     }
 
-    private fun handleNewAddressType(resultCode: Int) {
-        when (resultCode) {
-            SEGWIT_OPTION -> {
-                editAddressTypeButton.text = context.getString(R.string.segwit)
-                listener.onAddressTypeChanged(AddressType.SEGWIT)
-            }
+    private fun updateAddressType(newAddressType: AddressType) {
+        this.addressType = newAddressType
 
-            LEGACY_OPTION -> {
-                editAddressTypeButton.text = context.getString(R.string.legacy)
-                listener.onAddressTypeChanged(AddressType.LEGACY)
-            }
+        val buttonText = when (addressType) {
+            AddressType.SEGWIT -> R.string.segwit
+            AddressType.LEGACY -> R.string.legacy
+            AddressType.TAPROOT -> R.string.taproot
+        }
 
+        editAddressTypeButton.setText(buttonText)
+    }
+
+    private fun getLegacyOption(): AddressTypePicker.Option {
+        val title = getStyledString(R.string.address_picker_legacy_title)
+        val description = getStyledString(R.string.address_picker_legacy_desc)
+
+        val status = if (addressType == AddressType.LEGACY) Status.SELECTED else Status.NORMAL
+
+        return AddressTypePicker.Option(AddressType.LEGACY.ordinal, title, description, status)
+    }
+
+    private fun getSegwitOption(): AddressTypePicker.Option {
+        val title = getStyledString(R.string.address_picker_segwit_title)
+        val description = getStyledString(R.string.address_picker_segwit_desc)
+
+        val status = if (addressType == AddressType.SEGWIT) Status.SELECTED else Status.NORMAL
+
+        return AddressTypePicker.Option(AddressType.SEGWIT.ordinal, title, description, status)
+    }
+
+    private fun getTaprootOption(): AddressTypePicker.Option {
+        val title = getStyledString(R.string.address_picker_taproot_title)
+
+        val description = when {
+            hoursToTaproot > 0 ->
+                getStyledString(R.string.address_picker_taproot_desc_before_activation, "$hoursToTaproot")
             else ->
-                throw MissingCaseError(resultCode, "AddressType picker")
+                getStyledString(R.string.address_picker_taproot_desc_after_activation)
         }
+
+        val status = when {
+            taprootStatus != UserActivatedFeatureStatus.ACTIVE -> Status.DISABLED
+            addressType == AddressType.TAPROOT -> Status.SELECTED
+            else -> Status.NORMAL
+        }
+
+        return AddressTypePicker.Option(AddressType.TAPROOT.ordinal, title, description, status)
     }
+
+    private fun isTaprootOptionIncluded() =
+        when (taprootStatus) {
+            UserActivatedFeatureStatus.PREACTIVATED,
+            UserActivatedFeatureStatus.SCHEDULED_ACTIVATION,
+            UserActivatedFeatureStatus.ACTIVE -> true
+            else -> false
+        }
 }

@@ -4,6 +4,7 @@ import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.LnUrlWithdraw;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.Sha256Hash;
+import io.muun.common.api.messages.EventCommunicationMessage;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,6 +46,11 @@ public interface NotificationService {
      * Show a notification for an incoming lightning payment that is pending.
      */
     void showIncomingLightningPaymentPending();
+
+    /**
+     * Show a notification when Muun sends information about important events.
+     */
+    void showEventCommunication(@NotNull EventCommunicationMessage.Event event);
 
     /**
      * Cancel all previously shown notifications.

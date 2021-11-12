@@ -1,40 +1,70 @@
 package io.muun.apollo.presentation.ui.fragments.ek_save
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.FrameLayout
+import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.data.apis.DriveError
 import io.muun.apollo.data.fs.LocalFile
 import io.muun.apollo.data.os.sharer.FileSharer
+import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.view.DrawerDialogFragment
+import io.muun.apollo.presentation.ui.utils.postDelayed
+import io.muun.apollo.presentation.ui.utils.setStyledText
 import io.muun.apollo.presentation.ui.view.HtmlTextView
+import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunSaveOption
 import io.muun.apollo.presentation.ui.view.MuunSaveOptionLabel
+import io.muun.apollo.presentation.ui.view.MuunTextInput
 import rx.functions.Action0
 
-class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
-                                EmergencyKitSaveView {
+class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
+    EmergencyKitSaveView {
+
+    companion object {
+        private const val FEEDBACK_DIALOG_AUTO_DISMISS_MS = 2800L // developer-quality UX choice
+
+        private const val ARG_UPDATE_KIT = "update_kit"
+
+        @JvmStatic
+        fun createForUpdate(): EmergencyKitSaveFragment =
+            EmergencyKitSaveFragment().applyArgs {
+                putBoolean(ARG_UPDATE_KIT, true)
+            }
+
+        @JvmStatic
+        fun createForNormalExport(): EmergencyKitSaveFragment =
+            EmergencyKitSaveFragment().applyArgs {
+                putBoolean(ARG_UPDATE_KIT, false)
+            }
+    }
 
     @BindView(R.id.pdf_exporter_web_view)
     override lateinit var pdfWebView: WebView
 
+    @BindView(R.id.save_emergency_kit_title)
+    lateinit var titleView: TextView
+
     @BindView(R.id.explanation)
     lateinit var explanationView: HtmlTextView
 
-    @BindView(R.id.save_option_manual)
-    lateinit var shareManuallyOption: MuunSaveOption
-
-    @BindView(R.id.save_option_email)
-    lateinit var sendEmailOption: MuunSaveOption
+    @BindView(R.id.save_link_manual)
+    lateinit var shareManuallyLink: HtmlTextView
 
     @BindView(R.id.save_option_drive)
     lateinit var saveToDriveOption: MuunSaveOption
+
+    @BindView(R.id.save_option_feedback)
+    lateinit var cloudFeedbackOption: MuunSaveOption
 
     /** The last export option selected by the user. */
     private var selectedOption: EmergencyKitSaveOption? = null
@@ -56,26 +86,38 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
 
         saveToDriveOption.labelKind = MuunSaveOptionLabel.Kind.RECOMMENDED
 
-        shareManuallyOption.setOnClickListener { onShareManuallyClick() }
-        sendEmailOption.setOnClickListener { onSendEmailClick() }
         saveToDriveOption.setOnClickListener { onSaveToDriveClick() }
+        cloudFeedbackOption.setOnClickListener { onCloudFeedbackClick() }
+
+        shareManuallyLink.setStyledText(R.string.save_link_manual, this::onShareManuallyClick)
 
         FileSharer.onSelectionListener = { onShareApplicationChosen(it.className) }
 
         // Reset the selected option when creating (or re-creating) the UI:
         clearSelectedOption()
 
-        // Set the description dynamically to add the link:
-        StyledStringRes(requireContext(), R.string.ek_save_explanation, this::onWhyCloudClick)
-            .toCharSequence()
-            .let(explanationView::setText)
+        if (argumentsBundle.getBoolean(ARG_UPDATE_KIT)) {
+            titleView.text = getString(R.string.tr_setup_update_kit_title)
+            explanationView.text = getString(R.string.tr_setup_update_kit_desc)
+
+        } else {
+            titleView.text = getString(R.string.ek_save_title)
+            explanationView.text = getString(R.string.tr_setup_update_kit_desc)
+        }
     }
 
     override fun setDriveUploading(isUploading: Boolean) {
         if (isUploading) {
+            val message = if (argumentsBundle.getBoolean(ARG_UPDATE_KIT)) {
+                R.string.ek_uploading_body
+            } else {
+                R.string.ek_uploading_body
+            }
+
             MuunDialog.Builder()
                 .layout(R.layout.dialog_loading)
-                .message(R.string.ek_uploading_body)
+                .message(message)
+                .setCancelOnTouchOutside(false)
                 .build()
                 .let(this::showDialog)
 
@@ -88,26 +130,48 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
     }
 
     override fun setDriveError(error: Throwable) {
+
+        if (error is DriveError && error.isMissingPermissions()) {
+            retrySaveToDrive()
+            return
+        }
+
         val dialog = MuunDialog.Builder()
             .title(R.string.ek_upload_error_title)
             .message(R.string.ek_upload_error_body)
-            .positiveButton(R.string.retry) { selectOption(EmergencyKitSaveOption.SAVE_TO_DRIVE) }
+            .positiveButton(R.string.retry, Action0 { retrySaveToDrive() })
             .negativeButton(R.string.cancel, null)
             .build()
 
         showDialog(dialog)
     }
 
-    private fun onShareManuallyClick() {
-        selectOption(EmergencyKitSaveOption.SHARE_MANUALLY)
-    }
+    private fun onShareManuallyClick(linkId: String) {
+        presenter.reportManualAdviceOpen()
 
-    private fun onSendEmailClick() {
-        selectOption(EmergencyKitSaveOption.SEND_EMAIL)
+        val muunDialog = MuunDialog.Builder()
+            .layout(R.layout.dialog_manual_share_advice, this::initManualShareAdviceDialog)
+            .build()
+
+        muunDialog.show(viewContext)
     }
 
     private fun onSaveToDriveClick() {
         selectOption(EmergencyKitSaveOption.SAVE_TO_DRIVE)
+    }
+
+    private fun retrySaveToDrive() {
+        onSaveToDriveClick() // just faking this is enough, no special treatment needed
+    }
+
+    private fun onCloudFeedbackClick() {
+        val muunDialog = MuunDialog.Builder()
+            .layout(R.layout.dialog_cloud_feedback, this::initCloudFeedbackDialog)
+            .build()
+
+        muunDialog.show(viewContext)
+
+        presenter.reportCloudFeedbackOpen()
     }
 
     private fun onShareApplicationChosen(className: String?) {
@@ -125,9 +189,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         if (selectedOption == EmergencyKitSaveOption.SHARE_MANUALLY && chosenShareTarget != null) {
             presenter.reportManualShareStarted(chosenShareTarget)
             presenter.reportThirdPartyAppOpened()
-
-        } else if (selectedOption == EmergencyKitSaveOption.SEND_EMAIL) {
-            presenter.reportThirdPartyAppOpened()
         }
 
         clearSelectedOption()
@@ -137,9 +198,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         when (requestCode) {
             EmergencyKitSaveOption.SAVE_TO_DRIVE.requestCode ->
                 onExternalResultFromDrive(resultCode, data!!)
-
-            EmergencyKitSaveOption.SEND_EMAIL_PICKER.requestCode ->
-                onExternalResultFromEmailPicker(resultCode)
 
             else ->
                 super.onExternalResult(requestCode, resultCode, data)
@@ -153,20 +211,12 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
 
         when (selectedOption) {
             EmergencyKitSaveOption.SHARE_MANUALLY -> useShareManually(localFile)
-            EmergencyKitSaveOption.SEND_EMAIL -> useSendEmail()
             EmergencyKitSaveOption.SAVE_TO_DRIVE -> useSaveToDrive()
         }
     }
 
     override fun onBackPressed(): Boolean {
-        MuunDialog.Builder()
-            .title(R.string.ek_abort_title)
-            .message(R.string.ek_abort_body)
-            .positiveButton(R.string.abort, Action0 { presenter.goBack() })
-            .negativeButton(R.string.cancel, null)
-            .build()
-            .let(parentActivity::showDialog)
-
+        presenter.goBack()
         return true
     }
 
@@ -177,54 +227,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         // Create a generic share Intent:
         val intent = FileSharer(requireContext()).getShareIntent(localFile.uri, localFile.type)
 
-        requestExternalResult(requestCode, intent)
-    }
-
-    private fun useSendEmail() {
-        // Get a list of email application targets:
-        val fileSharer = FileSharer(requireContext())
-        val targets = fileSharer.getEmailTargets()
-
-        // If we have just one, use it:
-        if (targets.size == 1) {
-            shareWithEmailTarget(targets[0])
-            return
-        }
-
-        // Otherwise, show an email application picker:
-        val requestCode = EmergencyKitSaveOption.SEND_EMAIL_PICKER.requestCode
-
-        val drawer = DrawerDialogFragment()
-            .setTitle(R.string.save_option_email_title)
-
-        for (target in targets) {
-            drawer.addAction(target.id, target.icon, target.label)
-        }
-
-        requestExternalResult(requestCode, drawer)
-    }
-
-    private fun onExternalResultFromEmailPicker(resultCode: Int) {
-        val fileSharer = FileSharer(requireContext())
-
-        val selectedTarget = fileSharer.getEmailTargets().find { it.id == resultCode }
-
-        if (selectedTarget != null) {
-            shareWithEmailTarget(selectedTarget)
-        }
-    }
-
-    private fun shareWithEmailTarget(target: FileSharer.Target) {
-        // Compose the email:
-        val email = presenter.composeEmergencyKitEmail()
-
-        // Create the Intent and pick a request code:
-        val intent = FileSharer(requireContext()).getEmailIntent(email, target)
-        val requestCode = EmergencyKitSaveOption.SEND_EMAIL.requestCode
-
-        presenter.reportEmailShareStarted(target.component.flattenToString())
-
-        // Go!
         requestExternalResult(requestCode, intent)
     }
 
@@ -245,6 +247,65 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
             presenter.reportGoogleSignInComplete(data)
         } else {
             presenter.reportGoogleSignInCanceled()
+        }
+    }
+
+    private fun initCloudFeedbackDialog(view: View, dialog: AlertDialog) {
+        val formGroup = view.findViewById<ViewGroup>(R.id.dialog_form_group)
+        val successGroup = view.findViewById<ViewGroup>(R.id.dialog_success_group)
+        val feedbackInput = view.findViewById<MuunTextInput>(R.id.dialog_input)
+        val confirmButton = view.findViewById<MuunButton>(R.id.dialog_confirm)
+        val closeButton = view.findViewById<View>(R.id.dialog_close)
+
+        feedbackInput.setOnChangeListener {
+            confirmButton.isEnabled = feedbackInput.text.isNotEmpty()
+        }
+
+        feedbackInput.setText("")
+        feedbackInput.requestFocusInput()
+
+        confirmButton.setOnClickListener {
+            presenter.reportCloudFeedback(feedbackInput.text.toString())
+
+            hideKeyboard(feedbackInput)
+
+            // Absent some animation, this is really sudden. So we set height to 0 rather than
+            // visibility = GONE to at least avoid an abrupt resizing of the dialog.
+            // Note: this LPs need to be FrameLayout.LayoutParams (depends on view's parent)
+            formGroup.layoutParams = FrameLayout.LayoutParams(formGroup.width, 0)
+            successGroup.visibility = View.VISIBLE
+
+            // Auto-dismiss after some time (minding the fragment life-cycle):
+            postDelayed(FEEDBACK_DIALOG_AUTO_DISMISS_MS) {
+                if (this@EmergencyKitSaveFragment.isVisible) {
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+    private fun initManualShareAdviceDialog(view: View, dialog: AlertDialog) {
+        val advice1 = view.findViewById<TextView>(R.id.advice_1)
+        val advice2 = view.findViewById<TextView>(R.id.advice_2)
+        val advice3 = view.findViewById<TextView>(R.id.advice_3)
+        val confirmButton = view.findViewById<MuunButton>(R.id.dialog_confirm)
+        val closeButton = view.findViewById<View>(R.id.dialog_close)
+
+        advice1.setStyledText(R.string.ek_manual_advice_1)
+        advice2.setStyledText(R.string.ek_manual_advice_2)
+        advice3.setStyledText(R.string.ek_manual_advice_3)
+
+        confirmButton.setOnClickListener {
+            dialog.dismiss()
+            selectOption(EmergencyKitSaveOption.SHARE_MANUALLY)
+        }
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
         }
     }
 

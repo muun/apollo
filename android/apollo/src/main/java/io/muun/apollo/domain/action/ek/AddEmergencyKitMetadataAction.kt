@@ -11,10 +11,9 @@ import javax.inject.Singleton
 @Singleton
 class AddEmergencyKitMetadataAction @Inject constructor(
     private val fileCache: FileCache
-
 ): BaseAsyncAction1<String, Void>() {
 
-    override fun action(metadata: String) =
+    override fun action(metadata: String): Observable<Void> =
         Observable.defer { createFileWithMetadata(metadata) }
 
     private fun createFileWithMetadata(metadata: String): Observable<Void> {

@@ -11,48 +11,18 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.setTextAppearanceCompat
 
-class Picker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
+abstract class Picker<T> @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
     MuunView(c, a, s) {
 
-    interface OnOptionChosenListener {
-        fun onOptionChosen(optionId: Int)
+    interface OnOptionPickListener {
+        fun onOptionPick(optionId: Int)
     }
 
-    @BindView(R.id.picker_title)
-    lateinit var titleView: TextView
+    open class Option(
+        val id: Int
+    )
 
-    @BindView(R.id.picker_radio_group)
-    lateinit var radioGroup: RadioGroup
+    abstract fun addOption(option: T)
 
-    override val layoutResource: Int
-        get() = R.layout.view_picker
-
-    fun setTitle(@StringRes resId: Int) {
-        titleView.setText(resId)
-        titleView.visibility = VISIBLE
-    }
-
-    fun addOption(optionId: Int, label: CharSequence, checked: Boolean) {
-        val radioButton = RadioButton(context, null, R.attr.radioButtonStyle)
-        radioButton.layoutParams = LinearLayout.LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            LayoutParams.WRAP_CONTENT
-        )
-
-        radioButton.id = optionId
-        radioButton.text = label
-
-        if (checked) {
-            radioButton.isChecked = true
-            radioButton.setTextAppearanceCompat(R.style.MuunRadioButtonTextAppearanceSelected)
-        }
-
-        radioGroup.addView(radioButton)
-    }
-
-    fun setOnOptionChosenListener(listener: OnOptionChosenListener) {
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            listener.onOptionChosen(checkedId)
-        }
-    }
+    abstract fun setOnOptionPickListener(listener: OnOptionPickListener)
 }

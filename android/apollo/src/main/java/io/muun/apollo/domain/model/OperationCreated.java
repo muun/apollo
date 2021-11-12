@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.model;
 
 
+import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.common.crypto.hd.MuunAddress;
-import io.muun.common.crypto.tx.PartiallySignedTransaction;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;

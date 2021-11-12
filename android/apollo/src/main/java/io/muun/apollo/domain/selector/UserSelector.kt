@@ -2,7 +2,7 @@ package io.muun.apollo.domain.selector
 
 import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.user.User
 import io.muun.common.Optional
 import rx.Observable
 import javax.inject.Inject
@@ -33,5 +33,12 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
 
     fun setBalanceHidden(hidden: Boolean) {
         userRepository.setBalanceHidden(hidden)
+    }
+
+    fun watchPendingTaprootCelebration(): Observable<Boolean> =
+        userRepository.watchPendingTaprootCelebration()
+
+    fun setPendingTaprootCelebration(isCelebrationPending: Boolean) {
+        userRepository.setPendingTaprootCelebration(isCelebrationPending)
     }
 }

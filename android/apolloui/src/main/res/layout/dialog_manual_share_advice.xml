@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.muun.apollo.presentation.ui.view.MuunButtonLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/dialog_close"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_close" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="32dp"
+                android:lineSpacingExtra="6dp"
+                android:text="@string/ek_manual_advice_title"
+                android:textColor="@color/text_primary_color"
+                android:textSize="24sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                        android:text="1 ."
+                        tools:ignore="HardcodedText"
+                        style="@style/save_ek_manual_advice"/>
+
+                <TextView
+                    android:id="@+id/advice_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="6dp"
+                    android:text="@string/ek_manual_advice_1"
+                    android:textColor="@color/text_primary_color"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                        android:text="2 ."
+                        tools:ignore="HardcodedText"
+                        style="@style/save_ek_manual_advice" />
+
+                <TextView
+                    android:id="@+id/advice_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="6dp"
+                    android:text="@string/ek_manual_advice_2"
+                    android:textColor="@color/text_primary_color"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                        android:text="3 ."
+                        tools:ignore="HardcodedText"
+                        style="@style/save_ek_manual_advice" />
+
+                <TextView
+                    android:id="@+id/advice_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="6dp"
+                    android:text="@string/ek_manual_advice_3"
+                    android:textColor="@color/text_primary_color"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <io.muun.apollo.presentation.ui.view.MuunButton
+        android:id="@+id/dialog_confirm"
+        style="@style/muun_button_primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ek_manual_advice_action" />
+
+</io.muun.apollo.presentation.ui.view.MuunButtonLayout>

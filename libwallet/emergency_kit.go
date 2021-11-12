@@ -7,6 +7,17 @@ import (
 	"github.com/muun/libwallet/emergencykit"
 )
 
+const (
+	EKVersionNeverExported = -1
+	// EKVersionOnlyKeys is the encrypted keys to be written down / emailed
+	EKVersionOnlyKeys      = 1
+	// EKVersionDescriptors is the first PDF including the descriptors
+	EKVersionDescriptors   = 2
+	// EKVersionMusig add the musig descriptors
+	EKVersionMusig         = 3
+	ekVersionCurrent       = EKVersionMusig
+)
+
 // EKInput input struct to fill the PDF
 type EKInput struct {
 	FirstEncryptedKey  string
@@ -20,6 +31,7 @@ type EKOutput struct {
 	HTML             string
 	VerificationCode string
 	Metadata         string
+	Version          int
 }
 
 // GenerateEmergencyKitHTML returns the translated html as a string along with the verification
@@ -33,6 +45,7 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 		FirstFingerprint:   ekParams.FirstFingerprint,
 		SecondEncryptedKey: ekParams.SecondEncryptedKey,
 		SecondFingerprint:  ekParams.SecondFingerprint,
+		Version:            ekVersionCurrent,
 	}
 
 	// Create the HTML and the verification code:
@@ -56,6 +69,7 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 		HTML:             htmlWithCode.HTML,
 		VerificationCode: htmlWithCode.VerificationCode,
 		Metadata:         string(metadataBytes),
+		Version:          moduleInput.Version,
 	}
 
 	return output, nil
@@ -118,8 +132,8 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 	}
 
 	metadata := &emergencykit.Metadata{
-		Version:           2,
-		BirthdayBlock:     int(secondKey.Birthday),
+		Version:           ekVersionCurrent,
+		BirthdayBlock:     secondKey.Birthday,
 		EncryptedKeys:     keys,
 		OutputDescriptors: descriptors,
 	}

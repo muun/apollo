@@ -350,11 +350,6 @@
         <item name="android:lineSpacingExtra">8sp</item>
     </style>
 
-    <style name="muun_help_text" parent="base_muun_text">
-        <item name="android:textSize">@dimen/muun_text_size_help</item>
-        <item name="android:textColor">@color/text_tertiary_color</item>
-    </style>
-
     <style name="muun_new_operation_label_text" parent="base_muun_text">
         <item name="android:textSize">16sp</item>
         <item name="android:padding">@dimen/muun_screen_margin</item>
@@ -506,5 +501,29 @@
     <style name="ShapeAppearanceOverlay.MuunDialogBottomCorners">
         <item name="cornerSizeBottomLeft">@dimen/muun_welcome_dialog_corner_radius</item>
         <item name="cornerSizeBottomRight">@dimen/muun_welcome_dialog_corner_radius</item>
+    </style>
+
+    <style name="muun_block_clock_number">
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:paddingLeft">0.15dp</item>
+        <item name="android:background">@drawable/bg_block_clock_number</item>
+        <item name="android:gravity">center</item>
+        <item name="android:fontFamily">@font/steelfish_rounded_bd</item>
+        <item name="android:textColor">@color/text_primary_color</item>
+        <item name="android:textSize">18dp</item> <!-- Not SP, we don't want this to scale -->
+    </style>
+
+    <style name="save_ek_manual_advice">
+        <item name="android:layout_width">25dp</item>
+        <item name="android:layout_height">26dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/blue</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>

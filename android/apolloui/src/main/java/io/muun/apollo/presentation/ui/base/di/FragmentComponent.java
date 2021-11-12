@@ -35,6 +35,9 @@ import io.muun.apollo.presentation.ui.fragments.setup_password_accept.SetupPassw
 import io.muun.apollo.presentation.ui.fragments.setup_password_success.SetupPasswordSuccessFragment;
 import io.muun.apollo.presentation.ui.fragments.sync.SyncFragment;
 import io.muun.apollo.presentation.ui.fragments.sync_contacts.SyncContactsFragment;
+import io.muun.apollo.presentation.ui.fragments.tr_clock_detail.TaprootClockDetailFragment;
+import io.muun.apollo.presentation.ui.fragments.tr_intro.TaprootIntroFragment;
+import io.muun.apollo.presentation.ui.fragments.tr_success.TaprootSuccessFragment;
 import io.muun.apollo.presentation.ui.fragments.verification_code.VerificationCodeFragment;
 import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailFragment;
 import io.muun.apollo.presentation.ui.recovery_code.accept.AcceptRecoveryCodeFragment;
@@ -48,6 +51,7 @@ import io.muun.apollo.presentation.ui.settings.RecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.ChangePasswordFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.StartPasswordChangeFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.success.EditPasswordSuccessFragment;
+import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment;
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment;
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment;
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment;
@@ -118,6 +122,10 @@ public interface FragmentComponent {
 
     void inject(EmergencyKitSuccessFragment emergencyKitSuccessFragment);
 
+    void inject(TaprootSuccessFragment taprootSuccessFragment);
+
+    void inject(TaprootClockDetailFragment taprootClockDetailFragment);
+
     void inject(RecoveryToolFragment recoveryToolFragment);
 
     void inject(ExplanationPageFragment explanationFragment);
@@ -159,4 +167,8 @@ public interface FragmentComponent {
     void inject(HomeFragment homeFragment);
 
     void inject(LightningSettingsFragment lightningSettingsFragment);
+
+    void inject(BitcoinSettingsFragment bitcoinSettingsFragment);
+
+    void inject(TaprootIntroFragment taprootIntroFragment);
 }

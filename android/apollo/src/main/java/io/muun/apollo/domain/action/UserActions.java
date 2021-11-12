@@ -9,9 +9,9 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.FeedbackCategory;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.SessionStatus;
 import io.muun.common.model.VerificationType;
@@ -94,6 +94,9 @@ public class UserActions {
         this.notifyLogoutAction = asyncActionStore.get(NOTIFY_LOGOUT_ACTION, this::notifyLogout);
     }
 
+    /**
+     * Enqueues a profile picture to be uploaded in the future.
+     */
     public void setPendingProfilePicture(@Nullable Uri uri) {
         userRepository.setPendingProfilePictureUri(uri);
     }
@@ -140,12 +143,18 @@ public class UserActions {
                 .doOnNext(userRepository::store);
     }
 
+    /**
+     * Get an Observable to observe/wait for password authorization.
+     */
     public Observable<String> awaitPasswordChangeEmailAuthorization() {
         return userRepository.awaitForAuthorizedPasswordChange();
     }
 
+    /**
+     * Authorize pending password change process.
+     */
     public void authorizePasswordChange(String uuid) {
-        userRepository.storePasswordChangeStatus(uuid);
+        userRepository.authorizePasswordChange(uuid);
     }
 
     private Observable<Void> submitFeedback(FeedbackCategory category, String feedback) {
@@ -155,10 +164,16 @@ public class UserActions {
         return houstonClient.submitFeedback(body);
     }
 
+    /**
+     * Delete currently stored phone number. Probably to try and verify another.
+     */
     public void resetPhoneNumber() {
         userRepository.storePhoneNumber(null);
     }
 
+    /**
+     * Save user's choice to never be asked again for Contacts permission.
+     */
     public void reportContactsPermissionNeverAskAgain() {
         userRepository.storeContactsPermissionState(ContactsPermissionState.PERMANENTLY_DENIED);
     }

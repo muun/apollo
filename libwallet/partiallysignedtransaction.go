@@ -7,10 +7,11 @@ import (
 	"fmt"
 
 	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/btcsuitew/btcutilw"
+	"github.com/muun/libwallet/btcsuitew/txscriptw"
 
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 
-	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 )
@@ -76,11 +77,13 @@ type Input interface {
 	SubmarineSwapV1() InputSubmarineSwapV1
 	SubmarineSwapV2() InputSubmarineSwapV2
 	IncomingSwap() InputIncomingSwap
+	MuunPublicNonce() []byte
 }
 
 type PartiallySignedTransaction struct {
 	tx     *wire.MsgTx
 	inputs []Input
+	nonces *MusigNonces
 }
 
 type Transaction struct {
@@ -102,7 +105,9 @@ func (l *InputList) Inputs() []Input {
 	return l.inputs
 }
 
-func NewPartiallySignedTransaction(inputs *InputList, rawTx []byte) (*PartiallySignedTransaction, error) {
+func NewPartiallySignedTransaction(
+	inputs *InputList, rawTx []byte, nonces *MusigNonces,
+) (*PartiallySignedTransaction, error) {
 
 	tx := wire.NewMsgTx(0)
 	err := tx.Deserialize(bytes.NewReader(rawTx))
@@ -110,19 +115,56 @@ func NewPartiallySignedTransaction(inputs *InputList, rawTx []byte) (*PartiallyS
 		return nil, fmt.Errorf("failed to decode tx: %w", err)
 	}
 
-	return &PartiallySignedTransaction{tx: tx, inputs: inputs.Inputs()}, nil
+	return &PartiallySignedTransaction{
+		tx: tx,
+		inputs: inputs.Inputs(),
+		nonces: nonces,
+	}, nil
 }
 
 func (p *PartiallySignedTransaction) coins(net *Network) ([]coin, error) {
 	var coins []coin
-	for _, input := range p.inputs {
-		coin, err := createCoin(input, net)
+
+	prevOuts, err := p.createPrevOuts(net)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO:
+	// Only taproot coins are going to use this kind of cache. SegWit v0 coins should use it too.
+	sigHashes := txscriptw.NewTaprootSigHashes(p.tx, prevOuts)
+
+	for i, input := range p.inputs {
+		coin, err := createCoin(i, input, net, sigHashes, p.nonces)
 		if err != nil {
 			return nil, err
 		}
 		coins = append(coins, coin)
 	}
 	return coins, nil
+}
+
+func (p *PartiallySignedTransaction) createPrevOuts(net *Network) ([]*wire.TxOut, error) {
+	prevOuts := make([]*wire.TxOut, len(p.inputs))
+
+	for i, input := range p.inputs {
+		amount := input.OutPoint().Amount()
+		addr := input.Address().Address()
+
+		decodedAddr, err := btcutilw.DecodeAddress(addr, net.network)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode address %s in prevOut %d: %w", addr, i, err)
+		}
+
+		script, err := txscriptw.PayToAddrScript(decodedAddr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to craft output script for %s in prevOut %d: %w", addr, i, err)
+		}
+
+		prevOuts[i] = &wire.TxOut{Value: amount, PkScript: script}
+	}
+
+	return prevOuts, nil
 }
 
 func (p *PartiallySignedTransaction) Sign(userKey *HDPrivateKey, muunKey *HDPublicKey) (*Transaction, error) {
@@ -300,11 +342,11 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 }
 
 func addressToScript(address string, network *Network) ([]byte, error) {
-	parsedAddress, err := btcutil.DecodeAddress(address, network.network)
+	parsedAddress, err := btcutilw.DecodeAddress(address, network.network)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse address %v: %w", address, err)
 	}
-	script, err := txscript.PayToAddrScript(parsedAddress)
+	script, err := txscriptw.PayToAddrScript(parsedAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate script for address %v: %w", address, err)
 	}
@@ -331,7 +373,7 @@ type coin interface {
 	FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error
 }
 
-func createCoin(input Input, network *Network) (coin, error) {
+func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.TaprootSigHashes, nonces *MusigNonces) (coin, error) {
 	txID, err := chainhash.NewHash(input.OutPoint().TxId())
 	if err != nil {
 		return nil, err
@@ -374,6 +416,21 @@ func createCoin(input Input, network *Network) (coin, error) {
 			KeyPath:       keyPath,
 			Amount:        amount,
 			MuunSignature: input.MuunSignature(),
+		}, nil
+	case addresses.V5:
+		var nonce [66]byte
+		copy(nonce[:], input.MuunPublicNonce())
+		var muunPartialSig [32]byte
+		copy(muunPartialSig[:], input.MuunSignature())
+		return &coinV5{
+			Network:        network.network,
+			OutPoint:       outPoint,
+			KeyPath:        keyPath,
+			Amount:         amount,
+			UserSessionId:  nonces.sessionIds[index],
+			MuunPubNonce:   nonce,
+			MuunPartialSig: muunPartialSig,
+			SigHashes:      sigHashes,
 		}, nil
 	case addresses.SubmarineSwapV1:
 		swap := input.SubmarineSwapV1()

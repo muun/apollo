@@ -54,6 +54,10 @@ func (i *input) IncomingSwap() InputIncomingSwap {
 	return &i.incomingSwap
 }
 
+func (i *input) MuunPublicNonce() []byte {
+	return nil
+}
+
 type outpoint struct {
 	txId   []byte
 	index  int
@@ -185,7 +189,7 @@ func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
 	// We dont need to use the muunKey in V1
@@ -268,7 +272,7 @@ func TestPartiallySignedTransaction_SignV2(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -317,7 +321,7 @@ func TestPartiallySignedTransaction_SignV3(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -387,7 +391,7 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -478,7 +482,7 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -561,7 +565,7 @@ func TestPartiallySignedTransaction_SignIncomingSwap(t *testing.T) {
 		State:         walletdb.InvoiceStateUsed,
 	})
 
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -812,7 +816,7 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			inputList := &InputList{inputs: tt.fields.inputs}
 			rawTx, _ := hex.DecodeString(tt.fields.tx)
-			p, err := NewPartiallySignedTransaction(inputList, rawTx)
+			p, err := NewPartiallySignedTransaction(inputList, rawTx, nil)
 			if err != nil {
 				panic(err)
 			}

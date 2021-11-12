@@ -11,6 +11,8 @@ import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
@@ -22,7 +24,7 @@ import javax.money.MonetaryAmount
 
 class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     BitcoinAddressView,
-    AddressTypeItem.AddresTypeChangedListener,
+    AddressTypeItem.AddressTypeChangedListener,
     EditAmountItem.EditAmountHandler {
 
     companion object {
@@ -94,11 +96,19 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         }
     }
 
+    override fun setTaprootState(blocksToTaproot: Int, status: UserActivatedFeatureStatus) {
+        addressTypeItem.taprootStatus = status
+
+        addressTypeItem.hoursToTaproot = BlockchainHeightSelector
+            .getBlocksInHours(blocksToTaproot)
+    }
+
     override fun showFullAddress(address: String, addressType: AddressType) {
 
         val title = when (addressType) {
             AddressType.SEGWIT -> R.string.your_bitcoin_address
             AddressType.LEGACY -> R.string.your_compat_bitcoin_address
+            AddressType.TAPROOT -> R.string.your_taproot_bitcoin_address
         }
 
         val dialog = TitleAndDescriptionDrawer()

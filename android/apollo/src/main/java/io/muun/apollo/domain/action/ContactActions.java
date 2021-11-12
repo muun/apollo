@@ -14,20 +14,17 @@ import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PhoneContact;
-import io.muun.apollo.domain.model.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
-import io.muun.common.crypto.schemes.TransactionSchemeV1;
-import io.muun.common.crypto.schemes.TransactionSchemeV2;
-import io.muun.common.crypto.schemes.TransactionSchemeV3;
-import io.muun.common.crypto.schemes.TransactionSchemeV4;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 
+import libwallet.Libwallet;
 import org.bitcoinj.core.NetworkParameters;
 import rx.Observable;
 import rx.Subscription;
@@ -221,18 +218,21 @@ public class ContactActions {
             contact = fetchContact(contact.getHid()).toBlocking().first();
 
             switch (contact.maxAddressVersion) {
-                case TransactionSchemeV1.ADDRESS_VERSION:
+                case (int) Libwallet.AddressVersionV1:
                     return createContactAddressV1(contact);
 
-                case TransactionSchemeV2.ADDRESS_VERSION:
+                case (int) Libwallet.AddressVersionV2:
                     return createContactAddressV2(contact);
 
-                case TransactionSchemeV3.ADDRESS_VERSION:
+                case (int) Libwallet.AddressVersionV3:
                     return createContactAddressV3(contact);
 
-                case TransactionSchemeV4.ADDRESS_VERSION:
-                default: // contact can handle higher, we can't.
+                case (int) Libwallet.AddressVersionV4:
                     return createContactAddressV4(contact);
+
+                case (int) Libwallet.AddressVersionV5:
+                default: // contact can handle higher, we can't.
+                    return createContactAddressV5(contact);
 
             }
         }
@@ -268,6 +268,12 @@ public class ContactActions {
         return LibwalletBridge.createAddressV4(derivedPublicKeyPair, networkParameters);
     }
 
+    private MuunAddress createContactAddressV5(Contact contact) {
+        final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
+
+        return LibwalletBridge.createAddressV5(derivedPublicKeyPair, networkParameters);
+    }
+
     private PublicKeyPair derivePublicKeyPair(Contact contact) {
         final PublicKeyPair basePublicKeyPair = contact.getPublicKeyPair();
 
@@ -289,6 +295,9 @@ public class ContactActions {
         publicProfileDao.update(contact.publicProfile);
     }
 
+    /**
+     * Show a notification for a new contact.
+     */
     public void showNewContactNotification(Contact contact) {
         notificationService.showNewContactNotification(contact);
     }

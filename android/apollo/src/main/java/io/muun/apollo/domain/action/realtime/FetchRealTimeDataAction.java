@@ -3,6 +3,7 @@ package io.muun.apollo.domain.action.realtime;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
+import io.muun.apollo.data.preferences.FeaturesRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository;
 import io.muun.apollo.data.preferences.MinFeeRateRepository;
@@ -24,6 +25,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     private final BlockchainHeightRepository blockchainHeightRepository;
     private final ForwardingPoliciesRepository forwardingPoliciesRepository;
     private final MinFeeRateRepository minFeeRateRepository;
+    private final FeaturesRepository featuresRepository;
 
     /**
      * Update time-sensitive data, such as network fees and exchange rates.
@@ -35,7 +37,8 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
             final ExchangeRateWindowRepository exchangeRateWindowRepository,
             final BlockchainHeightRepository blockchainHeightRepository,
             final ForwardingPoliciesRepository forwardingPoliciesRepository,
-            final MinFeeRateRepository minFeeRateRepository) {
+            final MinFeeRateRepository minFeeRateRepository,
+            final FeaturesRepository featuresRepository) {
 
         this.houstonClient = houstonClient;
         this.feeWindowRepository = feeWindowRepository;
@@ -43,6 +46,11 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
         this.blockchainHeightRepository = blockchainHeightRepository;
         this.forwardingPoliciesRepository = forwardingPoliciesRepository;
         this.minFeeRateRepository = minFeeRateRepository;
+        this.featuresRepository = featuresRepository;
+    }
+
+    public void runForced() {
+        super.run(Observable.defer(this::forceSyncRealTimeData));
     }
 
     @Override
@@ -68,6 +76,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                     forwardingPoliciesRepository.store(realTimeData.forwardingPolicies);
                     minFeeRateRepository.store(realTimeData.minFeeRateInWeightUnits);
+                    featuresRepository.store(realTimeData.features);
                 })
                 .map(RxHelper::toVoid);
     }

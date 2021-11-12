@@ -5,4 +5,6 @@ import io.muun.apollo.presentation.ui.base.BaseView;
 public interface HomeView extends BaseView {
 
     void navigateToSecurityCenter();
+
+    void showTaprootCelebration();
 }

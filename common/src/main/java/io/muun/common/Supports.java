@@ -113,4 +113,8 @@ public class Supports {
         int APOLLO = 600;
     }
 
+    public interface Taproot {
+        int APOLLO = 700;
+        int FALCON = 605;
+    }
 }

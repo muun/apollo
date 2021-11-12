@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/taproot_section"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@color/lightning_settings_background">
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/taproot_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/muun_screen_margin"
+                    android:layout_marginTop="@dimen/muun_screen_margin"
+                    android:layout_marginEnd="@dimen/muun_screen_margin"
+                    android:layout_marginBottom="@dimen/muun_screen_margin"
+                    android:text="@string/tr_setting_title"
+                    android:textSize="@dimen/muun_text_size_body" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/taproot_timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginRight="4dp"
+                    android:src="@drawable/ic_clock_activation" />
+
+                <TextView
+                    android:id="@+id/taproot_timer_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tr_setting_timer"
+                    android:textColor="@color/text_primary_color"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text="@string/tr_setting_desc"
+                android:textColor="@color/text_secondary_color"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <io.muun.apollo.presentation.ui.view.LoadingView
+                android:id="@+id/bitcoin_settings_loading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

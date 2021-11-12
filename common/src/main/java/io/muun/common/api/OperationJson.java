@@ -1,5 +1,6 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.model.OperationStatus;
@@ -108,6 +109,13 @@ public class OperationJson {
     @Nullable
     public IncomingSwapJson incomingSwap;
 
+    // TODO: This is not integrated into apollo or falcon yet.
+    @Since(apolloVersion = Supports.Taproot.APOLLO, falconVersion = Supports.Taproot.FALCON)
+    @Nullable
+    // For old clients, never set.
+    // Also, only valid for musig ops and lifetime spread from newOperation to tx broadcast.
+    public List<String> userPublicNoncesHex;
+
     /**
      * Json constructor.
      */
@@ -138,7 +146,8 @@ public class OperationJson {
                          @Nullable String senderMetadata,
                          @Nullable String receiverMetadata,
                          @Nullable List<String> outpoints,
-                         @Nullable Boolean markItAsReplaceableByFee) {
+                         @Nullable Boolean markItAsReplaceableByFee,
+                         @Nullable List<String> userPublicNoncesHex) {
 
         this.requestId = requestId;
         this.direction = direction;
@@ -161,6 +170,7 @@ public class OperationJson {
         this.receiverMetadata = receiverMetadata;
         this.outpoints = outpoints;
         this.markItAsReplaceableByFee = markItAsReplaceableByFee;
+        // TODO: assign to property (leaving it for now as its already in other branch/commit)
     }
 
     /**

@@ -12,7 +12,7 @@ import io.muun.apollo.domain.model.PaymentAnalysis
 import io.muun.apollo.domain.model.PaymentContext
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwapFundingOutputPolicies
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.user.User
 import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
 import org.javamoney.moneta.Money

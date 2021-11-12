@@ -6,6 +6,8 @@ import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus;
+import io.muun.apollo.domain.selector.FeatureStatusSelector;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
@@ -17,6 +19,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.os.Bundle;
 import icepick.State;
+import libwallet.Libwallet;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -31,6 +34,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
     private final ContactActions contactActions;
     private final NotificationActions notificationActions;
     private final UserSelector userSel;
+    private final FeatureStatusSelector featureStatusSel;
     private final SignupDraftManager signupDraftManager;
 
     private final TaskScheduler taskScheduler;
@@ -52,6 +56,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
                          ContactActions contactActions,
                          NotificationActions notificationActions,
                          UserSelector userSel,
+                         FeatureStatusSelector featureStatusSel,
                          SignupDraftManager signupDraftManager,
                          TaskScheduler taskScheduler,
                          FetchRealTimeDataAction fetchRealTimeData,
@@ -60,6 +65,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         this.signinActions = signinActions;
         this.contactActions = contactActions;
         this.userSel = userSel;
+        this.featureStatusSel = featureStatusSel;
         this.signupDraftManager = signupDraftManager;
         this.fetchRealTimeData = fetchRealTimeData;
         this.notificationActions = notificationActions;
@@ -78,6 +84,8 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         signupDraftManager.clear(); // if we're here, we're 100% sure signup was successful
 
         operationsCache.start();
+
+        fetchRealTimeData.runForced();
     }
 
     public void onActivityDestroyed() {
@@ -96,6 +104,29 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         if (hasPermission(Manifest.permission.READ_CONTACTS)) {
             contactActions.startPhoneContactsAutoSync();
         }
+
+        setUpTaprootCelebrationDialog();
+    }
+
+    private void setUpTaprootCelebrationDialog() {
+        final Observable<?> taprootDialogObs = Observable.combineLatest(
+                userSel.watchPendingTaprootCelebration(),
+                featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+
+                (isCelebPending, status) -> {
+                    if (!isCelebPending && status == UserActivatedFeatureStatus.PREACTIVATED) {
+                        userSel.setPendingTaprootCelebration(true); // for the next time (hackish)
+                    }
+
+                    if (isCelebPending && status == UserActivatedFeatureStatus.ACTIVE) {
+                        view.showTaprootCelebration();
+                    }
+
+                    return null;
+                }
+        );
+
+        subscribeTo(taprootDialogObs);
     }
 
     private void setUpAnalyticsProfile() {
@@ -118,5 +149,9 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
 
     public void navigateToSendFeedbackScreen() {
         navigator.navigateToSendGenericFeedback(getContext());
+    }
+
+    public void reportTaprootCelebrationShown() {
+        userSel.setPendingTaprootCelebration(false);
     }
 }

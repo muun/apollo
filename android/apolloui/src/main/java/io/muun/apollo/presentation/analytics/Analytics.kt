@@ -5,7 +5,7 @@ import android.content.res.Resources
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
 import io.muun.apollo.domain.model.report.CrashReport
-import io.muun.apollo.domain.model.User
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.app.di.PerApplication
 import javax.inject.Inject
 

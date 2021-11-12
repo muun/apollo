@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.recovery_code.success;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.presentation.ui.fragments.single_action.SingleActionFragment;
 
 import android.view.View;

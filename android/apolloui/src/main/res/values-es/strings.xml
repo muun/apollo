@@ -4,6 +4,8 @@
     <!-- General-purpose strings -->
     <string name="cancel">Cancelar</string>
     <string name="dismiss">Aceptar</string>
+    <string name="stay">Seguir</string>
+    <string name="leave">Abandonar</string>
     <string name="retry">Reintentar</string>
     <string name="send_report">Enviar reporte</string>
     <string name="abort">Abortar</string>
@@ -554,7 +556,7 @@
     <string name="create_email_how_dialog_title">¿Como usará Muun mi email?</string>
     <string name="create_email_how_dialog_desc">
         Muun te enviará un correo electrónico cada vez que alguien intente acceder a tu
-        monedero, pidiendo tu autorización. Esto te proteje de gente (o computadoras) que intenten
+        monedero, pidiendo tu autorización. Esto te protege de gente (o computadoras) que intenten
         adivinar tu contraseña, y te alerta si alguien lo intenta.
     </string>
 
@@ -1092,6 +1094,7 @@
     <string name="legacy_address_info">Dirección de bitcoin de compatibilidad</string>
     <string name="your_bitcoin_address">Tu dirección de bitcoin</string>
     <string name="your_compat_bitcoin_address">Tu dirección de bitcoin de compatibilidad</string>
+    <string name="your_taproot_bitcoin_address">Tu dirección de bitcoin</string>
     <string name="your_ln_invoice">Tu factura de lightning</string>
     <string name="show_qr_invoice_loading">Generando factura</string>
     <string name="show_qr_invoice_expired">
@@ -1100,25 +1103,6 @@
     <string name="show_qr_invoice_create_other">Crear factura</string>
 
     <string name="address_share_title">Enviar a...</string>
-
-    <string name="bitcoin_address_help_title">Direcciones de Segwit y compatibilidad</string>
-    <string name="bitcoin_address_help_content">
-        <annotation role="p">
-            Segwit y compatibilidad son dos tipos distintos de direcciones de
-            bitcoin.
-        </annotation>
-
-        <annotation role="p">
-            Las direcciones de compatibilidad son ampliamente aceptadas en el ecosistema, pero crean
-            transacciones más pesadas que las direcciones de Segwit. Usarlas resultará en comisiones
-            más altas en tus futuras transacciones.
-        </annotation>
-
-        Para que tus transacciones sean más eficientes, Muun muestra las direcciones de Segwit
-        en primer lugar. Algunos servicios aún no se han actualizado a Segwit. Si tienes
-        problemas para utilizar Segwit, utiliza direcciones de compatibilidad en su lugar.
-    </string>
-
 
     <string name="secure_storage_error">
         Por razones de seguridad, tu sesión expiró. Por favor, ingresa nuevamente o contacta al
@@ -1264,11 +1248,31 @@
     <string name="ek_uploading_body">
         Guardando tu Kit de Emergencia
     </string>
+    <string name="ek_updating_body">
+        Actualizando tu Kit de Emergencia
+    </string>
     <string name="ek_upload_error_title">Tu Kit de Emergencia no se pudo guardar</string>
     <string name="ek_upload_error_body">
         No pudimos guardar tu Kit de Emergencia en la nube. Por favor, verifica tu conexión e
         inténtalo de nuevo.
     </string>
+
+    <string name="ek_manual_advice_title">
+        ¿Quieres guardar tu Kit manualmente?\nTe damos algunos consejos.
+    </string>
+    <string name="ek_manual_advice_1">
+        <annotation fontStyle="bold">Hazlo accesible</annotation>. Debes poder acceder a tu Kit
+        en todo momento, incluso si perdieras tu teléfono, te lo robaran o dejara de funcionar.
+    </string>
+    <string name="ek_manual_advice_2">
+        No priorices mantenerlo en secreto. Recuerda, tu Kit está encriptado. Sin tu Código de
+        Recuperación, el Kit es inofensivo.
+    </string>
+    <string name="ek_manual_advice_3">
+        <annotation fontStyle="bold">Facilita su actualización</annotation>. Debes tener el último
+        Kit a mano siempre, un Kit viejo no funcionará.
+    </string>
+    <string name="ek_manual_advice_action">Guardar manualmente</string>
 
     <!-- Email DeepLink errors -->
     <string name="email_link_error_title">Abre tu último email</string>
@@ -1341,14 +1345,18 @@
         Usa tu cuenta de Google para guardar y acceder a tu Kit.
     </string>
 
-    <string name="save_option_email_title">Envíate un correo</string>
-    <string name="save_option_email_description">
-        Usa tu cuenta de email para guardar y acceder a tu Kit.
+    <string name="save_option_feedback_title">Sugiere otro servicio</string>
+    <string name="save_option_feedback_description">
+        Cuéntanos qué servicio en la nube te gustaría que soportemos.
     </string>
+    <string name="save_option_feedback_dialog_body">
+        Planeamos incluir más servicios en la nube. ¿Cuál te gustaría que se agregue?
+    </string>
+    <string name="save_option_feedback_dialog_action">Enviar comentario</string>
+    <string name="save_option_feedback_dialog_success">¡Gracias por tu comentario!</string>
 
-    <string name="save_option_manual_title">Guardar manualmente</string>
-    <string name="save_option_manual_description">
-        Elige una aplicación para guardar y acceder a tu Kit.
+    <string name="save_link_manual">
+        <annotation link="no_cloud">No quiero almacenarlo en la nube</annotation>
     </string>
 
     <string name="migration_title">Actualizando tu monedero</string>
@@ -1380,7 +1388,7 @@
         cancelar transacciones. A menos que conozcas y confíes en el remitente, considera esto como
         un riesgo hasta que se confirme la transacción.
     </string>
-    
+
     <string name="turbo_channels">Turbo channels</string>
     <string name="turbo_channels_learn_more">
         <annotation link="https://blog.muun.com/turbo-channels-es/">Aprende más</annotation> sobre
@@ -1394,6 +1402,7 @@
 
     <string name="settings_header_advanced">Configuración avanzada</string>
     <string name="settings_lightning">Lightning Network</string>
+    <string name="settings_bitcoin">Bitcoin Network</string>
     <string name="dark_mode">Apariencia</string>
     <string name="dark_mode_dark">Modo oscuro</string>
     <string name="dark_mode_light">Modo claro</string>
@@ -1405,7 +1414,7 @@
     <string name="edit_address_type">Tipo de dirección</string>
     <string name="segwit">Segwit</string>
     <string name="legacy">Compatibilidad</string>
-    <string name="choose_address_type">Elige tu tipo de dirección</string>
+    <string name="taproot">Taproot</string>
 
     <string name="invoice_settings">Configuración de factura</string>
     <string name="invoice_settings_hide">Ocultar configuración</string>
@@ -1431,11 +1440,11 @@
     <string name="lnurl_withdraw_confirm_continue">Recibir bitcoin</string>
     <string name="lnurl_withdraw_contacting">
         Contactando a
-        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>…
     </string>
     <string name="lnurl_withdraw_receiving">
         Recibiendo de
-        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>…
     </string>
     <string name="lnurl_withdraw_taking_long">
         <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> está
@@ -1454,5 +1463,131 @@
     <string name="error_lnurl_already_used_title">Código ya usado</string>
     <string name="error_lnurl_already_used_desc">
         Éste código ya fue usado por otro monedero, y no puede ser usado nuevamente.
+    </string>
+
+    <string name="tr_setup_intro_1_title">Un gran paso para bitcoin</string>
+    <string name="tr_setup_intro_1_desc">
+        Taproot es una de las actualizaciones más esperadas en bitcoin.
+        \n\n
+        Empezando por pagos más baratos y menos rastreables, Taproot está sentando las bases para
+        una innovación masiva en bitcoin.
+    </string>
+    <string name="tr_setup_intro_2_title">Habilitado por potentes scripts</string>
+    <string name="tr_setup_intro_2_desc">
+        Taproot usa nuevos scripts para crear las direcciones donde recibirás fondos.
+        \n\n
+        Para recuperar esos fondos en una emergencia, estos scripts deben incluirse en tu Kit de
+        Emergencia.
+    </string>
+    <string name="tr_setup_intro_3_title">Completamente seguro</string>
+    <string name="tr_setup_intro_3_desc">
+        Mantén el control total de tus fondos actualizando tu Kit de Emergencia antes de usar
+        Taproot por primera vez.
+        \n\n
+        El Kit actualizado reemplaza al que ya tienes, pero tu Código de Recuperación no cambia.
+    </string>
+    <string name="tr_setup_intro_action">Actualiza tu Kit</string>
+    <string name="tr_setup_intro_abort_title">¿Abandonar la activación?</string>
+    <string name="tr_setup_intro_abort_desc">
+        Aún no has activado Taproot. Puedes reiniciar este proceso más tarde.
+    </string>
+
+    <string name="tr_setup_update_kit_title">Actualiza tu Kit de Emergencia</string>
+    <string name="tr_setup_update_kit_desc">
+        Elige tu servicio en la nube preferido para asegurarte de que tu Kit nunca se pierda.
+    </string>
+
+    <string name="tr_celebration_user_native_title">¡Se activó Taproot!</string>
+    <string name="tr_celebration_desc">
+        Ahora puedes enviar y recibir pagos usando direcciones Taproot. Tus pagos serán más baratos
+        y menos rastreables.
+    </string>
+    <string name="tr_celebration_action">
+        Excelente
+    </string>
+
+    <string name="tr_setting_title">Predeterminar a direcciones Taproot</string>
+    <string name="tr_setting_desc">
+        Taproot es un nuevo tipo de dirección que hace que tus pagos sean más baratos y menos
+        rastreables.
+        \n\n
+        Muchos servicios aún no son compatibles con Taproot y pueden marcar tus direcciones como
+        inválidas. Si eliges a Taproot como tipo predeterminado, deberás cambiar manualmente el
+        tipo de dirección a Segwit o Legacy cada vez que esto suceda.
+    </string>
+    <string name="tr_setting_timer">Se activa en ~~<annotation arg="0">3</annotation> horas</string>
+    <string name="tr_setting_confirm_title">¿Predeterminar a Taproot?</string>
+    <string name="tr_setting_confirm_desc">
+        Algunos servicios pueden marcar tus direcciones como inválidas.
+    </string>
+    <string name="tr_setting_confirm">CONFIRMAR</string>
+
+    <string name="address_picker_title">Elige tu tipo de dirección</string>
+    <string name="address_picker_legacy_title">Compatibilidad</string>
+    <string name="address_picker_legacy_desc">
+        Es el tipo de dirección más aceptado. Úsalo sólo cuando un servicio marque tus direcciones
+        de Segwit como inválidas.
+    </string>
+    <string name="address_picker_segwit_title">Segwit</string>
+    <string name="address_picker_segwit_desc">
+        Es un tipo de dirección relativamente nuevo, ya ampliamente aceptado. Crea transacciones
+        más livianas y te ahorra dinero en futuras comisiones de red.
+    </string>
+    <string name="address_picker_taproot_title">Taproot</string>
+    <string name="address_picker_taproot_desc_before_activation">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Se activa en
+         ~<annotation arg="0">x</annotation> horas</annotation></annotation>. Es el tipo de
+        dirección más nuevo y potente. Muchos servicios aún no son compatibles y pueden marcarlas
+        como inválidas.
+    </string>
+    <string name="address_picker_taproot_desc_after_activation">
+        Es el tipo de dirección más nuevo y potente. Muchos servicios aún no son compatibles
+        y pueden marcarlas como inválidas.
+    </string>
+    <string name="taproot_card_body">
+        <annotation fontColor="muunBlue"><annotation fontStyle="bold">
+            Mejora tus pagos</annotation></annotation>. Ahorra con cada pago activando Taproot.
+    </string>
+    <string name="taproot_success_title">
+        ¡Estás listo para Taproot!
+    </string>
+    <string name="taproot_success_preactivated_desc">
+        <annotation role="p">
+            En <annotation arg="0">123</annotation> bloques (~<annotation arg="1">4</annotation>
+            horas), la Red de Bitcoin activará Taproot globalmente.
+        </annotation>
+
+        <annotation role="p">
+            Cuando esto suceda, podrás recibir fondos en direcciones Taproot.
+        </annotation>
+    </string>
+    <string name="taproot_success_active_desc">
+        Ahora puedes enviar y recibir pagos usando direcciones Taproot. Tus pagos serán más baratos
+        y menos rastreables.
+    </string>
+    <string name="taproot_success_action">Excelente</string>
+
+    <string name="tr_clock_detail_title">¡Estamos en cuenta regresiva!</string>
+    <string name="tr_clock_detail_desc">
+        <annotation role="p">
+            Cuando la Red de Bitcoin mine el bloque 709.632, Taproot se activará globalmente.
+        </annotation>
+
+        <annotation role="p">
+            Para protegerte de posibles reorganizaciones de la blockchain, podrás comenzar a usar
+            direcciones Taproot 6 bloques después.
+        </annotation>
+
+        <annotation role="p">
+            ¡Quedan <annotation arg="0">210</annotation> bloques!
+        </annotation>
+    </string>
+
+    <string name="notification_tr_preactivate_title">Mejora tus pagos</string>
+    <string name="notification_tr_preactivate_desc">Ahorra con cada pago activando Taproot.</string>
+
+    <string name="notification_tr_activated_title">Se activó Taproot 🎉</string>
+    <string name="notification_tr_activated_desc">
+        La Red de Bitcoin activó Taproot. Ahora puedes disfrutar de pagos más baratos.
     </string>
 </resources>

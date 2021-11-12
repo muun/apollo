@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.ek_intro.EmergencyKitIntroFragment
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveFragment
@@ -18,6 +19,7 @@ import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
 import io.muun.apollo.presentation.ui.fragments.loading.LoadingFragment
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
+import rx.functions.Action0
 
 class EmergencyKitActivity: SingleFragmentActivity<EmergencyKitPresenter?>(), EmergencyKitView {
 
@@ -60,20 +62,30 @@ class EmergencyKitActivity: SingleFragmentActivity<EmergencyKitPresenter?>(), Em
     }
 
 
-    override fun goToStep(step: EmergencyKeysStep) {
+    override fun goToStep(step: EmergencyKitStep) {
         replaceFragment(createStepFragment(step), false)
     }
 
-    private fun createStepFragment(step: EmergencyKeysStep): Fragment {
+    override fun showSaveAbortDialog() {
+        MuunDialog.Builder()
+            .title(R.string.ek_abort_title)
+            .message(R.string.ek_abort_body)
+            .positiveButton(R.string.abort, Action0 { finishActivity() })
+            .negativeButton(R.string.cancel, null)
+            .build()
+            .let(this::showDialog)
+    }
+
+    private fun createStepFragment(step: EmergencyKitStep): Fragment {
         return when (step) {
-            EmergencyKeysStep.LOADING -> LoadingFragment.create(R.string.export_keys_preparing)
-            EmergencyKeysStep.INTRO -> EmergencyKitIntroFragment()
-            EmergencyKeysStep.SAVE -> EmergencyKitSaveFragment()
-            EmergencyKeysStep.VERIFY -> EmergencyKitVerifyFragment()
-            EmergencyKeysStep.VERIFY_HELP -> EmergencyKitVerifyHelpFragment()
-            EmergencyKeysStep.CLOUD_VERIFY -> EmergencyKitCloudVerifyFragment()
-            EmergencyKeysStep.SUCCESS -> EmergencyKitSuccessFragment()
-            EmergencyKeysStep.ERROR -> ErrorFragment.create(ErrorViewModel.Builder()
+            EmergencyKitStep.LOADING -> LoadingFragment.create(R.string.export_keys_preparing)
+            EmergencyKitStep.INTRO -> EmergencyKitIntroFragment()
+            EmergencyKitStep.SAVE -> EmergencyKitSaveFragment.createForNormalExport()
+            EmergencyKitStep.VERIFY -> EmergencyKitVerifyFragment()
+            EmergencyKitStep.VERIFY_HELP -> EmergencyKitVerifyHelpFragment()
+            EmergencyKitStep.CLOUD_VERIFY -> EmergencyKitCloudVerifyFragment()
+            EmergencyKitStep.SUCCESS -> EmergencyKitSuccessFragment()
+            EmergencyKitStep.ERROR -> ErrorFragment.create(ErrorViewModel.Builder()
                 .loggingName(AnalyticsEvent.ERROR_TYPE.EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR)
                 .title(getString(R.string.export_keys_preparing_error_title))
                 .descriptionRes(R.string.export_keys_preparing_error_desc)

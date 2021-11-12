@@ -6,11 +6,9 @@ import io.muun.apollo.presentation.ui.base.BaseView
 
 interface HomeView : BaseView {
 
-    fun setBalance(homeBalanceState: HomePresenter.HomeBalanceState)
+    fun setState(homeState: HomePresenter.HomeState)
 
     fun setNewOp(newOp: Operation, mode: CurrencyDisplayMode)
-
-    fun setUserRecoverable(recoverable: Boolean)
 
     fun showTooltip()
 }

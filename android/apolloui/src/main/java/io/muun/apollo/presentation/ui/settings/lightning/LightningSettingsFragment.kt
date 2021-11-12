@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.settings.lightning
 
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import butterknife.BindView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import icepick.State
@@ -53,7 +52,6 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
         }
 
         parentActivity.header.apply {
-            attachToActivity(parentActivity)
             showTitle(R.string.settings_lightning)
             setNavigation(MuunHeader.Navigation.BACK)
         }

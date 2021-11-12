@@ -3,7 +3,7 @@ package io.muun.apollo.data.preferences
 import android.content.Context
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
-import io.muun.apollo.domain.model.UserPreferences
+import io.muun.apollo.domain.model.user.UserPreferences
 import rx.Observable
 import javax.inject.Inject
 
@@ -51,6 +51,7 @@ open class UserPreferencesRepository @Inject constructor(
         var strictMode: Boolean = false
         var seenNewHome: Boolean = false
         var seenLnurlFirstTime: Boolean = false
+        var defaultAddressType: String = "segwit"
 
         // JSON constructor
         constructor()
@@ -59,13 +60,15 @@ open class UserPreferencesRepository @Inject constructor(
             strictMode = prefs.strictMode
             seenNewHome = prefs.seenNewHome
             seenLnurlFirstTime = prefs.seenLnurlFirstTime
+            defaultAddressType = prefs.defaultAddressType
         }
 
         fun toModel(): UserPreferences {
             return UserPreferences(
                     strictMode,
                     seenNewHome,
-                    seenLnurlFirstTime
+                    seenLnurlFirstTime,
+                    defaultAddressType
             )
         }
     }

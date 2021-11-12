@@ -15,6 +15,7 @@ import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
+import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
@@ -27,10 +28,10 @@ import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.TransactionPushed;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserPreferences;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserPreferences;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
@@ -71,6 +72,7 @@ import io.muun.common.utils.Pair;
 
 import android.content.Context;
 import android.net.Uri;
+import libwallet.MusigNonces;
 import okhttp3.MediaType;
 import org.threeten.bp.ZonedDateTime;
 import rx.Completable;
@@ -221,11 +223,18 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService().setUpPassword(params);
     }
 
+    /**
+     * Creates a new PhoneNumber for the user.
+     */
     public Observable<UserPhoneNumber> createPhone(PhoneNumber phoneNumber) {
         return getService().createPhone(apiMapper.mapPhoneNumber(phoneNumber))
                 .map(modelMapper::mapUserPhoneNumber);
     }
 
+    /**
+     * Asks Houston for a new verification code, to be sent via sms or phone call.
+     * @param verificationType the way to deliver the verification code, either sms or phone call
+     */
     public Observable<Void> resendVerificationCode(@NotNull VerificationType verificationType) {
         return getService().resendVerificationCode(verificationType);
     }
@@ -242,6 +251,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 .map(modelMapper::mapUserPhoneNumber);
     }
 
+    /**
+     * Creates a new UserProfile for the user.
+     */
     public Observable<User> createProfile(UserProfile userProfile) {
         return getService().createProfile(apiMapper.mapUserProfile(userProfile))
                 .map(modelMapper::mapUser);
@@ -394,17 +406,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Report a successful emergency kit export.
      */
-    public Observable<Void> reportEmergencyKitExported(ZonedDateTime createdAt,
-                                                       boolean verified,
-                                                       String vCode) {
-
-        final ExportEmergencyKitJson body = new ExportEmergencyKitJson(
-                ApolloZonedDateTime.of(createdAt),
-                verified,
-                vCode
-        );
-
-        return getService().reportEmergencyKitExported(body);
+    public Observable<Void> reportEmergencyKitExported(EmergencyKitExport export) {
+        return getService()
+                .reportEmergencyKitExported(apiMapper.mapEmergencyKitExport(export));
     }
 
     /**
@@ -450,16 +454,18 @@ public class HoustonClient extends BaseClient<HoustonService> {
         return getService().checkIntegrity(integrityCheck);
     }
 
-
     /**
      * Sends a new operation to houston, that will return it with more data, including a transaction
      * draft.
      */
-    public Observable<OperationCreated> newOperation(OperationWithMetadata operation,
-                                                     PreparedPayment prepPayment) {
+    public Observable<OperationCreated> newOperation(
+            final OperationWithMetadata operation,
+            final PreparedPayment prepPayment,
+            final MusigNonces musigNonces
+    ) {
         final List<String> outpoints = prepPayment.nextTransactionSize.extractOutpoints();
         return getService()
-                .newOperation(apiMapper.mapOperation(operation, outpoints))
+                .newOperation(apiMapper.mapOperation(operation, outpoints, musigNonces))
                 .map(modelMapper::mapOperationCreated);
     }
 

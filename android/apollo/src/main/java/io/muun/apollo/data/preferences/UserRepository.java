@@ -2,12 +2,15 @@ package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
+import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.CurrencyDisplayMode;
-import io.muun.apollo.domain.model.User;
-import io.muun.apollo.domain.model.UserPhoneNumber;
-import io.muun.apollo.domain.model.UserProfile;
+import io.muun.apollo.domain.model.EmergencyKitExport;
+import io.muun.apollo.domain.model.user.EmergencyKit;
+import io.muun.apollo.domain.model.user.User;
+import io.muun.apollo.domain.model.user.UserPhoneNumber;
+import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.utils.Preconditions;
@@ -18,8 +21,14 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import libwallet.Libwallet;
 import rx.Observable;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -49,6 +58,8 @@ public class UserRepository extends BaseRepository {
 
     private static final String BALANCE_HIDDEN_KEY = "balance_hidden_key";
 
+    private static final String TAPROOT_CELEBRATION_PENDING = "taproot_celebration_pending";
+
     private final Preference<String> lastCopiedAddress;
 
     private final Preference<String> pendingProfilePictureUriPreference;
@@ -71,6 +82,9 @@ public class UserRepository extends BaseRepository {
     private final Preference<Boolean> emailSetupSkippedPreference;
 
     private final Preference<Boolean> balanceHiddenPreference;
+
+    // Horrible I know, but only temporary until taproot activation date. Afterwards this goes away.
+    private final Preference<Boolean> taprootCelebrationPending;
 
     /**
      * Creates a user preference repository.
@@ -123,6 +137,11 @@ public class UserRepository extends BaseRepository {
                 BALANCE_HIDDEN_KEY,
                 false
         );
+
+        taprootCelebrationPending = rxSharedPreferences.getBoolean(
+                TAPROOT_CELEBRATION_PENDING,
+                false
+        );
     }
 
     @Override
@@ -162,6 +181,10 @@ public class UserRepository extends BaseRepository {
                 });
     }
 
+    /**
+     * Get the user for the current session. Returns an empty Optional if there's no user currently
+     * LOGGED_IN.
+     */
     public Optional<User> fetchOneOptional() {
         return fetchOptional().toBlocking().first();
     }
@@ -190,13 +213,21 @@ public class UserRepository extends BaseRepository {
                 true, // all users had passwords before this feature
                 sharedPreferences.getBoolean("has_p2p_enabled", false),
                 false, // non-existent at migration time. This is a good default
+                sharedPreferences.getString("primary_currency_key", "USD"),
                 null, // non-existent at migration time
-                sharedPreferences.getString("primary_currency_key", "USD")
+                null, // non-existent at migration time
+                null, // non-existent at migration time
+                new StoredEkVerificationCodes(), // non-existent at migration time
+                new LinkedList<>()
         );
 
         userPreference.set(value);
     }
 
+    /**
+     * Get the user for the current session. Throws an Exception (NoSuchElementException) if there's
+     * no user currently LOGGED_IN.
+     */
     public User fetchOne() {
         return fetch().toBlocking().first();
     }
@@ -281,10 +312,16 @@ public class UserRepository extends BaseRepository {
                 .filter(uuid -> uuid != null && !uuid.isEmpty());
     }
 
-    public void storePasswordChangeStatus(String uuid) {
+    /**
+     * Authorize pending password change process.
+     */
+    public void authorizePasswordChange(String uuid) {
         passwordChangeAuthorizedUuidPreference.set(uuid);
     }
 
+    /**
+     * Save contacts permission state.
+     */
     public void storeContactsPermissionState(ContactsPermissionState state) {
         conctactsPermissionStatePreference.set(state);
     }
@@ -293,18 +330,28 @@ public class UserRepository extends BaseRepository {
         return conctactsPermissionStatePreference.get();
     }
 
+    /**
+     * Get an Observable to observe changes to the contacts permission preference.
+     */
     public Observable<ContactsPermissionState> watchContactsPermissionState() {
         return conctactsPermissionStatePreference.asObservable();
     }
 
+    /**
+     * Save flag to signal that user has completed initial sync, and thus is probably LOGGED_IN now.
+     */
     public void storeInitialSyncCompleted() {
         initialSyncCompletedPreference.set(true);
     }
 
     public boolean isInitialSyncCompleted() {
+        //noinspection ConstantConditions
         return initialSyncCompletedPreference.get();
     }
 
+    /**
+     * Save flag to signal that RecoveryCode setup process, though started, has not been completed.
+     */
     public void setRecoveryCodeSetupInProcess(boolean isInProcess) {
         recoveryCodeSetupInProcessPreference.set(isInProcess);
     }
@@ -313,14 +360,24 @@ public class UserRepository extends BaseRepository {
         return displaySatsPreference.get();
     }
 
+    /**
+     * Get an Observable to observe changes to the bitcoin unit preference.
+     */
     public Observable<CurrencyDisplayMode> watchCurrencyDisplayMode() {
         return displaySatsPreference.asObservable();
     }
 
+    /**
+     * Save a new bitcoin unit preference value.
+     */
     public void setCurrencyDisplayMode(CurrencyDisplayMode value) {
         displaySatsPreference.set(value);
     }
 
+    /**
+     * Save email action link that is being await for confirmation (via email link click). This
+     * is used to distinguish between the different email links actions that we have.
+     */
     public void setPendingEmailLink(String emailLink) {
         pendingEmailLinkPreference.set(emailLink);
     }
@@ -329,6 +386,10 @@ public class UserRepository extends BaseRepository {
         return pendingEmailLinkPreference.get();
     }
 
+    /**
+     * Save user's choice to NOT want to use email backup, and thus skip that optional step in the
+     * security setup.
+     */
     public void setEmailSetupSkipped() {
         emailSetupSkippedPreference.set(true);
     }
@@ -337,12 +398,54 @@ public class UserRepository extends BaseRepository {
         return Preconditions.checkNotNull(emailSetupSkippedPreference.get());
     }
 
+    /**
+     * Save user's choice to see her wallet balance hidden in our home screen.
+     */
     public void setBalanceHidden(boolean hidden) {
         balanceHiddenPreference.set(hidden);
     }
 
+    /**
+     * Get an Observable to observe changes to the balance hidden preference.
+     */
     public Observable<Boolean> watchBalanceHidden() {
         return balanceHiddenPreference.asObservable();
+    }
+
+    /**
+     * Save whether the taproot celebration is in order.
+     */
+    public void setPendingTaprootCelebration(boolean isCelebrationPending) {
+        taprootCelebrationPending.set(isCelebrationPending);
+    }
+
+    /**
+     * Get an Observable to observe changes to the Taproot Celebration pending preference.
+     */
+    public Observable<Boolean> watchPendingTaprootCelebration() {
+        return taprootCelebrationPending.asObservable();
+    }
+
+    /**
+     * Migration to init emergency kit version.
+     */
+    public void initEmergencyKitVersion() {
+        final StoredUserJson storedUser = userPreference.get();
+        if (storedUser != null) {
+            storedUser.initEmergencyKitVersion();
+        }
+        userPreference.set(storedUser);
+    }
+
+    /**
+     * Save latest emergency kit verification code show to user. This can either be a verification
+     * code that is later successfully used, or not.
+     */
+    public void storeEmergencyKitVerificationCode(String verificationCode) {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
+
+        value.emergencyKitCodes.addNewest(verificationCode);
+        userPreference.set(value);
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -377,6 +480,14 @@ public class UserRepository extends BaseRepository {
         public String currency;
 
         public String emergencyKitLastExportedAt;
+        public Integer emergencyKitVersion;
+        public String emergencyKitExportMethod;
+
+        @NonNull // Not backed by Houston, cached locally
+        public StoredEkVerificationCodes emergencyKitCodes = new StoredEkVerificationCodes();
+
+        @NonNull
+        public List<Integer> ekVersions = new LinkedList<>();
 
         static StoredUserJson fromUser(User user) {
             return new StoredUserJson(
@@ -393,10 +504,15 @@ public class UserRepository extends BaseRepository {
                     user.hasPassword,
                     user.hasP2PEnabled,
                     user.hasExportedKeys,
-                    user.emergencyKitLastExportedAt
+                    SerializationUtils.serializeCurrencyUnit(user.unsafeGetPrimaryCurrency()),
+                    user.emergencyKit
+                            .map(ek -> ek.getLastExportedAt())
                             .map(SerializationUtils::serializeDate)
                             .orElse(null),
-                    SerializationUtils.serializeCurrencyUnit(user.unsafeGetPrimaryCurrency())
+                    user.emergencyKit.map(ek -> ek.getVersion()).orElse(null),
+                    user.emergencyKit.map(ek -> ek.getExportMethod()).orElse(null),
+                    user.emergencyKitVerificationCodes,
+                    new ArrayList<>(user.emergencyKitVersions)
             );
         }
 
@@ -422,8 +538,12 @@ public class UserRepository extends BaseRepository {
                               boolean hasPassword,
                               boolean hasP2PEnabled,
                               boolean hasExportedKeys,
+                              String currency,
                               String emergencyKitLastExportedAt,
-                              String currency) {
+                              Integer emergencyKitVersion,
+                              EmergencyKitExport.Method emergencyKitExportMethod,
+                              @NonNull StoredEkVerificationCodes ekVerificationCodes,
+                              @NonNull List<Integer> ekVersions) {
 
             this.hid = hid;
             this.email = email;
@@ -438,8 +558,14 @@ public class UserRepository extends BaseRepository {
             this.hasPassword = hasPassword;
             this.hasP2PEnabled = hasP2PEnabled;
             this.hasExportedKeys = hasExportedKeys;
-            this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
             this.currency = currency;
+            this.emergencyKitLastExportedAt = emergencyKitLastExportedAt;
+            this.emergencyKitVersion = emergencyKitVersion;
+            this.emergencyKitExportMethod = emergencyKitExportMethod != null
+                    ? emergencyKitExportMethod.name()
+                    : null;
+            this.emergencyKitCodes = ekVerificationCodes;
+            this.ekVersions = ekVersions;
         }
 
         User toUser() {
@@ -463,10 +589,36 @@ public class UserRepository extends BaseRepository {
                     hasP2PEnabled,
                     hasExportedKeys,
 
-                    Optional.ofNullable(emergencyKitLastExportedAt)
-                            .map(SerializationUtils::deserializeDate),
+                    emergencyKitLastExportedAt != null
+                            ? Optional.of(buildEK())
+                            : Optional.empty(),
+
+                    emergencyKitCodes,
+                    new TreeSet<>(ekVersions),
 
                     Optional.ofNullable(createdAt).map(SerializationUtils::deserializeDate)
+            );
+        }
+
+        void initEmergencyKitVersion() {
+            if (emergencyKitLastExportedAt != null) {
+                emergencyKitVersion = (int) Libwallet.EKVersionDescriptors;
+                ekVersions.add((int) Libwallet.EKVersionDescriptors);
+                // We can't know which method was used for prior exports so...
+                emergencyKitExportMethod = null;
+            }
+        }
+
+        EmergencyKit buildEK() {
+            Preconditions.checkNotNull(emergencyKitLastExportedAt);
+            return new EmergencyKit(
+                    Objects.requireNonNull(
+                            SerializationUtils.deserializeDate(emergencyKitLastExportedAt)
+                    ),
+                    emergencyKitVersion,
+                    emergencyKitExportMethod != null
+                            ? EmergencyKitExport.Method.valueOf(emergencyKitExportMethod)
+                            : null
             );
         }
 

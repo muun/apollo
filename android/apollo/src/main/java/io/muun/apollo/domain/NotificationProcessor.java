@@ -4,6 +4,7 @@ package io.muun.apollo.domain;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.SigninActions;
@@ -12,6 +13,7 @@ import io.muun.apollo.domain.action.incoming_swap.FulfillIncomingSwapAction;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.UpdateOperationAction;
+import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.errors.MessageOriginError;
 import io.muun.apollo.domain.errors.MessagePermissionsError;
 import io.muun.apollo.domain.errors.UnknownNotificationTypeError;
@@ -31,12 +33,14 @@ import io.muun.common.api.messages.AuthorizeRcSigninMessage;
 import io.muun.common.api.messages.AuthorizeSigninMessage;
 import io.muun.common.api.messages.ContactUpdateMessage;
 import io.muun.common.api.messages.EmailVerifiedMessage;
+import io.muun.common.api.messages.EventCommunicationMessage;
 import io.muun.common.api.messages.FulfillIncomingSwapMessage;
 import io.muun.common.api.messages.Message;
 import io.muun.common.api.messages.MessageOrigin;
 import io.muun.common.api.messages.MessageSpec;
 import io.muun.common.api.messages.NewContactMessage;
 import io.muun.common.api.messages.NewOperationMessage;
+import io.muun.common.api.messages.NoOpMessage;
 import io.muun.common.api.messages.OperationUpdateMessage;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.SessionStatus;
@@ -54,6 +58,7 @@ public class NotificationProcessor {
 
     private final UpdateOperationAction updateOperation;
     private final CreateOperationAction createOperation;
+    private final FetchRealTimeDataAction fetchRealTimeData;
 
     private final ContactActions contactActions;
     private final UserActions userActions;
@@ -74,6 +79,7 @@ public class NotificationProcessor {
     @Inject
     public NotificationProcessor(UpdateOperationAction updateOperation,
                                  CreateOperationAction createOperation,
+                                 FetchRealTimeDataAction fetchRealTimeData,
                                  ContactActions contactActions,
                                  UserActions userActions,
                                  SigninActions signinActions,
@@ -85,6 +91,7 @@ public class NotificationProcessor {
 
         this.updateOperation = updateOperation;
         this.createOperation = createOperation;
+        this.fetchRealTimeData = fetchRealTimeData;
         this.contactActions = contactActions;
         this.userActions = userActions;
         this.signinActions = signinActions;
@@ -113,6 +120,9 @@ public class NotificationProcessor {
 
         addHandler(FulfillIncomingSwapMessage.SPEC, this::handleFulfillIncomingSwap);
 
+        addHandler(NoOpMessage.SPEC, this::handleNoOp);
+
+        addHandler(EventCommunicationMessage.SPEC, this::handleEventCommunication);
     }
 
     /**
@@ -267,6 +277,31 @@ public class NotificationProcessor {
                 });
     }
 
+    private Completable handleNoOp(NotificationJson notificationJson, long retry) {
+        return Completable.complete();
+    }
+
+    private Completable handleEventCommunication(
+            final NotificationJson notification,
+            final Long retry
+    ) {
+        final EventCommunicationMessage message = convert(
+                EventCommunicationMessage.class,
+                notification.message
+        );
+
+        // NOTE:
+        // These events are only for Taproot at this point, a feature that changes the home screen
+        // based on real-time data. If the user taps this notification to open the app (triggering
+        // an RTD refresh), the home screen could change before their eyes. To mitigate this, we
+        // preemptively call `fetchRealTimeData` here.
+        fetchRealTimeData.runForced();
+        
+        notificationService.showEventCommunication(message.event);
+
+        return Completable.complete();
+    }
+
     private void verifyPermissions(NotificationJson notification, MessageSpec spec) {
         final Optional<SessionStatus> status = signinActions.getSessionStatus();
 
@@ -300,6 +335,9 @@ public class NotificationProcessor {
         }
     }
 
+    /**
+     * Register a handler for a new notification type.
+     */
     @VisibleForTesting
     public void addHandler(MessageSpec spec, Func2<NotificationJson, Long, Completable> handler) {
         handlers.put(spec.messageType, new NotificationHandler(spec, handler));

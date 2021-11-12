@@ -53,10 +53,16 @@ public class UiUtils {
 
     private static final int PREVIEW_AFFIX_LENGTH = 8;
 
+    /**
+     * Convert a magnitude in density-independent pixels to pixels.
+     */
     public static int dpToPx(Context context, int dp) {
         return (int) (dp * context.getResources().getDisplayMetrics().density + 0.5f);
     }
 
+    /**
+     * Convert a magnitude in scale-independent pixels to pixels.
+     */
     public static int spToPx(Context context, int sp) {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP,
@@ -65,6 +71,9 @@ public class UiUtils {
         );
     }
 
+    /**
+     * Convert a magnitude in pixels to density-independent pixels.
+     */
     public static int pxToDp(Context context, int px) {
         return (int) (px / context.getResources().getDisplayMetrics().density);
     }
@@ -111,18 +120,30 @@ public class UiUtils {
         return drawableForState;
     }
 
+    /**
+     * Tint an ImageView with specified color resource.
+     */
     public static void setTint(ImageView imageView, @ColorRes int colorId) {
         setTint(imageView.getContext(), imageView.getDrawable(), colorId);
     }
 
+    /**
+     * Tint a Drawable with specified color resource.
+     */
     private static void setTint(Context context, Drawable drawable, @ColorRes int colorId) {
         setTintColor(drawable, ContextCompat.getColor(context, colorId));
     }
 
+    /**
+     * Tint a Drawable with specified Android ColorStatelist.
+     */
     private static void setTintColorStateList(Drawable drawable, ColorStateList colorStateList) {
         DrawableCompat.setTintList(DrawableCompat.wrap(drawable), colorStateList);
     }
 
+    /**
+     * Tint an ImageView with specified Android Color.
+     */
     public static void setTintColor(ImageView imageView, @ColorInt int color) {
         setTintColor(imageView.getDrawable(), color);
     }
@@ -170,22 +191,37 @@ public class UiUtils {
         }
     }
 
+    /**
+     * Set a view's left padding.
+     */
     public static void setPaddingLeft(View v, int paddingLeft) {
         v.setPadding(paddingLeft, v.getPaddingTop(), v.getPaddingRight(), v.getPaddingBottom());
     }
 
+    /**
+     * Set a view's top padding.
+     */
     public static void setPaddingTop(View v, int paddingTop) {
         v.setPadding(v.getPaddingLeft(), paddingTop, v.getPaddingRight(), v.getPaddingBottom());
     }
 
+    /**
+     * Set a view's right padding.
+     */
     public static void setPaddingRight(View v, int paddingRight) {
         v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), paddingRight, v.getPaddingBottom());
     }
 
+    /**
+     * Set a view's bottom padding.
+     */
     public static void setPaddingBottom(View v, int paddingBottom) {
         v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), paddingBottom);
     }
 
+    /**
+     * Move the a view up or down as indicated.
+     */
     public static void setTranslationY(View v, int offsetY) {
         v.setTranslationY(0f + offsetY);
         v.requestLayout();
@@ -253,6 +289,7 @@ public class UiUtils {
      * Hide devices soft keyboard. Due to Android's awesomeness **cough, cough**, the IMM requires
      * that you specify what View you want to hide the keyboard FROM. So that's why this method
      * receives a View. More details: https://stackoverflow.com/a/17789187/901465
+     * Also: https://rmirabelle.medium.com/close-hide-the-soft-keyboard-in-android-db1da22b09d2
      */
     public static void tryHideKeyboard(Context context, View target) {
 
@@ -341,6 +378,9 @@ public class UiUtils {
         return color;
     }
 
+    /**
+     * Get an Android Color with alpha, based on a color resource id.
+     */
     public static int getColorWithAlpha(@NonNull Context ctx, @ColorRes int colorId, float alpha) {
         final int color = ContextCompat.getColor(ctx, colorId);
 

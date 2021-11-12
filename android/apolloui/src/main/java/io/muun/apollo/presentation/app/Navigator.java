@@ -4,7 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.model.FeedbackCategory;
 import io.muun.apollo.domain.model.OperationUri;
-import io.muun.apollo.domain.model.User;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.app.di.PerApplication;
@@ -42,6 +42,7 @@ import io.muun.apollo.presentation.ui.show_qr.ShowQrActivity;
 import io.muun.apollo.presentation.ui.signup.SignupActivity;
 import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
+import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.Optional;
@@ -440,6 +441,18 @@ public class Navigator {
     }
 
     /**
+     * Takes the user to the export keys introduction screen, start of the Export Keys flow.
+     */
+    public void navigateToTaprootSetup(Context context) {
+        final Intent intent = TaprootSetupActivity.Companion.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
      * Immediately logs out the user, then navigates back to the launcher.
      * CAREFUL! Code after this call can fail when it finds empty repositories/databases.
      */
@@ -511,6 +524,9 @@ public class Navigator {
         context.startActivity(intent);
     }
 
+    /**
+     * Takes the user to Setup P2P flow.
+     */
     public void navigateToSetupP2P(@NotNull Context context) {
         final Intent intent = SetupP2PActivity.getStartActivityIntent(context);
         context.startActivity(intent);
@@ -580,6 +596,11 @@ public class Navigator {
         context.startActivity(intent);
     }
 
+    /**
+     * Takes the user to the Operations (aka Payment History) screen.
+     * Note that, unlike the MANY other methods of this class, this method requires an Activity,
+     * instead of a Context, this is because in this case we apply a transition animation.
+     */
     public void navigateToOperations(@NotNull Activity activity) {
         final Intent intent = OperationsActivity.Companion.getStartActivityIntent(activity);
 
@@ -592,6 +613,9 @@ public class Navigator {
         }
     }
 
+    /**
+     * Takes the user to the specified Fragment.
+     */
     public void navigateToFragment(final Context context,
                                    final Class<? extends SingleFragment<?>> fragment) {
         context.startActivity(

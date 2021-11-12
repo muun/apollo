@@ -10,7 +10,7 @@ class MuunSaveOptionLabel @JvmOverloads constructor(
     c: Context,
     a: AttributeSet? = null,
     s: Int = 0
-) :
+):
     MuunView(c, a, s) {
 
     enum class Kind {

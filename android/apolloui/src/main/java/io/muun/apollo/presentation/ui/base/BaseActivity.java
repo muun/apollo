@@ -54,7 +54,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     protected PresenterT presenter;
 
     @Inject
-    ApplicationLockExtension applicationLockExtension;
+    protected ApplicationLockExtension applicationLockExtension;
 
     @Inject
     ExternalResultExtension externalResultExtension;

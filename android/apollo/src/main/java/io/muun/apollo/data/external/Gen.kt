@@ -1,15 +1,21 @@
 package io.muun.apollo.data.external
 
+import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes
 import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.user.EmergencyKit
+import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.model.user.UserPhoneNumber
+import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.common.Optional
+import io.muun.common.Temporary
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.crypto.hd.PrivateKey
-import io.muun.common.crypto.schemes.TransactionSchemeSubmarineSwapV2
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.*
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.RandomGenerator
+import libwallet.Libwallet
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.params.TestNet3Params
@@ -108,12 +114,16 @@ object Gen {
     /**
      * Get a UserPhoneNumber.
      */
-    fun userPhoneNumber() = UserPhoneNumber(phoneNumber(), Random.nextBoolean())
+    fun userPhoneNumber() = UserPhoneNumber(
+        phoneNumber(),
+        Random.nextBoolean()
+    )
 
     /**
      * Get a UserProfile.
      */
-    fun userProfile() = UserProfile(alpha(5, 10), alpha(5, 10))
+    fun userProfile() =
+        UserProfile(alpha(5, 10), alpha(5, 10))
 
     /**
      * Get a PublicProfile.
@@ -149,7 +159,10 @@ object Gen {
         hasRecoveryCode: Boolean = bool(),
         hasPassword: Boolean = bool(),
         hasP2PEnabled: Boolean = bool(),
-        emergencyKitLastExportedAt: ZonedDateTime? = pastDate(),
+        emergencyKit: EmergencyKit? = EmergencyKit(
+            pastDate(),
+            EkVersion.VERSION_DESCRIPTORS
+        ),
         createdAt: ZonedDateTime? = pastDate()
 
     ) = User(
@@ -163,7 +176,9 @@ object Gen {
         hasPassword,
         hasP2PEnabled,
         hasExportedKeys,
-        Optional.ofNullable(emergencyKitLastExportedAt),
+        Optional.ofNullable(emergencyKit),
+        StoredEkVerificationCodes(),
+        sortedSetOf<Int>(),
         Optional.ofNullable(createdAt)
     )
 
@@ -309,7 +324,7 @@ object Gen {
                 muunAddress(),
                 lnPaymentHash(),
                 lnPublicKey(),
-                TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION
+                Libwallet.AddressVersionSwapsV2.toInt()
             ),
             null,
             futureDate(),
@@ -346,7 +361,7 @@ object Gen {
             userRefundAddress,
             lnPaymentHash(),
             lnPublicKey(),
-            TransactionSchemeSubmarineSwapV2.ADDRESS_VERSION
+            Libwallet.AddressVersionSwapsV2.toInt()
         )
 
     fun submarineSwapFees(lightningInSats: Long, sweepInSats: Long) =

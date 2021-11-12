@@ -47,6 +47,8 @@ import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.model.UserPreferences;
 import io.muun.common.model.VerificationType;
+import io.muun.common.net.NetworkRetry;
+import io.muun.common.net.ServerRetry;
 
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
@@ -220,6 +222,8 @@ public interface HoustonService {
     @GET("operations")
     Observable<List<OperationJson>> fetchOperations();
 
+    @NetworkRetry(count = 0)    // No retries. Avoid Musig nonces reuse!
+    @ServerRetry(count = 0)     // No retries. Avoid Musig nonces reuse!
     @POST("operations")
     Observable<OperationCreatedJson> newOperation(@Body OperationJson operation);
 
@@ -230,6 +234,8 @@ public interface HoustonService {
     @PUT("operations/{operationId}/raw-transaction")
     Observable<TransactionPushedJson> pushTransaction(@Path("operationId") Long operationId);
 
+    @NetworkRetry(count = 0)    // No retries. Avoid Musig nonces reuse!
+    @ServerRetry(count = 0)     // No retries. Avoid Musig nonces reuse!
     @PUT("operations/{operationId}/raw-transaction")
     Observable<TransactionPushedJson> pushTransaction(@Body RawTransaction rawTransaction,
                                                       @Path("operationId") Long operationId);

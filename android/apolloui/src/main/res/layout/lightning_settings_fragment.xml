@@ -41,7 +41,7 @@
                     android:layout_marginBottom="@dimen/muun_screen_margin"
                     android:layout_marginStart="@dimen/muun_screen_margin"
                     android:layout_marginEnd="@dimen/muun_screen_margin"
-                    android:textSize="@dimen/muun_text_size_help"
+                    android:textSize="16sp"
                     android:textColor="@color/text_secondary_color"
                     android:textAlignment="viewStart"
                     android:text="@string/turbo_channels_learn_more" />

@@ -7,18 +7,21 @@ import io.muun.apollo.data.apis.DriveAuthenticator
 import io.muun.apollo.data.apis.DriveError
 import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.fs.FileCache
-import io.muun.apollo.data.os.sharer.FileSharer
+import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction
 import io.muun.apollo.domain.action.ek.UploadToDriveAction
+import io.muun.apollo.domain.model.FeedbackCategory
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_DRIVE_TYPE
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_DRIVE
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_EMAIL
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_OPTION
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_SELECT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SHARE
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_CLOUD_FEEDBACK
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_MANUAL_ADVICE
 import io.muun.apollo.presentation.export.PdfExportError
 import io.muun.apollo.presentation.export.PdfExporter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -32,7 +35,8 @@ class EmergencyKitSavePresenter @Inject constructor(
     private val renderEmergencyKit: RenderEmergencyKitAction,
     private val addEmergencyKitMetadata: AddEmergencyKitMetadataAction,
     private val uploadToDrive: UploadToDriveAction,
-    private val driveAuthenticator: DriveAuthenticator
+    private val driveAuthenticator: DriveAuthenticator,
+    private val userActions: UserActions
 
 ): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
@@ -78,8 +82,6 @@ class EmergencyKitSavePresenter @Inject constructor(
 
     fun reportSelection(option: EmergencyKitSaveOption) {
         val eventParam = when (option) {
-            EmergencyKitSaveOption.SEND_EMAIL,
-            EmergencyKitSaveOption.SEND_EMAIL_PICKER -> E_EK_SAVE_OPTION.EMAIL
             EmergencyKitSaveOption.SHARE_MANUALLY -> E_EK_SAVE_OPTION.MANUAL
             EmergencyKitSaveOption.SAVE_TO_DRIVE -> E_EK_SAVE_OPTION.DRIVE
         }
@@ -110,17 +112,14 @@ class EmergencyKitSavePresenter @Inject constructor(
             return
         }
 
+        val generatedEmergencyKit = parentPresenter.getGeneratedEmergencyKit()
         analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.UPLOAD_START))
-        uploadToDrive.run(fileCache.get(FileCache.Entry.EMERGENCY_KIT))
+        uploadToDrive.run(fileCache.get(FileCache.Entry.EMERGENCY_KIT), generatedEmergencyKit)
     }
 
-    fun composeEmergencyKitEmail(): FileSharer.Email {
-        val localFile = fileCache.get(FileCache.Entry.EMERGENCY_KIT)
-
-        return FileSharer.Email(
-            attachment = localFile.uri, // TODO: pick recipient, subject, etc.
-            attachmentType = localFile.type
-        )
+    fun reportCloudFeedback(cloudName: String) {
+        analytics.report(E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT(cloudName))
+        userActions.submitFeedbackAction.run(FeedbackCategory.CLOUD_REQUEST, cloudName)
     }
 
     private fun onRenderResult(kitGen: GeneratedEmergencyKit) {
@@ -161,6 +160,8 @@ class EmergencyKitSavePresenter @Inject constructor(
             return
         }
 
+        parentPresenter.setGeneratedEmergencyKit(kitGen)
+
         addEmergencyKitMetadata.run(kitGen.metadata)
     }
 
@@ -183,10 +184,6 @@ class EmergencyKitSavePresenter @Inject constructor(
     override fun getEntryEvent() =
         AnalyticsEvent.S_EMERGENCY_KIT_SAVE()
 
-    fun reportEmailShareStarted(app: String) {
-        analytics.report(E_EK_EMAIL(app))
-    }
-
     fun reportGoogleSignInCanceled() {
         // This method can be called for two reasons that we know of:
         // 1. The user manually dismissed the Google SignIn dialog
@@ -202,5 +199,13 @@ class EmergencyKitSavePresenter @Inject constructor(
         if (!isConnected) {
             view.showTextToast(context.getString(R.string.ek_save_drive_no_internet))
         }
+    }
+
+    fun reportCloudFeedbackOpen() {
+        analytics.report(S_EMERGENCY_KIT_CLOUD_FEEDBACK())
+    }
+
+    fun reportManualAdviceOpen() {
+        analytics.report(S_EMERGENCY_KIT_MANUAL_ADVICE())
     }
 }
