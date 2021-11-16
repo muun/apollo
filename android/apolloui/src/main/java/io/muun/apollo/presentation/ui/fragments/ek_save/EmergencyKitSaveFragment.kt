@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.fragments.ek_save
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -24,11 +25,20 @@ import io.muun.apollo.presentation.ui.view.MuunSaveOption
 import io.muun.apollo.presentation.ui.view.MuunSaveOptionLabel
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 import rx.functions.Action0
+import java.util.Locale
 
-class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
+class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
     EmergencyKitSaveView {
 
     companion object {
+
+        // List of oems that have weird rules or restrictions that make our features misbehave (e.g
+        // FileSharerReceiver broadcast receiver)
+        private val NAUGHTY_OEMS = setOf("huawei", "xiaomi", "oppo")
+
+        // Window of time we use to determine a successful manual share has occurred in naughty oems
+        private const val THRESHOLD_IN_SECS = 7
+
         private const val FEEDBACK_DIALOG_AUTO_DISMISS_MS = 2800L // developer-quality UX choice
 
         private const val ARG_UPDATE_KIT = "update_kit"
@@ -44,6 +54,9 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
             EmergencyKitSaveFragment().applyArgs {
                 putBoolean(ARG_UPDATE_KIT, false)
             }
+
+        private fun isNaughtyOem(): Boolean =
+            NAUGHTY_OEMS.contains(Build.MANUFACTURER.toLowerCase(Locale.getDefault()))
     }
 
     @BindView(R.id.pdf_exporter_web_view)
@@ -72,6 +85,11 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
 
     /** Whether the loading dialog is currently on screen */
     private var showingLoadingDialog = false
+
+    /**
+     * Extra metadata for workaround heuristic for naughty oems.
+     */
+    private var manuallySharedAt: Long = 0
 
     override fun inject() =
         component.inject(this)
@@ -184,8 +202,18 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         // will stop this Activity. I discovered this because Google Drive has this behavior, via
         // FLAG_ACTIVITY_NEW_DOCUMENT (which I didn't manage to override).
 
-        if (selectedOption == EmergencyKitSaveOption.SHARE_MANUALLY && chosenShareTarget != null) {
+        val isManualShare = selectedOption == EmergencyKitSaveOption.SHARE_MANUALLY
+
+        if (isManualShare && chosenShareTarget != null) {
             presenter.reportManualShareStarted(chosenShareTarget)
+            presenter.reportThirdPartyAppOpened()
+
+        } else if (isManualShare && isNaughtyOem() && secsSinceManualShare() > THRESHOLD_IN_SECS) {
+            // For certain OEMs our FileSharerReceiver doesn't work properly :(. So, we came up with
+            // this heuristic where we if a user using a device from one of this
+            // "naughty" oems opens the share intent and spends more than THRESHOLD_IN_SECS before
+            // coming back, then we consider that a successful manual share and we navigate forward
+            presenter.reportManualShareStarted("naughty_oem_heuristic")
             presenter.reportThirdPartyAppOpened()
         }
 
@@ -300,6 +328,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         confirmButton.setOnClickListener {
             dialog.dismiss()
             selectOption(EmergencyKitSaveOption.SHARE_MANUALLY)
+            manuallySharedAt = System.currentTimeMillis()
         }
 
         closeButton.setOnClickListener {
@@ -319,4 +348,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         selectedOption = null
         chosenShareTarget = null
     }
+
+    private fun secsSinceManualShare(): Long =
+        (System.currentTimeMillis() - manuallySharedAt) / 1000
 }

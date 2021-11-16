@@ -2,13 +2,10 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.LinearLayout
-import android.widget.LinearLayout.LayoutParams.MATCH_PARENT
-import android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class AddressTypePicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
     Picker<AddressTypePicker.Option>(c, a, s) {
@@ -23,6 +20,8 @@ class AddressTypePicker @JvmOverloads constructor(c: Context, a: AttributeSet? =
     @BindView(R.id.picker_card_container)
     lateinit var cardContainer: LinearLayout
 
+    private var selectedView: AddressTypeCard? = null
+
     private var onOptionPickListener: OnOptionPickListener? = null
 
     override val layoutResource: Int
@@ -31,17 +30,20 @@ class AddressTypePicker @JvmOverloads constructor(c: Context, a: AttributeSet? =
     override fun addOption(option: Option) {
         val view = AddressTypeCard(context)
 
-        view.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-            bottomMargin = UiUtils.dpToPx(context, 16)
-        }
-
         view.id = option.id
         view.title = option.title
         view.description = option.description
         view.status = option.status
 
+        if (view.status == AddressTypeCard.Status.SELECTED) {
+            selectedView = view
+        }
+
         view.setOnClickListener {
-            onOptionPickListener?.onOptionPick(option.id)
+            selectedView?.status = AddressTypeCard.Status.NORMAL
+            post {  // Needed to give time for layout/UI to reflect above change
+                onOptionPickListener?.onOptionPick(option.id)
+            }
         }
 
         cardContainer.addView(view)
