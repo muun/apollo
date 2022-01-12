@@ -17,7 +17,7 @@ import javax.inject.Singleton
 class ResolveOperationUriAction @Inject constructor(
     private val resolveBitcoinUri: ResolveBitcoinUriAction,
     private val resolveMuunUri: ResolveMuunUriAction,
-    private val resolveLnUri: ResolveLnUriAction
+    private val resolveLnInvoice: ResolveLnInvoiceAction
 
 ): BaseAsyncAction1<OperationUri, PaymentRequest>() {
 
@@ -28,7 +28,7 @@ class ResolveOperationUriAction @Inject constructor(
                 uri.isMuun -> resolveMuunUri.action(uri)
 
                 // Second, if the URI has a LN invoice, prioritize it:
-                uri.lnInvoice.isPresent -> resolveLnUri.action(uri)
+                uri.lnInvoice.isPresent -> resolveLnInvoice.action(uri.lnInvoice.get())
 
                 // Third, try looking for a Bitcoin address (BIP21 or BIP72):
                 uri.bitcoinAddress.isPresent || uri.asyncUrl.isPresent ->

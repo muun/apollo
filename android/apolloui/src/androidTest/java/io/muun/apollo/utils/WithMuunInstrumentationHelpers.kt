@@ -5,7 +5,7 @@ import androidx.annotation.StringRes
 import androidx.test.uiautomator.*
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -13,7 +13,6 @@ import io.muun.apollo.utils.screens.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.javamoney.moneta.Money
-import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.ParsePosition
@@ -31,64 +30,89 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     companion object {
         const val resourcePath = BuildConfig.APPLICATION_ID + ":id"
+
+        const val moneyEqualsRoundingMarginBTC = 0.00000001
+        const val moneyEqualsRoundingMarginFiat = 0.01
+
+        const val balanceNotEqualsErrorMessage = "BalanceNotEqualsTo"
     }
 
     val device: UiDevice
 
-    val locale get() =
-        context.locale()
+    val locale
+        get() =
+            context.locale()
 
     // UI Components:
 
-    val toolbar get() =
-        MuunToolbar(device, context)
+    val toolbar
+        get() =
+            MuunToolbar(device, context)
 
-    val dialog get() =
-        MuunDialog(device, context)
+    val dialog
+        get() =
+            MuunDialog(device, context)
 
-    val uriPaster get() =
-        UriPaster(device, context)
+    val uriPaster
+        get() =
+            UriPaster(device, context)
 
     // Screens:
 
-    val newOpScreen get() =
-        NewOperationScreen(device, context)
+    val newOpScreen
+        get() =
+            NewOperationScreen(device, context)
 
-    val homeScreen get() =
-        HomeScreen(device, context)
+    val homeScreen
+        get() =
+            HomeScreen(device, context)
 
-    val settingsScreen get() =
-        SettingsScreen(device, context)
+    val settingsScreen
+        get() =
+            SettingsScreen(device, context)
 
-    val recoveryCodeScreen get() =
-        RecoveryCodeSetupScreen(device, context)
+    val p2pScreen get() =
+        SetupP2PScreen(device, context)
 
-    val emergencyKitSetupScreen get() =
-        EmergencyKitSetupScreen(device, context)
+    val recoveryCodeScreen
+        get() =
+            RecoveryCodeSetupScreen(device, context)
 
-    val changePasswordScreen get() =
-        ChangePasswordScreen(device, context)
+    val emergencyKitSetupScreen
+        get() =
+            EmergencyKitSetupScreen(device, context)
 
-    val signInScreen get() =
-        SignInScreen(device, context)
+    val changePasswordScreen
+        get() =
+            ChangePasswordScreen(device, context)
 
-    val opDetailScreen get() =
-        OperationDetailScreen(device, context)
+    val signInScreen
+        get() =
+            SignInScreen(device, context)
 
-    val receiveScreen get() =
-        ReceiveScreen(device, context)
+    val opDetailScreen
+        get() =
+            OperationDetailScreen(device, context)
 
-    val recomFeeScreen get() =
-        RecommendedFeeScreen(device, context)
+    val receiveScreen
+        get() =
+            ReceiveScreen(device, context)
 
-    val manualFeeScreen get() =
-        ManualFeeScreen(device, context)
+    val recomFeeScreen
+        get() =
+            RecommendedFeeScreen(device, context)
 
-    val securityCenterScreen get() =
-        SecurityCenterScreen(device, context)
+    val manualFeeScreen
+        get() =
+            ManualFeeScreen(device, context)
 
-    val emailPasswordScreen get() =
-        EmailPasswordSetupScreen(device, context)
+    val securityCenterScreen
+        get() =
+            SecurityCenterScreen(device, context)
+
+    val emailPasswordScreen
+        get() =
+            EmailPasswordSetupScreen(device, context)
 
     // TODO this interface is starting to get BIG, we may need to start separating the functionality
     // contained here into multiple interfaces
@@ -164,32 +188,25 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      *  target what is actually rendered on screen while others target the string resource.
      *  This introduces differences when flags like textAllCaps or ellipsize are used.
      */
-    fun normalizedLabel(@StringRes stringResId: Int): UiObject
-        = label(MuunTexts.normalize(stringResId))
+    fun normalizedLabel(@StringRes stringResId: Int): UiObject = label(MuunTexts.normalize(stringResId))
 
     /** Obtain a view matching a string. */
-    fun label(@StringRes stringResId: Int): UiObject
-        = label(context.getString(stringResId))
+    fun label(@StringRes stringResId: Int): UiObject = label(context.getString(stringResId))
 
     /** Obtain a view matching a string. */
-    fun label(text: String): UiObject
-        = device.findObject(UiSelector().text(text))
+    fun label(text: String): UiObject = device.findObject(UiSelector().text(text))
 
     /** Obtain a view matching a string, that must be contained somewhere. */
-    fun labelWith(text: String): UiObject
-        = device.findObject(UiSelector().textContains(text))
+    fun labelWith(text: String): UiObject = device.findObject(UiSelector().textContains(text))
 
     /** Obtain a view matching a string, that must be contained somewhere. */
-    fun labelWith(@StringRes stringResId: Int): UiObject
-        = device.findObject(UiSelector().textContains(context.getString(stringResId)))
+    fun labelWith(@StringRes stringResId: Int): UiObject = device.findObject(UiSelector().textContains(context.getString(stringResId)))
 
     /** Obtain a view matching a string, found in the description. */
-    fun desc(@StringRes stringResId: Int): UiObject
-        = device.findObject(UiSelector().description(context.getString(stringResId)))
+    fun desc(@StringRes stringResId: Int): UiObject = device.findObject(UiSelector().description(context.getString(stringResId)))
 
     /** Obtain a view (if it exists) matching by id. */
-    fun maybeViewId(@IdRes id: Int): UiObject2
-        = device.findObject(By.res(resourceName(id)))
+    fun maybeViewId(@IdRes id: Int): UiObject2 = device.findObject(By.res(resourceName(id)))
 
     /**
      *  Obtain a view (waiting for it to exist) matching by id resource.
@@ -197,62 +214,58 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      *  instead use more specific ones (targetting specific components or classes) like
      *  button(), detailItem(), input(), etc...
      */
-    fun id(@IdRes id: Int): UiObject
-        = device.findObject(idSelector(id))
+    fun id(@IdRes id: Int): UiObject = device.findObject(idSelector(id))
 
     /** Obtain a view (waiting for it to exist) matching by id resource name. */
-    fun id(id: String): UiObject
-        = device.findObject(idSelector(id))
+    fun id(id: String): UiObject = device.findObject(idSelector(id))
 
     /** Obtain a MuunButton, matching by id resource name. */
-    fun button(@IdRes id: Int): UiObject
-        = id(id).getChild(idSelector(R.id.muun_button_button))
+    fun button(@IdRes id: Int): UiObject = id(id).getChild(idSelector(R.id.muun_button_button))
 
     /** Obtain a MuunButton as a domain object, matching by id resource name. */
     fun muunButton(@IdRes id: Int): MuunButton =
-        MuunButton(device, context, button(id))
+            MuunButton(device, context, button(id))
 
     /** Obtain a MuunDetailItem, matching by id resource name. */
-    fun detailItem(@IdRes id: Int): UiObject
-        = device.findObject(idSelector(id))
+    fun detailItem(@IdRes id: Int): UiObject = device.findObject(idSelector(id))
 
     /** Obtain a MuunDetailItem's content, matching by id resource name. */
     fun detailItemContent(@IdRes id: Int): UiObject =
-        detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_content))
+            detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_content))
 
     fun maybeDetailItemTitle(@IdRes id: Int): UiObject2 =
-        maybeViewId(id).findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
+            maybeViewId(id).findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
 
     /** Obtain a MuunDetailItem's title, matching by id resource name. */
     fun detailItemTitle(@IdRes id: Int): UiObject =
-        detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_title))
+            detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_title))
 
     /** Obtain a MuunDetailItem's image, matching by id resource name. */
     fun detailItemImage(@IdRes id: Int): UiObject =
-        detailItem(id).getChild(idSelector(R.id.operation_detail_item_icon))
+            detailItem(id).getChild(idSelector(R.id.operation_detail_item_icon))
 
 
     /** Obtain a MuunSettingsItem's title, matching by id resource name. */
     fun settingsItemTitle(@IdRes id: Int): UiObject =
-        detailItem(id).getChild(idSelector(R.id.setting_item_label))
+            detailItem(id).getChild(idSelector(R.id.setting_item_label))
 
     /** Obtain a MuunDetailItem's content, matching by id resource name. */
     fun settingsItemContent(@IdRes id: Int): UiObject =
-        detailItem(id).getChild(idSelector(R.id.setting_item_description))
+            detailItem(id).getChild(idSelector(R.id.setting_item_description))
 
     /** Obtain a MuunTextInput, matching by id resource name. */
     fun input(@IdRes id: Int): UiObject =
-        id(id).getChild(idSelector(R.id.muun_text_input_edit_text))
+            id(id).getChild(idSelector(R.id.muun_text_input_edit_text))
 
     fun inputError(@IdRes id: Int): UiObject2 =
-        maybeViewId(id).wait(Until.findObject(ByShortName("textinput_error")), 30000)
+            maybeViewId(id).wait(Until.findObject(ByShortName("textinput_error")), 30000)
 
     /** Obtain a Muun's empty screen action button, matching by id resource name. */
     fun emptyScreenButton(@IdRes id: Int): UiObject =
-        id(id).getChild(idSelector(R.id.muun_button_button))
+            id(id).getChild(idSelector(R.id.muun_button_button))
 
     fun androidPackageInstaller(id: String): UiObject =
-        device.findObject(fullId("com.android.packageinstaller:id/$id"))
+            device.findObject(fullId("com.android.packageinstaller:id/$id"))
 
     /**
      * Scroll to find or do something, but first try to find/do it without scrolling, to avoid
@@ -280,7 +293,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun waitUntilGone(@IdRes id: Int) =
-        device.wait(Until.gone(By.res(resourceName(id))), 4000) ?: false
+            device.wait(Until.gone(By.res(resourceName(id))), 4000) ?: false
 
     /**
      * Press the BACK key until a view with a given ID exists on screen, no more than `limit`
@@ -300,15 +313,19 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun sleep() =
-        sleep(10)
+            sleep(10)
 
     fun sleep(seconds: Long) =
-        Thread.sleep(seconds * 1000)
+            Thread.sleep(seconds * 1000)
 
     fun assertMoneyEqualsWithRoundingHack(actual: MonetaryAmount, expected: MonetaryAmount) {
         assertThat(actual.currency == expected.currency)
 
-        val margin = if (actual.currency.currencyCode == "BTC") 0.00000001 else 0.01
+        val margin = if (actual.currency.currencyCode == "BTC") {
+            moneyEqualsRoundingMarginBTC
+        } else {
+            moneyEqualsRoundingMarginFiat
+        }
 
         assertThat(actual.number.toDouble()).isCloseTo(expected.number.toDouble(), within(margin))
     }
@@ -317,7 +334,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      * Check MuunButton is enabled and press/click it.
      */
     fun pressMuunButton(@IdRes id: Int) =
-        button(id).assertEnabledAndClick()
+            button(id).assertEnabledAndClick()
 
     /**
      * Check MuunButton is enabled and press/click it, waiting for next activity, dialog, etc..
@@ -342,23 +359,18 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         assert(labelWith(stringResId).waitForExists(2000))
     }
 
-    private fun idSelector(@IdRes id: Int): UiSelector
-        = UiSelector().resourceId(resourceName(id))
+    private fun idSelector(@IdRes id: Int): UiSelector = UiSelector().resourceId(resourceName(id))
 
-    private fun idSelector(id: String): UiSelector
-        = fullId("$resourcePath/$id")
+    private fun idSelector(id: String): UiSelector = fullId("$resourcePath/$id")
 
-    private fun fullId(id: String): UiSelector
-        = UiSelector().resourceId(id)
+    private fun fullId(id: String): UiSelector = UiSelector().resourceId(id)
 
-    private fun resourceShortName(@IdRes id: Int): String
-        = context.resources.getResourceEntryName(id)
+    private fun resourceShortName(@IdRes id: Int): String = context.resources.getResourceEntryName(id)
 
-    private fun resourceName(@IdRes id: Int): String
-        = context.resources.getResourceName(id)
+    private fun resourceName(@IdRes id: Int): String = context.resources.getResourceName(id)
 
     private fun resourceId(resourceName: String) =
-        context.resources.getIdentifier(resourceName, "id", BuildConfig.APPLICATION_ID)
+            context.resources.getIdentifier(resourceName, "id", BuildConfig.APPLICATION_ID)
 
     /**
      *  Scroll to the bottom of the screen.
@@ -376,16 +388,22 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     /* Extension functions */
 
-    fun String.toMoney(locale: Locale): Money {
+    fun String.toMoney(): Money =
+        toMoney(locale)
+
+    private fun String.toMoney(locale: Locale): Money {
         val t = this.split(" ")
         return Money.of(t[0].parseDecimal(locale), t[1])
     }
 
-    fun String.toBtcMoney(locale: Locale): Money {
+    fun String.toBtcMoney(): Money =
+        toBtcMoney(locale)
+
+    private fun String.toBtcMoney(locale: Locale): Money {
         return Money.of(this.parseDecimal(locale), "BTC")
     }
 
-    fun MonetaryAmount.toShortText(mode: CurrencyDisplayMode = CurrencyDisplayMode.BTC): String {
+    fun MonetaryAmount.toShortText(mode: BitcoinUnit = BitcoinUnit.BTC): String {
         return MoneyHelper.formatShortMonetaryAmount(this, false, mode, locale)
     }
 
@@ -395,8 +413,17 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      * specific formatting. Apparently, NumberFormat.parse(String) parse "1,23abc" as 1.23.
      * Based on https://stackoverflow.com/a/16879667/901465.
      */
+    fun String.parseDecimal(): Double =
+        parseDecimal(locale)
+
+    /**
+     * Parse string into a number.
+     * Turns out it's not so easy to convert a string to a number when taking into account locale
+     * specific formatting. Apparently, NumberFormat.parse(String) parse "1,23abc" as 1.23.
+     * Based on https://stackoverflow.com/a/16879667/901465.
+     */
     @kotlin.jvm.Throws(ParseException::class)
-    fun String.parseDecimal(locale: Locale): Double {
+    private fun String.parseDecimal(locale: Locale): Double {
         val numberFormat: NumberFormat = NumberFormat.getNumberInstance(locale)
         val parsePosition = ParsePosition(0)
 
@@ -409,24 +436,24 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         return number.toDouble()
     }
 
-    fun MonetaryAmount.toText(mode: CurrencyDisplayMode = CurrencyDisplayMode.BTC): String {
+    fun MonetaryAmount.toText(mode: BitcoinUnit = BitcoinUnit.BTC): String {
         return MoneyHelper.formatLongMonetaryAmount(this, mode, locale)
     }
 
     fun String.dropParenthesis() =
-        drop(1).dropLast(1)
+            drop(1).dropLast(1)
 
     fun String.dropUnit() =
-        split(" ")[0]
+            split(" ")[0]
 
     fun UiObject.child(@IdRes childResId: Int) =
-        getChild(idSelector(childResId))
+            getChild(idSelector(childResId))
 
     fun UiObject.await() =
-        await(2000)
+            await(2000)
 
     fun UiObject.await(millis: Long) =
-        waitForExists(millis)
+            waitForExists(millis)
 
     fun UiObject.assertExists() {
         assertThat(this.waitForExists(3000)).isTrue()
@@ -442,6 +469,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
         assertThat(this.exists()).isFalse()
     }
+
     fun UiObject.assertTextEquals(expectedText: String) {
         assertThat(this.text).isEqualTo(expectedText)
     }
@@ -458,9 +486,9 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     // I WISH I could made these extension functions but we can't (as of this writing) static
     // static extension methods of JAVA classes (we can if the extended class is in Kotlin)
     fun Byid(@IdRes id: Int): BySelector =
-        ByShortName(resourceShortName(id))
+            ByShortName(resourceShortName(id))
 
     fun ByShortName(resourceShortName: String) =
-        By.res(BuildConfig.APPLICATION_ID, resourceShortName)
+            By.res(BuildConfig.APPLICATION_ID, resourceShortName)
 
 }

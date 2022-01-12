@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.operations
 
 import android.os.Bundle
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
@@ -18,7 +18,7 @@ class OperationsPresenter @Inject constructor(
 
     class ReactiveState<T>(
         val operations: List<T>,
-        val currencyDisplayMode: CurrencyDisplayMode,
+        val bitcoinUnit: BitcoinUnit,
         val user: User
     )
 

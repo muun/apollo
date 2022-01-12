@@ -83,7 +83,7 @@ class FetchRealTimeDataActionTest: BaseTest() {
         TestUtils.fetchItemFromObservable(fetchRealTimeDataAction.action())
 
         Mockito.verify(feeWindowRepository).store(feeWindow)
-        Mockito.verify(exchangeRateWindowRepository).store(exchangeRateWindow)
+        Mockito.verify(exchangeRateWindowRepository).storeLatest(exchangeRateWindow)
         Mockito.verify(blockchainHeightRepository).store(blockchainHeight)
         Mockito.verify(forwardingPoliciesRepository).store(forwardingPolicies)
         Mockito.verify(minFeeRateRepository).store(minFeeRateInWeightUnits)

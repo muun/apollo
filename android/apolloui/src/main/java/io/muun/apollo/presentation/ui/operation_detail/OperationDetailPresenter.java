@@ -3,9 +3,9 @@ package io.muun.apollo.presentation.ui.operation_detail;
 import io.muun.apollo.R;
 import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.domain.action.OperationActions;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.domain.model.Operation;
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
+import io.muun.apollo.domain.selector.BitcoinUnitSelector;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.model.UiOperation;
@@ -27,7 +27,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     public static final String OPERATION_ID_KEY = "OPERATION_ID";
 
     private final OperationActions operationActions;
-    private final CurrencyDisplayModeSelector currencyDisplayModeSel;
+    private final BitcoinUnitSelector bitcoinUnitSel;
 
     private final LinkBuilder linkBuilder;
 
@@ -35,7 +35,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     protected long operationId;
 
     @State
-    protected CurrencyDisplayMode currencyDisplayMode;
+    protected BitcoinUnit bitcoinUnit;
 
     private final BlockchainHeightRepository blockchainHeightRepository;
 
@@ -44,12 +44,12 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
      */
     @Inject
     public OperationDetailPresenter(OperationActions operationActions,
-                                    CurrencyDisplayModeSelector currencyDisplayModeSel,
+                                    BitcoinUnitSelector bitcoinUnitSel,
                                     LinkBuilder linkBuilder,
                                     BlockchainHeightRepository blockchainHeightRepository) {
 
         this.operationActions = operationActions;
-        this.currencyDisplayModeSel = currencyDisplayModeSel;
+        this.bitcoinUnitSel = bitcoinUnitSel;
         this.linkBuilder = linkBuilder;
         this.blockchainHeightRepository = blockchainHeightRepository;
     }
@@ -61,7 +61,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         final Optional<Long> maybeOperationId = takeLongArgument(arguments, OPERATION_ID_KEY);
         checkArgument(maybeOperationId.isPresent(), "operationId");
 
-        currencyDisplayMode = currencyDisplayModeSel.get();
+        bitcoinUnit = bitcoinUnitSel.get();
 
         operationId = maybeOperationId.get();
         bindOperation();
@@ -74,7 +74,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
                 .map(op -> UiOperation.fromOperation(
                         op,
                         linkBuilder,
-                        currencyDisplayMode,
+                        bitcoinUnit,
                         getContext())
                 )
                 .compose(getAsyncExecutor())

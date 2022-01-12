@@ -22,8 +22,8 @@ public class MuunPinInput extends MuunView {
     }
 
     static final ViewProps<MuunPinInput> viewProps = new ViewProps.Builder<MuunPinInput>()
-            .addRef(R.attr.title, MuunPinInput::setTitle)
-            .addRef(R.attr.description, MuunPinInput::setDescription)
+            .addRefJava(R.attr.title, MuunPinInput::setTitle)
+            .addRefJava(R.attr.description, MuunPinInput::setDescription)
             .build();
 
     public static final int PIN_LENGTH = 4; // NOTE: hard-coded in MuunPinIndicator XML as well

@@ -11,7 +11,7 @@ import butterknife.BindView
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.errors.UserFacingError
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
@@ -114,7 +114,6 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         passwordItem.setOnClickListener { editPassword() }
         darkModeItem.setOnClickListener { editDarkMode() }
         bitcoinUnitItem.setOnClickListener { editBitcoinUnit() }
-        currencyItem.setOnClickListener { editPrimaryCurrency() }
         logoutItem.setOnClickListener { goToLogout() }
         bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
@@ -142,7 +141,7 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         setUpRecoveryAndLogoutSection(state.user)
         setUpPublicProfileSection(state.user)
         setUpWalletDetailsSection(state.user)
-        setUpGeneralSection(state.user, state.currencyDisplayMode, state.exchangeRateWindow)
+        setUpGeneralSection(state.user, state.bitcoinUnit, state.exchangeRateWindow)
 
         bitcoinSettingsItem.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
     }
@@ -173,20 +172,24 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     }
 
     private fun setUpGeneralSection(user: User,
-                                    currencyMode: CurrencyDisplayMode,
+                                    bitcoinUnit: BitcoinUnit,
                                     rateWindow: ExchangeRateWindow) {
 
         val currency = Currency.getInfo(user.getPrimaryCurrency(rateWindow).currencyCode).get()
-        setUpCurrency(currency, currencyMode)
+        setUpCurrency(currency, bitcoinUnit, rateWindow)
 
         bitcoinUnitItem.setDescription(
-            " " + MoneyHelper.formatCurrencyName(Currency.BTC, currencyMode),
+            " " + MoneyHelper.formatCurrencyName(Currency.BTC, bitcoinUnit),
             R.drawable.btc_logo
         )
     }
 
-    private fun setUpCurrency(currency: Currency, currencyMode: CurrencyDisplayMode) {
-        val currencyName = MoneyHelper.formatCurrencyName(currency, currencyMode)
+    private fun setUpCurrency(
+        currency: Currency,
+        bitcoinUnit: BitcoinUnit,
+        rateWindow: ExchangeRateWindow
+    ) {
+        val currencyName = MoneyHelper.formatCurrencyName(currency, bitcoinUnit)
         if (currency.flag != null) {
             currencyItem.setDescription(currency.flag + " " + currencyName)
         } else {
@@ -196,6 +199,8 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
                 currencyItem.setDescription(" $currencyName", R.drawable.default_flag)
             }
         }
+
+        currencyItem.setOnClickListener { editPrimaryCurrency(rateWindow) }
     }
 
     private fun setUpWalletDetailsSection(user: User) {
@@ -264,9 +269,10 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     /**
      * Open Select Currency Activity, to change the user's primary currency.
      */
-    private fun editPrimaryCurrency() {
+    private fun editPrimaryCurrency(rateWindow: ExchangeRateWindow) {
+        val windowId = rateWindow.windowHid
         startActivityForResult(
-            SelectCurrencyActivity.getStartSelectPrimaryCurrencyActivityIntent(parentActivity),
+            SelectCurrencyActivity.getSelectPrimaryCurrencyActivityIntent(parentActivity, windowId),
             REQUEST_NEW_PRIMARY_CURRENCY
         )
     }

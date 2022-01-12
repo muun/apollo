@@ -42,7 +42,7 @@ func TestFastestFeeRate(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 
-			feeRate := tC.feewindow.fastestFeeRate()
+			feeRate := tC.feewindow.FastestFeeRate()
 
 			if feeRate != tC.expectedFeeRate {
 				t.Fatalf("expected feeRate = %v, got %v", tC.expectedFeeRate, feeRate)
@@ -127,7 +127,7 @@ func TestMinimumFeeRate(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 
-			feeRate, err := tC.feewindow.minimumFeeRate(tC.confTarget)
+			feeRate, err := tC.feewindow.MinimumFeeRate(tC.confTarget)
 
 			if err != nil {
 				t.Fatal(err)
@@ -155,11 +155,18 @@ func TestInvalidConfirmationTargets(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 
-			_, err := tC.feewindow.minimumFeeRate(tC.confTarget)
+			_, err := tC.feewindow.MinimumFeeRate(tC.confTarget)
 
 			if err == nil {
 				t.Fatalf("expected test to error")
 			}
 		})
+	}
+}
+
+func TestNextHighestBlock(t *testing.T) {
+	block := someFeeWindow.NextHighestBlock(10.0)
+	if block != 2 {
+		t.Fatalf("expected block to be 2, got %v", block)
 	}
 }

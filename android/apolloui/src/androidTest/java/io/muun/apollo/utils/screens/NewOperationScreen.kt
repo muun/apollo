@@ -3,10 +3,12 @@ package io.muun.apollo.utils.screens
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.new_operation.NewOperationStep
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
+import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.moneyEqualsRoundingMarginBTC
+import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.moneyEqualsRoundingMarginFiat
+import io.muun.apollo.utils.screens.RecommendedFeeScreen.OnScreenFeeOption
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
@@ -19,22 +21,25 @@ class NewOperationScreen(
 ): WithMuunInstrumentationHelpers {
 
     val confirmedAmount get() =
-        id(R.id.selected_amount).text.toMoney(locale)
+        id(R.id.selected_amount).text.toMoney()
 
     val confirmedFee get() =
-        id(R.id.fee_amount).text.toMoney(locale)
+        id(R.id.fee_amount).text.toMoney()
 
     val confirmedDescription get() =
         id(R.id.notes_content).text
 
     val confirmedTotal get() =
-        id(R.id.total_amount).text.toMoney(locale)
+        id(R.id.total_amount).text.toMoney()
 
     fun waitUntilVisible() {
         id(R.id.muun_next_step_button).waitForExists(15000)
     }
 
     fun fillForm(amount: MonetaryAmount?, description: String?) {
+
+        checkInputAmountCurrenciesMatch()
+
         // Enter the requested data, moving forward:
         if (amount != null) {
             editAmount(amount)
@@ -50,6 +55,7 @@ class NewOperationScreen(
     }
 
     fun fillFormUsingAllFunds(description: String?): MonetaryAmount {
+        checkInputAmountCurrenciesMatch()
         confirmUseAllFunds()
 
         if (description != null) {
@@ -57,23 +63,27 @@ class NewOperationScreen(
             goNext()
         }
 
-        checkConfirmedData(description=description)
+        checkConfirmedData(description = description)
 
         return confirmedAmount
     }
 
-    fun fillForm(invoice: LnInvoice,
-                 description: String? = null,
-                 debtType: DebtType = DebtType.NONE) {
+    fun fillForm(
+        invoice: LnInvoice,
+        description: String? = null,
+        debtType: DebtType = DebtType.NONE
+    ) {
 
         waitForResolveOperationUri()
+
+        checkInputAmountCurrenciesMatch()
 
         if (description != null) {
             editDescription(description)
             goNext()
         }
 
-        checkConfirmedData(invoice, description ?:invoice.description, debtType)
+        checkConfirmedData(invoice, description ?: invoice.description, debtType)
     }
 
     fun goToEditFee() =
@@ -86,6 +96,13 @@ class NewOperationScreen(
     fun submit() {
         checkStep(NewOperationStep.CONFIRM)
         goNext()
+    }
+
+    private fun checkInputAmountCurrenciesMatch() {
+        val inputCurrency = id(R.id.currency_code).text
+        val totalBalanceCurrency = id(R.id.secondary_amount).text.split(" ")[2]
+
+        assertThat(inputCurrency).isEqualTo(totalBalanceCurrency)
     }
 
     private fun editAmount(amount: MonetaryAmount) {
@@ -111,9 +128,11 @@ class NewOperationScreen(
         pressMuunButton(R.id.muun_next_step_button)
     }
 
-    fun checkConfirmedData(amount: MonetaryAmount? = null,
-                           description: String? = null,
-                           fee: MonetaryAmount? = null) {
+    fun checkConfirmedData(
+        amount: MonetaryAmount? = null,
+        description: String? = null,
+        fee: OnScreenFeeOption? = null
+    ) {
 
         checkStep(NewOperationStep.CONFIRM)
 
@@ -129,13 +148,47 @@ class NewOperationScreen(
         }
 
         if (fee != null) {
-            assertMoneyEqualsWithRoundingHack(confirmedFee, fee)
+            // Since we don't know if confirmedFee is in "primaryAmount" (e.g BTC) or
+            // "secondaryAmount" (e.g probably FIAT, primary currency) we check against both
+            try {
+                assertMoneyEqualsWithRoundingHack(confirmedFee, fee.primaryAmount)
+            } catch (e: AssertionError) {
+                try {
+                    assertMoneyEqualsWithRoundingHack(confirmedFee, fee.secondaryAmount)
+                } catch (e: AssertionError) {
+                    throw AssertionError(
+                        // Yeah, this is gross, but let's output all the debuggin data we can if
+                        // tests fail because of this.
+                        // TODO: abstract this a little if it becomes necessary elsewhere
+                        String.format(
+                            "\nExpecting:\n  <%s>\nto be close to:\n  <%s>\n" +
+                                    "by less than <%s> but difference was <%s>.\n" +
+                                    "(a difference of exactly <%s> being considered valid)\n" +
+                                    "OR to be close to:\n  <%s>\n" +
+                                    "by less than <%s> but difference was <%s>.%n" +
+                                    "(a difference of exactly <%s> being considered valid)\n",
+                            confirmedFee.toString(),
+                            fee.primaryAmount.toString(),
+                            moneyEqualsRoundingMarginBTC.toString(),
+                            confirmedFee.number.toDouble() - fee.primaryAmount.number.toDouble(),
+                            moneyEqualsRoundingMarginBTC.toString(),
+                            fee.secondaryAmount.toString(),
+                            moneyEqualsRoundingMarginFiat.toString(),
+                            confirmedFee.number.toDouble() - fee.secondaryAmount.number.toDouble(),
+                            moneyEqualsRoundingMarginFiat.toString()
+                        ),
+                        e
+                    )
+                }
+            }
         }
     }
 
-    private fun checkConfirmedData(invoice: LnInvoice,
-                                   desc: String,
-                                   debtType: DebtType = DebtType.NONE) {
+    private fun checkConfirmedData(
+        invoice: LnInvoice,
+        desc: String,
+        debtType: DebtType = DebtType.NONE
+    ) {
 
         checkStep(NewOperationStep.CONFIRM)
 

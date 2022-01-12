@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.model;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 public class PreparedPayment {
@@ -16,9 +17,18 @@ public class PreparedPayment {
     @NotNull
     public final Long rateWindowHid;
 
-    public final NextTransactionSize nextTransactionSize;
+    public final List<String> outpoints;
 
-    public final PaymentRequest payReq;
+    // TODO this should be removed
+    public PaymentRequest payReq;
+
+    public final PaymentRequest.Type type;
+
+    public final Contact contact;
+
+    public final String address;
+
+    public final SubmarineSwap swap;
 
     /**
      * Manual constructor.
@@ -28,16 +38,43 @@ public class PreparedPayment {
             final BitcoinAmount fee,
             final String description,
             final Long rateWindowHid,
-            final NextTransactionSize nextTransactionSize,
+            final List<String> outpoints,
             final PaymentRequest payReq) {
 
         this.amount = amount;
         this.fee = fee;
         this.description = description;
         this.rateWindowHid = rateWindowHid;
-        this.nextTransactionSize = nextTransactionSize;
+        this.outpoints = outpoints;
         this.payReq = payReq;
+        this.type = payReq.getType();
+        this.contact = payReq.getContact();
+        this.address = payReq.getAddress();
+        this.swap = payReq.getSwap();
     }
 
+    /**
+     * Manual constructor.
+     */
+    public PreparedPayment(
+            final BitcoinAmount amount,
+            final BitcoinAmount fee,
+            final String description,
+            final Long rateWindowHid,
+            final List<String> outpoints,
+            final PaymentRequest.Type type,
+            final Contact contact,
+            final String address,
+            final SubmarineSwap swap) {
 
+        this.amount = amount;
+        this.fee = fee;
+        this.description = description;
+        this.rateWindowHid = rateWindowHid;
+        this.outpoints = outpoints;
+        this.type = type;
+        this.contact = contact;
+        this.address = address;
+        this.swap = swap;
+    }
 }

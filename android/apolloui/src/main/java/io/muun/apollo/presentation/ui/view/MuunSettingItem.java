@@ -20,9 +20,9 @@ import javax.annotation.Nullable;
 public class MuunSettingItem extends MuunView {
 
     static final ViewProps<MuunSettingItem> viewProps = new ViewProps.Builder<MuunSettingItem>()
-            .addString(R.attr.label, MuunSettingItem::setLabel)
-            .addString(R.attr.description, MuunSettingItem::setDescription)
-            .addRef(R.attr.icon, MuunSettingItem::setIcon)
+            .addStringJava(R.attr.label, MuunSettingItem::setLabel)
+            .addStringJava(R.attr.description, MuunSettingItem::setDescription)
+            .addRefJava(R.attr.icon, MuunSettingItem::setIcon)
             .addColorList(R.attr.iconTint, MuunSettingItem::setIconColor)
             .build();
 

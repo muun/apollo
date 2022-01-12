@@ -8,6 +8,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import butterknife.BindView
+import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.P2PState
@@ -76,7 +77,7 @@ class SendActivity: SingleFragmentActivity<SendPresenter>(), SendView {
         uriInput.onChangeListener = this::onUriInputChange
 
         confirmButton.setOnClickListener {
-            confirmButton.isLoading = true
+            confirmButton.setLoading(true)
             presenter.selectUriFromInput(OperationUri.fromString(uriInput.content))
         }
 
@@ -92,7 +93,10 @@ class SendActivity: SingleFragmentActivity<SendPresenter>(), SendView {
         contactList.state = state
 
         // Bye bye p2p! Only users that have it enabled already can see it
-        contactList.visibility = if (state.user.hasP2PEnabled) {
+        // Note: keeping this feature on for CI P2P payments tests
+        val enableP2PSetup = state.user.hasP2PEnabled || BuildConfig.FLAVOR == "regtest"
+
+        contactList.visibility = if (enableP2PSetup) {
             View.VISIBLE
         } else {
             View.GONE

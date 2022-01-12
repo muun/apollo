@@ -156,14 +156,22 @@
         favor inicia un nuevo pago.
     </string>
 
-    <string name="error_op_cyclical_swap_title">Esta factura no se puede pagar</string>
-    <string name="error_op_cyclical_swap_desc">No puedes pagarte una factura a ti mismo.</string>
-
-    <string name="error_op_generic">Ha ocurrido un error inesperado</string>
-    <string name="error_op_generic_desc">
+    <string name="error_op_invalid_swap">Ha ocurrido un error inesperado</string>
+    <string name="error_op_invalid_swap_desc">
         Algo salió mal, pero no sabemos qué fue. Por favor, contacta a nuestro
         <annotation link="support">equipo de soporte</annotation> y cuéntanos que ocurrió. Estaremos
         felices de ayudarte.
+    </string>
+
+    <string name="error_op_cyclical_swap_title">Esta factura no se puede pagar</string>
+    <string name="error_op_cyclical_swap_desc">No puedes pagarte una factura a ti mismo.</string>
+
+    <string name="error_op_generic">Ha ocurrido un error</string>
+    <string name="error_op_generic_desc">
+        Algo salió mal, pero no pudimos identificar la causa. Creamos un reporte de error que nos
+        ayudará a encontrarla.
+        \n\n
+        Por favor, <annotation link="support">envía el reporte</annotation> a nuestro equipo.
     </string>
 
     <string name="error_op_amount_too_small_title">Este pago es demasiado pequeño</string>
@@ -995,7 +1003,7 @@
 
     <string name="error_send_report_dialog_title">Ocurrió un error inesperado</string>
     <string name="error_send_report_dialog_body">
-        Algo salió mal, pero no sabemos qué. Se generó un reporte de error que
+        Algo salió mal, pero no sabemos qué. Se generó un reporte de error que nos
         ayudará a resolverlo. Por favor, envíanoslo por email.
     </string>
     <string name="error_send_report_dialog_body_short">

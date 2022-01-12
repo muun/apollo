@@ -5,14 +5,14 @@ import android.os.SystemClock
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Gen
+import io.muun.apollo.domain.model.user.UserPhoneNumber
 import io.muun.apollo.presentation.ui.debug.LappClient
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
+import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
 import org.javamoney.moneta.Money
-import java.lang.IllegalStateException
 import javax.money.MonetaryAmount
 
 class AutoFlows(override val device: UiDevice,
@@ -224,7 +224,19 @@ class AutoFlows(override val device: UiDevice,
         }
     }
 
-    fun receiveMoneyFromNetwork(amount: Money) {
+    fun receiveMoneyFromNetwork(amount: Money) = try {
+        tryReceiveMoneyFromNetwork(amount)
+    } catch (e: AssertionError) {
+        if (e.message != null && e.message!!.contains(balanceNotEqualsErrorMessage)) {
+
+            LappClient().generateBlocks(30) // we don't want to need this again soon
+            Thread.sleep(2000)
+            tryReceiveMoneyFromNetwork(amount)
+        }
+        throw e
+    }
+
+    private fun tryReceiveMoneyFromNetwork(amount: Money) {
         val expectedBalance = homeScreen.balanceInBtc
         val balanceAfter = expectedBalance.add(amount)
 
@@ -244,6 +256,15 @@ class AutoFlows(override val device: UiDevice,
 
         // Wait for balance to be updated:
         homeScreen.waitUntilBalanceEquals(balanceAfter)
+    }
+
+    fun setupP2P(phoneNumber: UserPhoneNumber = Gen.userPhoneNumber(),
+                 verificationCode: String = Gen.numeric(6),
+                 firstName: String = Gen.alpha(5),
+                 lastName: String = Gen.alpha(5)) {
+
+        homeScreen.goToP2PSetup()
+        p2pScreen.fillForm(phoneNumber, verificationCode, firstName, lastName)
     }
 
     fun startOperationFromClipboardTo(addressOrInvoice: String) {
@@ -454,7 +475,7 @@ class AutoFlows(override val device: UiDevice,
         val optionMedium = recomFeeScreen.selectFeeOptionMedium()
         recomFeeScreen.confirmFee()
 
-        newOpScreen.checkConfirmedData(fee=optionMedium.secondaryAmount)
+        newOpScreen.checkConfirmedData(fee=optionMedium)
 
         // Try slow fee (TODO we should control whether it appears, instead of asking):
         newOpScreen.goToEditFee()
@@ -462,7 +483,7 @@ class AutoFlows(override val device: UiDevice,
             val optionSlow = recomFeeScreen.selectFeeOptionSlow()
             recomFeeScreen.confirmFee()
 
-            newOpScreen.checkConfirmedData(fee=optionSlow.secondaryAmount)
+            newOpScreen.checkConfirmedData(fee=optionSlow)
         } else {
             device.pressBack()
         }
@@ -472,7 +493,7 @@ class AutoFlows(override val device: UiDevice,
         val optionFast = recomFeeScreen.selectFeeOptionFast()
         recomFeeScreen.confirmFee()
 
-        newOpScreen.checkConfirmedData(fee=optionFast.secondaryAmount)
+        newOpScreen.checkConfirmedData(fee=optionFast)
 
         // Try manual fee:
         newOpScreen.goToEditFee()
@@ -482,7 +503,7 @@ class AutoFlows(override val device: UiDevice,
 
         // TODO test mempool congested?
 
-        newOpScreen.checkConfirmedData(fee=optionManual.secondaryAmount)
+        newOpScreen.checkConfirmedData(fee=optionManual)
 
         // Abort operation like a boss:
         device.pressBack()
@@ -588,6 +609,28 @@ class AutoFlows(override val device: UiDevice,
         uriPaster.waitForExists().click()
 
         pressMuunButton(R.id.lnurl_withdraw_confirm_action)
+    }
+
+    fun signUpUserWithExistingUserAsContact(contact: RandomUser) {
+        grantPermission("android.permission.READ_CONTACTS")
+
+        // Sign up the future contact, set up P2P and logout:
+
+        signUp()
+        setupP2P(
+            phoneNumber = contact.phoneNumber,
+            firstName = contact.firstName,
+            lastName = contact.lastName
+        )
+
+        deleteWallet()
+
+        // Sign up ourselves:
+        signUp()
+        setupP2P()
+
+        // Create the system contact:
+        SystemContacts.create(Gen.alpha(8), contact.phoneNumber.toE164String())
     }
 
     // PRIVATE, helper stuff

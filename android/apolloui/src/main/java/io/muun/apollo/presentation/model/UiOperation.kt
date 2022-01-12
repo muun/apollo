@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.Invoice.decodeInvoice
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.utils.isEmpty
 import io.muun.apollo.domain.utils.locale
@@ -30,7 +30,7 @@ import javax.money.MonetaryAmount
 abstract class UiOperation(
     @JvmField internal val operation: Operation,
     private val linkBuilder: LinkBuilder,
-    private val currencyDisplayMode: CurrencyDisplayMode,
+    private val bitcoinUnit: BitcoinUnit,
     private val context: Context
 ) {
 
@@ -46,13 +46,13 @@ abstract class UiOperation(
         fun fromOperation(
             operation: Operation,
             linkBuilder: LinkBuilder,
-            cdm: CurrencyDisplayMode,
+            bitcoinUnit: BitcoinUnit,
             context: Context
         ): UiOperation {
             return if (operation.isExternal) {
-                ExternalOperation(operation, linkBuilder, cdm, context)
+                ExternalOperation(operation, linkBuilder, bitcoinUnit, context)
             } else {
-                InternalOperation(operation, linkBuilder, cdm, context)
+                InternalOperation(operation, linkBuilder, bitcoinUnit, context)
             }
         }
     }
@@ -88,12 +88,7 @@ abstract class UiOperation(
 
             // If operation is a swap we display both funding and sweep tx as the operation fee
             if (operation.swap != null) {
-                var totalFeeInSats = feeInSats + operation.swap!!.fees!!.lightningInSats
-
-                // LEND swap have no associated on-chain tx, so sweepFee does not apply
-                if (!operation.swap!!.isLend) {
-                    totalFeeInSats += operation.swap!!.fees!!.sweepInSats
-                }
+                val totalFeeInSats = feeInSats + (operation.swap!!.totalFeesInSat() ?: 0)
 
                 // As we don't have the value in primary currency for some of the fees involved in a
                 // swap, we use a Rule of 3 to calculate their value in primary currency using amount as
@@ -114,7 +109,7 @@ abstract class UiOperation(
     val copyableNetworkFee: String
         get() {
             val feeInSats = operation.fee.inSatoshis
-            return BitcoinHelper.formatLongBitcoinAmount(feeInSats, currencyDisplayMode, locale)
+            return BitcoinHelper.formatLongBitcoinAmount(feeInSats, bitcoinUnit, locale)
         }
 
     /**
@@ -123,7 +118,7 @@ abstract class UiOperation(
     val copyableAmount: String
         get() {
             val amountInSats = operation.amount.inSatoshis
-            return BitcoinHelper.formatLongBitcoinAmount(amountInSats, currencyDisplayMode, locale)
+            return BitcoinHelper.formatLongBitcoinAmount(amountInSats, bitcoinUnit, locale)
         }
 
     /**
@@ -335,25 +330,25 @@ abstract class UiOperation(
         if (longFormat) {
             MoneyHelper.formatLongMonetaryAmount(
                 operation.amount.inInputCurrency,
-                currencyDisplayMode,
+                bitcoinUnit,
                 locale
             )
         } else {
             MoneyHelper.formatShortMonetaryAmount(
                 operation.amount.inInputCurrency,
-                currencyDisplayMode,
+                bitcoinUnit,
                 locale
             )
         }
 
     private fun getFormattedAmount(amountInSat: Long, amountInPrimary: MonetaryAmount): String =
         if (amountInPrimary.isBtc()) {
-            BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode, locale)
+            BitcoinHelper.formatLongBitcoinAmount(amountInSat, bitcoinUnit, locale)
         } else {
             String.format(
                 "%s (%s)",
-                BitcoinHelper.formatLongBitcoinAmount(amountInSat, currencyDisplayMode, locale),
-                MoneyHelper.formatLongMonetaryAmount(amountInPrimary, currencyDisplayMode, locale)
+                BitcoinHelper.formatLongBitcoinAmount(amountInSat, bitcoinUnit, locale),
+                MoneyHelper.formatLongMonetaryAmount(amountInPrimary, bitcoinUnit, locale)
             )
         }
 

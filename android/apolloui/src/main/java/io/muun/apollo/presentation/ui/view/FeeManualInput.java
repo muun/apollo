@@ -4,7 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.LocaleNumberParsingError;
 import io.muun.apollo.domain.model.BitcoinAmount;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
 import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
@@ -67,7 +67,7 @@ public class FeeManualInput extends MuunView {
     Double feeRateInSatsPerVbyte;
 
     @State
-    CurrencyDisplayMode currencyDisplayMode;
+    BitcoinUnit bitcoinUnit;
 
     // -----------------------------
 
@@ -132,7 +132,7 @@ public class FeeManualInput extends MuunView {
     }
 
     /**
-     * Set input's fee rate.
+     * Set input's fee rate, in satoshis per virtual byte.
      */
     public void setFeeRate(double feeRateInSatsPerVbyte) {
         isSkippingListeners = true;
@@ -147,7 +147,7 @@ public class FeeManualInput extends MuunView {
         notifyChange();
     }
 
-    public Double getFeeRate() {
+    public Double getFeeRateInVBytes() {
         return feeRateInSatsPerVbyte;
     }
 
@@ -212,7 +212,7 @@ public class FeeManualInput extends MuunView {
 
     private void setFeeInBtc(long feeInSat) {
         mainValue.setText(
-                BitcoinHelper.formatLongBitcoinAmount(feeInSat, currencyDisplayMode, getLocale())
+                BitcoinHelper.formatLongBitcoinAmount(feeInSat, bitcoinUnit, getLocale())
         );
     }
 
@@ -222,7 +222,7 @@ public class FeeManualInput extends MuunView {
     private void setFeeInSecondaryCurrency(MonetaryAmount feeAmount) {
         secondaryValue.setText(TextUtils.concat(
                 "(",
-                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode, getLocale()),
+                MoneyHelper.formatLongMonetaryAmount(feeAmount, bitcoinUnit, getLocale()),
                 ")"
         ));
     }
@@ -237,8 +237,8 @@ public class FeeManualInput extends MuunView {
         }
     }
 
-    public void setCurrencyDisplayMode(CurrencyDisplayMode mode) {
-        this.currencyDisplayMode = mode;
+    public void setBitcoinUnit(BitcoinUnit mode) {
+        this.bitcoinUnit = mode;
     }
 
     @Nullable

@@ -54,7 +54,7 @@ class DriveImpl @Inject constructor(
     override fun getSignInIntent() =
         signInClient.signInIntent
 
-    override fun getSignedInAccount(result: Intent): GoogleSignInAccount {
+    override fun getSignedInAccount(result: Intent?): GoogleSignInAccount {
         val completedTask = GoogleSignIn.getSignedInAccountFromIntent(result)
 
         // This is needlessly wrapped in a Task. If you check the implementation, you'll see it's

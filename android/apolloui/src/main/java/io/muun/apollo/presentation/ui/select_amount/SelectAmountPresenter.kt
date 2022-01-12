@@ -2,8 +2,9 @@ package io.muun.apollo.presentation.ui.select_amount
 
 import android.app.Activity
 import android.os.Bundle
+import io.muun.apollo.data.getRateWindow
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_AMOUNT_PICKER
@@ -22,7 +23,7 @@ import javax.validation.constraints.NotNull
 @PerActivity
 class SelectAmountPresenter @Inject constructor(
     private val exchangeRateSelector: ExchangeRateSelector,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
+    private val bitcoinUnitSel: BitcoinUnitSelector
 ) : BasePresenter<SelectAmountView>() {
 
     companion object {
@@ -50,15 +51,14 @@ class SelectAmountPresenter @Inject constructor(
 
         isOnChainAmount = arguments.getBoolean(SelectAmountActivity.IS_BTC_ON_CHAIN)
 
-        primaryCurrency = userSel.get().getPrimaryCurrency(exchangeRateSelector.getWindow())
-        view.setCurrencyDisplayMode(currencyDisplayModeSel.get())
+        view.setBitcoinUnit(bitcoinUnitSel.get())
 
         setUpExchangeRates()
     }
 
     private fun setUpExchangeRates() {
         val observable: Observable<*> = exchangeRateSelector
-            .watch()
+            .watchLatest()
             .compose(getAsyncExecutor())
             .doOnNext { provider: ExchangeRateProvider -> onExchangeRatesChange(provider) }
         subscribeTo(observable)
@@ -66,8 +66,11 @@ class SelectAmountPresenter @Inject constructor(
 
     private fun onExchangeRatesChange(exchangeRateProvider: ExchangeRateProvider) {
         val isBeingInitialized = !isInitialized()
+        exchangeRateSelector.fixWindow(exchangeRateProvider.getRateWindow())
         rateProvider = exchangeRateProvider
         view.setExchangeRateProvider(exchangeRateProvider)
+
+        primaryCurrency = userSel.get().getPrimaryCurrency(rateProvider)
 
         // This needs to happen AFTER rateProvider init due to the side effects of
         // initializeAmountInput (e.g updateAmount())
@@ -103,7 +106,7 @@ class SelectAmountPresenter @Inject constructor(
     private fun updateSecondaryAmount(amount: MonetaryAmount) {
         if (primaryCurrency.isBtc()) {
             view.hideSecondaryAmount()
-            return;
+            return
         }
 
         val secondaryAmount = if (amount.isBtc()) {

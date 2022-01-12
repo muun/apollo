@@ -12,7 +12,7 @@ import butterknife.BindColor
 import butterknife.BindDrawable
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.utils.locale
@@ -50,12 +50,14 @@ class NewOpBadge @JvmOverloads constructor(
     override val layoutResource: Int
         get() = R.layout.view_new_op_badge
 
-    fun setAmount(amountInBtc: MonetaryAmount, mode: CurrencyDisplayMode) {
+    fun setAmount(amountInBtc: MonetaryAmount, bitcoinUnit: BitcoinUnit) {
         Preconditions.checkArgument(!amountInBtc.isZero)
         Preconditions.checkArgument(amountInBtc.isBtc())
 
         val amountInSats = BitcoinUtils.bitcoinsToSatoshis(amountInBtc)
-        var content = BitcoinHelper.formatFlexBitcoinAmount(amountInSats, true, mode, locale())
+        var content = BitcoinHelper.formatFlexBitcoinAmount(
+                amountInSats, true, bitcoinUnit, locale()
+        )
 
         if (amountInBtc.isPositive) {
             background = incomingTxBkg

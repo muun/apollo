@@ -1,5 +1,7 @@
 package io.muun.common.api;
 
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -21,16 +23,24 @@ public class ClientJson {
     @Nonnegative
     public int version;
 
-    @Nullable // Set by new apollo 46.4 and 2.3.2
+    @Since(apolloVersion = 704, falconVersion = 611) // Apollo 47.4 and Falcon 2.4.2
+    @Nullable // Before that ;)
+    public String versionName;
+
+    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
+    @Nullable // Before that ;)
     public String deviceModel;
 
-    @Nullable // Set by new apollo 46.4 and 2.3.2
+    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
+    @Nullable // Before that ;)
     public Long timezoneOffsetInSeconds;
 
-    @Nullable // Set by new apollo 46.4 and 2.3.2
+    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
+    @Nullable // Before that ;)
     public String language;
 
-    @Nullable // Set by new apollo 46.4 and 2.3.2
+    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
+    @Nullable // Before that ;)
     public String bigQueryPseudoId;
 
     /**
@@ -44,7 +54,8 @@ public class ClientJson {
      */
     public ClientJson(final ClientTypeJson type,
                       final String buildType,
-                      int version,
+                      final int version,
+                      final String versionName,
                       final String deviceModel,
                       final Long timezoneOffsetInSeconds,
                       final String language,
@@ -52,6 +63,7 @@ public class ClientJson {
         this.type = type;
         this.buildType = buildType;
         this.version = version;
+        this.versionName = versionName;
         this.deviceModel = deviceModel;
         this.timezoneOffsetInSeconds = timezoneOffsetInSeconds;
         this.language = language;

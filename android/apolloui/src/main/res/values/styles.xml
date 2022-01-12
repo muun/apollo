@@ -316,6 +316,7 @@
         <item name="android:maxLength">4</item>
         <item name="android:hint">\u00A0\u00A0\u00A0\u00A0</item> <!-- because minEms is broken -->
         <item name="android:enabled">false</item>
+        <item name="android:inputType">textVisiblePassword|textNoSuggestions</item>
     </style>
 
     <style name="edit_profile_input">

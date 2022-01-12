@@ -7,7 +7,7 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.libwallet.Invoice
-import io.muun.apollo.domain.libwallet.toLibwalletModel
+import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.Sha256Hash
 import io.muun.apollo.domain.model.lnurl.LnUrlError
 import io.muun.apollo.domain.model.lnurl.LnUrlEvent
@@ -57,8 +57,8 @@ class LnUrlWithdrawAction @Inject constructor(
             val listener = RxListener(lnurlContent)
 
             Libwallet.lnurlWithdraw(
-                Globals.INSTANCE.network.toLibwalletModel(),
-                basePrivateKey.toLibwalletModel(Globals.INSTANCE.network),
+                Globals.INSTANCE.network.toLibwallet(),
+                basePrivateKey.toLibwallet(Globals.INSTANCE.network),
                 routeHints,
                 lnurlContent,
                 listener

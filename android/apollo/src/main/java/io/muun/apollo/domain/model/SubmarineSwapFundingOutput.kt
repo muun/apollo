@@ -5,7 +5,7 @@ import io.muun.common.api.SubmarineSwapFundingOutputJson
 import io.muun.common.crypto.hd.MuunAddress
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.model.DebtType
-import io.muun.common.utils.Deprecated
+import newop.SwapInfo
 
 data class SubmarineSwapFundingOutput(
     val outputAddress: String,
@@ -14,7 +14,7 @@ data class SubmarineSwapFundingOutput(
     val debtAmountInSatoshis: Long?,
     val confirmationsNeeded: Int?,
     val userLockTime: Int?,                 // for swaps v2 is null until funding tx confirmation
-    @Deprecated(
+    @io.muun.common.utils.Deprecated(
         atApolloVersion = Supports.SubmarineSwapsV2.APOLLO,
         atVersion = Supports.SubmarineSwapsV2.FALCON
     )
@@ -70,6 +70,7 @@ data class SubmarineSwapFundingOutput(
     /**
      * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
      */
+    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
     fun withOutputAmount(newAmountInSat: Long): SubmarineSwapFundingOutput =
         copy(outputAmountInSatoshis = newAmountInSat + debtAmountInSatoshis!!)
 
@@ -77,11 +78,25 @@ data class SubmarineSwapFundingOutput(
      * Return a cloned SubmarineSwapFundingOutput adding certain SubmarineSwapExecutionParameters.
      * Used for AmountLess Invoice swaps.
      */
+    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
     fun withSwapParams(params: SubmarineSwapExecutionParameters, outputAmountInSats: Long) =
         copy(
             outputAmountInSatoshis = outputAmountInSats,
             debtType = params.debtType,
             debtAmountInSatoshis =  params.debtAmountInSats,
             confirmationsNeeded = params.confirmationsNeeded
+        )
+
+
+    /**
+     * Return a cloned SubmarineSwapFundingOutput adding certain SubmarineSwapExecutionParameters.
+     * Used for AmountLess Invoice swaps.
+     */
+    fun withSwapInfo(swapInfo: SwapInfo) =
+        copy(
+            outputAmountInSatoshis = swapInfo.swapFees.outputAmountInSat,
+            debtType = DebtType.valueOf(swapInfo.swapFees.debtType),
+            debtAmountInSatoshis =  swapInfo.swapFees.debtAmountInSat,
+            confirmationsNeeded = swapInfo.swapFees.confirmationsNeeded.toInt()
         )
 }

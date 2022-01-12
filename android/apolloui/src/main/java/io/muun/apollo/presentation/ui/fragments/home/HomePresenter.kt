@@ -3,12 +3,12 @@ package io.muun.apollo.presentation.ui.fragments.home
 import android.os.Bundle
 import icepick.State
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.PaymentContext
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
 import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.domain.selector.LatestOperationSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @PerFragment
 class HomePresenter @Inject constructor(
     private val paymentContextSel: PaymentContextSelector,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
+    private val bitcoinUnitSel: BitcoinUnitSelector,
     private val userPreferencesSelector: UserPreferencesSelector,
     private val updateUserPreferencesAction: UpdateUserPreferencesAction,
     private val latestOperationSelector: LatestOperationSelector,
@@ -41,7 +41,7 @@ class HomePresenter @Inject constructor(
 
     class HomeState(
         val paymentContext: PaymentContext,
-        val currencyDisplayMode: CurrencyDisplayMode,
+        val bitcoinUnit: BitcoinUnit,
         val utxoSetState: UtxoSetStateSelector.UtxoSetState,
         val balanceHidden: Boolean,
         val user: User,
@@ -55,7 +55,7 @@ class HomePresenter @Inject constructor(
         Observable
             .combineLatest(
                 paymentContextSel.watch(),
-                currencyDisplayModeSel.watch(),
+                bitcoinUnitSel.watch(),
                 utxoSetStateSelector.watch(),
                 userSel.watchBalanceHidden(),
                 userSel.watch(),
@@ -79,7 +79,7 @@ class HomePresenter @Inject constructor(
                 maybeOp.ifPresent { latestOp ->
 
                     if (lastOpId != null && lastOpId != latestOp.hid) {
-                        view.setNewOp(latestOp, currencyDisplayModeSel.get())
+                        view.setNewOp(latestOp, bitcoinUnitSel.get())
                     }
 
                     lastOpId = latestOp.hid

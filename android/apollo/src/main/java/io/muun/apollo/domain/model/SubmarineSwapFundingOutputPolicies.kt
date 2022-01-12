@@ -19,4 +19,15 @@ class SubmarineSwapFundingOutputPolicies(
                 json.maxAmountInSatFor0Conf
             )
     }
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    fun toLibwallet(): newop.FundingOutputPolicies {
+        val libwalletFundingOutputPolicies = newop.FundingOutputPolicies()
+        libwalletFundingOutputPolicies.maximumDebtInSat = maximumDebtInSat
+        libwalletFundingOutputPolicies.potentialCollectInSat = potentialCollectInSat
+        libwalletFundingOutputPolicies.maxAmountInSatFor0Conf = maxAmountInSatFor0Conf
+        return libwalletFundingOutputPolicies
+    }
 }

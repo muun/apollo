@@ -4,7 +4,6 @@ import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
-import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
@@ -35,6 +34,7 @@ import io.muun.apollo.presentation.ui.show_qr.ShowQrActivity;
 import io.muun.apollo.presentation.ui.signup.SignupActivity;
 import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
+import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 
 import dagger.Subcomponent;
 

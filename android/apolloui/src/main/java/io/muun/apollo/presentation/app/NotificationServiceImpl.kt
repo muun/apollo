@@ -27,7 +27,7 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.*
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -49,7 +49,7 @@ import javax.validation.constraints.NotNull
 class NotificationServiceImpl @Inject constructor(
     private val context: Context,
     private val executionTransformerFactory: ExecutionTransformerFactory,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
+    private val bitcoinUnitSel: BitcoinUnitSelector
 ) : NotificationService {
 
     companion object {
@@ -228,7 +228,7 @@ class NotificationServiceImpl @Inject constructor(
     private fun showNewOperationFromNetworkNotification(op: Operation) {
         val amount = BitcoinHelper.formatShortBitcoinAmount(
             op.amount.inSatoshis,
-            currencyDisplayModeSel.get(),
+            bitcoinUnitSel.get(),
             context.locale()
         )
 
@@ -307,7 +307,7 @@ class NotificationServiceImpl @Inject constructor(
     private fun getNotificationContentMessage(operation: Operation): String {
         val amount = MoneyHelper.formatShortMonetaryAmount(
             operation.amount.inInputCurrency,
-            currencyDisplayModeSel.get(),
+            bitcoinUnitSel.get(),
             context.locale()
         )
         val senderName = operation.senderProfile!!.firstName

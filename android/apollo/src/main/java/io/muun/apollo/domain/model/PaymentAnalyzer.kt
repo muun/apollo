@@ -330,16 +330,14 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         val collectAmountInSatoshis = payReq.swap.fundingOutput.debtAmountInSatoshis
         val amountInSatoshis = outputAmountInSatoshis - collectAmountInSatoshis
 
-        val expectedAmountInSat = originalAmountInSatoshis +
-            payReq.swap.fees.lightningInSats +
-            payReq.swap.fees.sweepInSats
+        val expectedAmountInSat = originalAmountInSatoshis + payReq.swap.fees.total
 
         check(amountInSatoshis == expectedAmountInSat) {
             "Check failed." +
                 "(amountInSatoshis=$amountInSatoshis;" +
                 "originalAmountInSatoshis=$originalAmountInSatoshis;" +
                 "lightningInSats=${payReq.swap.fees.lightningInSats};" +
-                "sweepInSats=${payReq.swap.fees.sweepInSats})"
+                "outputPaddingInSats=${payReq.swap.outputPaddingInSat()})"
         }
 
         // For COLLECT swaps, outputAmountInSatoshis includes collectAmount so check must be
@@ -388,16 +386,14 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
 
         val outputAmountInSatoshis = payReq.swap.fundingOutput.outputAmountInSatoshis
 
-        val expectedAmountInSat = originalAmountInSatoshis +
-            payReq.swap.fees.lightningInSats +
-            payReq.swap.fees.sweepInSats
+        val expectedAmountInSat = originalAmountInSatoshis + payReq.swap.fees.total
 
         check(outputAmountInSatoshis == expectedAmountInSat) {
             "Check failed." +
                 "(outputAmountInSatoshis=$outputAmountInSatoshis;" +
                 "originalAmountInSatoshis=$originalAmountInSatoshis;" +
                 "lightningInSats=${payReq.swap.fees.lightningInSats};" +
-                "sweepInSats=${payReq.swap.fees.sweepInSats})"
+                "outputPaddingInSats=${payReq.swap.outputPaddingInSat()})"
         }
 
         if (outputAmountInSatoshis > totalBalanceInSatoshis) {
@@ -438,10 +434,9 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
                                canPayWithMinimumFee: Boolean): PaymentAnalysis {
 
         val amount = convertToBitcoinAmount(amountInSatoshis)
-        val sweepFee = convertToNullableBitcoinAmount(swapFees?.sweepInSats)
+        val sweepFee = convertToNullableBitcoinAmount(swapFees?.getSweepInSats())
         val lightningFee = convertToNullableBitcoinAmount(swapFees?.lightningInSats)
         val fee = convertToNullableBitcoinAmount(feeInSatoshis)
-
 
         // Ok, so here's how it goes. Sometimes we don't care to calculate the total, as the
         // payment is invalid/can't be paid. (Most of) Those times, totalInSatoshis is null, so
@@ -481,7 +476,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
         return PaymentAnalysis(
             updatedPayReq ?: payReq,
             totalBalance = convertToBitcoinAmount(totalBalanceInSatoshis),
-
             amount = amount,
             outputAmount = convertToBitcoinAmount(outputAmountInSatoshis ?: amountInSatoshis),
             sweepFee = sweepFee,
@@ -491,7 +485,6 @@ class PaymentAnalyzer(private val payCtx: PaymentContext,
             canPayWithoutFee = canPayWithoutFee,
             canPayWithSelectedFee = canPayWithSelectedFee,
             canPayWithMinimumFee = canPayWithMinimumFee,
-
             rateWindow = payCtx.exchangeRateWindow
         )
     }

@@ -28,3 +28,8 @@ func Regtest() *Network {
 func (n *Network) Name() string {
 	return n.network.Name
 }
+
+// ToParams returns the chaincfg.Params associated with this network (only available via Go code)
+func (n *Network) ToParams() *chaincfg.Params {
+	return n.network
+}

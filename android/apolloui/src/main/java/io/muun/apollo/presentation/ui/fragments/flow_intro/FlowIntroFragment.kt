@@ -61,7 +61,7 @@ abstract class FlowIntroFragment<V, P, PP>: SingleFragment<P>(), FlowIntroView
     }
 
     override fun setLoading(isLoading: Boolean) {
-        acceptButton.isLoading = isLoading
+        acceptButton.setLoading(isLoading)
     }
 
     @OnClick(R.id.accept)

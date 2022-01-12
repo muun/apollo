@@ -4,8 +4,8 @@ import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.data.serialization.SerializationUtils;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.domain.model.ContactsPermissionState;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.user.EmergencyKit;
 import io.muun.apollo.domain.model.user.User;
@@ -72,7 +72,7 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<Boolean> recoveryCodeSetupInProcessPreference;
 
-    private final Preference<CurrencyDisplayMode> displaySatsPreference;
+    private final Preference<BitcoinUnit> displaySatsPreference;
 
     private final Preference<StoredUserJson> userPreference;
 
@@ -121,8 +121,8 @@ public class UserRepository extends BaseRepository {
 
         displaySatsPreference = rxSharedPreferences.getEnum(
                 DISPLAY_SATS,
-                CurrencyDisplayMode.BTC,
-                CurrencyDisplayMode.class
+                BitcoinUnit.BTC,
+                BitcoinUnit.class
         );
 
         // Non-nullable default to assure non-nullability of values
@@ -356,21 +356,24 @@ public class UserRepository extends BaseRepository {
         recoveryCodeSetupInProcessPreference.set(isInProcess);
     }
 
-    public CurrencyDisplayMode getCurrencyDisplayMode() {
+    /**
+     * Get the bitcoin unit preference.
+     */
+    public BitcoinUnit getBitcoinUnit() {
         return displaySatsPreference.get();
     }
 
     /**
      * Get an Observable to observe changes to the bitcoin unit preference.
      */
-    public Observable<CurrencyDisplayMode> watchCurrencyDisplayMode() {
+    public Observable<BitcoinUnit> watchBitcoinUnit() {
         return displaySatsPreference.asObservable();
     }
 
     /**
      * Save a new bitcoin unit preference value.
      */
-    public void setCurrencyDisplayMode(CurrencyDisplayMode value) {
+    public void setBitcoinUnit(BitcoinUnit value) {
         displaySatsPreference.set(value);
     }
 

@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
 import io.muun.apollo.domain.ApplicationLockManager;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.model.text_decoration.AutoSizeDecoration;
 import io.muun.apollo.presentation.model.text_decoration.DecorationTransformation;
@@ -30,6 +30,7 @@ import org.javamoney.moneta.Money;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormatSymbols;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
@@ -88,7 +89,7 @@ public class MuunAmountInput extends MuunView {
     float maxWidthPx;
 
     @State
-    CurrencyDisplayMode currencyDisplayMode;
+    BitcoinUnit bitcoinUnit;
 
     private MonetaryAmount value;
     private MonetaryAmount valueBeforeCurrencyChange;
@@ -137,7 +138,7 @@ public class MuunAmountInput extends MuunView {
 
         // Initial value needed to avoid NPEs in view initialization. User pref will be set and view
         // state updated correctly later.
-        currencyDisplayMode = CurrencyDisplayMode.BTC;
+        bitcoinUnit = BitcoinUnit.BTC;
 
         this.symbols = new DecimalFormatSymbols(getLocale());
         symbols.setCurrencySymbol("");
@@ -219,8 +220,8 @@ public class MuunAmountInput extends MuunView {
     /**
      * Change bitcoin unit.
      */
-    public void setCurrencyDisplayMode(CurrencyDisplayMode currencyDisplayMode) {
-        this.currencyDisplayMode = currencyDisplayMode;
+    public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {
+        this.bitcoinUnit = bitcoinUnit;
         updateCurrencyCodeText();
     }
 
@@ -230,7 +231,11 @@ public class MuunAmountInput extends MuunView {
 
         requestExternalResult(
                 REQUEST_CURRENCY,
-                SelectCurrencyActivity.getStartActivityIntent(getContext(), currentCurrency)
+                SelectCurrencyActivity.getSelectCurrencyActivityIntent(
+                        getContext(),
+                        currentCurrency,
+                        Objects.requireNonNull(rateProvider.rateWindow).id
+                )
         );
     }
 
@@ -262,7 +267,7 @@ public class MuunAmountInput extends MuunView {
 
         MonetaryAmount newValue = Money.of(parseNumber(numberString), value.getCurrency());
 
-        if (MoneyExtensionsKt.isBtc(newValue) && currencyDisplayMode == CurrencyDisplayMode.SATS) {
+        if (MoneyExtensionsKt.isBtc(newValue) && bitcoinUnit == BitcoinUnit.SATS) {
             newValue = newValue.divide(BitcoinUtils.SATOSHIS_PER_BITCOIN);
         }
 
@@ -321,7 +326,7 @@ public class MuunAmountInput extends MuunView {
         isMakingInternalChange = true;
 
         final CurrencyUnit currency = value.getCurrency();
-        this.currencyInput.setText(MoneyHelper.formatCurrency(currency, currencyDisplayMode));
+        this.currencyInput.setText(MoneyHelper.formatCurrency(currency, bitcoinUnit));
 
         isMakingInternalChange = false;
     }
@@ -333,7 +338,7 @@ public class MuunAmountInput extends MuunView {
         if (value.isPositive()) {
             final String text = MoneyHelper.formatInputMonetaryAmount(
                     value,
-                    currencyDisplayMode,
+                    bitcoinUnit,
                     ExtensionsKt.locale(getContext())
             );
 

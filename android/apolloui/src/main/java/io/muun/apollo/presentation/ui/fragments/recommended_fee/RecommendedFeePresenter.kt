@@ -1,8 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.recommended_fee
 
 import android.os.Bundle
-import io.muun.apollo.domain.model.PaymentContext
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.*
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -11,31 +10,25 @@ import javax.inject.Inject
 
 @PerFragment
 class RecommendedFeePresenter @Inject constructor(
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
+    private val bitcoinUnitSel: BitcoinUnitSelector
 ) : SingleFragmentPresenter<RecommendedFeeView, RecommendedFeeParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
-        view.setCurrencyDisplayMode(currencyDisplayModeSel.get())
+        view.setBitcoinUnit(bitcoinUnitSel.get())
 
-        val payReq = RecommendedFeeFragment.getPaymentRequest(arguments)
-        val observable = parentPresenter
-            .watchPaymentContext()
-            .doOnNext { payCtx: PaymentContext ->
-                view.setPaymentContext(payCtx, payReq)
-            }
-
-        subscribeTo(observable)
+        parentPresenter
+            .watchEditFeeState()
+            .doOnNext(view::setState)
+            .let(this::subscribeTo)
     }
 
-    fun confirmFee(selectedFeeRate: Double) {
-        parentPresenter.confirmFee(selectedFeeRate)
+    fun confirmFee(selectedFeeRateInVBytes: Double) {
+        parentPresenter.confirmFee(selectedFeeRateInVBytes)
     }
 
     fun editFeeManually() {
-        parentPresenter.editFeeManually(
-            RecommendedFeeFragment.getPaymentRequest(view.argumentsBundle)
-        )
+        parentPresenter.editFeeManually()
     }
 
     override fun getEntryEvent(): AnalyticsEvent =

@@ -17,6 +17,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import static io.muun.common.Rules.VBYTE_TO_WEIGHT_UNIT_RATIO;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NextTransactionSize {
@@ -141,5 +143,45 @@ public class NextTransactionSize {
         // Houston expects the outpoint list (new clients) or null (old clients or "uninitialized"
         // clients, aka NTS not yet re-fetched)
         return outpoints.isEmpty() ? null : outpoints;
+    }
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    public newop.NextTransactionSize toLibwallet() {
+        final newop.NextTransactionSize libwalletNts = new newop.NextTransactionSize();
+
+        libwalletNts.setValidAtOperationHid(validAtOperationHid != null ? validAtOperationHid : -1);
+        libwalletNts.setExpectedDebtInSat(expectedDebtInSat);
+
+        for (SizeForAmount sizeForAmount : sizeProgression) {
+            libwalletNts.addSizeForAmount(toLibwallet(sizeForAmount));
+        }
+
+        return libwalletNts;
+    }
+
+    /**
+     * Placing this method here since SizeForAmount lives in common module (pure java) and
+     * can't interact with go code/classes.
+     */
+    private newop.SizeForAmount toLibwallet(SizeForAmount sizeForAmount) {
+        final newop.SizeForAmount libwalletSizeForAmount = new newop.SizeForAmount();
+
+        libwalletSizeForAmount.setAmountInSat(sizeForAmount.amountInSatoshis);
+        libwalletSizeForAmount.setSizeInVByte(getSizeInVirtualBytes(sizeForAmount));
+        libwalletSizeForAmount.setOutpoint(sizeForAmount.outpoint);
+
+        return libwalletSizeForAmount;
+    }
+
+    /**
+     * Despite what it says in its name @code{ sizeForAmount.sizeInBytes } holds the value of a
+     * tx size in weight units. Yes, it's indescribably confusing. This is due to legacy reasons.
+     * At some very old point in time (pre-segwit) these sizes were accounted in what was considered
+     * bytes at the time.
+     */
+    private int getSizeInVirtualBytes(SizeForAmount sizeForAmount) {
+        return sizeForAmount.sizeInBytes / VBYTE_TO_WEIGHT_UNIT_RATIO;
     }
 }

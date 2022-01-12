@@ -46,7 +46,7 @@ class LoginEmailFragment: SingleFragment<LoginEmailPresenter>(), LoginEmailView 
     }
 
     override fun setLoading(isLoading: Boolean) {
-        confirm.isLoading = isLoading
+        confirm.setLoading(isLoading)
     }
 
     override fun autoFillEmail(email: String) {
@@ -65,6 +65,7 @@ class LoginEmailFragment: SingleFragment<LoginEmailPresenter>(), LoginEmailView 
     @OnClick(R.id.enter_email_use_rc_only)
     fun onRecoverWithRecoveryCodeClick(v: View) {
         presenter.useRecoveryCodeOnlyLogin()
+        confirm.isEnabled
     }
 
     private fun validateEmailInput() {

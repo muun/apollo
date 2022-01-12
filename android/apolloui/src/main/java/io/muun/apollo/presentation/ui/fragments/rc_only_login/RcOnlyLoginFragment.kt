@@ -63,7 +63,7 @@ class RcOnlyLoginFragment: SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginVi
     }
 
     override fun setLoading(loading: Boolean) {
-        submitButton.isLoading = loading
+        submitButton.setLoading(loading)
         recoveryCodeBox.setEditable(!loading)
     }
 

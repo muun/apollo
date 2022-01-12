@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.utils.locale
 import javax.money.MonetaryAmount
@@ -22,7 +22,7 @@ class FeeManualItem @JvmOverloads constructor(
     @BindView(R.id.amount)
     lateinit var amountView: TextView
 
-    var currencyDisplayMode = CurrencyDisplayMode.BTC
+    var bitcoinUnit = BitcoinUnit.BTC
 
     override val layoutResource: Int
         get() = R.layout.fee_manual_item
@@ -38,7 +38,7 @@ class FeeManualItem @JvmOverloads constructor(
             field = value
             amountView.text = MoneyHelper.formatLongMonetaryAmount(
                 value!!,
-                currencyDisplayMode,
+                bitcoinUnit,
                 locale()
             )
         }

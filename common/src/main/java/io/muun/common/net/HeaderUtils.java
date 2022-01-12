@@ -11,6 +11,7 @@ public class HeaderUtils {
     public static final String AUTHORIZATION = "Authorization";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CLIENT_VERSION = "X-Client-Version";
+    public static final String CLIENT_VERSION_NAME = "X-Client-Version-Name";
     public static final String CLIENT_LANGUAGE = "X-Client-Language";
     public static final String CLIENT_TYPE = "X-Client-Type";
     public static final String CLIENT_SDK_VERSION = "X-Client-Sdk-Version";

@@ -46,8 +46,6 @@ class CreateFirstSessionAction @Inject constructor(
             .flatMap { basePrivateKey ->
                 houstonClient
                     .createFirstSession(
-                        Globals.INSTANCE.oldBuildType,
-                        Globals.INSTANCE.versionCode,
                         gcmToken,
                         basePrivateKey.publicKey,
                         currencyActions.localCurrencies.iterator().next(),

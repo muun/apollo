@@ -24,8 +24,8 @@ object Invoice {
 
         val networkParameters = publicKeyPair.networkParameters
         val secrets = Libwallet.generateInvoiceSecrets(
-            publicKeyPair.userPublicKey.toLibwalletModel(networkParameters),
-            publicKeyPair.muunPublicKey.toLibwalletModel(networkParameters),
+            publicKeyPair.userPublicKey.toLibwallet(networkParameters),
+            publicKeyPair.muunPublicKey.toLibwallet(networkParameters),
         )
 
         return SecretList(secrets)
@@ -53,8 +53,8 @@ object Invoice {
         options.amountSat = amountInSat ?: 0 // Specified amount or amount-less invoice
 
         val invoice = Libwallet.createInvoice(
-            networkParams.toLibwalletModel(),
-            userPrivateKey.toLibwalletModel(networkParams),
+            networkParams.toLibwallet(),
+            userPrivateKey.toLibwallet(networkParams),
             routeHints,
             options
         )
@@ -108,7 +108,7 @@ object Invoice {
      */
     fun parseInvoice(params: NetworkParameters, bech32Invoice: String): Invoice {
         return try {
-            Libwallet.parseInvoice(bech32Invoice, params.toLibwalletModel())
+            Libwallet.parseInvoice(bech32Invoice, params.toLibwallet())
         } catch (e: Exception) {
             throw InvoiceParsingError(bech32Invoice, e)
         }
@@ -142,11 +142,11 @@ object Invoice {
 
         val shortChannelId = secret.shortChanId
 
-        val userPublicKey: PublicKey = Extensions.fromLibwalletModel(secret.userHtlcKey)
+        val userPublicKey: PublicKey = Extensions.fromLibwallet(secret.userHtlcKey)
 
-        val muunPublicKey: PublicKey = Extensions.fromLibwalletModel(secret.muunHtlcKey)
+        val muunPublicKey: PublicKey = Extensions.fromLibwallet(secret.muunHtlcKey)
 
-        val identityKey: PublicKey = Extensions.fromLibwalletModel(secret.identityKey)
+        val identityKey: PublicKey = Extensions.fromLibwallet(secret.identityKey)
 
     }
 }

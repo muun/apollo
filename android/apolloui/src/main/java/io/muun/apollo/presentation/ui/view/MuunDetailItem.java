@@ -21,10 +21,10 @@ import javax.annotation.Nullable;
 public class MuunDetailItem extends MuunView {
 
     static final ViewProps<MuunDetailItem> viewProps = new ViewProps.Builder<MuunDetailItem>()
-            .addString(R.attr.title, MuunDetailItem::setTitle)
-            .addString(R.attr.description, MuunDetailItem::setDescription)
+            .addStringJava(R.attr.title, MuunDetailItem::setTitle)
+            .addStringJava(R.attr.description, MuunDetailItem::setDescription)
             .addInt(android.R.attr.maxLines, MuunDetailItem::setMaxLines)
-            .addRef(R.attr.icon, MuunDetailItem::setIcon)
+            .addRefJava(R.attr.icon, MuunDetailItem::setIcon)
             .build();
 
     @BindView(R.id.operation_detail_item_icon_title)

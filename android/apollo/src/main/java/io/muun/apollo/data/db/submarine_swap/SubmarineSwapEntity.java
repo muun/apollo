@@ -48,6 +48,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
         final PublicKey muunPublicKey = fundingOutput.getMuunPublicKey();
 
         final SubmarineSwapFees fees = swap.getFees();
+        final DebtType debtType = swap.getFundingOutput().getDebtType();
 
         insertStatement.bind(
                 swap.getId() == null ? BaseEntity.NULL_ID : swap.getId(),
@@ -65,7 +66,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 userRefundAddress.getVersion(),
                 fundingOutput.getPaymentHash().toString(),
                 fundingOutput.getServerPublicKeyInHex(),
-                fees != null ? fees.getSweepInSats() : null,
+                fees != null && debtType != null ? fees.outputPaddingInSat(debtType) : null,
                 fees != null ? fees.getLightningInSats() : null,
                 swap.getExpiresAt(),
                 swap.getPayedAt(),
@@ -76,7 +77,7 @@ public abstract class SubmarineSwapEntity implements SubmarineSwapModel, BaseEnt
                 userPublicKey != null ? userPublicKey.getAbsoluteDerivationPath() : null,
                 muunPublicKey != null ? muunPublicKey.serializeBase58() : null,
                 muunPublicKey != null ? muunPublicKey.getAbsoluteDerivationPath() : null,
-                swap.getFundingOutput().getDebtType(),
+                debtType,
                 swap.getFundingOutput().getDebtAmountInSatoshis()
         );
 

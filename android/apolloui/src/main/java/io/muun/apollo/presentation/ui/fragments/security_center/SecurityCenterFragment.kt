@@ -60,7 +60,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
 
     private fun setUpHeader() {
         parentActivity.header.apply {
-            visibility = VISIBLE
+            visibility = View.VISIBLE
             setNavigation(Navigation.NONE)
             showTitle(R.string.security_center_title)
             setElevated(true)
@@ -144,7 +144,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
 
         if (securityCenter.emailSetupSkipped()) {
             emailTaskCard.status = MuunTaskCard.Status.SKIPPED
-            emailSkippedTag.visibility = VISIBLE
+            emailSkippedTag.visibility = View.VISIBLE
             if (!UiUtils.isLollipop()) { // we can't use translateZ in api levels below 21 :(
                 emailSkippedTag.bringToFront()
                 (emailSkippedTag.parent as View).invalidate()
@@ -152,7 +152,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
 
         } else {
             emailTaskCard.status = toCardStatus(status)
-            emailSkippedTag.visibility = GONE
+            emailSkippedTag.visibility = View.GONE
         }
 
         emailTaskCard.title = when (emailTaskCard.status) {

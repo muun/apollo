@@ -73,6 +73,7 @@ import org.threeten.bp.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -283,7 +284,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 operation.transaction != null ? operation.transaction.hash : null,
                 operation.description,
                 operation.status,
-                mapZonedDateTime(operation.creationDate),
+                Objects.requireNonNull(mapZonedDateTime(operation.creationDate)),
                 operation.exchangeRatesWindowId,
                 operation.swap != null ? mapSubmarineSwap(operation.swap) : null,
                 operation.receiverMetadata,

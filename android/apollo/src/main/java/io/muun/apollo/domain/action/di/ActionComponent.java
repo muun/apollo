@@ -22,6 +22,7 @@ import io.muun.apollo.domain.action.fcm.GetFcmTokenAction;
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction;
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction;
 import io.muun.apollo.domain.action.integrity.IntegrityAction;
+import io.muun.apollo.domain.action.operation.ResolveLnInvoiceAction;
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
@@ -61,6 +62,8 @@ public interface ActionComponent {
     FetchRealTimeDataAction fetchRealTimeDataAction();
 
     ResolveOperationUriAction resolveOperationUriAction();
+
+    ResolveLnInvoiceAction resolveLnInvoiceAction();
 
     SubmitPaymentAction submitOutgoingPaymentAction();
 

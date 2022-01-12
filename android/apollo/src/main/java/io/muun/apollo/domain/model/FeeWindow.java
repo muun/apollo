@@ -131,4 +131,24 @@ public class FeeWindow {
                 Rules.CONF_TARGET_SLOW
         );
     }
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    public newop.FeeWindow toLibwallet() {
+        final newop.FeeWindow libwalletFeeWindow = new newop.FeeWindow();
+
+        for (Integer confTarget : targetedFees.keySet()) {
+            //noinspection ConstantConditions
+            libwalletFeeWindow.putTargetedFees(
+                    confTarget, Rules.toSatsPerVbyte(targetedFees.get(confTarget))
+            );
+        }
+
+        libwalletFeeWindow.setFastConfTarget(fastConfTarget);
+        libwalletFeeWindow.setMediumConfTarget(mediumConfTarget);
+        libwalletFeeWindow.setSlowConfTarget(slowConfTarget);
+
+        return libwalletFeeWindow;
+    }
 }

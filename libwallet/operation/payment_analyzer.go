@@ -42,7 +42,7 @@ import (
 //        	- If there's need for padding ⇒ payment is UNPAYABLE
 //        	- Hence, outputPadding = 0 or payment is UNPAYABLE
 
-const dustThreshold = 546
+const DustThreshold = 546
 
 type PaymentToAddress struct {
 	TakeFeeFromAmount     bool
@@ -58,7 +58,7 @@ type PaymentToInvoice struct {
 	FundingOutputPolicies *fees.FundingOutputPolicies // Nullable when we know the amount beforehand (invoice with amount)
 }
 
-type paymentAnalyzer struct {
+type PaymentAnalyzer struct {
 	feeWindow           *FeeWindow
 	nextTransactionSize *NextTransactionSize
 	feeCalculator       *feeCalculator
@@ -70,9 +70,8 @@ type SizeForAmount struct {
 }
 
 type NextTransactionSize struct {
-	SizeProgression     []SizeForAmount
-	ValidAtOperationHid int64 // Just for debugging reasons
-	ExpectedDebtInSat   int64
+	SizeProgression   []SizeForAmount
+	ExpectedDebtInSat int64
 }
 
 func (nts *NextTransactionSize) UtxoBalance() int64 {
@@ -103,31 +102,32 @@ type PaymentAnalysis struct {
 	TotalInSat  int64
 }
 
-func NewPaymentAnalyzer(feeWindow *FeeWindow, nts *NextTransactionSize) *paymentAnalyzer {
-	return &paymentAnalyzer{
+func NewPaymentAnalyzer(feeWindow *FeeWindow, nts *NextTransactionSize) *PaymentAnalyzer {
+	return &PaymentAnalyzer{
 		feeWindow:           feeWindow,
 		nextTransactionSize: nts,
 		feeCalculator:       &feeCalculator{nts},
 	}
 }
 
-func (a *paymentAnalyzer) totalBalance() int64 {
+func (a *PaymentAnalyzer) totalBalance() int64 {
 	return a.nextTransactionSize.TotalBalance()
 }
 
-func (a *paymentAnalyzer) utxoBalance() int64 {
+func (a *PaymentAnalyzer) utxoBalance() int64 {
 	return a.nextTransactionSize.UtxoBalance()
 }
 
-func (a *paymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis, error) {
-	if payment.AmountInSat < dustThreshold {
+func (a *PaymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis, error) {
+	if payment.AmountInSat < DustThreshold {
 		return &PaymentAnalysis{
 			Status: AnalysisStatusAmountTooSmall,
 		}, nil
 	}
 	if payment.AmountInSat > a.totalBalance() {
 		return &PaymentAnalysis{
-			Status: AnalysisStatusAmountGreaterThanBalance,
+			Status:     AnalysisStatusAmountGreaterThanBalance,
+			TotalInSat: payment.AmountInSat,
 		}, nil
 	}
 	if payment.TakeFeeFromAmount && payment.AmountInSat != a.totalBalance() {
@@ -140,13 +140,13 @@ func (a *paymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis
 	return a.analyzeFeeFromRemainingBalance(payment)
 }
 
-func (a *paymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*PaymentAnalysis, error) {
 	fee := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, true)
 
 	total := payment.AmountInSat
 	amount := total - fee
 
-	if amount <= dustThreshold {
+	if amount <= DustThreshold {
 		// avoid returning a negative amount
 		if amount < 0 {
 			amount = 0
@@ -167,7 +167,7 @@ func (a *paymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*Paym
 	}, nil
 }
 
-func (a *paymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddress) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddress) (*PaymentAnalysis, error) {
 	fee := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, false)
 	total := payment.AmountInSat + fee
 
@@ -188,7 +188,7 @@ func (a *paymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddre
 	}, nil
 }
 
-func (a *paymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
 	if payment.AmountInSat == 0 {
 		return &PaymentAnalysis{
 			Status: AnalysisStatusAmountTooSmall,
@@ -196,7 +196,8 @@ func (a *paymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis
 	}
 	if payment.AmountInSat > a.totalBalance() {
 		return &PaymentAnalysis{
-			Status: AnalysisStatusAmountGreaterThanBalance,
+			Status:     AnalysisStatusAmountGreaterThanBalance,
+			TotalInSat: payment.AmountInSat,
 		}, nil
 	}
 	if payment.TakeFeeFromAmount {
@@ -226,10 +227,14 @@ func (a *paymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis
 		}
 	}
 
+	if payment.SwapFees == nil {
+		return nil, fmt.Errorf("payment is missing required swap fees data")
+	}
+
 	return a.analyzeFixedAmountSwap(payment, payment.SwapFees)
 }
 
-func (a *paymentAnalyzer) analyzeFixedAmountSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFixedAmountSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
 	switch swapFees.DebtType {
 	case fees.DebtTypeLend:
 		return a.analyzeLendSwap(payment, swapFees)
@@ -241,7 +246,7 @@ func (a *paymentAnalyzer) analyzeFixedAmountSwap(payment *PaymentToInvoice, swap
 	return nil, fmt.Errorf("unsupported debt type: %v", swapFees.DebtType)
 }
 
-func (a *paymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
 
 	amount := payment.AmountInSat
 	total := amount + int64(swapFees.RoutingFee)
@@ -267,7 +272,7 @@ func (a *paymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *f
 
 // Analyze non LEND swaps (e.g both COLLECT and NON-DEBT swaps), understanding that both cases warrant
 // the same analysis. A non-debt swap is just a collect swap with debtAmount = 0.
-func (a *paymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
 
 	outputAmount := int64(swapFees.OutputAmount)
 	collectAmount := int64(swapFees.DebtAmount)
@@ -286,14 +291,6 @@ func (a *paymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 			int64(swapFees.OutputPadding),
 			collectAmount,
 		)
-	}
-
-	if outputAmount > a.utxoBalance() {
-		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: payment.AmountInSat,
-			SwapFees:    swapFees,
-		}, nil
 	}
 
 	feeRate, err := a.feeWindow.SwapFeeRate(swapFees.ConfirmationsNeeded)
@@ -325,7 +322,7 @@ func (a *paymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 	}, nil
 }
 
-func (a *paymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
 	zeroConfFeeRate, err := a.feeWindow.SwapFeeRate(0)
 
 	if err != nil {
@@ -485,7 +482,7 @@ type swapParams struct {
 // x = (y - h - b) / (FeeProportionalMillionth + 1_000_000) / 1_000_000
 // x = ((y - h - b) * 1_000_000) / (FeeProportionalMillionth + 1_000_000)
 //
-func (a *paymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, confs uint) (*swapParams, error) {
+func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, confs uint) (*swapParams, error) {
 	feeRate, err := a.feeWindow.SwapFeeRate(confs)
 
 	if err != nil {
@@ -529,10 +526,37 @@ func (a *paymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 	return nil, errors.New("none of the best route fees have enough capacity")
 }
 
-func (a *paymentAnalyzer) computeFeeForTFFASwap(payment *PaymentToInvoice, feeRate float64) int64 {
+func (a *PaymentAnalyzer) computeFeeForTFFASwap(payment *PaymentToInvoice, feeRate float64) int64 {
 	// Compute tha on-chain fee. As its TFFA, we want to calculate the fee for the total balance
 	// including any sats we want to collect.
 	onChainAmount := a.totalBalance() + int64(payment.FundingOutputPolicies.PotentialCollect)
 
 	return a.feeCalculator.Fee(onChainAmount, feeRate, true)
+}
+
+// MaxFeeRateToAddress computes the maximum fee rate that can be used when
+// paying a given amount. This does not imply that the payment _can be made_.
+// When given invalid parameters, it's likely to still obtain a value here and
+// the resulting analysis would be Unpayable. It's up to the caller to first
+// verify the amount is payable, and only then call this method.
+func (a *PaymentAnalyzer) MaxFeeRateToAddress(payment *PaymentToAddress) float64 {
+
+	if payment.AmountInSat > a.totalBalance() {
+		return 0
+	}
+
+	var restInSat int64
+	if payment.TakeFeeFromAmount {
+		restInSat = payment.AmountInSat
+	} else {
+		restInSat = a.totalBalance() - payment.AmountInSat
+	}
+
+	for _, sizeForAmount := range a.nextTransactionSize.SizeProgression {
+		if sizeForAmount.AmountInSat >= payment.AmountInSat {
+			return float64(restInSat) / float64(sizeForAmount.SizeInVByte)
+		}
+	}
+
+	return 0
 }

@@ -2,33 +2,29 @@ package io.muun.apollo.domain.libwallet
 
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
+import io.muun.common.utils.Encodings
 import libwallet.HDPrivateKey
 import libwallet.HDPublicKey
 import libwallet.Libwallet
 import libwallet.Network
 import libwallet.UserActivatedFeature
 import org.bitcoinj.core.NetworkParameters
+import org.javamoney.moneta.Money
+import java.math.BigDecimal
+import javax.money.MonetaryAmount
 
-fun NetworkParameters.toLibwalletModel(): Network =
+fun NetworkParameters.toLibwallet(): Network =
     when {
         NetworkParameters.ID_MAINNET == id -> Libwallet.mainnet()
         NetworkParameters.ID_REGTEST == id -> Libwallet.regtest()
         else -> Libwallet.testnet()
     }
 
-fun PrivateKey.toLibwalletModel(params: NetworkParameters): HDPrivateKey =
-    HDPrivateKey(
-        serializeBase58(),
-        absoluteDerivationPath,
-        params.toLibwalletModel()
-    )
+fun PrivateKey.toLibwallet(params: NetworkParameters): HDPrivateKey =
+    HDPrivateKey(serializeBase58(), absoluteDerivationPath, params.toLibwallet())
 
-fun PublicKey.toLibwalletModel(params: NetworkParameters): HDPublicKey =
-    HDPublicKey(
-        serializeBase58(),
-        absoluteDerivationPath,
-        params.toLibwalletModel()
-    )
+fun PublicKey.toLibwallet(params: NetworkParameters): HDPublicKey =
+    HDPublicKey(serializeBase58(), absoluteDerivationPath, params.toLibwallet())
 
 val UAF_TAPROOT: UserActivatedFeature = Libwallet.getUserActivatedFeatureTaproot()
 
@@ -53,6 +49,17 @@ object Extensions {
 
     // If PublicKey was Kotlin class we could add extensions fun to its companion
     // TODO: mv this to an extension fun when PublicKey is migrated to Kotlin
-    fun fromLibwalletModel(pubKey: HDPublicKey): PublicKey =
+    fun fromLibwallet(pubKey: HDPublicKey): PublicKey =
         PublicKey.deserializeFromBase58(pubKey.path, pubKey.string())
 }
+
+fun newop.MonetaryAmount.adapt(): MonetaryAmount =
+    Money.of(BigDecimal(this.valueAsString()), this.currency)
+
+fun libwallet.Invoice.remainingMillis(): Long {
+    val expirationTimeInMillis = this.expiry * 1000 // expiry contains expiry date in epoch seconds
+    return expirationTimeInMillis - System.currentTimeMillis()
+}
+
+fun libwallet.Invoice.destinationPubKey(): String =
+    Encodings.bytesToHex(this.destination)

@@ -184,9 +184,7 @@ public class Navigator {
                                        @NotNull NewOperationOrigin origin,
                                        @NotNull OperationUri uri) {
 
-        final Intent intent = NewOperationActivity
-                .getStartActivityIntent(context, origin, uri);
-
+        final Intent intent = NewOperationActivity.Companion.getIntent(context, origin, uri);
         context.startActivity(intent);
     }
 

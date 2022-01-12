@@ -121,7 +121,7 @@
         There\'s no route with enough capacity to make this payment. Please, reach out to our
         <annotation link="support">support team</annotation> and let us know what happened. We’ll
         be happy to help.
-    </string> <!-- BUG: this link is not handled -->
+    </string>
 
     <string name="error_op_invoice_will_expire_soon_title">
         This payment needs a longer expiration time
@@ -158,15 +158,23 @@
         Please start a new payment.
     </string>
 
-    <string name="error_op_cyclical_swap_title">This invoice can\’t be paid</string>
-    <string name="error_op_cyclical_swap_desc">You can’t pay an invoice to yourself.</string>
-
-    <string name="error_op_generic">An unexpected error occurred</string>
-    <string name="error_op_generic_desc">
+    <string name="error_op_invalid_swap">An unexpected error occurred</string>
+    <string name="error_op_invalid_swap_desc">
         Something went wrong, but we don’t know what. Please, reach out to our
         <annotation link="support">support team</annotation> and let us know what happened. We’ll
         be happy to help.
-    </string> <!-- check if link works -->
+    </string>
+
+    <string name="error_op_cyclical_swap_title">This invoice can\’t be paid</string>
+    <string name="error_op_cyclical_swap_desc">You can’t pay an invoice to yourself.</string>
+
+    <string name="error_op_generic">An error occurred</string>
+    <string name="error_op_generic_desc">
+        Something went wrong, but we couldn\'t identify the cause. We created an error report that
+        will help us find it.
+        \n\n
+        Please, <annotation link="support">send the report</annotation> to our team.
+    </string>
 
     <string name="error_op_amount_too_small_title">This payment is too small</string>
     <string name="error_op_amount_too_small_desc">

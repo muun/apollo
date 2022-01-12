@@ -63,7 +63,7 @@ class SetupPasswordAcceptFragment :
     }
 
     override fun setLoading(isLoading: Boolean) {
-        acceptButton.isLoading = isLoading
+        acceptButton.setLoading(isLoading)
     }
 
     private fun updateAcceptButtonState() {

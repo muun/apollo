@@ -2,6 +2,7 @@ package io.muun.apollo.presentation
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.presentation.ui.debug.LappClient
+import io.muun.apollo.utils.RandomUser
 import io.muun.common.utils.BitcoinUtils
 import org.javamoney.moneta.Money
 import org.junit.Ignore
@@ -35,7 +36,22 @@ open class NewOperationTests : BaseInstrumentationTest() {
     @Test
     @Ignore("Need new way of testing since setupP2P was disabled")
     fun test_03_user_can_send_btc_to_contact() {
-        // TODO ?
+        val contact = RandomUser()
+
+        autoFlows.signUpUserWithExistingUserAsContact(contact)
+
+        // Send money to contact:
+        autoFlows.receiveMoneyFromNetwork(Money.of(0.02, "BTC"))
+        val moneyToSend = Money.of(0.01, "BTC")
+        val description = "This is a note " + System.currentTimeMillis()
+
+        autoFlows.newOperation(moneyToSend, description) {
+
+            homeScreen.goToSend()
+            label(contact.fullName).click()
+        }
+
+        autoFlows.settleOperation(description)
     }
 
     @Test
@@ -43,7 +59,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
         autoFlows.signUp()
         autoFlows.receiveMoneyFromNetwork(Money.of(0.1, "BTC"))
 
-        val moneyToSend = Money.of(10, "USD")
+        val moneyToSend = Money.of(0.00001, "BTC")
         val receivingAddress = "2N2y9wGHh7AfqwQ8dk5cQfhjvEAAq6xhjb6"
         val description = "This is a note " + System.currentTimeMillis()
 

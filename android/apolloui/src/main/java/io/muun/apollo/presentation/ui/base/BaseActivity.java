@@ -343,7 +343,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * Needed to implement PermissionRequester interface. Should never be called.
      */
     @Override
-    public int getId() {
+    public int getMId() {
         return System.identityHashCode(this);
     }
 

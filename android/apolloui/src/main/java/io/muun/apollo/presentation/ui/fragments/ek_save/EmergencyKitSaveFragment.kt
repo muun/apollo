@@ -223,7 +223,7 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
     override fun onExternalResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             EmergencyKitSaveOption.SAVE_TO_DRIVE.requestCode ->
-                onExternalResultFromDrive(resultCode, data!!)
+                onExternalResultFromDrive(resultCode, data)
 
             else ->
                 super.onExternalResult(requestCode, resultCode, data)
@@ -267,7 +267,7 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         requestExternalResult(requestCode, intent)
     }
 
-    private fun onExternalResultFromDrive(resultCode: Int, data: Intent) {
+    private fun onExternalResultFromDrive(resultCode: Int, data: Intent?) {
         // Report back to Presenter (unless the prompt was dismissed):
         if (resultCode == Activity.RESULT_OK) {
             presenter.reportGoogleSignInComplete(data)

@@ -11,7 +11,7 @@ import butterknife.BindView
 import butterknife.OnClick
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.bundler.MonetaryAmountBundler
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -74,9 +74,11 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
         label.text = labelText
     }
 
-    fun setAmount(amount: MonetaryAmount, mode: CurrencyDisplayMode) {
+    fun setAmount(amount: MonetaryAmount, bitcoinUnit: BitcoinUnit) {
         this.amount = amount
-        selectedAmount.text = MoneyHelper.formatLongMonetaryAmount(amount, mode, locale())
+        selectedAmount.text = MoneyHelper.formatLongMonetaryAmount(
+                amount, true, bitcoinUnit, locale()
+        )
         selectedAmount.visibility = View.VISIBLE
         addAmountButton.visibility = View.GONE
 

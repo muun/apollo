@@ -34,7 +34,8 @@
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
             <!-- Wrapping LinearLayout needed as MuunButton can't handle layout_weight -->
             <LinearLayout

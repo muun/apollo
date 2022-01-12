@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.select_bitcoin_unit
 
 import android.os.Bundle
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
@@ -17,20 +17,20 @@ class SelectBitcoinUnitPresenter @Inject constructor(
 
     override fun setUp(@NotNull arguments: Bundle) {
         super.setUp(arguments)
-        setUpCurrencyDisplayMode()
+        setUpBitcoinUnit()
     }
 
-    private fun setUpCurrencyDisplayMode() {
+    private fun setUpBitcoinUnit() {
         val observable = userRepository
-            .watchCurrencyDisplayMode()
-            .doOnNext(view::setCurrencyDisplayMode)
+            .watchBitcoinUnit()
+            .doOnNext(view::setBitcoinUnit)
 
         subscribeTo(observable)
     }
 
-    fun changeCurrencyDisplayMode(displayMode: CurrencyDisplayMode) {
-        userRepository.currencyDisplayMode = displayMode
-        analytics.report(AnalyticsEvent.E_DID_SELECT_BITCOIN_UNIT(displayMode))
+    fun changeBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        userRepository.bitcoinUnit = bitcoinUnit
+        analytics.report(AnalyticsEvent.E_DID_SELECT_BITCOIN_UNIT(bitcoinUnit))
         view.finishActivity()
     }
 

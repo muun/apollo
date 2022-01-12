@@ -15,6 +15,7 @@ require (
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/pdfcpu/pdfcpu v0.3.11
 	github.com/pkg/errors v0.9.1
+	github.com/shopspring/decimal v1.2.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect

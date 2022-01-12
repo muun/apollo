@@ -142,6 +142,31 @@ func TestComputeSwapFees(t *testing.T) {
 			},
 		},
 		{
+			desc:   "sub-dust lend",
+			amount: 50,
+			bestRouteFees: []BestRouteFees{
+				{
+					MaxCapacity:              100000,
+					FeeProportionalMillionth: 1,
+					FeeBase:                  10,
+				},
+			},
+			takeFeeFromAmount: false,
+			policies: &FundingOutputPolicies{
+				MaximumDebt:       1000000,
+				PotentialCollect:  0,
+				MaxAmountFor0Conf: 1000000,
+			},
+			expected: &SwapFees{
+				RoutingFee:          10,
+				OutputPadding:       0,
+				DebtType:            DebtTypeLend,
+				DebtAmount:          60,
+				OutputAmount:        0,
+				ConfirmationsNeeded: 0,
+			},
+		},
+		{
 			desc:   "uses last route if route with enough capacity",
 			amount: 1000,
 			bestRouteFees: []BestRouteFees{
@@ -272,7 +297,7 @@ func TestComputeSwapFees(t *testing.T) {
 			},
 		},
 		{
-			desc:   "dust threshold  TFFA",
+			desc:   "dust threshold TFFA",
 			amount: 50,
 			bestRouteFees: []BestRouteFees{
 				{

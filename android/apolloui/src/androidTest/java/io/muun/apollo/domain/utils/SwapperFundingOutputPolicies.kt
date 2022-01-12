@@ -4,10 +4,11 @@ import io.muun.common.model.BtcAmount
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 
+@Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
 class SwapperFundingOutputPolicies(
-    val maxDebtInSat: Long = 0,
-    val potentialCollectInSat: Long = 0,
-    val maxAmountInSatFor0Conf: Long = 0
+    private val maxDebtInSat: Long = 0,
+    private val potentialCollectInSat: Long = 0,
+    private val maxAmountInSatFor0Conf: Long = 0
 ) {
 
     /**
@@ -77,20 +78,4 @@ class SwapperFundingOutputPolicies(
         val outputAmountInSat = Math.max(minAmountInSat, BitcoinUtils.DUST_IN_SATOSHIS)
         return BtcAmount.fromSats(outputAmountInSat)
     }
-
-    /**
-     * Compute the padding used in the output amount in order to reach the minimum DUST amount.
-     */
-    fun getFundingOutputPaddingInSat(paymentAmountInSat: Long,
-                                     lightningFeeInSat: Long,
-                                     hasKnownFundingTx: Boolean): Long {
-        val minAmountInSat = getMinFundingAmountInSat(
-            paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
-        )
-        val outputAmount = getFundingOutputAmount(
-            paymentAmountInSat, lightningFeeInSat, hasKnownFundingTx
-        )
-        return outputAmount.toSats() - minAmountInSat
-    }
-
 }

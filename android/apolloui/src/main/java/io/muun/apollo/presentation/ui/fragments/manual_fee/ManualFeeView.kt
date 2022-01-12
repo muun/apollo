@@ -1,13 +1,12 @@
 package io.muun.apollo.presentation.ui.fragments.manual_fee
 
-import io.muun.apollo.domain.model.CurrencyDisplayMode
-import io.muun.apollo.domain.model.PaymentContext
-import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BaseView
+import newop.EditFeeState
 
-internal interface ManualFeeView : BaseView {
+interface ManualFeeView : BaseView {
 
-    fun setCurrencyDisplayMode(currencyDisplayMode: CurrencyDisplayMode)
+    fun setBitcoinUnit(bitcoinUnit: BitcoinUnit)
 
-    fun setPaymentContext(paymentContext: PaymentContext, paymentRequest: PaymentRequest)
+    fun setState(state: EditFeeState)
 }

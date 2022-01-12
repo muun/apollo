@@ -155,7 +155,6 @@ public class Currency {
         load(new Currency("SLL", "Le", "Sierra Leonean Leone", "\uD83C\uDDF8\uD83C\uDDF1"));
         load(new Currency("SOS", "S", "Somali Shilling", "\uD83C\uDDF8\uD83C\uDDF4"));
         load(new Currency("SRD", "$", "Surinamese Dollar", "\uD83C\uDDF8\uD83C\uDDF7"));
-        load(new Currency("SVC", "₡", "Salvadoran Colón", "\uD83C\uDDF8\uD83C\uDDFB"));
         load(new Currency("SYP", "LS", "Syrian Pound", "\uD83C\uDDF8\uD83C\uDDFE"));
         load(new Currency("SZL", "L", "Swazi Lilangeni", "\uD83C\uDDF8\uD83C\uDDFF"));
         load(new Currency("THB", "฿", "Thai Baht", "\uD83C\uDDF9\uD83C\uDDED"));
@@ -167,7 +166,7 @@ public class Currency {
         load(new Currency("TTD", "TT$", "Trinidad and Tobago Dollar", "\uD83C\uDDF9\uD83C\uDDF9"));
         load(new Currency("TWD", "NT$", "New Taiwan Dollar", "\uD83C\uDDF9\uD83C\uDDFC"));
         load(new Currency("TZS", "x/y", "Tanzanian Shilling", "\uD83C\uDDF9\uD83C\uDDFF"));
-        load(new Currency("UAH", "₴", "Ukrainian Hryvnia", "\uD83C\uDDF9\uD83C\uDDFF"));
+        load(new Currency("UAH", "₴", "Ukrainian Hryvnia", "\uD83C\uDDFA\uD83C\uDDE6"));
         load(new Currency("UGX", "USh", "Ugandan Shilling", "\uD83C\uDDFA\uD83C\uDDEC"));
         load(new Currency("USD", "$", "US Dollar", "\uD83C\uDDFA\uD83C\uDDF8"));
         load(new Currency("UYU", "$U", "Uruguayan Peso", "\uD83C\uDDFA\uD83C\uDDFE"));

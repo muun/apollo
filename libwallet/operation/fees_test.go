@@ -97,16 +97,16 @@ func TestFeeCalculatorForAmountZero(t *testing.T) {
 			}
 
 			for _, nts := range allNts {
-				feeCalculator := feeCalculator{&nts}
-				feeInSat := feeCalculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+				calculator := feeCalculator{&nts}
+				feeInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
 
 				if feeInSat != tC.expectedFeeInSat {
 					t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
 				}
 			}
 
-			feeCalculator := feeCalculator{}
-			feeInSat := feeCalculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+			calculator := feeCalculator{}
+			feeInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
 
 			if feeInSat != tC.expectedFeeInSat {
 				t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)

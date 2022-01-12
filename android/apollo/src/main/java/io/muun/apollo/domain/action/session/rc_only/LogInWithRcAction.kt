@@ -50,8 +50,6 @@ class LogInWithRcAction @Inject constructor(
         getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createRcLoginSession(
-                        Globals.INSTANCE.oldBuildType,
-                        Globals.INSTANCE.versionCode,
                         fcmToken,
                         Libwallet.recoveryCodeToKey(recoveryCode, null).pubKeyHex(),
                         firebaseInstalationIdRepository.getBigQueryPseudoId()

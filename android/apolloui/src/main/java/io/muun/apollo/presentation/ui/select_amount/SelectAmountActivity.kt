@@ -9,12 +9,11 @@ import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.serialize
-import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.view.MuunAmountInput
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -44,7 +43,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
 
         fun getPreSelectedAmount(bundle: Bundle): MonetaryAmount? {
             val serialization = bundle.getString(PRE_SELECTED_AMOUNT) ?: return null
-
             return SerializationUtils.deserializeMonetaryAmount(serialization)
         }
 
@@ -65,7 +63,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
 
     @JvmField
     @State
-    var currencyDisplayMode: CurrencyDisplayMode? = null
+    var bitcoinUnit: BitcoinUnit? = null
 
     override fun inject() {
         component.inject(this)
@@ -90,9 +88,9 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         amountInput.requestFocusInput()
     }
 
-    override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
-        currencyDisplayMode = mode
-        amountInput.setCurrencyDisplayMode(mode)
+    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        this.bitcoinUnit = bitcoinUnit
+        amountInput.setBitcoinUnit(bitcoinUnit)
     }
 
     override fun setExchangeRateProvider(exchangeRateProvider: ExchangeRateProvider) {
@@ -122,7 +120,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         amountInput.setSecondaryAmount(MoneyHelper.formatLongMonetaryAmount(
             amount,
             true,
-            currencyDisplayMode!!,
+            bitcoinUnit!!,
             locale()
         ))
     }

@@ -1,5 +1,7 @@
 package io.muun.apollo.domain.model;
 
+import io.muun.apollo.domain.libwallet.ExtensionsKt;
+
 import javax.money.MonetaryAmount;
 import javax.validation.constraints.NotNull;
 
@@ -47,5 +49,13 @@ public class BitcoinAmount {
 
     public boolean isZero() {
         return inInputCurrency.isZero();
+    }
+
+    public static BitcoinAmount fromLibwallet(newop.BitcoinAmount libwalletBtcAmount) {
+        return new BitcoinAmount(
+                libwalletBtcAmount.getInSat(),
+                ExtensionsKt.adapt(libwalletBtcAmount.getInInputCurrency()),
+                ExtensionsKt.adapt(libwalletBtcAmount.getInPrimaryCurrency())
+        );
     }
 }

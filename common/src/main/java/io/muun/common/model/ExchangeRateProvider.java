@@ -1,6 +1,7 @@
 package io.muun.common.model;
 
 import io.muun.common.Optional;
+import io.muun.common.api.ExchangeRateWindow;
 
 import org.javamoney.moneta.ExchangeRateBuilder;
 import org.javamoney.moneta.spi.AbstractRateProvider;
@@ -22,9 +23,20 @@ public class ExchangeRateProvider extends AbstractRateProvider {
 
     private final Map<String, Double> rates;
     private final List<CurrencyUnit> units;
+    @Nullable // Only nullable for Houston (e.g constructed without ExchangeRateWindow)
+    public ExchangeRateWindow rateWindow;
 
     /**
-     * Construct an ExchangeRateProvider given a mapping of rates by currency code.
+     * Apollo constructor. Construct an ExchangeRateProvider for a give ExchangeRateWindow.
+     */
+    public ExchangeRateProvider(ExchangeRateWindow exchangeRateWindow) {
+        this(exchangeRateWindow.rates);
+        this.rateWindow = exchangeRateWindow;
+    }
+
+    /**
+     * Houston constructor. Construct an ExchangeRateProvider given a mapping of rates by currency
+     * code.
      */
     public ExchangeRateProvider(Map<String, Double> availableRates) {
         super(ProviderContextBuilder.of("ExchangeRateProvider", RateType.REALTIME).build());

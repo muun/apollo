@@ -510,6 +510,11 @@ public enum ErrorCode {
             8200, StatusCode.CLIENT_FAILURE, "There's no plan with that UUID"
     ),
 
+    // funder errors
+    NOT_ENOUGH_FUNDS(
+            8300, StatusCode.SERVER_FAILURE, "Not enough funds in wallet"
+    ),
+
     // syncer errors
     ADDRESS_NOT_FOUND(
             10000, StatusCode.CLIENT_FAILURE, "There's no address with that raw serialization"

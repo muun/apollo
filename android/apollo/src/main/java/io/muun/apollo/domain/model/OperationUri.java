@@ -296,10 +296,16 @@ public class OperationUri {
         return parser.getPath();
     }
 
+    /**
+     * Get param associated with a name in this URI, or empty if no param for that name exists.
+     */
     public Optional<String> getParam(String name) {
         return Optional.ofNullable(parser.getParam(name));
     }
 
+    /**
+     * Get string representation/serialization of this OperationUri.
+     */
     public String toString() {
         return original;
     }
@@ -339,12 +345,17 @@ public class OperationUri {
         return getLnUrl().isPresent();
     }
 
-
+    /**
+     * Get the contact Hid contained in this URI, only valid for contacts Muun Uris.
+     */
     public long getContactHid() {
         Preconditions.checkArgument(getHost().equals(MUUN_HOST_CONTACT));
         return Long.parseLong(getPath());
     }
 
+    /**
+     * Get the address contained in this URI, only valid for external Muun Uris.
+     */
     public String getExternalAddress() {
         Preconditions.checkArgument(getHost().equals(MUUN_HOST_EXTERNAL));
         return getPath();

@@ -48,10 +48,10 @@ import io.muun.apollo.presentation.ui.recovery_code.verify.VerifyRecoveryCodeFra
 import io.muun.apollo.presentation.ui.settings.EmailWaitFragment;
 import io.muun.apollo.presentation.ui.settings.OldPasswordFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeFragment;
+import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.ChangePasswordFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.StartPasswordChangeFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.success.EditPasswordSuccessFragment;
-import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment;
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment;
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment;
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment;
@@ -110,7 +110,7 @@ public interface FragmentComponent {
 
     void inject(SyncContactsFragment syncContactsFragment);
 
-    void inject(NewOperationErrorFragment fragment);
+    void inject(NewOperationErrorFragment newOperationErrorFragment);
 
     void inject(RecommendedFeeFragment recommendedFeeFragment);
 

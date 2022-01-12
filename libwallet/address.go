@@ -33,8 +33,8 @@ type MuunPaymentURI struct {
 	Label        string
 	Message      string
 	Amount       string
-	URI          string
-	BIP70Url     string
+	Uri          string
+	Bip70Url     string
 	CreationTime string
 	ExpiresTime  string
 	Invoice      *Invoice
@@ -92,6 +92,16 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		}
 	}
 
+	// legacy Apollo P2P/contacts check
+	if (strings.Contains(rawInput, "contacts/")) {
+		return &MuunPaymentURI{
+			Label:    label,
+			Message:  message,
+			Amount:   amount,
+			Uri:      bitcoinUri,
+		}, nil
+	}
+
 	//BIP70 check
 	if len(queryValues["r"]) != 0 {
 		if len(address) > 0 {
@@ -100,16 +110,17 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 				Label:    label,
 				Message:  message,
 				Amount:   amount,
-				URI:      bitcoinUri,
-				BIP70Url: queryValues["r"][0],
+				Uri:      bitcoinUri,
+				Bip70Url: queryValues["r"][0],
 			}, nil
 		}
+
 		return &MuunPaymentURI{
 			Label:    label,
 			Message:  message,
 			Amount:   amount,
-			URI:      bitcoinUri,
-			BIP70Url: queryValues["r"][0],
+			Uri:      bitcoinUri,
+			Bip70Url: queryValues["r"][0],
 		}, nil
 	}
 
@@ -128,7 +139,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		Label:   label,
 		Message: message,
 		Amount:  amount,
-		URI:     bitcoinUri,
+		Uri:     bitcoinUri,
 	}, nil
 
 }
@@ -176,11 +187,13 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 		return nil, fmt.Errorf("failed to get address: %w", err)
 	}
 
+	amount := float64(payDetails.Outputs[0].Amount) / 100_000_000
+
 	return &MuunPaymentURI{
 		Address:      address,
 		Message:      payDetails.Memo,
-		Amount:       strconv.FormatUint(payDetails.Outputs[0].Amount, 10),
-		BIP70Url:     url,
+		Amount:       strconv.FormatFloat(amount, 'f', -1, 64),
+		Bip70Url:     url,
 		CreationTime: strconv.FormatUint(payDetails.Time, 10),
 		ExpiresTime:  strconv.FormatUint(payDetails.Expires, 10),
 	}, nil
@@ -199,10 +212,7 @@ func getAddressFromScript(script []byte, network *Network) (string, error) {
 }
 
 func buildUriFromString(rawInput string, targetScheme string) (string, *url.URL) {
-	newUri := rawInput
-
-	newUri = strings.Replace(newUri, muunScheme, targetScheme, 1)
-
+	newUri := strings.Replace(rawInput, muunScheme, targetScheme, 1)
 	if !strings.HasPrefix(strings.ToLower(newUri), targetScheme) {
 		newUri = targetScheme + rawInput
 	}

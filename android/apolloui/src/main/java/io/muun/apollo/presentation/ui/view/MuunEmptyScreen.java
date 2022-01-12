@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
 public class MuunEmptyScreen extends MuunView {
 
     static final ViewProps<MuunEmptyScreen> viewProps = new ViewProps.Builder<MuunEmptyScreen>()
-            .addRef(R.attr.icon, MuunEmptyScreen::setIcon)
-            .addString(R.attr.title, MuunEmptyScreen::setTitle)
-            .addRef(R.attr.subtitle, MuunEmptyScreen::setSubtitle)
-            .addRef(R.attr.action, MuunEmptyScreen::setAction)
+            .addRefJava(R.attr.icon, MuunEmptyScreen::setIcon)
+            .addStringJava(R.attr.title, MuunEmptyScreen::setTitle)
+            .addRefJava(R.attr.subtitle, MuunEmptyScreen::setSubtitle)
+            .addRefJava(R.attr.action, MuunEmptyScreen::setAction)
             .build();
 
     @BindView(R.id.muun_empty_screen_icon)

@@ -6,7 +6,7 @@ import io.muun.apollo.data.preferences.FeaturesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.libwallet.isEqualTo
-import io.muun.apollo.domain.libwallet.toLibwalletModel
+import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
@@ -53,7 +53,7 @@ class FeatureStatusSelector @Inject constructor(
             blockHeight.toLong(),
             user.emergencyKitVersions.toLibwalletIntList(),
             backendFeatures.map { it.toLibwalletModel() }.toLibwalletModel(),
-            Globals.INSTANCE.network.toLibwalletModel()
+            Globals.INSTANCE.network.toLibwallet()
         )
 
         return UserActivatedFeatureStatus.fromLibwalletModel(uafStatus)

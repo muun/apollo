@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.helper
 
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.common.utils.BitcoinUtils
 import org.javamoney.moneta.Money
 import org.javamoney.moneta.format.AmountFormatParams
@@ -41,10 +41,10 @@ object BitcoinHelper {
     @JvmStatic
     fun formatInputBitcoinAmount(
         amountInSats: Long,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
-        return formatFlexBitcoinAmount(amountInSats, false, mode, locale)
+        return formatFlexBitcoinAmount(amountInSats, false, bitcoinUnit, locale)
     }
 
     /**
@@ -53,11 +53,11 @@ object BitcoinHelper {
     fun formatFlexBitcoinAmount(
         amountInSats: Long,
         showCurrencyCode: Boolean,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
 
-        return if (mode == CurrencyDisplayMode.SATS) {
+        return if (bitcoinUnit == BitcoinUnit.SATS) {
             formatAmountInSat(amountInSats, showCurrencyCode, locale)
 
         } else {
@@ -71,8 +71,8 @@ object BitcoinHelper {
      * the display of the currency code.
      */
     @JvmStatic
-    fun formatLongBitcoinAmount(amount: Long, mode: CurrencyDisplayMode, locale: Locale): String {
-        return formatLongBitcoinAmount(amount, true, mode, locale)
+    fun formatLongBitcoinAmount(amount: Long, bitcoinUnit: BitcoinUnit, locale: Locale): String {
+        return formatLongBitcoinAmount(amount, true, bitcoinUnit, locale)
     }
 
     /**
@@ -80,13 +80,13 @@ object BitcoinHelper {
      */
     @JvmStatic
     fun formatLongBitcoinAmount(
-        amountInSats: Long,
-        showCurrencyCode: Boolean,
-        mode: CurrencyDisplayMode,
-        locale: Locale
+            amountInSats: Long,
+            showCurrencyCode: Boolean,
+            btcUnit: BitcoinUnit,
+            locale: Locale
     ): String {
 
-        return if (mode == CurrencyDisplayMode.SATS) {
+        return if (btcUnit == BitcoinUnit.SATS) {
             formatAmountInSat(amountInSats, showCurrencyCode, locale)
 
         } else {
@@ -101,10 +101,10 @@ object BitcoinHelper {
      */
     fun formatShortBitcoinAmount(
         amountInSats: Long,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
-        return formatShortBitcoinAmount(amountInSats, true, mode, locale)
+        return formatShortBitcoinAmount(amountInSats, true, bitcoinUnit, locale)
     }
 
     /**
@@ -114,11 +114,11 @@ object BitcoinHelper {
     fun formatShortBitcoinAmount(
         amountInSats: Long,
         showCurrencyCode: Boolean,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
 
-        return if (mode == CurrencyDisplayMode.SATS) {
+        return if (bitcoinUnit == BitcoinUnit.SATS) {
             formatAmountInSat(amountInSats, showCurrencyCode, locale)
 
         } else {

@@ -152,7 +152,7 @@ public class OperationActionsTest extends BaseTest {
         );
 
         // check amount
-        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.rates);
+        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.toJson());
         final MonetaryAmount inBtc = payReq.getAmount().with(provider.getCurrencyConversion("BTC"));
         final long inSatoshis = BitcoinUtils.bitcoinsToSatoshis(inBtc);
 
@@ -196,7 +196,7 @@ public class OperationActionsTest extends BaseTest {
         assertThat(operation.receiverAddressDerivationPath).isEqualTo(null);
 
         // check amount
-        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.rates);
+        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.toJson());
         final MonetaryAmount inBtc = payReq.getAmount().with(provider.getCurrencyConversion("BTC"));
         final long inSatoshis = BitcoinUtils.bitcoinsToSatoshis(inBtc);
 

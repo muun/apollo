@@ -2,19 +2,18 @@ package io.muun.apollo.presentation.model
 
 import android.content.Context
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.utils.isEmpty
 import io.muun.apollo.presentation.ui.utils.LinkBuilder
 import io.muun.apollo.presentation.ui.utils.Uri
-import org.bitcoinj.core.NetworkParameters
 
 class ExternalOperation(
     operation: Operation,
     linkBuilder: LinkBuilder,
-    currencyDisplayMode: CurrencyDisplayMode,
+    bitcoinUnit: BitcoinUnit,
     context: Context
-) : UiOperation(operation, linkBuilder, currencyDisplayMode, context) {
+) : UiOperation(operation, linkBuilder, bitcoinUnit, context) {
 
     override fun getFormattedTitle(context: Context, shortName: Boolean): CharSequence =
         if (isCyclical) {

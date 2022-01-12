@@ -83,7 +83,7 @@ public class OperationJson {
     @Nullable
     public Transaction transaction;
 
-    @NotNull
+    @Nullable // When creating a new op, clients should send null, as creationDate is set by Houston
     public MuunZonedDateTime creationDate;
 
     @Nullable
@@ -141,7 +141,6 @@ public class OperationJson {
                          Long exchangeRatesWindowId,
                          @Nullable String description,
                          OperationStatus status,
-                         MuunZonedDateTime creationDate,
                          @Nullable String swapUuid,
                          @Nullable String senderMetadata,
                          @Nullable String receiverMetadata,
@@ -164,7 +163,6 @@ public class OperationJson {
         this.exchangeRatesWindowId = exchangeRatesWindowId;
         this.description = description;
         this.status = status;
-        this.creationDate = creationDate;
         this.swapUuid = swapUuid;
         this.senderMetadata = senderMetadata;
         this.receiverMetadata = receiverMetadata;

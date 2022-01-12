@@ -9,21 +9,23 @@ import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.BitcoinUnit
+import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.*
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_LOG_OUT
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_WALLET_DELETED
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SETTINGS
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
-import io.muun.apollo.presentation.ui.fragments.settings.SettingsPresenter.SettingsState
 import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
-import io.muun.common.api.messages.EventCommunicationMessage
 import io.muun.common.api.messages.EventCommunicationMessage.Event
 import rx.Observable
 import timber.log.Timber
@@ -32,7 +34,7 @@ import javax.money.CurrencyUnit
 
 @PerFragment
 class SettingsPresenter @Inject constructor(
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
+    private val bitcoinUnitSel: BitcoinUnitSelector,
     private val updateProfilePictureAction: UpdateProfilePictureAction,
     private val userActions: UserActions,
     private val exchangeRateSelector: ExchangeRateSelector,
@@ -44,7 +46,7 @@ class SettingsPresenter @Inject constructor(
 
     class SettingsState(
         val user: User,
-        val currencyDisplayMode: CurrencyDisplayMode,
+        val bitcoinUnit: BitcoinUnit,
         val exchangeRateWindow: ExchangeRateWindow,
         val taprootFeatureStatus: UserActivatedFeatureStatus
     )
@@ -61,8 +63,8 @@ class SettingsPresenter @Inject constructor(
         val observable: Observable<*> = Observable
             .combineLatest(
                 userSel.watch(),
-                currencyDisplayModeSel.watch(),
-                exchangeRateSelector.watchWindow(),
+                bitcoinUnitSel.watch(),
+                exchangeRateSelector.watchLatestWindow(),
                 featuresStatusSel.watch(UAF_TAPROOT),
                 ::SettingsState
             )
