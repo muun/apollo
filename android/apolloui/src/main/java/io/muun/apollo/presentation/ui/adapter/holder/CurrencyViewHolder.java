@@ -30,8 +30,8 @@ public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
     public void bind(CurrencyViewModel viewModel) {
         final Currency currency = viewModel.model.currencyInfo;
 
-        final String code = MoneyHelper.formatCurrency(currency.getCode(), viewModel.mode);
-        final String name = MoneyHelper.formatCurrencyName(currency, viewModel.mode);
+        final String code = MoneyHelper.formatCurrency(currency.getCode(), viewModel.bitcoinUnit);
+        final String name = MoneyHelper.formatCurrencyName(currency, viewModel.bitcoinUnit);
 
         if (currency.getFlag() != null) {
             label.setText(String.format("%s %s (%s)", currency.getFlag(), name, code));

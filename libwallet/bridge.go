@@ -8,7 +8,7 @@ func NewStringList() *StringList {
  	return &StringList{}
 }
 
-func newStringList(elems []string) *StringList {
+func NewStringListWithElements(elems []string) *StringList {
 	return &StringList{elems}
 }
 

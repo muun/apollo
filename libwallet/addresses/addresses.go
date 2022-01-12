@@ -42,6 +42,8 @@ func Create(version int, userKey, muunKey *hdkeychain.ExtendedKey, path string, 
 		return CreateAddressV3(userKey, muunKey, path, network)
 	case V4:
 		return CreateAddressV4(userKey, muunKey, path, network)
+	case V5:
+		return CreateAddressV5(userKey, muunKey, path, network)
 	default:
 		return nil, fmt.Errorf("unknown or unsupported version %v", version)
 	}

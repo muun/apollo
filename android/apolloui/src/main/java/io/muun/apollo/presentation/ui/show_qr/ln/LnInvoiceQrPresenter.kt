@@ -6,7 +6,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.di.PerFragment
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class LnInvoiceQrPresenter @Inject constructor(
     private val generateInvoice: GenerateInvoiceAction,
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector
+    private val bitcoinUnitSel: BitcoinUnitSelector
 ) : QrPresenter<LnInvoiceView>() {
 
     @State
@@ -37,12 +37,12 @@ class LnInvoiceQrPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        view.setCurrencyDisplayMode(currencyDisplayModeSel.get())
+        view.setBitcoinUnit(bitcoinUnitSel.get())
         view.setShowingAdvancedSettings(showingAdvancedSettings)
 
         generateInvoice
             .state
-            .compose(handleStates({ loading -> handleLoading(loading) }, { e -> handleError(e) }))
+            .compose(handleStates(this::handleLoading, this::handleError))
             .doOnNext { invoice -> onInvoiceReady(invoice) }
             .let(this::subscribeTo)
 

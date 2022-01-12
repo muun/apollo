@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 public class MuunPill extends MuunView {
 
     static final ViewProps<MuunPill> viewProps = new ViewProps.Builder<MuunPill>()
-            .addString(android.R.attr.text, MuunPill::setText)
+            .addStringJava(android.R.attr.text, MuunPill::setText)
             .build();
 
     @BindView(R.id.muun_pill_picture)

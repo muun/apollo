@@ -76,11 +76,11 @@ public class MuunTextInput extends MuunView {
 
     static {
         final ViewProps.Builder<MuunTextInput> builder = new ViewProps.Builder<MuunTextInput>()
-                .addString(android.R.attr.text, MuunTextInput::setText)
-                .addString(R.attr.helperText, MuunTextInput::setHelperText)
+                .addStringJava(android.R.attr.text, MuunTextInput::setText)
+                .addStringJava(R.attr.helperText, MuunTextInput::setHelperText)
                 .addEnum(R.attr.helperTextVisibility, MuunTextInput::setHelperTextVisibilityEnum)
-                .addString(android.R.attr.hint, MuunTextInput::setHint)
-                .addString(android.R.attr.fontFamily, MuunTextInput::setFontFamily)
+                .addStringJava(android.R.attr.hint, MuunTextInput::setHint)
+                .addStringJava(android.R.attr.fontFamily, MuunTextInput::setFontFamily)
                 .addBoolean(R.attr.hintEnabled, MuunTextInput::setHintEnabled)
                 .addBoolean(R.attr.errorEnabled, MuunTextInput::setErrorEnabled)
                 .addBoolean(android.R.attr.enabled, MuunTextInput::setEnabled)
@@ -92,8 +92,8 @@ public class MuunTextInput extends MuunView {
                 .addInt(android.R.attr.gravity, MuunTextInput::setGravity)
                 .addColorList(android.R.attr.textColor, MuunTextInput::setTextColor)
                 .addEnum(android.R.attr.inputType, MuunTextInput::setInputType)
-                .addRef(android.R.attr.nextFocusForward, MuunTextInput::setNextFocusForwardId)
-                .addSize(android.R.attr.textSize, MuunTextInput::setTextSize)
+                .addRefJava(android.R.attr.nextFocusForward, MuunTextInput::setNextFocusForwardId)
+                .addSizeJava(android.R.attr.textSize, MuunTextInput::setTextSize)
                 .addEnum(android.R.attr.textStyle, MuunTextInput::setTextStyle)
                 .addEnum(android.R.attr.imeOptions, MuunTextInput::setImeOptions);
 

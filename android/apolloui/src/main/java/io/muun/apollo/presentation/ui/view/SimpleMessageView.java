@@ -24,9 +24,9 @@ public class SimpleMessageView extends MuunView {
     MuunButton action;
 
     static final ViewProps<SimpleMessageView> viewProps = new ViewProps.Builder<SimpleMessageView>()
-            .addRef(R.attr.title, SimpleMessageView::setTitle)
-            .addRef(R.attr.subtitle, SimpleMessageView::setSubtitle)
-            .addRef(R.attr.action, SimpleMessageView::setAction)
+            .addRefJava(R.attr.title, SimpleMessageView::setTitle)
+            .addRefJava(R.attr.subtitle, SimpleMessageView::setSubtitle)
+            .addRefJava(R.attr.action, SimpleMessageView::setAction)
             .build();
 
     public SimpleMessageView(Context context) {

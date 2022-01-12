@@ -30,7 +30,7 @@ class Operation(
     @JvmField val description: String?,
     @JvmField val metadata: OperationMetadataJson?,
     @JvmField var status: OperationStatus,
-    @JvmField val creationDate: ZonedDateTime,
+    @JvmField var creationDate: ZonedDateTime,
     @JvmField val exchangeRateWindowHid: Long,
     @JvmField val swap: SubmarineSwap?,
     @JvmField val incomingSwap: IncomingSwap?,
@@ -80,7 +80,7 @@ class Operation(
                 preparedPayment.description,
                 OperationMetadataJson(preparedPayment.description),
                 OperationStatus.CREATED,
-                ZonedDateTime.now(),
+                ZonedDateTime.now(), // will be defined/set by Houston, keeping for non-nullability
                 preparedPayment.rateWindowHid,
                 null,
                 null,
@@ -111,7 +111,7 @@ class Operation(
                 pp.description,
                 OperationMetadataJson(pp.description),
                 OperationStatus.CREATED,
-                DateUtils.now(),
+                DateUtils.now(), // will be defined/set by Houston, keeping for non-nullability
                 pp.rateWindowHid,
                 swap,
                 null,
@@ -200,6 +200,9 @@ class Operation(
             receiverAddress = other.receiverAddress
             receiverAddressDerivationPath = other.receiverAddressDerivationPath
             status = other.status
+            // Use Houston's creation date to avoid sync issues (devices use their own clock which
+            // may be (un)intentionally skewed). Note: we use this to order ops in payment history.
+            creationDate = other.creationDate
         }
     }
 }

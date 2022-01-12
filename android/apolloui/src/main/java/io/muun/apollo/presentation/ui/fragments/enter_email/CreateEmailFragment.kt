@@ -13,7 +13,6 @@ import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 
 class CreateEmailFragment: SingleFragment<CreateEmailPresenter>(), CreateEmailView {
@@ -58,7 +57,7 @@ class CreateEmailFragment: SingleFragment<CreateEmailPresenter>(), CreateEmailVi
     }
 
     override fun setLoading(isLoading: Boolean) {
-        confirmButton.isLoading = isLoading
+        confirmButton.setLoading(isLoading)
         emailInput.isEnabled = !isLoading
     }
 

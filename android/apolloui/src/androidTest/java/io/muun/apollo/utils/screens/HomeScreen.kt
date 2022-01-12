@@ -1,6 +1,8 @@
 package io.muun.apollo.utils.screens
 
 import android.content.Context
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObjectNotFoundException
 import androidx.test.uiautomator.UiSelector
@@ -9,6 +11,7 @@ import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
+import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
 import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -19,7 +22,7 @@ class HomeScreen(
     override val context: Context
 ): WithMuunInstrumentationHelpers {
 
-    val balanceInBtc get() = id(R.id.balance_main_currency_amount).text.toBtcMoney(locale)
+    val balanceInBtc get() = id(R.id.balance_main_currency_amount).text.toBtcMoney()
 
     fun waitUntilVisible(): Boolean {
         return id(R.id.home_balance_view).waitForExists(5000)
@@ -35,7 +38,9 @@ class HomeScreen(
             balanceEquals(expectedBalance)
         }
 
-        assertThat(result).isTrue()
+        assertThat(result)
+            .withFailMessage("$balanceNotEqualsErrorMessage:$expectedBalance")
+            .isTrue()
     }
 
     fun checkBalanceCloseTo(expectedBalance: MonetaryAmount) {
@@ -119,6 +124,14 @@ class HomeScreen(
 
     fun goToSend() {
         pressMuunButtonAndWaitForNewWindow(R.id.home_send_button)
+    }
+
+    fun goToP2PSetup() {
+        goToSend()
+
+        // We're using Espresso for this, we hit a roadblock with UiAutomator (can't click spans)
+        onView(withId(R.id.muun_empty_screen_text))
+            .perform(clickClickableSpan(R.string.contact_list_empty_clickable_span))
     }
 
     fun goToSecurityCenter() {

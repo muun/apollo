@@ -224,7 +224,7 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 
 	iopts = append(iopts, zpay32.Features(features))
 	iopts = append(iopts, zpay32.CLTVExpiry(72)) // ~1/2 day
-	iopts = append(iopts, zpay32.Expiry(1*time.Hour))
+	iopts = append(iopts, zpay32.Expiry(24*time.Hour))
 
 	var paymentAddr [32]byte
 	copy(paymentAddr[:], dbInvoice.PaymentSecret)

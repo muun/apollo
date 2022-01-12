@@ -5,6 +5,7 @@ import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
+import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.utils.Since;
 
 import androidx.annotation.Nullable;
@@ -26,7 +27,7 @@ public class User {
     public Optional<UserPhoneNumber> phoneNumber;
     public Optional<UserProfile> profile;
 
-    private CurrencyUnit primaryCurrency;
+    private final CurrencyUnit primaryCurrency;
 
     public boolean hasRecoveryCode;
     public boolean hasPassword;
@@ -152,6 +153,17 @@ public class User {
      */
     public CurrencyUnit getPrimaryCurrency(ExchangeRateWindow rateWindow) {
         if (rateWindow.rates.containsKey(primaryCurrency.getCurrencyCode())) {
+            return primaryCurrency;
+        } else {
+            return Currency.getUnit("BTC").get();
+        }
+    }
+
+    /**
+     * Get the user's primary currency, if exchange rate is available, BTC otherwise.
+     */
+    public CurrencyUnit getPrimaryCurrency(ExchangeRateProvider rateProvider) {
+        if (rateProvider.isAvailable(primaryCurrency, Currency.getUnit("BTC").get())) {
             return primaryCurrency;
         } else {
             return Currency.getUnit("BTC").get();

@@ -3,6 +3,7 @@ package io.muun.apollo.domain.model
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.BaseUnitTest
 import io.muun.common.bitcoinj.NetworkParametersHelper
+import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -73,6 +74,17 @@ class OperationUriTest: BaseUnitTest() {
         uri = OperationUri.fromString("lightning:$lnUrl")
         assertFalse(uri.isLn)
         assertEquals(lnUrl, uri.lnUrl.get())
+
+        val address = "bc1q8j675rkzq3nn6vpg7quwhdh9q7drl8dzhh5rv9"
+        val fee = 8
+        val rbf = false
+        val uriStringWithCustomParams = "bitcoin:$address?fee=$fee&rbf=$rbf"
+
+        uri = OperationUri.fromString(uriStringWithCustomParams)
+        assertTrue(uri.isBitcoin)
+        assertEquals(address, uri.bitcoinAddress.get())
+        assertEquals(fee.toString(), uri.getParam("fee").get())
+        assertEquals(rbf.toString(), uri.getParam("rbf").get())
     }
 
     @Test
@@ -130,5 +142,16 @@ class OperationUriTest: BaseUnitTest() {
     @Test(expected = IllegalArgumentException::class)
     fun fromMalformed4() {
         OperationUri.fromString("lighting:muun:$lnUrl")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun fromMalformed5() {
+        val invalidAddress = "bc1q8j675rkzq3nn6vpg7quwhdh9g7drl8dzhh5rv9" // 9g7 should be 9q7
+        val fee = 8
+        val rbf = false
+        val uriString = "bitcoin:$invalidAddress?fee=$fee&rbf=$rbf"
+
+        val uri = OperationUri.fromString(uriString)
+        assertTrue(uri.isBitcoin)
     }
 }

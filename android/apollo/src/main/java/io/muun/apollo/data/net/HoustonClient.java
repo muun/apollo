@@ -2,7 +2,6 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
-import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.errors.CyclicalSwapError;
 import io.muun.apollo.domain.errors.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
@@ -21,7 +20,6 @@ import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
-import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.Sha256Hash;
@@ -37,7 +35,6 @@ import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.DiffJson;
-import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
@@ -74,7 +71,6 @@ import android.content.Context;
 import android.net.Uri;
 import libwallet.MusigNonces;
 import okhttp3.MediaType;
-import org.threeten.bp.ZonedDateTime;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -111,8 +107,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * Creates a session for a first-time unrecoverable user.
      */
     public Observable<CreateFirstSessionOk> createFirstSession(
-            String buildType,
-            int version,
             String gcmRegistrationToken,
             PublicKey basePublicKey,
             CurrencyUnit primaryCurrency,
@@ -120,8 +114,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
     ) {
 
         final CreateFirstSessionJson params = apiMapper.mapCreateFirstSession(
-                buildType,
-                version,
                 gcmRegistrationToken,
                 basePublicKey,
                 primaryCurrency,
@@ -135,15 +127,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Creates a session to log into an existing user.
      */
-    public Observable<CreateSessionOk> createLoginSession(String buildType,
-                                                          int clientVersion,
-                                                          String gcmRegistrationToken,
-                                                          String email,
-                                                          String bigQueryPseudoId) {
+    public Observable<CreateSessionOk> createLoginSession(
+            String gcmRegistrationToken,
+            String email,
+            String bigQueryPseudoId
+    ) {
 
         final CreateLoginSessionJson params = apiMapper.mapCreateLoginSession(
-                buildType,
-                clientVersion,
                 gcmRegistrationToken,
                 email,
                 bigQueryPseudoId
@@ -156,15 +146,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Creates a session to log into an existing user, using "RC only" flow.
      */
-    public Observable<Challenge> createRcLoginSession(String buildType,
-                                                      int clientVersion,
-                                                      String gcmToken,
-                                                      String rcChallengePublicKeyHex,
-                                                      String bigQueryPseudoId) {
+    public Observable<Challenge> createRcLoginSession(
+            String gcmToken,
+            String rcChallengePublicKeyHex,
+            String bigQueryPseudoId
+    ) {
 
         final CreateRcLoginSessionJson session = apiMapper.mapCreateRcLoginSession(
-                buildType,
-                clientVersion,
                 gcmToken,
                 rcChallengePublicKeyHex,
                 bigQueryPseudoId
@@ -460,10 +448,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<OperationCreated> newOperation(
             final OperationWithMetadata operation,
-            final PreparedPayment prepPayment,
+            final List<String> outpoints,
             final MusigNonces musigNonces
     ) {
-        final List<String> outpoints = prepPayment.nextTransactionSize.extractOutpoints();
         return getService()
                 .newOperation(apiMapper.mapOperation(operation, outpoints, musigNonces))
                 .map(modelMapper::mapOperationCreated);

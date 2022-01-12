@@ -239,7 +239,7 @@ public class LibwalletBridge {
 
         final MuunPaymentURI paymentUri = getPaymentUri(uri, network);
 
-        if (paymentUri != null && !paymentUri.getBIP70Url().isEmpty()) {
+        if (paymentUri != null && !paymentUri.getBip70Url().isEmpty()) {
 
             final MuunPaymentURI bip70PaymentUri = doPaymentRequestCall(paymentUri, network);
             return fromLibwalletModel(bip70PaymentUri);
@@ -261,7 +261,7 @@ public class LibwalletBridge {
     private static MuunPaymentURI doPaymentRequestCall(MuunPaymentURI uri, Network network)
             throws InvalidPaymentRequestError {
         try {
-            return Libwallet.doPaymentRequestCall(uri.getBIP70Url(), network);
+            return Libwallet.doPaymentRequestCall(uri.getBip70Url(), network);
 
         } catch (Exception e) {
             throw new InvalidPaymentRequestError("Failed to parse URI", e);
@@ -338,19 +338,10 @@ public class LibwalletBridge {
             return null;
         }
 
-        final Optional<Long> maybeAmount;
-        if (muunPaymentUri.getBIP70Url() != null && !muunPaymentUri.getBIP70Url().isEmpty()) {
-
-            // We suck and BIP70 returns amouns in sats, instead of BTC like the rest
-            maybeAmount = Optional.of(Long.valueOf(muunPaymentUri.getAmount()));
-
-        } else {
-
-            maybeAmount = Optional.ifNotEmpty(muunPaymentUri.getAmount())
-                    .map(Double::parseDouble)
-                    .map(it -> Money.of(it, "BTC"))
-                    .map(BitcoinUtils::bitcoinsToSatoshis);
-        }
+        final Optional<Long> maybeAmount = Optional.ifNotEmpty(muunPaymentUri.getAmount())
+                .map(Double::parseDouble)
+                .map(it -> Money.of(it, "BTC"))
+                .map(BitcoinUtils::bitcoinsToSatoshis);
 
         return new BitcoinUriContent(
                 muunPaymentUri.getAddress(),

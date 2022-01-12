@@ -2,13 +2,12 @@ package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
 import io.muun.apollo.domain.model.BitcoinAmount;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
 import io.muun.apollo.presentation.ui.helper.MoneyExtensionsKt;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.utils.ConfirmationTimeFormatter;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.common.Rules;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
@@ -54,7 +53,7 @@ public class FeeOptionItem extends MuunView {
     int disabledTintColor;
 
     @State
-    CurrencyDisplayMode currencyDisplayMode;
+    BitcoinUnit bitcoinUnit;
 
     public FeeOptionItem(Context context) {
         super(context);
@@ -89,12 +88,12 @@ public class FeeOptionItem extends MuunView {
     }
 
     /**
-     * Set fee rate, for this fee option.
+     * Set fee rate, in satoshis per virtual byte, for this fee option.
      */
-    public void setFeeRate(double satoshisPerWeightUnit) {
+    public void setFeeRate(double feeRateInSatsPerVbyte) {
         feeRate.setText(getContext().getString(
                 R.string.fee_option_item_fee_rate,
-                UiUtils.formatFeeRate(Rules.toSatsPerVbyte(satoshisPerWeightUnit))
+                UiUtils.formatFeeRate(feeRateInSatsPerVbyte)
         ));
     }
 
@@ -117,7 +116,7 @@ public class FeeOptionItem extends MuunView {
 
     private void setFeeInBtc(long feeInSat) {
         mainValue.setText(
-                BitcoinHelper.formatLongBitcoinAmount(feeInSat, currencyDisplayMode, getLocale())
+                BitcoinHelper.formatLongBitcoinAmount(feeInSat, bitcoinUnit, getLocale())
         );
     }
 
@@ -127,7 +126,7 @@ public class FeeOptionItem extends MuunView {
     private void setFeeInSecondaryCurrency(MonetaryAmount feeAmount) {
         secondaryValue.setText(TextUtils.concat(
                 "(",
-                MoneyHelper.formatLongMonetaryAmount(feeAmount, currencyDisplayMode, getLocale()),
+                MoneyHelper.formatLongMonetaryAmount(feeAmount, bitcoinUnit, getLocale()),
                 ")"
         ));
     }
@@ -163,7 +162,7 @@ public class FeeOptionItem extends MuunView {
         secondaryValue.setTextColor(enabled ? textSecondaryColor : disabledTintColor);
     }
 
-    public void setCurrencyDisplayMode(CurrencyDisplayMode currencyDisplayMode) {
-        this.currencyDisplayMode = currencyDisplayMode;
+    public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {
+        this.bitcoinUnit = bitcoinUnit;
     }
 }

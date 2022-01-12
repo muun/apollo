@@ -2,9 +2,9 @@ package io.muun.apollo.presentation.ui.fragments.operations
 
 import android.content.Context
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector
+import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.OperationSelector
 import io.muun.apollo.domain.selector.UserSelector
 import io.muun.apollo.presentation.app.di.PerApplication
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @PerApplication
 class OperationsCache @Inject constructor(
     private val operationsSel: OperationSelector,
-    private val currencyDisplayModeSel: CurrencyDisplayModeSelector,
+    private val bitcoinUnitSel: BitcoinUnitSelector,
     private val userSel: UserSelector,
     private val linkBuilder: LinkBuilder,
     private val transformerFactory: ExecutionTransformerFactory,
@@ -42,17 +42,17 @@ class OperationsCache @Inject constructor(
         subscription = Observable
             .combineLatest(
                 operationsSel.watch(),
-                currencyDisplayModeSel.watch(),
+                bitcoinUnitSel.watch(),
                 userSel.watch()
             ) { ops, currencyDisplay, user -> // Kotlin can't handle generic SAM conversions :(
                 OperationsPresenter.ReactiveState(ops, currencyDisplay, user)
             }
             .flatMap {
 
-                mapOperations(it.operations, it.currencyDisplayMode).map { uiOps ->
+                mapOperations(it.operations, it.bitcoinUnit).map { uiOps ->
                     OperationsPresenter.ReactiveState<ItemViewModel>(
                         uiOps,
-                        it.currencyDisplayMode,
+                        it.bitcoinUnit,
                         it.user
                     )
                 }
@@ -74,9 +74,9 @@ class OperationsCache @Inject constructor(
         cacheSubject.asObservable()
 
 
-    private fun mapOperations(operations: List<Operation>, displayMode: CurrencyDisplayMode) =
+    private fun mapOperations(operations: List<Operation>, bitcoinUnit: BitcoinUnit) =
         Observable.from(operations)
-            .map { op -> UiOperation.fromOperation(op, linkBuilder, displayMode, context) }
+            .map { op -> UiOperation.fromOperation(op, linkBuilder, bitcoinUnit, context) }
             .map(::OperationViewModel)
             .toList()
 }

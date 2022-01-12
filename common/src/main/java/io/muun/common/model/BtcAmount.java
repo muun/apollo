@@ -90,6 +90,13 @@ public class BtcAmount {
     }
 
     /**
+     * Multiply amount by integer value.
+     */
+    public BtcAmount integerProduct(int scalar) {
+        return new BtcAmount(milliSats * scalar);
+    }
+
+    /**
      * Check whether this amount is greater than the other.
      */
     public boolean greaterThan(@NotNull BtcAmount other) {

@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
-import io.muun.apollo.domain.libwallet.toLibwalletModel
+import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.base.HoustonUuidModel
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
@@ -37,8 +37,8 @@ open class IncomingSwap(
         }
 
     open fun verifyFulfillable(userKey: PrivateKey, network: NetworkParameters) {
-        val libwalletUserKey = userKey.toLibwalletModel(network)
-        val libwalletNetwork = network.toLibwalletModel()
+        val libwalletUserKey = userKey.toLibwallet(network)
+        val libwalletNetwork = network.toLibwallet()
 
         try {
             toLibwalletModel().verifyFulfillable(libwalletUserKey, libwalletNetwork)
@@ -54,9 +54,9 @@ open class IncomingSwap(
         network: NetworkParameters
     ): FulfillmentResult {
 
-        val libwalletUserKey = userKey.toLibwalletModel(network)
-        val libwalletMuunKey = muunKey.toLibwalletModel(network)
-        val libwalletNetwork = network.toLibwalletModel()
+        val libwalletUserKey = userKey.toLibwallet(network)
+        val libwalletMuunKey = muunKey.toLibwallet(network)
+        val libwalletNetwork = network.toLibwallet()
         val libwalletFullfillmentData = data.toLibwalletModel()
 
         try {

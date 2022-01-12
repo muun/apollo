@@ -34,8 +34,6 @@ class CreateLoginSessionAction @Inject constructor(
         return getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createLoginSession(
-                        Globals.INSTANCE.oldBuildType,
-                        Globals.INSTANCE.versionCode,
                         fcmToken,
                         email,
                         firebaseInstalationIdRepository.getBigQueryPseudoId()

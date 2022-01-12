@@ -22,11 +22,11 @@ import javax.annotation.Nullable;
 public class MuunIconButton extends MuunView {
 
     static final ViewProps<MuunIconButton> viewProps = new ViewProps.Builder<MuunIconButton>()
-            .addRef(R.attr.icon, MuunIconButton::setIcon)
-            .addSize(R.attr.iconSize, MuunIconButton::setIconSize)
+            .addRefJava(R.attr.icon, MuunIconButton::setIcon)
+            .addSizeJava(R.attr.iconSize, MuunIconButton::setIconSize)
             .addColorList(R.attr.color, MuunIconButton::setColor)
-            .addString(R.attr.label, MuunIconButton::setLabel)
-            .addSize(R.attr.labelSize, MuunIconButton::setLabelSize)
+            .addStringJava(R.attr.label, MuunIconButton::setLabel)
+            .addSizeJava(R.attr.labelSize, MuunIconButton::setLabelSize)
             .build();
 
     @BindView(R.id.muun_icon_button_container)

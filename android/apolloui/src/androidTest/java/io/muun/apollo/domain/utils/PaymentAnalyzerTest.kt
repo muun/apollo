@@ -29,6 +29,7 @@ import kotlin.random.Random
  * @see [Testing documentation](http://d.android.com/tools/testing)
  */
 @RunWith(AndroidJUnit4::class)
+@Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
 class PaymentAnalyzerTest {
 
     private val USD = Monetary.getCurrency("USD")

@@ -1,36 +1,21 @@
 package io.muun.apollo.presentation.ui.fragments.recommended_fee
 
-import android.os.Bundle
-import android.text.TextUtils
 import android.view.View
 import butterknife.BindString
 import butterknife.BindView
-import butterknife.OnClick
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.BitcoinAmount
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.new_operation.PaymentRequestCompanion.fromBundle
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
-import io.muun.apollo.presentation.ui.new_operation.toBundle
+import io.muun.apollo.presentation.ui.new_operation.estimateTimeInMs
 import io.muun.apollo.presentation.ui.view.*
 import io.muun.common.Rules
-import io.muun.common.utils.Preconditions
-import kotlin.properties.Delegates
+import newop.EditFeeState
+import newop.FeeState
 
-class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), RecommendedFeeView {
-
-    companion object {
-
-        @JvmStatic
-        fun create(payReq: PaymentRequest): RecommendedFeeFragment =
-            RecommendedFeeFragment().apply {
-                arguments = payReq.toBundle()
-            }
-
-        fun getPaymentRequest(bundle: Bundle): PaymentRequest =
-            fromBundle(bundle)
-    }
+class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), RecommendedFeeView {
 
     @BindView(R.id.fee_options_message)
     lateinit var message: HtmlTextView
@@ -59,10 +44,10 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
     @BindString(R.string.fee_options_whats_this)
     lateinit var whatsThisText: String
 
-    private var selectedFeeRate: Double? = null     // Starts with null if no pre-selected fee rate
+    private var selectedFeeRateInVBytes: Double? = null // Starts with null if no rate zpre-selected
 
     @State
-    lateinit var cdm: CurrencyDisplayMode
+    lateinit var mBitcoinUnit: BitcoinUnit
 
     override fun inject() {
         component.inject(this)
@@ -74,33 +59,37 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
 
     override fun initializeUi(view: View) {
         super.initializeUi(view)
+
         parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
         parentActivity.header.showTitle(R.string.edit_fee_title)
-        val content = TextUtils.concat(
-            messageText,
-            ". ",
-            RichText(whatsThisText).setLink { onWhatsThisClick() }
-        )
-        message.text = content
-        if (selectedFeeRate == null) {
+
+        message.text = "$messageText. ${RichText(whatsThisText).setLink { onWhatsThisClick() }}"
+
+        if (selectedFeeRateInVBytes == null) {
             confirmButton.isEnabled = false
+        }
+
+        feeManualItem.setOnClickListener {
+            presenter!!.editFeeManually()
+        }
+
+        confirmButton.setOnClickListener {
+            presenter!!.confirmFee(selectedFeeRateInVBytes!!) // NonNull (feeRate has been selected)
         }
     }
 
-    override fun setCurrencyDisplayMode(currencyDisplayMode: CurrencyDisplayMode) {
-        this.cdm = currencyDisplayMode
+    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        this.mBitcoinUnit = bitcoinUnit
     }
 
-    override fun setPaymentContext(paymentContext: PaymentContext, paymentRequest: PaymentRequest) {
-        val feeOptionFast = paymentContext.fastFeeOption
-        val feeOptionMid = paymentContext.mediumFeeOption
-        val feeOptionSlow = paymentContext.slowFeeOption
+    override fun setState(state: EditFeeState) {
 
-        analyzeAndBindFeeOption(feeOptionItemFast, paymentContext, paymentRequest, feeOptionFast)
-        analyzeAndBindFeeOption(feeOptionItemMedium, paymentContext, paymentRequest, feeOptionMid)
-        analyzeAndBindFeeOption(feeOptionItemSlow, paymentContext, paymentRequest, feeOptionSlow)
+        val feeWindow = state.resolved.paymentContext.feeWindow
+        bindFeeOption(feeOptionItemFast, state, feeWindow.fastConfTarget)
+        bindFeeOption(feeOptionItemMedium, state, feeWindow.mediumConfTarget)
+        bindFeeOption(feeOptionItemSlow, state, feeWindow.slowConfTarget)
 
-        if (paymentRequest.takeFeeFromAmount) {
+        if (state.amountInfo.takeFeeFromAmount) {
             statusMessage.setWarning(
                 R.string.use_all_funds_warning_message,
                 R.string.fee_options_use_all_funds_warning_desc,
@@ -109,19 +98,14 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
             )
         }
 
-        val feeRateFast = feeOptionFast.satoshisPerByte
-        val feeRateMid = feeOptionMid.satoshisPerByte
-        val feeRateSlow = feeOptionSlow.satoshisPerByte
+        val feeRateFastInVBytes = state.minFeeRateForTarget(feeWindow.fastConfTarget)
+        val feeRateMidInVBytes = state.minFeeRateForTarget(feeWindow.mediumConfTarget)
+        val feeRateSlowInVBytes = state.minFeeRateForTarget(feeWindow.slowConfTarget)
 
-        hideDuplicatedFeeRateOptions(feeRateFast, feeRateMid, feeRateSlow)
+        hideDuplicatedFeeRateOptions(feeRateFastInVBytes, feeRateMidInVBytes, feeRateSlowInVBytes)
 
-        val currentFeeRate = Preconditions.checkNotNull(paymentRequest.feeInSatoshisPerByte)
-        val analysis: PaymentAnalysis = try {
-            paymentContext.analyze(paymentRequest)
-        } catch (error: Throwable) {
-            presenter!!.handleError(error)
-            return
-        }
+        val currentFeeRateInVBytes = state.amountInfo.feeRateInSatsPerVByte
+        val feeData = state.calculateFee(currentFeeRateInVBytes)
 
         if (alreadySomeOptionSelected()) { // then we probably resuming from background, already set
             return
@@ -129,62 +113,52 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
 
         confirmButton.isEnabled = false // will be enabled later if selected fee is OK
 
-        if (analysis.canPayWithSelectedFee) {
+        if (feeData.isFinal) {
             when {
-                Rules.feeRateEquals(currentFeeRate, feeRateFast) ->
-                    selectFeeOption(feeOptionFast, feeOptionItemFast)
+                Rules.feeRateEquals(currentFeeRateInVBytes, feeRateFastInVBytes) ->
+                    selectFeeOption(feeOptionItemFast, feeRateFastInVBytes)
 
-                Rules.feeRateEquals(currentFeeRate, feeRateMid) ->
-                    selectFeeOption(feeOptionMid, feeOptionItemMedium)
+                Rules.feeRateEquals(currentFeeRateInVBytes, feeRateMidInVBytes) ->
+                    selectFeeOption(feeOptionItemMedium, feeRateMidInVBytes)
 
-                Rules.feeRateEquals(currentFeeRate, feeRateSlow) ->
-                    selectFeeOption(feeOptionSlow, feeOptionItemSlow)
+                Rules.feeRateEquals(currentFeeRateInVBytes, feeRateSlowInVBytes) ->
+                    selectFeeOption(feeOptionItemSlow, feeRateSlowInVBytes)
 
                 else ->
-                    showManuallySelectedFee(analysis)
+                    showManuallySelectedFee(feeData, currentFeeRateInVBytes)
             }
         }
     }
 
-    private fun alreadySomeOptionSelected(): Boolean {
-        return (feeOptionItemFast.isSelected
-            || feeOptionItemMedium.isSelected
-            || feeOptionItemSlow.isSelected
-            || feeManualItem.isSelected)
-    }
+    private fun alreadySomeOptionSelected(): Boolean =
+        feeOptionItemFast.isSelected
+                || feeOptionItemMedium.isSelected
+                || feeOptionItemSlow.isSelected
+                || feeManualItem.isSelected
 
-    private fun showManuallySelectedFee(analysis: PaymentAnalysis) {
-        Preconditions.checkNotNull(analysis)
-        if (analysis.canPayWithSelectedFee) {
+    private fun showManuallySelectedFee(feeData: FeeState, currentFeeRateInVBytes: Double) {
+        if (feeData.isFinal) {
             confirmButton.isEnabled = true
-            selectedFeeRate = analysis.payReq.feeInSatoshisPerByte!! // Always non null by now
+            selectedFeeRateInVBytes = currentFeeRateInVBytes
         }
-        feeManualItem.currencyDisplayMode = cdm
-        feeManualItem.amount = analysis.fee!!.inInputCurrency
+        feeManualItem.bitcoinUnit = mBitcoinUnit
+        feeManualItem.amount = BitcoinAmount.fromLibwallet(feeData.amount).inInputCurrency
         feeManualItem.isSelected = true
     }
 
-    private fun analyzeAndBindFeeOption(
-        feeOptionItem: FeeOptionItem,
-        paymentContext: PaymentContext,
-        payReq: PaymentRequest,
-        feeOption: FeeOption
-    ) {
+    private fun bindFeeOption(feeOptionItem: FeeOptionItem, state: EditFeeState, confTarget: Long) {
 
-        val analysis: PaymentAnalysis = try {
-            paymentContext.analyze(payReq.withFeeRate(feeOption.satoshisPerByte))
-        } catch (error: Throwable) {
-            presenter!!.handleError(error)
-            return
-        }
+        val feeRateInVBytes = state.minFeeRateForTarget(confTarget)
+        val feeData = state.calculateFee(feeRateInVBytes)
 
-        feeOptionItem.setCurrencyDisplayMode(cdm)
-        feeOptionItem.setMaxTimeMs(feeOption.maxTimeMs)
-        feeOptionItem.setFeeRate(feeOption.satoshisPerByte)
-        feeOptionItem.setFee(analysis.fee)
-        if (analysis.canPayWithSelectedFee) {
+        feeOptionItem.setBitcoinUnit(mBitcoinUnit)
+        feeOptionItem.setMaxTimeMs(estimateTimeInMs(feeData.targetBlocks.toInt()))
+        feeOptionItem.setFeeRate(feeRateInVBytes)
+        feeOptionItem.setFee(BitcoinAmount.fromLibwallet(feeData.amount))
+
+        if (feeData.isFinal) {
             feeOptionItem.setOnClickListener {
-                selectFeeOption(feeOption, feeOptionItem)
+                selectFeeOption(feeOptionItem, feeRateInVBytes)
             }
         } else {
             feeOptionItem.isEnabled = false
@@ -202,8 +176,8 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
         }
     }
 
-    private fun selectFeeOption(option: FeeOption, item: FeeOptionItem) {
-        selectedFeeRate = option.satoshisPerByte
+    private fun selectFeeOption(item: FeeOptionItem, feeRateInVBytes: Double) {
+        selectedFeeRateInVBytes = feeRateInVBytes
 
         feeOptionItemFast.isSelected = false
         feeOptionItemMedium.isSelected = false
@@ -220,15 +194,5 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter?>(), Recom
         dialog.setDescription(getString(R.string.fee_options_whats_this_explanation_desc))
         showDrawerDialog(dialog)
         presenter!!.reportShowSelectFeeInfo()
-    }
-
-    @OnClick(R.id.enter_fee_manually)
-    fun onEditFeeManuallyClick() {
-        presenter!!.editFeeManually()
-    }
-
-    @OnClick(R.id.confirm_fee)
-    fun onConfirmFeeClick() {
-        presenter!!.confirmFee(selectedFeeRate!!) // NonNull (one option or manually selected)
     }
 }

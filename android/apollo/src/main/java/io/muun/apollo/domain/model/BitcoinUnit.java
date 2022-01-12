@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.model;
 
-public enum CurrencyDisplayMode {
+public enum BitcoinUnit {
     BTC,
     SATS
 }

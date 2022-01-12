@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 public class StatusMessage extends MuunView {
 
     static final ViewProps<StatusMessage> viewProps = new ViewProps.Builder<StatusMessage>()
-            .addSize(android.R.attr.textSize, StatusMessage::setTextSize)
+            .addSizeJava(android.R.attr.textSize, StatusMessage::setTextSize)
             .build();
 
     @BindView(R.id.message_image)

@@ -5,13 +5,13 @@ import (
 )
 
 func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
-	backendFeaturesWithTaproot := newStringList([]string{
+	backendFeaturesWithTaproot := NewStringListWithElements([]string{
 		BackendFeatureTaproot, BackendFeatureTaprootPreactivation,
 	})
-	backendFeaturesWithTaprootPreactivation := newStringList([]string{
+	backendFeaturesWithTaprootPreactivation := NewStringListWithElements([]string{
 		BackendFeatureTaprootPreactivation,
 	})
-	backendFeaturesWithoutTaproot := newStringList([]string{})
+	backendFeaturesWithoutTaproot := NewStringListWithElements([]string{})
 	neverExportedKit := newIntList([]int{})
 	exportedPreviousKit := newIntList([]int{EKVersionDescriptors})
 	exportedOnlyLatest := newIntList([]int{EKVersionMusig})

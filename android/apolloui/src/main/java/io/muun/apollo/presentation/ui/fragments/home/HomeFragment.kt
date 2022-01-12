@@ -16,7 +16,7 @@ import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.OnBalloonClickListener
 import com.skydoves.balloon.createBalloon
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
@@ -229,7 +229,7 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
         blockClock.value = homeState.blocksToTaproot
     }
 
-    override fun setNewOp(newOp: Operation, mode: CurrencyDisplayMode) {
+    override fun setNewOp(newOp: Operation, bitcoinUnit: BitcoinUnit) {
 
         var amountInBtc = BitcoinUtils.satoshisToBitcoins(newOp.amount.inSatoshis)
 
@@ -250,7 +250,7 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
             }
         }
 
-        newOpBadge.setAmount(amountInBtc, mode)
+        newOpBadge.setAmount(amountInBtc, bitcoinUnit)
 
         // Only show animation for recently received or sent ops
         if (newOp.creationDate.isAfter(ZonedDateTime.now().minusSeconds(NEW_OP_ANIMATION_WINDOW))) {

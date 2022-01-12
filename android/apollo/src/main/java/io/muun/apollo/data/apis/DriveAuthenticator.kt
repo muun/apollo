@@ -10,7 +10,7 @@ interface DriveAuthenticator {
 
     fun getSignInIntent(): Intent
 
-    fun getSignedInAccount(resultIntent: Intent): GoogleSignInAccount
+    fun getSignedInAccount(resultIntent: Intent?): GoogleSignInAccount
 
     fun signOut()
 

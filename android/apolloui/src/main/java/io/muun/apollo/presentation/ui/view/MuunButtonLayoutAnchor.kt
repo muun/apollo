@@ -7,8 +7,11 @@ import android.view.ViewGroup
 import butterknife.BindView
 import io.muun.apollo.R
 
-class MuunButtonLayoutAnchor
-@JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) : MuunView(c, a, s) {
+class MuunButtonLayoutAnchor @JvmOverloads constructor(
+    c: Context,
+    a: AttributeSet? = null,
+    s: Int = 0
+) : MuunView(c, a, s) {
 
     @BindView(R.id.muun_button_layout_anchor)
     lateinit var rootLayout: ViewGroup

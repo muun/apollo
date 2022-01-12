@@ -28,6 +28,7 @@ import libwallet.MusigNonces;
 import libwallet.Transaction;
 import rx.Observable;
 
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
@@ -79,14 +80,15 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
 
         final Operation op = buildOperation(prepPayment);
         final OperationWithMetadata opWithMetadata =
-                buildOperationWithMetadata(prepPayment.payReq, op);
+                buildOperationWithMetadata(prepPayment, op);
 
-        // TODO: probably not final version of how nonces are generated
-        final int nonceCount = prepPayment.nextTransactionSize.extractOutpoints().size();
+        final List<String> outpoints = prepPayment.outpoints;
+
+        final int nonceCount = outpoints.size();
         final MusigNonces musigNonces = Libwallet.generateMusigNonces(nonceCount);
 
         return Observable.defer(keysRepository::getBasePrivateKey)
-                .flatMap(baseUserPrivKey -> newOperation(opWithMetadata, prepPayment, musigNonces)
+                .flatMap(baseUserPrivKey -> newOperation(opWithMetadata, outpoints, musigNonces)
                         .flatMap(opCreated -> {
                             final Operation houstonOp =
                                     operationMapper.mapFromMetadata(opCreated.operation);
@@ -111,24 +113,23 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                         }));
     }
 
-    private Observable<OperationCreated> newOperation(
-            final OperationWithMetadata operationWithMetadata,
-            final PreparedPayment prepPayment,
-            final MusigNonces musigNonces
-    ) {
-        return houstonClient.newOperation(operationWithMetadata, prepPayment, musigNonces);
+    private Observable<OperationCreated> newOperation(OperationWithMetadata operationWithMetadata,
+                                                      List<String> outpoints,
+                                                      MusigNonces nonces) {
+        return houstonClient.newOperation(operationWithMetadata, outpoints, nonces);
     }
 
     private OperationWithMetadata buildOperationWithMetadata(
-            final PaymentRequest payReq,
+            final PreparedPayment preparedPayment,
             final Operation operation
     ) {
 
-        if (payReq.getType() == PaymentRequest.Type.TO_CONTACT) {
+
+        if (preparedPayment.type == PaymentRequest.Type.TO_CONTACT) {
 
             return operationMapper.mapWithMetadataForContact(
                     operation,
-                    payReq.getContact()
+                    preparedPayment.contact
             );
         } else {
             return operationMapper.mapWithMetadata(operation);
@@ -176,20 +177,18 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
     @VisibleForTesting
     public Operation buildOperation(PreparedPayment prepPayment) {
 
-        final PaymentRequest payReq = prepPayment.payReq;
-
-        switch (payReq.getType()) {
+        switch (prepPayment.type) {
             case TO_CONTACT:
-                return buildOperationToContact(payReq.getContact(), prepPayment);
+                return buildOperationToContact(prepPayment.contact, prepPayment);
 
             case TO_ADDRESS:
-                return buildOperationToExternal(payReq.getAddress(), prepPayment);
+                return buildOperationToExternal(prepPayment.address, prepPayment);
 
             case TO_LN_INVOICE:
-                return buildOperationToLnInvoice(payReq.getSwap(), prepPayment);
+                return buildOperationToLnInvoice(prepPayment.swap, prepPayment);
 
             default:
-                throw new MissingCaseError(payReq.getType());
+                throw new MissingCaseError(prepPayment.type);
         }
     }
 

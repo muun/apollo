@@ -57,8 +57,10 @@ public final class SerializationUtils {
                                 MuunZonedDateTime.class,
                                 new MuunZonedDateTimeDeserializer()
                         )
+
                         .addSerializer(PhoneNumber.class, new PhoneNumberSerializer())
                         .addDeserializer(PhoneNumber.class, new PhoneNumberDeserializer())
+
                         .addSerializer(BitcoinAmount.class, new BitcoinAmountSerializer())
                         .addDeserializer(BitcoinAmount.class, new BitcoinAmountDeserializer());
 

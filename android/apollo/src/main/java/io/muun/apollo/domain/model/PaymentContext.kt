@@ -6,6 +6,7 @@ import io.muun.common.Rules
 import io.muun.common.model.ExchangeRateProvider
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Preconditions
+import newop.PaymentContext
 import org.javamoney.moneta.Money
 import javax.money.CurrencyUnit
 import javax.money.Monetary
@@ -140,7 +141,7 @@ class PaymentContext(
                 analysis.fee,
                 analysis.payReq.description,
                 analysis.rateWindow.windowHid,
-                nextTransactionSize,
+                nextTransactionSize.extractOutpoints(),
                 analysis.payReq
         )
     }
@@ -178,4 +179,20 @@ class PaymentContext(
             convert(amountInSatoshis, inputCurrency),
             convert(amountInSatoshis, user.getPrimaryCurrency(exchangeRateWindow))
         )
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    fun toLibwallet(submarineSwap: SubmarineSwap?): PaymentContext {
+        val libwalletPayCtx = PaymentContext()
+        libwalletPayCtx.feeWindow = feeWindow.toLibwallet()
+        libwalletPayCtx.exchangeRateWindow = exchangeRateWindow.toLibwallet()
+        libwalletPayCtx.nextTransactionSize = nextTransactionSize.toLibwallet()
+        libwalletPayCtx.primaryCurrency = user.getPrimaryCurrency(exchangeRateWindow).currencyCode
+        libwalletPayCtx.minFeeRateInSatsPerVByte = Rules.toSatsPerVbyte(minFeeRate)
+        if (submarineSwap != null) {
+            libwalletPayCtx.submarineSwap = submarineSwap.toLibwallet()
+        }
+        return libwalletPayCtx
+    }
 }

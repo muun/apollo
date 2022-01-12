@@ -126,7 +126,8 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status: AnalysisStatusAmountGreaterThanBalance,
+				Status:     AnalysisStatusAmountGreaterThanBalance,
+				TotalInSat: 1_000_000_000,
 			},
 		},
 		{
@@ -333,7 +334,8 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status: AnalysisStatusAmountGreaterThanBalance,
+				Status:     AnalysisStatusAmountGreaterThanBalance,
+				TotalInSat: 999_900,
 			},
 		},
 		{
@@ -366,7 +368,8 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status: AnalysisStatusAmountGreaterThanBalance,
+				Status:     AnalysisStatusAmountGreaterThanBalance,
+				TotalInSat: 999_900,
 			},
 		},
 		{
@@ -397,7 +400,7 @@ func TestAnalyzeOnChain(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 
-			var analyzer *paymentAnalyzer
+			var analyzer *PaymentAnalyzer
 			if tC.nts != nil {
 				analyzer = NewPaymentAnalyzer(defaultFeeWindow, tC.nts)
 			} else {
@@ -562,7 +565,8 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status: AnalysisStatusAmountGreaterThanBalance,
+				Status:     AnalysisStatusAmountGreaterThanBalance,
+				TotalInSat: 5_000_000,
 			},
 		},
 		{
@@ -809,8 +813,8 @@ func TestAnalyzeOffChain(t *testing.T) {
 			expected: &PaymentAnalysis{
 				Status:      AnalysisStatusUnpayable,
 				AmountInSat: 500,
-				FeeInSat:    0,
-				TotalInSat:  0,
+				FeeInSat:    240,
+				TotalInSat:  11240,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        11000,
 					DebtType:            fees.DebtTypeNone,
@@ -903,7 +907,8 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status: AnalysisStatusAmountGreaterThanBalance,
+				Status:     AnalysisStatusAmountGreaterThanBalance,
+				TotalInSat: 200,
 			},
 		},
 		{
@@ -1084,6 +1089,8 @@ func TestAnalyzeOffChain(t *testing.T) {
 			expected: &PaymentAnalysis{
 				Status:      AnalysisStatusUnpayable,
 				AmountInSat: 7400,
+				FeeInSat:    240,
+				TotalInSat:  7740,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        10500,
 					DebtType:            fees.DebtTypeCollect,
@@ -2187,6 +2194,173 @@ func TestAnalyzeOffChain(t *testing.T) {
 					analysis.SwapFees,
 					tC.expected.SwapFees,
 				)
+			}
+		})
+	}
+}
+
+func TestMaxFeeRate(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		nts      *NextTransactionSize
+		payment  *PaymentToAddress
+		expected float64
+	}{
+		{
+			desc: "small amount with one coin",
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       10_000,
+			},
+			expected: 9_900,
+		},
+		{
+			desc: "take fee from amount one coin",
+			payment: &PaymentToAddress{
+				AmountInSat:       1_000_000,
+				TakeFeeFromAmount: true,
+			},
+			expected: 10_000,
+		},
+		{
+			desc: "zero amount",
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       0,
+			},
+			expected: 10_000,
+		},
+		{
+			desc: "zero amount using TFFA",
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: true,
+				AmountInSat:       0,
+			},
+			expected: 0,
+		},
+		{
+			desc: "amount greater than balance",
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       1_000_000_000,
+			},
+			expected: 0,
+		},
+		{
+			desc: "small amount with one coin and debt > 0",
+			nts: &NextTransactionSize{
+				SizeProgression:   defaultNTS.SizeProgression,
+				ExpectedDebtInSat: 10_000,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       10_000,
+			},
+			expected: 9_800,
+		},
+		{
+			desc: "take fee from amount success with debt > 0",
+			nts: &NextTransactionSize{
+				SizeProgression:   defaultNTS.SizeProgression,
+				ExpectedDebtInSat: 10_000,
+			},
+			payment: &PaymentToAddress{
+				AmountInSat:       990_000,
+				TakeFeeFromAmount: true,
+			},
+			expected: 9_900,
+		},
+		{
+			desc: "amount greater than balance because debt > 0",
+			nts: &NextTransactionSize{
+				SizeProgression:   defaultNTS.SizeProgression,
+				ExpectedDebtInSat: 10_000,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       999_900,
+			},
+			expected: 0,
+		},
+		{
+			desc: "needs 2 coins to spend",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+					},
+					{
+						AmountInSat: 20_000,
+						SizeInVByte: 450,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: false,
+				AmountInSat:       11_000,
+			},
+			expected: 20,
+		},
+		{
+			desc: "needs 2 coins to spend with debt",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+					},
+					{
+						AmountInSat: 20_000,
+						SizeInVByte: 400,
+					},
+				},
+				ExpectedDebtInSat: 8_000,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     false,
+				AmountInSat:           11_000,
+				FeeRateInSatsPerVByte: 0,
+			},
+			expected: 2.5,
+		},
+		{
+			desc: "TFFA needs 2 coins to spend with debt",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+					},
+					{
+						AmountInSat: 20_000,
+						SizeInVByte: 400,
+					},
+				},
+				ExpectedDebtInSat: 8_000,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount: true,
+				AmountInSat:       12_000,
+			},
+			expected: 30,
+		},
+	}
+
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+
+			var analyzer *PaymentAnalyzer
+			if tC.nts != nil {
+				analyzer = NewPaymentAnalyzer(defaultFeeWindow, tC.nts)
+			} else {
+				analyzer = NewPaymentAnalyzer(defaultFeeWindow, defaultNTS)
+			}
+
+			maxFeeRate := analyzer.MaxFeeRateToAddress(tC.payment)
+			if maxFeeRate != tC.expected {
+				t.Fatalf("Max fee rate %v != %v", maxFeeRate, tC.expected)
 			}
 		})
 	}

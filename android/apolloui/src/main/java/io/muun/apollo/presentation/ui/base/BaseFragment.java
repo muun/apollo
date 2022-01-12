@@ -384,4 +384,9 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     protected boolean blockScreenshots() {
         return false;
     }
+
+    @Override
+    public int getMId() {
+        return getId();
+    }
 }

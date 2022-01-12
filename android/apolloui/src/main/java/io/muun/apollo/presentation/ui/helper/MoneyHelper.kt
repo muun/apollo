@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.helper
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper.formatInputBitcoinAmount
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper.formatLongBitcoinAmount
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper.formatShortBitcoinAmount
@@ -62,12 +62,12 @@ object MoneyHelper {
         amt: MonetaryAmount,
         amtColor: Int,
         currencyColor: Int,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): CharSequence {
 
-        val formattedAmount = formatLongMonetaryAmount(amt, false, mode, locale)
-        val formatCurrency = formatCurrency(amt.currency, mode)
+        val formattedAmount = formatLongMonetaryAmount(amt, false, bitcoinUnit, locale)
+        val formatCurrency = formatCurrency(amt.currency, bitcoinUnit)
 
         return concatRichText(
             RichText(formattedAmount).setForegroundColor(amtColor),
@@ -84,12 +84,12 @@ object MoneyHelper {
     @JvmStatic
     fun formatInputMonetaryAmount(
         amount: MonetaryAmount,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
 
         return if (amount.isBtc()) {
-            formatInputBitcoinAmount(BitcoinUtils.bitcoinsToSatoshis(amount), mode, locale)
+            formatInputBitcoinAmount(BitcoinUtils.bitcoinsToSatoshis(amount), bitcoinUnit, locale)
 
         } else {
             format(amount, INPUT_FIAT_FORMAT.buildFor(amount.currency), false, locale)
@@ -103,10 +103,10 @@ object MoneyHelper {
     @JvmStatic
     fun formatLongMonetaryAmount(
         amount: MonetaryAmount,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
-        return formatLongMonetaryAmount(amount, true, mode, locale)
+        return formatLongMonetaryAmount(amount, true, bitcoinUnit, locale)
     }
 
     /**
@@ -116,13 +116,13 @@ object MoneyHelper {
     fun formatLongMonetaryAmount(
         amount: MonetaryAmount,
         showCurrencyCode: Boolean,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
 
         return if (amount.isBtc()) {
             val amountInSats = BitcoinUtils.bitcoinsToSatoshis(amount)
-            formatLongBitcoinAmount(amountInSats, showCurrencyCode, mode, locale)
+            formatLongBitcoinAmount(amountInSats, showCurrencyCode, bitcoinUnit, locale)
 
         } else {
             format(amount, DEFAULT_FIAT_FORMAT.buildFor(amount.currency), showCurrencyCode, locale)
@@ -135,10 +135,10 @@ object MoneyHelper {
      */
     fun formatShortMonetaryAmount(
         amt: MonetaryAmount,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
-        return formatShortMonetaryAmount(amt, true, mode, locale)
+        return formatShortMonetaryAmount(amt, true, bitcoinUnit, locale)
     }
 
     /**
@@ -147,7 +147,7 @@ object MoneyHelper {
     fun formatShortMonetaryAmount(
         amount: MonetaryAmount,
         showCurrencyCode: Boolean,
-        mode: CurrencyDisplayMode,
+        bitcoinUnit: BitcoinUnit,
         locale: Locale
     ): String {
 
@@ -155,7 +155,7 @@ object MoneyHelper {
             formatShortBitcoinAmount(
                 BitcoinUtils.bitcoinsToSatoshis(amount),
                 showCurrencyCode,
-                mode,
+                bitcoinUnit,
                 locale
             )
         } else {
@@ -167,8 +167,8 @@ object MoneyHelper {
      * Return a UI-ready representation of the currency.
      */
     @JvmStatic
-    fun formatCurrency(currency: CurrencyUnit, mode: CurrencyDisplayMode): String {
-        return formatCurrency(currency.currencyCode, mode)
+    fun formatCurrency(currency: CurrencyUnit, bitcoinUnit: BitcoinUnit): String {
+        return formatCurrency(currency.currencyCode, bitcoinUnit)
     }
 
     /**
@@ -176,8 +176,8 @@ object MoneyHelper {
      */
     @SuppressLint("DefaultLocale")
     @JvmStatic
-    fun formatCurrency(currencyCode: String, mode: CurrencyDisplayMode): String {
-        return if (currencyCode == "BTC" && mode == CurrencyDisplayMode.SATS) {
+    fun formatCurrency(currencyCode: String, bitcoinUnit: BitcoinUnit): String {
+        return if (currencyCode == "BTC" && bitcoinUnit == BitcoinUnit.SATS) {
             "SAT"
         } else {
             currencyCode.toUpperCase()
@@ -188,8 +188,8 @@ object MoneyHelper {
      * Return a UI-ready representation of the currency name, given the code.
      */
     @JvmStatic
-    fun formatCurrencyName(currency: Currency, mode: CurrencyDisplayMode): String {
-        return if (currency.code == "BTC" && mode == CurrencyDisplayMode.SATS) {
+    fun formatCurrencyName(currency: Currency, bitcoinUnit: BitcoinUnit): String {
+        return if (currency.code == "BTC" && bitcoinUnit == BitcoinUnit.SATS) {
             "Satoshi"
         } else {
             currency.name

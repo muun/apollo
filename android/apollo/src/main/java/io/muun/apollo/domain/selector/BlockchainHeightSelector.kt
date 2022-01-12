@@ -2,7 +2,7 @@ package io.muun.apollo.domain.selector
 
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.preferences.BlockchainHeightRepository
-import io.muun.apollo.domain.libwallet.toLibwalletModel
+import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.common.bitcoinj.BlockHelpers
 import libwallet.Libwallet
 import rx.Observable
@@ -39,7 +39,7 @@ class BlockchainHeightSelector @Inject constructor(
         }
 
         val taprootHeight = Libwallet.getUserActivatedFeatureTaproot()
-            .blockheight(Globals.INSTANCE.network.toLibwalletModel())
+            .blockheight(Globals.INSTANCE.network.toLibwallet())
 
         return max(taprootHeight - blockchainHeight, 0).toInt()
     }

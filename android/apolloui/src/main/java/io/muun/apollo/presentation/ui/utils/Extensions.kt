@@ -17,10 +17,7 @@ import android.view.ViewTreeObserver
 import android.view.animation.Animation
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.ColorInt
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.annotation.StyleRes
+import androidx.annotation.*
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
@@ -230,6 +227,9 @@ fun TextView.setTextAppearanceCompat(@StyleRes resId: Int) {
 fun TextView.setDrawableTint(@ColorInt color: Int) {
     UiUtils.setDrawableTint(this, color)
 }
+
+fun Context.getColorCompat(@ColorRes colorId: Int) =
+    ContextCompat.getColor(this, colorId)
 
 fun TextView.setStyledText(@StringRes resId: Int, vararg args: Any) {
     setStyledText(resId, {}, *args)

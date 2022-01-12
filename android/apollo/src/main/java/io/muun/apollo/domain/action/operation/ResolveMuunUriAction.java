@@ -51,7 +51,11 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
     private PaymentRequest resolveMuunUri(OperationUri uri) {
         final User user = userRepository.fetchOne();
         final FeeWindow feeWindow = feeWindowRepository.fetchOne();
-        final ExchangeRateWindow rateWindow = rateSelector.getWindow();
+        // TODO: this could cause unexpected behaviour since it may not be same rate window as
+        // the one used in paymentContext. We've seen rates for some currencies suddenly being
+        // dropped which may cause trouble if the primary currency is one of them.
+        // We should try to receive an exchange rate window or have it fixed somehow.
+        final ExchangeRateWindow rateWindow = rateSelector.getLatestWindow();
 
         final String amountParam = uri.getParam(OperationUri.MUUN_AMOUNT)
                 .orElse("0");

@@ -40,7 +40,7 @@ GOMODCACHE="$GOMODCACHE" \
     -target="android" -o "$libwallet" \
     -cache  "$GOCACHE"\
     -trimpath -ldflags="-buildid=. -v" \
-    .
+    . ./newop
 
 st=$?
 echo "rebuilt gomobile with status $? to $libwallet"

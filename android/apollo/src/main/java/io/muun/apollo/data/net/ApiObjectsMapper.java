@@ -8,6 +8,7 @@ import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
+import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.api.BitcoinAmountJson;
@@ -36,9 +37,11 @@ import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.exception.MissingCaseError;
+import io.muun.common.model.DebtType;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
+import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 
 import libwallet.MusigNonces;
@@ -119,9 +122,7 @@ public class ApiObjectsMapper {
             final MusigNonces musigNonces
     ) {
 
-        final Long outputAmountInSatoshis = operation.getSwap() != null
-                ? operation.getSwap().getFundingOutput().getOutputAmountInSatoshis()
-                : operation.getAmount().inSatoshis;
+        final Long outputAmountInSatoshis = mapOutputAmountInSatoshis(operation);
 
         final List<String> userPublicNoncesHex = new LinkedList<>();
         for (int i = 0; i < outpoints.size(); i++) {
@@ -146,7 +147,6 @@ public class ApiObjectsMapper {
                 operation.getExchangeRateWindowHid(),
                 operation.getDescription(),
                 operation.getStatus(),
-                ApolloZonedDateTime.of(operation.getCreationDate()),
                 operation.getSwap() != null ? operation.getSwap().houstonUuid : null,
                 operation.getSenderMetadata(),
                 operation.getReceiverMetadata(),
@@ -156,14 +156,41 @@ public class ApiObjectsMapper {
         );
     }
 
+    private Long mapOutputAmountInSatoshis(OperationWithMetadata operation) {
+        if (operation.getSwap() == null) {
+            return operation.getAmount().inSatoshis;
+        }
+
+        // Workaround Houston validation that enforces all operations to have outputAmount > DUST
+        if (operation.getSwap().getFundingOutput().getDebtType() == DebtType.LEND) {
+            return fundingOutputAmount(operation);
+        }
+
+        return operation.getSwap().getFundingOutput().getOutputAmountInSatoshis();
+    }
+
+    /**
+     * Return a valid fundintOutputAmount (e.g > DUST) for this operation. Used only as a workaround
+     * for Houston validation that enforces all operation to have outputAmount > DUST.
+     */
+    private Long fundingOutputAmount(OperationWithMetadata operation) {
+        final SubmarineSwap swap = operation.getSwap();
+        Long inputAmount = operation.getAmount().inSatoshis + swap.getFees().getLightningInSats();
+        if (swap.isCollect()) {
+            inputAmount += swap.getFundingOutput().getDebtAmountInSatoshis();
+        }
+        return Math.max(inputAmount, BitcoinUtils.DUST_IN_SATOSHIS);
+    }
+
     /**
      * Map client information.
      */
-    public ClientJson mapClient(String buildType, int version, final String bigQueryPseudoId) {
+    public ClientJson mapClient(final String bigQueryPseudoId) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
-                buildType,
-                version,
+                Globals.INSTANCE.getOldBuildType(),
+                Globals.INSTANCE.getVersionCode(),
+                Globals.INSTANCE.getVersionName(),
                 Globals.INSTANCE.getDeviceName(),
                 TimeZone.getDefault().getRawOffset() / 1000L,
                 Locale.getDefault().toString(),
@@ -174,15 +201,15 @@ public class ApiObjectsMapper {
     /**
      * Map a CreateFirstSession object.
      */
-    public CreateFirstSessionJson mapCreateFirstSession(String buildType,
-                                                        int version,
-                                                        String gcmToken,
-                                                        PublicKey basePublicKey,
-                                                        CurrencyUnit primaryCurrency,
-                                                        String bigQueryPseudoId) {
+    public CreateFirstSessionJson mapCreateFirstSession(
+            String gcmToken,
+            PublicKey basePublicKey,
+            CurrencyUnit primaryCurrency,
+            String bigQueryPseudoId
+    ) {
 
         return new CreateFirstSessionJson(
-                mapClient(buildType, version, bigQueryPseudoId),
+                mapClient(bigQueryPseudoId),
                 gcmToken,
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
@@ -193,14 +220,15 @@ public class ApiObjectsMapper {
     /**
      * Map a CreateLoginSession object.
      */
-    public CreateLoginSessionJson mapCreateLoginSession(String buildType,
-                                                        int clientVersion,
-                                                        String gcmToken,
-                                                        String email,
-                                                        String bigQueryPseudoId) {
+    public CreateLoginSessionJson mapCreateLoginSession(
+
+            String gcmToken,
+            String email,
+            String bigQueryPseudoId
+    ) {
 
         return new CreateLoginSessionJson(
-                mapClient(buildType, clientVersion, bigQueryPseudoId),
+                mapClient(bigQueryPseudoId),
                 gcmToken,
                 email
         );
@@ -209,14 +237,13 @@ public class ApiObjectsMapper {
     /**
      * Map a CreateRcLoginSession object.
      */
-    public CreateRcLoginSessionJson mapCreateRcLoginSession(String buildType,
-                                                            int clientVersion,
-                                                            String gcmToken,
-                                                            String rcChallengePublicKeyHex,
-                                                            String bigQueryPseudoId) {
-
+    public CreateRcLoginSessionJson mapCreateRcLoginSession(
+            String gcmToken,
+            String rcChallengePublicKeyHex,
+            String bigQueryPseudoId
+    ) {
         return new CreateRcLoginSessionJson(
-                mapClient(buildType, clientVersion, bigQueryPseudoId),
+                mapClient(bigQueryPseudoId),
                 gcmToken,
                 new ChallengeKeyJson(
                         ChallengeType.RECOVERY_CODE,
@@ -356,10 +383,14 @@ public class ApiObjectsMapper {
     @Nullable
     private ExportEmergencyKitJson.Method mapExportMethod(@NotNull EmergencyKitExport.Method meth) {
         switch (meth) {
-            case UNKNOWN: return null;
-            case DRIVE: return ExportEmergencyKitJson.Method.DRIVE;
-            case MANUAL: return ExportEmergencyKitJson.Method.MANUAL;
-            case ICLOUD: return ExportEmergencyKitJson.Method.ICLOUD;
+            case UNKNOWN:
+                return null;
+            case DRIVE:
+                return ExportEmergencyKitJson.Method.DRIVE;
+            case MANUAL:
+                return ExportEmergencyKitJson.Method.MANUAL;
+            case ICLOUD:
+                return ExportEmergencyKitJson.Method.ICLOUD;
             default:
                 throw new MissingCaseError(meth);
         }

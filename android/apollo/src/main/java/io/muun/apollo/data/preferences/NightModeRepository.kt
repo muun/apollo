@@ -2,7 +2,6 @@ package io.muun.apollo.data.preferences
 
 import android.content.Context
 import io.muun.apollo.data.preferences.rx.Preference
-import io.muun.apollo.domain.model.CurrencyDisplayMode
 import io.muun.apollo.domain.model.NightMode
 import javax.inject.Inject
 

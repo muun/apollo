@@ -25,9 +25,9 @@ public class VersionHeaderInterceptor extends BaseInterceptor {
     protected Request processRequest(Request originalRequest) {
         return originalRequest.newBuilder()
                 .addHeader(HeaderUtils.CLIENT_VERSION, "" + Globals.INSTANCE.getVersionCode())
+                .addHeader(HeaderUtils.CLIENT_VERSION_NAME, "" + Globals.INSTANCE.getVersionName())
                 .addHeader(HeaderUtils.CLIENT_TYPE, ClientTypeJson.APOLLO.toString())
-                .addHeader(HeaderUtils.CLIENT_SDK_VERSION,
-                        "" + android.os.Build.VERSION.SDK_INT)
+                .addHeader(HeaderUtils.CLIENT_SDK_VERSION, "" + android.os.Build.VERSION.SDK_INT)
                 .build();
     }
 

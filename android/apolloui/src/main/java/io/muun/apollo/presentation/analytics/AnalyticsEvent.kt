@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.analytics
 
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin
@@ -237,8 +237,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         }
     }
 
-    class E_NEW_OP_STARTED(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
-
     class E_NEW_OP_COMPLETED(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
 
     enum class E_FEE_OPTION_TYPE {
@@ -288,7 +286,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         "url" to url
     ))
 
-    class E_DID_SELECT_BITCOIN_UNIT(val type: CurrencyDisplayMode): AnalyticsEvent(listOf(
+    class E_DID_SELECT_BITCOIN_UNIT(val type: BitcoinUnit): AnalyticsEvent(listOf(
         "type" to type.name.toLowerCase()
     ))
 

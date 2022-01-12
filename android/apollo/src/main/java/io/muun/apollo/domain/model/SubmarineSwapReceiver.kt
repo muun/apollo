@@ -59,4 +59,15 @@ class SubmarineSwapReceiver(
             publicKey
         )
     }
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    fun toLibwallet(): newop.SubmarineSwapReceiver {
+        val libwalletSwapReceiver = newop.SubmarineSwapReceiver()
+        libwalletSwapReceiver.alias = alias ?: ""
+        libwalletSwapReceiver.publicKey = publicKey
+        libwalletSwapReceiver.networkAddresses = networkAddresses.joinToString { "\n" }
+        return libwalletSwapReceiver
+    }
 }

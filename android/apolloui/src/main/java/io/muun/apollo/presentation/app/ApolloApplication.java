@@ -17,7 +17,7 @@ import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
-import io.muun.apollo.domain.selector.CurrencyDisplayModeSelector;
+import io.muun.apollo.domain.selector.BitcoinUnitSelector;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent;
@@ -275,7 +275,7 @@ public abstract class ApolloApplication extends Application
                     (appContext, transformerFactory, repoRegistry) -> new NotificationServiceImpl(
                             appContext,
                             transformerFactory,
-                            new CurrencyDisplayModeSelector(new UserRepository(this, repoRegistry))
+                            new BitcoinUnitSelector(new UserRepository(this, repoRegistry))
                     ),
                     AppStandbyBucketProviderImpl::new,
                     new HoustonConfigImpl()

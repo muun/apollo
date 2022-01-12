@@ -5,7 +5,7 @@ import android.content.Intent
 import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -30,7 +30,7 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
 
     @State
     @JvmField
-    var currencyDisplayMode: CurrencyDisplayMode? = null
+    var bitcoinUnit: BitcoinUnit? = null
 
     override fun inject() =
         component.inject(this)
@@ -47,18 +47,18 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
             it.setNavigation(Navigation.BACK)
         }
 
-        bitcoinUnitItem.setOnClickListener { onItemSelected(CurrencyDisplayMode.BTC) }
-        satoshisUnitItem.setOnClickListener { onItemSelected(CurrencyDisplayMode.SATS) }
+        bitcoinUnitItem.setOnClickListener { onItemSelected(BitcoinUnit.BTC) }
+        satoshisUnitItem.setOnClickListener { onItemSelected(BitcoinUnit.SATS) }
 
         updateSelection()
     }
 
-    private fun onItemSelected(newCurrencyDisplayMode: CurrencyDisplayMode) {
-        presenter.changeCurrencyDisplayMode(newCurrencyDisplayMode)
+    private fun onItemSelected(newBitcoinUnit: BitcoinUnit) {
+        presenter.changeBitcoinUnit(newBitcoinUnit)
     }
 
-    override fun setCurrencyDisplayMode(currencyDisplayMode: CurrencyDisplayMode) {
-        this.currencyDisplayMode = currencyDisplayMode
+    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        this.bitcoinUnit = bitcoinUnit
         updateSelection()
     }
 
@@ -72,10 +72,10 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
         satoshisUnitItem.setIcon(null)
         bitcoinUnitItem.setIcon(null)
 
-        if (currencyDisplayMode == CurrencyDisplayMode.BTC) {
+        if (bitcoinUnit == BitcoinUnit.BTC) {
             bitcoinUnitItem.setIcon(selectedIcon)
 
-        } else if (currencyDisplayMode == CurrencyDisplayMode.SATS) {
+        } else if (bitcoinUnit == BitcoinUnit.SATS) {
             satoshisUnitItem.setIcon(selectedIcon)
         }
     }

@@ -94,7 +94,7 @@ class RcLoginEmailAuthorizePresenter @Inject constructor(
     override fun <T> handleStates(
         handleLoading: Action1<Boolean>?,
         handleError: Action1<Throwable>?
-    ): Observable.Transformer<ActionState<T>, T>? {
+    ): Observable.Transformer<ActionState<T>, T> {
 
         return Observable.Transformer { observable: Observable<ActionState<T>> ->
             observable

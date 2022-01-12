@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.select_currency;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.model.CurrencyItem;
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter;
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory;
@@ -15,6 +15,7 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
 
     private static final String SELECTED_CURRENCY_RESULT = "selected_currency_result";
     private static final String SELECTED_CURRENCY = "SELECTED_CURRENCY";
+    private static final String FIXED_EXCHANGE_RATE_WINDOW_ID = "FIXED_EXCHANGE_RATE_WINDOW_ID";
     private static final String HEADER_TITLE = "HEADER_TITLE";
 
     @BindView(R.id.select_currency_header)
@@ -60,30 +62,53 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     String allCurrenciesSectionTitle;
 
     @State
-    CurrencyDisplayMode currencyDisplayMode;
+    BitcoinUnit bitcoinUnit;
 
     private ItemAdapter adapter;
 
-    public static Intent getStartSelectPrimaryCurrencyActivityIntent(@NotNull Context context) {
+    /**
+     * Creates an intent to launch the select primary currency activity.
+     */
+    public static Intent getSelectPrimaryCurrencyActivityIntent(@NotNull Context context,
+                                                                long fixedExchangeRateWindowId) {
         return new Intent(context, SelectCurrencyActivity.class)
-                .putExtra(HEADER_TITLE, context.getString(R.string.select_primary_currency_title));
+                .putExtra(HEADER_TITLE, context.getString(R.string.select_primary_currency_title))
+                .putExtra(FIXED_EXCHANGE_RATE_WINDOW_ID, fixedExchangeRateWindowId);
     }
 
-    public static Intent getStartActivityIntent(@NotNull Context context,
-                                                @NotNull String selectedCurrencyCode) {
+    /**
+     * Creates an intent to launch an activity to select a currency, with a pre-selected one.
+     */
+    public static Intent getSelectCurrencyActivityIntent(@NotNull Context context,
+                                                         @NotNull String selectedCurrencyCode,
+                                                         long fixedExchangeRateWindowId) {
         return new Intent(context, SelectCurrencyActivity.class)
-                .putExtra(SELECTED_CURRENCY, selectedCurrencyCode);
+                .putExtra(SELECTED_CURRENCY, selectedCurrencyCode)
+                .putExtra(FIXED_EXCHANGE_RATE_WINDOW_ID, fixedExchangeRateWindowId);
     }
 
+    /**
+     * Get the pre-selected currency from Android's bundle.
+     */
     public static Optional<CurrencyUnit> getSelectedCurrency(@NotNull Bundle bundle) {
         final String selectedCurrencyCode = bundle.getString(SELECTED_CURRENCY);
         return Currency.getUnit(selectedCurrencyCode);
+    }
+
+    /**
+     * Get the fixed exchange rate window id for the current top-level flow, from Android's bundle.
+     */
+    public static long getFixedExchangeRateWindowId(@NotNull Bundle bundle) {
+        return bundle.getLong(FIXED_EXCHANGE_RATE_WINDOW_ID);
     }
 
     private static Optional<String> getHeaderTitle(@NotNull Bundle bundle) {
         return Optional.ofNullable(bundle.getString(HEADER_TITLE));
     }
 
+    /**
+     * Extract a Result from this Activity from intent.
+     */
     public static String getResult(Intent data) {
         return data.getStringExtra(SELECTED_CURRENCY_RESULT);
     }
@@ -154,8 +179,8 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     }
 
     @Override
-    public void setCurrencyDisplayMode(CurrencyDisplayMode currencyDisplayMode) {
-        this.currencyDisplayMode = currencyDisplayMode;
+    public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {
+        this.bitcoinUnit = bitcoinUnit;
     }
 
     private static boolean filter(ItemViewModel viewModel, String query) {
@@ -173,7 +198,7 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     public void setCurrencies(Set<CurrencyUnit> topCurrencies,
                               Set<CurrencyUnit> allCurrencies,
                               CurrencyUnit selectedCurrency,
-                              CurrencyDisplayMode currencyDisplayMode) {
+                              BitcoinUnit bitcoinUnit) {
 
         final List<ItemViewModel> topItems = toViewModel(topCurrencies, selectedCurrency, false);
         topItems.add(0, new SectionHeaderViewModel(mostPopularSectionTitle));
@@ -187,14 +212,6 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
         adapter.addItems(sortedItems);
     }
 
-    @Override
-    public void finishWithResult(int resultCode, CurrencyUnit currencyUnit) {
-        final Intent intent = new Intent();
-        intent.putExtra(SELECTED_CURRENCY_RESULT, currencyUnit.getCurrencyCode());
-        setResult(resultCode, intent);
-        finishActivity();
-    }
-
     // TODO this could be made more generic
     private List<ItemViewModel> toViewModel(Collection<CurrencyUnit> currencies,
                                             CurrencyUnit selectedCurrency,
@@ -206,7 +223,7 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
             final String primaryCurrencyCode = selectedCurrency.getCurrencyCode();
             final boolean isSelected = currency.currencyInfo.getCode().equals(primaryCurrencyCode);
 
-            viewModels.add(new CurrencyViewModel(currency, currencyDisplayMode, isSelected));
+            viewModels.add(new CurrencyViewModel(currency, bitcoinUnit, isSelected));
         }
 
         return viewModels;
@@ -214,7 +231,11 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
 
     private void onItemClick(ItemViewModel viewModel) {
         if (viewModel instanceof CurrencyViewModel) {
-            presenter.onCurrencyClick(((CurrencyViewModel) viewModel).model.currencyUnit);
+            final CurrencyUnit currencyUnit = ((CurrencyViewModel) viewModel).model.currencyUnit;
+            final Intent intent = new Intent();
+            intent.putExtra(SELECTED_CURRENCY_RESULT, currencyUnit.getCurrencyCode());
+            setResult(Activity.RESULT_OK, intent);
+            finishActivity();
         }
     }
 }

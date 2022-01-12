@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui
 
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import org.assertj.core.api.Assertions.assertThat
@@ -12,8 +12,8 @@ import javax.money.MonetaryAmount
 class AmountFormattingTest {
 
     companion object {
-        private val BTC = CurrencyDisplayMode.BTC
-        private val SAT = CurrencyDisplayMode.SATS
+        private val BTC = BitcoinUnit.BTC
+        private val SAT = BitcoinUnit.SATS
     }
 
     private val locale = Locale.US
@@ -465,21 +465,21 @@ class AmountFormattingTest {
         checkInputFiat(Money.of(1_000_000_000.91, currency), "1,000,000,000.91")
     }
 
-    private fun checkLong(amountInSat: Long, expect: String, mode: CurrencyDisplayMode = BTC) {
-        assertThat(BitcoinHelper.formatLongBitcoinAmount(amountInSat, false, mode, locale))
+    private fun checkLong(amountInSat: Long, expect: String, bitcoinUnit: BitcoinUnit = BTC) {
+        assertThat(BitcoinHelper.formatLongBitcoinAmount(amountInSat, false, bitcoinUnit, locale))
             .isEqualTo(expect)
     }
 
-    private fun checkShort(amountInSat: Long, expect: String, mode: CurrencyDisplayMode = BTC) {
-        assertThat(BitcoinHelper.formatShortBitcoinAmount(amountInSat, false, mode, locale))
+    private fun checkShort(amountInSat: Long, expect: String, bitcoinUnit: BitcoinUnit = BTC) {
+        assertThat(BitcoinHelper.formatShortBitcoinAmount(amountInSat, false, bitcoinUnit, locale))
             .isEqualTo(expect)
     }
 
-    private fun checkInputBtc(amountInBtc: Double, expect: String, mode: CurrencyDisplayMode = BTC) {
+    private fun checkInputBtc(amountInBtc: Double, expect: String, bitcoinUnit: BitcoinUnit = BTC) {
 
         // NOTE: using Double here is a little flimsy
         val money = Money.of(amountInBtc, "BTC")
-        assertThat(MoneyHelper.formatInputMonetaryAmount(money, mode, locale))
+        assertThat(MoneyHelper.formatInputMonetaryAmount(money, bitcoinUnit, locale))
             .isEqualTo(expect)
     }
 

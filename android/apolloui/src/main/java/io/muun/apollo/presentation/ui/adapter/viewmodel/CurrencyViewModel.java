@@ -1,23 +1,23 @@
 package io.muun.apollo.presentation.ui.adapter.viewmodel;
 
-import io.muun.apollo.domain.model.CurrencyDisplayMode;
+import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.model.CurrencyItem;
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory;
 
 public class CurrencyViewModel implements ItemViewModel {
 
     public final CurrencyItem model;
-    public final CurrencyDisplayMode mode;
+    public final BitcoinUnit bitcoinUnit;
     public final boolean isSelected;
 
     /**
      * Constructor.
      */
     public CurrencyViewModel(CurrencyItem model,
-                             CurrencyDisplayMode mode,
+                             BitcoinUnit bitcoinUnit,
                              boolean isSelected) {
         this.model = model;
-        this.mode = mode;
+        this.bitcoinUnit = bitcoinUnit;
         this.isSelected = isSelected;
     }
 
@@ -38,11 +38,12 @@ public class CurrencyViewModel implements ItemViewModel {
 
         final CurrencyViewModel that = (CurrencyViewModel) o;
 
-        return model.currencyUnit.equals(that.model.currencyUnit) && mode == that.mode;
+        return model.currencyUnit.equals(that.model.currencyUnit)
+                && bitcoinUnit == that.bitcoinUnit;
     }
 
     @Override
     public int hashCode() {
-        return model.currencyUnit.hashCode() * 31 + mode.hashCode();
+        return model.currencyUnit.hashCode() * 31 + bitcoinUnit.hashCode();
     }
 }

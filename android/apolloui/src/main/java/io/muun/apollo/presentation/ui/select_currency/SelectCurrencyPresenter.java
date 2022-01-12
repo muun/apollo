@@ -11,10 +11,8 @@ import io.muun.common.Optional;
 import io.muun.common.model.Currency;
 import io.muun.common.model.ExchangeRateProvider;
 
-import android.app.Activity;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
-import rx.Observable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -54,31 +52,25 @@ public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {
     public void setUp(@NotNull Bundle arguments) {
         super.setUp(arguments);
 
-        primaryCurrency = userSel.get().getPrimaryCurrency(exchangeRateSelector.getWindow());
         selectedCurrency = SelectCurrencyActivity.getSelectedCurrency(arguments);
 
-        view.setCurrencyDisplayMode(userRepository.getCurrencyDisplayMode());
+        view.setBitcoinUnit(userRepository.getBitcoinUnit());
 
-        setUpExchangeRates();
-    }
-
-    private void setUpExchangeRates() {
-        final Observable<?> observable = exchangeRateSelector
-                .watch()
-                .compose(getAsyncExecutor())
-                .doOnNext(this::onExchangeRatesChange);
-
-        subscribeTo(observable);
-    }
-
-    private void onExchangeRatesChange(ExchangeRateProvider rates) {
+        final ExchangeRateProvider exchangeRateProvider = getExchangeRateProvider();
+        primaryCurrency = userSel.get().getPrimaryCurrency(exchangeRateProvider);
 
         view.setCurrencies(
                 getTopCurrencies(),
-                new HashSet<>(rates.getCurrencies()),
+                new HashSet<>(exchangeRateProvider.getCurrencies()),
                 selectedCurrency.orElse(primaryCurrency),
-                userRepository.getCurrencyDisplayMode()
+                userRepository.getBitcoinUnit()
         );
+    }
+
+    private ExchangeRateProvider getExchangeRateProvider() {
+        final Bundle args = view.getArgumentsBundle();
+        final long fixedRateWindowId = SelectCurrencyActivity.getFixedExchangeRateWindowId(args);
+        return exchangeRateSelector.getProviderForWindow(fixedRateWindowId);
     }
 
     private Set<CurrencyUnit> getTopCurrencies() {
@@ -97,10 +89,6 @@ public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {
         selectedCurrency.ifPresent(topCurrencies::add);
 
         return topCurrencies;
-    }
-
-    public void onCurrencyClick(CurrencyUnit currencyUnit) {
-        view.finishWithResult(Activity.RESULT_OK, currencyUnit);
     }
 
     @Nullable

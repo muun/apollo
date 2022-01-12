@@ -88,7 +88,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
 
     override fun setLoading(isLoading: Boolean) {
         passwordInput.isEnabled = !isLoading
-        confirmButton.isLoading = isLoading
+        confirmButton.setLoading(isLoading)
     }
 
     private fun validatePassword() {

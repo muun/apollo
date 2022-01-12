@@ -49,6 +49,9 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
         this.featuresRepository = featuresRepository;
     }
 
+    /**
+     * Force re-fetch of Houston's RealTimeData, bypassing any local cache logic.
+     */
     public void runForced() {
         super.run(Observable.defer(this::forceSyncRealTimeData));
     }
@@ -72,7 +75,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                 .doOnNext(realTimeData -> {
                     Timber.d("[Sync] Saving updated fee/rates");
                     feeWindowRepository.store(realTimeData.feeWindow);
-                    exchangeRateWindowRepository.store(realTimeData.exchangeRateWindow);
+                    exchangeRateWindowRepository.storeLatest(realTimeData.exchangeRateWindow);
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                     forwardingPoliciesRepository.store(realTimeData.forwardingPolicies);
                     minFeeRateRepository.store(realTimeData.minFeeRateInWeightUnits);

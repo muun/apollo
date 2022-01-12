@@ -10,14 +10,16 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.libwallet.DecodedInvoice
-import io.muun.apollo.domain.libwallet.Invoice
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
-import io.muun.apollo.presentation.ui.view.*
-import io.muun.common.utils.LnInvoice
+import io.muun.apollo.presentation.ui.view.EditAmountItem
+import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
+import io.muun.apollo.presentation.ui.view.HiddenSection
+import io.muun.apollo.presentation.ui.view.LoadingView
+import io.muun.apollo.presentation.ui.view.MuunButton
 import javax.money.MonetaryAmount
 
 
@@ -62,7 +64,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     // State:
 
     @State
-    lateinit var mode: CurrencyDisplayMode
+    lateinit var mBitcoinUnit: BitcoinUnit
 
     private var countdownTimer: InvoiceExpirationCountdownTimer? = null
 
@@ -85,8 +87,8 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         }
     }
 
-    override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
-        this.mode = mode
+    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        this.mBitcoinUnit = bitcoinUnit
     }
 
     override fun setLoading(loading: Boolean) {
@@ -111,7 +113,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         countdownTimer!!.start()
 
         if (amount != null) {
-            editAmountItem.setAmount(amount, mode)
+            editAmountItem.setAmount(amount, mBitcoinUnit)
 
         } else {
             editAmountItem.resetAmount()

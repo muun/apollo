@@ -101,7 +101,7 @@ class EmergencyKitSavePresenter @Inject constructor(
         analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_START))
     }
     
-    fun reportGoogleSignInComplete(resultIntent: Intent) {
+    fun reportGoogleSignInComplete(resultIntent: Intent?) {
         try {
             driveAuthenticator.getSignedInAccount(resultIntent) // called just for error checking
             analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_FINISH))

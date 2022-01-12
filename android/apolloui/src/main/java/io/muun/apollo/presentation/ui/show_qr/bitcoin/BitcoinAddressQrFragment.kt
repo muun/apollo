@@ -10,7 +10,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
@@ -49,7 +49,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     // State:
 
     @State
-    lateinit var mode: CurrencyDisplayMode
+    lateinit var mBitcoinUnit: BitcoinUnit
 
     override fun inject() =
         component.inject(this)
@@ -70,8 +70,8 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         }
     }
 
-    override fun setCurrencyDisplayMode(mode: CurrencyDisplayMode) {
-        this.mode = mode
+    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        this.mBitcoinUnit = bitcoinUnit
     }
 
     override fun setContent(content: String, addressType: AddressType, amount: MonetaryAmount?) {
@@ -89,7 +89,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         addressTypeItem.show(addressType)
 
         if (amount != null) {
-            editAmountItem.setAmount(amount, mode)
+            editAmountItem.setAmount(amount, mBitcoinUnit)
 
         } else {
             editAmountItem.resetAmount()

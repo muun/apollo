@@ -19,4 +19,15 @@ class SubmarineSwapBestRouteFees(
                 json.baseInSat
             )
     }
+
+    /**
+     * Adapt apollo's (java) model to libwallet's (go).
+     */
+    fun toLibwallet(): newop.BestRouteFees {
+        val libwalletBestRouteFees = newop.BestRouteFees()
+        libwalletBestRouteFees.maxCapacity = maxCapacityInSat
+        libwalletBestRouteFees.feeProportionalMillionth = proportionalMillionth
+        libwalletBestRouteFees.feeBase = baseInSat
+        return libwalletBestRouteFees
+    }
 }

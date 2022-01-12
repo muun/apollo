@@ -12,13 +12,14 @@ import butterknife.BindDrawable
 import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.CurrencyDisplayMode
+import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler
 import io.muun.apollo.presentation.ui.fragments.home.HomePresenter
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
+import io.muun.apollo.presentation.ui.utils.FakeCurrencyUnit
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.locale
 import io.muun.common.exception.MissingCaseError
@@ -67,13 +68,14 @@ class BalanceView @JvmOverloads constructor(
 
     @State
     @JvmField
-    var mode: CurrencyDisplayMode? = null
+    var bitcoinUnit: BitcoinUnit? = null
 
     // Setting a default to avoid race condition, paymentCtx may take too long to load/fetch
     // and if state must be saved, null can't be serialized by CurrencyUnitBundler
     @State(CurrencyUnitBundler::class)
     @JvmField
-    var primaryCurrency: CurrencyUnit = Monetary.getCurrency("USD")
+    var primaryCurrency: CurrencyUnit =
+        if (isInEditMode) FakeCurrencyUnit() else Monetary.getCurrency("USD")
 
     @State
     @JvmField
@@ -92,9 +94,9 @@ class BalanceView @JvmOverloads constructor(
     fun setBalance(homeState: HomePresenter.HomeState) {
         val paymentContext = homeState.paymentContext
 
-        this.rateProvider = ExchangeRateProvider(paymentContext.exchangeRateWindow.rates)
+        this.rateProvider = ExchangeRateProvider(paymentContext.exchangeRateWindow.toJson())
         this.balanceInSatoshis = paymentContext.userBalance
-        this.mode = homeState.currencyDisplayMode
+        this.bitcoinUnit = homeState.bitcoinUnit
 
         this.primaryCurrency = paymentContext.user
             .getPrimaryCurrency(paymentContext.exchangeRateWindow)
@@ -124,15 +126,19 @@ class BalanceView @JvmOverloads constructor(
         mainAmount.text = BitcoinHelper.formatShortBitcoinAmount(
             balanceInSatoshis,
             false,
-            mode!!,
+            bitcoinUnit!!,
             locale()
         )
-        mainCurrencyCode.text = MoneyHelper.formatCurrency(Currency.BTC.code, mode!!)
+        mainCurrencyCode.text = MoneyHelper.formatCurrency(Currency.BTC.code, bitcoinUnit!!)
 
         if (!primaryCurrency.isBtc()) {
             val balanceInSat = BitcoinUtils.satoshisToBitcoins(balanceInSatoshis)
             val balance = rateProvider!!.convert(balanceInSat, primaryCurrency)
-            secondaryAmount.text = MoneyHelper.formatLongMonetaryAmount(balance, mode!!, locale())
+            secondaryAmount.text = MoneyHelper.formatLongMonetaryAmount(
+                balance,
+                bitcoinUnit!!,
+                locale()
+            )
 
         } else {
             // Avoid changing this widget's height to avoid a layout readjustment

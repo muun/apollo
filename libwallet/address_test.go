@@ -57,7 +57,7 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 			want: &MuunPaymentURI{
 				Address: address,
-				URI:     bitcoinScheme + address,
+				Uri:     bitcoinScheme + address,
 			},
 		},
 		{
@@ -69,7 +69,7 @@ func TestGetPaymentURI(t *testing.T) {
 			want: &MuunPaymentURI{
 				Address: address,
 				Amount:  "1.2",
-				URI:     bitcoinScheme + amountURI,
+				Uri:     bitcoinScheme + amountURI,
 			},
 		},
 		{
@@ -83,7 +83,7 @@ func TestGetPaymentURI(t *testing.T) {
 				Amount:  "1.2",
 				Label:   "hola",
 				Message: "mensaje con espacios",
-				URI:     bitcoinScheme + completeURI,
+				Uri:     bitcoinScheme + completeURI,
 			},
 		},
 		{
@@ -109,8 +109,8 @@ func TestGetPaymentURI(t *testing.T) {
 				network: *Regtest(),
 			},
 			want: &MuunPaymentURI{
-				URI:      bip70NonRetroCompatAddress,
-				BIP70Url: bip70URL,
+				Uri:      bip70NonRetroCompatAddress,
+				Bip70Url: bip70URL,
 			},
 		},
 		{
@@ -121,8 +121,8 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 			want: &MuunPaymentURI{
 				Address:  address,
-				URI:      bip70RetroCompatAddress,
-				BIP70Url: bip70URL,
+				Uri:      bip70RetroCompatAddress,
+				Bip70Url: bip70URL,
 			},
 		},
 		{
@@ -133,7 +133,7 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 			want: &MuunPaymentURI{
 				Address: address,
-				URI:     uriWithSlashes,
+				Uri:     uriWithSlashes,
 				Amount:  "1.2",
 			},
 		},
@@ -185,7 +185,7 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 			want: &MuunPaymentURI{
 				Address: strings.ToLower("BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"),
-				URI:     "BITCOIN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+				Uri:     "BITCOIN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
 			},
 		},
 		{
@@ -196,7 +196,7 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 			want: &MuunPaymentURI{
 				Address: strings.ToLower("BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"),
-				URI:     "BiTcOiN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
+				Uri:     "BiTcOiN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
 			},
 		},
 	}
@@ -310,8 +310,8 @@ func TestDoPaymentRequestCall(t *testing.T) {
 	expected := &MuunPaymentURI{
 		Address:      "mqdofsXHpePPGBFXuwwypAqCcXi48Xhb2f",
 		Message:      "Hello World",
-		Amount:       "2500",
-		BIP70Url:     url,
+		Amount:       "0.000025",
+		Bip70Url:     url,
 		CreationTime: "100000",
 		ExpiresTime:  "102000",
 	}
