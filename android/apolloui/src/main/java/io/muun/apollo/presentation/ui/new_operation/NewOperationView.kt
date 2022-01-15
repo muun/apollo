@@ -1,27 +1,20 @@
 package io.muun.apollo.presentation.ui.new_operation
 
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.BitcoinUnit
+import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.presentation.ui.base.BaseView
-import newop.*
+import newop.AmountInfo
+import newop.EnterAmountState
+import newop.EnterDescriptionState
+import newop.Resolved
+import newop.Validated
 
 interface NewOperationView : BaseView {
 
     fun setBitcoinUnit(bitcoinUnit: BitcoinUnit)
 
-    fun setForm(form: NewOperationForm)
-
-    fun setPaymentAnalysis(analysis: PaymentAnalysis)
-
     fun setLoading(isLoading: Boolean)
-
-    fun setConnectedToNetwork(isConnected: Boolean)
-
-    fun editFee(paymentRequest: PaymentRequest)
-
-    fun editFeeManually(paymentRequest: PaymentRequest)
-
-    fun confirmFee(selectedFeeRate: Double)
 
     fun showErrorScreen(type: NewOperationErrorType)
 

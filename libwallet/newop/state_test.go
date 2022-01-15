@@ -1012,3 +1012,85 @@ func TestAmountInfo_Mutating(t *testing.T) {
 		t.Fatalf("Mutated should be mutated")
 	}
 }
+
+func TestOnChainTFFAWithDebtFeeNeedsChangeBecauseOutputAmountLowerThanDust(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	startState.Resolve("bitcoin:bcrt1qj35fkq34xend9w0ssthn432vl9pxxsuy0epzlu", libwallet.Regtest())
+
+	context := createContext()
+
+	nts := &NextTransactionSize{}
+	nts.AddSizeForAmount(&SizeForAmount{
+		AmountInSat: 5338,
+		SizeInVByte: 172,
+	})
+	nts.ExpectedDebtInSat = 4353
+	context.NextTransactionSize = nts
+
+	context.FeeWindow.PutTargetedFees(100, 1.0)
+
+	resolveState := listener.next().(*ResolveState)
+	resolveState.SetContext(context)
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(985), true)
+
+	validateState := listener.next().(*ValidateState)
+	validateState.Continue()
+
+	enterDescriptionState := listener.next().(*EnterDescriptionState)
+	enterDescriptionState.EnterDescription("bar")
+
+	// Amount is not payable with fastes/highest fee, but it is with min fee (1 sat/vbyte)
+	if enterDescriptionState.Amount.InInputCurrency.String() != "0 BTC" {
+		t.Fatalf("expected amount to match input, got %v", enterDescriptionState.Amount.InInputCurrency)
+	}
+
+	confirmState := listener.next().(*ConfirmState)
+
+	if confirmState.Note != "bar" {
+		t.Fatalf("expected note to match input, got '%v'", confirmState.Note)
+	}
+	if confirmState.Amount.InInputCurrency.String() != "0 BTC" {
+		t.Fatalf("expected amount to match input, got %v", confirmState.Amount.InInputCurrency)
+	}
+	if confirmState.Fee.InInputCurrency.String() != "0.000688 BTC" {
+		t.Fatalf("expected fee to match, got %v", confirmState.Fee.InInputCurrency)
+	}
+	if confirmState.Total.InInputCurrency.String() != "0.000688 BTC" {
+		t.Fatalf("expected total to match, got %v", confirmState.Total.InInputCurrency)
+	}
+	if confirmState.FeeNeedsChange != true {
+		t.Fatalf("expected feedsNeedsChange to be true, got %v", confirmState.FeeNeedsChange)
+	}
+
+	confirmState.OpenFeeEditor()
+	editFeeState := listener.next().(*EditFeeState)
+
+	editFeeState.SetFeeRate(1)
+
+	validateState = listener.next().(*ValidateState)
+	validateState.Continue()
+
+	confirmState = listener.next().(*ConfirmState)
+
+	if confirmState.Note != "bar" {
+		t.Fatalf("expected note to match input, got '%v'", confirmState.Note)
+	}
+	if confirmState.Amount.InInputCurrency.String() != "0.00000813 BTC" {
+		t.Fatalf("expected amount to match input, got %v", confirmState.Amount.InInputCurrency)
+	}
+	if confirmState.Fee.InInputCurrency.String() != "0.00000172 BTC" {
+		t.Fatalf("expected fee to match, got %v", confirmState.Fee.InInputCurrency)
+	}
+	if confirmState.Total.InInputCurrency.String() != "0.00000985 BTC" {
+		t.Fatalf("expected total to match, got %v", confirmState.Total.InInputCurrency)
+	}
+	if confirmState.FeeNeedsChange != false {
+		t.Fatalf("expected feedsNeedsChange to be false, got %v", confirmState.FeeNeedsChange)
+	}
+
+}

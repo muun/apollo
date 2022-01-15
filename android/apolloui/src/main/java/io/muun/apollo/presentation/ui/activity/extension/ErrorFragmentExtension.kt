@@ -9,6 +9,7 @@ import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragment
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
+import io.muun.apollo.presentation.ui.utils.safelyCommitNow
 import io.muun.common.utils.CollectionUtils
 import io.muun.common.utils.Preconditions
 import javax.inject.Inject
@@ -72,14 +73,5 @@ class ErrorFragmentExtension @Inject constructor() : ActivityExtension() {
             .beginTransaction()
             .replace(android.R.id.content, fragment, TAG)
             .safelyCommitNow(activity)
-    }
-
-    private fun FragmentTransaction.safelyCommitNow(activity: ExtensibleActivity) {
-        if (!activity.isFinishing && !activity.isDestroyed) {
-            val fragmentManager = activity.supportFragmentManager
-            if (!fragmentManager.isDestroyed && !fragmentManager.isStateSaved) {
-                commitNow()
-            }
-        }
     }
 }

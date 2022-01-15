@@ -75,10 +75,6 @@ func (p *FundingOutputPolicies) MinFundingAmount(paymentAmount, lightningFee btc
 }
 
 func (p *FundingOutputPolicies) FundingOutputAmount(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
-	if p.DebtType(paymentAmount, lightningFee) == DebtTypeLend {
-		return 0
-	}
-
 	minAmount := p.MinFundingAmount(paymentAmount, lightningFee)
 	if minAmount < dustThreshold {
 		return dustThreshold
@@ -87,10 +83,6 @@ func (p *FundingOutputPolicies) FundingOutputAmount(paymentAmount, lightningFee 
 }
 
 func (p *FundingOutputPolicies) FundingOutputPadding(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
-	if p.DebtType(paymentAmount, lightningFee) == DebtTypeLend {
-		return 0
-	}
-
 	minAmount := p.MinFundingAmount(paymentAmount, lightningFee)
 	outputAmount := p.FundingOutputAmount(paymentAmount, lightningFee)
 	return outputAmount - minAmount

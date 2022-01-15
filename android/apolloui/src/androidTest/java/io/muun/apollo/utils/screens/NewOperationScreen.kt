@@ -33,8 +33,11 @@ class NewOperationScreen(
         id(R.id.total_amount).text.toMoney()
 
     fun waitUntilVisible() {
-        id(R.id.muun_next_step_button).waitForExists(15000)
+        button(R.id.muun_next_step_button).waitForExists(15000)
     }
+
+    fun assertSubmitIsDisabled() =
+        button(R.id.muun_next_step_button).assertDisabled()
 
     fun fillForm(amount: MonetaryAmount?, description: String?) {
 

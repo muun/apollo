@@ -163,6 +163,10 @@ public class User {
      * Get the user's primary currency, if exchange rate is available, BTC otherwise.
      */
     public CurrencyUnit getPrimaryCurrency(ExchangeRateProvider rateProvider) {
+        if (Currency.OVERRIDES.get(primaryCurrency.getCurrencyCode()) != null) {
+            return Currency.OVERRIDES.get(primaryCurrency.getCurrencyCode());
+        }
+
         if (rateProvider.isAvailable(primaryCurrency, Currency.getUnit("BTC").get())) {
             return primaryCurrency;
         } else {

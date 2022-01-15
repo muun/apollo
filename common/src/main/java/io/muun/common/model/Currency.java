@@ -16,7 +16,14 @@ public class Currency {
 
     public static final Map<String, Currency> CURRENCIES;
 
+    // These are most likely known currencies for which we don't have an exchange rate. This exists
+    // so we can build better error reports when something goes wrong (e.g a currency/exchange rate
+    // for a currency, disappears).
     public static final Map<String, Currency> NOT_SUPPORTED_BY_HOUSTON = new HashMap<>();
+
+    // We have an absolute default currency (BTC), but for some special case, we might want to
+    // override/default to another currency.
+    public static final Map<String, CurrencyUnit> OVERRIDES = new HashMap<>();
 
     static {
         CURRENCIES = new HashMap<>();
@@ -211,6 +218,9 @@ public class Currency {
         for (Currency value : NOT_SUPPORTED_BY_HOUSTON.values()) {
             load(value);
         }
+
+        // For Salvadoran Colon (deprecated, not longer used), default to USD
+        OVERRIDES.put("SVC", getUnit("USD").get());
     }
 
     private static void load(Currency currency) {

@@ -4,6 +4,7 @@ import io.muun.apollo.presentation.ui.activity.extension.ErrorFragmentExtension;
 import io.muun.apollo.presentation.ui.bundler.StringListBundler;
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.listener.OnBackPressedListener;
+import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.common.utils.Preconditions;
 
@@ -41,6 +42,9 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         return 0; // valid, signals the Activity will manage Fragments without helpers
     }
 
+    /**
+     * Get Muun header (action/toolbar wrapper).
+     */
     public abstract MuunHeader getHeader();
 
     @Override
@@ -87,7 +91,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
     @Override
     public void replaceFragmentNow(@NotNull Fragment fragment) {
         final FragmentTransaction transaction = getFragmentTx(fragment);
-        transaction.commitNow();
+        ExtensionsKt.safelyCommitNow(transaction, this);
     }
 
     @NonNull
@@ -221,10 +225,16 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         this.backPressedListener = listener;
     }
 
+    /**
+     * Show error widget/screen.
+     */
     public void showError(ErrorViewModel viewModel) {
         errorFragmentExtension.showError(viewModel);
     }
 
+    /**
+     * Dismiss/Hide error widget/screen.
+     */
     public void hideError() {
         errorFragmentExtension.hideError();
     }

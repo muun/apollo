@@ -65,10 +65,17 @@ public class CurrencyActions {
 
                 regionLocales.add(locale);
 
-                final Optional<CurrencyUnit> currency = getCurrencyForLocale(locale);
+                final Optional<CurrencyUnit> maybeCurrency = getCurrencyForLocale(locale);
 
-                if (currency.isPresent() && !currencies.contains(currency.get())) {
-                    currencies.add(currency.get());
+                if (maybeCurrency.isPresent() && !currencies.contains(maybeCurrency.get())) {
+                    final String currencyCode = maybeCurrency.get().getCurrencyCode();
+
+                    // If we have a special default for this currency, override and use it
+                    if (Currency.OVERRIDES.get(currencyCode) != null) {
+                        currencies.add(Currency.OVERRIDES.get(currencyCode));
+                    } else {
+                        currencies.add(maybeCurrency.get());
+                    }
                 }
             }
         }
@@ -94,6 +101,9 @@ public class CurrencyActions {
         return currencies;
     }
 
+    /**
+     * Get default currencies, when we can't reliably detect a region to find its currency.
+     */
     private Set<CurrencyUnit> getDefaultCurrencies() {
 
         final Set<CurrencyUnit> currencies = new HashSet<>();
