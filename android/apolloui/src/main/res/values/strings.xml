@@ -1148,7 +1148,7 @@
 
     <string name="sc_task_header_0">Your wallet is not backed up</string>
     <string name="sc_task_header_1">Your wallet has a basic backup</string>
-    <string name="sc_task_header_2">Your\'re one step away from a complete setup</string>
+    <string name="sc_task_header_2">You\'re one step away from a complete setup</string>
     <string name="sc_task_header_3">You completed your setup</string>
 
     <!-- Emergency Kit -->
