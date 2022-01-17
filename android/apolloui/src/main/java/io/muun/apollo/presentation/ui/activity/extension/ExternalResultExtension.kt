@@ -25,7 +25,9 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
      * - https://stackoverflow.com/questions/34861257/how-can-i-set-a-tag-for-viewpager-fragments
      */
     interface DelegableCaller : Caller {
-        val delegateCaller: Caller
+        // Nullable, since impl classes may be in Java (and in fact some are)
+        // TODO kotlinize every last mother effing last one of 'em!
+        val delegateCaller: Caller?
     }
 
     /**
@@ -63,10 +65,12 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
         }
 
         if (view is DelegableCaller) {
-            view = view.delegateCaller
+            if (view.delegateCaller != null) {
+                view = view.delegateCaller
+            }
         }
         pendingRequests.remove(globalRequestCode)
-        view.onExternalResult(request!!.viewRequestCode, resultCode, data)
+        view!!.onExternalResult(request!!.viewRequestCode, resultCode, data)
     }
 
     override fun registerRequestFromCaller(request: CallerRequest, globalRequestCode: Int) {

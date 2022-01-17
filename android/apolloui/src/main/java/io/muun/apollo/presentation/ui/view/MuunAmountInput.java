@@ -227,6 +227,10 @@ public class MuunAmountInput extends MuunView {
 
     @OnClick(R.id.currency_code)
     protected void onCurrencyClicked() {
+        if (rateProvider == null) {
+            return; // If we're not completely initialized, briefly ignore input
+        }
+
         final String currentCurrency = value.getCurrency().getCurrencyCode();
 
         requestExternalResult(
