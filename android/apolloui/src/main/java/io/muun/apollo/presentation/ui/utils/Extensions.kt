@@ -21,8 +21,10 @@ import androidx.annotation.*
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import io.muun.apollo.R
 import io.muun.apollo.domain.utils.locale
+import io.muun.apollo.presentation.ui.base.ExtensibleActivity
 import timber.log.Timber
 import java.util.*
 
@@ -243,3 +245,12 @@ fun TextView.setStyledText(@StringRes resId: Int, onLinkClick: (String) -> Unit 
 
 fun PackageManager.hasAppInstalled(intent: Intent) =
     queryIntentActivities(intent, 0).size != 0
+
+fun FragmentTransaction.safelyCommitNow(activity: ExtensibleActivity) {
+    if (!activity.isFinishing && !activity.isDestroyed) {
+        val fragmentManager = activity.supportFragmentManager
+        if (!fragmentManager.isDestroyed && !fragmentManager.isStateSaved) {
+            commitNow()
+        }
+    }
+}

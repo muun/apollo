@@ -82,5 +82,8 @@ fun PaymentContext.buildExchangeRateProvider(): ExchangeRateProvider {
     )
 }
 
+fun PaymentContext.outpoints(): List<String> =
+    nextTransactionSize.outpoints?.split("\n")?.filterNot { it.isEmpty() } ?: listOf()
+
 fun estimateTimeInMs(numBlocks: Int) =
     BlockHelpers.timeInSecsForBlocksWithCertainty(numBlocks, CONF_CERTAINTY).toLong() * 1000

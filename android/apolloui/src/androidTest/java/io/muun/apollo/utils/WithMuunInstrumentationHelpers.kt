@@ -478,6 +478,10 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         assertThat(this.isEnabled).isTrue()
     }
 
+    fun UiObject.assertDisabled() {
+        assertThat(this.isEnabled).isFalse()
+    }
+
     fun UiObject.assertEnabledAndClick(): Boolean {
         assertEnabled()
         return click()

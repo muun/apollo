@@ -26,9 +26,12 @@ func (w *NextTransactionSize) AddSizeForAmount(item *SizeForAmount) {
 
 func (w *NextTransactionSize) GetOutpoints() string {
 	var sb strings.Builder
-	for _, sizeForAmount := range w.SizeProgression {
+	for i, sizeForAmount := range w.SizeProgression {
 		sb.WriteString(sizeForAmount.Outpoint)
-		sb.WriteRune('\n')
+		if i != len(w.SizeProgression)-1 { // avoid trailing \n at the end
+			sb.WriteRune('\n')
+		}
+
 	}
 	return sb.String()
 }

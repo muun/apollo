@@ -2,8 +2,10 @@ package io.muun.apollo.presentation
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.presentation.ui.debug.LappClient
+import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.utils.RandomUser
 import io.muun.common.utils.BitcoinUtils
+import org.assertj.core.api.Assertions.assertThat
 import org.javamoney.moneta.Money
 import org.junit.Ignore
 import org.junit.Test
@@ -317,6 +319,71 @@ open class NewOperationTests : BaseInstrumentationTest() {
         val amount = BitcoinUtils.satoshisToBitcoins(amountInSats)
         autoFlows.checkOperationDetails(amount, statusPending = false) {
             homeScreen.goToOperationDetail(1)
+        }
+    }
+
+    @Test
+    fun test_22_user_HAS_to_change_fee_to_pay_due_to_outputAmout_lower_than_dust() {
+        autoFlows.signUp()
+
+        // Receive an incoming swap of 985, generating an outputAmount and debt of aprox 5500 sats
+        val amountInSats: Long = 985
+        autoFlows.receiveMoneyFromLNWithInvoiceWithAmount(amountInSats)
+
+        val receivingAddress = "2N2y9wGHh7AfqwQ8dk5cQfhjvEAAq6xhjb6"
+        val note = "This is a note"
+
+        // Try to spend AllFunds, but fail: feeNeedsChange. OutputAmount is lower than dust
+
+        val balanceBefore = homeScreen.balanceInBtc
+        autoFlows.startOperationFromClipboardTo(receivingAddress)
+
+        newOpScreen.waitUntilVisible()
+        newOpScreen.fillFormUsingAllFunds(note)
+
+        // Ensure amounts in BTC (needed for post submit checks in balance and opDetail)
+        if (!newOpScreen.confirmedAmount.currency.isBtc()) {
+            newOpScreen.rotateAmountCurrencies()
+        }
+
+        // Keep these to check later:
+        val description = newOpScreen.confirmedDescription
+        var total = newOpScreen.confirmedTotal
+
+        assertThat(total.number.toDouble()).isGreaterThanOrEqualTo(balanceBefore.number.toDouble())
+        newOpScreen.assertSubmitIsDisabled()
+
+        newOpScreen.goToEditFee()
+        recomFeeScreen.goToManualFee()
+        val optionManual = manualFeeScreen.editFeeRate(1.0)
+        manualFeeScreen.confirmFeeRate()
+
+        Thread.sleep(2000)
+        newOpScreen.waitUntilVisible()
+
+        var amount = newOpScreen.confirmedAmount
+        var fee = newOpScreen.confirmedFee
+        total = newOpScreen.confirmedTotal
+
+        // Ensure amounts in BTC (needed for post submit checks in balance and opDetail)
+        if (!newOpScreen.confirmedAmount.currency.isBtc()) {
+            // Yeap this apparently is necessary. And YES, IT MUST happen here, if check is before
+            // var amount definition, it inexplicably fails
+            newOpScreen.rotateAmountCurrencies()
+
+            amount = newOpScreen.confirmedAmount
+            fee = newOpScreen.confirmedFee
+            total = newOpScreen.confirmedTotal
+        }
+
+        newOpScreen.checkConfirmedData(amount, description, optionManual)
+
+        newOpScreen.submit()
+
+        homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
+
+        autoFlows.checkOperationDetails(amount, description, fee) {
+            homeScreen.goToOperationDetail(description, isPending = true)
         }
     }
 }

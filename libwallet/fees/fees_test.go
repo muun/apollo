@@ -159,7 +159,7 @@ func TestComputeSwapFees(t *testing.T) {
 			},
 			expected: &SwapFees{
 				RoutingFee:          10,
-				OutputPadding:       0,
+				OutputPadding:       486,
 				DebtType:            DebtTypeLend,
 				DebtAmount:          60,
 				OutputAmount:        0,

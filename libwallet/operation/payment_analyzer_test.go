@@ -395,6 +395,29 @@ func TestAnalyzeOnChain(t *testing.T) {
 				TotalInSat:  2000,
 			},
 		},
+		{
+			desc: "unpayable using TFFA because amount < DUST",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+					},
+				},
+				ExpectedDebtInSat: 7400,
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     true,
+				AmountInSat:           2600,
+				FeeRateInSatsPerVByte: 10,
+			},
+			expected: &PaymentAnalysis{
+				Status:      AnalysisStatusUnpayable,
+				AmountInSat: 200,
+				FeeInSat:    2400,
+				TotalInSat:  2600,
+			},
+		},
 	}
 
 	for _, tC := range testCases {

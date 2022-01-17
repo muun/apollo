@@ -85,9 +85,9 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
-    fun startForBitcoinUri(uri: String, newOpOrigin: NewOperationOrigin) {
+    fun startForBitcoinUri(uri: String, operationUri: OperationUri, origin: NewOperationOrigin) {
 
-        val isActivityRecreation = handleStart(uri, newOpOrigin)
+        val isActivityRecreation = handleStart(uri, origin)
 
         if (isActivityRecreation) {
             return
@@ -95,6 +95,12 @@ class NewOperationPresenter @Inject constructor(
 
         stateMachine.withState { state: StartState ->
             state.resolve(uri, networkParams.toLibwallet())
+        }
+
+        if (operationUri.isAsync) {
+            // This will actually be call again once bip72 uri is resolved but its fine. We're just
+            // using it to show loading state "earlier"
+            handleResolveState()
         }
     }
 
@@ -570,7 +576,7 @@ class NewOperationPresenter @Inject constructor(
             BitcoinAmount.fromLibwallet(fee),
             note,
             paymentContext.exchangeRateWindow.windowId,
-            paymentContext.nextTransactionSize.outpoints?.split("\n") ?: listOf(),
+            paymentContext.outpoints(),
             paymentIntent.getPaymentType(),
             contact,
             paymentIntent.uri.address,
@@ -580,11 +586,15 @@ class NewOperationPresenter @Inject constructor(
         try {
 
             analytics.report(
-                E_NEW_OP_SUBMITTED(*uncheckedConvert(opSubmittedMetadata(
-                    paymentIntent.getPaymentType(),
-                    paymentContext,
-                    amountInfo.feeRateInSatsPerVByte
-                )))
+                E_NEW_OP_SUBMITTED(
+                    *uncheckedConvert(
+                        opSubmittedMetadata(
+                            paymentIntent.getPaymentType(),
+                            paymentContext,
+                            amountInfo.feeRateInSatsPerVByte
+                        )
+                    )
+                )
             )
 
             submitPaymentAction.run(preparedPayment)
@@ -617,10 +627,12 @@ class NewOperationPresenter @Inject constructor(
         objects.add(Pair<String, Any>("operation_id", operationId.toInt()))
 
         // Also add previously known metadata
-        objects.addAll(opSubmittedMetadata(
-            paymentIntent.getPaymentType(),
-            paymentContext,
-            amountInfo.feeRateInSatsPerVByte)
+        objects.addAll(
+            opSubmittedMetadata(
+                paymentIntent.getPaymentType(),
+                paymentContext,
+                amountInfo.feeRateInSatsPerVByte
+            )
         )
         return uncheckedConvert(objects)
     }

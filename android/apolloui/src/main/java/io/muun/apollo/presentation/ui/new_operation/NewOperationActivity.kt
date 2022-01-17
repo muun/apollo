@@ -67,8 +67,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
     companion object {
 
-        const val OPERATION_URI = "operation_uri"
-        const val ORIGIN = "origin"
+        private const val OPERATION_URI = "operation_uri"
+        private const val ORIGIN = "origin"
 
         private const val INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS: Long = 60
 
@@ -83,8 +83,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             // other Activities will be on top of this one (we never startActivity here).
             return Intent(context, NewOperationActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .putExtra(NewOperationActivity.OPERATION_URI, uri.toString())
-                .putExtra(NewOperationActivity.ORIGIN, origin.name)
+                .putExtra(OPERATION_URI, uri.toString())
+                .putExtra(ORIGIN, origin.name)
         }
     }
 
@@ -211,8 +211,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val intent = intent
-
         if (intent.flags and Intent.FLAG_ACTIVITY_CLEAR_TOP == 0) {
             // HACK ALERT
             // This Activity was not launched with the CLEAR_TOP flag, because it started from
@@ -223,9 +221,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             finishActivity()
         }
 
-        // TODO handle New Operation Origin
-        val newOpOrigin = NewOperationOrigin.SEND_CLIPBOARD_PASTE
-
+        val newOpOrigin = getOrigin(intent)
         val uri = getValidIntentUri(intent)
         val operationUri = try { OperationUri.fromString(uri) } catch (e: Exception) { null }
 
@@ -241,7 +237,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
                 }
 
                 else ->
-                    presenter.startForBitcoinUri(uri, newOpOrigin)
+                    presenter.startForBitcoinUri(uri, operationUri, newOpOrigin)
             }
 
         } else {
@@ -293,7 +289,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     }
 
     private fun getValidIntentUri(intent: Intent): String {
-        return intent.getStringExtra(NewOperationActivity.OPERATION_URI)    // from startActivity
+        return intent.getStringExtra(OPERATION_URI)    // from startActivity
             ?: intent.dataString                                            // deeplink
             ?: throw IllegalStateException("Invalid New Op Intent")         // should not happen
     }
@@ -322,6 +318,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             applicationContext.locale()
         )
 
+        amountInput.isEnabled = true
+        amountInput.setAmountError(false) // Actually needed to set correct textColor in some cases
         amountInput.value = state.amount.inInputCurrency.adapt()
         amountInput.setSecondaryAmount("${getString(R.string.available_balance)}: $balance")
 
@@ -370,7 +368,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
-        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, mBitcoinUnit))
+        val isValid = !state.validated.feeNeedsChange
+        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, mBitcoinUnit, isValid))
 
         descriptionInput.setText(state.note)
 
@@ -462,7 +461,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
                 presenter.confirmSwapOperation()
             }
         }
-        actionButton.isEnabled = true
+        actionButton.isEnabled = isValid
 
         statusMessageViews.changeVisibility(View.GONE)
         if (state.amountInfo.takeFeeFromAmount) {
@@ -525,33 +524,20 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         amountInput.setBitcoinUnit(bitcoinUnit)
     }
 
-    override fun setForm(form: NewOperationForm) {
-        TODO("Will be removed later on")
-    }
-
-    override fun setPaymentAnalysis(analysis: PaymentAnalysis) {
-        TODO("Not yet implemented, will be removed later on")
-    }
-
-    override fun setConnectedToNetwork(isConnected: Boolean) {
-        TODO("Not yet implemented, will probably be removed later on")
-    }
-
-    override fun editFee(paymentRequest: PaymentRequest) {
-        TODO("Will be removed later on")
-    }
-
-    override fun editFeeManually(paymentRequest: PaymentRequest) {
-        TODO("Will be removed later on")
-    }
-
-    override fun confirmFee(selectedFeeRate: Double) {
-        TODO("Will be removed later on")
-    }
-
     override fun showErrorScreen(type: NewOperationErrorType) {
         showOverlayFragment(NewOperationErrorFragment.create(type), false)
         scrollableLayout.setUserInteractionEnabled(false)
+    }
+
+    // PRIVATE STUFF
+
+    private fun getOrigin(intent: Intent): NewOperationOrigin {
+        val originExtra = intent.getStringExtra(ORIGIN)
+        return if (originExtra != null) {
+            NewOperationOrigin.valueOf(originExtra)
+        } else {
+            NewOperationOrigin.EXTERNAL_LINK // we landed from a URL click
+        }
     }
 
     private fun handleToggleCurrencyChange() {
