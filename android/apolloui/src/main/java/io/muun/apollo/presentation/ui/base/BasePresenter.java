@@ -41,7 +41,6 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
-import com.scottyab.rootbeer.RootBeer;
 import icepick.Icepick;
 import rx.Observable;
 import rx.Subscription;
@@ -529,10 +528,9 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         analytics.attachAnalyticsMetadata(report);
 
         final String presenterName = this.getClass().getSimpleName();
-        final boolean isRootedDevice = new RootBeer(getContext()).isRooted();
 
         final EmailReport emailReport = emailReportManager
-                .buildEmailReport(report, presenterName, isRootedDevice);
+                .buildEmailReport(report, presenterName);
 
         final String subjectPrefix = getContext().getString(R.string.error_report_email_subject);
         final String subject = emailReport.subject(subjectPrefix);

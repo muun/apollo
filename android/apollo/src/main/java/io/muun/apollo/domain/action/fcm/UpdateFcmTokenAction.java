@@ -37,9 +37,9 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
     }
 
     @Override
-    public Observable<Void> action(String token) {
+    public Observable<Void> action(String newFcmToken) {
 
-        firebaseInstalationIdRepository.storeFcmToken(token);
+        firebaseInstalationIdRepository.storeFcmToken(newFcmToken);
 
         final boolean hasJwt = authRepository.getServerJwt().isPresent();
         final boolean hasValidSession = authRepository.getSessionStatus()
@@ -61,7 +61,8 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
             if (hasValidSessionButNoJwt || hasJwtButInvalidSession) {
                 Timber.e(new LocalStorageIntegrityError(
                         hasValidSessionButNoJwt,
-                        hasJwtButInvalidSession
+                        hasJwtButInvalidSession,
+                        newFcmToken
                 ));
             }
 
@@ -73,7 +74,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
 
         Timber.d("Updating FCM token");
 
-        return houstonClient.updateFcmToken(token)
+        return houstonClient.updateFcmToken(newFcmToken)
                 .flatMap(ignore -> notificationActions.pullNotifications());
     }
 }

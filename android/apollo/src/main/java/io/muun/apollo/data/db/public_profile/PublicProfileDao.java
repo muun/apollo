@@ -3,6 +3,7 @@ package io.muun.apollo.data.db.public_profile;
 import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.PublicProfile;
 
+import rx.Completable;
 import rx.Observable;
 
 import javax.inject.Inject;
@@ -16,11 +17,22 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
      */
     @Inject
     public PublicProfileDao() {
-        super(
-                PublicProfileEntity.CREATE_TABLE,
-                PublicProfileEntity::fromModel,
-                PublicProfileEntity::toModel,
-                PublicProfileEntity.TABLE_NAME
+        super("public_profiles");
+    }
+
+    @Override
+    public Completable deleteAll() {
+        return Completable.fromAction(delightDb.getPublicProfileQueries()::deleteAll);
+    }
+
+    @Override
+    protected void storeUnsafe(final PublicProfile element) {
+        delightDb.getPublicProfileQueries().insertPublicProfile(
+                element.getId(),
+                element.getHid(),
+                element.firstName,
+                element.lastName,
+                element.profilePictureUrl
         );
     }
 
@@ -28,25 +40,22 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
      * Update all the mutable data of a public profile.
      */
     public void update(PublicProfile publicProfile) {
-
-        final PublicProfileModel.UpdateProfile statement =
-                new PublicProfileEntity.UpdateProfile(db);
-
-        statement.bind(
+        delightDb.getPublicProfileQueries().updateProfile(
                 publicProfile.firstName,
                 publicProfile.lastName,
                 publicProfile.profilePictureUrl,
                 publicProfile.getHid()
         );
-
-        executeUpdate(statement);
     }
 
     /**
      * Fetches a single public profile by its Houston id.
      */
     public Observable<PublicProfile> fetchByHid(long contactHid) {
-        return fetchOneOrFail(PublicProfileEntity.FACTORY.selectByHid(contactHid))
+        return fetchOneOrFail(delightDb.getPublicProfileQueries().selectByHid(
+                contactHid,
+                PublicProfile::new
+        ))
                 .doOnError(error -> enhanceError(error, String.valueOf(contactHid)));
     }
 

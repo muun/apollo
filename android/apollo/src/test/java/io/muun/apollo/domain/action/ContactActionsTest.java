@@ -18,13 +18,17 @@ import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 
+import androidx.annotation.NonNull;
 import br.com.six2six.fixturefactory.Fixture;
+import com.squareup.sqldelight.Query;
+import com.squareup.sqldelight.db.SqlCursor;
 import org.bitcoinj.params.TestNet3Params;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import rx.Completable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -104,7 +108,7 @@ public class ContactActionsTest extends BaseTest {
         final List<Contact> remote = Fixture.from(Contact.class).gimme(3, "valid");
 
         doReturn(Observable.just(remote)).when(houstonClient).fetchContacts();
-        doReturn(Observable.just(0)).when(contactDao).deleteAll();
+        doReturn(Completable.complete()).when(contactDao).deleteAll();
 
         doReturn(Observable.just(null)).when(contactActions).createOrUpdateContact(any());
 
@@ -204,7 +208,13 @@ public class ContactActionsTest extends BaseTest {
 
         final Contact contact = Fixture.from(Contact.class).gimme("valid");
 
-        doReturn(Observable.error(new ElementNotFoundException("")))
+        doReturn(Observable.error(new ElementNotFoundException(new Query<Contact>(null, null) {
+            @NonNull
+            @Override
+            public SqlCursor execute() {
+                return null;
+            }
+        })))
                 .when(contactDao).fetchByHid(contact.getHid());
 
         fetchItemFromObservable(contactActions.createOrUpdateContact(contact));

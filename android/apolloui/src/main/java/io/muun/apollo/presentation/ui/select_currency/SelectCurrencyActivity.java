@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.money.CurrencyContext;
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
 
@@ -92,6 +93,9 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
      */
     public static Optional<CurrencyUnit> getSelectedCurrency(@NotNull Bundle bundle) {
         final String selectedCurrencyCode = bundle.getString(SELECTED_CURRENCY);
+        if ("SAT".equals(selectedCurrencyCode)) {
+            return Optional.of(getFakeSatCurrencyUnit());
+        }
         return Currency.getUnit(selectedCurrencyCode);
     }
 
@@ -111,6 +115,44 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
      */
     public static String getResult(Intent data) {
         return data.getStringExtra(SELECTED_CURRENCY_RESULT);
+    }
+
+    /**
+     * Helper to decide whether to apply "sat as a currency hack" or not. This
+     * should be true when starting this activity to choose a currency for an input amount
+     * (receive or send) and false when starting this activity to choose a primary currency.
+     */
+    public static boolean applySatAsACurrencyHack(@NotNull Bundle bundle) {
+        return getSelectedCurrency(bundle).isPresent();
+    }
+
+    public static CurrencyUnit getFakeSatCurrencyUnit() {
+        return new CurrencyUnit() {
+            @Override
+            public String getCurrencyCode() {
+                return "SAT";
+            }
+
+            @Override
+            public int getNumericCode() {
+                return -1; // Undefined
+            }
+
+            @Override
+            public int getDefaultFractionDigits() {
+                return 0;
+            }
+
+            @Override
+            public CurrencyContext getContext() {
+                return Currency.getUnit("BTC").get().getContext();
+            }
+
+            @Override
+            public int compareTo(CurrencyUnit o) {
+                return -o.compareTo(this);
+            }
+        };
     }
 
     @Override
@@ -181,6 +223,9 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     @Override
     public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {
         this.bitcoinUnit = bitcoinUnit;
+        if (applySatAsACurrencyHack(getArgumentsBundle())) {
+            this.bitcoinUnit = BitcoinUnit.BTC; // If we'll always show SAT, let's show BTC as BTC
+        }
     }
 
     private static boolean filter(ItemViewModel viewModel, String query) {

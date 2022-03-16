@@ -9,18 +9,23 @@
             android:id="@+id/home_fragment"
             android:name="io.muun.apollo.presentation.ui.fragments.home.HomeFragment"
             android:label="home"
-            tools:layout="@layout/fragment_home" />
+            tools:layout="@layout/fragment_home">
+
+        <argument
+                android:name="newOpId"
+                app:argType="long"
+                android:defaultValue="-1L"/>
+    </fragment>
 
     <fragment
             android:id="@+id/security_center_fragment"
             android:name="io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragment"
             android:label="security"
-            tools:layout="@layout/fragment_security_center" >
+            tools:layout="@layout/fragment_security_center">
 
         <argument
                 android:name="origin"
-                app:argType="io.muun.apollo.presentation.analytics.AnalyticsEvent$SECURITY_CENTER_ORIGIN"
-                />
+                app:argType="io.muun.apollo.presentation.analytics.AnalyticsEvent$SECURITY_CENTER_ORIGIN" />
     </fragment>
 
     <fragment

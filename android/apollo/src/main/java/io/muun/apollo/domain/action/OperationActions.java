@@ -46,7 +46,7 @@ public class OperationActions {
     public Observable<Void> fetchReplaceOperations() {
         Timber.d("[Operations] Fetching full operation list");
 
-        return operationDao.deleteAll().flatMap(ignored ->
+        return operationDao.deleteAll().andThen(
                 houstonClient.fetchOperations()
                         .flatMap(Observable::from)
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue

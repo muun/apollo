@@ -1,0 +1,17 @@
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_script_version INTEGER DEFAULT 101;
+
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_expiration_in_blocks INTEGER DEFAULT NULL;
+
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_user_public_key TEXT DEFAULT NULL;
+
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_user_public_key_path TEXT DEFAULT NULL;
+
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_muun_public_key TEXT DEFAULT NULL;
+
+ALTER TABLE submarine_swaps
+ADD COLUMN funding_muun_public_key_path TEXT DEFAULT NULL;

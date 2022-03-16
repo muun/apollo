@@ -100,7 +100,7 @@ public class NotificationActions {
 
             final long lastProccessedId = notificationRepository.getLastProcessedId();
 
-            return fetchNotificationReport(lastProccessedId)
+            return houstonClient.fetchNotificationReportAfter(lastProccessedId)
                     .map(report -> {
                         onNotificationReport(report);
                         return null;
@@ -111,16 +111,38 @@ public class NotificationActions {
     /**
      * Process a notification report. Do not call directly.
      */
-    private Completable processReport(NotificationReport report) {
+    private void processReport(final NotificationReport report) {
 
-        return getPendingNotifications(report, notificationRepository.getLastProcessedId())
-                .flatMapCompletable(this::processNotificationList);
+        NotificationReport reportToProcess = report;
+
+        // If we have a gap between the report and what we last processed, ignore the report
+        // and start processing from the start of the gap. We'll refetch a bit of data, but it
+        // makes for simple code.
+        if (reportToProcess.getPreviousId() > notificationRepository.getLastProcessedId()) {
+            reportToProcess = fetchNotificationReport(notificationRepository.getLastProcessedId())
+                    .toBlocking()
+                    .value();
+        }
+
+        processNotificationList(reportToProcess.getPreview()).await();
+
+        // We rely on the fact that we mark notifications that failed to process as processed
+        // anyway. Without that the following loop might be infinite.
+        while (notificationRepository.getLastProcessedId() < reportToProcess.getMaximumId()) {
+
+            reportToProcess = fetchNotificationReport(notificationRepository.getLastProcessedId())
+                    .toBlocking()
+                    .value();
+
+            processNotificationList(reportToProcess.getPreview()).await();
+
+        }
     }
 
     /**
      * Process a list of notifications. Do not call directly.
      */
-    private Completable processNotificationList(List<NotificationJson> notifications) {
+    private Completable processNotificationList(final List<NotificationJson> notifications) {
 
         return Completable.defer(() -> {
             final long lastIdBefore = notificationRepository.getLastProcessedId();
@@ -144,7 +166,8 @@ public class NotificationActions {
                             return Observable.just(null);
                         }
                     })
-                    .toCompletable();
+                    .toCompletable()
+                    ;
         });
     }
 
@@ -192,39 +215,8 @@ public class NotificationActions {
         });
     }
 
-    private Single<List<NotificationJson>> getPendingNotifications(NotificationReport report,
-                                                                   long lastProcessedId) {
-
-        if (report.isMissingNotifications(lastProcessedId)) {
-            // This report starts later than expected (we missed past notifications), or ends
-            // earlier (more notifications are available in Houston):
-            return houstonClient.fetchNotificationsAfter(lastProcessedId).toSingle();
-
-            // TODO: a relatively easy optimization here would be to use the report preview and
-            // only fetch the missing notifications, instead of discarding those already obtained.
-            // This could be done in parallel.
-
-        } else {
-            // The report contains everything we need. It may even contain some notifications we
-            // already processed:
-            return Single.just(report.getPreview());
-        }
-    }
-
-
-    private Observable<NotificationReport> fetchNotificationReport(@Nullable Long afterId) {
-        // We'll create a fake NotificationReport from the notification list Houston gives us.
-        // This is simply to put in the queue and process it using the same entry point as other
-        // reports.
-        return houstonClient.fetchNotificationsAfter(afterId).map(notifications ->
-            new NotificationReport(
-                    afterId,
-                    notifications.isEmpty()
-                            ? afterId
-                            : notifications.get(notifications.size() - 1).id,
-                    notifications
-            )
-        );
+    private Single<NotificationReport> fetchNotificationReport(@Nullable Long afterId) {
+        return houstonClient.fetchNotificationReportAfter(afterId).toSingle();
     }
 
     private Subscription startProcessingQueue(Observable<NotificationReport> queue) {
@@ -244,8 +236,13 @@ public class NotificationActions {
                         BackpressureOverflow.ON_OVERFLOW_DROP_OLDEST
                 )
                 .observeOn(scheduler)
-                .compose(forEachSkipErrors(this::processReport))
-                .subscribe();
+                .subscribe(report -> {
+                    try {
+                        processReport(report);
+                    } catch (Exception e) {
+                        Timber.e(e);
+                    }
+                });
     }
 
     /**
@@ -262,17 +259,4 @@ public class NotificationActions {
     }
 
 
-    /**
-     * Transformer to run a task on each item of an Observable, logging and skipping errors.
-     */
-    private <T> Transformer<T, Void> forEachSkipErrors(Func1<T, Completable> createTask) {
-        return (items) -> items
-                .map(createTask)
-                .onBackpressureBuffer(200)
-                .concatMap(task -> task
-                        .doOnError(Timber::e)
-                        .onErrorComplete() // skip the error
-                        .toObservable()
-                );
-    }
 }

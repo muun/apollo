@@ -1,0 +1,11 @@
+CREATE TABLE hardware_wallets (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    model TEXT NOT NULL,
+    label TEXT NOT NULL,
+    base_public_key TEXT NOT NULL,
+    base_public_key_path TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    last_paired_at TEXT NOT NULL,
+    is_paired INTEGER NOT NULL
+);

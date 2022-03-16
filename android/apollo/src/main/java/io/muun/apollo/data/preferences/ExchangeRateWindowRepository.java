@@ -25,7 +25,7 @@ public class ExchangeRateWindowRepository extends BaseRepository {
     public ExchangeRateWindowRepository(Context context, RepositoryRegistry repositoryRegistry) {
         super(context, repositoryRegistry);
         windowPreference = rxSharedPreferences.getString(KEY_WINDOW);
-        fixedWindowPreference = rxSharedPreferences.getString(KEY_WINDOW);
+        fixedWindowPreference = rxSharedPreferences.getString(KEY_FIXED_WINDOW);
     }
 
     @Override

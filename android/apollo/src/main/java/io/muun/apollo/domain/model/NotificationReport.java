@@ -25,24 +25,12 @@ public class NotificationReport {
         return preview;
     }
 
-    /**
-     * Return true if there are gaps before or after this report, given a last seen Notification ID.
-     */
-    public boolean isMissingNotifications(long sinceId) {
-        if (previousId > sinceId) {
-            return true; // we missed past notifications.
-        }
-
-        final long maximumIdInPreview = preview.isEmpty()
-                ? -1L
-                : preview.get(preview.size() - 1).id;
-
-        final long maximumSeenId = Math.max(maximumIdInPreview, sinceId);
-
-        if (maximumId > maximumSeenId) {
-            return true; // there's more notifications waiting for us.
-        }
-
-        return false;
+    public long getMaximumId() {
+        return maximumId;
     }
+
+    public long getPreviousId() {
+        return previousId;
+    }
+
 }

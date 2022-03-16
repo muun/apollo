@@ -2,72 +2,57 @@ package io.muun.apollo.data.db.base;
 
 import io.muun.apollo.domain.errors.DatabaseError;
 import io.muun.apollo.domain.model.base.PersistentModel;
+import io.muun.apollo.lib.Database;
 import io.muun.common.Optional;
+import io.muun.common.utils.Preconditions;
 
 import android.database.Cursor;
-import androidx.annotation.Nullable;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.squareup.sqlbrite3.BriteDatabase;
-import com.squareup.sqldelight.prerelease.SqlDelightQuery;
-import com.squareup.sqldelight.prerelease.SqlDelightStatement;
+import com.squareup.sqldelight.Query;
+import com.squareup.sqldelight.runtime.rx.RxQuery;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.BackpressureStrategy;
-import io.reactivex.functions.Function;
+import io.reactivex.Scheduler;
+import rx.Completable;
 import rx.Observable;
 import rx.exceptions.OnErrorThrowable;
-import rx.functions.Func2;
-import timber.log.Timber;
+import rx.functions.Action0;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
-// TODO: make insert/delete/update/store return values non-observable
-// TODO: make non-observable versions of the fetch methods
-public class BaseDao<ModelT extends PersistentModel> {
-
-    protected BriteDatabase briteDb;
-    protected SupportSQLiteDatabase db;
+public abstract class BaseDao<ModelT extends PersistentModel> {
 
     protected final String tableName;
-
-    private final String createTableSql;
-
-    private final Func2<SupportSQLiteDatabase, ModelT, SqlDelightStatement> inputMapper;
-
-    private final Function<Cursor, ModelT> outputMapper;
+    protected BriteDatabase briteDb;
+    protected SupportSQLiteDatabase db;
+    protected Database delightDb;
+    protected Scheduler scheduler;
 
     /**
      * Constructor.
      */
-    protected BaseDao(
-            String createTableSql,
-            Func2<SupportSQLiteDatabase, ModelT, SqlDelightStatement> inputMapper,
-            Function<Cursor, ModelT> outputMapper,
-            String tableName) {
-
+    protected BaseDao(final String tableName) {
         this.tableName = tableName;
-        this.createTableSql = createTableSql;
-        this.inputMapper = inputMapper;
-        this.outputMapper = outputMapper;
     }
 
     /**
      * This method will be called from the DaoManager to set the database. You should not call this
      * method directly.
      */
-    public void setBriteDb(BriteDatabase briteDatabase) {
+    public void setDb(BriteDatabase briteDatabase, Database delightDb, final Scheduler scheduler) {
         this.briteDb = briteDatabase;
         this.db = briteDatabase.getWritableDatabase();
-    }
+        this.delightDb = delightDb;
+        this.scheduler = scheduler;
 
-    /**
-     * This method will be called from the DaoManager to create the table for this dao. You should
-     * not call this method directly.
-     */
-    public void createTable(SupportSQLiteDatabase database) {
-        database.execSQL(createTableSql);
+        Preconditions.checkState(
+                briteDatabase.query("SELECT COUNT(*) FROM " + tableName).getCount() == 1,
+                "expected table " + tableName + " to exist"
+        );
     }
 
     /**
@@ -83,81 +68,52 @@ public class BaseDao<ModelT extends PersistentModel> {
     /**
      * Deletes all rows from a table.
      *
-     * @return A deferred observable with the number of deleted rows.
+     * @return A deferred completable.
      */
-    public Observable<Integer> deleteAll() {
-        return delete(null);
-    }
-
-    /**
-     * Delete the rows that match a given query.
-     *
-     * @return A deferred observable with the number of deleted rows.
-     */
-    protected Observable<Integer> delete(@Nullable final String whereClause,
-                                         @Nullable final String... whereArgs) {
-        return Observable.defer(() ->
-                Observable.just(briteDb.delete(tableName, whereClause, whereArgs))
-        ).onErrorResumeNext(this::wrapError);
-    }
+    public abstract Completable deleteAll();
 
     /**
      * Runs the statement returning an observable with a list of results, and re-emitting if the
      * result set changes.
      */
-    protected Observable<List<ModelT>> fetchList(@NotNull SqlDelightQuery query) {
-        final io.reactivex.Observable<List<ModelT>> v2Observable = briteDb
-                .createQuery(query.getTables(), query)
-                .mapToList(outputMapper)
-                .onErrorResumeNext(error -> {
-                    return RxJavaInterop.toV2Observable(wrapError(error));
-                });
+    protected Observable<List<ModelT>> fetchList(@NotNull Query<ModelT> query) {
+
+        final io.reactivex.Observable<List<ModelT>> v2Observable =
+                RxQuery.toObservable(query, scheduler)
+                        .map(Query::executeAsList)
+                        .onErrorResumeNext(error -> {
+                            return RxJavaInterop.toV2Observable(wrapError(error));
+                        });
 
         return RxJavaInterop.toV1Observable(v2Observable, BackpressureStrategy.ERROR);
-    }
-
-    /**
-     * Runs the statement returning a list of results, without an ongoing subscription. Safe to call
-     * inside transactions.
-     */
-    protected List<ModelT> fetchListOnce(@NotNull SqlDelightQuery query) {
-        final List<ModelT> results = new ArrayList<>();
-
-        try (Cursor cursor = briteDb.query(query)) {
-            while (cursor.moveToNext()) {
-                results.add(outputMapper.apply(cursor));
-            }
-        } catch (Exception e) {
-            // TODO handle?
-            Timber.e(e);
-        }
-
-        return results;
     }
 
     /**
      * Runs the statement which will emit the only expected result, re-emitting when it changes. The
      * observable will emit an error if no element is found.
      */
-    protected Observable<ModelT> fetchOneOrFail(@NotNull SqlDelightQuery query) {
+    protected Observable<ModelT> fetchOneOrFail(@NotNull Query<ModelT> query) {
 
         final ElementNotFoundException elementNotFoundException = new ElementNotFoundException(
-                query.getSql()
+                query
         );
 
-        final io.reactivex.Observable<ModelT> v2Observable = briteDb
-                .createQuery(query.getTables(), query)
-                .mapToOneOrDefault(getCursorOptionalFunction(), Optional.empty())
-                .flatMap(maybeElement -> {
+        final io.reactivex.Observable<ModelT> v2Observable =
+                RxQuery.toObservable(query, scheduler)
+                        .map(this::mapQueryToOptional)
+                        .flatMap(maybeElement -> {
 
-                    if (!maybeElement.isPresent()) {
-                        return io.reactivex.Observable.error(
-                                OnErrorThrowable.from(elementNotFoundException)
-                        );
-                    }
+                            if (maybeElement.isPresent()) {
+                                return io.reactivex.Observable.just(maybeElement.get());
 
-                    return io.reactivex.Observable.just(maybeElement.get());
-                });
+                            } else {
+
+                                return io.reactivex.Observable.error(
+                                        OnErrorThrowable.from(elementNotFoundException)
+                                );
+                            }
+
+                        });
 
         return RxJavaInterop.toV1Observable(v2Observable, BackpressureStrategy.ERROR);
     }
@@ -166,87 +122,82 @@ public class BaseDao<ModelT extends PersistentModel> {
      * Runs the statement which will emit the only expected result, re-emitting when it changes. If
      * no element is found, an empty Optional is returned.
      */
-    protected Observable<Optional<ModelT>> fetchMaybeOne(@NotNull SqlDelightQuery query) {
+    protected Observable<Optional<ModelT>> fetchMaybeOne(@NotNull Query<ModelT> query) {
 
-        final io.reactivex.Observable<Optional<ModelT>> v2Observable = briteDb
-                .createQuery(query.getTables(), query)
-                .mapToOneOrDefault(getCursorOptionalFunction(), Optional.empty());
+        final io.reactivex.Observable<Optional<ModelT>> v2Observable =
+                RxQuery.toObservable(query, scheduler)
+                        .map(this::mapQueryToOptional);
 
         return RxJavaInterop.toV1Observable(v2Observable, BackpressureStrategy.ERROR);
     }
 
-    /**
-     * Somewhat convoluted hack to avoid QueryObseravle#mapToOneOrDefault's "defaultValue can't be
-     * null" restriction AND our inability to use QueryObseravle#mapToOptional version (requires
-     * Android's version > 24).
-     */
-    private Function<Cursor, Optional<ModelT>> getCursorOptionalFunction() {
-        return cursor -> Optional.ofNullable(outputMapper.apply(cursor));
+    private Optional<ModelT> mapQueryToOptional(final Query<ModelT> query) {
+        return Optional.ofNullable(query.executeAsOneOrNull());
     }
+
+    /**
+     * Directly store an element to the backing database. Not intended to be called directly since
+     * this does not check for any of the currently held invariants by {@link HoustonIdDao} or
+     * {@link HuostonUuidDao}. Incorrect calls might result in duplicated entries.
+     */
+    protected abstract void storeUnsafe(@Nonnull ModelT element);
 
     /**
      * Stores an entity in the database, returning a single-element observable of the saved entity.
      *
      * @return A deferred observable with an element that has an id.
      */
-    public Observable<ModelT> store(@NotNull ModelT element) {
-
-        final SqlDelightStatement statement = inputMapper.call(db, element);
-
+    public Observable<ModelT> store(@Nonnull ModelT element) {
         final Long id = element.getId();
 
         if (id != null) {
+            final Action0 update = () -> {
+                try (final BriteDatabase.Transaction tx = briteDb.newNonExclusiveTransaction()) {
+                    storeUnsafe(element);
 
-            return Observable.defer(() -> Observable.just(
-                    briteDb.executeUpdateDelete(statement.getTable(), statement)
-            )).onErrorResumeNext(this::wrapError)
-                    .map(alteredRowsCount -> {
-
-                        if (alteredRowsCount == 0) {
-                            throw new NoSuchElementException("Entity with id " + id + " not found");
-                        }
-
-                        if (alteredRowsCount > 1) {
-                            throw new IllegalStateException(
-                                    "More than one entity updated with id " + id);
-                        }
-
-                        return element;
-                    });
-        }
-
-        // Make sure the auto increment id is not set to anything
-        statement.bindNull(1);
-
-        return Observable.defer(() -> Observable.just(
-                briteDb.executeInsert(statement.getTable(), statement)
-        )).onErrorResumeNext(this::wrapError)
-                .map(rowId -> {
-
-                    if (rowId == -1) {
-                        throw new RuntimeException("Error while inserting new value in the db");
+                    final Cursor cursor = briteDb.query(
+                            "SELECT COUNT(*) FROM " + tableName + " WHERE id = " + id
+                    );
+                    if (cursor.getCount() == 0) {
+                        throw new NoSuchElementException("Entity with id " + id + " not found");
                     }
 
-                    element.setId(rowId);
-                    return element;
-                })
-                .onErrorResumeNext(this::wrapError);
+                    Preconditions.checkState(cursor.moveToFirst());
+                    if (cursor.getLong(0) > 1) {
+                        throw new IllegalStateException(
+                                "More than one entity updated with id " + id);
+                    }
+
+                    tx.markSuccessful();
+                }
+            };
+
+            return Completable.fromAction(update)
+                    .andThen(Observable.just(element))
+                    .onErrorResumeNext(this::wrapError);
+        }
+
+        return Observable.defer(() -> {
+            storeUnsafe(element);
+
+            // FIXME: This is a racy operation. If another thread inserts any row, the id
+            // won't match.
+            final Cursor query = briteDb.query("SELECT last_insert_rowid();");
+            Preconditions.checkState(query.moveToFirst());
+            final long insertedId = query.getLong(0);
+            if (insertedId < 0) {
+                throw new RuntimeException("Error while inserting new value in the db");
+            }
+
+            element.setId(insertedId);
+
+            return Observable.just(element);
+        })
+        .onErrorResumeNext(this::wrapError);
     }
 
     protected <T> Observable<T> wrapError(Throwable error) {
         return Observable.error(new DatabaseError("Error on " + getClass().getSimpleName(), error));
-    }
-
-    protected void executeInsert(SqlDelightStatement compiledStatement) {
-        briteDb.executeInsert(compiledStatement.getTable(), compiledStatement);
-    }
-
-    protected void executeUpdate(SqlDelightStatement compiledStatement) {
-        briteDb.executeUpdateDelete(compiledStatement.getTable(), compiledStatement);
-    }
-
-    protected void executeDelete(SqlDelightStatement compiledStatement) {
-        briteDb.executeUpdateDelete(compiledStatement.getTable(), compiledStatement);
     }
 
     protected void enhanceError(Throwable error, String... args) {
@@ -255,10 +206,11 @@ public class BaseDao<ModelT extends PersistentModel> {
         }
     }
 
-    protected Observable<Long> executeCount(final SqlDelightQuery query) {
+    protected Observable<Long> executeCount(final Query<Long> query) {
         final io.reactivex.Observable<Long> observable =
-                briteDb.createQuery(query.getTables(), query)
-                        .mapToOneOrDefault(cursor -> cursor.getLong(0), 0L)
+                RxQuery.toObservable(query, scheduler)
+                        .map(Query::executeAsOneOrNull)
+                        .map(l -> l == null ? 0 : l)
                         .onErrorResumeNext(error -> {
                             return RxJavaInterop.toV2Observable(wrapError(error));
                         });

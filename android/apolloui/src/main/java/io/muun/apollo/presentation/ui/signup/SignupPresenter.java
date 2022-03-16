@@ -88,7 +88,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                 .doOnNext(createSessionOk -> {
                     signupDraft.setExistingUser(true);
                     signupDraft.setCanUseRecoveryCode(createSessionOk.canUseRecoveryCode());
-                    navigateToStep(SignupStep.LOGIN_WAIT_VERIFICATION);
+                    navigateToStepFrom(SignupStep.LOGIN_WAIT_VERIFICATION, signupDraft.getStep());
                 });
 
         subscribeTo(observable);
@@ -98,7 +98,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         final Observable<?> observable = watchSubmitEnterPassword() // its same for SubmitEnterRC
                 .filter(ActionState::isValue)   // Child presenters handle errors
                 .map(ActionState::getValue)
-                .doOnNext(ignored -> navigateToStep(SignupStep.SYNC));
+                .doOnNext(ignored -> navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep()));
 
         subscribeTo(observable);
     }
@@ -113,11 +113,14 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
                     if (createSessionOk.hasEmailSetup()) {
                         signupDraft.setEmail(createSessionOk.getOfuscatedEmail().get());
-                        navigateToStep(SignupStep.LOGIN_RECOVERY_CODE_EMAIL_AUTH);
+                        navigateToStepFrom(
+                                SignupStep.LOGIN_RECOVERY_CODE_EMAIL_AUTH,
+                                signupDraft.getStep()
+                        );
 
                     } else {
 
-                        navigateToStep(SignupStep.SYNC);
+                        navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep());
                     }
                 });
 
@@ -142,7 +145,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         final SignupStep step = signupDraft.getStep();
 
         if (step != SignupStep.START) {
-            navigateToStep(step);
+            navigateToStepFrom(step, SignupStep.START);
         }
     }
 
@@ -151,7 +154,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
      */
     public void startSignup() {
         checkStep(SignupStep.START);
-        navigateToStep(SignupStep.SYNC);
+        navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep());
     }
 
     /**
@@ -159,7 +162,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
      */
     public void startLogin() {
         checkStep(SignupStep.START);
-        navigateToStep(SignupStep.LOGIN_EMAIL);
+        navigateToStepFrom(SignupStep.LOGIN_EMAIL, signupDraft.getStep());
     }
 
     /**
@@ -170,7 +173,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         checkStep(SignupStep.LOGIN_WAIT_VERIFICATION);
         Preconditions.checkState(signupDraft.isExistingUser());
 
-        navigateToStep(SignupStep.LOGIN_PASSWORD);
+        navigateToStepFrom(SignupStep.LOGIN_PASSWORD, signupDraft.getStep());
     }
 
     @Override
@@ -182,13 +185,13 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     @Override
     public void useRecoveryCodeToLogin() {
         checkStep(SignupStep.LOGIN_PASSWORD);
-        navigateToStep(SignupStep.LOGIN_RECOVERY_CODE);
+        navigateToStepFrom(SignupStep.LOGIN_RECOVERY_CODE, signupDraft.getStep());
     }
 
     @Override
     public void useRecoveryCodeOnlyLogin() {
         checkStep(SignupStep.LOGIN_EMAIL);
-        navigateToStep(SignupStep.LOGIN_RECOVERY_CODE_ONLY);
+        navigateToStepFrom(SignupStep.LOGIN_RECOVERY_CODE_ONLY, signupDraft.getStep());
     }
 
     @Override
@@ -198,7 +201,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         Preconditions.checkNotNull(signupDraft.getLoginWithRc());
 
         signupDraft.getLoginWithRc().setKeysetFetchNeeded(true);
-        navigateToStep(SignupStep.SYNC);
+        navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep());
     }
 
     @NonNull
@@ -258,7 +261,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         createLoginSession.reset();
         signinActions.clearSession();
 
-        navigateToStep(SignupStep.START);
+        navigateToStepFrom(SignupStep.START, signupDraft.getStep());
     }
 
     @Override
@@ -267,7 +270,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         Preconditions.checkState(signupDraft.isExistingUser());
 
         signinActions.clearSession();
-        navigateToStep(SignupStep.LOGIN_EMAIL);
+        navigateToStepFrom(SignupStep.LOGIN_EMAIL, signupDraft.getStep());
     }
 
     @Override
@@ -277,13 +280,13 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
         logIn.reset();
         signinActions.clearSession();
-        navigateToStep(SignupStep.START);
+        navigateToStepFrom(SignupStep.START, signupDraft.getStep());
     }
 
     @Override
     public void cancelEnterRecoveryCode() {
         checkStep(SignupStep.LOGIN_RECOVERY_CODE);
-        navigateToStep(SignupStep.LOGIN_PASSWORD);
+        navigateToStepFrom(SignupStep.LOGIN_PASSWORD, signupDraft.getStep());
     }
 
     @Override
@@ -293,13 +296,13 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         signinActions.clearSession();
         signupDraftManager.clear();
         restoreSignupDraft();
-        navigateToStep(SignupStep.LOGIN_EMAIL);
+        navigateToStepFrom(SignupStep.LOGIN_EMAIL, signupDraft.getStep());
     }
 
     @Override
     public void cancelRcLoginEmailAuth() {
         checkStep(SignupStep.LOGIN_RECOVERY_CODE_EMAIL_AUTH);
-        navigateToStep(SignupStep.LOGIN_RECOVERY_CODE_ONLY);
+        navigateToStepFrom(SignupStep.LOGIN_RECOVERY_CODE_ONLY, signupDraft.getStep());
     }
 
     @Override
@@ -329,9 +332,12 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         view.finishActivity();
     }
 
-    private void navigateToStep(SignupStep step) {
-        final SignupStep previousStep = signupDraft.getStep();
-
+    /**
+     * Navigate to SignupStep, specifying previous step.
+     * Note: navigating to SYNC step requires passing previous step (aka from), for tracking
+     * purposes.
+     */
+    private void navigateToStepFrom(SignupStep step, SignupStep previousStep) {
         // Make sure we start with a clean slate if we get back to the start screen
         if (step == SignupStep.START) {
             signupDraftManager.clear();

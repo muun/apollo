@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        package="io.muun.apollo"
->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="io.muun.apollo">
 
     <!-- Permissions -->
 
@@ -363,12 +362,16 @@
                     android:resource="@xml/filepaths" />
         </provider>
 
-        <!-- Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom)-->
+        <!--
+            Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom). See:
+            https://developer.android.com/topic/libraries/architecture/workmanager/advanced/custom-configuration
+        -->
         <provider
                 android:name="androidx.work.impl.WorkManagerInitializer"
                 android:authorities="${applicationId}.workmanager-init"
                 android:enabled="false"
-                android:exported="false" />
+                android:exported="false"
+                tools:node="remove" />
 
         <!-- Receivers -->
 

@@ -42,7 +42,7 @@ def lint(files):
     root = get_git_root()
 
     results = run_checkstyle(
-        root + "/linters/checkstyle/checkstyle-8.45.1-all.jar",
+        root + "/linters/checkstyle/checkstyle-9.2.1-all.jar",
         root + "/linters/checkstyle/config.xml",
         root + "/linters/checkstyle/suppressions.xml",
         root + "/linters/checkstyle/suppressions-xpath.xml",

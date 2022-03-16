@@ -48,8 +48,10 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
 
     // State:
 
+    // Part of our (ugly) hack to allow SATs as an input currency option
     @State
-    lateinit var mBitcoinUnit: BitcoinUnit
+    @JvmField
+    var satSelectedAsCurrency = false
 
     override fun inject() =
         component.inject(this)
@@ -70,10 +72,6 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         }
     }
 
-    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
-        this.mBitcoinUnit = bitcoinUnit
-    }
-
     override fun setContent(content: String, addressType: AddressType, amount: MonetaryAmount?) {
 
         // TODO Enable extra QR compression mode. Uppercase bech32 strings are more efficiently
@@ -89,7 +87,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         addressTypeItem.show(addressType)
 
         if (amount != null) {
-            editAmountItem.setAmount(amount, mBitcoinUnit)
+            editAmountItem.setAmount(amount, getBitcoinUnit())
 
         } else {
             editAmountItem.resetAmount()
@@ -144,7 +142,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     override fun onEditAmount(amount: MonetaryAmount?) {
         requestDelegatedExternalResult(
             REQUEST_AMOUNT,
-            SelectAmountActivity.getSelectAddressAmountIntent(requireContext(), amount)
+            SelectAmountActivity.getSelectAddressAmountIntent(requireContext(), amount, satSelectedAsCurrency)
         )
     }
 
@@ -152,7 +150,8 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
         super.onExternalResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_AMOUNT && resultCode == Activity.RESULT_OK) {
-            val result = SelectAmountActivity.getResult(data!!)
+            this.satSelectedAsCurrency = SelectAmountActivity.getSatSelectedAsCurrencyResult(data!!)
+            val result = SelectAmountActivity.getResult(data)
 
             if (result != null && !result.isZero) {
                 presenter.setAmount(result)
@@ -161,5 +160,12 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
                 presenter.setAmount(null)
             }
         }
+    }
+
+    // Part of our (ugly) hack to allow SATs as an input currency option
+    private fun getBitcoinUnit() = if (satSelectedAsCurrency) {
+        BitcoinUnit.SATS
+    } else {
+        BitcoinUnit.BTC
     }
 }

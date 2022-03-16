@@ -117,4 +117,9 @@ public class Supports {
         int APOLLO = 700;
         int FALCON = 605;
     }
+
+    public interface PaginatedNotifications {
+        int APOLLO = 900;
+        int FALCON = 706;
+    }
 }

@@ -139,10 +139,10 @@
     </string>
 
     <string name="error_op_invoice_invalid_amount_title">
-        Factura sin un monto válido
+        Esta factura no incluye un monto
     </string>
     <string name="error_op_invoice_invalid_amount_desc">
-        La factura debe tener un monto de al menos 1 satoshi. Por favor, crea o solicita una nueva.
+        Por el momento, sólo se puede pagar a facturas que incluyan un monto. Por favor, crea o solicita una nueva.
     </string>
 
     <string name="error_op_invoice_invalid_title">No es posible pagar esta factura</string>
@@ -364,7 +364,7 @@
     <!-- Landing -->
 
     <string name="signup_start">CREAR UN MONEDERO NUEVO</string>
-    <string name="login_start">YA TENGO UN MONEDERO</string>
+    <string name="login_start">RECUPERAR MONEDERO EXISTENTE</string>
 
     <!-- Signup -->
 
@@ -1119,7 +1119,7 @@
 
     <string name="select_bitcoin_unit_title">Unidad de bitcoin</string>
     <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
-    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
+    <string name="select_bitcoin_unit_sat">Bitcoin (SAT)</string>
 
     <!-- Security center -->
     <string name="security_center_title">Centro de Seguridad</string>
@@ -1380,11 +1380,11 @@
         Hasta que se confirme, esta transacción puede ser cancelada por el remitente.
         <annotation link="how">¿Como?</annotation>.
     </string>
-    <string name="rbf_notice_banner_title">¿Como puede ser cancelada?</string>
+    <string name="rbf_notice_banner_title">¿Cómo se puede cancelar esta transacción?</string>
     <string name="rbf_notice_banner_desc">
-        Esta transacción tiene RBF (replace-by-fee) activado. Esto permite al remitente incrementar
-        la comisión original para una confirmación más rápida, pero también puede usarse para
-        cancelar transacciones. A menos que conozcas y confíes en el remitente, considera esto como
+        Esta transacción tiene RBF (replace-by-fee) activado. RBF le permite al remitente incrementar
+        la comisión original para una confirmación más rápida, pero también puede usarlo para
+        cancelar la transacción. A menos que conozcas y confíes en el remitente, considéralo
         un riesgo hasta que se confirme la transacción.
     </string>
 

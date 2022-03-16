@@ -43,6 +43,11 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String bigQueryPseudoId;
 
+    // TODO complete before releasing this
+    @Since(apolloVersion = 999) // Apollo ?
+    @Nullable // Before that ;)
+    public boolean isRootHint;
+
     /**
      * Json constructor.
      */
@@ -59,7 +64,8 @@ public class ClientJson {
                       final String deviceModel,
                       final Long timezoneOffsetInSeconds,
                       final String language,
-                      final String bigQueryPseudoId) {
+                      final String bigQueryPseudoId,
+                      final boolean isRootHint) {
         this.type = type;
         this.buildType = buildType;
         this.version = version;
@@ -68,5 +74,6 @@ public class ClientJson {
         this.timezoneOffsetInSeconds = timezoneOffsetInSeconds;
         this.language = language;
         this.bigQueryPseudoId = bigQueryPseudoId;
+        this.isRootHint = isRootHint;
     }
 }

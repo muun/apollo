@@ -1,0 +1,8 @@
+ALTER TABLE hardware_wallets
+ADD COLUMN brand TEXT;
+
+
+UPDATE hardware_wallets
+SET
+    brand = upper(substr(model, 1, instr(model, '/') - 1)),
+    model = substr(model, instr(model, '/') + 1);

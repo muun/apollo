@@ -1,0 +1,11 @@
+CREATE TABLE satellite_pairings (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    satellite_session_uuid TEXT NOT NULL UNIQUE,
+    apollo_session_uuid TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL,
+    browser TEXT,
+    os_version TEXT,
+    ip TEXT,
+    creation_date TEXT NOT NULL,
+    last_active TEXT
+);

@@ -40,7 +40,7 @@ class RepositoryRegistry {
     )
 
     // Notable exceptions:
-    // - FcmTokenRepository
+    // - FirebaseInstalationIdRepository
     // - NightModeRepository
     // - SchemaVersionRepository
     // They get special treatment and are not wiped on logout to avoid problems.

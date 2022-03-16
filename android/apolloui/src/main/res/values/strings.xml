@@ -143,10 +143,10 @@
     </string>
 
     <string name="error_op_invoice_invalid_amount_title">
-        This invoice is missing a valid amount
+        This invoice doesn\’t include an amount
     </string>
     <string name="error_op_invoice_invalid_amount_desc">
-        Invoices must have an amount of at least 1 satoshi. Please, create or request a new one.
+        At the moment, you can only pay to invoices that include an amount. Please, create or request a new one.
     </string>
 
     <string name="error_op_invoice_invalid_title">Unable to pay this invoice</string>
@@ -352,7 +352,7 @@
     <!-- Landing -->
 
     <string name="signup_start">CREATE A NEW WALLET</string>
-    <string name="login_start">I ALREADY HAVE A WALLET</string>
+    <string name="login_start">RECOVER EXISTING WALLET</string>
 
     <!-- Signup -->
 
@@ -1084,7 +1084,7 @@
 
     <string name="select_bitcoin_unit_title">Bitcoin unit</string>
     <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
-    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
+    <string name="select_bitcoin_unit_sat">Bitcoin (SAT)</string>
 
     <!-- Security center -->
     <string name="security_center_title">Security Center</string>
@@ -1330,11 +1330,11 @@
         Until confirmed, this transaction can be canceled by the sender.
         <annotation link="how">How?</annotation>.
     </string>
-    <string name="rbf_notice_banner_title">How can this be canceled?</string>
+    <string name="rbf_notice_banner_title">How can this transaction be canceled?</string>
     <string name="rbf_notice_banner_desc">
-        This transaction has RBF (replace-by-fee) enabled. This allows the sender to raise the
-        original fee for faster confirmation, but can also be used to cancel transactions.  Unless
-        you know and trust the sender, consider this a risk until the transaction is confirmed.
+        This transaction has RBF (replace-by-fee) enabled. RBF allows the sender to raise the
+        original fee for faster confirmation, but they can also use it to cancel the transaction. Unless
+        you know and trust the sender, consider it a risk until the transaction is confirmed.
     </string>
 
     <string name="turbo_channels">Turbo channels</string>

@@ -45,6 +45,7 @@ import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.beam.notification.NotificationJson;
+import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.model.UserPreferences;
 import io.muun.common.model.VerificationType;
 import io.muun.common.net.NetworkRetry;
@@ -108,6 +109,11 @@ public interface HoustonService {
     @GET("sessions/notifications")
     Observable<List<NotificationJson>> fetchNotificationsAfter(
             @Query("after") @Nullable Long notificationId);
+
+    @GET("sessions/notification_report")
+    Observable<NotificationReportJson> fetchNotificationReportAfter(
+            @Query("after") @Nullable Long notificationId
+    );
 
     @PUT("sessions/notifications/confirm")
     Observable<Void> confirmNotificationsDeliveryUntil(
@@ -205,9 +211,6 @@ public interface HoustonService {
 
     @GET("contacts")
     Observable<List<Contact>> fetchContacts();
-
-    @GET("contacts/{contactId}")
-    Observable<Contact> fetchContact(@Path("contactId") long contactId);
 
     @PATCH("watched-phone-numbers")
     Observable<List<Contact>> patchPhoneNumbers(@Body DiffJson<String> phoneNumberHashDiff);

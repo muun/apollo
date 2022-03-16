@@ -136,6 +136,14 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         }
     }
 
+    /**
+     * Horrible. I know. Quick hack to avoid dealing with ramifications of changing onBackPressed
+     * (popBackStack) logic.
+     */
+    protected void superOnBackPressed() {
+        super.onBackPressed();
+    }
+
     private void pushToBackStack(FragmentTransaction transaction, boolean canGoBackToCurrent) {
         String transactionTag = Boolean.toString(canGoBackToCurrent);
 
@@ -195,7 +203,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         // Here, instead of just popping the top stack item (as the Activity class does), we'll
         // keep popping until we remove the first transition tagged with "true":
         // UPDATE: since popBackStackImmediate() called with POP_BACK_STACK_INCLUSIVE pops EVERY
-        // fragmentTransaction with a name/tag matching the specfied transactionTag, we make a
+        // fragmentTransaction with a name/tag matching the specified transactionTag, we make a
         // small modification introduce unique transactionTags for each transaction and keep
         // track of them. Otherwise, in the case of fragment transactions A -> B -> C (all with
         // canGoBackCurrent = true), pressing back in fragment C would remove C but also B.
@@ -206,6 +214,10 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
             transactionTag = Boolean.toString(true);
         }
 
+        if (isFinishing() || getSupportFragmentManager().isStateSaved()) {
+            return; // Avoid crash if activity's finishing or has already called onSaveInstanceState
+        }
+
         final boolean hadPreviousFragment = getSupportFragmentManager().popBackStackImmediate(
                 transactionTag,
                 FragmentManager.POP_BACK_STACK_INCLUSIVE
@@ -214,7 +226,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         if (hadPreviousFragment) {
             backStackTags.remove(backStackTags.size() - 1);
         } else {
-            finishActivity();
+            finishActivity(); // TODO we probably want to super.onBackPressed()
         }
     }
 

@@ -1,0 +1,65 @@
+-- We want to delete hws foreign key in operations table but we can't drop column...
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+--
+--  1. Rename your table to a temporary name.
+--  2. Create a table exactly as the original one, except for the column in question.
+--  3. Insert all the rows from the temporary table to the new one.
+--  4. Delete the temporary table.
+
+
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+CREATE TABLE operations (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    direction TEXT NOT NULL,
+    is_external INTEGER NOT NULL,
+    sender_hid INTEGER REFERENCES public_profiles(hid),
+    sender_is_external INTEGER NOT NULL,
+    receiver_hid INTEGER REFERENCES public_profiles(hid),
+    receiver_is_external INTEGER NOT NULL,
+    receiver_address TEXT,
+    receiver_address_derivation_path TEXT,
+    amount_in_satoshis INTEGER NOT NULL,
+    amount_in_input_currency TEXT NOT NULL,
+    amount_in_primary_currency TEXT NOT NULL,
+    fee_in_satoshis INTEGER NOT NULL,
+    fee_in_input_currency TEXT NOT NULL,
+    fee_in_primary_currency TEXT NOT NULL,
+    confirmations INTEGER NOT NULL,
+    hash TEXT,
+    description TEXT,
+    status TEXT NOT NULL,
+    creation_date TEXT NOT NULL,
+    exchange_rate_window_hid INTEGER NOT NULL,
+    submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid)
+);
+
+INSERT INTO operations
+SELECT
+ id,
+ hid,
+ direction,
+ is_external,
+ sender_hid,
+ sender_is_external,
+ receiver_hid,
+ receiver_is_external,
+ receiver_address, receiver_address_derivation_path,
+ amount_in_satoshis,
+ amount_in_input_currency,
+ amount_in_primary_currency,
+ fee_in_satoshis,
+ fee_in_input_currency,
+ fee_in_primary_currency,
+ confirmations,
+ hash,
+ description,
+ status,
+ creation_date,
+ exchange_rate_window_hid,
+ submarine_swap_houston_uuid
+FROM tmp_operations;
+
+DROP TABLE tmp_operations;

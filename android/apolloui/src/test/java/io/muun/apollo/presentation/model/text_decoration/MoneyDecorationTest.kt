@@ -7,11 +7,15 @@ import java.util.*
 /**
  * This test uses a DSL for expressing inputs and expected results.
  * - A pipe `|` represents the caret position.
- * - An underscore `_` represents the grouping separator for the current locale.
- * Why using an underscore? Because we want to automate inputs for different grouping separators
- * without overlapping symbols or having to modify each test case if we happen to change or
- * fix one.
+ * - An underscore `_` represents the grouping separator for the current locale (aka it's a locale
+ *  agnostic grouping separator).
+ *  Why using an underscore? Because we want to automate inputs for different grouping separators
+ *  without overlapping symbols or having to modify each test case if we happen to change or
+ *  fix one.
+ * - A dot `.` represents the decimal separator for the current locale (aka it's a locale agnostic
+ *  decimal separator).
  */
+// TODO handle PASTE correctly and add LOTS more tests for paste (e.g 123|.34 PASTE 567.34)
 class MoneyDecorationTest {
 
     private val locales = listOf(Locale("es"), Locale("en"))
@@ -123,6 +127,28 @@ class MoneyDecorationTest {
         }
     }
 
+    @Test
+    fun `test no decimals (aka SAT input)`() {
+        locales.forEach {
+
+            // Test manual input aka add
+            Given(it, "1|", 0).add(".").expect("1|")
+
+            Given(it, "1|23", 0).add(".").expect("1|23")
+
+            Given(it, "|123", 0).add(".").expect("|123")
+
+            // This is kindof a benevolent, simple paste
+            Given(it, "44|", 0).add("123.123").expect("44123|")
+
+            Given(it, "4|4", 0).add("123.123").expect("4123|4")
+
+            Given(it, "|44", 0).add("123.123").expect("123|44")
+
+            // TODO test paste
+        }
+    }
+
     /**
      * Provides a fluent API for generating text operation cases.
      */
@@ -151,7 +177,8 @@ class MoneyDecorationTest {
             return this
         }
 
-        fun paste(from: Int, to: Int, inserted: String): Given {
+        fun paste(from: Int, to: Int, insertedDsl: String): Given {
+            val inserted = cleanText(insertedDsl)
             val replacedCount = from - to
             decoration.beforeTextChanged(text, from, replacedCount, inserted.length)
             text.replace(from, to, inserted)
@@ -160,7 +187,8 @@ class MoneyDecorationTest {
             return this
         }
 
-        fun add(inserted: String): Given {
+        fun add(insertedDsl: String): Given {
+            val inserted = cleanText(insertedDsl)
             decoration.beforeTextChanged(text, caretPosition, 0, inserted.length)
             text.insert(caretPosition, inserted)
             caretPosition += inserted.length

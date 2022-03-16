@@ -5,6 +5,7 @@ import io.muun.apollo.data.serialization.dates.MuunZonedDateTimeSerializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeDeserializer;
 import io.muun.apollo.data.serialization.dates.ZonedDateTimeSerializer;
 import io.muun.apollo.domain.errors.MissingCurrencyError;
+import io.muun.apollo.domain.errors.data.MuunDeserializetionError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.utils.DateUtils;
 import io.muun.common.dates.MuunZonedDateTime;
@@ -149,7 +150,7 @@ public final class SerializationUtils {
         try {
             return JSON_MAPPER.readValue(jsonString, jsonType);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, jsonString));
         }
     }
 
@@ -163,7 +164,7 @@ public final class SerializationUtils {
         try {
             return JSON_MAPPER.readValue(jsonString, jsonType);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, jsonString));
         }
     }
 
@@ -196,7 +197,7 @@ public final class SerializationUtils {
         try {
             return new BigDecimal(numberString);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, numberString));
         }
     }
 
@@ -205,7 +206,6 @@ public final class SerializationUtils {
      */
     @NotNull
     public static String serializeCurrencyUnit(@NotNull CurrencyUnit currencyValue) {
-
         return currencyValue.getCurrencyCode();
     }
 
@@ -221,11 +221,11 @@ public final class SerializationUtils {
         } catch (UnknownCurrencyException e) {
             // In practice, only this type of error should arise.
             Timber.e(new MissingCurrencyError(e));
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, currencyString));
 
         } catch (MonetaryException e) {
             // This more general kind can only happen when providers are incorrectly initialized.
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, currencyString));
         }
     }
 
@@ -249,7 +249,7 @@ public final class SerializationUtils {
 
         final String[] parts = moneyString.split(" ");
         if (parts.length != 2) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(new MuunDeserializetionError(moneyString));
         }
 
         final BigDecimal number = deserializeBigDecimal(parts[0]);
@@ -278,7 +278,7 @@ public final class SerializationUtils {
     public static BitcoinAmount deserializeBitcoinAmount(@NotNull String string) {
         final String[] parts = string.split(";");
         if (parts.length != 3) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(new MuunDeserializetionError(string));
         }
 
         final Long inSatoshis = Long.valueOf(parts[0]);
@@ -314,7 +314,7 @@ public final class SerializationUtils {
                     .readValue(json);
 
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, json));
         }
     }
 
@@ -344,7 +344,7 @@ public final class SerializationUtils {
                     .readValue(json);
 
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, json));
         }
     }
 
@@ -389,7 +389,7 @@ public final class SerializationUtils {
             return object;
 
         } catch (ClassNotFoundException | IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException(new MuunDeserializetionError(e, objectString));
         }
     }
 

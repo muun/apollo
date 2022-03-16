@@ -1,0 +1,29 @@
+DROP TABLE contacts;
+
+CREATE TABLE contacts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    profile_picture_url TEXT,
+    root_hd_public_key TEXT
+);
+
+DROP TABLE operations;
+
+CREATE TABLE operations (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER UNIQUE,
+    sender_hid INTEGER,
+    receiver_hid INTEGER,
+    amount INTEGER NOT NULL,
+    fee INTEGER NOT NULL,
+    confirmations INTEGER NOT NULL,
+    hash TEXT,
+    description TEXT,
+    status TEXT NOT NULL,
+    creation_date TEXT NOT NULL,
+    amount_in_input_currency TEXT NOT NULL,
+    amount_in_primary_currency TEXT NOT NULL,
+    exchange_rate_window_hid INTEGER NOT NULL
+);

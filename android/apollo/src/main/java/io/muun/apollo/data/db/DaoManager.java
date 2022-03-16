@@ -1,6 +1,8 @@
 package io.muun.apollo.data.db;
 
+import io.muun.apollo.data.db.base.Adapters;
 import io.muun.apollo.data.db.base.BaseDao;
+import io.muun.apollo.lib.Database;
 
 import android.content.Context;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -8,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory;
 import com.squareup.sqlbrite3.BriteDatabase;
 import com.squareup.sqlbrite3.SqlBrite;
+import com.squareup.sqldelight.android.AndroidSqliteDriver;
 import io.reactivex.Scheduler;
 import rx.Observable;
 
@@ -21,6 +24,10 @@ public class DaoManager {
 
     private final DbMigrationManager dbMigrationManager = new DbMigrationManager();
 
+    private final Database delightDb;
+
+    private final Scheduler scheduler;
+
     /**
      * Constructor.
      */
@@ -29,7 +36,8 @@ public class DaoManager {
             String name,
             int version,
             Scheduler scheduler,
-            BaseDao... daos) {
+            BaseDao... daos
+    ) {
 
         final SqlBrite sqlBrite = new SqlBrite.Builder().build();
 
@@ -38,12 +46,17 @@ public class DaoManager {
 
             @Override
             public void onCreate(SupportSQLiteDatabase db) {
-                createTables(db);
+                // This executes all create statements
+                Database.Companion.getSchema().create(new AndroidSqliteDriver(db));
             }
 
             @Override
             public void onUpgrade(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
-                runMigrations(db, oldVersion, newVersion);
+                runMigrations(
+                        db,
+                        oldVersion,
+                        newVersion
+                );
             }
 
             @Override
@@ -65,6 +78,12 @@ public class DaoManager {
         this.daos = daos;
         this.database = sqlBrite.wrapDatabaseHelper(helper, scheduler);
         this.database.setLoggingEnabled(true);
+        this.delightDb = Database.Companion.invoke(
+                new AndroidSqliteDriver(helper),
+                Adapters.OPERATIONS,
+                Adapters.SUBMARINE_SWAPS
+        );
+        this.scheduler = scheduler;
 
         initializeDaos();
     }
@@ -81,9 +100,9 @@ public class DaoManager {
      */
     public void delete() {
         Observable.from(daos)
-                .flatMap(BaseDao::deleteAll)
+                .flatMapCompletable(BaseDao::deleteAll)
                 .toBlocking()
-                .last();
+                .subscribe();
     }
 
     /**
@@ -95,13 +114,7 @@ public class DaoManager {
 
     private void initializeDaos() {
         for (BaseDao dao : daos) {
-            dao.setBriteDb(database);
-        }
-    }
-
-    private void createTables(SupportSQLiteDatabase db) {
-        for (BaseDao dao : daos) {
-            dao.createTable(db);
+            dao.setDb(database, delightDb, scheduler);
         }
     }
 

@@ -51,8 +51,6 @@ class SelectAmountPresenter @Inject constructor(
 
         isOnChainAmount = arguments.getBoolean(SelectAmountActivity.IS_BTC_ON_CHAIN)
 
-        view.setBitcoinUnit(bitcoinUnitSel.get())
-
         setUpExchangeRates()
     }
 
@@ -76,7 +74,7 @@ class SelectAmountPresenter @Inject constructor(
         // initializeAmountInput (e.g updateAmount())
         // Also, initialize AmountInput just once and not on every exchangeRates change
         if (isBeingInitialized) {
-            view.initializeAmountInput(primaryCurrency)
+            view.initializeAmountInput(primaryCurrency, bitcoinUnitSel.get())
         }
     }
 

@@ -19,11 +19,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_centerInParent="true"
             android:maxWidth="480dp"
             android:orientation="vertical"
             android:paddingStart="32dp"
-            android:paddingEnd="32dp">
+            android:paddingEnd="32dp"
+            android:layout_centerInParent="true">
 
         <io.muun.apollo.presentation.ui.view.BalanceView
                 android:id="@+id/home_balance_view"
@@ -74,15 +74,6 @@
         </LinearLayout>
 
         <io.muun.apollo.presentation.ui.view.MuunHomeCard
-                android:id="@+id/home_security_center_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="64dp"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-        <io.muun.apollo.presentation.ui.view.MuunHomeCard
                 android:id="@+id/home_taproot_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -91,14 +82,23 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
 
+        <io.muun.apollo.presentation.ui.view.MuunHomeCard
+                android:id="@+id/home_security_center_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="64dp"
+                android:visibility="invisible"
+                tools:visibility="visible" />
+
         <io.muun.apollo.presentation.ui.view.BlockClock
-            android:id="@+id/home_block_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_gravity="center_horizontal"
-            android:visibility="gone"
-            tools:visibility="visible" />
+                android:id="@+id/home_block_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
     </LinearLayout>
 

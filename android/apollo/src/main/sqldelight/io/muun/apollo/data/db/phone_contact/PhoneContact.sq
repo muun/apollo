@@ -55,4 +55,5 @@ UPDATE phone_contacts
 SET phone_number_hash = ?
 WHERE id = ?;
 
-
+deleteAll:
+DELETE FROM phone_contacts;

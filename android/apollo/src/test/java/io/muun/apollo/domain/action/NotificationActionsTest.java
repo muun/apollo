@@ -6,7 +6,6 @@ import io.muun.apollo.data.external.AppStandbyBucketProvider;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.net.ModelObjectsMapper;
-import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.NotificationRepository;
 import io.muun.apollo.domain.NotificationProcessor;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
@@ -152,7 +151,7 @@ public class NotificationActionsTest extends BaseTest {
 
         // This is important: onNotificationReport will be invoked from a GCM handler that's
         // expected to finish within a short timespan.
-        final NotificationJson notif = new TestNotification(1L);
+        final NotificationJson notif = TestNotification.withId(1L);
 
         executor.pause();
 
@@ -167,8 +166,8 @@ public class NotificationActionsTest extends BaseTest {
 
     @Test
     public void processReport_isSequential() {
-        final TestNotification notif1 = new TestNotification(1L);
-        final TestNotification notif2 = new TestNotification(2L);
+        final TestNotification notif1 = TestNotification.withId(1L);
+        final TestNotification notif2 = TestNotification.withId(2L);
 
         notificationActions.onNotificationReport(reportOf(notif1));
         notificationActions.onNotificationReport(reportOf(notif2));
@@ -182,7 +181,7 @@ public class NotificationActionsTest extends BaseTest {
 
     @Test
     public void processReport_correctDispatch() {
-        final NotificationJson notification = new TestNotification(1L);
+        final NotificationJson notification = TestNotification.withId(1L);
 
         notificationActions.onNotificationReport(reportOf(notification));
         executor.waitUntilFinished();
@@ -192,11 +191,11 @@ public class NotificationActionsTest extends BaseTest {
 
     @Test
     public void processReport_detectsGapBefore() {
-        final NotificationJson first = new TestNotification(2L); // gap before!
-        final NotificationJson second = new TestNotification(3L);
+        final NotificationJson first = TestNotification.withId(2L); // gap before!
+        final NotificationJson second = TestNotification.withId(3L);
 
-        doReturn(Observable.just(Arrays.asList(first, second)))
-                .when(houstonClient).fetchNotificationsAfter(anyLong());
+        doReturn(Observable.just(reportOf(first, second)))
+                .when(houstonClient).fetchNotificationReportAfter(anyLong());
 
         final NotificationReport report = new NotificationReport(
                 first.previousId,
@@ -207,15 +206,16 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(report);
         executor.waitUntilFinished();
 
-        verify(houstonClient).fetchNotificationsAfter(0L);
+        verify(houstonClient).fetchNotificationReportAfter(0L);
     }
 
     @Test
     public void processReport_detectsGapAfter() {
-        final NotificationJson first = new TestNotification(1L);
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.withId(2L);
 
-        doReturn(Observable.just(Arrays.asList(first)))
-                .when(houstonClient).fetchNotificationsAfter(anyLong());
+        doReturn(Observable.just(reportOf(second)))
+                .when(houstonClient).fetchNotificationReportAfter(anyLong());
 
         final NotificationReport report = new NotificationReport(
                 first.previousId,
@@ -226,13 +226,13 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(report);
         executor.waitUntilFinished();
 
-        verify(houstonClient).fetchNotificationsAfter(0L);
+        verify(houstonClient).fetchNotificationReportAfter(1L);
     }
 
     @Test
     public void processReport_detectNoGaps() {
         savedLastProcessedId = 1L;
-        final NotificationJson first = new TestNotification(2L);
+        final NotificationJson first = TestNotification.withId(2L);
 
         final NotificationReport report = new NotificationReport(
                 first.previousId,
@@ -243,15 +243,15 @@ public class NotificationActionsTest extends BaseTest {
         notificationActions.onNotificationReport(report);
         executor.waitUntilFinished();
 
-        verify(houstonClient, never()).fetchNotificationsAfter(savedLastProcessedId);
+        verify(houstonClient, never()).fetchNotificationReportAfter(savedLastProcessedId);
     }
 
     @Test
     public void processNotificationList_skipErrors() {
         final List<NotificationJson> list = Arrays.asList(
-                new TestNotification(1L),
-                new TestNotification(2L, EXPLODING_SPEC),
-                new TestNotification(3L) // will be processed, even if previous fails
+                TestNotification.withId(1L),
+                TestNotification.explodingWithId(2L),
+                TestNotification.withId(3L) // will be processed, even if previous fails
         );
 
         notificationActions.onNotificationReport(reportOf(list));
@@ -268,9 +268,9 @@ public class NotificationActionsTest extends BaseTest {
     public void processNotificationList_fulfillIsNotSkippedOnError() {
 
         final List<NotificationJson> list = Arrays.asList(
-                new TestNotification(1L),
-                new TestNotification(2L, FulfillIncomingSwapMessage.SPEC),
-                new TestNotification(3L) // will not be processed
+                TestNotification.withId(1L),
+                TestNotification.fulfillWithId(2L),
+                TestNotification.withId(3L) // will not be processed
         );
 
         notificationActions.onNotificationReport(reportOf(list));
@@ -288,8 +288,8 @@ public class NotificationActionsTest extends BaseTest {
     public void processNotificationList_confirmDelivery() {
 
         final List<NotificationJson> list = Arrays.asList(
-                new TestNotification(1L),
-                new TestNotification(2L)
+                TestNotification.withId(1L),
+                TestNotification.withId(2L)
         );
 
         notificationActions.onNotificationReport(reportOf(list));
@@ -303,12 +303,137 @@ public class NotificationActionsTest extends BaseTest {
     @Test
     public void processNotification_updatesLastProcessedId() {
         savedLastProcessedId = 1L;
-        final NotificationJson notification = new TestNotification(2L);
+        final NotificationJson notification = TestNotification.withId(2L);
 
         notificationActions.onNotificationReport(reportOf(notification));
         executor.waitUntilFinished();
 
         verify(notificationRepository, times(1)).setLastProcessedId(notification.id);
+    }
+
+    @Test
+    public void onNotificationReport_fetchPaginated() {
+
+        // Verify that we keep on fetching pages until there's no more new notifications, as given
+        // by the max id in the report.
+
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.withId(2L);
+        final NotificationJson third = TestNotification.withId(3L);
+        final NotificationJson fourth = TestNotification.withId(4L);
+
+        doReturn(Observable.just(reportWithMaxId(4, second)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(1L));
+
+        doReturn(Observable.just(reportWithMaxId(4, third)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(2L));
+
+        doReturn(Observable.just(reportWithMaxId(4, fourth)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(3L));
+
+        notificationActions.onNotificationReport(reportWithMaxId(4, first));
+        executor.waitUntilFinished();
+
+        verify(houstonClient).fetchNotificationReportAfter(1L);
+        verify(houstonClient).fetchNotificationReportAfter(2L);
+        verify(houstonClient).fetchNotificationReportAfter(3L);
+
+        verify(houstonClient).confirmNotificationsDeliveryUntil(
+                eq(4L), any(), any(), any()
+        );
+
+        verify(notificationRepository).setLastProcessedId(fourth.id);
+    }
+
+    @Test
+    public void onNotificationReport_emptyPreviewWithHigherMaxCausesFetch() {
+
+        // If we get an empty preview, we should fetch unprocessed notifications from the backend.
+        // This happens if our notifications are to big to fit in a FCM message.
+
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.withId(2L);
+        final NotificationJson third = TestNotification.withId(3L);
+        final NotificationJson fourth = TestNotification.withId(4L);
+
+        // We return single element pages to force several pages to be fetched
+        doReturn(Observable.just(reportWithMaxId(4, third)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(2L));
+
+        doReturn(Observable.just(reportWithMaxId(4, fourth)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(3L));
+
+        // First process a normal report to seed
+        notificationActions.onNotificationReport(reportOf(first, second));
+        notificationActions.onNotificationReport(reportWithMaxId(4));
+        executor.waitUntilFinished();
+
+        verify(houstonClient).fetchNotificationReportAfter(2L);
+        verify(houstonClient).fetchNotificationReportAfter(3L);
+    }
+
+    @Test
+    public void onNotificationReport_emptyPreviewWithSameMaxDoesNothing() {
+
+        // If we get an empty preview with the same max id, we should do nothing.
+
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.withId(2L);
+
+        // First process a normal report to seed
+        notificationActions.onNotificationReport(reportOf(first, second));
+        notificationActions.onNotificationReport(reportWithMaxId(2));
+        executor.waitUntilFinished();
+
+        verify(houstonClient, never()).fetchNotificationReportAfter(anyLong());
+    }
+
+    @Test
+    public void onNotificationReport_failureWithPagination() {
+        // Verify that failure to process one notification won't stop us from fetching remaining
+        // pages.
+
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.explodingWithId(2L);
+        final NotificationJson third = TestNotification.withId(3L);
+
+        doReturn(Observable.just(reportWithMaxId(3, third)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(2L));
+
+        notificationActions.onNotificationReport(reportWithMaxId(3, first, second));
+        executor.waitUntilFinished();
+
+        verify(notificationRepository, times(1)).setLastProcessedId(first.id);
+        verify(notificationRepository, times(1)).setLastProcessedId(third.id);
+    }
+
+    @Test
+    public void onNotificationReport_moreThanOnePageWithReport() {
+
+        // Verify that if we get a report with a previousId that's several pages bigger than our
+        // max processed id, we'll fetch all the pages in-between.
+
+        final NotificationJson first = TestNotification.withId(1L);
+        final NotificationJson second = TestNotification.withId(2L);
+        final NotificationJson third = TestNotification.withId(3L);
+
+        doReturn(Observable.just(reportWithMaxId(3, first)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(0L));
+        doReturn(Observable.just(reportWithMaxId(3, second)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(1L));
+        doReturn(Observable.just(reportWithMaxId(3, third)))
+                .when(houstonClient).fetchNotificationReportAfter(eq(2L));
+
+        notificationActions.onNotificationReport(reportWithMaxId(3, third));
+        executor.waitUntilFinished();
+
+        verify(houstonClient).fetchNotificationReportAfter(0L);
+        verify(houstonClient).fetchNotificationReportAfter(1L);
+        verify(houstonClient).fetchNotificationReportAfter(2L);
+
+        verify(notificationRepository).setLastProcessedId(first.id);
+        verify(notificationRepository).setLastProcessedId(second.id);
+        verify(notificationRepository).setLastProcessedId(third.id);
     }
 
     private static class TestMessageHandler implements Func2<NotificationJson, Long, Completable> {
@@ -325,11 +450,19 @@ public class NotificationActionsTest extends BaseTest {
     }
 
     private static class TestNotification extends NotificationJson {
-        public TestNotification(Long id) {
-            this(id, TEST_SPEC);
+        public static TestNotification withId(long id) {
+            return new TestNotification(id, TEST_SPEC);
         }
 
-        public TestNotification(Long id, MessageSpec spec) {
+        public static TestNotification explodingWithId(long id) {
+            return new TestNotification(id, EXPLODING_SPEC);
+        }
+
+        public static TestNotification fulfillWithId(long id) {
+            return new TestNotification(id, FulfillIncomingSwapMessage.SPEC);
+        }
+
+        private TestNotification(Long id, MessageSpec spec) {
             super(
                     id,
                     id - 1,
@@ -353,6 +486,14 @@ public class NotificationActionsTest extends BaseTest {
             SessionStatus.CREATED,
             MessageOrigin.ANY
     );
+
+    private NotificationReport reportWithMaxId(long maxId, NotificationJson ...notifs) {
+        return new NotificationReport(
+                notifs.length == 0 ? maxId : notifs[0].previousId,
+                maxId,
+                Arrays.asList(notifs)
+        );
+    }
 
     private NotificationReport reportOf(NotificationJson ...notifs) {
         return reportOf(Arrays.asList(notifs));

@@ -1,0 +1,46 @@
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+--
+--  1. Rename your table to a temporary name.
+--  2. Create a table exactly as the original one, except for the column in question.
+--  3. Insert all the rows from the temporary table to the new one.
+--  4. Delete the temporary table.
+
+ALTER TABLE submarine_swaps
+RENAME TO tmp_submarine_swaps;
+
+
+CREATE TABLE submarine_swaps (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    invoice TEXT NOT NULL,
+    receiver_alias TEXT,
+    receiver_network_addresses TEXT NOT NULL,
+    receiver_public_key TEXT NOT NULL,
+    funding_output_address TEXT NOT NULL,
+    funding_output_amount_in_satoshis INTEGER NOT NULL,
+    funding_confirmations_needed INTEGER NOT NULL,
+    funding_user_lock_time INTEGER,
+    funding_user_refund_address TEXT NOT NULL,
+    funding_user_refund_address_path TEXT NOT NULL,
+    funding_user_refund_address_version INTEGER NOT NULL,
+    funding_server_payment_hash_in_hex TEXT NOT NULL,
+    funding_server_public_key_in_hex TEXT NOT NULL,
+    sweep_fee_in_satoshis INTEGER NOT NULL,
+    lightning_fee_in_satoshis INTEGER NOT NULL,
+    expires_at TEXT NOT NULL,
+    payed_at TEXT,
+    preimage_in_hex TEXT,
+    will_pre_open_channel INTEGER NOT NULL,
+    channel_open_fee_in_satoshis INTEGER NOT NULL,
+    channel_close_fee_in_satoshis INTEGER NOT NULL,
+    funding_script_version INTEGER NOT NULL,
+    funding_expiration_in_blocks INTEGER,
+    funding_user_public_key TEXT,
+    funding_user_public_key_path TEXT,
+    funding_muun_public_key TEXT,
+    funding_muun_public_key_path TEXT
+);
+
+INSERT INTO submarine_swaps SELECT * FROM tmp_submarine_swaps;
+
+DROP TABLE tmp_submarine_swaps;

@@ -1,0 +1,2 @@
+ALTER TABLE incoming_swaps
+ADD COLUMN preimage_in_hex TEXT;

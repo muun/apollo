@@ -1,0 +1,106 @@
+import javax.annotation.Nullable
+
+def libwalletSources = fileTree("${project.rootDir}/libwallet") {
+    include "**/*.go"
+    include "go.mod"
+    exclude ".build/**"
+    exclude "**/*_test.go"
+}
+
+task build(type: Exec) {
+    group = "build"
+    description = "Build libwallet for Android bindings"
+
+    ext {
+        aar = "${project.projectDir}/libs/libwallet.aar"
+        script = "${project.rootDir}/tools/libwallet-android.sh"
+    }
+
+    inputs.property("aar", aar)
+    inputs.property("script", script)
+
+    inputs.files(libwalletSources)
+    inputs.file(script)
+
+    outputs.file(aar)
+
+    outputs.cacheIf { true }
+
+    executable script
+    args aar
+}
+
+// The Android Gradle Plugin requires we expose a configuration with this attribute. Otherwise, it
+// just gives up and assumes it's not compatible with android. It's quite likely this attribute
+// set will change over time
+configurations {
+    'default' {
+        attributes {
+            it.attribute(Attribute.of("org.jetbrains.kotlin.platform.type", String), "androidJvm")
+        }
+    }
+}
+
+// Expose an artifact built by build task
+artifacts {
+    'default' new LibwalletArtifact(build)
+}
+
+project.defaultTasks('build')
+
+// Most artifact classes I could have a lot of opaque structure. Implementing this interface is
+// quite simple and should be reliable since it's part of the public/stable API.
+
+class LibwalletArtifact implements PublishArtifact {
+
+    private Task builder;
+
+    LibwalletArtifact(final Task builder) {
+        // builder is passed as an argument cause we can't access file globals inside the class
+        this.builder = builder;
+    }
+
+    @Override
+    TaskDependency getBuildDependencies() {
+        // This artifact depends on the builder task
+        return new TaskDependency() {
+
+            @Override
+            Set<? extends Task> getDependencies(@Nullable final Task task) {
+                return Set.of(builder)
+            }
+        }
+    }
+
+    @Override
+    File getFile() {
+        // We only have one output: the AAR
+        // singleFile will go up in flames the task ha more than one output
+        return builder.getOutputs().files.singleFile
+    }
+
+    @Override
+    String getName() {
+        return "libwallet"
+    }
+
+    @Override
+    String getExtension() {
+        return "aar"
+    }
+
+    @Override
+    String getType() {
+        return "aar"
+    }
+
+    @Override
+    String getClassifier() {
+        return null
+    }
+
+    @Override
+    Date getDate() {
+        return null
+    }
+}

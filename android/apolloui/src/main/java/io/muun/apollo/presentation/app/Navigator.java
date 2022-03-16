@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.app;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.model.FeedbackCategory;
+import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.UserSelector;
@@ -114,6 +115,19 @@ public class Navigator {
      */
     public void navigateToHome(@NotNull Context context) {
         final Intent intent = HomeActivity.getStartActivityIntent(context);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        context.startActivity(intent);
+    }
+
+    /**
+     * Takes the user to the Home screen.
+     *
+     * @param context an {Activity} context.
+     */
+    public void navigateToHome(@NotNull Context context, final Operation operation) {
+        final Intent intent = HomeActivity.getStartActivityIntent(context, operation);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.fragment.app.DialogFragment
 import icepick.State
 import io.muun.apollo.presentation.ui.base.di.PerActivity
+import timber.log.Timber
 import java.util.HashMap
 import javax.inject.Inject
 
@@ -67,6 +68,17 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
         if (view is DelegableCaller) {
             if (view.delegateCaller != null) {
                 view = view.delegateCaller
+            } else {
+
+                // We're hunting down a sneaky bug here. Let's log every useful piece data
+                val fragments = activity.supportFragmentManager.fragments
+                val fragmentIds = fragments.map { it.id }
+                val fragmentNames = fragments.map { it.javaClass.simpleName }
+                Timber.e(
+                    "View/Fragment Caller with id:${request!!.viewId} not found." +
+                            " Fallback to activity: ${activity.javaClass.simpleName}." +
+                            " Fragment ids: $fragmentIds. Fragment names: $fragmentNames"
+                )
             }
         }
         pendingRequests.remove(globalRequestCode)

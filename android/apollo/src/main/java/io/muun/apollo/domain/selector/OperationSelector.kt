@@ -14,4 +14,7 @@ class OperationSelector @Inject constructor(
 
     fun watchUnsettled(): Observable<List<Operation>> =
         operationDao.fetchUnsettled()
+
+    fun fetchByHId(hid: Long): Operation =
+        operationDao.fetchByHid(hid).toBlocking().first()
 }

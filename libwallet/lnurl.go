@@ -47,21 +47,19 @@ func LNURLValidate(qr string) bool {
 
 // Withdraw will parse an LNURL withdraw QR and begin a withdraw process.
 // Caller must wait for the actual payment after this function has notified success.
-func LNURLWithdraw(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, qr string, listener LNURLListener) {
-	// TODO: consider making a struct out of the (net, userKey, routeHints) data
-	// that can be used for creating invoices
+func LNURLWithdraw(invoiceBuilder *InvoiceBuilder, qr string, listener LNURLListener) {
 	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
-		opts := &InvoiceOptions{
-			AmountMSat:  int64(amt),
-			Description: desc,
-			Metadata: &OperationMetadata{
-				LnurlSender: host,
-			},
+		metadata := &OperationMetadata{
+			LnurlSender: host,
 		}
-		return CreateInvoice(net, userKey, routeHints, opts)
+
+		return invoiceBuilder.AmountMSat(int64(amt)).
+			Description(desc).
+			Metadata(metadata).
+			Build()
 	}
 
-	allowUnsafe := net != Mainnet()
+	allowUnsafe := invoiceBuilder.net != Mainnet()
 
 	go lnurl.Withdraw(qr, createInvoiceFunc, allowUnsafe, func(e *lnurl.Event) {
 		event := &LNURLEvent{

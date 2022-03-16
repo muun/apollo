@@ -1,0 +1,2 @@
+ALTER TABLE submarine_swaps
+ADD COLUMN channel_close_fee_in_satoshis INTEGER NOT NULL DEFAULT 0;

@@ -2,7 +2,7 @@ apply plugin: 'checkstyle'
 
 checkstyle {
     ignoreFailures = false
-    toolVersion = '8.45.1'
+    toolVersion = '9.2.1'
     configFile = file("${rootProject.rootDir}/linters/checkstyle/config.xml")
     configProperties = [ 
         'suppressionFile' : file("${rootProject.rootDir}/linters/checkstyle/suppressions.xml"),

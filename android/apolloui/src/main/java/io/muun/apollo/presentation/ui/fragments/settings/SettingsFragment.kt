@@ -176,7 +176,7 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
                                     rateWindow: ExchangeRateWindow) {
 
         val currency = Currency.getInfo(user.getPrimaryCurrency(rateWindow).currencyCode).get()
-        setUpCurrency(currency, bitcoinUnit, rateWindow)
+        setUpCurrency(currency, rateWindow)
 
         bitcoinUnitItem.setDescription(
             " " + MoneyHelper.formatCurrencyName(Currency.BTC, bitcoinUnit),
@@ -184,19 +184,14 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         )
     }
 
-    private fun setUpCurrency(
-        currency: Currency,
-        bitcoinUnit: BitcoinUnit,
-        rateWindow: ExchangeRateWindow
-    ) {
-        val currencyName = MoneyHelper.formatCurrencyName(currency, bitcoinUnit)
+    private fun setUpCurrency(currency: Currency, rateWindow: ExchangeRateWindow) {
         if (currency.flag != null) {
-            currencyItem.setDescription(currency.flag + " " + currencyName)
+            currencyItem.setDescription(currency.flag + " " + currency.name)
         } else {
             if (currency.code == Currency.BTC.code) {
-                currencyItem.setDescription(" $currencyName", R.drawable.btc_logo)
+                currencyItem.setDescription(" ${currency.name}", R.drawable.btc_logo)
             } else {
-                currencyItem.setDescription(" $currencyName", R.drawable.default_flag)
+                currencyItem.setDescription(" ${currency.name}", R.drawable.default_flag)
             }
         }
 

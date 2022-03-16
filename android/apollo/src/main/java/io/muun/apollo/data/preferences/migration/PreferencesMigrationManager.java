@@ -107,7 +107,7 @@ public class PreferencesMigrationManager {
             // Nov 2020, Apollo 77 now remembers many Emergency Kit verification codes
             this::migrateToRecentEmergencyKitVerificationCodes,
 
-            // Sept 2021, Apollo 700 introduces EmergencKit version and its own model
+            // Sept 2021, Apollo 700 introduces EmergencyKit version and its own model
             this::addEmergencyKitVersion
     };
 

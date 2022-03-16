@@ -6,7 +6,6 @@ import icepick.State
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.address.CreateAddressAction
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.model.MuunAddressGroup
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.FeatureStatusSelector
@@ -21,7 +20,6 @@ import javax.inject.Inject
 
 open class BitcoinAddressQrPresenter @Inject constructor(
     private val createAddress: CreateAddressAction,
-    private val bitcoinUnitSel: BitcoinUnitSelector,
     private val blockchainHeightSel: BlockchainHeightSelector,
     private val featureStatusSel: FeatureStatusSelector,
     private val userPreferencesSel: UserPreferencesSelector
@@ -53,7 +51,6 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        view.setBitcoinUnit(bitcoinUnitSel.get())
         view.setShowingAdvancedSettings(showingAdvancedSettings)
 
 

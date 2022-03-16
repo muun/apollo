@@ -12,7 +12,7 @@ import newop.Validated
 
 interface NewOperationView : BaseView {
 
-    fun setBitcoinUnit(bitcoinUnit: BitcoinUnit)
+    fun setInitialBitcoinUnit(bitcoinUnit: BitcoinUnit)
 
     fun setLoading(isLoading: Boolean)
 

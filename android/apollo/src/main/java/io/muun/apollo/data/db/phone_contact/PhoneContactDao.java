@@ -5,6 +5,7 @@ import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.model.Diff;
 
 import com.squareup.sqlbrite3.BriteDatabase;
+import rx.Completable;
 import rx.Observable;
 
 import java.util.List;
@@ -19,11 +20,26 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
      */
     @Inject
     public PhoneContactDao() {
-        super(
-                PhoneContactEntity.CREATE_TABLE,
-                PhoneContactEntity::fromModel,
-                PhoneContactEntity::toModel,
-                PhoneContactEntity.TABLE_NAME
+        super("phone_contacts");
+    }
+
+    @Override
+    public Completable deleteAll() {
+        return Completable.fromAction(delightDb.getPhoneContactQueries()::deleteAll);
+    }
+
+    @Override
+    protected void storeUnsafe(final PhoneContact element) {
+
+        delightDb.getPhoneContactQueries().insertPhoneContact(
+                element.getId(),
+                element.internalId,
+                element.name,
+                element.phoneNumber,
+                element.phoneNumberHash,
+                element.firstSeen,
+                element.lastSeen,
+                element.lastUpdated
         );
     }
 
@@ -70,18 +86,19 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
     }
 
     private List<PhoneContact> selectFirstSeenAt(long currentTs) {
-        return fetchListOnce(PhoneContactEntity.FACTORY.selectFirstSeenAt(currentTs));
+        return delightDb.getPhoneContactQueries()
+                .selectFirstSeenAt(currentTs, PhoneContact::new)
+                .executeAsList();
     }
 
     private List<PhoneContact> selectLastSeenNotAt(long currentTs) {
-        return fetchListOnce(PhoneContactEntity.FACTORY.selectLastSeenNotAt(currentTs));
+        return delightDb.getPhoneContactQueries()
+                .selectFirstSeenAt(currentTs, PhoneContact::new)
+                .executeAsList();
     }
 
     private void insertOrIgnore(PhoneContact contact) {
-        final PhoneContactEntity.InsertOrIgnore statement = new PhoneContactEntity
-                .InsertOrIgnore(db);
-
-        statement.bind(
+        delightDb.getPhoneContactQueries().insertOrIgnore(
                 contact.internalId,
                 contact.name,
                 contact.phoneNumber,
@@ -89,30 +106,22 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
                 contact.lastSeen,
                 contact.lastUpdated
         );
-
-        executeInsert(statement);
     }
 
     private void updateLastSeen(PhoneContact contact) {
-        final PhoneContactModel.UpdateLastSeen statement = new PhoneContactModel.UpdateLastSeen(db);
-
-        statement.bind(contact.lastSeen, contact.internalId, contact.phoneNumber);
-        executeUpdate(statement);
+        delightDb.getPhoneContactQueries().updateLastSeen(
+                contact.lastSeen, contact.internalId, contact.phoneNumber
+        );
     }
 
     private void updatePhoneHash(PhoneContact contact) {
-        final PhoneContactModel.UpdatePhoneHash statement = new PhoneContactModel
-                .UpdatePhoneHash(db);
-
-        statement.bind(contact.phoneNumberHash, contact.getId());
-        executeUpdate(statement);
+        delightDb.getPhoneContactQueries().updatePhoneHash(
+                contact.phoneNumberHash, contact.getId()
+        );
     }
 
     private void deleteLastSeenNotAt(long currentTs) {
-        final PhoneContactModel.DeleteLastSeenNotAt statement = new PhoneContactModel
-                .DeleteLastSeenNotAt(db);
-
-        statement.bind(currentTs);
-        executeDelete(statement);
+        delightDb.getPhoneContactQueries().deleteLastSeenNotAt(currentTs);
     }
+
 }

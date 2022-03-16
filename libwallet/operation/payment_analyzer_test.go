@@ -556,10 +556,28 @@ func TestAnalyzeOffChain(t *testing.T) {
 		err       bool
 	}{
 		{
-			desc: "swap with amount too small",
+			desc: "swap with amount too small (zero funds)",
 			payment: &PaymentToInvoice{
 				TakeFeeFromAmount: false,
 				AmountInSat:       0,
+				SwapFees: &fees.SwapFees{
+					OutputAmount:        0,
+					DebtType:            fees.DebtTypeNone,
+					DebtAmount:          0,
+					RoutingFee:          0,
+					OutputPadding:       0,
+					ConfirmationsNeeded: 0,
+				},
+			},
+			expected: &PaymentAnalysis{
+				Status: AnalysisStatusAmountTooSmall,
+			},
+		},
+		{
+			desc: "swap with amount too small (negative funds)",
+			payment: &PaymentToInvoice{
+				TakeFeeFromAmount: false,
+				AmountInSat:       -10,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
 					DebtType:            fees.DebtTypeNone,

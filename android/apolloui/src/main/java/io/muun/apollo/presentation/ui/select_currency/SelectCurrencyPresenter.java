@@ -14,8 +14,12 @@ import io.muun.common.model.ExchangeRateProvider;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.validation.constraints.NotNull;
@@ -23,7 +27,14 @@ import javax.validation.constraints.NotNull;
 @PerActivity
 public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {
 
-    private static final String[] TOP_CURRENCY_CODES = new String[]{"BTC", "EUR", "USD"};
+    // Note: SAT will actually only be displayed when selecting an amount INPUT currency (aka not
+    // when selecting the user's primary currency)
+    private static final List<String> TOP_CURRENCY_CODES = Arrays.asList(
+            "BTC",
+            "SAT",
+            "EUR",
+            "USD"
+    );
 
     private final ExchangeRateSelector exchangeRateSelector;
     private final CurrencyActions currencyActions;
@@ -74,11 +85,19 @@ public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {
     }
 
     private Set<CurrencyUnit> getTopCurrencies() {
-        final Set<CurrencyUnit> topCurrencies = new HashSet<>(); // set handle duplicates for us :)
+        // set handle duplicates for us :)
+        final Set<CurrencyUnit> topCurrencies = new TreeSet<>(buildTopCurrenciesOrder());
+        final Bundle bundle = view.getArgumentsBundle();
 
         // 1. Add Muun pre-determined top currencies
-        for (String topCurrenciesCode : TOP_CURRENCY_CODES) {
-            Currency.getUnit(topCurrenciesCode).ifPresent(topCurrencies::add);
+        for (String code : TOP_CURRENCY_CODES) {
+
+            if ("SAT".equals(code) && SelectCurrencyActivity.applySatAsACurrencyHack(bundle)) {
+                // If we are selecting an amount INPUT currency... Then its HACK TIME!
+                topCurrencies.add(SelectCurrencyActivity.getFakeSatCurrencyUnit());
+            } else {
+                Currency.getUnit(code).ifPresent(topCurrencies::add);
+            }
         }
 
         // 2. Add user relevant currencies based on location (network and locale)
@@ -89,6 +108,22 @@ public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {
         selectedCurrency.ifPresent(topCurrencies::add);
 
         return topCurrencies;
+    }
+
+    private Comparator<CurrencyUnit> buildTopCurrenciesOrder() {
+        return (currencyUnit1, currencyUnit2) -> {
+            int index1 = TOP_CURRENCY_CODES.indexOf(currencyUnit1.getCurrencyCode());
+            int index2 = TOP_CURRENCY_CODES.indexOf(currencyUnit2.getCurrencyCode());
+
+            // If currencies aren't among top currencies, make them go last
+            if (index1 < 0) {
+                index1 = 1000;
+            }
+            if (index2 < 0) {
+                index2 = 1000;
+            }
+            return index1 - index2;
+        };
     }
 
     @Nullable

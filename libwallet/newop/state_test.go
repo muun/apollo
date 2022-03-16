@@ -317,6 +317,32 @@ func TestOnChainFixedAmountGreaterThanbalance(t *testing.T) {
 	}
 }
 
+func TestOnChainSendZeroFundsWithZeroBalance(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	startState.Resolve("bitcoin:bcrt1qj35fkq34xend9w0ssthn432vl9pxxsuy0epzlu", libwallet.Regtest())
+
+	context := createContext()
+	context.NextTransactionSize = &NextTransactionSize{}
+
+	resolveState := listener.next().(*ResolveState)
+	resolveState.SetContext(context)
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(0), true)
+
+	validateState := listener.next().(*ValidateState)
+	validateState.Continue()
+
+	errorState := listener.next().(*ErrorState)
+
+	if errorState.Error != OperationErrorAmountTooSmall {
+		t.Fatalf("expected error to be amount too small but got %s", errorState.Error)
+	}
+}
+
 func TestOnChainTFFA(t *testing.T) {
 
 	listener := newTestListener()
@@ -515,6 +541,190 @@ func TestOnChainChangeCurrency(t *testing.T) {
 	}
 	if enterDescriptionState.Amount.InInputCurrency.String() != "0.99904 BTC" {
 		t.Fatalf("expected amount to match input, got %v", enterDescriptionState.Amount.InInputCurrency)
+	}
+}
+
+func TestLightningSendZeroFunds(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	invoice, err := libwallet.ParseInvoice("lnbcrt1ps3l7zlpp5ngv7sl4wrjalma9navd0w9956pu0tcqwrltcnnzz83eeyk4rszxqdqqcqzpgrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqgqqqqqqqlgqqqqqqgq9qrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqsqqqqqqqlgqqqqqqgq9qsp5luyagw4mtcq735je8ldukhlkg063cxzycjhpz2x2hjfq2mgk5xns9qyyssq7ydzdwyl7yr6ldpzqjjspmgrevw4lxt4jwfy3cxm7we20wveqq8p8khjxuq9u3v953e7t9r8ysfzx5r874vu3nd7w5yx5eqfxu0tevspgxr607", libwallet.Regtest())
+	if err != nil {
+		panic(err)
+	}
+
+	startState.ResolveInvoice(invoice, libwallet.Regtest())
+
+	resolveState := listener.next().(*ResolveState)
+
+	context := createContext()
+	context.NextTransactionSize = &NextTransactionSize{}
+	context.SubmarineSwap = &SubmarineSwap{
+		BestRouteFees: []*BestRouteFees{
+			{
+				MaxCapacity:              100_000,
+				FeeProportionalMillionth: 1,
+				FeeBase:                  1_000,
+			},
+		},
+		FundingOutputPolicies: &FundingOutputPolicies{
+			MaximumDebtInSat:       0,
+			PotentialCollectInSat:  0,
+			MaxAmountInSatFor0Conf: 25_000,
+		},
+	}
+
+	resolveState.setContextWithTime(context, time.Unix(1629485164, 0))
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(0), false)
+
+	validateState := listener.next().(*ValidateLightningState)
+	validateState.Continue()
+
+	errorState := listener.next().(*ErrorState)
+
+	if errorState.Error != OperationErrorAmountTooSmall {
+		t.Fatalf("expected error to be amount too small but got %s", errorState.Error)
+	}
+}
+
+func TestLightningSendZeroFundsTFFA(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	invoice, err := libwallet.ParseInvoice("lnbcrt1ps3l7zlpp5ngv7sl4wrjalma9navd0w9956pu0tcqwrltcnnzz83eeyk4rszxqdqqcqzpgrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqgqqqqqqqlgqqqqqqgq9qrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqsqqqqqqqlgqqqqqqgq9qsp5luyagw4mtcq735je8ldukhlkg063cxzycjhpz2x2hjfq2mgk5xns9qyyssq7ydzdwyl7yr6ldpzqjjspmgrevw4lxt4jwfy3cxm7we20wveqq8p8khjxuq9u3v953e7t9r8ysfzx5r874vu3nd7w5yx5eqfxu0tevspgxr607", libwallet.Regtest())
+	if err != nil {
+		panic(err)
+	}
+
+	startState.ResolveInvoice(invoice, libwallet.Regtest())
+
+	resolveState := listener.next().(*ResolveState)
+
+	context := createContext()
+	context.NextTransactionSize = &NextTransactionSize{}
+	context.SubmarineSwap = &SubmarineSwap{
+		BestRouteFees: []*BestRouteFees{
+			{
+				MaxCapacity:              100_000,
+				FeeProportionalMillionth: 1,
+				FeeBase:                  1_000,
+			},
+		},
+		FundingOutputPolicies: &FundingOutputPolicies{
+			MaximumDebtInSat:       0,
+			PotentialCollectInSat:  0,
+			MaxAmountInSatFor0Conf: 25_000,
+		},
+	}
+
+	resolveState.setContextWithTime(context, time.Unix(1629485164, 0))
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(0), true)
+
+	validateState := listener.next().(*ValidateLightningState)
+	validateState.Continue()
+
+	errorState := listener.next().(*ErrorState)
+
+	if errorState.Error != OperationErrorAmountTooSmall {
+		t.Fatalf("expected error to be amount too small but got %s", errorState.Error)
+	}
+}
+
+func TestLightningSendNegativeFunds(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	invoice, err := libwallet.ParseInvoice("lnbcrt1ps3l7zlpp5ngv7sl4wrjalma9navd0w9956pu0tcqwrltcnnzz83eeyk4rszxqdqqcqzpgrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqgqqqqqqqlgqqqqqqgq9qrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqsqqqqqqqlgqqqqqqgq9qsp5luyagw4mtcq735je8ldukhlkg063cxzycjhpz2x2hjfq2mgk5xns9qyyssq7ydzdwyl7yr6ldpzqjjspmgrevw4lxt4jwfy3cxm7we20wveqq8p8khjxuq9u3v953e7t9r8ysfzx5r874vu3nd7w5yx5eqfxu0tevspgxr607", libwallet.Regtest())
+	if err != nil {
+		panic(err)
+	}
+
+	startState.ResolveInvoice(invoice, libwallet.Regtest())
+
+	resolveState := listener.next().(*ResolveState)
+
+	context := createContext()
+	context.NextTransactionSize = &NextTransactionSize{}
+	context.SubmarineSwap = &SubmarineSwap{
+		BestRouteFees: []*BestRouteFees{
+			{
+				MaxCapacity:              100_000,
+				FeeProportionalMillionth: 1,
+				FeeBase:                  1_000,
+			},
+		},
+		FundingOutputPolicies: &FundingOutputPolicies{
+			MaximumDebtInSat:       0,
+			PotentialCollectInSat:  0,
+			MaxAmountInSatFor0Conf: 25_000,
+		},
+	}
+
+	resolveState.setContextWithTime(context, time.Unix(1629485164, 0))
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(-10), false)
+
+	validateState := listener.next().(*ValidateLightningState)
+	validateState.Continue()
+
+	errorState := listener.next().(*ErrorState)
+
+	if errorState.Error != OperationErrorAmountTooSmall {
+		t.Fatalf("expected error to be amount too small but got %s", errorState.Error)
+	}
+}
+
+func TestLightningSendNegativeFundsWithTFFA(t *testing.T) {
+
+	listener := newTestListener()
+	startState := NewOperationFlow(listener)
+
+	invoice, err := libwallet.ParseInvoice("lnbcrt1ps3l7zlpp5ngv7sl4wrjalma9navd0w9956pu0tcqwrltcnnzz83eeyk4rszxqdqqcqzpgrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqgqqqqqqqlgqqqqqqgq9qrzjq2eawnq2ywdmcpe56nk02tfamgfmsn0acp0zcn8z8cr0djkgpslr5qqpkgqqqqsqqqqqqqlgqqqqqqgq9qsp5luyagw4mtcq735je8ldukhlkg063cxzycjhpz2x2hjfq2mgk5xns9qyyssq7ydzdwyl7yr6ldpzqjjspmgrevw4lxt4jwfy3cxm7we20wveqq8p8khjxuq9u3v953e7t9r8ysfzx5r874vu3nd7w5yx5eqfxu0tevspgxr607", libwallet.Regtest())
+	if err != nil {
+		panic(err)
+	}
+
+	startState.ResolveInvoice(invoice, libwallet.Regtest())
+
+	resolveState := listener.next().(*ResolveState)
+
+	context := createContext()
+	context.NextTransactionSize = &NextTransactionSize{}
+	context.SubmarineSwap = &SubmarineSwap{
+		BestRouteFees: []*BestRouteFees{
+			{
+				MaxCapacity:              100_000,
+				FeeProportionalMillionth: 1,
+				FeeBase:                  1_000,
+			},
+		},
+		FundingOutputPolicies: &FundingOutputPolicies{
+			MaximumDebtInSat:       0,
+			PotentialCollectInSat:  0,
+			MaxAmountInSatFor0Conf: 25_000,
+		},
+	}
+
+	resolveState.setContextWithTime(context, time.Unix(1629485164, 0))
+
+	enterAmountState := listener.next().(*EnterAmountState)
+	enterAmountState.EnterAmount(NewMonetaryAmountFromSatoshis(-10), true)
+
+	validateState := listener.next().(*ValidateLightningState)
+	validateState.Continue()
+
+	errorState := listener.next().(*ErrorState)
+
+	if errorState.Error != OperationErrorAmountTooSmall {
+		t.Fatalf("expected error to be amount too small but got %s", errorState.Error)
 	}
 }
 
@@ -1092,5 +1302,4 @@ func TestOnChainTFFAWithDebtFeeNeedsChangeBecauseOutputAmountLowerThanDust(t *te
 	if confirmState.FeeNeedsChange != false {
 		t.Fatalf("expected feedsNeedsChange to be false, got %v", confirmState.FeeNeedsChange)
 	}
-
 }

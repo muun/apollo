@@ -1,0 +1,7 @@
+CREATE TABLE phone_contacts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    internal_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    phone_number_hash TEXT NOT NULL
+);

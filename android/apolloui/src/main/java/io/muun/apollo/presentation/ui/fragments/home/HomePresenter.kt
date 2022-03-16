@@ -11,6 +11,7 @@ import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.domain.selector.LatestOperationSelector
+import io.muun.apollo.domain.selector.OperationSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
@@ -29,6 +30,7 @@ class HomePresenter @Inject constructor(
     private val bitcoinUnitSel: BitcoinUnitSelector,
     private val userPreferencesSelector: UserPreferencesSelector,
     private val updateUserPreferencesAction: UpdateUserPreferencesAction,
+    private val operationSelector: OperationSelector,
     private val latestOperationSelector: LatestOperationSelector,
     private val utxoSetStateSelector: UtxoSetStateSelector,
     private val featureStatusSel: FeatureStatusSelector,
@@ -67,12 +69,23 @@ class HomePresenter @Inject constructor(
             .doOnNext(view::setState)
             .let(this::subscribeTo)
 
+        val newOpId = HomeFragmentArgs.fromBundle(view.argumentsBundle).newOpId
+        if (newOpId > 0) {
+            // Then we are coming from recently submitting an outgoing op. The best way to ALWAYS
+            // show newop badge in this case is this (newop deeplink + process death needs this)
+
+            val newOperation = operationSelector.fetchByHId(newOpId)
+            view.setNewOp(newOperation, bitcoinUnitSel.get())
+
+            lastOpId = newOpId
+        }
+
         latestOperationSelector.watch()
             .compose(getAsyncExecutor())
             .doOnNext { maybeOp ->
 
                 if (!maybeOp.isPresent) {
-                    // Seed an imposible op id so the first operation ever is shown
+                    // Seed an impossible op id so the first operation ever is shown
                     lastOpId = -1
                 }
 

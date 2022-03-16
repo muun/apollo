@@ -181,9 +181,51 @@ func PersistInvoiceSecrets(list *InvoiceSecretsList) error {
 	return nil
 }
 
-// CreateInvoice returns a new lightning invoice string for the given network.
-// Amount and description can be configured optionally.
-func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, opts *InvoiceOptions) (string, error) {
+type InvoiceBuilder struct {
+	net         *Network
+	userKey     *HDPrivateKey
+	routeHints  []*RouteHints
+	description string
+	amountMSat  lnwire.MilliSatoshi
+	metadata    *OperationMetadata
+}
+
+func (i *InvoiceBuilder) Description(description string) *InvoiceBuilder {
+	i.description = description
+	return i
+}
+
+func (i *InvoiceBuilder) AmountMSat(amountMSat int64) *InvoiceBuilder {
+	i.amountMSat = lnwire.MilliSatoshi(amountMSat)
+	return i
+}
+
+func (i *InvoiceBuilder) AmountSat(amountSat int64) *InvoiceBuilder {
+	i.amountMSat = lnwire.NewMSatFromSatoshis(btcutil.Amount(amountSat))
+	return i
+}
+
+func (i *InvoiceBuilder) Metadata(metadata *OperationMetadata) *InvoiceBuilder {
+	i.metadata = metadata
+	return i
+}
+
+func (i *InvoiceBuilder) Network(net *Network) *InvoiceBuilder {
+	i.net = net
+	return i
+}
+
+func (i *InvoiceBuilder) UserKey(userKey *HDPrivateKey) *InvoiceBuilder {
+	i.userKey = userKey
+	return i
+}
+
+func (i *InvoiceBuilder) AddRouteHints(routeHints *RouteHints) *InvoiceBuilder {
+	i.routeHints = append(i.routeHints, routeHints)
+	return i
+}
+
+func (i *InvoiceBuilder) Build() (string, error) {
 	// obtain first unused secret from db
 	db, err := openDB()
 	if err != nil {
@@ -202,21 +244,24 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	var paymentHash [32]byte
 	copy(paymentHash[:], dbInvoice.PaymentHash)
 
-	nodeID, err := parsePubKey(routeHints.Pubkey)
-	if err != nil {
-		return "", fmt.Errorf("can't parse route hint pubkey: %w", err)
-	}
-
 	var iopts []func(*zpay32.Invoice)
-	iopts = append(iopts, zpay32.RouteHint([]zpay32.HopHint{
-		{
-			NodeID:                    nodeID,
-			ChannelID:                 dbInvoice.ShortChanId,
-			FeeBaseMSat:               uint32(routeHints.FeeBaseMsat),
-			FeeProportionalMillionths: uint32(routeHints.FeeProportionalMillionths),
-			CLTVExpiryDelta:           uint16(routeHints.CltvExpiryDelta),
-		},
-	}))
+	for _, hint := range i.routeHints {
+
+		nodeID, err := parsePubKey(hint.Pubkey)
+		if err != nil {
+			return "", fmt.Errorf("can't parse route hint pubkey: %w", err)
+		}
+
+		iopts = append(iopts, zpay32.RouteHint([]zpay32.HopHint{
+			{
+				NodeID:                    nodeID,
+				ChannelID:                 dbInvoice.ShortChanId,
+				FeeBaseMSat:               uint32(hint.FeeBaseMsat),
+				FeeProportionalMillionths: uint32(hint.FeeProportionalMillionths),
+				CLTVExpiryDelta:           uint16(hint.CltvExpiryDelta),
+			},
+		}))
+	}
 
 	features := lnwire.EmptyFeatureVector()
 	features.RawFeatureVector.Set(lnwire.TLVOnionPayloadOptional)
@@ -230,24 +275,19 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	copy(paymentAddr[:], dbInvoice.PaymentSecret)
 	iopts = append(iopts, zpay32.PaymentAddr(paymentAddr))
 
-	if opts.Description != "" {
-		iopts = append(iopts, zpay32.Description(opts.Description))
+	if i.description != "" {
+		iopts = append(iopts, zpay32.Description(i.description))
 	} else {
 		// description or description hash must be non-empty, adding a placeholder for now
 		iopts = append(iopts, zpay32.Description(""))
 	}
-	// AmountSat is deprecated: remove after apps have migrated
-	if opts.AmountSat != 0 {
-		msat := lnwire.NewMSatFromSatoshis(btcutil.Amount(opts.AmountSat))
-		iopts = append(iopts, zpay32.Amount(msat))
-	} else if opts.AmountMSat != 0 {
-		msat := lnwire.MilliSatoshi(opts.AmountMSat)
-		iopts = append(iopts, zpay32.Amount(msat))
+	if i.amountMSat != 0 {
+		iopts = append(iopts, zpay32.Amount(i.amountMSat))
 	}
 
 	// create the invoice
 	invoice, err := zpay32.NewInvoice(
-		net.network, paymentHash, time.Now(), iopts...,
+		i.net.network, paymentHash, time.Now(), iopts...,
 	)
 	if err != nil {
 		return "", err
@@ -259,7 +299,7 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 		return "", err
 	}
 	identityKeyPath := parentKeyPath.Child(identityKeyChildIndex)
-	identityHDKey, err := userKey.DeriveTo(identityKeyPath.String())
+	identityHDKey, err := i.userKey.DeriveTo(identityKeyPath.String())
 	if err != nil {
 		return "", err
 	}
@@ -292,10 +332,10 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 	dbInvoice.UsedAt = &now
 
 	var metadata *OperationMetadata
-	if opts.Metadata != nil {
-		metadata = opts.Metadata
+	if i.metadata != nil {
+		metadata = i.metadata
 		metadata.Invoice = bech32
-	} else if opts.Description != "" {
+	} else if i.description != "" {
 		metadata = &OperationMetadata{Invoice: bech32}
 	}
 
@@ -306,7 +346,7 @@ func CreateInvoice(net *Network, userKey *HDPrivateKey, routeHints *RouteHints, 
 			return "", fmt.Errorf("failed to encode metadata json: %w", err)
 		}
 		// encryption key is derived at 3/x/y with x and y random indexes
-		key, err := deriveMetadataEncryptionKey(userKey)
+		key, err := deriveMetadataEncryptionKey(i.userKey)
 		if err != nil {
 			return "", fmt.Errorf("failed to derive encryption key: %w", err)
 		}

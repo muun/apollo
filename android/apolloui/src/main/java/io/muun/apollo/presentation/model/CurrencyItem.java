@@ -16,7 +16,18 @@ public class CurrencyItem implements Comparable<CurrencyItem> {
 
     public CurrencyItem(CurrencyUnit currencyUnit) {
         this.currencyUnit = currencyUnit;
-        this.currencyInfo = Currency.getInfo(currencyUnit.getCurrencyCode()).orElse(null);
+
+        if (currencyUnit.getCurrencyCode().equals("SAT")) {
+            // HACK!
+            this.currencyInfo = new Currency(
+                    "SAT",
+                    "",
+                    "Bitcoin", // Satoshis are a Unit, Bitcoin is the currency
+                    null
+            );
+        } else {
+            this.currencyInfo = Currency.getInfo(currencyUnit.getCurrencyCode()).orElse(null);
+        }
     }
 
     @Override

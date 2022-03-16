@@ -18,7 +18,6 @@ import javax.inject.Inject
 class LnInvoiceQrPresenter @Inject constructor(
     private val generateInvoice: GenerateInvoiceAction,
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
-    private val bitcoinUnitSel: BitcoinUnitSelector
 ) : QrPresenter<LnInvoiceView>() {
 
     @State
@@ -37,7 +36,6 @@ class LnInvoiceQrPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        view.setBitcoinUnit(bitcoinUnitSel.get())
         view.setShowingAdvancedSettings(showingAdvancedSettings)
 
         generateInvoice
