@@ -1,9 +1,9 @@
-FROM openjdk:14.0.2-jdk-buster@sha256:12fa83956c7ba2423622e293eced64b475e6e3bb151c06c54812d5d8c39f4bc0 AS muun_android_builder
+FROM openjdk:17-jdk-buster@sha256:9217da81dcff19e60861791511ce57c019e47eaf5ca40dc73defe454ba7ea320 AS muun_android_builder
 
 ENV NDK_VERSION 22.0.7026061
 ENV ANDROID_PLATFORM_VERSION 28
 ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
-ENV GO_VERSION 1.15.8
+ENV GO_VERSION 1.16.8
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
@@ -63,8 +63,7 @@ COPY . /src
 RUN tools/bootstrap-gomobile.sh \
     && (cd libwallet; go clean) \
     && ./gradlew :android:apollo:clean :android:apolloui:clean \
-    && ./gradlew :android:apollo:libwallet \
-    && ./gradlew :android:apolloui:assembleProdRelease
+    && ./gradlew :android:libwallet:build :android:apolloui:assembleProdRelease
 
 FROM scratch
 

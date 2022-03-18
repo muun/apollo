@@ -117,3 +117,6 @@ WHERE
     AND o.is_rbf = ?
     AND o.status IN ?
 ;
+
+deleteAll:
+DELETE FROM operations;

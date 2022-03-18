@@ -10,7 +10,6 @@ buildscript {
 }
 
 plugins {
-    id 'com.palantir.configuration-resolver' version '0.1.0'
     id 'com.github.ben-manes.versions' version '0.15.0'
     id 'org.owasp.dependencycheck' version '5.3.2.1'
     id 'org.jetbrains.kotlin.plugin.serialization'
@@ -81,8 +80,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 804
-        versionName "48.4"
+        versionCode 900
+        versionName "49"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -317,6 +316,9 @@ ext {
 dependencies {
     // modules
     implementation project(':android:apollo')
+    // We explictly include libwallet to workaround a limitation of module module builds with local deps
+    // https://stackoverflow.com/a/63665094/550
+    api project(':android:libwallet')
 
     implementation 'org.slf4j:slf4j-nop:1.7.14'
 
@@ -325,7 +327,7 @@ dependencies {
     minifiedImplementation 'com.github.markzhai:blockcanary-no-op:1.5.0'
     releaseImplementation 'com.github.markzhai:blockcanary-no-op:1.5.0'
 
-    kapt 'com.google.dagger:dagger-compiler:2.27'
+    kapt "com.google.dagger:dagger-compiler:$global_version_dagger"
 
     // support library
     implementation 'com.google.android.material:material:1.2.1'
@@ -406,9 +408,6 @@ dependencies {
 
     // Fancy animations
     implementation 'com.airbnb.android:lottie:3.5.0'
-
-    // Detect root devices (just for error reports metadata)
-    implementation 'com.scottyab:rootbeer-lib:0.0.8'
 }
 
 task start(type: Exec, dependsOn: 'assembleDebug') {

@@ -23,8 +23,10 @@ import javax.money.format.MonetaryFormats
 
 object MoneyHelper {
 
+    const val MAX_FRACTIONAL_DIGITS_SAT = 0
     const val MAX_FRACTIONAL_DIGITS_FIAT = 2
     const val MAX_FRACTIONAL_DIGITS_BTC = 8
+
 
     private class FiatFormat(private val basePattern: String, private val decimalsPattern: Char) {
 

@@ -91,40 +91,12 @@ ext {
     version_workmanager = '2.4.0'
 }
 
-def libwalletSources = fileTree("${project.rootDir}/libwallet") {
-    include "**/*.go"
-    exclude ".build/**"
-    exclude "**/*_test.go"
-}
-
-task libwallet(type: Exec) {
-    group = "build"
-    description = "Build libwallet for Android bindings"
-
-    ext {
-        aar = "${project.projectDir}/libs/libwallet.aar"
-        script = "${project.rootDir}/tools/libwallet-android.sh"
-    }
-
-    inputs.property("aar", aar)
-    inputs.property("script", script)
-
-    inputs.files(libwalletSources)
-    inputs.file(script)
-
-    outputs.file(aar)
-
-    outputs.cacheIf { true }
-
-    executable script
-    args aar
-}
-
-preBuild.dependsOn "libwallet"
 
 dependencies {
     api project(':common')
-    api files('libs/libwallet.aar')
+    // We do compileOnly to workaround a limitation regarding multi module builds with local deps
+    // https://stackoverflow.com/a/63665094/550
+    compileOnly project(':android:libwallet')
 
     // Android support:
     api 'androidx.appcompat:appcompat:1.2.0'
@@ -137,8 +109,8 @@ dependencies {
     implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
 
     // Dependency injection:
-    api 'com.google.dagger:dagger:2.27'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.27'
+    api "com.google.dagger:dagger:$global_version_dagger"
+    annotationProcessor "com.google.dagger:dagger-compiler:$global_version_dagger"
 
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
 
@@ -168,8 +140,8 @@ dependencies {
 
     // Storage:
     implementation 'com.squareup.sqlbrite3:sqlbrite:3.2.0'
-    implementation 'com.google.auto.value:auto-value-annotations:1.6'
-    annotationProcessor 'com.google.auto.value:auto-value:1.6'
+    implementation "com.squareup.sqldelight:android-driver:1.5.3"
+    implementation "com.squareup.sqldelight:rxjava2-extensions:1.5.3"
 
     // Networking:
     implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
@@ -190,6 +162,9 @@ dependencies {
     // the compiler one, runtime library has different coordinates, repository and versioning.
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
 
+    // Detect root devices (for error reports metadata and fraud control)
+    implementation 'com.scottyab:rootbeer-lib:0.0.8'
+
     // Testing:
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
@@ -205,5 +180,5 @@ dependencies {
     testImplementation 'net.sourceforge.streamsupport:streamsupport:1.5.5'
     testImplementation 'com.github.tomakehurst:wiremock-standalone:2.6.0'
 
-    testImplementation files('libs/libwallet.aar')
+    testImplementation project(':android:libwallet')
 }

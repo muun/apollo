@@ -20,7 +20,6 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
-import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getDrawable
@@ -50,10 +49,10 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
     @BindView(R.id.home_balance_view)
     lateinit var balanceView: BalanceView
 
-    @BindView(R.id.home_taproot_card)
+    @BindView(R.id.home_security_center_card)
     lateinit var securityCenterCard: MuunHomeCard
 
-    @BindView(R.id.home_security_center_card)
+    @BindView(R.id.home_taproot_card)
     lateinit var taprootCard: MuunHomeCard
 
     @BindView(R.id.home_block_clock)
@@ -209,24 +208,37 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
         balanceView.setBalance(homeState)
         setChevronAnimation(homeState.utxoSetState)
 
-        securityCenterCard.visibility = View.GONE
+        // We want one of the cards to "occupy space" (aka be invisible not gone) to avoid visual
+        // jumps/glitches
         taprootCard.visibility = View.GONE
+        securityCenterCard.visibility = View.INVISIBLE
+
         blockClock.visibility = View.GONE
 
+        // Due to (complex) business logic reasons, only 1 of these cards is currently displayed
+        var displayedMuunHomeCard: MuunHomeCard? = null
         val taprootStatus = homeState.taprootFeatureStatus
         if (!homeState.user.isRecoverable) {
-            securityCenterCard.visibility = View.VISIBLE
+            displayedMuunHomeCard = securityCenterCard
 
         } else when (taprootStatus) {
             UserActivatedFeatureStatus.OFF -> { } // Do nothing
-            UserActivatedFeatureStatus.CAN_PREACTIVATE -> taprootCard.visibility = View.VISIBLE
-            UserActivatedFeatureStatus.CAN_ACTIVATE -> taprootCard.visibility = View.VISIBLE
+            UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = taprootCard
+            UserActivatedFeatureStatus.CAN_ACTIVATE -> displayedMuunHomeCard = taprootCard
             UserActivatedFeatureStatus.PREACTIVATED -> blockClock.visibility = View.VISIBLE
             UserActivatedFeatureStatus.SCHEDULED_ACTIVATION -> {} // Do nothing
             UserActivatedFeatureStatus.ACTIVE -> { } // Do nothing
         }
 
         blockClock.value = homeState.blocksToTaproot
+
+        displayedMuunHomeCard?.let {
+            it.visibility = View.VISIBLE
+            if (it == taprootCard) {
+                // Avoid having 2x height when taprootCard is shown (see visual jump comment above)
+                securityCenterCard.visibility = View.GONE
+            }
+        }
     }
 
     override fun setNewOp(newOp: Operation, bitcoinUnit: BitcoinUnit) {

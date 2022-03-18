@@ -189,7 +189,7 @@ func (a *PaymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddre
 }
 
 func (a *PaymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
-	if payment.AmountInSat == 0 {
+	if payment.AmountInSat <= 0 {
 		return &PaymentAnalysis{
 			Status: AnalysisStatusAmountTooSmall,
 		}, nil

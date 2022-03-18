@@ -1,0 +1,49 @@
+-- The famous Amount Less Invoices Migration (aka Invoices Without Amount)
+-- We need to change several previously NOT NULL columns that now become nullable
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+-- NOTE: we start doing this ALTER TABLE migrations THE RIGHT WAY. For more info see:
+-- https://www.sqlite.org/lang_altertable.html#otheralter
+--
+--  1. Create a temp table exactly as the original one, except for the columns in question.
+--  2. Insert all the rows from old/original table into the new one.
+--  3. Delete the old/original table.
+--  4. Rename the new/temporary name into your old table.
+
+
+CREATE TABLE tmp_submarine_swaps (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    invoice TEXT NOT NULL,
+    receiver_alias TEXT,
+    receiver_network_addresses TEXT NOT NULL,
+    receiver_public_key TEXT NOT NULL,
+    funding_output_address TEXT NOT NULL,
+    funding_output_amount_in_satoshis INTEGER,
+    funding_confirmations_needed INTEGER,
+    funding_user_lock_time INTEGER,
+    funding_user_refund_address TEXT NOT NULL,
+    funding_user_refund_address_path TEXT NOT NULL,
+    funding_user_refund_address_version INTEGER NOT NULL,
+    funding_server_payment_hash_in_hex TEXT NOT NULL,
+    funding_server_public_key_in_hex TEXT NOT NULL,
+    sweep_fee_in_satoshis INTEGER,
+    lightning_fee_in_satoshis INTEGER,
+    expires_at TEXT NOT NULL,
+    payed_at TEXT,
+    preimage_in_hex TEXT,
+    funding_script_version INTEGER NOT NULL,
+    funding_expiration_in_blocks INTEGER,
+    funding_user_public_key TEXT,
+    funding_user_public_key_path TEXT,
+    funding_muun_public_key TEXT,
+    funding_muun_public_key_path TEXT,
+    funding_output_debt_type TEXT,
+    funding_output_debt_amount_in_satoshis INTEGER
+);
+
+INSERT INTO tmp_submarine_swaps SELECT * FROM submarine_swaps;
+
+DROP TABLE submarine_swaps;
+
+ALTER TABLE tmp_submarine_swaps
+RENAME TO submarine_swaps;

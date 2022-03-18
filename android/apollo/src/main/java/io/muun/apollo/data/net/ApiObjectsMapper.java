@@ -185,7 +185,7 @@ public class ApiObjectsMapper {
     /**
      * Map client information.
      */
-    public ClientJson mapClient(final String bigQueryPseudoId) {
+    public ClientJson mapClient(final String bigQueryPseudoId, final boolean isRootHint) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
                 Globals.INSTANCE.getOldBuildType(),
@@ -194,7 +194,8 @@ public class ApiObjectsMapper {
                 Globals.INSTANCE.getDeviceName(),
                 TimeZone.getDefault().getRawOffset() / 1000L,
                 Locale.getDefault().toString(),
-                bigQueryPseudoId
+                bigQueryPseudoId,
+                isRootHint
         );
     }
 
@@ -205,11 +206,12 @@ public class ApiObjectsMapper {
             String gcmToken,
             PublicKey basePublicKey,
             CurrencyUnit primaryCurrency,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
 
         return new CreateFirstSessionJson(
-                mapClient(bigQueryPseudoId),
+                mapClient(bigQueryPseudoId, isRootHint),
                 gcmToken,
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
@@ -224,11 +226,12 @@ public class ApiObjectsMapper {
 
             String gcmToken,
             String email,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
 
         return new CreateLoginSessionJson(
-                mapClient(bigQueryPseudoId),
+                mapClient(bigQueryPseudoId, isRootHint),
                 gcmToken,
                 email
         );
@@ -240,10 +243,11 @@ public class ApiObjectsMapper {
     public CreateRcLoginSessionJson mapCreateRcLoginSession(
             String gcmToken,
             String rcChallengePublicKeyHex,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
         return new CreateRcLoginSessionJson(
-                mapClient(bigQueryPseudoId),
+                mapClient(bigQueryPseudoId, isRootHint),
                 gcmToken,
                 new ChallengeKeyJson(
                         ChallengeType.RECOVERY_CODE,

@@ -3,13 +3,14 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -61,7 +62,7 @@ type WithdrawResponse struct {
 // After adding new codes here, remember to export them in the root libwallet
 // module so that the apps can consume them.
 const (
-	ErrNone				  int = 0
+	ErrNone               int = 0
 	ErrDecode             int = 1
 	ErrUnsafeURL          int = 2
 	ErrUnreachable        int = 3
@@ -76,9 +77,9 @@ const (
 	ErrAlreadyUsed        int = 12
 	ErrForbidden          int = 13
 
-	StatusContacting      int = 100
-	StatusInvoiceCreated  int = 101
-	StatusReceiving       int = 102
+	StatusContacting     int = 100
+	StatusInvoiceCreated int = 101
+	StatusReceiving      int = 102
 )
 
 type Event struct {
@@ -88,9 +89,9 @@ type Event struct {
 }
 
 type EventMetadata struct {
-	Host    	string
-	Invoice 	string
-	RequestId	string
+	Host      string
+	Invoice   string
+	RequestId string
 }
 
 var httpClient = http.Client{Timeout: 15 * time.Second}
@@ -273,8 +274,8 @@ func (fr *Response) Validate() (int, string) {
 // reasons maps from parts of responses to the error code. The string can be in
 // any part of the response, and has to be lowercased to simplify matching.
 // Try to also document the original error string above the pattern.
-var reasons = map[string]int {
-	"route": ErrNoRoute,
+var reasons = map[string]int{
+	"route":   ErrNoRoute,
 	"expired": ErrRequestExpired,
 	// This Withdrawal Request is already being processed by another wallet. (zebedee)
 	"already being processed": ErrAlreadyUsed,
@@ -304,23 +305,41 @@ func mapReasonToErrorCode(reason string) int {
 
 func decode(qr string) (*url.URL, error) {
 	// handle fallback scheme
+	var toParse string
 	if strings.HasPrefix(qr, "http://") || strings.HasPrefix(qr, "https://") {
 		u, err := url.Parse(qr)
 		if err != nil {
 			return nil, err
 		}
-		qr = u.Query().Get("lightning")
+		toParse = u.Query().Get("lightning")
 	} else {
-		// remove lightning prefix
-		if strings.HasPrefix(strings.ToLower(qr), "lightning:") {
-			qr = qr[len("lightning:"):]
+		// Remove muun: prefix, including the :// version for iOS
+		qr = strings.Replace(qr, "muun://", "", 1)
+		qr = strings.Replace(qr, "muun:", "", 1)
+
+		// Use a consistent prefix
+		if !strings.HasPrefix(strings.ToLower(qr), "lightning:") {
+			qr = "lightning:" + qr
+		}
+
+		uri, err := url.Parse(qr)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(uri.Opaque) > 0 {
+			// This catches scheme:LNURL
+			toParse = uri.Opaque
+		} else {
+			// And this catches scheme://LNURL which is needed for iOS
+			toParse = uri.Host
 		}
 	}
-	u, err := lnurl.LNURLDecode(qr)
+	u, err := lnurl.LNURLDecode(toParse)
 	if err != nil {
 		return nil, err
 	}
-	return url.Parse(string(u))
+	return url.Parse(u)
 }
 
 // We allow "withdraw" as a valid LNURL withdraw tag because, even though not in spec, there are

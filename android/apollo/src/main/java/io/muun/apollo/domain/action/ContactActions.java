@@ -100,7 +100,7 @@ public class ContactActions {
     public Observable<Void> fetchReplaceContacts() {
         Timber.d("[Contacts] Fetching full contact list");
 
-        return contactDao.deleteAll().flatMap(ignored ->
+        return contactDao.deleteAll().andThen(
                 houstonClient.fetchContacts()
                         .flatMap(Observable::from)
                         // using concatMap to avoid parallelization, overflows JobExecutor's queue
@@ -186,7 +186,7 @@ public class ContactActions {
      */
     public Observable<Void> resetSyncPhoneContacts() {
         return phoneContactDao.deleteAll()
-                .flatMap(ignored -> syncPhoneContacts())
+                .andThen(syncPhoneContacts())
                 .map(RxHelper::toVoid);
     }
 

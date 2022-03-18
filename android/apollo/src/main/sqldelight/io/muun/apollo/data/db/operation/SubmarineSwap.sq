@@ -25,7 +25,7 @@ CREATE TABLE submarine_swaps (
     funding_user_public_key_path TEXT,
     funding_muun_public_key TEXT,
     funding_muun_public_key_path TEXT,
-    funding_output_debt_type TEXT as io.muun.common.model.DebtType,
+    funding_output_debt_type TEXT AS io.muun.common.model.DebtType,
     funding_output_debt_amount_in_satoshis INTEGER
 );
 
@@ -41,3 +41,6 @@ updatePaymentInfo:
 UPDATE submarine_swaps
 SET payed_at = ?, preimage_in_hex = ?
 WHERE houston_uuid = ?;
+
+deleteAll:
+DELETE FROM submarine_swaps;

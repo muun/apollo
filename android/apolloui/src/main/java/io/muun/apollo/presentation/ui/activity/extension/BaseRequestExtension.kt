@@ -59,16 +59,16 @@ abstract class BaseRequestExtension : ActivityExtension() {
         var viewRequestCode = 0
     }
 
-    class RequestMapBundler : Bundler<Map<Int?, CallerRequest?>?> {
+    class RequestMapBundler : Bundler<Map<Int, CallerRequest>> {
 
-        override fun put(key: String, map: Map<Int?, CallerRequest?>?, bundle: Bundle) {
+        override fun put(key: String, map: Map<Int, CallerRequest>, bundle: Bundle) {
             bundle.putString(
                 key,
                 SerializationUtils.serializeMap(Int::class.java, CallerRequest::class.java, map)
             )
         }
 
-        override fun get(key: String, bundle: Bundle): Map<Int?, CallerRequest?>? {
+        override fun get(key: String, bundle: Bundle): Map<Int, CallerRequest> {
             return SerializationUtils.deserializeMap(
                 Int::class.java,
                 CallerRequest::class.java,

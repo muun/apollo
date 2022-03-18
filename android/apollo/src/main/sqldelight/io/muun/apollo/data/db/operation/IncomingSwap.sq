@@ -16,3 +16,6 @@ selectAll:
 SELECT swap.*, htlc.*
 FROM incoming_swaps AS swap
 LEFT JOIN incoming_swap_htlcs AS htlc ON htlc.incoming_swap_houston_uuid = swap.houston_uuid;
+
+deleteAll:
+DELETE FROM incoming_swaps;

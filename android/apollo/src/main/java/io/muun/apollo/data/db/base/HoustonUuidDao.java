@@ -1,29 +1,29 @@
 package io.muun.apollo.data.db.base;
 
 import io.muun.apollo.domain.model.base.HoustonUuidModel;
+import io.muun.apollo.lib.BuildConfig;
+import io.muun.common.utils.Preconditions;
 
 import android.database.Cursor;
-import androidx.sqlite.db.SupportSQLiteDatabase;
-import com.squareup.sqldelight.prerelease.SqlDelightStatement;
-import io.reactivex.functions.Function;
 import rx.Observable;
-import rx.functions.Func2;
 
-public class HoustonUuidDao<ModelT extends HoustonUuidModel> extends BaseDao<ModelT> {
+public abstract class HoustonUuidDao<ModelT extends HoustonUuidModel> extends BaseDao<ModelT> {
 
-    protected HoustonUuidDao(
-            String createTableSql,
-            Func2<SupportSQLiteDatabase, ModelT, SqlDelightStatement> inputMapper,
-            Function<Cursor, ModelT> outputMapper,
-            String tableName) {
-
-        super(createTableSql, inputMapper, outputMapper, tableName);
+    protected HoustonUuidDao(final String tableName) {
+        super(tableName);
     }
 
     @Override
     public Observable<ModelT> store(ModelT element) {
 
         return Observable.defer(() -> {
+
+            if (BuildConfig.DEBUG) {
+                Preconditions.checkNotNull(
+                        element.houstonUuid,
+                        "Trying to store model with no UUID"
+                );
+            }
 
             if (element.getId() != null) {
                 return super.store(element);

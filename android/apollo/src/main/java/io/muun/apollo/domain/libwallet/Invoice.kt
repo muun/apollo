@@ -10,8 +10,12 @@ import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.crypto.hd.PublicKeyPair
 import io.muun.common.utils.Encodings
-import libwallet.*
 import libwallet.Invoice
+import libwallet.InvoiceBuilder
+import libwallet.InvoiceSecrets
+import libwallet.InvoiceSecretsList
+import libwallet.Libwallet
+import libwallet.RouteHints
 import org.bitcoinj.core.NetworkParameters
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -38,26 +42,28 @@ object Invoice {
     fun generate(
         networkParams: NetworkParameters,
         userPrivateKey: PrivateKey,
-        forwardingPolicy: ForwardingPolicy,
+        forwardingPolicies: List<ForwardingPolicy>,
         amountInSat: Long? = null
     ): String {
 
-        val routeHints = RouteHints()
-        routeHints.cltvExpiryDelta = forwardingPolicy.cltvExpiryDelta.toInt()
-        routeHints.feeBaseMsat = forwardingPolicy.feeBaseMsat
-        routeHints.feeProportionalMillionths = forwardingPolicy.feeProportionalMillionths
-        routeHints.pubkey = Encodings.bytesToHex(forwardingPolicy.identityKey)
+        val builder = InvoiceBuilder()
+            .network(networkParams.toLibwallet())
+            .userKey(userPrivateKey.toLibwallet(networkParams))
 
-        val options = InvoiceOptions()
+        for (policy in forwardingPolicies) {
+            val routeHint = RouteHints()
+            routeHint.cltvExpiryDelta = policy.cltvExpiryDelta.toInt()
+            routeHint.feeBaseMsat = policy.feeBaseMsat
+            routeHint.feeProportionalMillionths = policy.feeProportionalMillionths
+            routeHint.pubkey = Encodings.bytesToHex(policy.identityKey)
+            builder.addRouteHints(routeHint)
+        }
 
-        options.amountSat = amountInSat ?: 0 // Specified amount or amount-less invoice
+        if (amountInSat != null) {
+            builder.amountSat(amountInSat)
+        }
 
-        val invoice = Libwallet.createInvoice(
-            networkParams.toLibwallet(),
-            userPrivateKey.toLibwallet(networkParams),
-            routeHints,
-            options
-        )
+        val invoice = builder.build()
 
         if (invoice.isBlank()) {
             throw NoInvoicesLeftError()

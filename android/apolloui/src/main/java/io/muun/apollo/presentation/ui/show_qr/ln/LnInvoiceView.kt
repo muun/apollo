@@ -9,8 +9,6 @@ interface LnInvoiceView : BaseView {
 
     fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean)
 
-    fun setBitcoinUnit(bitcoinUnit: BitcoinUnit)
-
     fun setLoading(loading: Boolean)
 
     fun setInvoice(invoice: DecodedInvoice, amount: MonetaryAmount?)

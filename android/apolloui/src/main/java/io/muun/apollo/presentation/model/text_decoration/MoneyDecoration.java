@@ -1,12 +1,24 @@
 package io.muun.apollo.presentation.model.text_decoration;
 
+import io.muun.apollo.domain.errors.MoneyDecorationError;
 import io.muun.common.utils.Preconditions;
 
+import android.text.Spannable;
 import androidx.annotation.VisibleForTesting;
+import timber.log.Timber;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+/**
+ * Welcome to the jungle! Though we've no fun and games here, sorry. This class serves as the
+ * editor and/or input pre-processor for our MuunAmountInput. There's several tasks it accomplishes
+ * but the main reason for its existence is to handle grouping separator display correctly (e.g
+ * auto input/display grouping separators as a user types in, auto remove them as they delete),
+ * taking into account the locale (grouping and decimal separator may differ according to the
+ * locale).
+ * Also, it handles AndroidSupremeLocalizationBug, ugly stuff. See below.
+ */
 public class MoneyDecoration implements DecorationTransformation {
 
     public static Character THIN_SPACE = '\u200A';
@@ -50,6 +62,14 @@ public class MoneyDecoration implements DecorationTransformation {
         this.target = target;
     }
 
+    /**
+     * This method is called to notify you that, within <code>s</code>,
+     * the <code>count</code> characters beginning at <code>start</code>
+     * are about to be replaced by new text with length <code>after</code>.
+     * It is an error to attempt to make changes to <code>s</code> from
+     * this callback.
+     * @see android.text.TextWatcher
+     */
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -64,9 +84,35 @@ public class MoneyDecoration implements DecorationTransformation {
         }
     }
 
+    /**
+     * This method is called to notify you that, somewhere within
+     * <code>s</code>, the text has been changed.
+     * It is legitimate to make further changes to <code>s</code> from
+     * this callback, but be careful not to get yourself into an infinite
+     * loop, because any changes you make will cause this method to be
+     * called again recursively.
+     * (You are not told where the change took place because other
+     * afterTextChanged() methods may already have made other changes
+     * and invalidated the offsets.  But if you need to know here,
+     * you can use {@link Spannable#setSpan} in {@link android.text.TextWatcher#onTextChanged}
+     * to mark your place and then look up from here where the span
+     * ended up.
+     * @see android.text.TextWatcher
+     */
     @Override
     public void afterTextChanged(StringBuilder s) {
         Preconditions.checkNotNull(target);
+
+        if (maxFractionalDigits == 0) {
+            final int indexOfDecimalComma = s.indexOf(String.valueOf(decimalSeparator));
+            if (indexOfDecimalComma != -1) {
+                final int decimalsCount = start + after - indexOfDecimalComma - 1;
+                s.replace(indexOfDecimalComma, indexOfDecimalComma + decimalsCount + 1, "");
+                target.setSelection(target.getSelectionStart() - 1 - decimalsCount);
+            }
+            target.setText(s);
+            return;
+        }
 
         handleAndroidSupremeLocalizationBug(s, target);
 
@@ -114,8 +160,43 @@ public class MoneyDecoration implements DecorationTransformation {
         }
 
         target.setText(result);
-        target.setSelection(newCaretPosition);
 
+        // Avoid crashes but log error to understand what's going on
+        if (newCaretPosition > result.length()) {
+            Timber.e(new MoneyDecorationError(
+                    "Trying to set selection caret beyond new text's length",
+                    newCaretPosition,
+                    target.length(),
+                    result.toString(),
+                    stringTotalSize,
+                    inputString,
+                    decimalSeparator,
+                    groupingSeparator,
+                    maxFractionalDigits,
+                    integerPartSize,
+                    target.getSelectionStart()
+
+            ));
+            newCaretPosition = target.length();
+
+        } else if (newCaretPosition < 0) {
+            Timber.e(new MoneyDecorationError(
+                    "Trying to set selection caret below 0",
+                    newCaretPosition,
+                    target.length(),
+                    result.toString(),
+                    stringTotalSize,
+                    inputString,
+                    decimalSeparator,
+                    groupingSeparator,
+                    maxFractionalDigits,
+                    integerPartSize,
+                    target.getSelectionStart()
+            ));
+            newCaretPosition = 0;
+        }
+
+        target.setSelection(newCaretPosition);
     }
 
     public void setMaxFractionalDigits(int maxFractionalDigits) {

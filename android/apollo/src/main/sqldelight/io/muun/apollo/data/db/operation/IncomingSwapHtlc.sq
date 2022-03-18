@@ -19,3 +19,6 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 selectAll:
 SELECT *
 FROM incoming_swap_htlcs;
+
+deleteAll:
+DELETE FROM incoming_swap_htlcs;

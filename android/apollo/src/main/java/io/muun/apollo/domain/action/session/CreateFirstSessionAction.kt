@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.session
 
-import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
@@ -25,7 +24,8 @@ class CreateFirstSessionAction @Inject constructor(
     private val logoutActions: LogoutActions,
     private val getFcmToken: GetFcmTokenAction,
     private val createBasePrivateKey: CreateBasePrivateKeyAction,
-    private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
+    private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository,
+    private val isRootedDeviceAction: IsRootedDeviceAction
 ) : BaseAsyncAction0<CreateFirstSessionOk>() {
 
     /**
@@ -49,7 +49,8 @@ class CreateFirstSessionAction @Inject constructor(
                         gcmToken,
                         basePrivateKey.publicKey,
                         currencyActions.localCurrencies.iterator().next(),
-                        firebaseInstalationIdRepository.getBigQueryPseudoId()
+                        firebaseInstalationIdRepository.getBigQueryPseudoId(),
+                        isRootedDeviceAction.actionNow()
                     )
             }
             .doOnNext {

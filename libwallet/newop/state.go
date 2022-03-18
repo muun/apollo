@@ -761,6 +761,9 @@ func (s *ValidateLightningState) Continue() error {
 
 		return s.emitBalanceError(OperationErrorAmountGreaterThanBalance, analysis, inputCurrency)
 
+        case operation.AnalysisStatusAmountTooSmall:
+                return s.emitError(OperationErrorAmountTooSmall)
+
 	default:
 		return fmt.Errorf("unrecognized analysis status: %v", analysis.Status)
 	}

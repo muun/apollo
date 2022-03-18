@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import rx.Observable;
+import timber.log.Timber;
 
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
@@ -36,7 +37,15 @@ public class ClipboardProvider {
 
         final ClipData clip = ClipData.newPlainText(label, text);
 
-        clipboard.setPrimaryClip(clip);
+        try {
+            clipboard.setPrimaryClip(clip);
+        } catch (Exception e) {
+            // Apparently sometimes, if another app is listening to the clipboard a
+            // SecurityException could be thrown (if the right permission, config is set).
+            // Source: https://stackoverflow.com/a/65441899/901465
+            // TODO: should we warn the user that this may be happening?
+            Timber.e("This shouldn't really happen... but here we are", e);
+        }
     }
 
     /**

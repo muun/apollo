@@ -29,3 +29,6 @@ SELECT *
 FROM contacts
 INNER JOIN public_profiles ON contacts.hid = public_profiles.hid
 WHERE contacts.hid = ?;
+
+deleteAll:
+DELETE FROM contacts;

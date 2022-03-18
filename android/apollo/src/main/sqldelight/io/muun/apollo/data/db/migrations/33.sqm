@@ -1,0 +1,100 @@
+-- We do *tons* of things here!
+-- 1. Add a collect_in_satoshis column to incoming_swaps
+-- 2. Invert the foreign key between incoming swaps and htlcs, making HTLCs point to swaps
+-- 3. Move the payment_amount_in_satoshis column out of HTLCs into swaps
+--
+
+
+-- Steps 1-3 create the new columns
+ALTER TABLE incoming_swaps
+ADD COLUMN collect_in_satoshis INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE incoming_swaps
+ADD COLUMN payment_amount_in_satoshis INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE incoming_swap_htlcs
+ADD COLUMN incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid);
+
+-- Steps 4-5 move the values between tables with UPDATE queries
+UPDATE incoming_swaps
+SET payment_amount_in_satoshis = (
+ SELECT payment_amount_in_satoshis
+ FROM incoming_swap_htlcs
+ WHERE
+ incoming_swap_htlcs.houston_uuid = incoming_swaps.incoming_swap_htlc_houston_uuid
+);
+
+UPDATE incoming_swap_htlcs
+SET incoming_swap_houston_uuid = (
+ SELECT incoming_swaps.houston_uuid
+ FROM incoming_swaps
+ WHERE
+ incoming_swap_htlcs.houston_uuid = incoming_swaps.incoming_swap_htlc_houston_uuid
+);
+
+-- Steps 6-9 drop the old column from htlcs using the sqlite dance
+
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+-- NOTE: this is actually the first time we started handling ALTER COLUMN in Sqlite3, correctly
+-- See: https://www.sqlite.org/lang_altertable.html#otheralter
+
+CREATE TABLE tmp_incoming_swap_htlcs (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    expiration_height INTEGER NOT NULL,
+    fulfillment_fee_subsidy_in_satoshis INTEGER NOT NULL,
+    lent_in_satoshis INTEGER NOT NULL,
+    swap_server_public_key_in_hex TEXT NOT NULL,
+    fulfillment_tx_in_hex TEXT,
+    address TEXT NOT NULL,
+    output_amount_in_satoshis INTEGER NOT NULL,
+    htlc_tx_in_hex TEXT NOT NULL,
+    incoming_swap_houston_uuid TEXT REFERENCES incoming_swaps(houston_uuid)
+);
+
+INSERT INTO tmp_incoming_swap_htlcs
+SELECT
+     id,
+     houston_uuid,
+     expiration_height,
+     fulfillment_fee_subsidy_in_satoshis,
+     lent_in_satoshis,
+     swap_server_public_key_in_hex,
+     fulfillment_tx_in_hex,
+     address,
+     output_amount_in_satoshis,
+     htlc_tx_in_hex,
+     incoming_swap_houston_uuid
+FROM incoming_swap_htlcs;
+
+DROP TABLE incoming_swaps;
+
+ALTER TABLE tmp_incoming_swaps
+RENAME TO incoming_swaps;
+
+-- Steps 10-13 drop the old column from incoming swaps using the sqlite dance
+CREATE TABLE tmp_incoming_swaps (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    houston_uuid TEXT NOT NULL UNIQUE,
+    payment_hash_in_hex TEXT NOT NULL,
+    sphinx_packet_in_hex TEXT,
+    collect_in_satoshis INTEGER NOT NULL,
+    payment_amount_in_satoshis INTEGER NOT NULL
+);
+
+
+INSERT INTO tmp_incoming_swaps
+SELECT
+     id,
+     houston_uuid,
+     payment_hash_in_hex,
+     sphinx_packet_in_hex,
+     collect_in_satoshis,
+     payment_amount_in_satoshis
+FROM incoming_swaps;
+
+DROP TABLE incoming_swap_htlcs;
+
+ALTER TABLE tmp_incoming_swap_htlcs
+RENAME TO incoming_swap_htlcs;
+

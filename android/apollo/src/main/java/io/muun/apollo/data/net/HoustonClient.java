@@ -17,6 +17,7 @@ import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
+import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
@@ -49,7 +50,6 @@ import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
-import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.error.ErrorCode;
 import io.muun.common.api.houston.HoustonService;
 import io.muun.common.crypto.ChallengeType;
@@ -110,14 +110,16 @@ public class HoustonClient extends BaseClient<HoustonService> {
             String gcmRegistrationToken,
             PublicKey basePublicKey,
             CurrencyUnit primaryCurrency,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
 
         final CreateFirstSessionJson params = apiMapper.mapCreateFirstSession(
                 gcmRegistrationToken,
                 basePublicKey,
                 primaryCurrency,
-                bigQueryPseudoId
+                bigQueryPseudoId,
+                isRootHint
         );
 
         return getService().createFirstSession(params)
@@ -130,13 +132,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<CreateSessionOk> createLoginSession(
             String gcmRegistrationToken,
             String email,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
 
         final CreateLoginSessionJson params = apiMapper.mapCreateLoginSession(
                 gcmRegistrationToken,
                 email,
-                bigQueryPseudoId
+                bigQueryPseudoId,
+                isRootHint
         );
 
         return getService().createLoginSession(params)
@@ -149,13 +153,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<Challenge> createRcLoginSession(
             String gcmToken,
             String rcChallengePublicKeyHex,
-            String bigQueryPseudoId
+            String bigQueryPseudoId,
+            boolean isRootHint
     ) {
 
         final CreateRcLoginSessionJson session = apiMapper.mapCreateRcLoginSession(
                 gcmToken,
                 rcChallengePublicKeyHex,
-                bigQueryPseudoId
+                bigQueryPseudoId,
+                isRootHint
         );
 
         return getService().createRecoveryCodeLoginSession(session)
@@ -286,12 +292,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
-     * Fetch all the notifications after a given id.
+     * Fetch a notification report after a given id. This endpoint supports pagination and might
+     * not return all the existing notifications, it's up to the caller to make subsequent calls.
      */
-    public Observable<List<NotificationJson>> fetchNotificationsAfter(
+    public Observable<NotificationReport> fetchNotificationReportAfter(
             @Nullable Long notificationId) {
 
-        return getService().fetchNotificationsAfter(notificationId);
+        return getService().fetchNotificationReportAfter(notificationId)
+                .map(modelMapper::mapNotificationReport);
     }
 
     /**
@@ -415,14 +423,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 .flatMap(Observable::from)
                 .map(modelMapper::mapContact)
                 .toList();
-    }
-
-    /**
-     * Fetches a single contact.
-     */
-    public Observable<Contact> fetchContact(long contactHid) {
-        return getService().fetchContact(contactHid)
-                .map(modelMapper::mapContact);
     }
 
     /**

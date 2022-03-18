@@ -31,7 +31,7 @@ public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
         final Currency currency = viewModel.model.currencyInfo;
 
         final String code = MoneyHelper.formatCurrency(currency.getCode(), viewModel.bitcoinUnit);
-        final String name = MoneyHelper.formatCurrencyName(currency, viewModel.bitcoinUnit);
+        final String name = currency.getName();
 
         if (currency.getFlag() != null) {
             label.setText(String.format("%s %s (%s)", currency.getFlag(), name, code));
@@ -39,9 +39,9 @@ public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
 
         } else {
 
-            if (currency.getCode().equals(Currency.BTC.getCode())) {
+            if (currency.getCode().equals(Currency.BTC.getCode())
+                    || currency.getCode().equals("SAT")) {
                 logo.setImageResource(R.drawable.btc_logo);
-
 
             } else {
                 logo.setImageResource(R.drawable.default_flag);

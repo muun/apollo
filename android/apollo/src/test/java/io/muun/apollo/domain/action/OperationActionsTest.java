@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
+import rx.Completable;
 import rx.Observable;
 
 import java.util.List;
@@ -94,7 +95,7 @@ public class OperationActionsTest extends BaseTest {
         doReturn(Observable.just(remote))
                 .when(houstonClient).fetchOperations();
 
-        doReturn(Observable.just(0))
+        doReturn(Completable.complete())
                 .when(operationDao).deleteAll();
 
         fetchItemFromObservable(operationActions.fetchReplaceOperations());

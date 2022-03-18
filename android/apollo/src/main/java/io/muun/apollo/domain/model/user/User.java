@@ -152,11 +152,7 @@ public class User {
      * Get the user's primary currency, if exchange rate is available, BTC otherwise.
      */
     public CurrencyUnit getPrimaryCurrency(ExchangeRateWindow rateWindow) {
-        if (rateWindow.rates.containsKey(primaryCurrency.getCurrencyCode())) {
-            return primaryCurrency;
-        } else {
-            return Currency.getUnit("BTC").get();
-        }
+        return getPrimaryCurrency(new ExchangeRateProvider(rateWindow.rates));
     }
 
     /**

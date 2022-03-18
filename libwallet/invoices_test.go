@@ -2,6 +2,7 @@ package libwallet
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"testing"
 
@@ -58,11 +59,13 @@ func TestInvoiceSecrets(t *testing.T) {
 	})
 
 	t.Run("create an invoice", func(t *testing.T) {
-
-		invoice, err := CreateInvoice(network, userKey, routeHints, &InvoiceOptions{
-			AmountSat:   1000,
-			Description: "hello world",
-		})
+		builder := &InvoiceBuilder{}
+		builder.Network(network)
+		builder.UserKey(userKey)
+		builder.AddRouteHints(routeHints)
+		builder.AmountSat(1000)
+		builder.Description("hello world")
+		invoice, err := builder.Build()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -131,7 +134,11 @@ func TestInvoiceSecrets(t *testing.T) {
 
 	t.Run("creating a 2nd invoice returns a different payment hash", func(t *testing.T) {
 
-		invoice1, err := CreateInvoice(network, userKey, routeHints, &InvoiceOptions{})
+		builder := &InvoiceBuilder{}
+		builder.Network(network)
+		builder.UserKey(userKey)
+		builder.AddRouteHints(routeHints)
+		invoice1, err := builder.Build()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -141,7 +148,7 @@ func TestInvoiceSecrets(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		invoice2, err := CreateInvoice(network, userKey, routeHints, &InvoiceOptions{})
+		invoice2, err := builder.Build()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -158,9 +165,12 @@ func TestInvoiceSecrets(t *testing.T) {
 	})
 
 	t.Run("amountMsat gets stored", func(t *testing.T) {
-		invoice3, err := CreateInvoice(network, userKey, routeHints, &InvoiceOptions{
-			AmountMSat: 1001,
-		})
+		builder := &InvoiceBuilder{}
+		builder.Network(network)
+		builder.UserKey(userKey)
+		builder.AddRouteHints(routeHints)
+		builder.AmountMSat(1001)
+		invoice3, err := builder.Build()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -183,6 +193,74 @@ func TestInvoiceSecrets(t *testing.T) {
 		// Note that we sent 1001 msats
 		if invoiceMetadata.AmountSat != 1 {
 			t.Fatalf("Expected persisted amount to 1 found %v", invoiceMetadata.AmountSat)
+		}
+	})
+
+	t.Run("two route hints are encoded", func(t *testing.T) {
+		builder := &InvoiceBuilder{}
+		invoice, err := builder.
+			Network(network).
+			UserKey(userKey).
+			AddRouteHints(routeHints).
+			AddRouteHints(&RouteHints{
+				Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff",
+				FeeBaseMsat:               123,
+				FeeProportionalMillionths: 1,
+				CltvExpiryDelta:           23,
+			}).
+			Build()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		payreq, err := zpay32.Decode(invoice, network.network)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(payreq.RouteHints) != 2 {
+			t.Fatalf("Expected there to be 2 route hints, found %v", len(payreq.RouteHints))
+		}
+
+		for i, hops := range payreq.RouteHints {
+			if len(hops) != 1 {
+				t.Fatalf(
+					"Expected hops for hint %v to be 1, found %v",
+					i,
+					len(hops),
+				)
+			}
+			hint := hops[0]
+
+			var expectedFeeBase, expectedProportional uint32
+			var expectedPubKey string
+			if hint.CLTVExpiryDelta == 23 {
+				// Second hint
+				expectedFeeBase = 123
+				expectedProportional = 1
+				expectedPubKey = "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff"
+			} else if hint.CLTVExpiryDelta == uint16(routeHints.CltvExpiryDelta) {
+				// First hint
+				expectedFeeBase = uint32(routeHints.FeeBaseMsat)
+				expectedProportional = uint32(routeHints.FeeProportionalMillionths)
+				expectedPubKey = routeHints.Pubkey
+			} else {
+				t.Fatalf("Failed to match route hint %v: %v", i, hops)
+			}
+
+			if hint.ChannelID&(1<<63) == 0 {
+				t.Fatal("invalid short channel id in hophints")
+			}
+			if hint.FeeProportionalMillionths != expectedProportional {
+				t.Fatalf("Route hint %v proportional fee %v != %v", i, hint.FeeProportionalMillionths, expectedProportional)
+			}
+			if hint.FeeBaseMSat != expectedFeeBase {
+				t.Fatalf("Route hint %v base fee %v != %v", i, hint.FeeBaseMSat, expectedFeeBase)
+			}
+			pubKey := hex.EncodeToString(hint.NodeID.SerializeCompressed())
+			if pubKey != expectedPubKey {
+				t.Fatalf("Route hint %v pub key %v != %v", i, pubKey, expectedPubKey)
+			}
 		}
 	})
 

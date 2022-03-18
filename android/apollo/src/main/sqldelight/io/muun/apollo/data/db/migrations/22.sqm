@@ -1,0 +1,2 @@
+ALTER TABLE submarine_swaps
+ADD COLUMN will_pre_open_channel INTEGER NOT NULL DEFAULT 0;

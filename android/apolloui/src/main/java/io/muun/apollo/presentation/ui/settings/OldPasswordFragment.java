@@ -9,7 +9,6 @@ import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import android.text.TextUtils;
 import android.view.View;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPresenter>
         implements OldPasswordView {
@@ -47,6 +46,9 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
         password.setOnChangeListener(this::conditionallyEnableContinueButton);
 
         conditionallyEnableContinueButton(password.getText().toString());
+
+        useRecoveryCodeButton.setOnClickListener(v -> onUseRecoveryCodeButtonClick());
+        continueButton.setOnClickListener(v -> onContinueButtonClick());
     }
 
     @Override
@@ -66,18 +68,6 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
         useRecoveryCodeButton.setEnabled(!loading);
     }
 
-    @OnClick(R.id.use_recovery_code)
-    public void onUseRecoveryCodeButtonClick() {
-        useRecoveryCodeButton.setEnabled(false); // avoid double tap while preparing next Fragment
-        presenter.useRecoveryCode();
-    }
-
-    @OnClick(R.id.change_password_continue)
-    public void onContinueButtonClick() {
-        setLoading(true); // avoid double tap while preparing next Fragment
-        presenter.submitPassword(password.getText().toString());
-    }
-
     @Override
     public void setPasswordError(UserFacingError error) {
         password.clearError();
@@ -88,12 +78,26 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
         }
     }
 
+    private void onUseRecoveryCodeButtonClick() {
+        useRecoveryCodeButton.setEnabled(false); // avoid double tap while preparing next Fragment
+        presenter.useRecoveryCode();
+    }
+
+    private void onContinueButtonClick() {
+        setLoading(true); // avoid double tap while preparing next Fragment
+        presenter.submitPassword(password.getText().toString());
+    }
+
     private boolean shouldEnableContinueButton(String passwordText) {
         return !TextUtils.isEmpty(passwordText) && passwordText.length() >= 8;
     }
 
     private void conditionallyEnableContinueButton(String passwordText) {
-        final boolean enable = shouldEnableContinueButton(passwordText);
-        continueButton.setEnabled(enable);
+        // We've seen some bizarre crashes that indicated fragment is not correctly initialized or
+        // already being discarded when this event handler is called (e.g orientation change)
+        if (continueButton != null) {
+            final boolean enable = shouldEnableContinueButton(passwordText);
+            continueButton.setEnabled(enable);
+        }
     }
 }

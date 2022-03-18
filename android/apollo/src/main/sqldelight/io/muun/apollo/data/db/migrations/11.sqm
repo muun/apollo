@@ -1,0 +1,13 @@
+DROP TABLE phone_contacts;
+
+CREATE TABLE phone_contacts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    internal_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    phone_number TEXT NOT NULL,
+    phone_number_hash TEXT,
+    first_seen INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL,
+    last_updated INTEGER NOT NULL,
+    UNIQUE (internal_id, phone_number)
+);

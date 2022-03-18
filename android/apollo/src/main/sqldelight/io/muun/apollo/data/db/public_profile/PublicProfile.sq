@@ -24,3 +24,6 @@ selectByHid:
 SELECT *
 FROM public_profiles
 WHERE hid = ?;
+
+deleteAll:
+DELETE FROM public_profiles;

@@ -1,0 +1,51 @@
+-- We forgot to add a migration changing the is_incoming column to direction, so we change
+-- it now. The thing is, some users might have already created the table with the direction
+-- column (if they cleared data, or uninstalled/installed the app).
+
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+--
+--  1. Rename your table to a temporary name.
+--  2. Create a table exactly as the original one, except for the column in question.
+--  3. Insert all the rows from the temporary table to the new one.
+--  4. Delete the temporary table.
+
+-- NOTE: this is actually not the correct way of handling ALTER COLUMN in Sqlite3, starting
+-- from migrate 34 and 35 we handle these correctly.
+-- See: https://www.sqlite.org/lang_altertable.html#otheralter
+
+
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+CREATE TABLE operations (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    direction TEXT NOT NULL,
+    is_external INTEGER NOT NULL,
+    sender_hid INTEGER REFERENCES public_profiles(hid),
+    sender_is_external INTEGER NOT NULL,
+    receiver_hid INTEGER REFERENCES public_profiles(hid),
+    receiver_is_external INTEGER NOT NULL,
+    receiver_address TEXT,
+    receiver_address_derivation_path TEXT,
+    amount_in_satoshis INTEGER NOT NULL,
+    amount_in_input_currency TEXT NOT NULL,
+    amount_in_primary_currency TEXT NOT NULL,
+    fee_in_satoshis INTEGER NOT NULL,
+    fee_in_input_currency TEXT NOT NULL,
+    fee_in_primary_currency TEXT NOT NULL,
+    confirmations INTEGER NOT NULL,
+    hash TEXT,
+    description TEXT,
+    status TEXT NOT NULL,
+    creation_date TEXT NOT NULL,
+    exchange_rate_window_hid INTEGER NOT NULL
+);
+
+-- The following copy will fail for users that don't have the new column yet (ie.
+-- users that actually need the migration), but that's ok, since their operations
+-- table is empty: we've just logged the user out.
+
+INSERT INTO operations SELECT * FROM tmp_operations;
+
+DROP TABLE tmp_operations;

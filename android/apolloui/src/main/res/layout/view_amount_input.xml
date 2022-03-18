@@ -55,6 +55,8 @@
             android:textColor="@color/text_secondary_color"
             android:lineSpacingExtra="4sp"
             android:gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible"
             tools:text="Available: 12.349,11 ARS" />
 
 </LinearLayout>

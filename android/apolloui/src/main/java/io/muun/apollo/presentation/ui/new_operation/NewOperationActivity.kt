@@ -24,7 +24,6 @@ import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.OperationUri
-import io.muun.apollo.domain.model.PaymentAnalysis
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
@@ -186,8 +185,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     lateinit var buttonLayoutAnchor: View
 
     // State:
-    @State
-    lateinit var mBitcoinUnit: BitcoinUnit
 
     @State
     @JvmField
@@ -261,7 +258,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         })
         descriptionInput.setOnBackPressedListener { onBackPressed() }
 
-
         feeLabel.setOnClickListener { presenter.editFee() }
 
         selectedAmount.setOnClickListener { handleToggleCurrencyChange() }
@@ -311,17 +307,23 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         updateReceiver(state.resolved.paymentIntent, receiver)
 
-        val balance = MoneyHelper.formatLongMonetaryAmount(
-            BitcoinAmount.fromLibwallet(state.totalBalance).inInputCurrency,
+        val balance = BitcoinAmount.fromLibwallet(state.totalBalance)
+        val balanceText = MoneyHelper.formatLongMonetaryAmount(
+            balance.inInputCurrency,
             true,
-            mBitcoinUnit,
+            amountInput.bitcoinUnit,
             applicationContext.locale()
         )
+        val newAmount = state.amount.inInputCurrency.adapt()
 
         amountInput.isEnabled = true
         amountInput.setAmountError(false) // Actually needed to set correct textColor in some cases
-        amountInput.value = state.amount.inInputCurrency.adapt()
-        amountInput.setSecondaryAmount("${getString(R.string.available_balance)}: $balance")
+        if (amountInput.value.isZero || newAmount.isPositive) {
+            // Ugly hack to work around state machine's current API short comings
+            // TODO: change state machine changeCurrency API
+            amountInput.value = newAmount
+        }
+        amountInput.setSecondaryAmount("${getString(R.string.available_balance)}: $balanceText")
 
         root.layoutTransition = null
         showLoadingSpinner(false)
@@ -350,7 +352,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             presenter.updateAmount(amount, state)
         }
 
-        useAllFundsView.isEnabled = true
+        useAllFundsView.isEnabled = !balance.isZero
 
         actionButton.setOnClickListener {
             presenter.confirmAmount(amountInput.value, false)
@@ -369,7 +371,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
         val isValid = !state.validated.feeNeedsChange
-        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, mBitcoinUnit, isValid))
+        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, getBitcoinUnit(), isValid))
 
         descriptionInput.setText(state.note)
 
@@ -420,9 +422,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
         val isValid = !state.validated.feeNeedsChange
-        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, mBitcoinUnit, isValid))
-        setAmount(feeAmount, DisplayAmount(state.validated.fee, mBitcoinUnit, isValid))
-        setAmount(totalAmount, DisplayAmount(state.validated.total, mBitcoinUnit, isValid))
+        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, getBitcoinUnit(), isValid))
+        setAmount(feeAmount, DisplayAmount(state.validated.fee, getBitcoinUnit(), isValid))
+        setAmount(totalAmount, DisplayAmount(state.validated.total, getBitcoinUnit(), isValid))
 
         descriptionContent.text = state.note
 
@@ -519,9 +521,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         presenter.goBack()
     }
 
-    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
-        this.mBitcoinUnit = bitcoinUnit
-        amountInput.setBitcoinUnit(bitcoinUnit)
+    override fun setInitialBitcoinUnit(bitcoinUnit: BitcoinUnit) {
+        amountInput.setInitialBitcoinUnit(bitcoinUnit) // set initial bitcoin unit to user's pref
     }
 
     override fun showErrorScreen(type: NewOperationErrorType) {
@@ -759,4 +760,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             }
         }
     }
+
+    // Part of our (ugly) hack to allow SATs as an input currency option
+    private fun getBitcoinUnit(): BitcoinUnit =
+        amountInput.bitcoinUnit
 }

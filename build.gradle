@@ -6,16 +6,17 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
-        classpath 'com.squareup.sqldelight:gradle-plugin:0.9.0'
+        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.squareup.sqldelight:gradle-plugin:1.5.3'
     }
 }
 
 
 plugins {
     id "com.github.spotbugs-base" version "4.7.1" apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.4.30' apply false
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.30' apply false // kotlin's version
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10' apply false
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.10' apply false // kotlin's version
+    id "org.jetbrains.kotlin.kapt" version "1.6.10" apply false
 }
 
 // Without this we cant define spot bugs as an external script that can be applied
@@ -30,15 +31,15 @@ subprojects {
     }
 
     ext {
-        global_version_dagger = '2.23.1'
-        global_version_lombok = '1.18.12'
+        global_version_dagger = '2.40.5'
+        global_version_lombok = '1.18.22'
         global_version_mockito = '2.24.0'
         global_version_sentry = '1.7.5'
 
         global_version_moneta = '1.1'
         global_version_jackson_money = '1.0.0'
 
-        global_kotlin_version = '1.4.30'
+        global_kotlin_version = '1.6.10'
 
         global_threetenabp_version = '1.1.1'
     }

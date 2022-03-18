@@ -82,7 +82,7 @@ public class ExponentialBackoffRetry implements
      * specific error, or abort the sequence. By default, all errors of type {retryErrorType} are
      * retried.
      */
-    private boolean shouldRetry(Throwable error) {
+    protected boolean shouldRetry(Throwable error) {
         return retryErrorType.isInstance(error);
     }
 

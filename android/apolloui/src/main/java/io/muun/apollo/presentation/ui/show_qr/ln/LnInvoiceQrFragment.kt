@@ -63,8 +63,10 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
 
     // State:
 
+    // Part of our (ugly) hack to allow SATs as an input currency option
     @State
-    lateinit var mBitcoinUnit: BitcoinUnit
+    @JvmField
+    var satSelectedAsCurrency = false
 
     private var countdownTimer: InvoiceExpirationCountdownTimer? = null
 
@@ -85,10 +87,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         if (showingAdvancedSettings) {
             invoiceSettingsContent.visibility = View.VISIBLE
         }
-    }
-
-    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
-        this.mBitcoinUnit = bitcoinUnit
     }
 
     override fun setLoading(loading: Boolean) {
@@ -113,7 +111,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         countdownTimer!!.start()
 
         if (amount != null) {
-            editAmountItem.setAmount(amount, mBitcoinUnit)
+            editAmountItem.setAmount(amount, getBitcoinUnit())
 
         } else {
             editAmountItem.resetAmount()
@@ -161,7 +159,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     override fun onEditAmount(amount: MonetaryAmount?) {
         requestDelegatedExternalResult(
             REQUEST_AMOUNT,
-            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(), amount)
+            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(), amount, satSelectedAsCurrency)
         )
     }
 
@@ -169,7 +167,8 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         super.onExternalResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_AMOUNT && resultCode == Activity.RESULT_OK) {
-            val result = SelectAmountActivity.getResult(data!!)
+            this.satSelectedAsCurrency = SelectAmountActivity.getSatSelectedAsCurrencyResult(data!!)
+            val result = SelectAmountActivity.getResult(data)
 
             if (result != null && !result.isZero) {
                 presenter.setAmount(result)
@@ -216,5 +215,12 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     fun refresh() {
         resetViewState()
         presenter.generateNewInvoice()
+    }
+
+    // Part of our (ugly) hack to allow SATs as an input currency option
+    private fun getBitcoinUnit() = if (satSelectedAsCurrency) {
+        BitcoinUnit.SATS
+    } else {
+        BitcoinUnit.BTC
     }
 }

@@ -14,6 +14,7 @@ import io.muun.apollo.domain.model.lnurl.LnUrlEvent
 import io.muun.apollo.domain.model.lnurl.LnUrlState
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
 import io.muun.common.utils.Encodings
+import libwallet.InvoiceBuilder
 import libwallet.LNURLEvent
 import libwallet.LNURLListener
 import libwallet.Libwallet
@@ -46,20 +47,24 @@ class LnUrlWithdrawAction @Inject constructor(
         return Observable.defer {
 
             val basePrivateKey = keysRepo.basePrivateKey.toBlocking().first()
-            val forwardingPolicy = forwardingPoliciesRepo.fetchOne().random()
+            val builder = InvoiceBuilder()
+                .network(Globals.INSTANCE.network.toLibwallet())
+                .userKey(basePrivateKey.toLibwallet(Globals.INSTANCE.network))
 
-            val routeHints = RouteHints()
-            routeHints.cltvExpiryDelta = forwardingPolicy.cltvExpiryDelta.toInt()
-            routeHints.feeBaseMsat = forwardingPolicy.feeBaseMsat
-            routeHints.feeProportionalMillionths = forwardingPolicy.feeProportionalMillionths
-            routeHints.pubkey = Encodings.bytesToHex(forwardingPolicy.identityKey)
+            for (policy in forwardingPoliciesRepo.fetchOne()) {
+                val routeHints = RouteHints()
+                routeHints.cltvExpiryDelta = policy.cltvExpiryDelta.toInt()
+                routeHints.feeBaseMsat = policy.feeBaseMsat
+                routeHints.feeProportionalMillionths = policy.feeProportionalMillionths
+                routeHints.pubkey = Encodings.bytesToHex(policy.identityKey)
+
+                builder.addRouteHints(routeHints)
+            }
 
             val listener = RxListener(lnurlContent)
 
             Libwallet.lnurlWithdraw(
-                Globals.INSTANCE.network.toLibwallet(),
-                basePrivateKey.toLibwallet(Globals.INSTANCE.network),
-                routeHints,
+                builder,
                 lnurlContent,
                 listener
             )

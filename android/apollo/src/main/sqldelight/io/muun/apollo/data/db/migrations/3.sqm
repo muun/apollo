@@ -1,0 +1,35 @@
+-- Sqlite3 doesn't support ALTER COLUMN, so we have to do this instead:
+--
+--  1. Rename your table to a temporary name.
+--  2. Create a table exactly as the original one, except for the column in question.
+--  3. Insert all the rows from the temporary table to the new one.
+--  4. Delete the temporary table.
+--
+-- NOTE: this is actually not the correct way of handling ALTER COLUMN in Sqlite3, starting
+-- from migrate 34 and 35 we handle these correctly.
+-- See: https://www.sqlite.org/lang_altertable.html#otheralter
+
+ALTER TABLE operations
+RENAME TO tmp_operations;
+
+CREATE TABLE operations (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    hid INTEGER NOT NULL UNIQUE,
+    sender_hid INTEGER,
+    receiver_hid INTEGER,
+    external_receiver_address TEXT,
+    amount INTEGER NOT NULL,
+    fee INTEGER NOT NULL,
+    confirmations INTEGER NOT NULL,
+    hash TEXT,
+    description TEXT,
+    status TEXT NOT NULL,
+    creation_date TEXT NOT NULL,
+    amount_in_input_currency TEXT NOT NULL,
+    amount_in_primary_currency TEXT NOT NULL,
+    exchange_rate_window_hid INTEGER NOT NULL
+);
+
+INSERT INTO operations SELECT * FROM tmp_operations;
+
+DROP TABLE tmp_operations;

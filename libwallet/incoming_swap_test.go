@@ -339,14 +339,22 @@ func TestVerifyFulfillable(t *testing.T) {
 		}
 	}
 
-	createInvoice := func(opts *InvoiceOptions) string {
-	retry:
-		invoice, err := CreateInvoice(network, userKey, &RouteHints{
+	createInvoice := func(amountSat int64) string {
+		builder := InvoiceBuilder{}
+		builder.Network(network)
+		builder.UserKey(userKey)
+		builder.AddRouteHints(&RouteHints{
 			Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869fd",
 			FeeBaseMsat:               1000,
 			FeeProportionalMillionths: 1000,
 			CltvExpiryDelta:           8,
-		}, opts)
+		})
+		if amountSat != 0 {
+			builder.AmountSat(amountSat)
+		}
+
+	retry:
+		invoice, err := builder.Build()
 		if err != nil {
 			panic(err)
 		}
@@ -358,7 +366,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	}
 
 	t.Run("single part payment", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -377,7 +385,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("multi part payment fails", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -408,7 +416,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("invalid payment secret", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, _, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -428,7 +436,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("muun 2 muun with no blob", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, _, _ := getInvoiceSecrets(invoice, userKey)
 
 		swap := &IncomingSwap{
@@ -443,7 +451,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("invalid amount from server", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -462,7 +470,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("validates amount from server", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{})
+		invoice := createInvoice(0)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -481,9 +489,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("validates invoice amount", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{
-			AmountSat: 20000,
-		})
+		invoice := createInvoice(20000)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 		lockTime := int64(1000)
@@ -502,9 +508,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("validates invoice amount for muun 2 muun", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{
-			AmountSat: 20000,
-		})
+		invoice := createInvoice(20000)
 		paymentHash, _, _ := getInvoiceSecrets(invoice, userKey)
 		amt := int64(10000)
 
@@ -520,9 +524,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 
 	t.Run("invoice with amount", func(t *testing.T) {
-		invoice := createInvoice(&InvoiceOptions{
-			AmountSat: 20000,
-		})
+		invoice := createInvoice(20000)
 		paymentHash, paymentSecret, nodePublicKey := getInvoiceSecrets(invoice, userKey)
 		amt := int64(20000)
 		lockTime := int64(1000)

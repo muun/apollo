@@ -1,9 +1,11 @@
 package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
+import io.muun.apollo.presentation.ui.fragments.home.HomeFragmentArgs;
 import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragmentArgs;
 import io.muun.apollo.presentation.ui.view.BlockClock;
 import io.muun.apollo.presentation.ui.view.MuunButton;
@@ -23,7 +25,6 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import butterknife.BindView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import icepick.State;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,6 +39,13 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     }
 
     /**
+     * Creates an intent to launch this activity, and show a new operation badge.
+     */
+    public static Intent getStartActivityIntent(@NotNull Context context, final Operation op) {
+        return getStartActivityIntent(context).putExtra(NEW_OP_ID, op.getHid());
+    }
+
+    /**
      * Creates an intent to launch this activity.
      */
     public static Intent getStartActivityIntent(@NotNull Context context) {
@@ -45,16 +53,13 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     }
 
     public static String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
+    public static String NEW_OP_ID = "NEW_OP_ID";
+
 
     @BindView(R.id.home_header)
     MuunHeader header;
 
-    @State
-    int currentNavItem = R.id.home_fragment;
-
     private NavController navController;
-
-    private boolean hasShownTaprootCelebration;
 
     @Override
     protected void inject() {
@@ -99,6 +104,13 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         final BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
         navController = navHostFragment.getNavController();
+        final Bundle initialBundle = new Bundle();
+        initialBundle.putAll(new HomeFragmentArgs
+                .Builder()
+                .setNewOpId(getArgumentsBundle().getLong(NEW_OP_ID, -1L))
+                .build().toBundle()
+        );
+        navController.setGraph(R.navigation.home_nav_graph, initialBundle);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
@@ -117,6 +129,9 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
                     return true;
                 }
         );
+        bottomNav.setOnNavigationItemReselectedListener(item -> {
+            // do nothing here, it will prevent recreating same fragment
+        });
 
         if (getIntent().hasExtra(SHOW_WELCOME_TO_MUUN)) {
             getIntent().removeExtra(SHOW_WELCOME_TO_MUUN);
@@ -138,15 +153,16 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
 
         final MenuItem item = menu.findItem(R.id.feedback);
         item.setOnMenuItemClickListener(menuItem -> {
-            onSendFeedbackClick();
+            presenter.navigateToSendFeedbackScreen();
             return true;
         });
 
         return showMenu;
     }
 
-    public void onSendFeedbackClick() {
-        presenter.navigateToSendFeedbackScreen();
+    @Override
+    public void onBackPressed() {
+        superOnBackPressed();
     }
 
     @Override
@@ -159,15 +175,9 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         navigateToItem(R.id.security_center_fragment, args.toBundle());
     }
 
-    private void navigateToItem(int itemId, Bundle bundle) {
-        // TODO: define transition animation See NavigationUI.onNavDestinationSelected()
-
-        if (currentNavItem != itemId) {
-            navController.navigate(itemId, bundle, null);
-            currentNavItem = itemId;
-        }
-    }
-
+    /**
+     * Show Taproot celebration dialog! A once-in-a-lifetime special event.
+     */
     public void showTaprootCelebration() {
         if (applicationLockExtension.isShowingLockOverlay()) {
             new Handler(Looper.getMainLooper()).postDelayed(this::showTaprootCelebration, 100);
@@ -177,18 +187,23 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         presenter.reportTaprootCelebrationShown();
 
         new MuunDialog.Builder()
-            .layout(R.layout.dialog_taproot_celebration, (view, dialog) -> {
-                BlockClock blockClock = view.findViewById(R.id.dialog_block_clock);
-                MuunButton confirmButton = view.findViewById(R.id.dialog_confirm);
-                TextView title = view.findViewById(R.id.dialog_title);
+                .layout(R.layout.dialog_taproot_celebration, (view, dialog) -> {
+                    final BlockClock blockClock = view.findViewById(R.id.dialog_block_clock);
+                    final MuunButton confirmButton = view.findViewById(R.id.dialog_confirm);
+                    final TextView title = view.findViewById(R.id.dialog_title);
 
-                blockClock.setValue(0);
-                confirmButton.setOnClickListener(v -> dialog.dismiss());
-                title.setText(R.string.tr_celebration_user_native_title);
+                    blockClock.setValue(0);
+                    confirmButton.setOnClickListener(v -> dialog.dismiss());
+                    title.setText(R.string.tr_celebration_user_native_title);
 
-                return null;
-            })
-            .build()
-            .show(this);
+                    return null;
+                })
+                .build()
+                .show(this);
+    }
+
+    private void navigateToItem(int itemId, Bundle bundle) {
+        // TODO: define transition animation See NavigationUI.onNavDestinationSelected()
+        navController.navigate(itemId, bundle, null);
     }
 }

@@ -1,0 +1,2 @@
+ALTER TABLE operations
+ADD COLUMN submarine_swap_houston_uuid TEXT REFERENCES submarine_swaps(houston_uuid);

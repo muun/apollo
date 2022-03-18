@@ -2,10 +2,10 @@ package io.muun.apollo.data.db.incoming_swap;
 
 import io.muun.apollo.data.db.base.HoustonUuidDao;
 import io.muun.apollo.domain.model.IncomingSwap;
+import io.muun.apollo.domain.model.Sha256Hash;
 
-import rx.Observable;
+import rx.Completable;
 
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -17,18 +17,25 @@ public class IncomingSwapDao extends HoustonUuidDao<IncomingSwap> {
      */
     @Inject
     public IncomingSwapDao() {
-        super(
-                IncomingSwapEntity.CREATE_TABLE,
-                IncomingSwapEntity::fromModel,
-                IncomingSwapEntity::toModel,
-                IncomingSwapEntity.TABLE_NAME
-        );
+        super("incoming_swaps");
     }
 
-    /**
-     * Fetches all incoming swaps from the db.
-     */
-    public Observable<List<IncomingSwap>> fetchAll() {
-        return fetchList(IncomingSwapEntity.FACTORY.selectAll());
+    @Override
+    public Completable deleteAll() {
+        return Completable.fromAction(delightDb.getIncomingSwapQueries()::deleteAll);
+    }
+
+    @Override
+    protected void storeUnsafe(final IncomingSwap element) {
+        final Sha256Hash preimage = element.getPreimage();
+        delightDb.getIncomingSwapQueries().insertIncomingSwap(
+                element.getId(),
+                element.houstonUuid,
+                element.getPaymentHash().toString(),
+                element.getSphinxPacketHex(),
+                element.getCollectInSats(),
+                element.getPaymentAmountInSats(),
+                preimage != null ? preimage.toString() : null
+        );
     }
 }

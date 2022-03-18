@@ -52,10 +52,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_AMOUNT_PICKER: AnalyticsEvent()
 
     class S_SCAN_QR: AnalyticsEvent()
-    class S_NEW_OP_LOADING: AnalyticsEvent()
-    class S_NEW_OP_AMOUNT: AnalyticsEvent()
-    class S_NEW_OP_DESCRIPTION: AnalyticsEvent()
-    class S_NEW_OP_CONFIRMATION: AnalyticsEvent()
+    class S_NEW_OP_LOADING(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
+    class S_NEW_OP_AMOUNT(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
+    class S_NEW_OP_DESCRIPTION(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
+    class S_NEW_OP_CONFIRMATION(vararg params: Pair<String, Any>): AnalyticsEvent(listOf(*params))
     class S_SETTINGS: AnalyticsEvent()
     class S_SETTINGS_BITCOIN_NETWORK: AnalyticsEvent()
     class S_SETTINGS_LIGHTNING_NETWORK: AnalyticsEvent()
@@ -247,8 +247,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     }
 
     class E_NEW_OP_SUBMITTED(vararg extras: Pair<String, Any>): AnalyticsEvent(listOf(*extras))
-
-    class E_NEW_OP_ERROR: AnalyticsEvent()
 
     class E_SCAN_QR_ASK_CAMERA_PERMISSION: AnalyticsEvent()
     class E_SCAN_QR_CAMERA_PERMISSION_GRANTED: AnalyticsEvent()

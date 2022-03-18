@@ -218,11 +218,11 @@ public class MuunAmountInput extends MuunView {
     }
 
     /**
-     * Change bitcoin unit.
+     * Set initial bitcoin unit.
      */
-    public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {
+    public void setInitialBitcoinUnit(BitcoinUnit bitcoinUnit) {
         this.bitcoinUnit = bitcoinUnit;
-        updateCurrencyCodeText();
+        updateCurrencyCodeText(bitcoinUnit);
     }
 
     @OnClick(R.id.currency_code)
@@ -231,7 +231,9 @@ public class MuunAmountInput extends MuunView {
             return; // If we're not completely initialized, briefly ignore input
         }
 
-        final String currentCurrency = value.getCurrency().getCurrencyCode();
+        final String currentCurrency = isSatSelectedAsCurrency()
+                ? "SAT"
+                : value.getCurrency().getCurrencyCode();
 
         requestExternalResult(
                 REQUEST_CURRENCY,
@@ -271,7 +273,7 @@ public class MuunAmountInput extends MuunView {
 
         MonetaryAmount newValue = Money.of(parseNumber(numberString), value.getCurrency());
 
-        if (MoneyExtensionsKt.isBtc(newValue) && bitcoinUnit == BitcoinUnit.SATS) {
+        if (MoneyExtensionsKt.isBtc(newValue) && getBitcoinUnit() == BitcoinUnit.SATS) {
             newValue = newValue.divide(BitcoinUtils.SATOSHIS_PER_BITCOIN);
         }
 
@@ -290,6 +292,13 @@ public class MuunAmountInput extends MuunView {
     private void onCurrencyInputChange(String newCode) {
         if (isMakingInternalChange) {
             return;
+        }
+
+        if ("SAT".equals(newCode)) {
+            bitcoinUnit = BitcoinUnit.SATS;
+            newCode = "BTC";
+        } else {
+            bitcoinUnit = BitcoinUnit.BTC;
         }
 
         final MonetaryAmount newValue;
@@ -315,7 +324,9 @@ public class MuunAmountInput extends MuunView {
     }
 
     private void adjustFractionalDigits() {
-        if (value.getCurrency().getCurrencyCode().equals("BTC")) {
+        if (isSatSelectedAsCurrency()) {
+            moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_SAT);
+        } else if (value.getCurrency().getCurrencyCode().equals("BTC")) {
             moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_BTC);
         } else {
             moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_FIAT);
@@ -327,6 +338,10 @@ public class MuunAmountInput extends MuunView {
     }
 
     private void updateCurrencyCodeText() {
+        updateCurrencyCodeText(getBitcoinUnit());
+    }
+
+    private void updateCurrencyCodeText(BitcoinUnit bitcoinUnit) {
         isMakingInternalChange = true;
 
         final CurrencyUnit currency = value.getCurrency();
@@ -342,7 +357,7 @@ public class MuunAmountInput extends MuunView {
         if (value.isPositive()) {
             final String text = MoneyHelper.formatInputMonetaryAmount(
                     value,
-                    bitcoinUnit,
+                    getBitcoinUnit(),
                     ExtensionsKt.locale(getContext())
             );
 
@@ -369,6 +384,20 @@ public class MuunAmountInput extends MuunView {
         } catch (NumberFormatException exception) {
             return BigDecimal.ZERO;
         }
+    }
+
+    /**
+     * Part of our (ugly) hack to allow SATs as an input currency option.
+     */
+    public BitcoinUnit getBitcoinUnit() {
+        return bitcoinUnit;
+    }
+
+    /**
+     * Part of our (ugly) hack to allow SATs as an input currency option.
+     */
+    public boolean isSatSelectedAsCurrency() {
+        return MoneyExtensionsKt.isBtc(value) && bitcoinUnit == BitcoinUnit.SATS;
     }
 
     @Override

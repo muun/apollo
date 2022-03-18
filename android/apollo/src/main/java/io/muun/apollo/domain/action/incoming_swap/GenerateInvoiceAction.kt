@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.incoming_swap
 
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.libwallet.errors.NoInvoicesLeftError
@@ -35,7 +34,7 @@ class GenerateInvoiceAction @Inject constructor(
                 Invoice.generate(
                     networkParameters,
                     basePrivateKey,
-                    forwardingPoliciesRepository.fetchOne().random(),
+                    forwardingPoliciesRepository.fetchOne(),
                     amountInSat
                 )
             )

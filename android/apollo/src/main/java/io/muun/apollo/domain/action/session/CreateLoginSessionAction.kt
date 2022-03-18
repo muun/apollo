@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.session
 
-import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
@@ -18,8 +17,9 @@ class CreateLoginSessionAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val getFcmToken: GetFcmTokenAction,
     private val logoutActions: LogoutActions,
+    private val isRootedDeviceAction: IsRootedDeviceAction,
     private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
-): BaseAsyncAction1<String, CreateSessionOk>() {
+) : BaseAsyncAction1<String, CreateSessionOk>() {
 
     override fun action(email: String): Observable<CreateSessionOk> =
         Observable.defer { createSession(email) }
@@ -34,9 +34,10 @@ class CreateLoginSessionAction @Inject constructor(
         return getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createLoginSession(
-                        fcmToken,
-                        email,
-                        firebaseInstalationIdRepository.getBigQueryPseudoId()
+                    fcmToken,
+                    email,
+                    firebaseInstalationIdRepository.getBigQueryPseudoId(),
+                    isRootedDeviceAction.actionNow()
                 )
             }
             .doOnNext { LoggingContext.configure(email, "NotLoggedYet") }

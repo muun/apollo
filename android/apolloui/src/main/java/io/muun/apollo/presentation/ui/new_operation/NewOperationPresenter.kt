@@ -98,9 +98,8 @@ class NewOperationPresenter @Inject constructor(
         }
 
         if (operationUri.isAsync) {
-            // This will actually be call again once bip72 uri is resolved but its fine. We're just
-            // using it to show loading state "earlier"
-            handleResolveState()
+            // We're just using it to show loading state "earlier"
+             view.goToResolvingState()
         }
     }
 
@@ -119,8 +118,6 @@ class NewOperationPresenter @Inject constructor(
 
     override fun setUp(arguments: Bundle?) {
         super.setUp(arguments)
-
-        view.setBitcoinUnit(bitcoinUnitSel.get())
 
         // Set up SubmitPaymentAction. Needs to be set up first (e.g first async action to be
         // subscribed), to avoid its ActionState (will initially fire an EMPTY action state) messing
@@ -173,7 +170,7 @@ class NewOperationPresenter @Inject constructor(
             reportFinished(op.id!!, resolved.paymentContext, resolved.paymentIntent, amountInfo)
         }
 
-        navigator.navigateToHome(context)
+        navigator.navigateToHome(context, op)
         view.finishActivity()
     }
 
@@ -304,7 +301,9 @@ class NewOperationPresenter @Inject constructor(
     }
 
     fun editFee() {
-        stateMachine.withState { state: ConfirmState ->
+        // Using this getter + check instead of withState to avoid quick double clicks to crash app
+        val state = stateMachine.value()!!
+        if (state is ConfirmState) {
             state.openFeeEditor()
         }
     }
@@ -406,6 +405,8 @@ class NewOperationPresenter @Inject constructor(
         // - resolveMuunUri for P2P/Contacts legacy feature TODO refactor this?
         resolveOperationUriAction.run(OperationUri.fromString(uri))
 
+        view.setInitialBitcoinUnit(bitcoinUnitSel.get())
+
         return stateMachine.value() as? StartState == null
     }
 
@@ -437,7 +438,7 @@ class NewOperationPresenter @Inject constructor(
         when (state) {
             is StartState -> {
             } // Do nothing
-            is ResolveState -> handleResolveState()
+            is ResolveState -> handleResolveState(state)
             is EnterAmountState -> handleEnterAmountState(state)
             is EnterDescriptionState -> handleEnterDescriptionState(state)
             is ValidateState -> handleValidateState(state)
@@ -453,18 +454,24 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
-    private fun handleResolveState() {
-        analytics.report(AnalyticsEvent.S_NEW_OP_LOADING())
+    private fun handleResolveState(state: ResolveState) {
+        analytics.report(AnalyticsEvent.S_NEW_OP_LOADING(
+            *uncheckedConvert(opStartedMetadata(state.paymentIntent.getPaymentType()))
+        ))
         view.goToResolvingState()
     }
 
     private fun handleEnterAmountState(state: EnterAmountState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_AMOUNT())
+        analytics.report(AnalyticsEvent.S_NEW_OP_AMOUNT(
+            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
+        ))
         view.goToEnterAmountState(state, receiver)
     }
 
     private fun handleEnterDescriptionState(state: EnterDescriptionState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_DESCRIPTION())
+        analytics.report(AnalyticsEvent.S_NEW_OP_DESCRIPTION(
+            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
+        ))
         view.goToEnterDescriptionState(state, receiver)
     }
 
@@ -477,7 +484,9 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmState(state: ConfirmState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION())
+        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION(
+            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
+        ))
         view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
 
             override val resolved: Resolved
@@ -498,7 +507,9 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION())
+        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION(
+            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
+        ))
         view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
 
             override val resolved: Resolved

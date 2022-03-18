@@ -9,11 +9,9 @@ import javax.money.MonetaryAmount
 
 interface SelectAmountView : BaseView {
 
-    fun setBitcoinUnit(bitcoinUnit: BitcoinUnit)
-
     fun setExchangeRateProvider(exchangeRateProvider: ExchangeRateProvider)
 
-    fun initializeAmountInput(primaryCurrency: CurrencyUnit)
+    fun initializeAmountInput(primaryCurrency: CurrencyUnit, bitcoinUnit: BitcoinUnit)
 
     fun setSecondaryAmount(amount: MonetaryAmount)
 
