@@ -269,15 +269,15 @@ class NewOperationPresenter @Inject constructor(
         return true
     }
 
-    fun updateAmount(amount: MonetaryAmount, state: EnterAmountState) {
+    fun updateAmount(oldAmount: MonetaryAmount, newAmount: MonetaryAmount, state: EnterAmountState) {
 
         // This is our way of detecting a currency change. Since the feature is abstracted into
         // MuunAmountInput and the exposed API reports the new amount.
-        if (amount.currency.currencyCode != state.amount.inInputCurrency.currency) {
-            state.changeCurrency(amount.currency.currencyCode)
+        if (newAmount.currency.currencyCode != state.amount.inInputCurrency.currency) {
+            state.changeCurrencyWithAmount(newAmount.currency.currencyCode, oldAmount.toLibwallet())
         }
 
-        if (!state.partialValidate(amount.toLibwallet())) {
+        if (!state.partialValidate(newAmount.toLibwallet())) {
             view.setAmountInputError()
         }
     }

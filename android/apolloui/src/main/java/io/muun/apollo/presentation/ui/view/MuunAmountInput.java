@@ -46,9 +46,9 @@ public class MuunAmountInput extends MuunView {
 
         /**
          * This method is called to notify you that the amount in this input has changed. The
-         * param value holds the new amount.
+         * param values hold the old and the new amount.
          */
-        void onChange(MonetaryAmount value);
+        void onChange(MonetaryAmount oldValue, MonetaryAmount newValue);
     }
 
     static final ViewProps<MuunAmountInput> viewProps
@@ -104,7 +104,7 @@ public class MuunAmountInput extends MuunView {
     private DecimalFormatSymbols symbols;
 
     private boolean isMakingInternalChange;
-    private boolean isCurrentyChangingCurrency;
+    private boolean isCurrentlyChangingCurrency;
 
     public MuunAmountInput(Context context) {
         super(context);
@@ -277,16 +277,17 @@ public class MuunAmountInput extends MuunView {
             newValue = newValue.divide(BitcoinUtils.SATOSHIS_PER_BITCOIN);
         }
 
+        final MonetaryAmount oldValue = value;
         value = newValue;
 
         // Once we start typing, text should have this color, unless overruled by setAmountError
         inputAmount.setTextColor(normalNumberColor);
 
-        if (!isCurrentyChangingCurrency) {
+        if (!isCurrentlyChangingCurrency) {
             valueBeforeCurrencyChange = newValue;
         }
 
-        notifyChange();
+        notifyChange(oldValue, newValue);
     }
 
     private void onCurrencyInputChange(String newCode) {
@@ -309,17 +310,18 @@ public class MuunAmountInput extends MuunView {
             newValue = Money.of(value.getNumber(), newCode);
         }
 
+        final MonetaryAmount oldValue = value;
         value = newValue;
 
         adjustFractionalDigits();
         updateCurrencyCodeText();
         updateAmountText(true);
-        notifyChange();
+        notifyChange(oldValue, newValue);
     }
 
-    private void notifyChange() {
+    private void notifyChange(MonetaryAmount oldValue, MonetaryAmount newValue) {
         if (onChangeListener != null) {
-            onChangeListener.onChange(value);
+            onChangeListener.onChange(oldValue, newValue);
         }
     }
 
@@ -352,7 +354,7 @@ public class MuunAmountInput extends MuunView {
 
     private void updateAmountText(boolean isDueToCurrencyChange) {
         isMakingInternalChange = true;
-        isCurrentyChangingCurrency = isDueToCurrencyChange;
+        isCurrentlyChangingCurrency = isDueToCurrencyChange;
 
         if (value.isPositive()) {
             final String text = MoneyHelper.formatInputMonetaryAmount(
@@ -372,7 +374,7 @@ public class MuunAmountInput extends MuunView {
             inputAmount.setText("");
         }
 
-        isCurrentyChangingCurrency = false;
+        isCurrentlyChangingCurrency = false;
         isMakingInternalChange = false;
     }
 

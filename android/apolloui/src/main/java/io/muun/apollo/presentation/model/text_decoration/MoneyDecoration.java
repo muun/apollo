@@ -110,11 +110,10 @@ public class MoneyDecoration implements DecorationTransformation {
                 s.replace(indexOfDecimalComma, indexOfDecimalComma + decimalsCount + 1, "");
                 target.setSelection(target.getSelectionStart() - 1 - decimalsCount);
             }
-            target.setText(s);
-            return;
+        } else {
+            // Android Supreme localization bug only happens when dealing with decimal separator
+            handleAndroidSupremeLocalizationBug(s, target);
         }
-
-        handleAndroidSupremeLocalizationBug(s, target);
 
         removeExtraDigitIfDeletingGroupingSeparator(s, target);
         cleanLeadingZeros(s, target);
@@ -224,7 +223,7 @@ public class MoneyDecoration implements DecorationTransformation {
      * </p>
      */
     private void handleAndroidSupremeLocalizationBug(StringBuilder s, DecorationHandler handler) {
-        if (decimalSeparator != '.') {
+        if (decimalSeparator != '.' && maxFractionalDigits != 0) {
 
             replace(s, start, start + after, '.', decimalSeparator);
 

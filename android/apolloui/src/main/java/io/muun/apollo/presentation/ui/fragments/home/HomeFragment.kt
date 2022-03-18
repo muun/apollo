@@ -208,20 +208,12 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
         balanceView.setBalance(homeState)
         setChevronAnimation(homeState.utxoSetState)
 
-        // We want one of the cards to "occupy space" (aka be invisible not gone) to avoid visual
-        // jumps/glitches
-        taprootCard.visibility = View.GONE
-        securityCenterCard.visibility = View.INVISIBLE
-
-        blockClock.visibility = View.GONE
-
         // Due to (complex) business logic reasons, only 1 of these cards is currently displayed
         var displayedMuunHomeCard: MuunHomeCard? = null
-        val taprootStatus = homeState.taprootFeatureStatus
         if (!homeState.user.isRecoverable) {
             displayedMuunHomeCard = securityCenterCard
 
-        } else when (taprootStatus) {
+        } else when (homeState.taprootFeatureStatus) {
             UserActivatedFeatureStatus.OFF -> { } // Do nothing
             UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = taprootCard
             UserActivatedFeatureStatus.CAN_ACTIVATE -> displayedMuunHomeCard = taprootCard
@@ -232,12 +224,16 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
 
         blockClock.value = homeState.blocksToTaproot
 
-        displayedMuunHomeCard?.let {
-            it.visibility = View.VISIBLE
-            if (it == taprootCard) {
-                // Avoid having 2x height when taprootCard is shown (see visual jump comment above)
+        if (displayedMuunHomeCard != null) {
+            displayedMuunHomeCard.visibility = View.VISIBLE
+            if (displayedMuunHomeCard == taprootCard) {
                 securityCenterCard.visibility = View.GONE
+            } else {
+                taprootCard.visibility = View.GONE
             }
+        } else {
+            securityCenterCard.visibility = View.GONE
+            taprootCard.visibility = View.GONE
         }
     }
 

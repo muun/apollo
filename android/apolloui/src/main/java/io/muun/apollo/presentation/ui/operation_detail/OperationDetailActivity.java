@@ -285,7 +285,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         swapPaymentHashItem.setVisibility(
                 !TextUtils.isEmpty(paymentHash) ? View.VISIBLE : View.GONE
         );
-        swapPaymentHashItem.setOnIconClickListener(view -> onCopyPreimageToClipboard(paymentHash));
+        swapPaymentHashItem.setOnIconClickListener(v -> onCopyPaymentHashToClipboard(paymentHash));
 
         final String preimage = operation.getPreimage();
         swapPreimageItem.setDescription(preimage);
@@ -348,6 +348,11 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
 
     private void onCopyPreimageToClipboard(String preimage) {
         presenter.copySwapPreimageToClipboard(preimage);
+        showTextToast(getString(R.string.operation_detail_preimage_copied));
+    }
+
+    private void onCopyPaymentHashToClipboard(String paymentHash) {
+        presenter.copySwapPreimageToClipboard(paymentHash);
         showTextToast(getString(R.string.operation_detail_preimage_copied));
     }
 

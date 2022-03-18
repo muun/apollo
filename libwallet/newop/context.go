@@ -21,10 +21,11 @@ func (c *PaymentContext) toBitcoinAmount(sats int64, inputCurrency string) *Bitc
 		NewMonetaryAmountFromSatoshis(sats),
 		inputCurrency,
 	)
-	return amount.toBitcoinAmount(
-		c.ExchangeRateWindow,
-		c.PrimaryCurrency,
-	)
+	return &BitcoinAmount{
+		InSat:             sats,
+		InInputCurrency:   amount,
+		InPrimaryCurrency: c.ExchangeRateWindow.convert(amount, c.PrimaryCurrency),
+	}
 }
 
 func newPaymentAnalyzer(context *PaymentContext) *operation.PaymentAnalyzer {
