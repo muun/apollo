@@ -142,7 +142,8 @@
         Esta factura no incluye un monto
     </string>
     <string name="error_op_invoice_invalid_amount_desc">
-        Por el momento, sólo se puede pagar a facturas que incluyan un monto. Por favor, crea o solicita una nueva.
+        Por el momento, sólo se puede pagar a facturas que incluyan un monto. Por favor,
+        crea o solicita una nueva.
     </string>
 
     <string name="error_op_invoice_invalid_title">No es posible pagar esta factura</string>
@@ -294,6 +295,9 @@
     <string name="operation_detail_invoice_copied">Factura copiada al portapapeles</string>
     <string name="operation_detail_preimage_copied">
         Preimagen del pago copiada al portapapeles
+    </string>
+    <string name="operation_detail_payment_hash_copied">
+        Hash del pago copiado al portapapeles
     </string>
     <string name="operation_detail_txid_copied">
         Identificador copiado al portapapeles
@@ -1382,10 +1386,10 @@
     </string>
     <string name="rbf_notice_banner_title">¿Cómo se puede cancelar esta transacción?</string>
     <string name="rbf_notice_banner_desc">
-        Esta transacción tiene RBF (replace-by-fee) activado. RBF le permite al remitente incrementar
-        la comisión original para una confirmación más rápida, pero también puede usarlo para
-        cancelar la transacción. A menos que conozcas y confíes en el remitente, considéralo
-        un riesgo hasta que se confirme la transacción.
+        Esta transacción tiene RBF (replace-by-fee) activado. RBF le permite al remitente
+        incrementar la comisión original para una confirmación más rápida, pero también puede
+        usarlo para cancelar la transacción. A menos que conozcas y confíes en el remitente,
+        considéralo un riesgo hasta que se confirme la transacción.
     </string>
 
     <string name="turbo_channels">Turbo channels</string>

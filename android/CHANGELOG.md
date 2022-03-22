@@ -6,12 +6,33 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+
+## [49.1] - 2022-03-17
+
+### FIXED
+- Bug when fetching legacy Contact model after SQLDelight upgrade (on 49)
+- Use of Math.toIntExact() which isn't supported on lower api levels (introduced in SQLDelight
+upgrade)
+- MuunAmountInput handling of SATs (currencies without decimals)
+- Incorrect handling of changeCurrency and useAllFunds in send flow, introduced in our send payment
+flow rewrite (48.2)
+- Minor copy change when copying a LN payment hash to clipboard
+
 ## [49] - 2022-03-16
 
 ### ADDED
 - Option to select SAT as input currency for receive and send screens' amount input
 - Extra metadata for rare crash scenario
 - Multiple route hints support in our invoices
+
+### CHANGED
+- Upgrade gradle to 7.3.3 to support JDK17 (ARM support)
+- Upgrade AGP to 7.0.4 for gradle 7.3 compat
+- Upgrade SQDelight to 1.5.3 for gradle 7.3 compat (hughe refactor and rework of data layer)
+- Upgrade Kotlin to 1.6.10 for gradle 7.3 compat
+- Upgrade Dagger to 2.40.5 for gradle 7.3 compat
+- Upgrade checkstyle to 9.2.1
+- Make libwallet it's own gradle project to work nicely with AndroidStudio
 
 ### FIXED
 - Show new outgoing operation badge animation when using deeplink + process death/app not started

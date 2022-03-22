@@ -115,20 +115,19 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
 
-                    final Bundle bundle = new Bundle();
+            final Bundle bundle = new Bundle();
 
-                    if (item.getItemId() == R.id.security_center_fragment) {
-                        final SecurityCenterFragmentArgs args = new SecurityCenterFragmentArgs
-                                .Builder(SECURITY_CENTER_ORIGIN.SHIELD_BUTTON)
-                                .build();
+            if (item.getItemId() == R.id.security_center_fragment) {
+                final SecurityCenterFragmentArgs args = new SecurityCenterFragmentArgs
+                        .Builder(SECURITY_CENTER_ORIGIN.SHIELD_BUTTON)
+                        .build();
 
-                        bundle.putAll(args.toBundle());
-                    }
+                bundle.putAll(args.toBundle());
+            }
 
-                    navigateToItem(item.getItemId(), bundle);
-                    return true;
-                }
-        );
+            navigateToItem(item.getItemId(), bundle);
+            return true;
+        });
         bottomNav.setOnNavigationItemReselectedListener(item -> {
             // do nothing here, it will prevent recreating same fragment
         });

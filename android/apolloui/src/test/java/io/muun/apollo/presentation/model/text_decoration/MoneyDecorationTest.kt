@@ -138,12 +138,20 @@ class MoneyDecorationTest {
 
             Given(it, "|123", 0).add(".").expect("|123")
 
+            // Test input initializes with some amount
+
+            Given(it, "|", 0).add("0").expect("0|")
+
+            Given(it, "0|", 0).add("0").expect("0|")
+
+            Given(it, "|", 0).add("2000").expect("2_000|")
+
             // This is kindof a benevolent, simple paste
-            Given(it, "44|", 0).add("123.123").expect("44123|")
+            Given(it, "44|", 0).add("123.123").expect("44_123|")
 
-            Given(it, "4|4", 0).add("123.123").expect("4123|4")
+            Given(it, "4|4", 0).add("123.123").expect("41_23|4")
 
-            Given(it, "|44", 0).add("123.123").expect("123|44")
+            Given(it, "|44", 0).add("123.123").expect("12_3|44")
 
             // TODO test paste
         }

@@ -105,8 +105,8 @@ public class ContactDao extends HoustonIdDao<Contact> {
                         lastName,
                         profilePictureUrl
                 ),
-                Math.toIntExact(maxAddressVersion),
-                PublicKey.deserializeFromBase58(publicKeyPath, publicKeyPath),
+                (int) maxAddressVersion,
+                PublicKey.deserializeFromBase58(publicKeyPath, serializedPublicKey),
                 cosigningPublicKey,
                 lastDerivationIndex
         );

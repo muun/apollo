@@ -146,7 +146,8 @@
         This invoice doesn\’t include an amount
     </string>
     <string name="error_op_invoice_invalid_amount_desc">
-        At the moment, you can only pay to invoices that include an amount. Please, create or request a new one.
+        At the moment, you can only pay to invoices that include an amount. Please, create or
+        request a new one.
     </string>
 
     <string name="error_op_invoice_invalid_title">Unable to pay this invoice</string>
@@ -290,6 +291,7 @@
     </string>
     <string name="operation_detail_invoice_copied">Invoice copied to clipboard</string>
     <string name="operation_detail_preimage_copied">Payment preimage copied to clipboard</string>
+    <string name="operation_detail_payment_hash_copied">Payment hash copied to clipboard</string>
     <string name="operation_detail_txid_copied">Transaction ID copied to clipboard</string>
     <string name="operation_detail_amount_copied">Amount copied to clipboard</string>
     <string name="operation_detail_fee_copied">Network fee copied to clipboard</string>
@@ -1333,13 +1335,14 @@
     <string name="rbf_notice_banner_title">How can this transaction be canceled?</string>
     <string name="rbf_notice_banner_desc">
         This transaction has RBF (replace-by-fee) enabled. RBF allows the sender to raise the
-        original fee for faster confirmation, but they can also use it to cancel the transaction. Unless
-        you know and trust the sender, consider it a risk until the transaction is confirmed.
+        original fee for faster confirmation, but they can also use it to cancel the transaction.
+        Unless you know and trust the sender, consider it a risk until the transaction is confirmed.
     </string>
 
     <string name="turbo_channels">Turbo channels</string>
     <string name="turbo_channels_learn_more">
-        <annotation link="https://blog.muun.com/turbo-channels/">Learn more</annotation> about the trade-offs of turbo channels.
+        <annotation link="https://blog.muun.com/turbo-channels/">Learn more</annotation> about the
+        trade-offs of turbo channels.
     </string>
     <string name="turbo_channels_disable_title">Disable turbo channels?</string>
     <string name="turbo_channels_disable_message">

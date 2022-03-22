@@ -88,6 +88,10 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         fetchRealTimeData.runForced();
     }
 
+    /**
+     * Call to report activity was destroyed.
+     * TODO: this should have a base presenter method associated
+     */
     public void onActivityDestroyed() {
         operationsCache.stop();
     }
@@ -147,10 +151,16 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         navigator.navigateToOperations((Activity) view);
     }
 
+    /**
+     * Navigate to send feedbback screen.
+     */
     public void navigateToSendFeedbackScreen() {
         navigator.navigateToSendGenericFeedback(getContext());
     }
 
+    /**
+     * Avoid showing taproot celebration again.
+     */
     public void reportTaprootCelebrationShown() {
         userSel.setPendingTaprootCelebration(false);
     }

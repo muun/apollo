@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="64dp"
-                android:visibility="invisible"
+                android:visibility="gone"
                 tools:visibility="visible" />
 
         <io.muun.apollo.presentation.ui.view.BlockClock

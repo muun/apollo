@@ -363,8 +363,8 @@
         </provider>
 
         <!--
-            Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom). See:
-            https://developer.android.com/topic/libraries/architecture/workmanager/advanced/custom-configuration
+         Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom). See:
+         https://developer.android.com/topic/libraries/architecture/workmanager/advanced/custom-configuration
         -->
         <provider
                 android:name="androidx.work.impl.WorkManagerInitializer"

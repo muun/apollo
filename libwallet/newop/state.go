@@ -193,7 +193,7 @@ func (s *StartState) resolveBip70(uri *libwallet.MuunPaymentURI, network *libwal
 			}
 			next.emit()
 
-                // If the error contains the expired string, that means that the invoice has expired
+			// If the error contains the expired string, that means that the invoice has expired
 		} else if strings.Contains(err.Error(), "failed to unmarshal payment request") {
 			next := &ErrorState{
 				BaseState:     s.BaseState,
@@ -202,7 +202,7 @@ func (s *StartState) resolveBip70(uri *libwallet.MuunPaymentURI, network *libwal
 			}
 			next.emit()
 
-                // In any other case we display the invalid address message
+			// In any other case we display the invalid address message
 		} else {
 			next := &ErrorState{
 				BaseState:     s.BaseState,
@@ -299,7 +299,7 @@ func (s *ResolveState) setContextWithTime(context *PaymentContext, now time.Time
 
 		amount := amount.toBitcoinAmount(context.ExchangeRateWindow, context.PrimaryCurrency)
 		return s.emitValidate(&Resolved{
-			BaseState: s.BaseState,
+			BaseState:      s.BaseState,
 			PaymentIntent:  s.PaymentIntent,
 			PaymentContext: context,
 			PresetAmount:   amount,
@@ -353,7 +353,7 @@ func (s *ResolveState) emitValidateLightning(context *PaymentContext, invoice *l
 func (s *ResolveState) emitValidate(resolved *Resolved, amount *BitcoinAmount, context *PaymentContext) error {
 
 	nextState := &ValidateState{
-		Resolved:  resolved,
+		Resolved: resolved,
 		AmountInfo: &AmountInfo{
 			TotalBalance:          context.toBitcoinAmount(context.totalBalance(), "BTC"),
 			Amount:                amount,
@@ -443,27 +443,47 @@ func (s *EnterAmountState) PartialValidate(inputAmount *MonetaryAmount) (bool, e
 		minAmount = 0
 	}
 
-	if amountInSat < minAmount  || amountInSat > s.TotalBalance.InSat {
+	if amountInSat < minAmount || amountInSat > s.TotalBalance.InSat {
 		return false, nil
 	}
 
 	return true, nil
 }
 
+// ChangeCurrency is deprecated. Prefer the newer, ChangeCurrencyWithAmount(currency, inputAmount)
 func (s *EnterAmountState) ChangeCurrency(currency string) error {
+	return s.ChangeCurrencyWithAmount(currency, s.Amount.InInputCurrency)
+}
+
+// ChangeCurrencyWithAmount respond to the user action of changing the current input currency to a new one,
+// while also updating the input amount, needed for performing the necessary conversion.
+// Note: this state machine doesn't receive partial updates for the input amount each time the
+// user types or deletes a digit, so ChangeCurrencyWithAmount needs to receive the updates input amount.
+func (s *EnterAmountState) ChangeCurrencyWithAmount(currency string, inputAmount *MonetaryAmount) error {
 	exchangeRateWindow := s.PaymentContext.ExchangeRateWindow
-	amount := &BitcoinAmount{
-		InSat:             s.Amount.InSat,
-		InInputCurrency:   exchangeRateWindow.convert(s.Amount.InInputCurrency, currency),
-		InPrimaryCurrency: s.Amount.InPrimaryCurrency,
+
+	newTotalBalance := s.PaymentContext.toBitcoinAmount(
+		s.PaymentContext.totalBalance(),
+		currency,
+	)
+
+	var amount *BitcoinAmount
+	// IF amount == balance THEN tffa/useAllFunds
+	// See EnterAmount transition.
+	if inputAmount.String() == s.TotalBalance.InInputCurrency.String() {
+		amount = newTotalBalance
+	} else {
+		amount = &BitcoinAmount{
+			InSat:             int64(inputAmount.toBtc(exchangeRateWindow)),
+			InInputCurrency:   exchangeRateWindow.convert(inputAmount, currency),
+			InPrimaryCurrency: exchangeRateWindow.convert(inputAmount, s.PaymentContext.PrimaryCurrency),
+		}
 	}
+
 	nextState := &EnterAmountState{
 		Resolved:     s.Resolved,
 		Amount:       amount,
-		TotalBalance: s.PaymentContext.toBitcoinAmount(
-			s.PaymentContext.totalBalance(),
-			currency,
-		),
+		TotalBalance: newTotalBalance,
 	}
 	nextState.emitUpdate(UpdateInPlace)
 
@@ -761,8 +781,8 @@ func (s *ValidateLightningState) Continue() error {
 
 		return s.emitBalanceError(OperationErrorAmountGreaterThanBalance, analysis, inputCurrency)
 
-        case operation.AnalysisStatusAmountTooSmall:
-                return s.emitError(OperationErrorAmountTooSmall)
+	case operation.AnalysisStatusAmountTooSmall:
+		return s.emitError(OperationErrorAmountTooSmall)
 
 	default:
 		return fmt.Errorf("unrecognized analysis status: %v", analysis.Status)

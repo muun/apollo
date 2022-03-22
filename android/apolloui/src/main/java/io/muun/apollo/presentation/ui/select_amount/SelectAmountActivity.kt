@@ -111,7 +111,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
 
     override fun setExchangeRateProvider(exchangeRateProvider: ExchangeRateProvider) {
         amountInput.setExchangeRateProvider(exchangeRateProvider)
-        amountInput.setOnChangeListener(this::onAmountChange)
+        amountInput.setOnChangeListener { _, newAmount -> onAmountChange(newAmount) }
         amountInput.isEnabled = true
         amountInput.requestFocusInput()
     }
