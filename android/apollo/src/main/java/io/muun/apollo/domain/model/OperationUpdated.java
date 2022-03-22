@@ -14,7 +14,8 @@ public class OperationUpdated {
     @NotNull
     public final Long confirmations;
 
-    @NotNull
+    // Null for certain kinds of lightning operations
+    @Nullable
     public final String hash;
 
     @NotNull
@@ -31,7 +32,7 @@ public class OperationUpdated {
      */
     public OperationUpdated(Long hid,
                             Long confirmations,
-                            String hash,
+                            @Nullable String hash,
                             OperationStatus status,
                             NextTransactionSize nextTransactionSize,
                             @Nullable SubmarineSwap submarineSwap) {
