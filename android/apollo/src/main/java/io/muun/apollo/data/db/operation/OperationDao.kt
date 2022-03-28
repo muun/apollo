@@ -73,7 +73,7 @@ open class OperationDao
     fun updateStatus(
         operationHid: Long,
         confirmations: Long,
-        hash: String,
+        hash: String?,
         status: OperationStatus
     ) {
         delightDb.operationQueries.updateStatus(

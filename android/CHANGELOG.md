@@ -6,6 +6,11 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.2] - 2022-03-22
+
+### FIXED
+- A crash when you have contacts with old address versions
+- An error processing operation updates for lightning payments that made the look as if stuck pending
 
 ## [49.1] - 2022-03-17
 

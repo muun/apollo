@@ -32,8 +32,8 @@ public class ContactDao extends HoustonIdDao<Contact> {
 
     @Override
     protected void storeUnsafe(final Contact element) {
-        final PublicKey userPublicKey = element.getPublicKeyPair().getUserPublicKey();
-        final PublicKey muunPublicKey = element.getPublicKeyPair().getMuunPublicKey();
+        final PublicKey userPublicKey = element.publicKey;
+        final PublicKey muunPublicKey = element.cosigningPublicKey;
 
         delightDb.getContactQueries().insertContact(
                 element.getId(),

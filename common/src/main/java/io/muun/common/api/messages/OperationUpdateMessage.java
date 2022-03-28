@@ -54,7 +54,7 @@ public class OperationUpdateMessage extends AbstractMessage {
      */
     public OperationUpdateMessage(Long id,
                                   Long confirmations,
-                                  String hash,
+                                  @Nullable String hash,
                                   OperationStatus status,
                                   NextTransactionSizeJson nextTransactionSize,
                                   SubmarineSwapJson swapDetails,
