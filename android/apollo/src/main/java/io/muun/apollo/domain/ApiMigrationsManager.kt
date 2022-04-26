@@ -12,8 +12,7 @@ import rx.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class ApiMigrationsManager
-@Inject constructor(
+class ApiMigrationsManager @Inject constructor(
         private val apiMigrationsVersionRepository: ApiMigrationsVersionRepository,
         private val registerInvoices: RegisterInvoicesAction,
         private val fetchSwapServerKeyAction: FetchSwapServerKeyAction,

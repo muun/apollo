@@ -149,6 +149,8 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     private fun bindFeeOption(feeOptionItem: FeeOptionItem, state: EditFeeState, confTarget: Long) {
 
         val feeRateInVBytes = state.minFeeRateForTarget(confTarget)
+
+        // TODO currently forgets input currency, which is important for amount display
         val feeData = state.calculateFee(feeRateInVBytes)
 
         feeOptionItem.setBitcoinUnit(mBitcoinUnit)

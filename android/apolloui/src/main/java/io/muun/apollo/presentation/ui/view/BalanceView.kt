@@ -15,7 +15,7 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler
-import io.muun.apollo.presentation.ui.fragments.home.HomePresenter
+import io.muun.apollo.presentation.ui.fragments.home.HomeFragmentPresenter
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
@@ -91,7 +91,7 @@ class BalanceView @JvmOverloads constructor(
         get() = R.layout.view_balance
 
 
-    fun setBalance(homeState: HomePresenter.HomeState) {
+    fun setBalance(homeState: HomeFragmentPresenter.HomeState) {
         val paymentContext = homeState.paymentContext
 
         this.rateProvider = ExchangeRateProvider(paymentContext.exchangeRateWindow.toJson())

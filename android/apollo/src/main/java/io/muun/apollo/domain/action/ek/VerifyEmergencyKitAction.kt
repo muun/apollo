@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.ek
 
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.errors.EmergencyKitInvalidCodeError
 import io.muun.apollo.domain.errors.EmergencyKitOldCodeError
@@ -38,7 +37,7 @@ class VerifyEmergencyKitAction @Inject constructor(
 
             } else {
                 // Not even an old code, just plain invalid:
-                throw EmergencyKitInvalidCodeError()
+                throw EmergencyKitInvalidCodeError(providedCode)
             }
         }
         .flatMap {

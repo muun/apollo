@@ -18,7 +18,7 @@ class CreateLoginSessionAction @Inject constructor(
     private val getFcmToken: GetFcmTokenAction,
     private val logoutActions: LogoutActions,
     private val isRootedDeviceAction: IsRootedDeviceAction,
-    private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
+    private val firebaseInstallationIdRepository: FirebaseInstalationIdRepository
 ) : BaseAsyncAction1<String, CreateSessionOk>() {
 
     override fun action(email: String): Observable<CreateSessionOk> =
@@ -36,7 +36,7 @@ class CreateLoginSessionAction @Inject constructor(
                 houstonClient.createLoginSession(
                     fcmToken,
                     email,
-                    firebaseInstalationIdRepository.getBigQueryPseudoId(),
+                    firebaseInstallationIdRepository.getBigQueryPseudoId(),
                     isRootedDeviceAction.actionNow()
                 )
             }

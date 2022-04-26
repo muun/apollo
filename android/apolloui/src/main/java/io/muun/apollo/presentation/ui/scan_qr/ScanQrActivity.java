@@ -147,7 +147,6 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         camera.startCamera(findBackFacingCamera());
     }
 
-    @SuppressWarnings("deprecation")
     private int findBackFacingCamera() {
 
         final int numberOfCameras = Camera.getNumberOfCameras();
@@ -228,6 +227,10 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
                 .substring(0, Math.min(500, replacedText.length()));
     }
 
+    /**
+     * Handle enable camera permission click. Request OS permissions use device Camera to be granted
+     * to this application.
+     */
     public void onGrantPermissionClick() {
         requestPermissions(this, Manifest.permission.CAMERA);
         presenter.reportCameraPermissionAsked();

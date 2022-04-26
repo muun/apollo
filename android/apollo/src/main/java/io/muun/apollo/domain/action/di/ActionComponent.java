@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.di;
 
+import io.muun.apollo.domain.LoggingContextManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
 import io.muun.apollo.domain.action.NotificationActions;
@@ -41,6 +42,8 @@ public interface ActionComponent {
     // Action bags:
 
     SigninActions signinActions();
+
+    LoggingContextManager loggingContextManager();
 
     ContactActions contactActions();
 

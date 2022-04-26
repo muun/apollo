@@ -974,6 +974,8 @@ func (s *EditFeeState) MinFeeRateForTarget(target int) (float64, error) {
 	return feeWindow.MinimumFeeRate(uint(target))
 }
 
+// TODO this currently ignores and forgets input currency, which is important for amount display
+// logic in Edit Fee screens
 func (s *EditFeeState) CalculateFee(rateInSatsPerVByte float64) (*FeeState, error) {
 	amountInSat := s.Amount.InSat
 	if s.TakeFeeFromAmount {

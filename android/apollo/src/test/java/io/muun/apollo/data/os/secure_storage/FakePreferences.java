@@ -1,14 +1,12 @@
-package io.muun.apollo.data.secure_storage;
+package io.muun.apollo.data.os.secure_storage;
 
-import io.muun.apollo.data.os.secure_storage.SecureStorageMode;
-import io.muun.apollo.data.os.secure_storage.SecureStoragePreferences;
 import io.muun.common.utils.RandomGenerator;
 
-import android.content.Context;
-
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import static org.mockito.Mockito.mock;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FakePreferences extends SecureStoragePreferences {
     private final HashMap<String, byte[]> map = new HashMap<>();
@@ -16,7 +14,7 @@ public class FakePreferences extends SecureStoragePreferences {
     private SecureStorageMode lastModeUsedInSave;
 
     public FakePreferences() {
-        super(mock(Context.class));
+        super();
     }
 
     public byte[] getAesIv(String key) {
@@ -67,5 +65,24 @@ public class FakePreferences extends SecureStoragePreferences {
 
     public void setMode(SecureStorageMode mode) {
         this.mode = mode;
+    }
+
+    @Override
+    List<String> getAuditTrail() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    Set<String> getAllIvLabels() {
+        return new HashSet<>();
+    }
+
+    @Override
+    Set<String> getAllLabels() {
+        return new HashSet<>();
+    }
+
+    @Override
+    void recordAuditTrail(final String operation, final String label) {
     }
 }

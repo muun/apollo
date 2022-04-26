@@ -33,10 +33,10 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.MonetaryAmount;
 
-public class FeeManualInput extends MuunView {
+import static io.muun.common.utils.Dates.HOUR_IN_SECONDS;
+import static io.muun.common.utils.Dates.MINUTE_IN_SECONDS;
 
-    private static final long MINUTE_IN_SECONDS = 60;
-    private static final long HOUR_IN_SECONDS = MINUTE_IN_SECONDS * 60;
+public class FeeManualInput extends MuunView {
 
     public interface OnChangeListener {
 

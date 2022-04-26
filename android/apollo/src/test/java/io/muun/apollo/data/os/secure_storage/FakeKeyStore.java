@@ -1,6 +1,4 @@
-package io.muun.apollo.data.secure_storage;
-
-import io.muun.apollo.data.os.secure_storage.KeyStoreProvider;
+package io.muun.apollo.data.os.secure_storage;
 
 import android.content.Context;
 import androidx.core.util.Pair;

@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.activity.extension;
 
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.app.Navigator;
@@ -16,6 +17,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import icepick.State;
 import rx.Single;
+import rx.exceptions.OnErrorNotImplementedException;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -175,11 +178,21 @@ public class ApplicationLockExtension extends ActivityExtension {
         public void onPinEntered(String pin) {
             Single.fromCallable(() -> lockManager.tryUnlockWithPin(pin))
                     .compose(executionTransformerFactory.getSingleAsyncExecutor())
-                    .subscribe((isUnlocked) -> {
+                    .subscribe(isUnlocked -> {
                         if (isUnlocked) {
                             onUnlockAttemptSuccess();
                         } else {
                             onUnlockAttemptFailure();
+                        }
+                    }, throwable -> {
+                        // Avoid crashes due to keystore's weird bugs. If it's a secure storage
+                        // error, catch it, otherwise re-throw it
+                        if (!ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable)) {
+                            // IDKW but we can't throw other error than this one, go figure
+                            throw new OnErrorNotImplementedException(throwable);
+                        } else {
+                            Timber.e(throwable); // Probably redundant, should already be logged
+                            lockOverlay.reportError(null);
                         }
                     });
         }

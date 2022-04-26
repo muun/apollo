@@ -4,6 +4,7 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.NoStackTraceException;
 import io.muun.apollo.domain.errors.PeriodicTaskError;
+import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.os.SystemClock;
@@ -51,7 +52,7 @@ public class PeriodicTaskWorker extends Worker {
         // minutes of execution if your task has not returned it will be considered to have timed
         // out, and the wakelock will be released.
 
-        final String type = getInputData().getString(TASK_TYPE_KEY);
+        final String type = Preconditions.checkNotNull(getInputData().getString(TASK_TYPE_KEY));
 
         Timber.d("Running periodic task of type %s", type);
 
@@ -60,30 +61,30 @@ public class PeriodicTaskWorker extends Worker {
         try {
 
             taskDispatcher.dispatch(type)
-                .doOnError(throwable -> {
+                    .doOnError(throwable -> {
 
-                    if (throwable.getStackTrace() == null) {
-                        fillInStackTrace(throwable);
-                    }
+                        if (throwable.getStackTrace() == null) {
+                            fillInStackTrace(throwable);
+                        }
 
-                    if (throwable.getStackTrace() == null) {
+                        if (throwable.getStackTrace() == null) {
 
-                        final String message = String.format(
-                                "Exception of type %s with no stacktrace, while running a periodic "
-                                        + "task of type %s. Message: %s.",
-                                throwable.getClass().getCanonicalName(),
-                                type,
-                                throwable.getMessage()
-                        );
+                            final String message = String.format(
+                                    "Exception of type %s with no stacktrace, while running a "
+                                            + "periodic task of type %s. Message: %s.",
+                                    throwable.getClass().getCanonicalName(),
+                                    type,
+                                    throwable.getMessage()
+                            );
 
-                        throwable = new NoStackTraceException(message);
-                    }
+                            throwable = new NoStackTraceException(message);
+                        }
 
-                    Timber.e(throwable);
-                })
-                .compose(transformerFactory.getAsyncExecutor())
-                .toBlocking()
-                .subscribe();
+                        Timber.e(throwable);
+                    })
+                    .compose(transformerFactory.getAsyncExecutor())
+                    .toBlocking()
+                    .subscribe();
 
         } catch (RuntimeException error) {
             Timber.e(new PeriodicTaskError(type, secondsSince(startMs), error));

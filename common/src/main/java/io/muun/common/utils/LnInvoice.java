@@ -121,18 +121,18 @@ public class LnInvoice {
         this.original = original;
         this.addresses = addresses;
         this.cltvDelta = cltvDelta;
-        this.createdAt = createdAt.format(Dates.LN_DATE_TIME_FORMATTER);
+        this.createdAt = createdAt.format(Dates.LN_DATE_TIME);
         this.description = description;
         this.descriptionHash = descriptionHash;
         this.destinationPubKey = destinationPubKey;
-        this.expiresAt = expiresAt.format(Dates.LN_DATE_TIME_FORMATTER);
+        this.expiresAt = expiresAt.format(Dates.LN_DATE_TIME);
         this.id = id;
         this.isExpired = expiresAt.compareTo(ZonedDateTime.now(ZoneOffset.UTC)) < 0;
         this.amount = amount;
     }
 
     public ZonedDateTime getExpirationTime() {
-        return ZonedDateTime.parse(expiresAt, Dates.LN_DATE_TIME_FORMATTER);
+        return ZonedDateTime.parse(expiresAt, Dates.LN_DATE_TIME);
     }
 
     /**

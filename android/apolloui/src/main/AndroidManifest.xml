@@ -107,6 +107,11 @@
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:windowSoftInputMode="adjustResize">
 
+            <!--
+            Note: Scheme matching in the Android framework is case-sensitive, unlike the RFC.
+            As a result, you should always specify schemes using lowercase letters.
+            See: https://developer.android.com/guide/topics/manifest/data-element
+            -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -363,8 +368,8 @@
         </provider>
 
         <!--
-         Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom). See:
-         https://developer.android.com/topic/libraries/architecture/workmanager/advanced/custom-configuration
+        Disable WorkManagerInitializer to avoid auto workmanager initialization (use custom). See:
+        https://developer.android.com/topic/libraries/architecture/workmanager/advanced/custom-configuration
         -->
         <provider
                 android:name="androidx.work.impl.WorkManagerInitializer"

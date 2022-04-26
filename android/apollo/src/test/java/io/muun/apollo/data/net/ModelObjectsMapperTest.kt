@@ -1,10 +1,8 @@
 package io.muun.apollo.data.net
 
 import io.muun.apollo.BaseTest
-import io.muun.apollo.data.secure_storage.SecureStorageProviderTest
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.common.MuunFeatureJson
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
 

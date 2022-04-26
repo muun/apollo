@@ -4,9 +4,9 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.presentation.ui.base.BaseView
 
-interface HomeView : BaseView {
+interface HomeFragmentView : BaseView {
 
-    fun setState(homeState: HomePresenter.HomeState)
+    fun setState(homeState: HomeFragmentPresenter.HomeState)
 
     fun setNewOp(newOp: Operation, bitcoinUnit: BitcoinUnit)
 

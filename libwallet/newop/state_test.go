@@ -63,6 +63,7 @@ func createContext() *PaymentContext {
 	return context
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestBarebonesOnChainFixedAmountFixedFee(t *testing.T) {
 
 	listener := newTestListener()
@@ -96,6 +97,7 @@ func TestBarebonesOnChainFixedAmountFixedFee(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestBarebonesOnChainFixedAmountFixedDescriptionFixedFee(t *testing.T) {
 
 	listener := newTestListener()
@@ -126,6 +128,7 @@ func TestBarebonesOnChainFixedAmountFixedDescriptionFixedFee(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainFixedAmountChangeFee(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -185,6 +188,8 @@ func TestOnChainFixedAmountChangeFee(t *testing.T) {
 		t.Fatalf("expected total to match, got %v", confirmState.Total.InInputCurrency)
 	}
 }
+
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainFixedAmountFeeNeedsChange(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -253,6 +258,7 @@ func TestOnChainFixedAmountFeeNeedsChange(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainFixedAmountNoPossibleFee(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -277,6 +283,7 @@ func TestOnChainFixedAmountNoPossibleFee(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainFixedAmountTooSmall(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -293,6 +300,7 @@ func TestOnChainFixedAmountTooSmall(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainFixedAmountGreaterThanbalance(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -317,6 +325,7 @@ func TestOnChainFixedAmountGreaterThanbalance(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainSendZeroFundsWithZeroBalance(t *testing.T) {
 
 	listener := newTestListener()
@@ -343,6 +352,7 @@ func TestOnChainSendZeroFundsWithZeroBalance(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainTFFA(t *testing.T) {
 
 	listener := newTestListener()
@@ -392,6 +402,7 @@ func TestOnChainTFFA(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestInvalidAmountEmitsInvalidAddress(t *testing.T) {
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
@@ -409,6 +420,7 @@ func TestInvalidAmountEmitsInvalidAddress(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainBack(t *testing.T) {
 
 	listener := newTestListener()
@@ -435,12 +447,40 @@ func TestOnChainBack(t *testing.T) {
 	enterDescriptionState.Back()
 
 	enterAmountState = listener.next().(*EnterAmountState)
+	// TODO when deleting this method impl (deprecated) rm lines below up until the call to ChangeCurrencyWithAmount
 	enterAmountState.ChangeCurrency("USD")
 
 	enterAmountState = listener.next().(*EnterAmountState)
 	enterAmountState.Back()
 
 	abortState := listener.next().(*AbortState)
+	if abortState.update != UpdateAll {
+		t.Fatalf("expected normal/full update , got %v", abortState.update)
+	}
+	abortState.Cancel()
+
+	enterAmountState = listener.next().(*EnterAmountState)
+	if enterAmountState.update != UpdateEmpty {
+		t.Fatalf("expected empty update, got %v", enterAmountState.update)
+	}
+	enterAmountState.Back()
+
+	abortState = listener.next().(*AbortState)
+	if abortState.update != UpdateAll {
+		t.Fatalf("expected normal/full update , got %v", abortState.update)
+	}
+	abortState.Cancel()
+
+	enterAmountState = listener.next().(*EnterAmountState)
+	enterAmountState.ChangeCurrencyWithAmount("USD", NewMonetaryAmountFromSatoshis(1_000_000))
+
+	enterAmountState = listener.next().(*EnterAmountState)
+	enterAmountState.Back()
+
+	abortState = listener.next().(*AbortState)
+	if abortState.update != UpdateAll {
+		t.Fatalf("expected normal/full update , got %v", abortState.update)
+	}
 	abortState.Cancel()
 
 	enterAmountState = listener.next().(*EnterAmountState)
@@ -462,6 +502,7 @@ func TestOnChainBack(t *testing.T) {
 	_ = listener.next().(*AbortState)
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainChangeCurrency(t *testing.T) {
 
 	listener := newTestListener()
@@ -491,6 +532,7 @@ func TestOnChainChangeCurrency(t *testing.T) {
 	enterDescriptionState.Back()
 
 	enterAmountState = listener.next().(*EnterAmountState)
+	// TODO when deleting this method impl (deprecated) rm lines below up until the call to ChangeCurrencyWithAmount
 	enterAmountState.ChangeCurrency("USD")
 
 	enterAmountState = listener.next().(*EnterAmountState)
@@ -503,6 +545,9 @@ func TestOnChainChangeCurrency(t *testing.T) {
 	if enterAmountState.Amount.InInputCurrency.String() != "32000 USD" {
 		t.Fatalf("expected amount to match 32000 USD, got '%v'", enterAmountState.Amount.InInputCurrency.String())
 	}
+	if enterAmountState.Amount.InPrimaryCurrency.String() != "1 BTC" {
+		t.Fatalf("expected amount to match 1 BTC, got '%v'", enterAmountState.Amount.InPrimaryCurrency.String())
+	}
 
 	enterAmountState.ChangeCurrency("BTC")
 	enterAmountState = listener.next().(*EnterAmountState)
@@ -514,6 +559,39 @@ func TestOnChainChangeCurrency(t *testing.T) {
 	}
 	if enterAmountState.Amount.InInputCurrency.String() != "1 BTC" {
 		t.Fatalf("expected amount to match 1 BTC, got '%v'", enterAmountState.Amount.InInputCurrency.String())
+	}
+	if enterAmountState.Amount.InPrimaryCurrency.String() != "1 BTC" {
+		t.Fatalf("expected amount to match 1 BTC, got '%v'", enterAmountState.Amount.InPrimaryCurrency.String())
+	}
+
+	enterAmountState.ChangeCurrencyWithAmount("USD", NewMonetaryAmountFromSatoshis(1_000_000))
+	enterAmountState = listener.next().(*EnterAmountState)
+	if enterAmountState.update != UpdateInPlace {
+		t.Fatalf("expected UpdateInPlace, got '%v'", enterAmountState.update)
+	}
+	if enterAmountState.Amount.InSat != 1_000_000 {
+		t.Fatalf("expected amount to match 1_000_000, got '%v'", enterAmountState.Amount.InSat)
+	}
+	if enterAmountState.Amount.InInputCurrency.String() != "320 USD" {
+		t.Fatalf("expected amount to match 320 USD, got '%v'", enterAmountState.Amount.InInputCurrency.String())
+	}
+	if enterAmountState.Amount.InPrimaryCurrency.String() != "0.01 BTC" {
+		t.Fatalf("expected amount to match 0.01 BTC, got '%v'", enterAmountState.Amount.InPrimaryCurrency.String())
+	}
+
+	enterAmountState.ChangeCurrencyWithAmount("BTC", enterAmountState.Amount.InInputCurrency)
+	enterAmountState = listener.next().(*EnterAmountState)
+	if enterAmountState.update != UpdateInPlace {
+		t.Fatalf("expected UpdateInPlace, got '%v'", enterAmountState.update)
+	}
+	if enterAmountState.Amount.InSat != 1_000_000 {
+		t.Fatalf("expected amount to match 1_000_000, got '%v'", enterAmountState.Amount.InSat)
+	}
+	if enterAmountState.Amount.InInputCurrency.String() != "0.01 BTC" {
+		t.Fatalf("expected amount to match 0.01 BTC, got '%v'", enterAmountState.Amount.InInputCurrency.String())
+	}
+	if enterAmountState.Amount.InPrimaryCurrency.String() != "0.01 BTC" {
+		t.Fatalf("expected amount to match 0.01 BTC, got '%v'", enterAmountState.Amount.InPrimaryCurrency.String())
 	}
 
 	enterDescriptionState.EnterDescription("bar")
@@ -544,6 +622,7 @@ func TestOnChainChangeCurrency(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningSendZeroFunds(t *testing.T) {
 
 	listener := newTestListener()
@@ -590,6 +669,7 @@ func TestLightningSendZeroFunds(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningSendZeroFundsTFFA(t *testing.T) {
 
 	listener := newTestListener()
@@ -636,6 +716,7 @@ func TestLightningSendZeroFundsTFFA(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningSendNegativeFunds(t *testing.T) {
 
 	listener := newTestListener()
@@ -682,6 +763,7 @@ func TestLightningSendNegativeFunds(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningSendNegativeFundsWithTFFA(t *testing.T) {
 
 	listener := newTestListener()
@@ -728,6 +810,7 @@ func TestLightningSendNegativeFundsWithTFFA(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningExpiredInvoice(t *testing.T) {
 
 	listener := newTestListener()
@@ -750,6 +833,7 @@ func TestLightningExpiredInvoice(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningInvoiceWithAmount(t *testing.T) {
 
 	listener := newTestListener()
@@ -800,6 +884,7 @@ func TestLightningInvoiceWithAmount(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningWithAmountBack(t *testing.T) {
 
 	listener := newTestListener()
@@ -859,6 +944,7 @@ func TestLightningWithAmountBack(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningInvoiceWithAmountAndDescription(t *testing.T) {
 
 	listener := newTestListener()
@@ -906,6 +992,7 @@ func TestLightningInvoiceWithAmountAndDescription(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestLightningAmountlessInvoice(t *testing.T) {
 
 	listener := newTestListener()
@@ -973,6 +1060,7 @@ func TestLightningAmountlessInvoice(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestInvoiceOneConf(t *testing.T) {
 
 	listener := newTestListener()
@@ -1036,6 +1124,7 @@ func TestInvoiceOneConf(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestAmountConversion(t *testing.T) {
 
 	// This test repros a bug where we had:
@@ -1098,6 +1187,7 @@ func TestAmountConversion(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestInvoiceUnpayable(t *testing.T) {
 
 	listener := newTestListener()
@@ -1149,6 +1239,7 @@ func TestInvoiceUnpayable(t *testing.T) {
 
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestInvoiceLend(t *testing.T) {
 
 	listener := newTestListener()
@@ -1205,6 +1296,7 @@ func TestInvoiceLend(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestAmountInfo_Mutating(t *testing.T) {
 	amountInfo := &AmountInfo{
 		TakeFeeFromAmount:     false,
@@ -1223,6 +1315,7 @@ func TestAmountInfo_Mutating(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestOnChainTFFAWithDebtFeeNeedsChangeBecauseOutputAmountLowerThanDust(t *testing.T) {
 
 	listener := newTestListener()

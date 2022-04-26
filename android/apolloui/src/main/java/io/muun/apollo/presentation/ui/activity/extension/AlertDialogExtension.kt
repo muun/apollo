@@ -2,10 +2,12 @@ package io.muun.apollo.presentation.ui.activity.extension
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import androidx.annotation.StringRes
 import butterknife.BindColor
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.di.PerActivity
+import io.muun.apollo.presentation.ui.utils.getStyledString
 import rx.functions.Action0
 import javax.inject.Inject
 
@@ -41,7 +43,14 @@ class AlertDialogExtension @Inject constructor() : ActivityExtension() {
     /**
      * Show a simple, standard muun error dialog.
      */
-    fun showErrorDialog(msg: String, followupAction: Action0? = null, onDismiss: Action0? = null) {
+    fun showErrorDialog(@StringRes resId: Int, followup: Action0? = null, onDismiss: Action0? = null) {
+        showErrorDialog(activity.getStyledString(resId), followup, onDismiss)
+    }
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    fun showErrorDialog(msg: CharSequence, followupAction: Action0? = null, onDismiss: Action0? = null) {
         val builder = MuunDialog.Builder()
             .layout(R.layout.dialog_custom_layout)
             .message(msg)

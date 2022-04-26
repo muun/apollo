@@ -37,7 +37,7 @@
             android:textColor="@color/text_secondary_color"
             android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            tools:text="59:40"/>
+            tools:text="23:59:58"/>
 
     <io.muun.apollo.presentation.ui.view.LoadingView
             android:id="@+id/expiration_time_loading"

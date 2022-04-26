@@ -31,7 +31,7 @@ import io.muun.common.utils.BitcoinUtils
 import org.threeten.bp.ZonedDateTime
 import kotlin.math.abs
 
-class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
+class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
 
     companion object {
         private const val NEW_OP_ANIMATION_WINDOW = 15L   // In Seconds
@@ -204,7 +204,7 @@ class HomeFragment: SingleFragment<HomePresenter>(), HomeView {
         }
     }
 
-    override fun setState(homeState: HomePresenter.HomeState) {
+    override fun setState(homeState: HomeFragmentPresenter.HomeState) {
         balanceView.setBalance(homeState)
         setChevronAnimation(homeState.utxoSetState)
 

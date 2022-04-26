@@ -124,8 +124,8 @@
         Este pago requiere un tiempo de expiración más largo
     </string>
     <string name="error_op_invoice_will_expire_soon_desc">
-        Este pago requiere más tiempo restante antes de que expire la factura. Por favor, 
-        crea o solicita una nueva factura. Sugerimos un tiempo de expiración de 1 hora o más.
+        Por favor solicita una nueva factura con un tiempo de expiración de al menos una hora,
+        o intenta escaneando una factura de menor monto.
     </string>
 
     <string name="error_op_invoice_used_title">Esta factura ya fue utilizada</string>
@@ -142,8 +142,8 @@
         Esta factura no incluye un monto
     </string>
     <string name="error_op_invoice_invalid_amount_desc">
-        Por el momento, sólo se puede pagar a facturas que incluyan un monto. Por favor,
-        crea o solicita una nueva.
+        Por el momento, sólo se puede pagar a facturas que incluyan un monto. Por favor, crea o
+        solicita una nueva.
     </string>
 
     <string name="error_op_invoice_invalid_title">No es posible pagar esta factura</string>
@@ -319,6 +319,7 @@
     <string name="internal_outgoing_operation">Pagaste a %s</string>
     <string name="external_incoming_operation">Te pagaron</string>
     <string name="external_outgoing_operation">Pagaste</string>
+    <string name="external_outgoing_swap_operation">Pagaste a %s</string>
     <string name="lnurl_withdraw_op_detail_title">%s te pagó</string>
 
     <!-- Contacts -->
@@ -1115,10 +1116,15 @@
     <string name="show_qr_invoice_create_other">Crear factura</string>
 
     <string name="address_share_title">Enviar a...</string>
-
     <string name="secure_storage_error">
-        Por razones de seguridad, tu sesión expiró. Por favor, ingresa nuevamente o contacta al
-        soporte técnico.
+        La unidad de almacenamiento seguro de tu teléfono se corrompió o fue comprometida. Por
+        razones de seguridad, tu sesión expiró. Por favor, escribinos a
+        <annotation fontStyle="bold">support@muun.com</annotation> para que podamos ayudarte.
+    </string>
+    <string name="secure_storage_error_avoid_crash_non_logout">
+        La unidad de almacenamiento seguro de tu teléfono se corrompió o fue comprometida. Muun
+        no puede continuar ejecutando en estas condiciones. Por favor, escribinos a
+        <annotation fontStyle="bold">support@muun.com</annotation> para que podamos ayudarte.
     </string>
 
     <string name="select_bitcoin_unit_title">Unidad de bitcoin</string>

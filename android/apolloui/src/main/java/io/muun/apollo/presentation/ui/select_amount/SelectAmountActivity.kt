@@ -32,7 +32,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         private const val PRE_SELECTED_AMOUNT = "SELECTED_AMOUNT"
         private const val SAT_SELECTED_AS_CURRENCY = "sat_selected_as_currency"
 
-
         fun getSelectAddressAmountIntent(context: Context,
                                          amount: MonetaryAmount? = null,
                                          satSelectedAsCurrency: Boolean

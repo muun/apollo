@@ -5,7 +5,10 @@ import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -36,7 +39,7 @@ public class SecureStorageProvider {
             return retrieveDecrypted(key);
 
         } catch (Throwable e) {
-            throw new SecureStorageError(e);
+            throw new SecureStorageError(e, debugSnapshot());
         }
     }
 
@@ -57,8 +60,10 @@ public class SecureStorageProvider {
             storeEncrypted(key, value);
 
         } catch (Throwable e) {
-            throw new SecureStorageError(e);
+            throw new SecureStorageError(e, debugSnapshot());
         }
+
+        preferences.recordAuditTrail("PUT", key);
     }
 
     /**
@@ -77,6 +82,8 @@ public class SecureStorageProvider {
     public void delete(String key) {
         preferences.delete(key);
         keyStore.deleteEntry(key);
+
+        preferences.recordAuditTrail("DELETE", key);
     }
 
     /**
@@ -105,11 +112,13 @@ public class SecureStorageProvider {
     public void wipe() {
         preferences.wipe();
         keyStore.wipe();
+
+        preferences.recordAuditTrail("WIPE", "*");
     }
 
     private void throwIfModeInconsistent() {
         if (!preferences.isCompatibleFormat()) {
-            throw new InconsistentModeError();
+            throw new InconsistentModeError(debugSnapshot());
         }
     }
 
@@ -122,11 +131,11 @@ public class SecureStorageProvider {
         }
 
         if (!hasKeyInPreferences) {
-            throw new SharedPreferencesCorruptedError();
+            throw new SharedPreferencesCorruptedError(debugSnapshot());
         }
 
         if (!hasKeyInKeystore) {
-            throw new KeyStoreCorruptedError();
+            throw new KeyStoreCorruptedError(debugSnapshot());
         }
     }
 
@@ -139,10 +148,37 @@ public class SecureStorageProvider {
     }
 
     /**
+     * Take a debug snapshot of the current state of the secure storage. This is safe to
+     * report without compromising any user data.
+     */
+    public DebugSnapshot debugSnapshot() {
+        // NEVER ever return any values from the keystore itself, only labels should get out.
+
+        Set<String> keystoreLabels = null;
+        Exception keystoreException = null;
+        try {
+            keystoreLabels = keyStore.getAllLabels();
+        } catch (final Exception e) {
+            keystoreException = e;
+        }
+
+        return new DebugSnapshot(
+                preferences.getMode(),
+                preferences.isCompatibleFormat(),
+                preferences.getAllLabels(),
+                preferences.getAllIvLabels(),
+                keystoreLabels,
+                keystoreException,
+                preferences.getAuditTrail()
+        );
+    }
+
+    /**
      * The Android KeyStore appears to be corrupted: a key present in our Preference map is missing.
      */
     public static class KeyStoreCorruptedError extends SecureStorageError {
-        public KeyStoreCorruptedError() {
+        public KeyStoreCorruptedError(DebugSnapshot debugSnapshot) {
+            super(debugSnapshot);
         }
     }
 
@@ -150,11 +186,8 @@ public class SecureStorageProvider {
      * The SharedPreferences bag appears to be corrupted: a key present in our KeyStore is missing.
      */
     public static class SharedPreferencesCorruptedError extends SecureStorageError {
-        public SharedPreferencesCorruptedError(Throwable throwable) {
-            super(throwable);
-        }
-
-        public SharedPreferencesCorruptedError() {
+        public SharedPreferencesCorruptedError(DebugSnapshot debugSnapshot) {
+            super(debugSnapshot);
         }
     }
 
@@ -163,7 +196,36 @@ public class SecureStorageProvider {
      * This is most likely due to a system update to Marshmallow from a previous version.
      */
     public static class InconsistentModeError extends SecureStorageError {
-        public InconsistentModeError() {
+        public InconsistentModeError(DebugSnapshot debugSnapshot) {
+            super(debugSnapshot);
+        }
+    }
+
+    public static class DebugSnapshot {
+        public final SecureStorageMode mode;
+        public final boolean isCompatible;
+        public final Set<String> labelsInPrefs;
+        public final Set<String> labelsWithIvInPrefs;
+        public @Nullable final Set<String> labelsInKeystore;
+        public @Nullable final Exception keystoreException;
+        public final List<String> auditTrail;
+
+        public DebugSnapshot(
+                final SecureStorageMode mode,
+                final boolean isCompatible,
+                final Set<String> labelsInPrefs,
+                final Set<String> labelsWithIvInPrefs,
+                @Nullable final Set<String> labelsInKeystore,
+                @Nullable final Exception keystoreException,
+                final List<String> auditTrail
+        ) {
+            this.mode = mode;
+            this.isCompatible = isCompatible;
+            this.labelsInPrefs = labelsInPrefs;
+            this.labelsWithIvInPrefs = labelsWithIvInPrefs;
+            this.labelsInKeystore = labelsInKeystore;
+            this.keystoreException = keystoreException;
+            this.auditTrail = auditTrail;
         }
     }
 }

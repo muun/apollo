@@ -11,10 +11,11 @@ import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.model.BitcoinUnit
-import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer
+import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
+import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
 import io.muun.apollo.presentation.ui.view.EditAmountItem
 import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
@@ -68,7 +69,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     @JvmField
     var satSelectedAsCurrency = false
 
-    private var countdownTimer: InvoiceExpirationCountdownTimer? = null
+    private var countdownTimer: MuunCountdownTimer? = null
 
     override fun inject() {
         component.inject(this)
@@ -196,11 +197,15 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         }
     }
 
-    private fun buildCountDownTimer(remainingMillis: Long): InvoiceExpirationCountdownTimer {
+    private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {
 
-        return object : InvoiceExpirationCountdownTimer(context, remainingMillis) {
-            override fun onTextUpdate(remainingSeconds: Long, text: CharSequence) {
-                expirationTimeItem.setExpirationTime(text)
+        return object : MuunCountdownTimer(remainingMillis) {
+
+            override fun onTickSeconds(remainingSeconds: Long) {
+                // Using minimalistic pattern/display/formatting to better fit in small screen space
+                expirationTimeItem.setExpirationTime(
+                    ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
+                )
             }
 
             override fun onFinish() {

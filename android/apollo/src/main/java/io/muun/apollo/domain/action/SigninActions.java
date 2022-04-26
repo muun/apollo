@@ -1,9 +1,6 @@
 package io.muun.apollo.domain.action;
 
-import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.preferences.AuthRepository;
-import io.muun.apollo.data.preferences.UserRepository;
-import io.muun.apollo.domain.model.user.User;
 import io.muun.common.Optional;
 import io.muun.common.model.SessionStatus;
 
@@ -15,27 +12,13 @@ import javax.inject.Singleton;
 public class SigninActions {
 
     private final AuthRepository authRepository;
-    private final UserRepository userRepository;
 
     /**
      * Constructor.
      */
     @Inject
-    public SigninActions(AuthRepository authRepository, UserRepository userRepository) {
-
+    public SigninActions(AuthRepository authRepository) {
         this.authRepository = authRepository;
-        this.userRepository = userRepository;
-    }
-
-    /**
-     * Setups Crashlytics identifiers.
-     */
-    public void setupCrashlytics() {
-        final User user = userRepository.fetchOne();
-
-        if (user.email.isPresent()) {
-            LoggingContext.configure(user.email.get(), user.hid.toString());
-        }
     }
 
     public Optional<SessionStatus> getSessionStatus() {

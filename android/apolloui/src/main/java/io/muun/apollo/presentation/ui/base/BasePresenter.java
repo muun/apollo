@@ -298,7 +298,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             } else {
                 // Handle session expired "gracefully"
                 view.showErrorDialog(
-                        getContext().getString(R.string.error_expired_session),
+                        R.string.error_expired_session,
                         () -> {
                             // Do nothing
                         }
@@ -307,7 +307,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
         } else if (error instanceof SecureStorageError && isRecoverableWallet) {
 
-            view.showErrorDialog(getContext().getString(R.string.secure_storage_error),
+            view.showErrorDialog(
+                    R.string.secure_storage_error,
                     () -> navigator.navigateToLogout(getContext())
             );
 
@@ -331,7 +332,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             return true;
 
         } else if (ExtensionsKt.isInstanceOrIsCausedByNetworkError(error)) {
-            view.showErrorDialog(getContext().getString(R.string.network_error_message));
+            view.showErrorDialog(R.string.network_error_message);
             return true;
 
         } else if (error instanceof TooManyRequestsError) {
@@ -522,7 +523,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         view.showDialog(muunDialog);
     }
 
-    protected void sendErrorReport(Throwable error) {
+    @Override
+    public void sendErrorReport(Throwable error) {
 
         final CrashReport report = CrashReportBuilder.INSTANCE.build(error);
         analytics.attachAnalyticsMetadata(report);

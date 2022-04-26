@@ -28,6 +28,8 @@ import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -79,6 +81,8 @@ public class KeyStoreProvider {
     }
 
     /**
+     * Encrypt a value using an unique keystore-backed key.
+     *
      * @param input Data to encrypt.
      * @param alias Key alias under which a key will be generated in the keystore.
      * @param iv    Initialization vector which will prevent an attacker to easily figure out the
@@ -91,6 +95,9 @@ public class KeyStoreProvider {
             final String keyAlias = getAlias(alias);
 
             if (!hasKey(keyAlias)) {
+                // FIXME: This is a racy operation and might end up creating 2 keys overwriting
+                // each other. That might mean we store the encrypted value using key 1 but keystore
+                // has key 2 stored.
                 generateKeyStore(keyAlias);
             }
 
@@ -105,6 +112,8 @@ public class KeyStoreProvider {
     }
 
     /**
+     * Decrypt a value using it's unique key backed by the keystore.
+     *
      * @param input Data to decrypt.
      * @param alias Key alias under which the data was encrypted in the first place.
      * @param iv    Initialization vector that was user to encrypt the data.
@@ -141,10 +150,10 @@ public class KeyStoreProvider {
 
             keyGenerator.generateKey();
 
-        } catch (
-                NoSuchAlgorithmException
-                        | NoSuchProviderException
-                        | InvalidAlgorithmParameterException e) {
+        } catch (NoSuchAlgorithmException
+                | NoSuchProviderException
+                | InvalidAlgorithmParameterException e) {
+
             Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
@@ -205,10 +214,10 @@ public class KeyStoreProvider {
             generator.initialize(spec);
             generator.generateKeyPair();
 
-        } catch (
-                NoSuchAlgorithmException
-                        | NoSuchProviderException
-                        | InvalidAlgorithmParameterException e) {
+        } catch (NoSuchAlgorithmException
+                | NoSuchProviderException
+                | InvalidAlgorithmParameterException e) {
+
             Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
@@ -217,18 +226,17 @@ public class KeyStoreProvider {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private byte[] encryptDataJ(byte[] inputData, String keyAlias, KeyStore keyStore) {
         try {
-            final PrivateKeyEntry privateKeyEntry
-                    = (PrivateKeyEntry) keyStore.getEntry(keyAlias, null);
+            final PrivateKeyEntry entry = (PrivateKeyEntry) keyStore.getEntry(keyAlias, null);
 
-            return CryptographyWrapper.rsaEncrypt(inputData, privateKeyEntry);
+            return CryptographyWrapper.rsaEncrypt(inputData, entry);
 
-        } catch (
-                KeyStoreException
-                        | NoSuchAlgorithmException
-                        | UnrecoverableEntryException
-                        | InvalidKeyException
-                        | NoSuchPaddingException
-                        | IOException e) {
+        } catch (KeyStoreException
+                | NoSuchAlgorithmException
+                | UnrecoverableEntryException
+                | InvalidKeyException
+                | NoSuchPaddingException
+                | IOException e) {
+
             Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
@@ -236,26 +244,26 @@ public class KeyStoreProvider {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     private byte[] decryptDataJ(byte[] input, String keyAlias, KeyStore keyStore) {
-        PrivateKeyEntry privateKeyEntry = null;
         try {
-            privateKeyEntry = (PrivateKeyEntry) keyStore.getEntry(keyAlias,
-                    null);
+            final PrivateKeyEntry entry = (PrivateKeyEntry) keyStore.getEntry(keyAlias, null);
 
-            return CryptographyWrapper.rsaDecrypt(input, privateKeyEntry);
+            return CryptographyWrapper.rsaDecrypt(input, entry);
 
-        } catch (
-                NoSuchAlgorithmException
-                        | NoSuchPaddingException
-                        | UnrecoverableEntryException
-                        | KeyStoreException
-                        | InvalidKeyException
-                        | IOException e) {
+        } catch (NoSuchAlgorithmException
+                | NoSuchPaddingException
+                | UnrecoverableEntryException
+                | KeyStoreException
+                | InvalidKeyException
+                | IOException e) {
+
             Timber.e(e);
             throw new MuunKeyStoreException(e);
         }
     }
 
     /**
+     * Check whether an alias is present in the keystore.
+     *
      * @param keyAlias Key alias that was used to encrypt data.
      * @return True if that key was generated.
      */
@@ -309,6 +317,14 @@ public class KeyStoreProvider {
                     Timber.e(e);
                 }
             }
+        }
+    }
+
+    Set<String> getAllLabels() throws MuunKeyStoreException {
+        try {
+            return new HashSet<>(Collections.list(loadKeystore().aliases()));
+        } catch (KeyStoreException e) {
+            throw new MuunKeyStoreException(e);
         }
     }
 

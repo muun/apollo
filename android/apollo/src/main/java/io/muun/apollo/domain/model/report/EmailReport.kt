@@ -3,6 +3,7 @@ package io.muun.apollo.domain.model.report
 import android.os.Build
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
+import io.muun.common.utils.Dates
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import org.threeten.bp.Instant
@@ -51,7 +52,7 @@ class EmailReport private constructor(val body: String) {
             val body =
                 """|Android version: ${Build.VERSION.SDK_INT}
                    |App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
-                   |Date: ${now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss z")) }
+                   |Date: ${now.format(Dates.ISO_DATE_TIME_WITH_MILLIS) }
                    |Locale: ${locale.toString()}
                    |SupportId: ${if (supportId != null) supportId else "Not logged in"}
                    |ScreenPresenter: $presenterName

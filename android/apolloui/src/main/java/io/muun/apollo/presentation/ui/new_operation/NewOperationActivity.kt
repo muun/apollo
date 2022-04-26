@@ -28,7 +28,7 @@ import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
 import io.muun.apollo.domain.utils.locale
-import io.muun.apollo.presentation.ui.InvoiceExpirationCountdownTimer
+import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.base.di.PerActivity
@@ -40,6 +40,7 @@ import io.muun.apollo.presentation.ui.home.HomeActivity
 import io.muun.apollo.presentation.ui.listener.SimpleTextWatcher
 import io.muun.apollo.presentation.ui.new_operation.NewOperationView.ConfirmStateViewModel
 import io.muun.apollo.presentation.ui.new_operation.NewOperationView.Receiver
+import io.muun.apollo.presentation.ui.utils.NewOperationInvoiceFormatter
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.getStyledString
@@ -190,7 +191,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     @JvmField
     var displayInAlternateCurrency: Boolean = false
 
-    private var countdownTimer: InvoiceExpirationCountdownTimer? = null
+    private var countdownTimer: MuunCountdownTimer? = null
 
     override fun inject() {
         component.inject(this)
@@ -740,16 +741,20 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         finishActivity()
     }
 
-    private fun buildCountDownTimer(remainingMillis: Long): InvoiceExpirationCountdownTimer {
-        return object : InvoiceExpirationCountdownTimer(this, remainingMillis) {
+    private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {
+        return object : MuunCountdownTimer(remainingMillis) {
 
-            override fun onTextUpdate(remainingSeconds: Long, timeText: CharSequence) {
-                val prefixText = ctx.getString(R.string.new_operation_invoice_exp_prefix)
+
+            override fun onTickSeconds(remainingSeconds: Long) {
+                val context = this@NewOperationActivity
+                val timeText= NewOperationInvoiceFormatter(context).formatSeconds(remainingSeconds)
+
+                val prefixText = getString(R.string.new_operation_invoice_exp_prefix)
                 val text = TextUtils.concat(prefixText, " ", timeText)
                 val richText = RichText(text)
 
                 if (remainingSeconds < INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS) {
-                    richText.setForegroundColor(ContextCompat.getColor(ctx, R.color.red))
+                    richText.setForegroundColor(ContextCompat.getColor(context, R.color.red))
                 }
 
                 invoiceExpirationCountdown.text = text

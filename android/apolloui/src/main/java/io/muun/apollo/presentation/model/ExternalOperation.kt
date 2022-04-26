@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.model
 
 import android.content.Context
+import android.text.TextUtils
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
@@ -25,7 +26,11 @@ class ExternalOperation(
                 context.getString(R.string.external_incoming_operation)
             }
         } else {
-            context.getString(R.string.external_outgoing_operation)
+            if (isSwap && !TextUtils.isEmpty(swapReceiverAlias)) {
+                context.getString(R.string.external_outgoing_swap_operation, swapReceiverAlias)
+            } else {
+                context.getString(R.string.external_outgoing_operation)
+            }
         }
 
     override fun getPictureUri(context: Context): String {

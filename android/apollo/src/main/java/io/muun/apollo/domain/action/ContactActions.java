@@ -13,6 +13,7 @@ import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
+import io.muun.apollo.domain.model.MultisigContact;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.common.crypto.hd.MuunAddress;
@@ -222,17 +223,17 @@ public class ContactActions {
                     return createContactAddressV1(contact);
 
                 case (int) Libwallet.AddressVersionV2:
-                    return createContactAddressV2(contact);
+                    return createContactAddressV2(new MultisigContact(contact));
 
                 case (int) Libwallet.AddressVersionV3:
-                    return createContactAddressV3(contact);
+                    return createContactAddressV3(new MultisigContact(contact));
 
                 case (int) Libwallet.AddressVersionV4:
-                    return createContactAddressV4(contact);
+                    return createContactAddressV4(new MultisigContact(contact));
 
                 case (int) Libwallet.AddressVersionV5:
                 default: // contact can handle higher, we can't.
-                    return createContactAddressV5(contact);
+                    return createContactAddressV5(new MultisigContact(contact));
 
             }
         }
@@ -250,31 +251,31 @@ public class ContactActions {
         return LibwalletBridge.createAddressV1(derivedPublicKey, networkParameters);
     }
 
-    private MuunAddress createContactAddressV2(Contact contact) {
+    private MuunAddress createContactAddressV2(MultisigContact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
         return LibwalletBridge.createAddressV2(derivedPublicKeyPair, networkParameters);
     }
 
-    private MuunAddress createContactAddressV3(Contact contact) {
+    private MuunAddress createContactAddressV3(MultisigContact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
         return LibwalletBridge.createAddressV3(derivedPublicKeyPair, networkParameters);
     }
 
-    private MuunAddress createContactAddressV4(Contact contact) {
+    private MuunAddress createContactAddressV4(MultisigContact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
         return LibwalletBridge.createAddressV4(derivedPublicKeyPair, networkParameters);
     }
 
-    private MuunAddress createContactAddressV5(Contact contact) {
+    private MuunAddress createContactAddressV5(MultisigContact contact) {
         final PublicKeyPair derivedPublicKeyPair = derivePublicKeyPair(contact);
 
         return LibwalletBridge.createAddressV5(derivedPublicKeyPair, networkParameters);
     }
 
-    private PublicKeyPair derivePublicKeyPair(Contact contact) {
+    private PublicKeyPair derivePublicKeyPair(MultisigContact contact) {
         final PublicKeyPair basePublicKeyPair = contact.getPublicKeyPair();
 
         final PublicKeyPair derivedPublicKeyPair = basePublicKeyPair
