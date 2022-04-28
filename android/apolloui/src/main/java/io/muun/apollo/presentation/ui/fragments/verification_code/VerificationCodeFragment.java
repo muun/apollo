@@ -24,6 +24,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import icepick.State;
 
+import static io.muun.common.utils.Dates.MINUTE_IN_SECONDS;
+
 public class VerificationCodeFragment extends SingleFragment<VerificationCodePresenter>
         implements VerificationCodeView {
 
@@ -117,6 +119,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
         return true;
     }
 
+    @Override
     public void setLoading(boolean isLoading) {
         verificationCode.setEnabled(!isLoading);
         continueButton.setLoading(isLoading);
@@ -227,8 +230,8 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
 
         @Override
         public void onTickSeconds(long remainingSeconds) {
-            final long minutes = remainingSeconds / 60;
-            final long seconds = remainingSeconds % 60;
+            final long minutes = remainingSeconds / MINUTE_IN_SECONDS;
+            final long seconds = remainingSeconds % MINUTE_IN_SECONDS;
 
             final String text = String.format(countdownTextFormat, minutes, seconds);
             countdownText.setText(text);

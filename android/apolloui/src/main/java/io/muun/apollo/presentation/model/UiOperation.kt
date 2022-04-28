@@ -197,6 +197,11 @@ abstract class UiOperation(
         }
 
     /**
+     * Get the receiving LN node alias.
+     */
+    val swapReceiverAlias: CharSequence
+        get() = operation.swap?.receiver?.alias ?: ""
+    /**
      * Get the preimage of swap or incomingSwap, if this is a LN payment. Empty String otherwise.
      */
     val preimage: String

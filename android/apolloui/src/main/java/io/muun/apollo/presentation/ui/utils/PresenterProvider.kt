@@ -11,6 +11,7 @@ object PresenterProvider {
         idToPresenter[id] = presenter
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <T: Presenter<*>> get(id: String): T? {
         return idToPresenter[id] as? T
     }

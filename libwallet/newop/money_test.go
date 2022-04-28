@@ -40,6 +40,14 @@ func TestMonetaryAmountToBitcoinAmount(t *testing.T) {
 		t.Fatalf("expected converted amount to be 32000, got %v", bitcoinAmount.InInputCurrency.Value)
 	}
 
+	if bitcoinAmount.InInputCurrency.Currency != "BTC" {
+		t.Fatalf("expected intput currency to be BTC, got %v", bitcoinAmount.InInputCurrency.Currency)
+	}
+
+	if bitcoinAmount.InInputCurrency.Value.Cmp(decimal.NewFromInt(1)) != 0 {
+		t.Fatalf("expected converted amount to be 1, got %v", bitcoinAmount.InInputCurrency.Value)
+	}
+
 }
 
 func TestMonetaryAmountAdd(t *testing.T) {

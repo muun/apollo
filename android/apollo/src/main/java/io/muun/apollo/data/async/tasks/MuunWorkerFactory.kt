@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import io.muun.apollo.data.external.DataComponentProvider
 import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
+import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.utils.Preconditions
@@ -29,6 +30,9 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
     lateinit var userActions: UserActions
 
     @Inject
+    lateinit var loggingContextManager: LoggingContextManager
+
+    @Inject
     lateinit var transformerFactory: ExecutionTransformerFactory
 
     @Inject
@@ -47,6 +51,8 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
 
         // Should be enforce by WorkManager API but still (why don't they use Class param?!)
         Preconditions.checkArgument(Worker::class.java.isAssignableFrom(workerClass))
+
+        loggingContextManager.setupCrashlytics()
 
         when (workerClass) {
             PeriodicTaskWorker::class.java -> {

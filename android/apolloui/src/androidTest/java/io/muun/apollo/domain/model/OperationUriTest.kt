@@ -3,8 +3,9 @@ package io.muun.apollo.domain.model
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.BaseUnitTest
 import io.muun.common.bitcoinj.NetworkParametersHelper
-import org.junit.Assert
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.doReturn
@@ -24,6 +25,7 @@ class OperationUriTest: BaseUnitTest() {
 
     private val legacyAddress = "3AXHY3dJU1z9YkU5o1GKiLomCcdySZhBnj"
     private val bech32Address = "BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"
+    private val taprootAddress = "bc1ps3y85gxp3wxyezkcvsww0cylfng209t896fsxxw2c8r2tju0fajseqrglx"
     private val invoice = "lnbc340n1p0r3px4pp5xf6h65d75sjwfd0lg6x37238chfxa8j5e2txn2cu8rwhqll9s3s" +
         "qdzq2pshjmt9de6zqen0wgsrxdpqwp5hsetvwvsxzapqwdshgmmndp5hxtnsd3skxefwxqzjccqp2sp53uldkk4r" +
         "zafm00pv9sm7u57caycgn0qs52fxvkce96w4349x9pyqrzjqwryaup9lh50kkranzgcdnn2fgvx390wgj5jd07rw" +
@@ -41,6 +43,8 @@ class OperationUriTest: BaseUnitTest() {
 
     @Test
     fun fromString() {
+
+        // TODO add support and test for taproot addresses
 
         var uri = OperationUri.fromString(bech32Address)
         assertTrue(uri.isBitcoin)
@@ -115,6 +119,8 @@ class OperationUriTest: BaseUnitTest() {
         assertEquals("1.2", btcUriWithAmountAndCurrency.getParam(OperationUri.MUUN_AMOUNT).get())
         assertEquals("btc", btcUriWithAmountAndCurrency.getParam(OperationUri.MUUN_CURRENCY).get())
 
+        // TODO add test for BOLT11_INVOICE_PARAM
+
         val lnUri = OperationUri.fromString("muun:$invoice")
         assertTrue(lnUri.isLn)
         assertEquals(invoice, lnUri.lnInvoice.get())
@@ -154,4 +160,7 @@ class OperationUriTest: BaseUnitTest() {
         val uri = OperationUri.fromString(uriString)
         assertTrue(uri.isBitcoin)
     }
+
+    // TODO: What about bitcoin:<LNURL> or muun:<LNURL>??
+    // TODO: What about muun:<bitcoinUri>? E.g muun:bitcoin:<address>
 }

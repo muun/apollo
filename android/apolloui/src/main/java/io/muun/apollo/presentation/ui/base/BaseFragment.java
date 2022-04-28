@@ -27,6 +27,7 @@ import androidx.annotation.MainThread;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import butterknife.ButterKnife;
@@ -251,7 +252,23 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg) {
+    public void showErrorDialog(@StringRes int resId) {
+        showErrorDialog(resId, null);
+    }
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(@StringRes int resId, Action0 followupAction) {
+        getParentActivity().showErrorDialog(resId, followupAction);
+    }
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(CharSequence errorMsg) {
         showErrorDialog(errorMsg, null, null);
     }
 
@@ -259,7 +276,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg, Action0 followupAction) {
+    public void showErrorDialog(CharSequence errorMsg, Action0 followupAction) {
         getParentActivity().showErrorDialog(errorMsg, followupAction);
     }
 
@@ -267,8 +284,8 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg, Action0 followupAction, Action0 onDismissAction) {
-        getParentActivity().showErrorDialog(errorMsg, followupAction, onDismissAction);
+    public void showErrorDialog(CharSequence errorMsg, Action0 followup, Action0 onDismiss) {
+        getParentActivity().showErrorDialog(errorMsg, followup, onDismiss);
     }
 
     @Override

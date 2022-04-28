@@ -4,6 +4,7 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.ApiMigrationsManager
+import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.SigninActions
@@ -29,7 +30,7 @@ class SyncApplicationDataAction @Inject constructor(
     private val userRepository: UserRepository,
     private val contactActions: ContactActions,
     private val operationActions: OperationActions,
-    private val signinActions: SigninActions,
+    private val loggingContextManager: LoggingContextManager,
     private val syncPublicKeySet: SyncPublicKeySetAction,
     private val fetchNextTransactionSize: FetchNextTransactionSizeAction,
     private val fetchRealTimeData: FetchRealTimeDataAction,
@@ -101,7 +102,7 @@ class SyncApplicationDataAction @Inject constructor(
             .doOnNext {
                 userRepository.store(it.fst)
                 userPreferencesRepository.update(it.snd)
-                signinActions.setupCrashlytics()
+                loggingContextManager.setupCrashlytics()
             }
             .toVoid()
 

@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 
 @PerFragment
-class HomePresenter @Inject constructor(
+class HomeFragmentPresenter @Inject constructor(
     private val paymentContextSel: PaymentContextSelector,
     private val bitcoinUnitSel: BitcoinUnitSelector,
     private val userPreferencesSelector: UserPreferencesSelector,
@@ -35,7 +35,7 @@ class HomePresenter @Inject constructor(
     private val utxoSetStateSelector: UtxoSetStateSelector,
     private val featureStatusSel: FeatureStatusSelector,
     private val blockchainHeightSel: BlockchainHeightSelector
-) : SingleFragmentPresenter<HomeView, HomeParentPresenter>() {
+) : SingleFragmentPresenter<HomeFragmentView, HomeFragmentParentPresenter>() {
 
     @State
     @JvmField

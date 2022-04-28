@@ -122,4 +122,8 @@ public class Supports {
         int APOLLO = 900;
         int FALCON = 706;
     }
+
+    public interface BrokenTransactionHashProcessing {
+        int APOLLO = 901;
+    }
 }

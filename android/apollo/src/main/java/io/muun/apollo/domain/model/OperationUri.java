@@ -54,13 +54,13 @@ public class OperationUri {
         try {
             return fromLnInvoice(text);
         } catch (IllegalArgumentException ex) {
-            // Not a Lighning Network raw invoice.
+            // Not a Lightning Network raw invoice.
         }
 
         try {
             return fromLnUri(text);
         } catch (IllegalArgumentException ex) {
-            // Not a Lighning Network URI.
+            // Not a Lightning Network URI.
         }
 
         try {

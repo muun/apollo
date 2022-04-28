@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.errors
 
+import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 import java.io.Serializable
 
 open class MuunError: RuntimeException {

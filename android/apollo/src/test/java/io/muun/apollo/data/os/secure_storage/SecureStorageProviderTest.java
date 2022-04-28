@@ -1,8 +1,6 @@
-package io.muun.apollo.data.secure_storage;
+package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.BaseTest;
-import io.muun.apollo.data.os.secure_storage.SecureStorageMode;
-import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -2,7 +2,6 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.base.HoustonIdModel;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.utils.Preconditions;
 
 import androidx.annotation.Nullable;
@@ -44,10 +43,6 @@ public class Contact extends HoustonIdModel {
         this.publicKey = publicKey;
         this.cosigningPublicKey = cosigningPublicKey;
         this.lastDerivationIndex = lastDerivationIndex;
-    }
-
-    public PublicKeyPair getPublicKeyPair() {
-        return new PublicKeyPair(publicKey, cosigningPublicKey);
     }
 
     /**

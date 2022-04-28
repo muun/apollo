@@ -3,7 +3,11 @@ package io.muun.apollo.domain.errors
 import io.muun.apollo.data.external.UserFacingErrorMessages
 
 
-open class EmergencyKitInvalidCodeError:
-    EmergencyKitVerificationError(
-        UserFacingErrorMessages.INSTANCE.emergencyKitInvalidVerificationCode()
-    )
+class EmergencyKitInvalidCodeError(providedCode: String) : EmergencyKitVerificationError(
+    UserFacingErrorMessages.INSTANCE.emergencyKitInvalidVerificationCode()
+) {
+
+    init {
+        metadata["providedCode"] = providedCode
+    }
+}

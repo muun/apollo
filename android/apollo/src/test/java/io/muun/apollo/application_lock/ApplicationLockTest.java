@@ -3,9 +3,9 @@ package io.muun.apollo.application_lock;
 
 import io.muun.apollo.BaseTest;
 import io.muun.apollo.data.os.authentication.PinManager;
+import io.muun.apollo.data.os.secure_storage.FakeKeyStore;
+import io.muun.apollo.data.os.secure_storage.FakePreferences;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
-import io.muun.apollo.data.secure_storage.FakeKeyStore;
-import io.muun.apollo.data.secure_storage.FakePreferences;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
 

@@ -7,6 +7,7 @@ import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.Fragment
 import io.muun.apollo.data.net.base.NetworkException
 import io.muun.apollo.domain.errors.MuunError
+import io.muun.apollo.domain.errors.SecureStorageError
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.common.model.Currency
 import io.muun.common.rx.ObservableFn
@@ -52,6 +53,12 @@ fun <T: Fragment> T.applyArgs(f: Bundle.() -> Unit) =
  */
 fun Throwable.isInstanceOrIsCausedByNetworkError() =
     isInstanceOrIsCausedByError<NetworkException>()
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isInstanceOrIsCausedBySecureStorageError() =
+    isInstanceOrIsCausedByError<SecureStorageError>()
 
 inline fun <reified T> Throwable.isInstanceOrIsCausedByError() =
     this is T || isCausedByError<T>()

@@ -13,7 +13,9 @@ class MoneyDecorationError(
     groupingSeparator: Char,
     maxFractionalDigits: Int,
     integerPartSize: Int,
-    selectionStart: Int
+    selectionStart: Int,
+    start: Int,
+    after: Int,
 ): MuunError(message), PotentialBug {
 
     init {
@@ -27,6 +29,9 @@ class MoneyDecorationError(
         metadata["maxFractionalDigits"] = maxFractionalDigits
         metadata["integerPartSize"] = integerPartSize
         metadata["selectionStart"] = selectionStart
+        metadata["start"] = start
+        metadata["after"] = after
+
     }
 
 }

@@ -127,8 +127,8 @@
         This payment needs a longer expiration time
     </string>
     <string name="error_op_invoice_will_expire_soon_desc">
-        This payment requires more remaining time before the invoice expires. Please create or
-        request a new invoice. We suggest an expiration time of 1 hour or more.
+        Please request a new invoice with an expiration time of at least one hour,
+        or try scanning an invoice with a smaller amount.
     </string>
 
     <string name="error_op_invoice_expired_title">This invoice has expired</string>
@@ -310,6 +310,7 @@
     <string name="internal_outgoing_operation">You paid %s</string>
     <string name="external_incoming_operation">You were paid</string>
     <string name="external_outgoing_operation">You paid</string>
+    <string name="external_outgoing_swap_operation">You paid %s</string>
     <string name="lnurl_withdraw_op_detail_title">%s paid you</string>
 
     <!-- Contacts -->
@@ -1081,6 +1082,11 @@
     <string name="secure_storage_error">
         Your phone\'s secure storage has been corrupted or compromised. For security reasons,
         Muun has logged you out. Please contact
+        <annotation fontStyle="bold">support@muun.com</annotation> for help.
+    </string>
+    <string name="secure_storage_error_avoid_crash_non_logout">
+        Your phone\'s secure storage has been corrupted or compromised. Muun can\'t continue working
+        in this conditions. Please contact
         <annotation fontStyle="bold">support@muun.com</annotation> for help.
     </string>
 

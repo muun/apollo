@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.3] - 2022-04-26
+
+### ADDED
+- Better error reporting and extra metadata for MoneyDecoration (MuunAmountInput) crash
+
+### FIXED
+- Added missing error metadata to some crashlytics errors (e.g for background task of anon users)
+- Invoice expiration time label getting cut off due to very long expiration time formatting
+- Avoid crashing and add debug snapshot with audit trail for SecureStorageErrors
+
 ## [49.2] - 2022-03-22
 
 ### FIXED

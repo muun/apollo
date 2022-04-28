@@ -1,10 +1,10 @@
 package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.data.async.tasks.TaskScheduler;
+import io.muun.apollo.domain.LoggingContextManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.NotificationActions;
-import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus;
 import io.muun.apollo.domain.selector.FeatureStatusSelector;
@@ -12,7 +12,7 @@ import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler;
-import io.muun.apollo.presentation.ui.fragments.home.HomeParentPresenter;
+import io.muun.apollo.presentation.ui.fragments.home.HomeFragmentParentPresenter;
 import io.muun.apollo.presentation.ui.fragments.operations.OperationsCache;
 
 import android.Manifest;
@@ -28,9 +28,9 @@ import javax.money.Monetary;
 import javax.validation.constraints.NotNull;
 
 @PerActivity
-public class HomePresenter extends BasePresenter<HomeView> implements HomeParentPresenter {
+public class HomePresenter extends BasePresenter<HomeView> implements HomeFragmentParentPresenter {
 
-    private final SigninActions signinActions;
+    private final LoggingContextManager loggingContextManager;
     private final ContactActions contactActions;
     private final NotificationActions notificationActions;
     private final UserSelector userSel;
@@ -52,7 +52,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
      * Creates a home presenter.
      */
     @Inject
-    public HomePresenter(SigninActions signinActions,
+    public HomePresenter(LoggingContextManager loggingContextManager,
                          ContactActions contactActions,
                          NotificationActions notificationActions,
                          UserSelector userSel,
@@ -62,7 +62,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
                          FetchRealTimeDataAction fetchRealTimeData,
                          OperationsCache operationsCache) {
 
-        this.signinActions = signinActions;
+        this.loggingContextManager = loggingContextManager;
         this.contactActions = contactActions;
         this.userSel = userSel;
         this.featureStatusSel = featureStatusSel;
@@ -80,7 +80,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeParent
         assertGooglePlayServicesPresent();
 
         taskScheduler.scheduleAllTasks();
-        signinActions.setupCrashlytics();
+        loggingContextManager.setupCrashlytics();
         signupDraftManager.clear(); // if we're here, we're 100% sure signup was successful
 
         operationsCache.start();

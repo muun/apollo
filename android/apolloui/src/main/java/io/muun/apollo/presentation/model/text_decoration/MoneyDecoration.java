@@ -173,7 +173,9 @@ public class MoneyDecoration implements DecorationTransformation {
                     groupingSeparator,
                     maxFractionalDigits,
                     integerPartSize,
-                    target.getSelectionStart()
+                    target.getSelectionStart(),
+                    start,
+                    after
 
             ));
             newCaretPosition = target.length();
@@ -190,12 +192,36 @@ public class MoneyDecoration implements DecorationTransformation {
                     groupingSeparator,
                     maxFractionalDigits,
                     integerPartSize,
-                    target.getSelectionStart()
+                    target.getSelectionStart(),
+                    start,
+                    after
+
             ));
             newCaretPosition = 0;
         }
 
-        target.setSelection(newCaretPosition);
+        try {
+            target.setSelection(newCaretPosition);
+        } catch (Exception e) {
+            // I'm sick of this, we're gonna find out what's going on here
+            final MoneyDecorationError moneyDecorationError = new MoneyDecorationError(
+                    e.getClass() + ": " + e.getMessage(),
+                    newCaretPosition,
+                    target.length(),
+                    result.toString(),
+                    stringTotalSize,
+                    inputString,
+                    decimalSeparator,
+                    groupingSeparator,
+                    maxFractionalDigits,
+                    integerPartSize,
+                    target.getSelectionStart(),
+                    start,
+                    after
+            );
+            Timber.e(moneyDecorationError);
+            throw e;
+        }
     }
 
     public void setMaxFractionalDigits(int maxFractionalDigits) {

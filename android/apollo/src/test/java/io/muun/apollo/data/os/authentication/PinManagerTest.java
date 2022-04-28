@@ -1,7 +1,8 @@
-package io.muun.apollo.data.secure_storage;
+package io.muun.apollo.data.os.authentication;
 
 import io.muun.apollo.BaseTest;
-import io.muun.apollo.data.os.authentication.PinManager;
+import io.muun.apollo.data.os.secure_storage.FakeKeyStore;
+import io.muun.apollo.data.os.secure_storage.FakePreferences;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 
 import org.junit.Before;

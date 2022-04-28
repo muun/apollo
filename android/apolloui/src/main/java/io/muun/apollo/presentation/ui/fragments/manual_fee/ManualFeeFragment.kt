@@ -99,6 +99,7 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
             val minMempoolFeeRateInVBytes = state.resolved.paymentContext.minFeeRateInSatsPerVByte
             val minFeeRateInVBytes = max(minMempoolFeeRateInVBytes, minProtocolFeeRateInVBytes)
 
+            // TODO currently forgets input currency, which is important for amount display
             val feeData = state.calculateFee(feeRateInSatsPerVByte)
 
             // 2. Always show analysis data

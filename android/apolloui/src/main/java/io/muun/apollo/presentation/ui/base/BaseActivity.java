@@ -1,8 +1,10 @@
 package io.muun.apollo.presentation.ui.base;
 
+import io.muun.apollo.R;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.BugDetected;
+import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.ApolloApplication;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
@@ -35,6 +37,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import butterknife.ButterKnife;
 import icepick.Icepick;
@@ -121,13 +124,26 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Override
     @CallSuper
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        try {
+            super.onCreate(savedInstanceState);
 
-        Icepick.restoreInstanceState(this, savedInstanceState);
+            Icepick.restoreInstanceState(this, savedInstanceState);
 
-        setUpLayout();
-        initializePresenter(savedInstanceState);
-        initializeUi();
+            setUpLayout();
+            initializePresenter(savedInstanceState);
+            initializeUi();
+
+        } catch (SecureStorageError e) {
+            // Avoid crashing on weird Android Keystore errors. Redundantly report error with
+            // extra metadata and offer some explanation to the user with the option to send
+            // error report email for maximum exposure and data points.
+
+            Timber.e(e);
+            showErrorDialog(
+                    R.string.secure_storage_error_avoid_crash_non_logout,
+                    () -> presenter.sendErrorReport(e)
+            );
+        }
     }
 
     @Override
@@ -176,17 +192,29 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Override
     @CallSuper
     protected void onResume() {
-        super.onResume();
-        LoggingContext.setLocale(ExtensionsKt.locale(this).toString());
-        if (blockScreenshots()) {
-            screenshotBlockExtension.startBlockingScreenshots();
-        }
+        try {
+            super.onResume();
+            LoggingContext.setLocale(ExtensionsKt.locale(this).toString());
+            if (blockScreenshots()) {
+                screenshotBlockExtension.startBlockingScreenshots();
+            }
 
-        userActions.updateContactsPermissionState(
-                allPermissionsGranted(android.Manifest.permission.READ_CONTACTS)
-        );
-        presenter.setUp(getArgumentsBundle());
-        presenter.afterSetUp();
+            userActions.updateContactsPermissionState(
+                    allPermissionsGranted(android.Manifest.permission.READ_CONTACTS)
+            );
+            presenter.setUp(getArgumentsBundle());
+            presenter.afterSetUp();
+        } catch (SecureStorageError e) {
+            // Avoid crashing on weird Android Keystore errors. Redundantly report error with
+            // extra metadata and offer some explanation to the user with the option to send
+            // error report email for maximum exposure and data points.
+
+            Timber.e(e);
+            showErrorDialog(
+                    R.string.secure_storage_error_avoid_crash_non_logout,
+                    () -> presenter.sendErrorReport(e)
+            );
+        }
     }
 
     @Override
@@ -437,12 +465,27 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         showDialog.call(this);
     }
 
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(@StringRes int resId) {
+        showErrorDialog(resId, null);
+    }
 
     /**
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg) {
+    public void showErrorDialog(@StringRes int resId, Action0 followupAction) {
+        alertDialogExtension.showErrorDialog(resId, followupAction, null);
+    }
+
+    /**
+     * Show a simple, standard muun error dialog.
+     */
+    @Override
+    public void showErrorDialog(CharSequence errorMsg) {
         showErrorDialog(errorMsg, null, null);
     }
 
@@ -450,7 +493,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg, Action0 followupAction) {
+    public void showErrorDialog(CharSequence errorMsg, Action0 followupAction) {
         showErrorDialog(errorMsg, followupAction, null);
     }
 
@@ -458,8 +501,8 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * Show a simple, standard muun error dialog.
      */
     @Override
-    public void showErrorDialog(String errorMsg, Action0 followupAction, Action0 onDismissAction) {
-        alertDialogExtension.showErrorDialog(errorMsg, followupAction, onDismissAction);
+    public void showErrorDialog(CharSequence errorMsg, Action0 followup, Action0 onDismiss) {
+        alertDialogExtension.showErrorDialog(errorMsg, followup, onDismiss);
     }
 
     /**
@@ -485,8 +528,8 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     /**
      * Show an indefinite snack bar, of custom height.
      */
-    public void showSnackBar(int messageResId, boolean dismissable, Float height) {
-        snackBarExtension.showSnackBarIndefinite(messageResId, dismissable, height);
+    public void showSnackBar(int messageResId, boolean dismissible, Float height) {
+        snackBarExtension.showSnackBarIndefinite(messageResId, dismissible, height);
     }
 
     /**
