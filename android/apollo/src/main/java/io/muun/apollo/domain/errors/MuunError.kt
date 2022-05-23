@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.errors
 
-import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 import java.io.Serializable
 
 open class MuunError: RuntimeException {
@@ -22,5 +21,19 @@ open class MuunError: RuntimeException {
     fun extractMetadata(): MutableMap<String, Serializable> {
         val mapKeys = metadata.mapKeys { entry -> "${javaClass.canonicalName}.${entry.key}" }
         return mapKeys as MutableMap<String, Serializable>
+    }
+
+    /**
+     * Add extra metadata to this error.
+     */
+    fun addMetadata(key: String, value: Serializable) {
+        metadata[key] = value
+    }
+
+    /**
+     * Add extra metadata to this error.
+     */
+    fun addMetadata(newMetadata: Map<String, Serializable>) {
+        metadata.putAll(newMetadata)
     }
 }

@@ -10,6 +10,7 @@ class LatestOperationSelector @Inject constructor(private val operationDao: Oper
 
     fun watch(): Observable<Optional<Operation>> {
         return operationDao.fetchMaybeLatest()
+                .distinct { maybeOp -> maybeOp.map { it.hid }.orElse(null) }
     }
 
     fun get(): Optional<Operation> {

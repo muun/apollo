@@ -105,6 +105,13 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     }
 
     /**
+     * Copy receiving node to clipboard.
+     */
+    public void copyReceivingNodeToClipboard(String node) {
+        clipboardManager.copy("Receiving Node", node);
+    }
+
+    /**
      * Copy fee amount to the clipboard.
      */
     public void copyNetworkFeeToClipboard(String fee) {

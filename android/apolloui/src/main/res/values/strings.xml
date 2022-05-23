@@ -296,6 +296,7 @@
     <string name="operation_detail_amount_copied">Amount copied to clipboard</string>
     <string name="operation_detail_fee_copied">Network fee copied to clipboard</string>
     <string name="operation_detail_address_copied">Address copied to clipboard</string>
+    <string name="operation_detail_node_copied">Receiving node copied to clipboard</string>
 
     <!-- Operation history -->
     <string name="home_operations_list_title">Payments</string>

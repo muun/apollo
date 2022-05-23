@@ -305,6 +305,7 @@
     <string name="operation_detail_amount_copied">Monto copiado al portapapeles</string>
     <string name="operation_detail_fee_copied">Comisión de la red copiada al portapapeles</string>
     <string name="operation_detail_address_copied">Dirección copiada al portapapeles</string>
+    <string name="operation_detail_node_copied">Nodo destinatario copiado al portapapeles</string>
 
     <!-- Operation history -->
     <string name="home_operations_list_title">Pagos</string>

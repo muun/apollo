@@ -75,7 +75,7 @@ object CrashReportBuilder {
         error = summarize(error)
 
         // Done!
-        return CrashReport(tag ?: "Apollo", message, error, metadata)
+        return CrashReport(tag ?: "Apollo", message, error, origError, metadata)
     }
 
     /** Craft a summarized Throwable */
@@ -105,5 +105,5 @@ object CrashReportBuilder {
 
     /** Remove the Stack trace from the message, if present */
     private fun removeRedundantStackTrace(timberMessage: String?, error: Throwable) =
-        (timberMessage ?: "").split(error.javaClass.canonicalName!!, limit=2)[0]
+        (timberMessage ?: "").split(error.javaClass.canonicalName!!, limit = 2)[0]
 }

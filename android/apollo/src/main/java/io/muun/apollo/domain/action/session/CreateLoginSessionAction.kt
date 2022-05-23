@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.action.session
 
-import io.muun.apollo.data.logging.LoggingContext
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
 import io.muun.apollo.domain.action.LogoutActions
@@ -40,6 +40,6 @@ class CreateLoginSessionAction @Inject constructor(
                     isRootedDeviceAction.actionNow()
                 )
             }
-            .doOnNext { LoggingContext.configure(email, "NotLoggedYet") }
+            .doOnNext { Crashlytics.configure(email, "NotLoggedYet") }
     }
 }

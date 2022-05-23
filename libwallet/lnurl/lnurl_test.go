@@ -388,6 +388,9 @@ func TestNoRouteCheck(t *testing.T) {
 func TestExtraQueryParams(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("requestId") == "" {
+			t.Fatalf("Expected non-empty requestId in query params. Got URL: %v", r.URL.String())
+		}
 		json.NewEncoder(w).Encode(&WithdrawResponse{
 			K1:                 "foobar",
 			Callback:           "http://" + r.Host + "/withdraw/complete?foo=bar",
@@ -397,6 +400,9 @@ func TestExtraQueryParams(t *testing.T) {
 		})
 	})
 	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("requestId") == "" {
+			t.Fatalf("Expected non-empty requestId in query params. Got URL: %v", r.URL.String())
+		}
 		if r.URL.Query().Get("foo") != "bar" {
 			t.Fatalf("Expected foo=bar in query params. Got URL: %v", r.URL.String())
 		}

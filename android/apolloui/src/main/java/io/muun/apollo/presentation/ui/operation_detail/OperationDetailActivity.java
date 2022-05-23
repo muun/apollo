@@ -115,7 +115,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
     }
 
     @Override
-    public void setOperation(UiOperation operation) {
+    public void setOperation(final UiOperation operation) {
         final Context context = getViewContext();
 
         // Header:
@@ -198,7 +198,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         }
     }
 
-    private void setSwapOperation(UiOperation operation) {
+    private void setSwapOperation(final UiOperation operation) {
         // Sections involved:
         swapSection.setVisibility(View.VISIBLE);
         feeItem.setVisibility(View.VISIBLE);
@@ -216,7 +216,11 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         swapInvoiceItem.setVisibility(View.VISIBLE);
 
         swapReceiverPubkeyItem.setVisibility(View.VISIBLE);
-        swapReceiverPubkeyItem.setDescription(operation.getSwapReceiverLink());
+        swapReceiverPubkeyItem.setDescription(operation.getSwapReceiverNodeData());
+        final String swapReceiverNodeData = operation.getSwapReceiverNodeData();
+        swapReceiverPubkeyItem.setOnIconClickListener(view ->
+                onCopyReceivingNodeToClipboard(swapReceiverNodeData)
+        );
 
         // We no longer show fundingTxId to hide the submarine swap impl detail of our ln payments
 
@@ -226,7 +230,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         swapPreimageItem.setOnIconClickListener(view -> onCopyPreimageToClipboard(preimage));
     }
 
-    private void setNormalOperation(Context context, UiOperation operation) {
+    private void setNormalOperation(final Context context, final UiOperation operation) {
         // Sections involved:
         normalSection.setVisibility(View.VISIBLE);
 
@@ -298,7 +302,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         }
     }
 
-    private CharSequence getStatusDescription(UiOperation operation) {
+    private CharSequence getStatusDescription(final UiOperation operation) {
 
         switch (operation.getOperationStatus()) {
 
@@ -318,7 +322,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
     }
 
     @NonNull
-    private CharSequence getPendingStatusDescription(UiOperation operation) {
+    private CharSequence getPendingStatusDescription(final UiOperation operation) {
 
         if (operation.is0ConfSwap()) {
             return getString(R.string.operation_swap_pending_0conf_desc);
@@ -331,7 +335,7 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         );
     }
 
-    private Unit onWhyThisClick(String linkId) {
+    private Unit onWhyThisClick(final String linkId) {
         final TitleAndDescriptionDrawer dialog = new TitleAndDescriptionDrawer();
         dialog.setTitle(R.string.operation_swap_pending_confirmations_explanation_title);
         dialog.setDescription(getString(R.string.operation_swap_pending_explanation_desc));
@@ -341,42 +345,47 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         return null;
     }
 
-    private void onCopyInvoiceToClipboard(String invoice) {
+    private void onCopyInvoiceToClipboard(final String invoice) {
         presenter.copyLnInvoiceToClipboard(invoice);
         showTextToast(getString(R.string.operation_detail_invoice_copied));
     }
 
-    private void onCopyPreimageToClipboard(String preimage) {
+    private void onCopyPreimageToClipboard(final String preimage) {
         presenter.copySwapPreimageToClipboard(preimage);
         showTextToast(getString(R.string.operation_detail_preimage_copied));
     }
 
-    private void onCopyPaymentHashToClipboard(String paymentHash) {
+    private void onCopyPaymentHashToClipboard(final String paymentHash) {
         presenter.copySwapPreimageToClipboard(paymentHash);
         showTextToast(getString(R.string.operation_detail_preimage_copied));
     }
 
-    private void onCopyTransactionIdToClipboard(String transactionId) {
+    private void onCopyTransactionIdToClipboard(final String transactionId) {
         presenter.copyTransactionIdToClipboard(transactionId);
         showTextToast(getString(R.string.operation_detail_txid_copied));
     }
 
-    private void onShareTransactionId(String transactionId) {
+    private void onShareTransactionId(final String transactionId) {
         presenter.shareTransactionId(transactionId);
     }
 
-    private void onCopyAmountToClipboard(String amount) {
+    private void onCopyAmountToClipboard(final String amount) {
         presenter.copyAmountToClipboard(amount);
         showTextToast(getString(R.string.operation_detail_amount_copied));
     }
 
-    private void onCopyNetworkFeeToClipboard(String fee) {
+    private void onCopyNetworkFeeToClipboard(final String fee) {
         presenter.copyNetworkFeeToClipboard(fee);
         showTextToast(getString(R.string.operation_detail_fee_copied));
     }
 
-    private void onCopyAddressToClipboard(String address) {
+    private void onCopyAddressToClipboard(final String address) {
         presenter.copyNetworkFeeToClipboard(address);
         showTextToast(getString(R.string.operation_detail_address_copied));
+    }
+
+    private void onCopyReceivingNodeToClipboard(final String receivingNode) {
+        presenter.copyReceivingNodeToClipboard(receivingNode);
+        showTextToast(getString(R.string.operation_detail_node_copied));
     }
 }

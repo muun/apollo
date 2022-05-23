@@ -1,6 +1,7 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.domain.errors.SecureStorageError;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
@@ -39,7 +40,9 @@ public class SecureStorageProvider {
             return retrieveDecrypted(key);
 
         } catch (Throwable e) {
-            throw new SecureStorageError(e, debugSnapshot());
+            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
+            enhanceError(ssError, key);
+            throw ssError;
         }
     }
 
@@ -60,7 +63,9 @@ public class SecureStorageProvider {
             storeEncrypted(key, value);
 
         } catch (Throwable e) {
-            throw new SecureStorageError(e, debugSnapshot());
+            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
+            enhanceError(ssError, key);
+            throw ssError;
         }
 
         preferences.recordAuditTrail("PUT", key);
@@ -147,11 +152,17 @@ public class SecureStorageProvider {
         preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
     }
 
+    private void enhanceError(SecureStorageError ssError, String key) {
+        ssError.addMetadata("key", key);
+        ssError.addMetadata("cypherText", Encodings.bytesToHex(preferences.getBytes(key)));
+        ssError.addMetadata("aesIV", Encodings.bytesToHex(preferences.getAesIv(key)));
+    }
+
     /**
      * Take a debug snapshot of the current state of the secure storage. This is safe to
      * report without compromising any user data.
      */
-    public DebugSnapshot debugSnapshot() {
+    private DebugSnapshot debugSnapshot() {
         // NEVER ever return any values from the keystore itself, only labels should get out.
 
         Set<String> keystoreLabels = null;

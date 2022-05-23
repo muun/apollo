@@ -221,7 +221,11 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         val newOpOrigin = getOrigin(intent)
         val uri = getValidIntentUri(intent)
-        val operationUri = try { OperationUri.fromString(uri) } catch (e: Exception) { null }
+        val operationUri = try {
+            OperationUri.fromString(uri)
+        } catch (e: Exception) {
+            null
+        }
 
         if (operationUri != null) {
             when {
@@ -639,7 +643,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     }
 
 
-    private fun getFormattedDestinationData(receiver: SubmarineSwapReceiver): CharSequence  {
+    private fun getFormattedDestinationData(receiver: SubmarineSwapReceiver): CharSequence {
         val publicKeyText: CharSequence = Html.fromHtml(
             getString(
                 R.string.new_operation_receiving_node_public_key,
@@ -747,7 +751,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
             override fun onTickSeconds(remainingSeconds: Long) {
                 val context = this@NewOperationActivity
-                val timeText= NewOperationInvoiceFormatter(context).formatSeconds(remainingSeconds)
+                val timeText = NewOperationInvoiceFormatter(context).formatSeconds(remainingSeconds)
 
                 val prefixText = getString(R.string.new_operation_invoice_exp_prefix)
                 val text = TextUtils.concat(prefixText, " ", timeText)

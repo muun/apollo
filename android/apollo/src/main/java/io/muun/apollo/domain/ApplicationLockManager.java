@@ -1,15 +1,20 @@
 package io.muun.apollo.domain;
 
 
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.authentication.PinManager;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
+import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 import rx.Observable;
 import rx.Subscription;
+import timber.log.Timber;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +25,9 @@ import javax.inject.Singleton;
 public class ApplicationLockManager {
 
     public interface UnlockListener {
+        /**
+         * Called when lock screen has successfully been unlocked.
+         */
         void onUnlock();
     }
 
@@ -34,6 +42,7 @@ public class ApplicationLockManager {
     private final PinManager pinManager;
     private final SecureStorageProvider secureStorageProvider;
     private final ChallengePublicKeySelector challengePublicKeySel;
+    private final Context context;
 
     /**
      * Constructor.
@@ -41,11 +50,13 @@ public class ApplicationLockManager {
     @Inject
     public ApplicationLockManager(PinManager pinManager,
                                   SecureStorageProvider secureStorageProvider,
-                                  ChallengePublicKeySelector challengePublicKeySel1) {
+                                  ChallengePublicKeySelector challengePublicKeySel1,
+                                  Context context) {
 
         this.pinManager = pinManager;
         this.secureStorageProvider = secureStorageProvider;
         this.challengePublicKeySel = challengePublicKeySel1;
+        this.context = context;
     }
 
     public synchronized boolean isLockConfigured() {
@@ -176,6 +187,18 @@ public class ApplicationLockManager {
         } catch (NoSuchElementException error) {
             storeIncorrectAttempts(0);
             return 0;
+
+        } catch (SecureStorageError error) {
+            if (ExtensionsKt.isCauseByBadPaddingException(error)) {
+                // If this error is caused by a BadPadding Exception coming from the Android
+                // Keystore, we try continue execution hoping this is the only piece of data
+                // affected by this data corruption.
+                error.addMetadata("hasBackup", challengePublicKeySel.existsAnyType());
+                Crashlytics.logBreadcrumb("bad_padding_exception_workaround");
+                Timber.e(error, "WORKAROUND for BadPaddingException in fetchIncorrectAttempts");
+                return 0;
+            }
+            throw error;
         }
     }
 }
