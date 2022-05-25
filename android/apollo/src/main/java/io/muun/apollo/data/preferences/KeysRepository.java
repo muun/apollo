@@ -391,7 +391,7 @@ public class KeysRepository extends BaseRepository {
         }
 
         secureStorageProvider.put(
-                KEY_CHALLENGE_PUBLIC_KEY + type.toString(),
+                KEY_CHALLENGE_PUBLIC_KEY + type,
                 publicKey.serialize()
         );
 

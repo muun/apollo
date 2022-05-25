@@ -1,6 +1,7 @@
 package io.muun.apollo.domain
 
 import android.content.Context
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.model.user.User
@@ -10,13 +11,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LoggingContextManager  @Inject constructor(
+class LoggingContextManager @Inject constructor(
     private val userRepository: UserRepository,
-    private val context: Context
+    private val context: Context,
 ) {
 
     /**
-     * Setups Crashlytics metadata.
+     * Set up Crashlytics metadata.
      */
     fun setupCrashlytics() {
         val maybeUser: Optional<User> = userRepository.fetchOneOptional()
@@ -26,7 +27,7 @@ class LoggingContextManager  @Inject constructor(
         }
 
         val user = maybeUser.get()
-        LoggingContext.configure(user.email.orElse(null), user.hid.toString())
+        Crashlytics.configure(user.email.orElse(null), user.hid.toString())
 
         LoggingContext.locale = context.locale().toString()
     }

@@ -7,6 +7,7 @@ data class CrashReport(
     val tag: String,
     val message: String,
     val error: Throwable,
+    val originalError: Throwable?,
     val metadata: MutableMap<String, Serializable>
 ) {
 

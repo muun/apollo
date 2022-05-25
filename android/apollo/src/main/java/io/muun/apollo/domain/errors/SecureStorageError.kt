@@ -2,13 +2,13 @@ package io.muun.apollo.domain.errors
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 
-open class SecureStorageError: MuunError {
+open class SecureStorageError : MuunError {
 
     constructor(debugSnapshot: SecureStorageProvider.DebugSnapshot) {
         attachDebugSnapshotMetadata(debugSnapshot)
     }
 
-    constructor(t: Throwable, debugSnapshot: SecureStorageProvider.DebugSnapshot): super(t) {
+    constructor(t: Throwable, debugSnapshot: SecureStorageProvider.DebugSnapshot) : super(t) {
         attachDebugSnapshotMetadata(debugSnapshot)
     }
 

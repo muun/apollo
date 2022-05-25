@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.challenge_keys.password_setup
 
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserRepository
@@ -36,7 +37,7 @@ class StartEmailSetupAction @Inject constructor(
                     user.email = Optional.of(email)
                     user.isEmailVerified = false
 
-                    LoggingContext.configure(email, user.hid.toString())
+                    Crashlytics.configure(email, user.hid.toString())
 
                     userRepository.store(user)
                 }

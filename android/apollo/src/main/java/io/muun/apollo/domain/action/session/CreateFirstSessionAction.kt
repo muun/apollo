@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.session
 
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
@@ -58,7 +59,7 @@ class CreateFirstSessionAction @Inject constructor(
                 keysRepository.storeBaseMuunPublicKey(it.cosigningPublicKey)
                 keysRepository.storeSwapServerPublicKey(it.swapServerPublicKey)
 
-                LoggingContext.configure(null, it.user.hid.toString())
+                Crashlytics.configure(null, it.user.hid.toString())
             }
     }
 }

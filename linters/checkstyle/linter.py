@@ -1,11 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import subprocess
 import sys
 
 
 def get_git_root():
-    return subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).\
+    return subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text = True).\
         strip()
 
 
@@ -23,7 +23,7 @@ def run_checkstyle(jar_path, checks_path, suppressions_path, xpath_suppressions_
     command.extend(files)
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.PIPE, text=True)
     status = process.wait()
 
     if status == 0:
@@ -50,7 +50,7 @@ def lint(files):
     )
 
     for result in results:
-        print result
+        print(result)
 
     return len(results) == 0
 

@@ -36,14 +36,14 @@ check.dependsOn 'lint'
 /**
  * Insert quotes around string fields that are injected literally into code, like a C macro.
  */
-def quote(string) {
+static def quote(string) {
     return "\"" + string + "\""
 }
 
 /**
  * Returns a prefix of the current commit hash.
  */
-def commitTag() {
+static def commitTag() {
     return 'git rev-parse --short HEAD'.execute().text.trim().substring(0, 7)
 }
 
@@ -51,7 +51,7 @@ def commitTag() {
 /**
  * Configure external links for a given product flavor.
  */
-def configExternalLinks(productFlavor, String host) {
+static def configExternalLinks(productFlavor, String host) {
     String verifyPath = "/link/verify-v2/index.html"
     String authorizePath = "/link/authorize/index.html"
     String changePasswdPath = "/link/confirm/index.html"
@@ -80,8 +80,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 903
-        versionName "49.3"
+        versionCode 904
+        versionName "49.4"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/

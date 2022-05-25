@@ -6,10 +6,21 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.4] - 2022-05-23
+
+### CHANGED
+- Receiving Node cell behavior in Operation Detail. Instead of opening 1ML site (private nodes
+return a 404 not found), we copy node public key to clipboard.
+
+### FIXED
+- A bug that triggered LN invoice regeneration multiple times when a payment was received
+- Added a workaround for a strange BadPaddingException coming from Android's Keystore
+
 ## [49.3] - 2022-04-26
 
 ### ADDED
 - Better error reporting and extra metadata for MoneyDecoration (MuunAmountInput) crash
+- Show LN alias for outgoing payments in payment history and payment Detail
 
 ### FIXED
 - Added missing error metadata to some crashlytics errors (e.g for background task of anon users)

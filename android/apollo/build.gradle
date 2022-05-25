@@ -20,20 +20,6 @@ apply from: "${project.rootDir}/linters/pmd/check-android.gradle"
 // https://github.com/spotbugs/spotbugs-gradle-plugin/issues/90
 //apply from: "${project.rootDir}/linters/findbugs/check-android.gradle"
 
-/**
- * Returns the ip of the local network specified by the TESTING_LOCAL_NETWORK env var.
- */
-def testingLocalIp() {
-    def interfaceName = System.getenv("TESTING_LOCAL_NETWORK")?.trim()
-
-    return NetworkInterface.getNetworkInterfaces().
-            findAll { interfaceName && interfaceName.equalsIgnoreCase(it.displayName) }.
-            collect { Collections.list it.getInetAddresses() }.
-            flatten().
-            find()?. // first or null
-            getHostAddress()
-}
-
 android {
     compileSdkVersion 30
 
@@ -42,9 +28,6 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-
-        // circle
-        buildConfigField("String", "TESTING_LOCAL_IP", "\"${testingLocalIp()}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

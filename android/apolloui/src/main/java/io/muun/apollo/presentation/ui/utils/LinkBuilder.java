@@ -60,13 +60,6 @@ public class LinkBuilder {
     /**
      * Create a RichText containing a clickable link to a lightning node in an explorer.
      */
-    public RichText lightningNodeLink(SubmarineSwapReceiver receiver) {
-        return lightningNodeLink(receiver, getLnLinkText(receiver));
-    }
-
-    /**
-     * Create a RichText containing a clickable link to a lightning node in an explorer.
-     */
     public RichText lightningNodeLink(SubmarineSwapReceiver receiver, String linkText) {
 
         final String urlRoot = isTestnet(network)
@@ -100,7 +93,6 @@ public class LinkBuilder {
         return new RichText(text).setLink(() -> {
             ExtensionsKt.openInBrowser(context, url);
             analytics.report(new AnalyticsEvent.E_OPEN_WEB(trackingName, url));
-
         });
     }
 

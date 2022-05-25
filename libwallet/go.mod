@@ -16,12 +16,14 @@ require (
 	github.com/pdfcpu/pdfcpu v0.3.11
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.2.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/mobile v0.0.0-20210220033013-bdb1ca9a1e08 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/mobile v0.0.0-20220414153400-ce6a79cf6a13 // indirect
+	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/gormigrate.v1 v1.6.0
 )
 
 // Fork that includes the -cache flag for quicker builds
-replace golang.org/x/mobile => github.com/champo/mobile v0.0.0-20210412201235-a784c99e2a62
+replace golang.org/x/mobile => github.com/champo/mobile v0.0.0-20220505154254-6a5f99bae305

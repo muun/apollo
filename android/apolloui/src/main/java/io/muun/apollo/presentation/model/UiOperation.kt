@@ -187,13 +187,13 @@ abstract class UiOperation(
         get() = operation.description
 
     /**
-     * Get the receiving LN node data, in a clickable link to an explorer.
+     * Get the receiving LN node data.
      */
-    val swapReceiverLink: CharSequence
+    val swapReceiverNodeData: String
         get() = if (operation.swap == null) {
             ""
         } else {
-            linkBuilder.lightningNodeLink(operation.swap!!.receiver)
+            operation.swap!!.receiver.formattedDestination
         }
 
     /**

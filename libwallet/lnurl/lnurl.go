@@ -135,7 +135,10 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 
 	// add request id to enhance error reports and troubleshooting with LNURL service providers
 	requestId := uuid.New().String()
-	qrUrl.Query().Add("requestId", requestId)
+	// Mutate the query params so we keep those the original URL had
+	query := qrUrl.Query()
+	query.Add("requestId", requestId)
+	qrUrl.RawQuery = query.Encode()
 	notifier.SetRequestId(requestId)
 
 	// start withdraw with service
@@ -188,11 +191,12 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	notifier.Status(StatusInvoiceCreated)
 
 	// Mutate the query params so we keep those the original URL had
-	query := callbackURL.Query()
-	query.Add("k1", wr.K1)
-	query.Add("pr", invoice)
+	callbackQuery := callbackURL.Query()
+	callbackQuery.Add("requestId", requestId)
+	callbackQuery.Add("k1", wr.K1)
+	callbackQuery.Add("pr", invoice)
+	callbackURL.RawQuery = callbackQuery.Encode()
 
-	callbackURL.RawQuery = query.Encode()
 	// Confirm withdraw with service
 	// Use an httpClient with a higher timeout for reliability with slow LNURL services
 	withdrawClient := http.Client{Timeout: 3 * time.Minute}
@@ -328,10 +332,10 @@ func decode(qr string) (*url.URL, error) {
 		}
 
 		if len(uri.Opaque) > 0 {
-			// This catches scheme:LNURL
+			// This catches lightning:LNURL
 			toParse = uri.Opaque
 		} else {
-			// And this catches scheme://LNURL which is needed for iOS
+			// And this catches lightning://LNURL which is needed for iOS
 			toParse = uri.Host
 		}
 	}

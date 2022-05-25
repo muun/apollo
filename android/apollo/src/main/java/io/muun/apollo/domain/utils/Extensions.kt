@@ -19,6 +19,7 @@ import libwallet.StringList
 import rx.Observable
 import java.io.Serializable
 import java.util.*
+import javax.crypto.BadPaddingException
 import javax.money.Monetary
 import javax.money.MonetaryException
 
@@ -59,6 +60,13 @@ fun Throwable.isInstanceOrIsCausedByNetworkError() =
  */
 fun Throwable.isInstanceOrIsCausedBySecureStorageError() =
     isInstanceOrIsCausedByError<SecureStorageError>()
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isCauseByBadPaddingException() =
+    isInstanceOrIsCausedByError<BadPaddingException>()
+
 
 inline fun <reified T> Throwable.isInstanceOrIsCausedByError() =
     this is T || isCausedByError<T>()

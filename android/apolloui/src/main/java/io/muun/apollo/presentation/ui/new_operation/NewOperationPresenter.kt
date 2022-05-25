@@ -26,7 +26,7 @@ import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeParentPresenter
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter
-import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter.*
+import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter.ErrorMetadata
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeParentPresenter
 import io.muun.common.Rules
 import io.muun.common.utils.Preconditions
