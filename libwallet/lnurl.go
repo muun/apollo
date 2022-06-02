@@ -14,7 +14,6 @@ type LNURLEvent struct {
 type LNURLEventMetadata struct {
 	Host      string
 	Invoice   string
-	RequestId string
 }
 
 const (
@@ -68,7 +67,6 @@ func LNURLWithdraw(invoiceBuilder *InvoiceBuilder, qr string, listener LNURLList
 			Metadata: &LNURLEventMetadata{
 				Host:      e.Metadata.Host,
 				Invoice:   e.Metadata.Invoice,
-				RequestId: e.Metadata.RequestId,
 			},
 		}
 		if event.Code < 100 {

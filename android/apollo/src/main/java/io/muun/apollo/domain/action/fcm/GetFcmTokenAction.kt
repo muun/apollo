@@ -34,11 +34,11 @@ class GetFcmTokenAction @Inject constructor(
                 .filter { token -> token != null }
                 .map { token -> token!! }   // Just to appease Kotlin type inference
                 .first()
-                .timeout(15, TimeUnit.SECONDS)
+                .timeout(25, TimeUnit.SECONDS)
                 .replaceTypedError(TimeoutException::class.java) { getError() }
                 .doOnError { Timber.e(it) } // force-log this UserFacingError
                 .doOnError { firebaseManager.fetchFcmToken() }
-                .retry(1)
+                .retry(2)
         }
 
     private fun getError() =

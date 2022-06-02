@@ -15,13 +15,21 @@
       },
       "oauth_client": [
         {
-          "client_id": "354157037931-qe9kgq8gtgjpiia6bjm6camnpgriovj8.apps.googleusercontent.com",
+          "client_id": "880007565849-39tect1mc9e6l8c05rg1vouoopnmruuq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.muun.apollo.debug",
+            "certificate_hash": "be87aae76d32f68a229c48624e1e907f88ab2fb6"
+          }
+        },
+        {
+          "client_id": "880007565849-iegtr4pdrkkf0qbcu8gvm27pl64hsmro.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC9BhDZfgz30geRHiPgFsOVrLb3obfzdmI"
+          "current_key": "AIzaSyDrAwVipDayA8YfKkfCDW6u9CfOps1R9co"
         }
       ],
       "services": {
@@ -32,10 +40,49 @@
               "client_type": 3
             },
             {
-              "client_id": "880007565849-tfb4sf3icqm5cuflf49nktmv31qf7m1h.apps.googleusercontent.com",
+              "client_id": "880007565849-1li9etmo362duqoai9h1pgcf72e1068c.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.muun.falcon"
+                "bundle_id": "com.muun.falcon.dev"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880007565849:android:ef5949071c84bde7b6d088",
+        "android_client_info": {
+          "package_name": "io.muun.apollo.regtest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "880007565849-iegtr4pdrkkf0qbcu8gvm27pl64hsmro.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9BhDZfgz30geRHiPgFsOVrLb3obfzdmI"
+        },
+        {
+          "current_key": "AIzaSyDrAwVipDayA8YfKkfCDW6u9CfOps1R9co"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "880007565849-cgdit22naai9q1eg89e8btdao5a3cv03.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "880007565849-1li9etmo362duqoai9h1pgcf72e1068c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.muun.falcon.dev"
               }
             }
           ]
