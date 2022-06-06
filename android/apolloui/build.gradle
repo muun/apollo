@@ -2,7 +2,7 @@ buildscript {
     ext.nav_version = "2.3.1"
 
     dependencies { // Add third party gradle plugins
-        classpath 'com.google.gms:google-services:4.3.2'    // Google Services plugin
+        classpath 'com.google.gms:google-services:4.3.10'    // Google Services plugin
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.2.1'
 
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
@@ -80,8 +80,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 904
-        versionName "49.4"
+        versionCode 905
+        versionName "49.5"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -418,7 +418,7 @@ task startStaging(type: Exec, dependsOn: 'assembleStaging') {
     commandLine "${rootProject.rootDir}/tools/run-apollo.sh", "staging"
 }
 
-apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services' // Google Services plugin
 // We should delete this as soon as we can. google services plugin introduces a dependency strict
 // checking that checks against other projects deps too. There's a conflict with
 // com.google.errorprone:error_prone_annotations. This should be fixed whenever the android deps

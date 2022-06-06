@@ -2,8 +2,7 @@ package io.muun.apollo.data.async.gcm
 
 import android.os.AsyncTask
 import com.google.android.gms.tasks.Task
-import com.google.firebase.iid.FirebaseInstanceId
-import com.google.firebase.iid.InstanceIdResult
+import com.google.firebase.messaging.FirebaseMessaging
 import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction
 import io.muun.apollo.domain.errors.FcmTokenCanceledError
 import io.muun.apollo.domain.errors.FcmTokenError
@@ -26,7 +25,7 @@ class FirebaseManager @Inject constructor(private val updateFcmTokenAction: Upda
      */
     fun fetchFcmToken(): Observable<String> {
 
-        FirebaseInstanceId.getInstance().instanceId
+        FirebaseMessaging.getInstance().token
             .addOnCompleteListener { task ->
 
                 if (!task.isSuccessful) {
@@ -36,18 +35,18 @@ class FirebaseManager @Inject constructor(private val updateFcmTokenAction: Upda
                     return@addOnCompleteListener
                 }
 
-                val result = checkNotNull(task.result)
+                val token = checkNotNull(task.result)
 
-                Timber.i("GetInstanceId SUCCESS: " + result.token)
+                Timber.i("GetInstanceId SUCCESS: $token")
 
-                updateFcmTokenAction.run(result.token)
-                subject.onNext(result.token)
+                updateFcmTokenAction.run(token)
+                subject.onNext(token)
             }
 
         return subject
     }
 
-    private fun getError(task: Task<InstanceIdResult>): MuunError {
+    private fun getError(task: Task<String>): MuunError {
         return if (task.isCanceled) {
             FcmTokenCanceledError()
 
@@ -65,7 +64,7 @@ class FirebaseManager @Inject constructor(private val updateFcmTokenAction: Upda
         // This needs to happen outside the main thread (see code for deleteInstanceId())
         AsyncTask.execute {
             try {
-                FirebaseInstanceId.getInstance().deleteInstanceId()
+                FirebaseMessaging.getInstance().deleteToken()
                 Timber.i("InstanceID DELETED")
 
             } catch (e: IOException) {

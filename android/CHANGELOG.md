@@ -6,6 +6,21 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.5] - 2022-06-02
+
+### CHANGED
+- Upgrade Firebase dependencies to start using BOM (Bill Of Materials). firebase-bom:30.1.0
+- Upgrade Firebase Messaging as part of firebase-bom:30.1.0
+- Upgrade Firebase Crashlytics as part of firebase-bom:30.1.0
+- Upgrade Firebase Analtyics as part of firebase-bom:30.1.0
+- Upgrade Google Services Gradle Plugin to 4.3.10
+- Changed splash screen english copy
+- Increased FcmToken fetch timeout and add extra retry to improve reliability in Fcm Token registration
+
+### FIXED
+- Removed extra query param requestId for lnurl withdraw requests to avoid errors with certain
+LNURL service providers (e.g ln.cash)
+
 ## [49.4] - 2022-05-23
 
 ### CHANGED

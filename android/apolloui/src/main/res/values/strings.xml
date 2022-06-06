@@ -346,7 +346,7 @@
 
 
     <!-- Generic strings -->
-    <string name="slogan">Bitcoin and lightning wallet</string>
+    <string name="slogan">Self-custodial wallet\nfor bitcoin and lightning</string>
     <string name="network_error_message">
         Can\'t connect to Muun\'s server. This is usually something temporary and self-healing. Wait
         a couple of seconds, check your Internet connection and try again. If the problem persists,
