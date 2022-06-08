@@ -6,6 +6,11 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.6] - 2022-08-02
+
+### FIXED
+- Removed unused AD_ID permission, added by Firebase SDK in latest upgrade (in 49.5)
+
 ## [49.5] - 2022-06-02
 
 ### CHANGED
