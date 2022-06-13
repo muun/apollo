@@ -16,7 +16,6 @@ import rx.Observable;
 import rx.Subscription;
 import timber.log.Timber;
 
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -184,7 +183,9 @@ public class ApplicationLockManager {
         try {
             return Encodings.bytesToInt(secureStorageProvider.get(KEY_INCORRECT_ATTEMPTS));
 
-        } catch (NoSuchElementException error) {
+        } catch (SecureStorageProvider.SecureStorageNoSuchElementError error) {
+            // Yeah, we shouldn't use exceptions for normal control flow, but for now...
+            // TODO: this whole class needs some serious refactoring
             storeIncorrectAttempts(0);
             return 0;
 

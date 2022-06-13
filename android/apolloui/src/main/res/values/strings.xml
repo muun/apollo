@@ -1285,6 +1285,9 @@
     <string name="rc_only_login_error">
         Wrong Recovery Code. Please review it and try again.
     </string>
+    <string name="ek_emergency_kit_save_failure">
+        Emergency kit save in the device failed. Please try again or contact us.
+    </string>
 
     <!--
     Note for future us: we put an arbitrary \n because of weird text wrapping problems in some

@@ -33,7 +33,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
         parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
 
         passwordInput.setPasswordRevealEnabled(true)
-        passwordInput.setOnChangeListener {
+        passwordInput.setOnChangeListener(this) {
             // Ugly check needed for some convoluted scenario where we receive input and fragment
             // is being re-created or something
             if (::passwordInput.isInitialized) {
@@ -42,7 +42,7 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
         }
 
         passwordConfirmInput.setPasswordRevealEnabled(true)
-        passwordConfirmInput.setOnChangeListener {
+        passwordConfirmInput.setOnChangeListener(this) {
             // Ugly check needed for some convoluted scenario where we receive input and fragment
             // is being re-created or something
             if (::passwordConfirmInput.isInitialized) {

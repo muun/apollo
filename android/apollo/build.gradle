@@ -21,11 +21,11 @@ apply from: "${project.rootDir}/linters/pmd/check-android.gradle"
 //apply from: "${project.rootDir}/linters/findbugs/check-android.gradle"
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -71,7 +71,7 @@ ext {
     // TODO this currently needs to match common's retrofit version. We should refactor to avoid
     // this discipline on our part. We probably need to extract it to a constant in top-level gradle
     version_retrofit = '2.5.0'
-    version_workmanager = '2.4.0'
+    version_workmanager = '2.7.1'
 }
 
 
@@ -154,8 +154,8 @@ dependencies {
     implementation 'com.scottyab:rootbeer-lib:0.0.8'
 
     // Testing:
-    androidTestImplementation 'androidx.test:runner:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     testImplementation 'org.mockito:mockito-core:2.8.47'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"

@@ -2,10 +2,10 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.CancellationSignal;
@@ -26,8 +26,14 @@ import javax.annotation.Nullable;
 public class MuunLockOverlay extends MuunView {
 
     public interface LockOverlayListener {
+        /**
+         * This method will be called once a pin is successfully entered.
+         */
         void onPinEntered(String pin);
 
+        /**
+         * This method will be called once a fingerprint is successfully entered.
+         */
         void onFingerprintEntered();
     }
 
@@ -60,7 +66,7 @@ public class MuunLockOverlay extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
         pinInput.setListener(this::onPinEntered);
@@ -159,7 +165,7 @@ public class MuunLockOverlay extends MuunView {
     }
 
     private void tryEnableFingerprint() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (OS.supportsFingerprintAPI()) {
             enableFingerprintOnApi23();
         }
     }
@@ -198,10 +204,6 @@ public class MuunLockOverlay extends MuunView {
         );
 
         isFingerprintEnabled = true;
-    }
-
-    private boolean isLandscape() {
-        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)

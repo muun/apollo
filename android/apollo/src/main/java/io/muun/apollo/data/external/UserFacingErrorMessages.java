@@ -2,6 +2,7 @@ package io.muun.apollo.data.external;
 
 import io.muun.apollo.domain.errors.EmptyFieldError;
 
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 public abstract class UserFacingErrorMessages {
 
     /**
@@ -73,4 +74,6 @@ public abstract class UserFacingErrorMessages {
     public abstract String emergencyKitOldVerificationCode(String firstExpectedDigits);
 
     public abstract String invalidRcV2();
+
+    public abstract String saveEkToDisk();
 }

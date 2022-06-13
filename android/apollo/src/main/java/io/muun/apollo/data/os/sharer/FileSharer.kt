@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import io.muun.apollo.data.os.OS
 
 
 class FileSharer(val context: Context) {
@@ -28,7 +29,7 @@ class FileSharer(val context: Context) {
      * Create an Intent to share a file with an external application.
      */
     fun getShareIntent(fileUri: Uri, fileType: String): Intent {
-        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+        return if (!OS.supportsExtraChosenComponentIntentExtra()) {
             getShareIntentPre22(fileUri, fileType)
         } else {
             getShareIntentPost22(fileUri, fileType)
@@ -56,12 +57,21 @@ class FileSharer(val context: Context) {
 
         // To capture the result, we need an Intent that reaches our broadcast receiver:
         val resultIntent = Intent(context, FileSharerReceiver::class.java)
-        val resultFlags = PendingIntent.FLAG_UPDATE_CURRENT
+        val resultFlags = if (OS.supportsPendingIntentMutabilityFlags()) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
 
         // And to hand over the result Intent to the system, we need a PendingIntent wrapper:
         val pendingIntent = PendingIntent.getBroadcast(context, 0, resultIntent, resultFlags)
 
         // Return the actual Intent that connects everything with a Chooser dialog:
-        return Intent.createChooser(shareIntent, "Muun", pendingIntent.intentSender)
+        val chooserIntent = Intent.createChooser(shareIntent, "Muun", pendingIntent.intentSender)
+
+        // Add file system app to chooser dialog, for save to disk option
+        val openDocumentTreeIntent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(openDocumentTreeIntent))
+        return chooserIntent
     }
 }

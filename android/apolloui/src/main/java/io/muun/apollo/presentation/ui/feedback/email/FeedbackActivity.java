@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 import javax.validation.constraints.NotNull;
 
@@ -65,10 +64,12 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
         header.showTitle(R.string.feedback_title);
         header.setNavigation(Navigation.EXIT);
 
-        feedbackContent.setOnChangeListener(ignored -> onFeedbackContentChange());
+        feedbackContent.setOnChangeListener(this, ignored -> onFeedbackContentChange());
         feedbackContent.setMaxLength(MAX_FEEDBACK_CONTENT_LENGTH);
 
         onFeedbackContentChange();
+
+        submit.setOnClickListener(v -> presenter.submit(feedbackContent.getText().toString()));
     }
 
     @Override
@@ -88,14 +89,9 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
         onFeedbackContentChange();
     }
 
-    @OnClick(R.id.submit)
-    public void onSubmitClick() {
-        presenter.submit(feedbackContent.getText().toString());
-    }
-
     @Override
     public void setLoading(boolean isLoading) {
-        if (! isFinishing()) {
+        if (!isFinishing()) {
             submit.setLoading(isLoading);
             feedbackContent.setEnabled(!isLoading);
         }

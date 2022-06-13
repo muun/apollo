@@ -70,8 +70,8 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         header.setNavigation(Navigation.EXIT);
         header.setPadding(0, 0, UiUtils.dpToPx(this, 16), 0);
 
-        firstName.setOnChangeListener(ignored -> onInputChange());
-        lastName.setOnChangeListener(ignored -> onInputChange());
+        firstName.setOnChangeListener(this, ignored -> onInputChange());
+        lastName.setOnChangeListener(this, ignored -> onInputChange());
     }
 
     @Override

@@ -43,7 +43,7 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
                 onContinueButtonClick();
             }
         });
-        password.setOnChangeListener(this::conditionallyEnableContinueButton);
+        password.setOnChangeListener(this, this::conditionallyEnableContinueButton);
 
         conditionallyEnableContinueButton(password.getText().toString());
 

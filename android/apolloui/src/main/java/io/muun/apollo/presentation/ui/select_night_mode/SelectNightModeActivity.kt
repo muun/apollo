@@ -8,6 +8,7 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.presentation.ui.base.BaseActivity
+import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -52,7 +53,7 @@ class SelectNightModeActivity: BaseActivity<SelectNightModePresenter>(), SelectN
         lightModeItem.setOnClickListener { onItemSelected(NightMode.LIGHT) }
         followSystemItem.setOnClickListener { onItemSelected(NightMode.FOLLOW_SYSTEM) }
 
-        if (!UiUtils.supportsDarkMode()) {
+        if (!OS.supportsDarkMode()) {
             followSystemItem.visibility = View.GONE
         }
     }
@@ -80,7 +81,7 @@ class SelectNightModeActivity: BaseActivity<SelectNightModePresenter>(), SelectN
             NightMode.FOLLOW_SYSTEM -> {
                 followSystemItem.setIcon(selectedIcon)
 
-                if (!UiUtils.supportsDarkMode()) {
+                if (!OS.supportsDarkMode()) {
                     if (isInNightMode()) {
                         setNightMode(NightMode.DARK)
 

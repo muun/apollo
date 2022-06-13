@@ -10,8 +10,8 @@ import javax.inject.Singleton
 @Singleton
 @VisibleForTesting // open (non-final) class so mockito can mock/spy
 open class ForceFetchFcmAction @Inject constructor(
-    private val firebaseManager: FirebaseManager
-): BaseAsyncAction0<String>() {
+    private val firebaseManager: FirebaseManager,
+) : BaseAsyncAction0<String>() {
 
     override fun action(): Observable<String> {
         return Observable.defer {

@@ -1,8 +1,7 @@
 package io.muun.apollo.data.os.secure_storage;
 
+import io.muun.apollo.data.os.OS;
 import io.muun.common.crypto.Cryptography;
-
-import android.os.Build;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -28,7 +27,7 @@ class CryptographyWrapper {
         } catch (ProviderException error) {
 
             // As class docs states, for Android 10 we retry after a small delay, else we re-throw
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            if (OS.shouldApplyKeystoreSmallDelayWorkaround()) {
                 smallDelay();
                 return Cryptography.aesCbcPkcs7PaddingUsingProviders(input, iv, key, forEncryption);
             } else {
@@ -48,7 +47,7 @@ class CryptographyWrapper {
         } catch (ProviderException error) {
 
             // As class docs states, for Android 10 we retry after a small delay, else we re-throw
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            if (OS.shouldApplyKeystoreSmallDelayWorkaround()) {
                 smallDelay();
                 return Cryptography.rsaEncrypt(inputData, privateKeyEntry);
             } else {
@@ -68,7 +67,7 @@ class CryptographyWrapper {
         } catch (ProviderException error) {
 
             // As class docs states, for Android 10 we retry after a small delay, else we re-throw
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            if (OS.shouldApplyKeystoreSmallDelayWorkaround()) {
                 smallDelay();
                 return Cryptography.rsaDecrypt(input, privateKeyEntry);
             } else {

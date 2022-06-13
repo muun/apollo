@@ -61,7 +61,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         countryPrefix.setHintEnabled(false);
         countryPrefix.setHint(getString(R.string.default_country_prefix_hint));
 
-        countryPrefix.setOnChangeListener(this::onCountryPrefixChange);
+        countryPrefix.setOnChangeListener(this, this::onCountryPrefixChange);
 
         nationalNumber.setOnKeyboardNextListener(continueButton::callOnClick);
 

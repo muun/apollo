@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.utils.UiUtils;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.model.PhoneNumber;
 
 import android.content.Context;
@@ -80,7 +80,7 @@ public class MuunPhoneInput extends MuunTextInput {
 
         editText.removeTextChangedListener(formatter);
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsNewPhoneNumberFormattingTextWatcher()) {
             if (countryCode == null) {
                 countryCode = getContext().getString(R.string.default_country_code);
             }

@@ -2,7 +2,7 @@ package io.muun.apollo.domain.action.fcm;
 
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.AuthRepository;
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.LocalStorageIntegrityError;
@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
 
     private final HoustonClient houstonClient;
-    private final FirebaseInstalationIdRepository firebaseInstalationIdRepository;
+    private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
     private final AuthRepository authRepository;
     private final NotificationActions notificationActions;
 
@@ -27,11 +27,11 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
      */
     @Inject
     public UpdateFcmTokenAction(HoustonClient houstonClient,
-                                FirebaseInstalationIdRepository firebaseInstalationIdRepository,
+                                FirebaseInstallationIdRepository firebaseInstallationIdRepository,
                                 AuthRepository authRepository,
                                 NotificationActions notificationActions) {
         this.houstonClient = houstonClient;
-        this.firebaseInstalationIdRepository = firebaseInstalationIdRepository;
+        this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.authRepository = authRepository;
         this.notificationActions = notificationActions;
     }
@@ -39,7 +39,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
     @Override
     public Observable<Void> action(String newFcmToken) {
 
-        firebaseInstalationIdRepository.storeFcmToken(newFcmToken);
+        firebaseInstallationIdRepository.storeFcmToken(newFcmToken);
 
         final boolean hasJwt = authRepository.getServerJwt().isPresent();
         final boolean hasValidSession = authRepository.getSessionStatus()

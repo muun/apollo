@@ -4,7 +4,7 @@ import android.os.Bundle
 import icepick.Bundler
 import io.muun.apollo.domain.model.LnUrlWithdraw
 
-class LnUrlWithdrawBundler: Bundler<LnUrlWithdraw> {
+class LnUrlWithdrawBundler : Bundler<LnUrlWithdraw> {
 
     override fun put(key: String, lnUrlWithdraw: LnUrlWithdraw?, bundle: Bundle) {
         bundle.putString(key, lnUrlWithdraw?.serialize())

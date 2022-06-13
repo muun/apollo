@@ -7,10 +7,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseInstalationIdRepository @Inject constructor(
+class FirebaseInstallationIdRepository @Inject constructor(
     context: Context,
-    repositoryRegistry: RepositoryRegistry
-): BaseRepository(context, repositoryRegistry) {
+    repositoryRegistry: RepositoryRegistry,
+) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val FCM_TOKEN_KEY = "fcm_token_key"
@@ -21,7 +21,7 @@ class FirebaseInstalationIdRepository @Inject constructor(
 
     private val bigQueryPseudoIdPreference = rxSharedPreferences.getString(BIG_QUERY_PSEUDO_ID)
 
-    override fun getFileName(): String? {
+    override fun getFileName(): String {
         // legacy name to avoid migration
         return "fcmToken"
     }

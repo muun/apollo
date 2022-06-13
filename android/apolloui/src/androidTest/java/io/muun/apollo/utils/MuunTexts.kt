@@ -2,7 +2,7 @@ package io.muun.apollo.utils
 
 import androidx.annotation.StringRes
 import androidx.test.platform.app.InstrumentationRegistry
-import io.muun.apollo.presentation.ui.utils.UiUtils
+import io.muun.apollo.presentation.ui.utils.OS
 
 object MuunTexts {
 
@@ -10,6 +10,6 @@ object MuunTexts {
 
     fun normalize(@StringRes id: Int): String {
         val text = context.getString(id)
-        return if (UiUtils.isNougat()) text.toUpperCase() else text
+        return if (OS.shouldNormalizeTextForUiTests()) text.toUpperCase() else text
     }
 }

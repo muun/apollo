@@ -4,6 +4,7 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.UserFacingError;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.exception.MissingCaseError;
 
@@ -28,6 +29,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import butterknife.BindView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -43,7 +46,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.google.android.material.textfield.TextInputLayout.END_ICON_NONE;
 import static com.google.android.material.textfield.TextInputLayout.END_ICON_PASSWORD_TOGGLE;
 
-public class MuunTextInput extends MuunView {
+public class MuunTextInput extends MuunView implements DefaultLifecycleObserver {
 
     public enum HelperTextVisibility {
         VISIBLE,
@@ -61,14 +64,26 @@ public class MuunTextInput extends MuunView {
             LINEAR_OUT_SLOW_IN_INTERPOLATOR = new LinearOutSlowInInterpolator();
 
     public interface OnChangeListener {
+        /**
+         * This method is called to notify you that the content for this input has
+         * changed. Parameter newText contains the new input/content.
+         */
         void onTextChanged(String newText);
     }
 
     public interface OnKeyboardNextListener {
+        /**
+         * This method is called to notify you that the NEXT key/action has been pressed on the IME.
+         * See: {@link TextView#setOnEditorActionListener(TextView.OnEditorActionListener)}.
+         */
         void onKeyboardNext();
     }
 
     public interface OnKeyboardDoneListener {
+        /**
+         * This method is called to notify you that the DONE key/action has been pressed on the IME.
+         * See: {@link TextView#setOnEditorActionListener(TextView.OnEditorActionListener)}.
+         */
         void onKeyboardDone();
     }
 
@@ -97,7 +112,7 @@ public class MuunTextInput extends MuunView {
                 .addEnum(android.R.attr.textStyle, MuunTextInput::setTextStyle)
                 .addEnum(android.R.attr.imeOptions, MuunTextInput::setImeOptions);
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsLetterSpacing()) {
             builder.addFloat(android.R.attr.letterSpacing, MuunTextInput::setLetterSpacing);
         }
 
@@ -187,6 +202,22 @@ public class MuunTextInput extends MuunView {
         setEnabled(isEnabled);
     }
 
+    /**
+     * Ignore change updates when the [LifecycleOwner] is paused.
+     */
+    @Override
+    public void onPause(@NonNull LifecycleOwner owner) {
+        this.notifyChanges = false;
+    }
+
+    /**
+     * Un-ignore (haha) change updates when the [LifecycleOwner] is resumed.
+     */
+    @Override
+    public void onResume(@NonNull LifecycleOwner owner) {
+        this.notifyChanges = true;
+    }
+
     private void preloadErrorView() {
         // We need to force the TextInputLayout to generate an invisible error view in order to
         // avoid jumps on the MuunTextInput layout after showing an error.
@@ -230,7 +261,15 @@ public class MuunTextInput extends MuunView {
         };
     }
 
-    public void setOnChangeListener(OnChangeListener changesListener) {
+    /**
+     * Register a callback to be invoked when the content for this input is changed. A
+     * LifecycleOwner is receive as param so callbacks event are lifecycle-aware.
+     */
+    public void setOnChangeListener(
+            LifecycleOwner lifecycleOwner,
+            OnChangeListener changesListener
+    ) {
+        lifecycleOwner.getLifecycle().addObserver(this); // so we can disable notifyChanges flag
         this.changesListener = changesListener;
     }
 
@@ -242,6 +281,11 @@ public class MuunTextInput extends MuunView {
         this.keyboardDoneListener = keyboardDoneListener;
     }
 
+    /**
+     * Register a callback to be invoked when a hardware key is pressed in this view. Key presses
+     * in software input methods will generally not trigger the methods of this listener.
+     * See: {@link View#setOnKeyListener(OnKeyListener)}.
+     */
     public void setOnKeyListener(OnKeyListener listener) {
         editText.setOnKeyListener(listener);
     }
@@ -271,10 +315,18 @@ public class MuunTextInput extends MuunView {
         return editText.getText();
     }
 
+    /**
+     * Sets the text to be displayed.
+     * See: {@link android.widget.EditText#setText(CharSequence)}.
+     */
     public void setText(CharSequence text) {
         editText.setText(text);
     }
 
+    /**
+     * Sets the text color.
+     * See: {@link android.widget.EditText#setTextColor(ColorStateList)}.
+     */
     public void setTextColor(ColorStateList colors) {
         editText.setTextColor(colors);
     }
@@ -294,30 +346,52 @@ public class MuunTextInput extends MuunView {
         editText.setTextSize(unit, size);
     }
 
+    /**
+     * See: {@link android.widget.EditText#setMaxLines(int)}.
+     */
     public void setMaxLines(int maxlines) {
         editText.setMaxLines(maxlines);
     }
 
+    /**
+     * See: {@link android.widget.EditText#setMinEms(int)}.
+     */
     public void setMinEms(int minems) {
         editText.setMinEms(minems);
     }
 
+    /**
+     * See: {@link android.widget.EditText#setEms(int)}.
+     */
     public void setEms(int ems) {
         editText.setEms(ems);
     }
 
+    /**
+     * See: {@link android.widget.EditText#setMaxEms(int)}.
+     */
     public void setMaxEms(int maxems) {
         editText.setMaxEms(maxems);
     }
 
+    /**
+     * Constrain edits not to make the length of the text greater than the specified length.
+     * See: {@link InputFilter.LengthFilter}.
+     */
     public void setMaxLength(int maxLength) {
         editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(maxLength)});
     }
 
+    /**
+     * See: {@link android.widget.EditText#setInputType(int)}.
+     */
     public void setInputType(int type) {
         editText.setInputType(type);
     }
 
+    /**
+     * See: {@link android.widget.EditText#setImeOptions(int)}.
+     */
     public void setImeOptions(int imeOptions) {
         editText.setImeOptions(FIXED_IME_OPTIONS | imeOptions);
     }
@@ -369,11 +443,16 @@ public class MuunTextInput extends MuunView {
      * Set the letter spacing, on API levels that support it.
      */
     public void setLetterSpacing(float letterSpacing) {
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsLetterSpacing()) {
             editText.setLetterSpacing(letterSpacing);
         }
     }
 
+    /**
+     * Set whether to show a password toggle button if its EditText displays a password. When this
+     * end icon is clicked, the password is shown as plain-text if it was disguised, or vice-versa.
+     * See: {@link TextInputLayout#END_ICON_PASSWORD_TOGGLE}
+     */
     public void setPasswordRevealEnabled(boolean isEnabled) {
         layout.setEndIconMode(isEnabled ? END_ICON_PASSWORD_TOGGLE : END_ICON_NONE);
     }
@@ -414,14 +493,26 @@ public class MuunTextInput extends MuunView {
         this.notifyChanges = true;
     }
 
+    /**
+     * Set the selection anchor to start and the selection edge to stop.
+     * See: {@link android.widget.EditText#setSelection(int, int)}
+     */
     public void setSelection(int start, int stop) {
         editText.setSelection(start, stop);
     }
 
+    /**
+     * Move the cursor to offset index.
+     * See: {@link android.widget.EditText#setSelection(int)}
+     */
     public void setSelection(int index) {
         editText.setSelection(index);
     }
 
+    /**
+     * Disable Android's native error functionality and our custom helper text helper. Workaround
+     * for view-height-changing issues.
+     */
     public void disableErrorAndHelperTextTempFix() {
         setErrorEnabled(false);
         helperText.setVisibility(View.GONE);
@@ -436,11 +527,19 @@ public class MuunTextInput extends MuunView {
         updateErrorGravity();
     }
 
+    /**
+     * Clear this input error message.
+     * See: {@link TextInputLayout#setError(CharSequence)}
+     */
     public void clearError() {
         layout.setError(null);
         updateHelperText();
     }
 
+    /**
+     * Set the hint to be displayed in the floating label, if enabled.
+     * See: {@link TextInputLayout#setHint(CharSequence)}
+     */
     public void setHint(CharSequence hint) {
         layout.setHint(hint);
         editText.setContentDescription(hint);
@@ -450,19 +549,28 @@ public class MuunTextInput extends MuunView {
         return layout.getHint();
     }
 
+    /**
+     * Sets whether the floating label functionality is enabled or not in this layout.
+     * See: {@link TextInputLayout#setHintEnabled(boolean)}
+     */
     public void setHintEnabled(boolean enabled) {
         layout.setHintEnabled(enabled);
     }
 
-    public boolean isHintEnabled() {
-        return layout.isHintEnabled();
-    }
-
+    /**
+     * Whether Android's native error functionality is enabled or not in this layout.
+     * See: {@link TextInputLayout#setErrorEnabled(boolean)}
+     */
     public void setErrorEnabled(boolean enabled) {
         layout.setErrorEnabled(enabled);
         updateErrorGravity();
     }
 
+    /**
+     * Set the fontFamily to use for this input.
+     * See: {@link TextInputLayout#setTypeface(Typeface)}
+     * See: {@link TextView#setTypeface(Typeface)}
+     */
     public void setFontFamily(String fontFamily) {
         this.fontFamily = fontFamily;
         updateTypeface();
@@ -472,6 +580,11 @@ public class MuunTextInput extends MuunView {
         return fontFamily;
     }
 
+    /**
+     * Set the textStyle to use for this input.
+     * See: {@link TextInputLayout#setTypeface(Typeface)}
+     * See: {@link TextView#setTypeface(Typeface)}
+     */
     public void setTextStyle(int textStyle) {
         this.textStyle = textStyle;
         updateTypeface();
@@ -492,6 +605,11 @@ public class MuunTextInput extends MuunView {
         updateHelperText();
     }
 
+    /**
+     * Sets this input helper text's visibility.
+     * See: {@link MuunTextInput#updateHelperText()}
+     * See: {@link MuunTextInput#setHelperText(CharSequence)}
+     */
     public void setHelperTextVisibility(HelperTextVisibility visibility) {
         this.helperTextVisibility = visibility;
         updateHelperText();

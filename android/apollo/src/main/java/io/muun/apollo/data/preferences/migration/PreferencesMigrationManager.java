@@ -2,7 +2,7 @@ package io.muun.apollo.data.preferences.migration;
 
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.SchemaVersionRepository;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
@@ -43,7 +43,7 @@ public class PreferencesMigrationManager {
 
     private final TransactionSizeRepository transactionSizeRepository;
 
-    private final FirebaseInstalationIdRepository firebaseInstalationIdRepository;
+    private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
 
     private final KeysRepository keysRepository;
 
@@ -123,7 +123,7 @@ public class PreferencesMigrationManager {
             LogoutActions logoutActions,
             FeeWindowRepository feeWindowRepository,
             TransactionSizeRepository transactionSizeRepository,
-            FirebaseInstalationIdRepository firebaseInstalationIdRepository,
+            FirebaseInstallationIdRepository firebaseInstallationIdRepository,
             KeysRepository keysRepository,
             SignupDraftManager signupDraftManager
     ) {
@@ -137,7 +137,7 @@ public class PreferencesMigrationManager {
 
         this.logoutActions = logoutActions;
         this.transactionSizeRepository = transactionSizeRepository;
-        this.firebaseInstalationIdRepository = firebaseInstalationIdRepository;
+        this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.keysRepository = keysRepository;
         this.signupDraftManager = signupDraftManager;
     }
@@ -256,7 +256,7 @@ public class PreferencesMigrationManager {
         if (hasFcmToken) {
 
             final String fcmToken = userRepositoryPrefs.getString("fcm_token_key", null);
-            firebaseInstalationIdRepository.storeFcmToken(fcmToken);
+            firebaseInstallationIdRepository.storeFcmToken(fcmToken);
 
             userRepositoryPrefs.edit().remove("fcm_token_key").apply();
         }

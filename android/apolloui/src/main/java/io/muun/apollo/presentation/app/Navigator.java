@@ -45,7 +45,7 @@ import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
 import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
-import io.muun.apollo.presentation.ui.utils.UiUtils;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.Optional;
 
 import android.app.Activity;
@@ -616,7 +616,7 @@ public class Navigator {
     public void navigateToOperations(@NotNull Activity activity) {
         final Intent intent = OperationsActivity.Companion.getStartActivityIntent(activity);
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsActivityTransitions()) {
             final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(activity);
             activity.startActivity(intent, options.toBundle());
 

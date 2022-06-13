@@ -14,6 +14,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import io.muun.apollo.data.os.OS
 import timber.log.Timber
 import java.io.File
 import kotlin.random.Random
@@ -99,7 +100,7 @@ class PdfExporter(
                 .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
                 .build()
 
-            adapter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            adapter = if (OS.supportsNewPrintDocumentAdapter()) {
                 webView.createPrintDocumentAdapter(jobName)
 
             } else {

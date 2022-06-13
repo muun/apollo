@@ -4,20 +4,28 @@ import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
+import androidx.annotation.VisibleForTesting;
 import rx.Observable;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
 public class SecureStorageProvider {
 
+    @GuardedBy("lock")
     private final KeyStoreProvider keyStore;
+
+    @GuardedBy("lock")
     private final SecureStoragePreferences preferences;
+
+    private final Lock lock;
 
     /**
      * Constructor.
@@ -27,22 +35,21 @@ public class SecureStorageProvider {
                                  SecureStoragePreferences preferences) {
         this.keyStore = keyStore;
         this.preferences = preferences;
+        this.lock = new ReentrantLock();
     }
 
     /**
      * Fetch and decrypt a value from secure storage.
      */
     public byte[] get(String key) {
-        throwIfModeInconsistent();
-        throwIfKeyCorruptedOrMissing(key);
-
+        lock.lock();
         try {
-            return retrieveDecrypted(key);
+            throwIfModeInconsistent();
+            throwIfKeyCorruptedOrMissing(key);
 
-        } catch (Throwable e) {
-            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
-            enhanceError(ssError, key);
-            throw ssError;
+            return retrieveDecrypted(key);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -57,18 +64,16 @@ public class SecureStorageProvider {
      * Encrypt and save a value in secure storage.
      */
     public void put(String key, byte[] value) {
-        throwIfModeInconsistent();
-
+        lock.lock();
         try {
+            throwIfModeInconsistent();
+
             storeEncrypted(key, value);
 
-        } catch (Throwable e) {
-            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
-            enhanceError(ssError, key);
-            throw ssError;
+            preferences.recordAuditTrail("PUT", key);
+        } finally {
+            lock.unlock();
         }
-
-        preferences.recordAuditTrail("PUT", key);
     }
 
     /**
@@ -85,71 +90,102 @@ public class SecureStorageProvider {
      * Remove a single value from secure storage.
      */
     public void delete(String key) {
-        preferences.delete(key);
-        keyStore.deleteEntry(key);
+        lock.lock();
+        try {
+            preferences.delete(key);
+            keyStore.deleteEntry(key);
 
-        preferences.recordAuditTrail("DELETE", key);
+            preferences.recordAuditTrail("DELETE", key);
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
      * Return `true` if the key exists in secure storage.
      */
     public boolean has(String key) {
-        final boolean hasKeyInPreferences = preferences.hasKey(key);
-        final boolean hasKeyInKeystore = keyStore.hasKey(key);
+        lock.lock();
+        try {
+            final boolean hasKeyInPreferences = preferences.hasKey(key);
+            final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
-        Preconditions.checkState(
-                hasKeyInPreferences == hasKeyInKeystore,
-                String.format(
-                        "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInKeystore =%s",
-                        key,
-                        hasKeyInPreferences,
-                        hasKeyInKeystore
-                )
-        );
+            Preconditions.checkState(
+                    hasKeyInPreferences == hasKeyInKeystore,
+                    String.format(
+                            "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInKeystore =%s",
+                            key,
+                            hasKeyInPreferences,
+                            hasKeyInKeystore
+                    )
+            );
 
-        return hasKeyInPreferences;
+            return hasKeyInPreferences;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
      * Remove all values from secure storage (careful!).
      */
     public void wipe() {
-        preferences.wipe();
-        keyStore.wipe();
+        lock.lock();
+        try {
+            preferences.wipe();
+            keyStore.wipe();
 
-        preferences.recordAuditTrail("WIPE", "*");
+            preferences.recordAuditTrail("WIPE", "*");
+        } finally {
+            lock.unlock();
+        }
     }
 
+    @GuardedBy("lock")
     private void throwIfModeInconsistent() {
         if (!preferences.isCompatibleFormat()) {
             throw new InconsistentModeError(debugSnapshot());
         }
     }
 
+    @GuardedBy("lock")
     private void throwIfKeyCorruptedOrMissing(String key) {
         final boolean hasKeyInPreferences = preferences.hasKey(key);
         final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
         if (!hasKeyInKeystore && !hasKeyInPreferences) {
-            throw new NoSuchElementException();
+            throw new SecureStorageNoSuchElementError(key, debugSnapshot());
         }
 
         if (!hasKeyInPreferences) {
-            throw new SharedPreferencesCorruptedError(debugSnapshot());
+            throw new SharedPreferencesCorruptedError(key, debugSnapshot());
         }
 
         if (!hasKeyInKeystore) {
-            throw new KeyStoreCorruptedError(debugSnapshot());
+            throw new KeyStoreCorruptedError(key, debugSnapshot());
         }
     }
 
+    @GuardedBy("lock")
     private byte[] retrieveDecrypted(String key) {
-        return keyStore.decryptData(preferences.getBytes(key), key, preferences.getAesIv(key));
+        try {
+            return keyStore.decryptData(preferences.getBytes(key), key, preferences.getAesIv(key));
+        } catch (Throwable e) {
+            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
+            enhanceError(ssError, key);
+            throw ssError;
+        }
     }
 
+    @GuardedBy("lock")
     private void storeEncrypted(String key, byte[] input) {
-        preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
+        try {
+            preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
+        } catch (Throwable e) {
+            final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
+            enhanceError(ssError, key);
+            throw ssError;
+        }
     }
 
     private void enhanceError(SecureStorageError ssError, String key) {
@@ -162,7 +198,8 @@ public class SecureStorageProvider {
      * Take a debug snapshot of the current state of the secure storage. This is safe to
      * report without compromising any user data.
      */
-    private DebugSnapshot debugSnapshot() {
+    @VisibleForTesting
+    public DebugSnapshot debugSnapshot() {
         // NEVER ever return any values from the keystore itself, only labels should get out.
 
         Set<String> keystoreLabels = null;
@@ -185,11 +222,23 @@ public class SecureStorageProvider {
     }
 
     /**
+     * The key trying to be accessed is not present in our Secure Storage: not in the Android
+     * Keystore, nor in our SharedPreferences.
+     */
+    public static class SecureStorageNoSuchElementError extends SecureStorageError {
+        public SecureStorageNoSuchElementError(String key, DebugSnapshot debugSnapshot) {
+            super(debugSnapshot);
+            addMetadata("key", key);
+        }
+    }
+
+    /**
      * The Android KeyStore appears to be corrupted: a key present in our Preference map is missing.
      */
     public static class KeyStoreCorruptedError extends SecureStorageError {
-        public KeyStoreCorruptedError(DebugSnapshot debugSnapshot) {
+        public KeyStoreCorruptedError(String key, DebugSnapshot debugSnapshot) {
             super(debugSnapshot);
+            addMetadata("key", key);
         }
     }
 
@@ -197,8 +246,9 @@ public class SecureStorageProvider {
      * The SharedPreferences bag appears to be corrupted: a key present in our KeyStore is missing.
      */
     public static class SharedPreferencesCorruptedError extends SecureStorageError {
-        public SharedPreferencesCorruptedError(DebugSnapshot debugSnapshot) {
+        public SharedPreferencesCorruptedError(String key, DebugSnapshot debugSnapshot) {
             super(debugSnapshot);
+            addMetadata("key", key);
         }
     }
 

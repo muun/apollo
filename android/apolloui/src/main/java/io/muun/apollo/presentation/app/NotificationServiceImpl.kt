@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,7 +25,11 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.libwallet.Invoice
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.Contact
+import io.muun.apollo.domain.model.LnUrlWithdraw
+import io.muun.apollo.domain.model.Operation
+import io.muun.apollo.domain.model.PublicProfile
+import io.muun.apollo.domain.model.Sha256Hash
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
@@ -34,6 +37,7 @@ import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.home.HomeActivity
 import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity
+import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.notificationManager
 import io.muun.apollo.presentation.ui.utils.string
 import io.muun.common.api.messages.EventCommunicationMessage
@@ -49,7 +53,7 @@ import javax.validation.constraints.NotNull
 class NotificationServiceImpl @Inject constructor(
     private val context: Context,
     private val executionTransformerFactory: ExecutionTransformerFactory,
-    private val bitcoinUnitSel: BitcoinUnitSelector
+    private val bitcoinUnitSel: BitcoinUnitSelector,
 ) : NotificationService {
 
     companion object {
@@ -68,7 +72,7 @@ class NotificationServiceImpl @Inject constructor(
         val intent: Intent?,
         val onGoing: Boolean = false,
         val actions: MutableList<Action> = mutableListOf(),
-        private val id: Int? = null
+        private val id: Int? = null,
     ) {
 
         fun computeId() =
@@ -85,7 +89,7 @@ class NotificationServiceImpl @Inject constructor(
         class Action(
             @DrawableRes val icon: Int?,
             val title: CharSequence,
-            val intent: PendingIntent? = null // We'll use the notification default intent
+            val intent: PendingIntent? = null, // We'll use the notification default intent
         )
 
     }
@@ -213,13 +217,13 @@ class NotificationServiceImpl @Inject constructor(
 
     override fun showIncomingLightningPaymentPending() {
         val notification = MuunNotification(
-                context.string(R.string.notification_incoming_ln_payment_pending),
-                context.string(R.string.notification_incoming_ln_payment_pending_desc),
-                HomeActivity.getStartActivityIntent(context)
+            context.string(R.string.notification_incoming_ln_payment_pending),
+            context.string(R.string.notification_incoming_ln_payment_pending_desc),
+            HomeActivity.getStartActivityIntent(context)
         )
 
         notification.actions.add(MuunNotification.Action(
-                0, context.string(R.string.notification_incoming_ln_payment_pending_cta)
+            0, context.string(R.string.notification_incoming_ln_payment_pending_cta)
         ))
 
         showWithDrawable(notification, R.drawable.lightning)
@@ -372,11 +376,16 @@ class NotificationServiceImpl @Inject constructor(
         val notificationId = notification.computeId()
 
         if (notification.intent != null) {
+            val flags = if (OS.supportsPendingIntentMutabilityFlags()) {
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            } else {
+                PendingIntent.FLAG_ONE_SHOT
+            }
             val pendingIntent = PendingIntent.getActivity(
                 context,
                 notificationId,
                 notification.intent,
-                PendingIntent.FLAG_ONE_SHOT
+                flags
             )
             builder.setContentIntent(pendingIntent)
 
@@ -398,7 +407,7 @@ class NotificationServiceImpl @Inject constructor(
 
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (OS.supportsNotificationChannel()) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channelName = muunChannelName
 

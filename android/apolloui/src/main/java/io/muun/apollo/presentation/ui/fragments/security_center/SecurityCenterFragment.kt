@@ -11,10 +11,10 @@ import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.SecurityLevel
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterView.TaskStatus
+import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.getDrawable
-import io.muun.apollo.presentation.ui.view.MuunHeader.*
+import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunProgressBar
 import io.muun.apollo.presentation.ui.view.MuunTaskCard
 
@@ -145,7 +145,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
         if (securityCenter.emailSetupSkipped()) {
             emailTaskCard.status = MuunTaskCard.Status.SKIPPED
             emailSkippedTag.visibility = View.VISIBLE
-            if (!UiUtils.isLollipop()) { // we can't use translateZ in api levels below 21 :(
+            if (!OS.supportsTranslateZ()) { // we can't use translateZ in api levels below 21 :(
                 emailSkippedTag.bringToFront()
                 (emailSkippedTag.parent as View).invalidate()
             }

@@ -61,6 +61,7 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
         val request = pendingRequests[globalRequestCode]
         var view = findCaller(request, Caller::class.java)
 
+        @Suppress("FoldInitializerAndIfToElvis") // Else kotlin smart cast fail for line below
         if (view == null) {
             return
         }

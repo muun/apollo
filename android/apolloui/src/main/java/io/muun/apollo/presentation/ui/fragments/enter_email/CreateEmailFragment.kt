@@ -46,7 +46,7 @@ class CreateEmailFragment: SingleFragment<CreateEmailPresenter>(), CreateEmailVi
             .toCharSequence()
             .let(subtitle::setText)
 
-        emailInput.setOnChangeListener { validateEmailInput() }
+        emailInput.setOnChangeListener(this) { validateEmailInput() }
         validateEmailInput() // in case it was already set by previous state
 
         confirmButton.setOnClickListener { presenter.submitEmail(emailInput.text.toString()) }

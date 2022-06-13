@@ -16,9 +16,8 @@ import javax.inject.Inject
 
 @PerActivity
 class EmergencyKitPresenter @Inject constructor(
-    private val driveUploader: DriveUploader
-):
-    BasePresenter<EmergencyKitView>(),
+    private val driveUploader: DriveUploader,
+) : BasePresenter<EmergencyKitView>(),
     FlowIntroParentPresenter,
     EmergencyKitSaveParentPresenter,
     EmergencyKitVerifyParentPresenter,
@@ -58,12 +57,12 @@ class EmergencyKitPresenter @Inject constructor(
     override fun getGeneratedEmergencyKit(): GeneratedEmergencyKit =
         generatedEK!!
 
-    override fun reportEmergencyKitUploaded(driveFile: DriveFile) {
+    override fun confirmEmergencyKitUploaded(driveFile: DriveFile) {
         this.uploadedFile = driveFile
         view!!.goToStep(EmergencyKitStep.CLOUD_VERIFY)
     }
 
-    override fun reportEmergencyKitShared() {
+    override fun confirmManualShareCompleted() {
         view!!.goToStep(EmergencyKitStep.VERIFY)
     }
 
@@ -114,5 +113,4 @@ class EmergencyKitPresenter @Inject constructor(
             super.handleError(error)
         }
     }
-
 }

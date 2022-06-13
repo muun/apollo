@@ -1,19 +1,17 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.action.images.DecodeImageAction;
 import io.muun.apollo.domain.errors.InvalidPictureError;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.presentation.ui.utils.Device;
 import io.muun.common.Optional;
 import io.muun.common.exception.MissingCaseError;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
@@ -32,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 
 public class MuunPictureInput extends MuunView {
@@ -43,10 +42,17 @@ public class MuunPictureInput extends MuunView {
     private static final int GALLERY_ACTION = 2;
 
     public interface OnChangeListener {
+        /**
+         * This method will be called on picture loading success, with the picture's local Uri.
+         */
         void onPictureChange(Uri pictureUri);
     }
 
     public interface OnErrorListener {
+        /**
+         * This method will be called on picture loading failure, with the specific error
+         * encountered.
+         */
         void onPictureError(UserFacingError error);
     }
 
@@ -61,6 +67,11 @@ public class MuunPictureInput extends MuunView {
 
     @BindString(R.string.action_gallery)
     String galleryActionLabel;
+
+    // -----------------------------
+
+    @Inject
+    DecodeImageAction decodeImage;
 
     private OnChangeListener changeListener;
     private OnErrorListener errorListener;
@@ -86,14 +97,16 @@ public class MuunPictureInput extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        getComponent().inject(this);
+
         profilePictureView.setOnClickListener(view -> openIntentChooser());
         profilePictureView.setListener((Uri uri) -> toggleLoading(false));
     }
 
     @Override
-    protected void onRestoreInstanceState(Parcelable parcelable) {
+    protected void onRestoreInstanceState(@NonNull Parcelable parcelable) {
         super.onRestoreInstanceState(parcelable);
         toggleLoading(loading);
     }
@@ -137,10 +150,16 @@ public class MuunPictureInput extends MuunView {
         }
     }
 
+    /**
+     * Reset the profile picture to the default image.
+     */
     public void clearPicture() {
         profilePictureView.setDefaultPictureUri();
     }
 
+    /**
+     * Reload the cached pictureUri, if any.
+     */
     public void resetPicture() {
         final Optional<Uri> optionalUri = getPictureUri();
         setPicture(optionalUri.isPresent() ? optionalUri.get() : null);
@@ -254,7 +273,7 @@ public class MuunPictureInput extends MuunView {
 
         if (result.getData() != null) {
             // When picture comes from Gallery or 3rd party app, the URI comes in intent's data
-            bitmap = getBitmap(result.getData());
+            bitmap = decodeImage.run(result.getData());
 
         } else {
 
@@ -274,22 +293,6 @@ public class MuunPictureInput extends MuunView {
         }
 
         return storeInLocalTempFile(bitmap);
-    }
-
-    private Bitmap getBitmap(Uri data) {
-
-        final ContentResolver contentResolver = getContext().getContentResolver();
-
-        try {
-            if (Device.INSTANCE.supportsImageDecoderApi()) {
-                return ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, data));
-            } else {
-                return MediaStore.Images.Media.getBitmap(contentResolver, data);
-            }
-
-        } catch (IOException e) {
-            throw new InvalidPictureError();
-        }
     }
 
     private Uri storeInLocalTempFile(Bitmap bitmap) {

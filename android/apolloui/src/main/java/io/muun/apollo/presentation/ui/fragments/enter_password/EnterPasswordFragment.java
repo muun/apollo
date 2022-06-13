@@ -47,7 +47,7 @@ public class EnterPasswordFragment extends SingleFragment<EnterPasswordPresenter
 
         password.setPasswordRevealEnabled(true);
         password.setOnKeyboardNextListener(continueButton::callOnClick);
-        password.setOnChangeListener((ignored) -> validateInput());
+        password.setOnChangeListener(this, (ignored) -> validateInput());
         validateInput();
     }
 

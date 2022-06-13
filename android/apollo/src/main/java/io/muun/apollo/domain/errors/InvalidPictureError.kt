@@ -4,11 +4,11 @@ package io.muun.apollo.domain.errors
 import android.content.Intent
 import io.muun.apollo.data.external.UserFacingErrorMessages
 
-class InvalidPictureError: UserFacingError {
+class InvalidPictureError : UserFacingError {
 
-    constructor(): super(UserFacingErrorMessages.INSTANCE.invalidPicture())
+    constructor() : super(UserFacingErrorMessages.INSTANCE.invalidPicture())
 
-    constructor(resultIntent: Intent): super(UserFacingErrorMessages.INSTANCE.invalidPicture()) {
+    constructor(resultIntent: Intent) : super(UserFacingErrorMessages.INSTANCE.invalidPicture()) {
         metadata["intent"] = resultIntent.toString()
         metadata["action"] = resultIntent.action ?: "null"
         metadata["data"] = resultIntent.dataString ?: "null"

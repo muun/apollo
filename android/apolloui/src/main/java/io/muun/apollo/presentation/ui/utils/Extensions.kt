@@ -74,7 +74,7 @@ fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
  * Returns whether the device supports night mode or not.
  */
 fun supportsDarkMode(): Boolean =
-    UiUtils.supportsDarkMode()
+    OS.supportsDarkMode()
 
 fun postDelayed(delayInMillis: Long, runnable: () -> Unit) {
     Handler(Looper.getMainLooper()).postDelayed(runnable, delayInMillis)

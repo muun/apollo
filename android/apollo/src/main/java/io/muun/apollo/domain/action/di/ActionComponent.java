@@ -35,6 +35,17 @@ import io.muun.apollo.domain.action.session.rc_only.LogInWithRcAction;
 import io.muun.apollo.domain.action.user.EmailLinkAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 
+import dagger.Component;
+
+/**
+ * Dagger Component. {@link Component}.
+ * Add here:
+ * - members-injection methods (e.g for classes which lifecycles are 3rd-party controlled, like
+ * Android's). Example: void inject(GcmMessageListenerService service).
+ * - provision methods, to expose injected or provided dependencies to other (dependent) components.
+ * Example: UpdateProfilePictureAction updateProfilePictureAction();
+ */
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 public interface ActionComponent {
 
     // Exposed to dependent components
