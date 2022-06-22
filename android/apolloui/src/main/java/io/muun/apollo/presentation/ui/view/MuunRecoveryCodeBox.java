@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewTreeLifecycleOwner;
 import butterknife.BindView;
 import butterknife.BindViews;
 import rx.functions.Action0;
@@ -28,6 +30,11 @@ import javax.annotation.Nullable;
 public class MuunRecoveryCodeBox extends MuunView {
 
     public interface OnEditedListener {
+
+        /**
+         * This method is called to notify you that the content for this recovery code box has
+         * changed. Parameter content contains the new input/content.
+         */
         void onEdited(String content);
     }
 
@@ -41,7 +48,7 @@ public class MuunRecoveryCodeBox extends MuunView {
             R.id.recovery_code_box_input_6,
             R.id.recovery_code_box_input_7,
             R.id.recovery_code_box_input_8
-            })
+    })
     List<MuunTextInput> segmentInputs;
 
     @BindView(R.id.recovery_code_error)
@@ -80,11 +87,33 @@ public class MuunRecoveryCodeBox extends MuunView {
 
             input.disableErrorAndHelperTextTempFix(); // TODO replace this with reasonable API
 
-            input.setOnChangeListener(string -> onSegmentInputEdited());
             input.setOnKeyListener(new SegmentAutoReturnKeyListener(index));
 
             input.editText.addTextChangedListener(new SegmentAutoAdvanceToNextListener(index));
+
         }
+
+        // Since we are using ViewTreeLifecycleOwner.get() we need to make sure view is already
+        // attached to a Window so it successfully finds the LifecycleOwner (Activity or Fragment),
+        // otherwise we risk it returning null. Once view is attached it shouldn't return null.
+        // See:
+        // https://thomasgorisse.medium.com/android-view-lifecycleowner-extensions-lifecycle-lifecyclescope-on-any-view-b97d62d5201f
+        // https://stackoverflow.com/q/66160161/901465
+        addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                final LifecycleOwner lifecycleOwner = ViewTreeLifecycleOwner.get(v);
+                Preconditions.checkNotNull(lifecycleOwner);
+                for (MuunTextInput input : segmentInputs) {
+                    input.setOnChangeListener(lifecycleOwner, string -> onSegmentInputEdited());
+                }
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+
+            }
+        });
     }
 
     /**

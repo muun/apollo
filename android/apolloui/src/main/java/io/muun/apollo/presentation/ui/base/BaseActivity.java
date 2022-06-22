@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.base;
 
 import io.muun.apollo.R;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.errors.BugDetected;
@@ -322,12 +323,26 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
         if (shouldIgnoreBackAndExit) {
 
-            // Ugly hack to "simulate home button press". We need to exit app "smoothly", sending
-            // it to the background, as when Home Button is pressed. This gets the job done.
-            final Intent intent = new Intent()
-                    .setAction(Intent.ACTION_MAIN)
-                    .addCategory(Intent.CATEGORY_HOME);
-            startActivity(intent);
+            try {
+                // Ugly hack to "simulate home button press". We need to exit "smoothly", sending
+                // it to the background, as when Home Button is pressed. This gets the job done.
+                // See: https://stackoverflow.com/questions/21253303/exit-android-app-on-back-pressed
+                final Intent intent = new Intent()
+                        .setAction(Intent.ACTION_MAIN)
+                        .addCategory(Intent.CATEGORY_HOME)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                startActivity(intent);
+            } catch (Exception e) {
+
+                // Tackling weird `Can't change activity type once set:` crash. See:
+                // https://stackoverflow.com/questions/55005798/illegalstateexception-cant-change-activity-type-once-set
+                Crashlytics.logBreadcrumb("shouldIgnoreBackAndExit() failed: " + e.getMessage());
+                Timber.e(e);
+
+                // On this weird case we just ignore back (user can try pin again or choose to kill
+                // the app). Should we finishAffinity() + finishActivity() instead?
+            }
         }
 
         return shouldIgnoreBackAndExit;

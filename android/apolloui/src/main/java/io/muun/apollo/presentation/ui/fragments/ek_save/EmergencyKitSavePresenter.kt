@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.ek_save
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import io.muun.apollo.R
 import io.muun.apollo.data.apis.DriveAuthenticator
@@ -11,19 +12,24 @@ import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction
 import io.muun.apollo.domain.action.ek.UploadToDriveAction
+import io.muun.apollo.domain.errors.SaveToDiskError
 import io.muun.apollo.domain.model.FeedbackCategory
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_DRIVE_TYPE
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_DRIVE
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_OPTION
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_SELECT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SHARE
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_SAVE_TO_DISK
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_ERROR
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_CLOUD_FEEDBACK
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_MANUAL_ADVICE
 import io.muun.apollo.presentation.export.PdfExportError
 import io.muun.apollo.presentation.export.PdfExporter
+import io.muun.apollo.presentation.export.SaveToDiskExporter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import timber.log.Timber
@@ -89,12 +95,19 @@ class EmergencyKitSavePresenter @Inject constructor(
         analytics.report(E_EK_SAVE_SELECT(eventParam))
     }
 
-    fun reportManualShareStarted(app: String?) {
-        analytics.report(E_EK_SHARE(app ?: ""))
-    }
+    /**
+     * There's a limitation here. Android OS doesn't allow us to know with 100% certainty that
+     * the EK was successfully shared or saved locally. But this is our best effort, we accept
+     * there will be false-positives. We signal that this step of the flow is completed and we can
+     * move forward. Worst case, users can always press back and return.
+     *
+     * Note: we also do a best effort to try to identify the third party app chosen for the manual
+     * export for tracking purposes (which is also apparently not 100% effective).
+     */
+    fun manualShareCompleted(chosenShareTarget: String?) {
+        parentPresenter.confirmManualShareCompleted() // we're not really sure, though
 
-    fun reportThirdPartyAppOpened() {
-        parentPresenter.reportEmergencyKitShared() // we're not really sure, though
+        analytics.report(E_EK_SHARE(chosenShareTarget ?: ""))
     }
 
     fun reportGoogleSignInStarted() {
@@ -149,7 +162,7 @@ class EmergencyKitSavePresenter @Inject constructor(
 
     private fun onUploadResult(driveFile: DriveFile) {
         analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.UPLOAD_FINISH))
-        parentPresenter.reportEmergencyKitUploaded(driveFile)
+        parentPresenter.confirmEmergencyKitUploaded(driveFile)
     }
 
     private fun onPdfExportFinished(kitGen: GeneratedEmergencyKit, error: PdfExportError?) {
@@ -207,5 +220,16 @@ class EmergencyKitSavePresenter @Inject constructor(
 
     fun reportManualAdviceOpen() {
         analytics.report(S_EMERGENCY_KIT_MANUAL_ADVICE())
+    }
+
+    fun saveToDiskSelected(treeUri: Uri) {
+        try {
+            analytics.report(E_EMERGENCY_KIT_SAVE_TO_DISK())
+            val localFile = fileCache.get(FileCache.Entry.EMERGENCY_KIT)
+            SaveToDiskExporter.saveToDisk(context, localFile.uri, treeUri)
+        } catch (e: Exception) {
+            handleError(SaveToDiskError(e))
+            analytics.report(E_ERROR(ERROR_TYPE.EMERGENCY_KIT_SAVE_ERROR, e.toString()))
+        }
     }
 }

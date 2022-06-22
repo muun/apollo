@@ -14,7 +14,6 @@ import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.NightMode
-import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.ACTIVE
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_ACTIVATE
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_PREACTIVATE
@@ -38,7 +37,7 @@ import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 import io.muun.common.model.Currency
 
-open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
+open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView {
 
     private val REQUEST_NEW_PRIMARY_CURRENCY = 4
 
@@ -108,7 +107,7 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
 
         muunPictureInput.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
         muunPictureInput.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
-        versionCode.text = getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+        versionCode.text = getString(R.string.settings_version, getVersionForDisplay())
 
         usernameItem.setOnClickListener { editUsername() }
         passwordItem.setOnClickListener { editPassword() }
@@ -147,7 +146,7 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     }
 
     override fun setNightMode(mode: NightMode) {
-        when(mode) {
+        when (mode) {
             NightMode.DARK -> darkModeItem.setDescription(getString(R.string.dark_mode_dark))
             NightMode.LIGHT -> darkModeItem.setDescription(getString(R.string.dark_mode_light))
             NightMode.FOLLOW_SYSTEM -> setFollowSystemDarkMode()
@@ -171,9 +170,11 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
         }
     }
 
-    private fun setUpGeneralSection(user: User,
-                                    bitcoinUnit: BitcoinUnit,
-                                    rateWindow: ExchangeRateWindow) {
+    private fun setUpGeneralSection(
+        user: User,
+        bitcoinUnit: BitcoinUnit,
+        rateWindow: ExchangeRateWindow,
+    ) {
 
         val currency = Currency.getInfo(user.getPrimaryCurrency(rateWindow).currencyCode).get()
         setUpCurrency(currency, rateWindow)
@@ -293,9 +294,10 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
 
     private fun showBitcoinSettings(state: SettingsState): Boolean =
         when (state.taprootFeatureStatus) {
-            UserActivatedFeatureStatus.PREACTIVATED,
-            UserActivatedFeatureStatus.SCHEDULED_ACTIVATION,
-            UserActivatedFeatureStatus.ACTIVE -> true
+            PREACTIVATED,
+            SCHEDULED_ACTIVATION,
+            ACTIVE,
+            -> true
             else -> false
         }
 
@@ -364,6 +366,17 @@ open class SettingsFragment: SingleFragment<SettingsPresenter>(), SettingsView {
     private fun onPictureChange(uri: Uri) {
         showTextToast(getString(R.string.uploading_picture))
         presenter.reportPictureChange(uri)
+    }
+
+    private fun getVersionForDisplay(): String {
+        val versionName = BuildConfig.VERSION_NAME
+        return if (BuildConfig.PRODUCTION && BuildConfig.RELEASE) {
+            versionName
+        } else {
+            val commit = BuildConfig.COMMIT
+            val branchName = BuildConfig.BRANCH
+            "$versionName (${BuildConfig.FLAVOR}-${BuildConfig.BUILD_TYPE}-$commit-$branchName)"
+        }
     }
 
     private fun rotateDebugTaprootStatusForQa() {

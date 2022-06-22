@@ -4,9 +4,7 @@ import android.os.Bundle
 import icepick.Bundler
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.model.CountryInfo
 import io.muun.apollo.presentation.ui.helper.serialize
-import javax.money.MonetaryAmount
 
 class BitcoinAmountBundler : Bundler<BitcoinAmount> {
 

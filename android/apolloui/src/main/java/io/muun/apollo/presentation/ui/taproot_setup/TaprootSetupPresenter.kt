@@ -59,7 +59,7 @@ class TaprootSetupPresenter @Inject constructor(
     override fun getGeneratedEmergencyKit(): GeneratedEmergencyKit =
         generatedEK!!
 
-    override fun reportEmergencyKitUploaded(driveFile: DriveFile) {
+    override fun confirmEmergencyKitUploaded(driveFile: DriveFile) {
         this.uploadedFile = driveFile
 
         val shouldGoToCloudVerify = true // TODO
@@ -71,7 +71,7 @@ class TaprootSetupPresenter @Inject constructor(
         }
     }
 
-    override fun reportEmergencyKitShared() {
+    override fun confirmManualShareCompleted() {
         goToStep(TaprootSetupStep.VERIFY)
     }
 

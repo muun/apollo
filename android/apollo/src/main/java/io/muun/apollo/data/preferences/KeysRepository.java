@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences;
 
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.data.os.secure_storage.SecureStorageProvider.SecureStorageNoSuchElementError;
 import io.muun.apollo.data.preferences.adapter.PublicKeyPreferenceAdapter;
 import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.domain.errors.BugDetected;
@@ -22,7 +23,6 @@ import org.threeten.bp.ZonedDateTime;
 import rx.Observable;
 import timber.log.Timber;
 
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -316,7 +316,7 @@ public class KeysRepository extends BaseRepository {
         return getChallengePublicKey(ChallengeType.PASSWORD)
                 .map(key -> true)
                 .compose(ObservableFn.onTypedErrorResumeNext(
-                        NoSuchElementException.class,
+                        SecureStorageNoSuchElementError.class,
                         error -> Observable.just(true) // nothing to migrate if the user is UU
                 ))
                 .compose(ObservableFn.onTypedErrorResumeNext(

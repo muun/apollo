@@ -20,7 +20,7 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
 import io.muun.apollo.data.preferences.FeeWindowRepository;
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.data.preferences.UserRepository;
@@ -35,6 +35,15 @@ import org.bitcoinj.core.NetworkParameters;
 
 import javax.inject.Singleton;
 
+/**
+ * Dagger Component. {@link Component}.
+ * Add here:
+ * - members-injection methods (e.g for classes which lifecycles are 3rd-party controlled, like
+ * Android's). Example: void inject(GcmMessageListenerService service).
+ * - provision methods, to expose injected or provided dependencies to other (dependent) components.
+ * Example: TelephonyInfoProvider telephonyProvider();
+ */
+@SuppressWarnings("checkstyle:MissingJavadocMethod")
 @Singleton
 @Component(modules = DataModule.class)
 public interface DataComponent extends ActionComponent {
@@ -57,7 +66,7 @@ public interface DataComponent extends ActionComponent {
 
     UserRepository userRepository();
 
-    FirebaseInstalationIdRepository fcmTokenRepository();
+    FirebaseInstallationIdRepository fcmTokenRepository();
 
     ContactDao contactDao();
 

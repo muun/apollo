@@ -187,8 +187,8 @@ public class SecureStoragePreferences {
 
             final Instant instant = Instant.ofEpochMilli(System.currentTimeMillis());
             final ZonedDateTime now = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
-            final String timestampt = now.format(Dates.ISO_DATE_TIME_WITH_MILLIS);
-            trail.add(timestampt + " " + operation + " " + label);
+            final String timestamp = now.format(Dates.ISO_DATE_TIME_WITH_MILLIS);
+            trail.add(timestamp + " " + operation + " " + label);
             auditPreference.setNow(trail);
         } catch (final Exception e) {
             Timber.e("Failed to record audit trail (" + operation + " " + label + ")", e);

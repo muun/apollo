@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.utils.UiUtils;
+import io.muun.apollo.presentation.ui.utils.OS;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -30,6 +30,9 @@ import javax.annotation.Nullable;
 public class MuunDropdownInput<T> extends MuunView {
 
     public interface OnChangeListener<Item> {
+        /**
+         * This method will be called when a new item has been selected.
+         */
         void onSelectionChange(@Nullable Item item);
     }
 
@@ -90,7 +93,7 @@ public class MuunDropdownInput<T> extends MuunView {
         // Doing this here in code as we can't easily and reliably do it via xml
         // Head's up we maaaaay have to adjust this to support rtl layouts
         Drawable drawable = spinnerBkg;
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsBackgroundTintList()) {
             spinner.setBackgroundTintList(spinnerBkgTintList);
         } else {
             drawable = DrawableCompat.wrap(drawable);

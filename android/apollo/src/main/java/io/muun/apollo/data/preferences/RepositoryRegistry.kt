@@ -26,7 +26,7 @@ class RepositoryRegistry {
         ClientVersionRepository::class.java,
         ExchangeRateWindowRepository::class.java,
         FeeWindowRepository::class.java,
-        FirebaseInstalationIdRepository::class.java,
+        FirebaseInstallationIdRepository::class.java,
         ForwardingPoliciesRepository::class.java,
         MinFeeRateRepository::class.java,
         KeysRepository::class.java,
@@ -48,7 +48,7 @@ class RepositoryRegistry {
     // its more clear and clean to keep it and avoid wiping it (there's no privacy or security
     // issues).
     private val logoutSurvivorRepositories : Set<Class<out BaseRepository>> = setOf(
-        FirebaseInstalationIdRepository::class.java,
+        FirebaseInstallationIdRepository::class.java,
         NightModeRepository::class.java,
         SchemaVersionRepository::class.java
     )

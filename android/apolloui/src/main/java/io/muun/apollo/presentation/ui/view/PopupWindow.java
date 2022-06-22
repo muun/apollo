@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
 import android.app.Activity;
@@ -47,7 +48,7 @@ public class PopupWindow {
                 MaterialToolbar.LayoutParams.WRAP_CONTENT
         );
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsElevation()) {
             popupWindow.setElevation(10);
             popupWindow.setBackgroundDrawable(new ColorDrawable(backgroundColor));
 
@@ -87,11 +88,11 @@ public class PopupWindow {
         );
     }
 
+    /**
+     * Dismiss this popup window.
+     */
     public void dismiss() {
         popupWindow.dismiss();
-    }
-
-    public void tearDownUi() {
         butterKnifeUnbinder.unbind();
     }
 }

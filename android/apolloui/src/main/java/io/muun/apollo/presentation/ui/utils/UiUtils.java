@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
@@ -305,36 +304,6 @@ public class UiUtils {
         if (imm != null) {
             imm.hideSoftInputFromWindow(target.getWindowToken(), 0);
         }
-    }
-
-    public static boolean isLollipop() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-    }
-
-    public static boolean isNougat() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
-    }
-
-    /**
-     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
-     * accessible way (aka there's a system config accessible for all users). Android P aka 9
-     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
-     * a system that does NOT support Dark Mode as most users won't ever find how to display the
-     * developer options and/or find that Dark Mode config in there.
-     */
-    public static boolean supportsDarkMode() {
-        return supportsDarkModePublicly();
-    }
-
-    /**
-     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
-     * accessible way (aka there's a system config accessible for all users). Android P aka 9
-     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
-     * a system that does NOT support Dark Mode as most users won't ever find how to display the
-     * developer options and/or find that Dark Mode config in there.
-     */
-    private static boolean supportsDarkModePublicly() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
     /**

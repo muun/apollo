@@ -279,6 +279,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT(cloudName: String):
         AnalyticsEvent(listOf("cloud_name" to cloudName))
 
+    class E_EMERGENCY_KIT_SAVE_TO_DISK: AnalyticsEvent()
+
     class E_OPEN_WEB(val name: String, val url: String): AnalyticsEvent(listOf(
         "name" to name,
         "url" to url
@@ -372,6 +374,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     enum class ERROR_TYPE {
         INVALID_QR, // A little bit duplicated with NEW_OP_ERROR(INVALID_ADDRESS)
         EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR,
+        EMERGENCY_KIT_SAVE_ERROR,
         LNURL_INVALID_CODE,
         LNURL_INVALID_TAG, // E.g Not a withdraw request
         LNURL_UNRESPONSIVE,

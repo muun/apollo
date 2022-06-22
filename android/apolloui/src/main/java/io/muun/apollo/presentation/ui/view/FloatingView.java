@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.utils.UiUtils;
+import io.muun.apollo.presentation.ui.utils.OS;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
@@ -40,7 +40,7 @@ public class FloatingView {
                 true // attach view to viewTree, important for ui tests to work
         );
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsElevation()) {
             popupWindow.setElevation(10);
             popupWindow.setBackgroundDrawable(new ColorDrawable(backgroundColor));
 
@@ -66,6 +66,9 @@ public class FloatingView {
         popupWindow.showAtLocation(parent, gravity, xOffset, yOffset);
     }
 
+    /**
+     * Dismiss this floating view.
+     */
     public void dismiss() {
         popupWindow.dismiss();
         butterKnifeUnbinder.unbind();

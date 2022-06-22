@@ -81,7 +81,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     protected void initializeUi(View view) {
         super.initializeUi(view);
 
-        verificationCode.setOnChangeListener(newText -> {
+        verificationCode.setOnChangeListener(this, newText -> {
             final boolean enable = !TextUtils.isEmpty(newText) && newText.length() >= 6;
             continueButton.setEnabled(enable);
             verificationCode.setOnKeyboardNextListener(enable ? continueButton::callOnClick : null);

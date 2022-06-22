@@ -43,14 +43,17 @@
         <meta-data android:name="google_analytics_default_allow_ad_personalization_signals"
                 android:value="false" />
 
+        <!-- BlockCanary's really out-dated :(. After targeting Android 12 we need this to build -->
+        <activity android:name="com.github.moduth.blockcanary.ui.DisplayActivity"
+                android:exported="false" />
+
         <!-- LauncherActivity -->
 
         <activity
                 android:name=".presentation.ui.launcher.LauncherActivity"
-                android:label="@string/app_name"
+                android:exported="true"
                 android:theme="@style/Theme.NoDisplay"
-                android:launchMode="singleTask"
-        >
+                android:launchMode="singleTask">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -109,8 +112,7 @@
         <!-- HomeActivity -->
 
         <activity
-                android:name=".presentation.ui.home.HomeActivity"
-                android:label="@string/app_name">
+                android:name=".presentation.ui.home.HomeActivity">
 
         </activity>
 
@@ -118,6 +120,7 @@
 
         <activity
                 android:name=".presentation.ui.new_operation.NewOperationActivity"
+                android:exported="true"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:windowSoftInputMode="adjustResize">
 
@@ -219,14 +222,12 @@
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity"
-                android:label="@string/app_name"
                 />
 
         <!-- SecurityLogoutActivity -->
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity"
-                android:label="@string/app_name"
                 />
 
         <!-- SetupRecoveryCodeActivity -->
@@ -291,7 +292,7 @@
 
         <activity
                 android:name=".presentation.ui.setup_password.SetupPasswordActivity"
-                android:label="@string/app_name" />
+                />
 
         <!-- SuccessDeleteWalletActivity -->
 
@@ -309,7 +310,7 @@
 
         <activity
                 android:name=".presentation.ui.migration.MigrationActivity"
-                android:label="@string/app_name" />
+                />
 
         <!--   OperationsActivity   -->
         <activity

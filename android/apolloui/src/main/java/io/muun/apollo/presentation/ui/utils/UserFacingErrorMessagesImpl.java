@@ -200,6 +200,11 @@ public class UserFacingErrorMessagesImpl extends UserFacingErrorMessages {
         return get(R.string.rc_only_login_error);
     }
 
+    @Override
+    public String saveEkToDisk() {
+        return get(R.string.ek_emergency_kit_save_failure);
+    }
+
     private String get(@StringRes int resId, Object... args) {
         return context.getString(resId, args);
     }

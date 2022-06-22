@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.fragments.ek_save
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -24,20 +23,11 @@ import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunSaveOption
 import io.muun.apollo.presentation.ui.view.MuunSaveOptionLabel
 import io.muun.apollo.presentation.ui.view.MuunTextInput
-import rx.functions.Action0
-import java.util.Locale
 
-class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
+class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     EmergencyKitSaveView {
 
     companion object {
-
-        // List of oems that have weird rules or restrictions that make our features misbehave (e.g
-        // FileSharerReceiver broadcast receiver)
-        private val NAUGHTY_OEMS = setOf("huawei", "xiaomi", "oppo")
-
-        // Window of time we use to determine a successful manual share has occurred in naughty oems
-        private const val THRESHOLD_IN_SECS = 7
 
         private const val FEEDBACK_DIALOG_AUTO_DISMISS_MS = 2800L // developer-quality UX choice
 
@@ -54,9 +44,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
             EmergencyKitSaveFragment().applyArgs {
                 putBoolean(ARG_UPDATE_KIT, false)
             }
-
-        private fun isNaughtyOem(): Boolean =
-            NAUGHTY_OEMS.contains(Build.MANUFACTURER.toLowerCase(Locale.getDefault()))
     }
 
     @BindView(R.id.pdf_exporter_web_view)
@@ -85,11 +72,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
 
     /** Whether the loading dialog is currently on screen */
     private var showingLoadingDialog = false
-
-    /**
-     * Extra metadata for workaround heuristic for naughty oems.
-     */
-    private var manuallySharedAt: Long = 0
 
     override fun inject() =
         component.inject(this)
@@ -155,7 +137,7 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         val dialog = MuunDialog.Builder()
             .title(R.string.ek_upload_error_title)
             .message(R.string.ek_upload_error_body)
-            .positiveButton(R.string.retry, Action0 { retrySaveToDrive() })
+            .positiveButton(R.string.retry) { retrySaveToDrive() }
             .negativeButton(R.string.cancel, null)
             .build()
 
@@ -204,17 +186,17 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
 
         val isManualShare = selectedOption == EmergencyKitSaveOption.SHARE_MANUALLY
 
-        if (isManualShare && chosenShareTarget != null) {
-            presenter.reportManualShareStarted(chosenShareTarget)
-            presenter.reportThirdPartyAppOpened()
+        if (isManualShare) {
 
-        } else if (isManualShare && isNaughtyOem() && secsSinceManualShare() > THRESHOLD_IN_SECS) {
-            // For certain OEMs our FileSharerReceiver doesn't work properly :(. So, we came up with
-            // this heuristic where we if a user using a device from one of this
-            // "naughty" oems opens the share intent and spends more than THRESHOLD_IN_SECS before
-            // coming back, then we consider that a successful manual share and we navigate forward
-            presenter.reportManualShareStarted("naughty_oem_heuristic")
-            presenter.reportThirdPartyAppOpened()
+            // Always navigate forward, no matter what. This will take users to the next step,
+            // even when they didn't successfully finish the manual export (e.g they chose
+            // a third party app for the manual export but just pressed back) but it's better than
+            // having a dead end if we fail to realize that the export was made successfully (which
+            // apparently is getting more common). Note: they can always press back and return to
+            // this step.
+            // TODO: perhaps transition here should be more smooth, so user UNDERSTANDS that we
+            // automatically moved her forward. Or we should add a button so they do it themselves
+            presenter.manualShareCompleted(chosenShareTarget)
         }
 
         clearSelectedOption()
@@ -224,6 +206,13 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         when (requestCode) {
             EmergencyKitSaveOption.SAVE_TO_DRIVE.requestCode ->
                 onExternalResultFromDrive(resultCode, data)
+            EmergencyKitSaveOption.SHARE_MANUALLY.requestCode -> {
+                // we assume if it's not received an uri the user did not select save to disk option
+                data?.data?.let {
+                    presenter.saveToDiskSelected(it)
+                }
+            }
+
 
             else ->
                 super.onExternalResult(requestCode, resultCode, data)
@@ -235,7 +224,7 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
             return // unlikely, but maybe this Fragment was detached.
         }
 
-        when (selectedOption) {
+        when (selectedOption!!) {
             EmergencyKitSaveOption.SHARE_MANUALLY -> useShareManually(localFile)
             EmergencyKitSaveOption.SAVE_TO_DRIVE -> useSaveToDrive()
         }
@@ -283,7 +272,7 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         val confirmButton = view.findViewById<MuunButton>(R.id.dialog_confirm)
         val closeButton = view.findViewById<View>(R.id.dialog_close)
 
-        feedbackInput.setOnChangeListener {
+        feedbackInput.setOnChangeListener(this) {
             confirmButton.isEnabled = feedbackInput.text.isNotEmpty()
         }
 
@@ -328,7 +317,6 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         confirmButton.setOnClickListener {
             dialog.dismiss()
             selectOption(EmergencyKitSaveOption.SHARE_MANUALLY)
-            manuallySharedAt = System.currentTimeMillis()
         }
 
         closeButton.setOnClickListener {
@@ -348,7 +336,4 @@ class EmergencyKitSaveFragment: SingleFragment<EmergencyKitSavePresenter>(),
         selectedOption = null
         chosenShareTarget = null
     }
-
-    private fun secsSinceManualShare(): Long =
-        (System.currentTimeMillis() - manuallySharedAt) / 1000
 }

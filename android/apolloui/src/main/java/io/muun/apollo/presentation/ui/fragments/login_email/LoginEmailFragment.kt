@@ -11,7 +11,7 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 import io.muun.common.bitcoinj.ValidationHelpers
 
-class LoginEmailFragment: SingleFragment<LoginEmailPresenter>(), LoginEmailView {
+class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView {
 
     @BindView(R.id.enter_email_input)
     lateinit var emailInput: MuunTextInput
@@ -25,7 +25,6 @@ class LoginEmailFragment: SingleFragment<LoginEmailPresenter>(), LoginEmailView 
     override fun getLayoutResource() =
         R.layout.login_email
 
-
     override fun initializeUi(view: View) {
         super.initializeUi(view)
 
@@ -35,7 +34,7 @@ class LoginEmailFragment: SingleFragment<LoginEmailPresenter>(), LoginEmailView 
             setElevated(true)
         }
 
-        emailInput.setOnChangeListener { validateEmailInput() }
+        emailInput.setOnChangeListener(this) { validateEmailInput() }
         validateEmailInput()
 
     }

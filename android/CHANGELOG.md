@@ -6,7 +6,26 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-## [49.6] - 2022-08-02
+## [49.7] - 2022-06-13
+
+### CHANGED
+- Upgraded several testing libs
+- Upgraded compiledSdkVersion and targetSdkVersion to 31
+- Upgraded workmanager library to 2.7.1 for compat with targetSdkVersion 31
+- Upgrade Navigation library to 2.4.1
+- Refactor to add OS classes to centralize checks for android version and supported capabilities
+
+### FIXED
+- Several crashes and problems regarding concurrent access to Android Keystore
+- A few activity/fragment lifecycle related crashes
+- Added a workaround for a rare, non-deterministic crash when trying to exit app by pressing back
+- A problem in Emergency Kit export flow that could sometimes result in a dead end after a
+ successful manual export
+
+### ADDED
+- An option to always be able to save the Emergency Kit manually in the file system.
+
+## [49.6] - 2022-06-08
 
 ### FIXED
 - Removed unused AD_ID permission, added by Firebase SDK in latest upgrade (in 49.5)
@@ -17,7 +36,7 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 - Upgrade Firebase dependencies to start using BOM (Bill Of Materials). firebase-bom:30.1.0
 - Upgrade Firebase Messaging as part of firebase-bom:30.1.0
 - Upgrade Firebase Crashlytics as part of firebase-bom:30.1.0
-- Upgrade Firebase Analtyics as part of firebase-bom:30.1.0
+- Upgrade Firebase Analytics as part of firebase-bom:30.1.0
 - Upgrade Google Services Gradle Plugin to 4.3.10
 - Changed splash screen english copy
 - Increased FcmToken fetch timeout and add extra retry to improve reliability in Fcm Token registration
@@ -74,7 +93,7 @@ flow rewrite (48.2)
 ### CHANGED
 - Upgrade gradle to 7.3.3 to support JDK17 (ARM support)
 - Upgrade AGP to 7.0.4 for gradle 7.3 compat
-- Upgrade SQDelight to 1.5.3 for gradle 7.3 compat (hughe refactor and rework of data layer)
+- Upgrade SQDelight to 1.5.3 for gradle 7.3 compat (huge refactor and rework of data layer)
 - Upgrade Kotlin to 1.6.10 for gradle 7.3 compat
 - Upgrade Dagger to 2.40.5 for gradle 7.3 compat
 - Upgrade checkstyle to 9.2.1

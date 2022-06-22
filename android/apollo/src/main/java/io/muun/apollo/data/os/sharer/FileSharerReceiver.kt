@@ -7,12 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
-import rx.Observable
-import rx.subjects.BehaviorSubject
 import timber.log.Timber
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-class FileSharerReceiver: BroadcastReceiver() {
+class FileSharerReceiver : BroadcastReceiver() {
 
     init {
         Timber.d("Instance created")

@@ -1335,7 +1335,10 @@
     <string name="rc_only_login_error">
         Código de Recuperación incorrecto. Por favor, revisalo y vuelve a intentar.
     </string>
-
+    <string name="ek_emergency_kit_save_failure">
+        No se pudo guardar el kit de emergencia en el dispositivo. Por favor vuelve a intentarlo
+        o escribenos a support@muun.com.
+    </string>
     <!--
     Note for future us: we put an arbitrary \n because of weird text wrapping problems in some
     devices where 2nd line is not shown. Has to do with LinearLayout + TextView width interaction.

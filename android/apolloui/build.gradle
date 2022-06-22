@@ -1,5 +1,5 @@
 buildscript {
-    ext.nav_version = "2.3.1"
+    ext.nav_version = "2.4.1"
 
     dependencies { // Add third party gradle plugins
         classpath 'com.google.gms:google-services:4.3.10'    // Google Services plugin
@@ -47,6 +47,13 @@ static def commitTag() {
     return 'git rev-parse --short HEAD'.execute().text.trim().substring(0, 7)
 }
 
+/**
+ * Returns the name of the current git branch, truncated to 20 chars.
+ */
+static def branchName() {
+    def branchName = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+    return branchName.substring(0, Math.min(branchName.length(), 20))
+}
 
 /**
  * Configure external links for a given product flavor.
@@ -74,14 +81,14 @@ static def configExternalLinks(productFlavor, String host) {
 
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "io.muun.apollo"
         minSdkVersion 19
-        targetSdkVersion 30
-        versionCode 906
-        versionName "49.6"
+        targetSdkVersion 31
+        versionCode 907
+        versionName "49.7"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -102,7 +109,10 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        buildConfigField("String", "COMMIT", quote(commitTag()))
+        buildConfigField("String", "BRANCH", quote(branchName()))
         buildConfigField("boolean", "PRODUCTION", "false")
+        buildConfigField("boolean", "RELEASE", "false")
     }
 
     buildTypes {
@@ -125,6 +135,8 @@ android {
             multiDexEnabled true
             minifyEnabled true
             shrinkResources true
+
+            buildConfigField("boolean", "RELEASE", "true")
         }
     }
 
@@ -342,6 +354,7 @@ dependencies {
     implementation 'androidx.browser:browser:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
     // for WebView
     implementation 'androidx.webkit:webkit:1.1.0'
 
@@ -379,16 +392,16 @@ dependencies {
     testImplementation 'net.sourceforge.streamsupport:streamsupport:1.5.5'
     testImplementation 'com.github.tomakehurst:wiremock-standalone:2.6.0'
 
-    androidTestImplementation 'androidx.test:core:1.1.0'
-    androidTestImplementation 'androidx.test:rules:1.1.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test:core:1.4.0'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'org.assertj:assertj-core:3.8.0'
     androidTestImplementation 'org.mockito:mockito-core:3.10.0'
     androidTestImplementation 'org.mockito:mockito-android:3.10.0'
     androidTestImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
 
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // UiAutomator Testing
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'

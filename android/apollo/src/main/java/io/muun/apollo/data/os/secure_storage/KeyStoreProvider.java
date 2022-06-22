@@ -95,9 +95,10 @@ public class KeyStoreProvider {
             final String keyAlias = getAlias(alias);
 
             if (!hasKey(keyAlias)) {
-                // FIXME: This is a racy operation and might end up creating 2 keys overwriting
-                // each other. That might mean we store the encrypted value using key 1 but keystore
-                // has key 2 stored.
+                // This is a racy operation and might end up creating 2 keys overwriting each other.
+                // That might mean we store the encrypted value using key 1 but keystore
+                // has key 2 stored. This should be taken care of by external locking at
+                // SecureStorageProvider.
                 generateKeyStore(keyAlias);
             }
 

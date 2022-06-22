@@ -10,7 +10,7 @@ import io.muun.apollo.data.external.UserFacingErrorMessages;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
@@ -74,7 +74,7 @@ public abstract class ApolloApplication extends Application
     NightModeManager nightModeManager;
 
     @Inject
-    FirebaseInstalationIdRepository firebaseInstalationIdRepository;
+    FirebaseInstallationIdRepository firebaseInstallationIdRepository;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -128,7 +128,7 @@ public abstract class ApolloApplication extends Application
                 .addOnSuccessListener(id -> {
                     // id can be null on platforms without google play services.
                     if (id != null) {
-                        firebaseInstalationIdRepository.storeBigQueryPseudoId(id);
+                        firebaseInstallationIdRepository.storeBigQueryPseudoId(id);
                     }
                 });
     }
@@ -258,6 +258,7 @@ public abstract class ApolloApplication extends Application
 
         final Iterator<CurrencyProviderSpi> it = loader.iterator();
 
+        //noinspection WhileLoopReplaceableByForEach
         while (it.hasNext()) {
             it.next(); // nothing else to do, just populate the ServiceLoader cache.
         }

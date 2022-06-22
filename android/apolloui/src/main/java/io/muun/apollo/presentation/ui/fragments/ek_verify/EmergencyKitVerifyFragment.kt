@@ -33,7 +33,7 @@ class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
     override fun initializeUi(view: View?) {
         super.initializeUi(view)
 
-        verificationCodeInput.setOnChangeListener {
+        verificationCodeInput.setOnChangeListener(this) {
             verifyButton.isEnabled = verificationCodeInput.text.isNotEmpty()
         }
 

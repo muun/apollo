@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.action.session.rc_only
 
 import io.muun.apollo.data.net.HoustonClient
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.challenge_keys.SignChallengeAction
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
@@ -23,7 +23,7 @@ class LogInWithRcAction @Inject constructor(
     private val signChallenge: SignChallengeAction,
     private val decryptAndStoreKeySet: DecryptAndStoreKeySetAction,
     private val isRootedDeviceAction: IsRootedDeviceAction,
-    private val firebaseInstalationIdRepository: FirebaseInstalationIdRepository
+    private val firebaseInstallationIdRepository: FirebaseInstallationIdRepository
 ) : BaseAsyncAction1<String, CreateSessionRcOk>() {
 
     override fun action(recoveryCode: String): Observable<CreateSessionRcOk> =
@@ -53,7 +53,7 @@ class LogInWithRcAction @Inject constructor(
                 houstonClient.createRcLoginSession(
                     fcmToken,
                     Libwallet.recoveryCodeToKey(recoveryCode, null).pubKeyHex(),
-                    firebaseInstalationIdRepository.getBigQueryPseudoId(),
+                    firebaseInstallationIdRepository.getBigQueryPseudoId(),
                     isRootedDeviceAction.actionNow()
                 )
             }

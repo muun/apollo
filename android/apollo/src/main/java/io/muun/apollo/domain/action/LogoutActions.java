@@ -6,7 +6,7 @@ import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.BaseRepository;
-import io.muun.apollo.data.preferences.FirebaseInstalationIdRepository;
+import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.SignupDraftManager;
@@ -45,7 +45,7 @@ public class LogoutActions {
     private final SecureStorageProvider secureStorageProvider;
     private final NotificationService notificationService;
     private final RepositoryRegistry repositoryRegistry;
-    private final FirebaseInstalationIdRepository firebaseInstalationIdRepository;
+    private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
     private final LibwalletDataDirectory libwalletDataDirectory;
 
     private final List<String> thirdPartyPreferencesToClear;
@@ -65,7 +65,7 @@ public class LogoutActions {
                          SecureStorageProvider secureStorageProvider,
                          NotificationService notificationService,
                          RepositoryRegistry repositoryRegistry,
-                         FirebaseInstalationIdRepository firebaseInstalationIdRepository,
+                         FirebaseInstallationIdRepository firebaseInstallationIdRepository,
                          LibwalletDataDirectory libwalletDataDirectory) {
 
         this.context = context;
@@ -81,7 +81,7 @@ public class LogoutActions {
         this.secureStorageProvider = secureStorageProvider;
         this.notificationService = notificationService;
         this.repositoryRegistry = repositoryRegistry;
-        this.firebaseInstalationIdRepository = firebaseInstalationIdRepository;
+        this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.libwalletDataDirectory = libwalletDataDirectory;
 
         this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
@@ -177,7 +177,7 @@ public class LogoutActions {
      */
     public void clearAllRepositories() {
         clearRepositoriesForLogout();
-        clearRepository(firebaseInstalationIdRepository);
+        clearRepository(firebaseInstallationIdRepository);
     }
 
     /**

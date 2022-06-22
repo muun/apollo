@@ -12,7 +12,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentView
 import io.muun.apollo.presentation.ui.fragments.operations.OperationsFragment
-import io.muun.apollo.presentation.ui.utils.UiUtils
+import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 
@@ -40,12 +40,12 @@ class OperationsActivity
     override fun getHeader(): MuunHeader =
         headerView
 
-    override fun getInitialFragment()  =
+    override fun getInitialFragment() =
         OperationsFragment.newInstance()!!
 
     override fun setAnimation() {
 
-        if (UiUtils.isLollipop()) {
+        if (OS.supportsActivityTransitions()) {
             val slide = Slide()
             slide.slideEdge = Gravity.BOTTOM
             slide.duration = 300

@@ -1,0 +1,175 @@
+package io.muun.apollo.presentation.ui.utils
+
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
+
+/**
+ * Utility object to group OS related queries or operations like checking supported features
+ * based on Android version.
+ *
+ * This is a "sibling" object to the its namesake in our data module. We decided to have a separate
+ * object in our presentation layer to avoid breaking CLEAN architecture (presentation accessing
+ * data directly) or tightly coupling domain layer to data (domain knowing android version
+ * specifics).
+ *
+ * Note: this file docs use the following convention to refer to android OS versions:
+ * <versionLetter>-<versionMajorNumber>-<apiLevel>. Some examples:
+ * - M-6-23 -> Android Marshmallow, Android 6, Api Level 23
+ * - N-7-24 -> Android Nougat, Android 7, Api level 24
+ * - P-9-28 -> Android Pie, Android 9, Api level 28
+ */
+object OS {
+
+    /**
+     * Whether this OS supports querying for App Standby Buckets, support for which was added in
+     * P-9-28.
+     */
+    fun supportsStandByBuckets(): Boolean =
+        isAndroidPOrNewer()
+
+    /**
+     * Whether this OS supports Pending Intent mutability flags, which where introduced in M-6-23
+     * and are required starting in S-12-31.
+     *
+     * NOTE: this method has a sibling method in the sibling object in data layer with the same
+     * exact check.
+     *
+     * See:
+     * - https://developer.android.com/about/versions/12/behavior-changes-12#pending-intent-mutability
+     * - https://developer.android.com/guide/components/intents-filters#DeclareMutabilityPendingIntent
+     * - https://stackoverflow.com/questions/70894168/targeting-s-version-31-and-above-requires-that-one-of-flag-immutable-or-flag
+     */
+    fun supportsPendingIntentMutabilityFlags(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports NotificationChannel, which is new class and is not present in the
+     * support library. Support started in O-8-26.
+     */
+    fun supportsNotificationChannel(): Boolean =
+        isAndroidOOrNewer()
+
+    /**
+     * Whether this OS supports the Fingerprint API, which was added in M-6-23. It was later
+     * deprecated.
+     */
+    @JvmStatic
+    fun supportsFingerprintAPI(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
+     * accessible way (aka there's a system config accessible for all users). Android P aka 9
+     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
+     * a system that does NOT support Dark Mode as most users won't ever find how to display the
+     * developer options and/or find that Dark Mode config in there.
+     */
+    fun supportsDarkMode(): Boolean {
+        return supportsDarkModePublicly()
+    }
+
+    /**
+     * Whether we should apply a special treatment for string resources in our UI tests. This is
+     * apparently needed starting from N-7-24.
+     */
+    fun shouldNormalizeTextForUiTests(): Boolean =
+        isAndroidNOrNewer()
+
+    /**
+     * Whether this OS supports elevation view attribute, which was added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsElevation(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS has letter spacing support, which was added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsLetterSpacing(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS has translateZ support, which was added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsTranslateZ(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS has setBackgroundTintList support, which was added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsBackgroundTintList(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS has new PhoneNumberFormattingTextWatcher constructor support, which was
+     * added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsNewPhoneNumberFormattingTextWatcher(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS has Activity Transitions support, which was added in L-5-21.
+     */
+    @JvmStatic
+    fun supportsActivityTransitions(): Boolean =
+        isAndroidLOrNewer()
+
+    // PRIVATE STUFF:
+
+    /**
+     * We'll define that an Android OS version supports Dark Mode if it does so in a publicly
+     * accessible way (aka there's a system config accessible for all users). Android P aka 9
+     * (api 28) does support Dark Mode though hidden, via Developer Options. We'll take that as
+     * a system that does NOT support Dark Mode as most users won't ever find how to display the
+     * developer options and/or find that Dark Mode config in there.
+     */
+    private fun supportsDarkModePublicly(): Boolean {
+        return isAndroidQOrNewer()
+    }
+
+    /**
+     * Whether this OS version is P-9-28 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
+    private fun isAndroidPOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+
+    /**
+     * Whether this OS version is M-6-23 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.M)
+    private fun isAndroidMOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+
+    /**
+     * Whether this OS version is O-8-26 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
+    private fun isAndroidOOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+    /**
+     * Whether this OS version is Q-10-29 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
+    private fun isAndroidQOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    /**
+     * Whether this OS version is N-7-24 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
+    private fun isAndroidNOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    /**
+     * Whether this OS version is L-5-21 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+    private fun isAndroidLOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+}
