@@ -93,7 +93,7 @@ public class LoginAuthorizePresenter extends
         subscribeTo(observable);
     }
 
-    public void onOpenEmailClient() {
+    void openEmailClient() {
         navigator.navigateToEmailClient(getContext());
     }
 
@@ -102,7 +102,7 @@ public class LoginAuthorizePresenter extends
         return new AnalyticsEvent.S_AUTHORIZE_EMAIL();
     }
 
-    public void goBack() {
+    void goBack() {
         getParentPresenter().cancelEmailVerification();
     }
 

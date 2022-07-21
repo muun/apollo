@@ -101,7 +101,7 @@ public class EmailWaitPresenter extends BaseEditPasswordPresenter<VerifyEmailVie
         }
     }
 
-    public void onOpenEmailClient() {
+    void openEmailClient() {
         navigator.navigateToEmailClient(getContext());
     }
 

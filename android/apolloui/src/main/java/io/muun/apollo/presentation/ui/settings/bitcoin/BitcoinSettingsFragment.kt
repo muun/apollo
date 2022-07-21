@@ -15,7 +15,7 @@ import io.muun.apollo.presentation.ui.utils.setUserInteractionEnabled
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), BitcoinSettingsView {
+class BitcoinSettingsFragment : SingleFragment<BitcoinSettingsPresenter>(), BitcoinSettingsView {
 
     @BindView(R.id.taproot_switch)
     lateinit var taprootByDefaultSwitch: SwitchMaterial
@@ -67,7 +67,8 @@ class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), Bitco
 
         if (estimatedHours > 0) {
             taprootTimerContainer.visibility = View.VISIBLE
-            taprootTimerText.text = getStyledString(R.string.tr_setting_timer, estimatedHours.toString())
+            taprootTimerText.text =
+                getStyledString(R.string.tr_setting_timer, estimatedHours.toString())
 
         } else {
             taprootTimerContainer.visibility = View.GONE
@@ -81,16 +82,16 @@ class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), Bitco
 
         if (newTaprootByDefault) {
             val dialog = MuunDialog.Builder()
-                    .title(R.string.tr_setting_confirm_title)
-                    .message(R.string.tr_setting_confirm_desc)
-                    .positiveButton(R.string.tr_setting_confirm) {
-                        presenter.reportTaprootByDefaultChange(newTaprootByDefault)
-                    }
-                    .negativeButton(R.string.cancel) {
-                        taprootByDefaultSwitch.isChecked = false
-                    }
-                    .layout(R.layout.dialog_custom_layout)
-                    .build()
+                .title(R.string.tr_setting_confirm_title)
+                .message(R.string.tr_setting_confirm_desc)
+                .positiveButton(R.string.tr_setting_confirm) {
+                    presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+                }
+                .negativeButton(R.string.cancel) {
+                    taprootByDefaultSwitch.isChecked = false
+                }
+                .layout(R.layout.dialog_custom_layout)
+                .build()
 
             showDialog(dialog)
 
@@ -100,7 +101,15 @@ class BitcoinSettingsFragment: SingleFragment<BitcoinSettingsPresenter>(), Bitco
     }
 
     override fun setLoading(loading: Boolean) {
-        taprootSection.visibility = if (loading) { View.GONE } else { View.VISIBLE }
-        loadingView.visibility = if (loading) { View.VISIBLE } else { View.GONE }
+        taprootSection.visibility = if (loading) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
+        loadingView.visibility = if (loading) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
     }
 }

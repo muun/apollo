@@ -130,7 +130,7 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             e1: MotionEvent?,
             e2: MotionEvent?,
             velocityX: Float,
-            velocityY: Float
+            velocityY: Float,
         ): Boolean {
             checkNotNull(e1)
             checkNotNull(e2)

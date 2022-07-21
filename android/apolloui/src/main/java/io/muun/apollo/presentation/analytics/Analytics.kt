@@ -7,6 +7,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.app.di.PerApplication
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -32,10 +33,10 @@ class Analytics @Inject constructor(val context: Context) {
     }
 
     fun attachAnalyticsMetadata(report: CrashReport) {
-        report.metadata["breadcrumbs"] = getBreadcrumbMetadata()!!
+        report.metadata["breadcrumbs"] = getBreadcrumbMetadata()
     }
 
-    private fun getBreadcrumbMetadata(): String? {
+    private fun getBreadcrumbMetadata(): String {
         val builder = StringBuilder()
         builder.append(" {\n")
 
@@ -49,7 +50,7 @@ class Analytics @Inject constructor(val context: Context) {
         return builder.toString()
     }
 
-    private fun getBreadcrumb(bundle: Bundle): String? {
+    private fun getBreadcrumb(bundle: Bundle): String {
         val builder = StringBuilder()
         var first = true
 
@@ -92,6 +93,7 @@ class Analytics @Inject constructor(val context: Context) {
 
         fba.logEvent(event.eventId, bundle)
         inMemoryMapBreadcrumbCollector[event.eventId] = bundle
+        Timber.i(event.toString())
     }
 
 }

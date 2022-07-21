@@ -22,7 +22,7 @@ class EmailReport private constructor(val body: String) {
         var googlePlayServicesAvailable: Boolean? = null,
         var defaultRegion: String? = null,
         var rootHint: Boolean? = null,
-        var locale: Locale? = null
+        var locale: Locale? = null,
     ) {
 
         fun report(report: CrashReport) = apply { this.report = report }
@@ -33,6 +33,7 @@ class EmailReport private constructor(val body: String) {
         fun googlePlayServices(available: Boolean) = apply {
             this.googlePlayServicesAvailable = available
         }
+
         fun rootHint(rootHint: Boolean) = apply { this.rootHint = rootHint }
         fun locale(locale: Locale) = apply { this.locale = locale }
 
@@ -52,7 +53,7 @@ class EmailReport private constructor(val body: String) {
             val body =
                 """|Android version: ${Build.VERSION.SDK_INT}
                    |App version: ${Globals.INSTANCE.versionName}(${Globals.INSTANCE.versionCode})
-                   |Date: ${now.format(Dates.ISO_DATE_TIME_WITH_MILLIS) }
+                   |Date: ${now.format(Dates.ISO_DATE_TIME_WITH_MILLIS)}
                    |Locale: ${locale.toString()}
                    |SupportId: ${if (supportId != null) supportId else "Not logged in"}
                    |ScreenPresenter: $presenterName

@@ -11,8 +11,8 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import javax.inject.Inject
 
 @PerFragment
-class RcOnlyLoginPresenter @Inject constructor()
-    : SingleFragmentPresenter<RcOnlyLoginView, RcOnlyLoginParentPresenter>() {
+class RcOnlyLoginPresenter @Inject constructor() :
+    SingleFragmentPresenter<RcOnlyLoginView, RcOnlyLoginParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)

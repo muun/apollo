@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.activity.extension
 import android.content.Intent
 import androidx.fragment.app.DialogFragment
 import icepick.State
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import timber.log.Timber
 import java.util.HashMap
@@ -61,6 +62,17 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
         val request = pendingRequests[globalRequestCode]
         var view = findCaller(request, Caller::class.java)
 
+        Crashlytics.logBreadcrumb(
+            """onActivityResult:
+                globalRequestCode: $globalRequestCode
+                resultCode: $resultCode
+                request.viewRequestCode: ${request?.viewRequestCode}
+                request.viewId: ${request?.viewId}
+                view: ${view?.javaClass.toString()}
+                view.mId: ${view?.mId}
+                 """
+        )
+
         @Suppress("FoldInitializerAndIfToElvis") // Else kotlin smart cast fail for line below
         if (view == null) {
             return
@@ -72,6 +84,11 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
             } else {
 
                 // We're hunting down a sneaky bug here. Let's log every useful piece data
+                // We believe there’s some random, not deterministic issue that makes fragments ids
+                // change or something and our findCaller mechanism falls short
+                Crashlytics.logBreadcrumb(
+                    "View/Fragment Caller not found for onActivityResult."
+                )
                 val fragments = activity.supportFragmentManager.fragments
                 val fragmentIds = fragments.map { it.id }
                 val fragmentNames = fragments.map { it.javaClass.simpleName }

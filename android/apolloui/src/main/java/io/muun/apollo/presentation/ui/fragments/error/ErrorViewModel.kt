@@ -15,12 +15,13 @@ interface ErrorViewModel {
         var title: String? = null,
         var descRes: Int? = null,
         var descArgs: Array<String> = arrayOf(),
-        var kind: ErrorViewKind = ErrorViewKind.FINAL
+        var kind: ErrorViewKind = ErrorViewKind.FINAL,
     ) {
 
         fun loggingName(loggingName: AnalyticsEvent.ERROR_TYPE) = apply {
             this.loggingName = loggingName
         }
+
         fun title(title: String) = apply { this.title = title }
         fun descriptionRes(@StringRes descRes: Int) = apply { this.descRes = descRes }
         fun descriptionArgs(vararg descArgs: String) = apply { this.descArgs = arrayOf(*descArgs) }
@@ -32,7 +33,7 @@ interface ErrorViewModel {
             checkNotNull(title)
             checkNotNull(descRes)
 
-            return object: ErrorViewModel {
+            return object : ErrorViewModel {
                 override val description: StringResWithArgs
                     get() = StringResWithArgs(descRes!!, descArgs)
 

@@ -16,7 +16,7 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
 
     companion object {
         val viewProps: ViewProps<NoticeBanner> = ViewProps.Builder<NoticeBanner>().run {
-            addString(android.R.attr.text) { v: NoticeBanner, str: String? -> v.setText(str!!) }
+            addString(android.R.attr.text) { v: NoticeBanner, str: String -> v.setText(str) }
             addRef(android.R.attr.background) { v: NoticeBanner, resId: Int? ->
                 v.setBackgroundResource(resId!!)
             }

@@ -12,8 +12,8 @@ import javax.inject.Inject
 // Open for mockito to mock/spy
 open class FeaturesRepository @Inject constructor(
     context: Context,
-    repositoryRegistry: RepositoryRegistry
-): BaseRepository(context, repositoryRegistry) {
+    repositoryRegistry: RepositoryRegistry,
+) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
         private const val BACKEND_FEATURES = "backend_features"

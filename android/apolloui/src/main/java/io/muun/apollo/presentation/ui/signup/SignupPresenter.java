@@ -112,7 +112,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                     signupDraft.setExistingUser(true);
 
                     if (createSessionOk.hasEmailSetup()) {
-                        signupDraft.setEmail(createSessionOk.getOfuscatedEmail().get());
+                        signupDraft.setObfuscatedEmail(createSessionOk.getObfuscatedEmail().get());
                         navigateToStepFrom(
                                 SignupStep.LOGIN_RECOVERY_CODE_EMAIL_AUTH,
                                 signupDraft.getStep()
@@ -134,8 +134,8 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
     @NonNull
     @Override
-    public String getOfuscatedEmail() {
-        return Objects.requireNonNull(signupDraft.getEmail());
+    public String getObfuscatedEmail() {
+        return Objects.requireNonNull(signupDraft.getObfuscatedEmail());
     }
 
     /**

@@ -2,9 +2,10 @@ package io.muun.apollo.presentation.ui.show_qr.bitcoin
 
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.presentation.ui.base.BaseView
+import io.muun.apollo.presentation.ui.show_qr.QrView
 import javax.money.MonetaryAmount
 
-interface BitcoinAddressView : BaseView {
+interface BitcoinAddressView : QrView {
 
     fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean)
 

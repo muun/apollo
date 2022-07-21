@@ -4,17 +4,17 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import io.muun.apollo.R
+import io.muun.apollo.presentation.app.Email
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailView
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class RcLoginEmailAuthorizeFragment: SingleFragment<RcLoginEmailAuthorizePresenter>(), VerifyEmailView {
+class RcLoginEmailAuthorizeFragment : SingleFragment<RcLoginEmailAuthorizePresenter>(),
+    RcLoginEmailAuthorizeView {
 
     @BindView(R.id.open_email_client)
     lateinit var openEmailAppButton: MuunButton
@@ -26,10 +26,10 @@ class RcLoginEmailAuthorizeFragment: SingleFragment<RcLoginEmailAuthorizePresent
     lateinit var descriptionView: HtmlTextView
 
     @BindView(R.id.rc_login_email_auth_icon)
-    lateinit  var emailIcon: ImageView
+    lateinit var emailIcon: ImageView
 
     @BindView(R.id.rc_login_email_auth_loading)
-    lateinit  var loadingView: LoadingView
+    lateinit var loadingView: LoadingView
 
     override fun inject() {
         component.inject(this)
@@ -47,7 +47,8 @@ class RcLoginEmailAuthorizeFragment: SingleFragment<RcLoginEmailAuthorizePresent
         header.showTitle(R.string.login_title)
 
         titleView.setText(R.string.signup_email_authorize)
-        openEmailAppButton.isEnabled = presenter.hasEmailAppInstalled()
+        openEmailAppButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
+        openEmailAppButton.setOnClickListener { presenter.openEmailClient() }
     }
 
     override fun onBackPressed(): Boolean {
@@ -55,18 +56,13 @@ class RcLoginEmailAuthorizeFragment: SingleFragment<RcLoginEmailAuthorizePresent
         return true
     }
 
-    @OnClick(R.id.open_email_client)
-    fun onOpenEmailClient() {
-        presenter.openEmailClient()
-    }
-
-    override fun setEmail(ofuscatedEmail: String) {
+    override fun setObfuscatedEmail(obfuscatedEmail: String) {
         val styledDesc = StyledStringRes(
             requireContext(),
             R.string.signup_email_verify_explanation
         )
 
-        descriptionView.text = styledDesc.toCharSequence(ofuscatedEmail)
+        descriptionView.text = styledDesc.toCharSequence(obfuscatedEmail)
     }
 
     override fun setLoading(isLoading: Boolean) {

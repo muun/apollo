@@ -36,7 +36,8 @@ class RepositoryRegistry {
         TransactionSizeRepository::class.java,
         UserPreferencesRepository::class.java,
         UserRepository::class.java,
-        FeaturesRepository::class.java
+        FeaturesRepository::class.java,
+        AppVersionRepository::class.java
     )
 
     // Notable exceptions:

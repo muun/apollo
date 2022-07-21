@@ -13,11 +13,11 @@ import javax.inject.Singleton
 
 @Singleton
 class GenerateInvoiceAction @Inject constructor(
-        private val registerInvoices: RegisterInvoicesAction,
-        private val forwardingPoliciesRepository: ForwardingPoliciesRepository,
-        private val keysRepository: KeysRepository,
-        private val networkParameters: NetworkParameters
-): BaseAsyncAction1<Long?, String>() {
+    private val registerInvoices: RegisterInvoicesAction,
+    private val forwardingPoliciesRepository: ForwardingPoliciesRepository,
+    private val keysRepository: KeysRepository,
+    private val networkParameters: NetworkParameters,
+) : BaseAsyncAction1<Long?, String>() {
 
     override fun action(amountInSat: Long?): Observable<String> {
         return generateInvoice(amountInSat)

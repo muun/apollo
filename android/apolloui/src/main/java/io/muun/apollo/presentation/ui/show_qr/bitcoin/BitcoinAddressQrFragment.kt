@@ -5,7 +5,6 @@ import android.content.Intent
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import butterknife.BindView
-import butterknife.OnClick
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
@@ -40,9 +39,6 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     @BindView(R.id.address_settings_content)
     lateinit var addressSettingsContent: View
 
-    @BindView(R.id.edit_amount_item)
-    lateinit var editAmountItem: EditAmountItem
-
     @BindView(R.id.address_type_item)
     lateinit var addressTypeItem: AddressTypeItem
 
@@ -61,8 +57,8 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
 
     override fun initializeUi(view: View?) {
         super.initializeUi(view)
-        editAmountItem.setEditAmountHandler(this)
         addressTypeItem.setOnAddressTypeChangedListener(this)
+        hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
     }
 
     override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
@@ -118,9 +114,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.H
 
-    @OnClick(R.id.address_settings)
-    fun onAddressSettingsClick() {
-        presenter.toggleAdvancedSettings()
+    override fun toggleAdvancedSettings() {
         hiddenSection.toggleSection()
 
         if (addressSettingsContent.visibility == View.VISIBLE) {
@@ -142,7 +136,9 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     override fun onEditAmount(amount: MonetaryAmount?) {
         requestDelegatedExternalResult(
             REQUEST_AMOUNT,
-            SelectAmountActivity.getSelectAddressAmountIntent(requireContext(), amount, satSelectedAsCurrency)
+            SelectAmountActivity.getSelectAddressAmountIntent(requireContext(),
+                amount,
+                satSelectedAsCurrency)
         )
     }
 

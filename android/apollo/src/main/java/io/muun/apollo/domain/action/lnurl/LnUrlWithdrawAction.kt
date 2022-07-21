@@ -30,7 +30,7 @@ class LnUrlWithdrawAction @Inject constructor(
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
     private val forwardingPoliciesRepo: ForwardingPoliciesRepository,
     private val registerInvoices: RegisterInvoicesAction,
-): BaseAsyncAction1<String, LnUrlState>() {
+) : BaseAsyncAction1<String, LnUrlState>() {
 
     lateinit var paymentHash: Sha256Hash
 
@@ -85,10 +85,12 @@ class LnUrlWithdrawAction @Inject constructor(
                 .flatMap { state ->
                     when (state) {
                         // schedule payment taking too long message 15 seconds after "receiving" msg
-                        is LnUrlState.Receiving ->
-                            return@flatMap Observable.just<LnUrlState>(LnUrlState.TakingTooLong(state.domain))
+                        is LnUrlState.Receiving -> {
+                            val takingTooLongState = LnUrlState.TakingTooLong(state.domain)
+                            return@flatMap Observable.just<LnUrlState>(takingTooLongState)
                                 .delay(15, TimeUnit.SECONDS)
                                 .startWith(state)
+                        }
 
                         // schedule invoice expired error message after invoice expiration
                         is LnUrlState.InvoiceCreated -> {
@@ -124,7 +126,7 @@ class LnUrlWithdrawAction @Inject constructor(
     private fun decodeInvoice(invoice: String): DecodedInvoice =
         Invoice.decodeInvoice(Globals.INSTANCE.network, invoice)
 
-    private class RxListener(val lnUrl: String): LNURLListener {
+    private class RxListener(val lnUrl: String) : LNURLListener {
 
         private val subject = rx.subjects.ReplaySubject.create<LnUrlState>(25)
 
@@ -178,8 +180,13 @@ class LnUrlWithdrawAction @Inject constructor(
                     Libwallet.LNURLErrNoRoute ->
                         LnUrlError.NoRoute(event.message, event.metadata.host)
 
+                    Libwallet.LNURLErrCountryNotSupported ->
+                        LnUrlError.CountryNotSupported(event.message, event.metadata.host)
+
                     Libwallet.LNURLErrForbidden ->
-                        LnUrlError.Forbidden(event.message, event.metadata.host)
+                        LnUrlError.Unknown(
+                            LnUrlEvent(event.code.toInt(), event.message, event.metadata.toString())
+                        )
 
                     Libwallet.LNURLErrAlreadyUsed ->
                         LnUrlError.AlreadyUsed(event.message, event.metadata.host)
@@ -198,7 +205,7 @@ class LnUrlWithdrawAction @Inject constructor(
             }
         }
 
-        fun asObservable() : Observable<LnUrlState> {
+        fun asObservable(): Observable<LnUrlState> {
             return subject
         }
     }

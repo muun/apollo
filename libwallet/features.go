@@ -7,6 +7,7 @@ import (
 const (
 	BackendFeatureTaproot = "TAPROOT"
 	BackendFeatureTaprootPreactivation = "TAPROOT_PREACTIVATION"
+	BackendFeatureApolloBiometrics = "APOLLO_BIOMETRICS"
 
 	UserActivatedFeatureStatusOff                 = "off"
 	UserActivatedFeatureStatusCanPreactivate      = "can_preactivate"

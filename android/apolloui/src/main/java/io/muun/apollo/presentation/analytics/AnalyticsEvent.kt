@@ -14,6 +14,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     val eventId = javaClass.simpleName.toLowerCase()
     val metadata = metadataKeyValues.toMap()
 
+    override fun toString(): String {
+        return "$eventId $metadata"
+    }
+
     // Screen navigation events:
     class S_GET_STARTED: AnalyticsEvent()
     class S_SIGN_IN_EMAIL: AnalyticsEvent()
@@ -383,7 +387,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         LNURL_REQUEST_EXPIRED,
         LNURL_NO_BALANCE,
         LNURL_NO_ROUTE,
-        LNURL_FORBIDDEN,
+        LNURL_COUNTRY_NOT_SUPPORTED,
         LNURL_ALREADY_USED
     }
 
@@ -408,4 +412,24 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_EASTER_EGG(val easterEgg: String): AnalyticsEvent(listOf(
         "type" to easterEgg
     ))
+
+    class E_PDF_FONT_ISSUE(
+        type: PDF_FONT_ISSUE_TYPE,
+        model: String,
+        webViewVersion: String,
+        chromeVersion: String,
+        androidVersion: String,
+    ) : AnalyticsEvent(listOf(
+        "type" to type.name.toLowerCase(),
+        "model" to model,
+        "webViewVersion" to webViewVersion,
+        "chromeVersion" to chromeVersion,
+        "androidVersion" to androidVersion
+    ))
+
+
+    enum class PDF_FONT_ISSUE_TYPE {
+        HOME_VIEW,
+        PDF_EXPORTED
+    }
 }

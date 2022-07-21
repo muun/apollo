@@ -1,6 +1,5 @@
 package io.muun.common.api;
 
-import io.muun.common.MuunFeatureJson;
 import io.muun.common.Supports;
 import io.muun.common.utils.Since;
 

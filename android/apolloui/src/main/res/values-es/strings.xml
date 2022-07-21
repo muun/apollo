@@ -1469,8 +1469,8 @@
         <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
     </string>
     <string name="lnurl_withdraw_uri_paster_title">Usar LNURL del portapapeles</string>
-    <string name="error_lnurl_forbidden_title">País sin soporte</string>
-    <string name="error_lnurl_forbidden_desc">
+    <string name="error_lnurl_country_not_supported_title">País sin soporte</string>
+    <string name="error_lnurl_country_not_supported_desc">
         El servicio que creó éste código no está disponible en tu país.
     </string>
     <string name="error_lnurl_already_used_title">Código ya usado</string>

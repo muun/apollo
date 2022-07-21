@@ -37,7 +37,7 @@ class BitcoinSettingsPresenter @Inject constructor(
         )
 
         subscribeTo(combined) { state ->
-          onStateChange(state)
+            onStateChange(state)
         }
 
         // Handle loading and errors. Action updates userPrefs repo, triggers a change in selector

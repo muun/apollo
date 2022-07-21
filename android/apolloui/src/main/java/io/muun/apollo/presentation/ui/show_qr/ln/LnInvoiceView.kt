@@ -3,9 +3,10 @@ package io.muun.apollo.presentation.ui.show_qr.ln
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BaseView
+import io.muun.apollo.presentation.ui.show_qr.QrView
 import javax.money.MonetaryAmount
 
-interface LnInvoiceView : BaseView {
+interface LnInvoiceView : QrView {
 
     fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean)
 

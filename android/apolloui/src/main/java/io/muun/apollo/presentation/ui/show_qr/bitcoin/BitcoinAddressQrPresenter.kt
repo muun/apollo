@@ -22,7 +22,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     private val createAddress: CreateAddressAction,
     private val blockchainHeightSel: BlockchainHeightSelector,
     private val featureStatusSel: FeatureStatusSelector,
-    private val userPreferencesSel: UserPreferencesSelector
+    private val userPreferencesSel: UserPreferencesSelector,
 ) : QrPresenter<BitcoinAddressView>() {
 
     @State
@@ -42,17 +42,10 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     @JvmField
     var amount: BitcoinAmount? = null
 
-    // We need to state-save in presenter 'cause apparently this fragment being inside ViewPager
-    // messes up our state saving/restoring for our custom views :'(
-    @State
-    @JvmField
-    var showingAdvancedSettings = false
-
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         view.setShowingAdvancedSettings(showingAdvancedSettings)
-
 
         // TODO: this should NOT be invoked using the `action()` method, but we can't invoke this
         // action from the main thread otherwise. What we should do is refactor our child presenters
@@ -90,7 +83,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     override fun hasLoadedCorrectly(): Boolean =
         ::legacyAddress.isInitialized
 
-    override fun showFullContent() {
+    override fun showFullContentInternal() {
         view.showFullAddress(getAddress(), addressType)
     }
 
@@ -118,10 +111,6 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     fun setAmount(bitcoinAmount: BitcoinAmount?) {
         this.amount = bitcoinAmount
         updateView()
-    }
-
-    fun toggleAdvancedSettings() {
-        showingAdvancedSettings = !showingAdvancedSettings
     }
 
     private fun getAddress() =

@@ -1415,8 +1415,8 @@
         <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
     </string>
     <string name="lnurl_withdraw_uri_paster_title">Use LNURL from clipboard</string>
-    <string name="error_lnurl_forbidden_title">Country not supported</string>
-    <string name="error_lnurl_forbidden_desc">
+    <string name="error_lnurl_country_not_supported_title">Country not supported</string>
+    <string name="error_lnurl_country_not_supported_desc">
         The service that created this code is not available in your country.
     </string>
     <string name="error_lnurl_already_used_title">Code already used</string>

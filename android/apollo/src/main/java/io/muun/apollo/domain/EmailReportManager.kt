@@ -5,9 +5,9 @@ import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.TelephonyInfoProvider
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.apollo.domain.action.session.IsRootedDeviceAction
-import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.report.EmailReport
+import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.selector.UserSelector
 import io.muun.apollo.domain.utils.locale
 import io.muun.common.utils.Encodings
@@ -23,7 +23,7 @@ class EmailReportManager @Inject constructor(
     private val context: Context
 ) {
 
-    fun buildEmailReport(report: CrashReport, presenter: String): EmailReport {
+    fun buildEmailReport(report: CrashReport, presenterName: String): EmailReport {
 
         val supportId = userSel.getOptional()
             .flatMap { obj: User -> obj.supportId }
@@ -44,7 +44,7 @@ class EmailReportManager @Inject constructor(
             .report(report)
             .supportId(supportId)
             .fcmTokenHash(fcmTokenHash)
-            .presenterName(presenter)
+            .presenterName(presenterName)
             .googlePlayServices(googlePlayServicesAvailable)
             .defaultRegion(telephonyInfoProvider.region.orElse("null"))
             .rootHint(isRootedDeviceAction.actionNow())

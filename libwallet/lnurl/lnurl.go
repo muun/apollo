@@ -60,25 +60,31 @@ type WithdrawResponse struct {
 // After adding new codes here, remember to export them in the root libwallet
 // module so that the apps can consume them.
 const (
-	ErrNone               int = 0
-	ErrDecode             int = 1
-	ErrUnsafeURL          int = 2
-	ErrUnreachable        int = 3
-	ErrInvalidResponse    int = 4
-	ErrResponse           int = 5
-	ErrUnknown            int = 6
-	ErrWrongTag           int = 7
-	ErrNoAvailableBalance int = 8
-	ErrRequestExpired     int = 9
-	ErrNoRoute            int = 10
-	ErrTorNotSupported    int = 11
-	ErrAlreadyUsed        int = 12
-	ErrForbidden          int = 13
+	ErrNone                int = 0
+	ErrDecode              int = 1
+	ErrUnsafeURL           int = 2
+	ErrUnreachable         int = 3
+	ErrInvalidResponse     int = 4
+	ErrResponse            int = 5
+	ErrUnknown             int = 6
+	ErrWrongTag            int = 7
+	ErrNoAvailableBalance  int = 8
+	ErrRequestExpired      int = 9
+	ErrNoRoute             int = 10
+	ErrTorNotSupported     int = 11
+	ErrAlreadyUsed         int = 12
+	ErrForbidden           int = 13
+	ErrCountryNotSupported int = 14 // By LNURL Service Provider
 
 	StatusContacting     int = 100
 	StatusInvoiceCreated int = 101
 	StatusReceiving      int = 102
 )
+
+const zebedeeHostConst = "api.zebedee.io"
+
+// This should definitely be a const but to simplify testing we treat it as a "conf var"
+var zebedeeHost = zebedeeHostConst
 
 type Event struct {
 	Code     int
@@ -223,7 +229,11 @@ func validateHttpResponse(resp *http.Response) (int, string) {
 		if bytesBody, err := ioutil.ReadAll(resp.Body); err == nil {
 			code := ErrInvalidResponse
 			if resp.StatusCode == 403 {
-				code = ErrForbidden
+				if strings.Contains(resp.Request.URL.Host, zebedeeHost) {
+					code = ErrCountryNotSupported
+				} else {
+					code = ErrForbidden
+				}
 			}
 
 			return code, fmt.Sprintf("unexpected status code in response: %v, body: %s", resp.StatusCode, string(bytesBody))

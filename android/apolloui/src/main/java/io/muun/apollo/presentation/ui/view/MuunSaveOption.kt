@@ -14,10 +14,10 @@ class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
 
     companion object {
         val viewProps: ViewProps<MuunSaveOption> = ViewProps.Builder<MuunSaveOption>()
-            .addRef(R.attr.icon) { v: MuunSaveOption, resId: Int? -> v.icon = resId!! }
-            .addString(R.attr.title) { v: MuunSaveOption, str: String? -> v.title = str!! }
-            .addString(R.attr.description) { v: MuunSaveOption, str: String? ->
-                v.description = str!!
+            .addRef(R.attr.icon) { v: MuunSaveOption, resId: Int -> v.icon = resId }
+            .addString(R.attr.title) { v: MuunSaveOption, str: String -> v.title = str }
+            .addString(R.attr.description) { v: MuunSaveOption, str: String ->
+                v.description = str
             }
             .build()
     }

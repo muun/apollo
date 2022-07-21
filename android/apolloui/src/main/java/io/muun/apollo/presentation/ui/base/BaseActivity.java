@@ -164,6 +164,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * Override this method to add any clean up logic.
      */
     protected void tearDownUi() {
+        presenter.destroy();
     }
 
     protected void initializePresenter(@Nullable Bundle savedInstanceState) {

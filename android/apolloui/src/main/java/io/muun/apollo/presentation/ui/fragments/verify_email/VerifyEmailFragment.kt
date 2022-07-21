@@ -4,8 +4,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import io.muun.apollo.R
+import io.muun.apollo.presentation.app.Email
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.view.HtmlTextView
@@ -42,7 +42,9 @@ class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailVi
 
         parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
 
-        openEmailClientButton.isEnabled = presenter.hasEmailAppInstalled()
+        openEmailClientButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
+        openEmailClientButton.setOnClickListener { presenter.openEmailClient() }
+
     }
 
     override fun setEmail(email: String) {
@@ -74,10 +76,5 @@ class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailVi
         emailIcon.setImageResource(R.drawable.ic_envelope_error)
         titleView.setText(R.string.email_link_error_title)
         descriptionView.setText(R.string.verify_email_link_expired)
-    }
-
-    @OnClick(R.id.open_email_client)
-    fun onOpenEmailClient() {
-        presenter.openEmailClient()
     }
 }

@@ -8,13 +8,11 @@ import android.view.ViewGroup
 import rx.functions.Action2
 import rx.functions.Func2
 import rx.functions.Func3
-import java.util.Arrays
-import java.util.HashMap
-import java.util.LinkedList
+import java.util.*
 
 class ViewProps<T : View> private constructor(
     private val attrIds: IntArray,
-    private val transfers: Array<Transfer<T>>
+    private val transfers: Array<Transfer<T>>,
 ) {
     // Well, damn. You found this file. Oh man. This class requires an explanation.
     //
@@ -77,15 +75,17 @@ class ViewProps<T : View> private constructor(
         private val attrIdList: MutableList<Int> = LinkedList()
         private val transferMap: MutableMap<Int, Transfer<T>> = HashMap()
 
+        @Suppress("RedundantSamConstructor") // They are not redundant here ;)
         fun addString(attrId: Int, setter: (T, String) -> Unit): Builder<T> {
             return addProp(
                 attrId,
                 Action2<T, String> { obj: T, text: String ->
-                        setter(obj, text)
+                    setter(obj, text)
                 },
                 Func2<TypedArray, Int, String> { obj: TypedArray, index: Int ->
                     obj.getString(index)
-                })
+                }
+            )
         }
 
         // This special naming is necessary to avoid ambiguous reference in some Java custom views.
@@ -96,16 +96,17 @@ class ViewProps<T : View> private constructor(
                 setter,
                 Func2<TypedArray, Int, String> { obj: TypedArray, index: Int ->
                     obj.getString(index)
-                })
+                }
+            )
         }
 
         fun addInt(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, int: Int ->
+                { obj: T, int: Int ->
                     setter(obj, int)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getInt(index, defValue)
                 },
                 0
@@ -117,7 +118,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getInt(index, defValue)
                 },
                 0
@@ -127,10 +128,10 @@ class ViewProps<T : View> private constructor(
         fun addFloat(attrId: Int, setter: (T, Float) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Float> { obj: T, float: Float ->
+                { obj: T, float: Float ->
                     setter(obj, float)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Float ->
+                { obj: TypedArray, index: Int, defValue: Float ->
                     obj.getFloat(index, defValue)
                 },
                 0f
@@ -142,7 +143,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Float ->
+                { obj: TypedArray, index: Int, defValue: Float ->
                     obj.getFloat(index, defValue)
                 },
                 0f
@@ -152,10 +153,10 @@ class ViewProps<T : View> private constructor(
         fun addBoolean(attrId: Int, setter: (T, Boolean) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Boolean> { obj: T, boolean: Boolean ->
+                { obj: T, boolean: Boolean ->
                     setter(obj, boolean)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Boolean ->
+                { obj: TypedArray, index: Int, defValue: Boolean ->
                     obj.getBoolean(index, defValue)
                 },
                 false
@@ -167,7 +168,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Boolean ->
+                { obj: TypedArray, index: Int, defValue: Boolean ->
                     obj.getBoolean(index, defValue)
                 },
                 false
@@ -177,10 +178,10 @@ class ViewProps<T : View> private constructor(
         fun addEnum(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, enumValue: Int ->
+                { obj: T, enumValue: Int ->
                     setter(obj, enumValue)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getInt(index, defValue)
                 },
                 0
@@ -192,7 +193,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getInt(index, defValue)
                 },
                 0
@@ -202,10 +203,10 @@ class ViewProps<T : View> private constructor(
         fun addColor(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, color: Int ->
+                { obj: T, color: Int ->
                     setter(obj, color)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getColor(index, defValue)
                 },
                 0
@@ -217,41 +218,38 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getColor(index, defValue)
                 },
                 0
             )
         }
 
-        fun addColorList(attrId: Int, setter:(T, ColorStateList) -> Unit): Builder<T> {
+        fun addColorList(attrId: Int, setter: (T, ColorStateList) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, ColorStateList> { obj: T, colorStateList: ColorStateList ->
+                { obj: T, colorStateList: ColorStateList ->
                     setter(obj, colorStateList)
                 },
-                Func2 { obj: TypedArray, index: Int ->
+                { obj: TypedArray, index: Int ->
                     obj.getColorStateList(index)!!
                 })
         }
 
         // TODO: remove once all custom views are migrated to Kotlin
         fun addColorList(attrId: Int, setter: Action2<T, ColorStateList>): Builder<T> {
-            return addProp(
-                attrId,
-                setter,
-                Func2 { obj: TypedArray, index: Int ->
-                    obj.getColorStateList(index)!!
-                })
+            return addProp(attrId, setter) { obj: TypedArray, index: Int ->
+                obj.getColorStateList(index)!!
+            }
         }
 
         fun addSize(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, size: Int ->
+                { obj: T, size: Int ->
                     setter(obj, size)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getDimensionPixelSize(index, defValue)
                 },
                 0
@@ -264,7 +262,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getDimensionPixelSize(index, defValue)
                 },
                 0
@@ -274,10 +272,10 @@ class ViewProps<T : View> private constructor(
         fun addDimension(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, dimen: Int ->
+                { obj: T, dimen: Int ->
                     setter(obj, dimen)
                 },
-                Func3{ obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getLayoutDimension(index, defValue)
                 },
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -289,7 +287,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3{ obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getLayoutDimension(index, defValue)
                 },
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -299,10 +297,10 @@ class ViewProps<T : View> private constructor(
         fun addRef(attrId: Int, setter: (T, Int) -> Unit): Builder<T> {
             return addProp(
                 attrId,
-                Action2<T, Int> { obj: T, refId: Int ->
+                { obj: T, refId: Int ->
                     setter(obj, refId)
                 },
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getResourceId(index, defValue)
                 },
                 0
@@ -315,7 +313,7 @@ class ViewProps<T : View> private constructor(
             return addProp(
                 attrId,
                 setter,
-                Func3 { obj: TypedArray, index: Int, defValue: Int ->
+                { obj: TypedArray, index: Int, defValue: Int ->
                     obj.getResourceId(index, defValue)
                 },
                 0
@@ -325,7 +323,7 @@ class ViewProps<T : View> private constructor(
         private fun <U> addProp(
             attrId: Int,
             setter: Action2<T, U>,
-            getter: Func2<TypedArray, Int, U>
+            getter: Func2<TypedArray, Int, U>,
         ): Builder<T> {
 
             val transfer: Transfer<T> = object : Transfer<T> {
@@ -343,7 +341,7 @@ class ViewProps<T : View> private constructor(
             attrId: Int,
             setter: Action2<T, U>,
             getter: Func3<TypedArray, Int, U, U>,
-            defaultValue: U
+            defaultValue: U,
         ): Builder<T> {
 
             val transfer: Transfer<T> = object : Transfer<T> {

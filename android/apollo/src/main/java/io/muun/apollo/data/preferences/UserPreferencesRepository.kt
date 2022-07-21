@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 open class UserPreferencesRepository @Inject constructor(
     context: Context,
-    repositoryRegistry: RepositoryRegistry
+    repositoryRegistry: RepositoryRegistry,
 ) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
@@ -17,11 +17,11 @@ open class UserPreferencesRepository @Inject constructor(
     }
 
     private val preference: Preference<StoredUserPreferences> =
-            rxSharedPreferences.getObject(
-                    KEY,
-                    StoredUserPreferences(),
-                    JsonPreferenceAdapter(StoredUserPreferences::class.java)
-            );
+        rxSharedPreferences.getObject(
+            KEY,
+            StoredUserPreferences(),
+            JsonPreferenceAdapter(StoredUserPreferences::class.java)
+        )
 
     override fun getFileName(): String {
         return KEY
@@ -29,7 +29,7 @@ open class UserPreferencesRepository @Inject constructor(
 
     open fun watch(): Observable<UserPreferences> {
         return preference.asObservable()
-                .map { it.toModel() }
+            .map { it.toModel() }
     }
 
     open fun update(prefs: UserPreferences) {
@@ -56,7 +56,7 @@ open class UserPreferencesRepository @Inject constructor(
         // JSON constructor
         constructor()
 
-        constructor(prefs: UserPreferences): this() {
+        constructor(prefs: UserPreferences) : this() {
             strictMode = prefs.strictMode
             seenNewHome = prefs.seenNewHome
             seenLnurlFirstTime = prefs.seenLnurlFirstTime
@@ -65,10 +65,10 @@ open class UserPreferencesRepository @Inject constructor(
 
         fun toModel(): UserPreferences {
             return UserPreferences(
-                    strictMode,
-                    seenNewHome,
-                    seenLnurlFirstTime,
-                    defaultAddressType
+                strictMode,
+                seenNewHome,
+                seenLnurlFirstTime,
+                defaultAddressType
             )
         }
     }

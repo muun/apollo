@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.settings;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.app.Email;
 import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailView;
 import io.muun.apollo.presentation.ui.settings.edit_password.BaseEditPasswordFragment;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
-import butterknife.OnClick;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -42,7 +42,8 @@ public class EmailWaitFragment extends BaseEditPasswordFragment<EmailWaitPresent
     protected void initializeUi(View view) {
         super.initializeUi(view);
 
-        openEmailAppButton.setEnabled(presenter.hasEmailAppInstalled());
+        openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(requireContext()));
+        openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
     }
 
     @Override
@@ -53,16 +54,11 @@ public class EmailWaitFragment extends BaseEditPasswordFragment<EmailWaitPresent
     @Override
     public void setEmail(@NotNull String email) {
         final StyledStringRes styledDesc = new StyledStringRes(
-                getContext(),
+                requireContext(),
                 R.string.signup_email_verify_explanation
         );
 
         descriptionView.setText(styledDesc.toCharSequence(email));
-    }
-
-    @OnClick(R.id.signup_waiting_for_email_open_email_client)
-    public void onOpenEmailClient() {
-        presenter.onOpenEmailClient();
     }
 
     @Override

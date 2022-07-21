@@ -15,6 +15,7 @@
             android:fontFamily="sans-serif-medium"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:lineSpacingExtra="6dp"
             android:visibility="gone"
             tools:text="@string/error_send_report_dialog_title"

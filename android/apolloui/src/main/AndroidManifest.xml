@@ -24,6 +24,28 @@
     -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
 
+    <!-- Queries -->
+    <!--
+    Package visibility filtering: https://developer.android.com/training/package-visibility
+    -->
+
+    <queries>
+        <!-- Specific apps you interact with, eg: -->
+        <!-- We use this specifically to track an issue involving certain versions of the Android
+         System WebView, Google Chrome and certain device models -->
+        <package android:name="com.google.android.webview" />
+        <package android:name="com.android.chrome" />
+
+        <!--
+         We just want to know if there's an email client available: to open it directly or degrade
+          gracefully
+        -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="*" />
+        </intent>
+    </queries>
+
     <!-- Application -->
 
     <application
