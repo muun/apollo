@@ -1,6 +1,5 @@
 package io.muun.apollo.presentation.export
 
-import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.ParcelFileDescriptor
@@ -24,7 +23,8 @@ class PdfExporter(
     private val webView: WebView,
     private val html: String,
     private val destinationFile: File,
-    private val callback: (PdfExportError?) -> Unit) {
+    private val callback: (PdfExportError?) -> Unit,
+) {
 
     private var isUsed: Boolean = false
 
@@ -40,7 +40,7 @@ class PdfExporter(
 
         webView.webViewClient = OwnWebViewClient()
 
-        // Set the zoom level % to default, avoiding `Accesibility > Font Size` system settings from
+        // Set the zoom level % to default, avoiding `Accessibility > Font Size` system settings from
         // altering the PDF font size (and destroying our carefully measured layouts):
         webView.settings.textZoom = 100
 
@@ -184,7 +184,7 @@ class PdfExporter(
     }
 
 
-    private inner class OwnWebViewClient: WebViewClient() {
+    private inner class OwnWebViewClient : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
             this@PdfExporter.onPageLoaded()
@@ -192,7 +192,7 @@ class PdfExporter(
 
     }
 
-    private inner class OwnLayoutCallback: MuunLayoutResultCallback() {
+    private inner class OwnLayoutCallback : MuunLayoutResultCallback() {
 
         override fun onLayoutFinished(info: PrintDocumentInfo, changed: Boolean) =
             this@PdfExporter.onLayoutFinished()
@@ -206,7 +206,7 @@ class PdfExporter(
         }
     }
 
-    private inner class OwnResultCallback: MuunWriteResultCallback() {
+    private inner class OwnResultCallback : MuunWriteResultCallback() {
 
         override fun onWriteCancelled() =
             this@PdfExporter.onWriteCancelled()
@@ -218,7 +218,7 @@ class PdfExporter(
             this@PdfExporter.onWriteFailed(message)
     }
 
-    private inner class OwnVisualStateCallback: WebViewCompat.VisualStateCallback {
+    private inner class OwnVisualStateCallback : WebViewCompat.VisualStateCallback {
         override fun onComplete(requestId: Long) {
             // Called "when the visual state is ready to be drawn in the next WebView.onDraw",
             // according to the docs. Again, attempting to eliminate the elusive bug, we'll give the

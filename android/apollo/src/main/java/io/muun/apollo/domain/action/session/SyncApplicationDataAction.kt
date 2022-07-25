@@ -38,20 +38,24 @@ class SyncApplicationDataAction @Inject constructor(
     private val finishLoginWithRc: FinishLoginWithRcAction,
     private val registerInvoices: RegisterInvoicesAction,
     private val apiMigrationsManager: ApiMigrationsManager,
-    private val userPreferencesRepository: UserPreferencesRepository
-): BaseAsyncAction3<Boolean, Boolean, LoginWithRc?, Void>() {
+    private val userPreferencesRepository: UserPreferencesRepository,
+) : BaseAsyncAction3<Boolean, Boolean, LoginWithRc?, Void>() {
 
-    override fun action(isFirstSession: Boolean,
-                        hasContactsPermission: Boolean,
-                        loginWithRc: LoginWithRc?): Observable<Void> =
+    override fun action(
+        isFirstSession: Boolean,
+        hasContactsPermission: Boolean,
+        loginWithRc: LoginWithRc?,
+    ): Observable<Void> =
         Observable.defer { syncApplicationData(isFirstSession, hasContactsPermission, loginWithRc) }
 
     /**
      * Synchronize Apollo with Houston.
      */
-    private fun syncApplicationData(isFirstSession: Boolean,
-                                    hasContactsPermission: Boolean,
-                                    loginWithRc: LoginWithRc?): Observable<Void> {
+    private fun syncApplicationData(
+        isFirstSession: Boolean,
+        hasContactsPermission: Boolean,
+        loginWithRc: LoginWithRc?,
+    ): Observable<Void> {
 
         // Before anything else, new (unrecoverable) users need a session:
         val step0 = if (isFirstSession) {

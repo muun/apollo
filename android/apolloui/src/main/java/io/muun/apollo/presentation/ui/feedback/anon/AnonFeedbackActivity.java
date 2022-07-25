@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.feedback.anon;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.app.Email;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
 import io.muun.apollo.presentation.ui.view.HtmlTextView;
@@ -14,7 +15,6 @@ import android.content.Intent;
 import android.text.TextUtils;
 import butterknife.BindColor;
 import butterknife.BindView;
-import butterknife.OnClick;
 import timber.log.Timber;
 
 import javax.validation.constraints.NotNull;
@@ -70,7 +70,8 @@ public class AnonFeedbackActivity
         explanation.setTextColor(textSecondaryColor); // Setting attr in xml isn't working
         explanation.setText(getExplanationBase());
 
-        openEmailAppButton.setEnabled(presenter.hasEmailAppInstalled());
+        openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(this));
+        openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
     }
 
     @Override
@@ -85,11 +86,6 @@ public class AnonFeedbackActivity
         }
 
         explanation.setText(text);
-    }
-
-    @OnClick(R.id.anon_feedback_open_email_app)
-    public void onOpenEmailClient() {
-        presenter.onOpenEmailClient();
     }
 
     private CharSequence getExplanationBase() {

@@ -15,6 +15,7 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.NightModeManager;
+import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.BitcoinUnitSelector;
@@ -74,6 +75,9 @@ public abstract class ApolloApplication extends Application
     NightModeManager nightModeManager;
 
     @Inject
+    DetectAppUpdateAction detectAppUpdate;
+
+    @Inject
     FirebaseInstallationIdRepository firebaseInstallationIdRepository;
 
     @Override
@@ -97,6 +101,8 @@ public abstract class ApolloApplication extends Application
 
         initializeStaticSingletons();
         initializeDagger();
+
+        detectAppUpdate.run();
 
         setNightMode();
 

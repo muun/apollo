@@ -9,18 +9,18 @@ public class CreateSessionRcOk {
 
     private final Optional<KeySet> keySet; // Empty if hasEmailSetup = true
     private final boolean hasEmailSetup;
-    private final Optional<String> ofuscatedEmail;  // Empty if if hasEmailSetup = false
+    private final Optional<String> obfuscatedEmail;  // Empty if if hasEmailSetup = false
 
     /**
      * Constructor.
      */
     public CreateSessionRcOk(@Nullable KeySet keySet,
                              boolean hasEmailSetup,
-                             @Nullable String ofuscatedEmail) {
+                             @Nullable String obfuscatedEmail) {
 
         this.keySet = Optional.ofNullable(keySet);
         this.hasEmailSetup = hasEmailSetup;
-        this.ofuscatedEmail = Optional.ofNullable(ofuscatedEmail);
+        this.obfuscatedEmail = Optional.ofNullable(obfuscatedEmail);
     }
 
     public Optional<KeySet> getKeySet() {
@@ -34,7 +34,7 @@ public class CreateSessionRcOk {
         return hasEmailSetup;
     }
 
-    public Optional<String> getOfuscatedEmail() {
-        return ofuscatedEmail;
+    public Optional<String> getObfuscatedEmail() {
+        return obfuscatedEmail;
     }
 }

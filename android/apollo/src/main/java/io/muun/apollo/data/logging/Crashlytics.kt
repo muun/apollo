@@ -12,6 +12,7 @@ import io.muun.apollo.domain.errors.NoPaymentRouteException
 import io.muun.apollo.domain.errors.UnreachableNodeException
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
+import timber.log.Timber
 
 object Crashlytics {
 
@@ -34,6 +35,7 @@ object Crashlytics {
      */
     @JvmStatic
     fun logBreadcrumb(breadcrumb: String) {
+        Timber.d("Breadcrumb: $breadcrumb")
         crashlytics.log(breadcrumb);
     }
 

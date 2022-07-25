@@ -15,7 +15,7 @@ public class ClientVersionRepository extends BaseRepository {
     private final Preference<Integer> minClientVersionPreference;
 
     /**
-     * Creates a repository for auth data.
+     * Creates a repository for storing minClientVersion.
      */
     @Inject
     public ClientVersionRepository(Context context, RepositoryRegistry repositoryRegistry) {
@@ -42,6 +42,9 @@ public class ClientVersionRepository extends BaseRepository {
         return watchMinClientVersion().toBlocking().first();
     }
 
+    /**
+     * Return an Observable of MinClientVersion preference.
+     */
     public Observable<Optional<Integer>> watchMinClientVersion() {
         return minClientVersionPreference.asObservable()
                 .map(Optional::ofNullable);

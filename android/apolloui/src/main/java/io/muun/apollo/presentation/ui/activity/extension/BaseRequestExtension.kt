@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import icepick.Bundler
 import icepick.State
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.common.utils.Preconditions
@@ -25,6 +26,16 @@ abstract class BaseRequestExtension : ActivityExtension() {
         request.viewRequestCode = viewRequestCode
         val globalRequestCode = uniqueRequestCode
         registerRequestFromCaller(request, globalRequestCode)
+
+        Crashlytics.logBreadcrumb(
+            """startActivityForResult:
+                globalRequestCode: $globalRequestCode
+                request.viewRequestCode: ${request.viewRequestCode}
+                request.viewId: ${request.viewId}
+                view: ${caller.javaClass}
+                 """
+        )
+
         return globalRequestCode
     }
 
@@ -55,6 +66,7 @@ abstract class BaseRequestExtension : ActivityExtension() {
     class CallerRequest {
         // Making fields public for Jackson to de/serialize
         var viewId = 0
+
         @JvmField
         var viewRequestCode = 0
     }

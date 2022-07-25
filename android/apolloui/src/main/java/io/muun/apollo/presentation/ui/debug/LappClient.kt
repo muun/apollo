@@ -17,7 +17,7 @@ class LappClient : SimpleHttpClient() {
         NO_BALANCE("noBalance"),
         EXPIRED_LNURL("expiredLnurl"),
         NO_ROUTE("noRoute"),
-        WRONT_TAG("wrongTag"),
+        WRONG_TAG("wrongTag"),
         UNRESPONSIVE("unresponsive")
     }
 

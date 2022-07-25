@@ -6,7 +6,6 @@ import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.utils.MuunTexts
 import io.muun.common.utils.BitcoinUtils
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -160,7 +159,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
 
         val balanceBefore = homeScreen.balanceInBtc
 
-        autoFlows.startLnUrlWithdrawViaSend(LappClient.LnUrlVariant.WRONT_TAG)
+        autoFlows.startLnUrlWithdrawViaSend(LappClient.LnUrlVariant.WRONG_TAG)
 
         label(R.string.error_invalid_lnurl_tag_title).assertExists()
 

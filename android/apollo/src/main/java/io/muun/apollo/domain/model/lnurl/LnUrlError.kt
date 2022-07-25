@@ -1,7 +1,16 @@
 package io.muun.apollo.domain.model.lnurl
 
 import io.muun.apollo.domain.errors.MuunError
-import io.muun.apollo.domain.errors.lnurl.*
+import io.muun.apollo.domain.errors.lnurl.AlreadyUsedError
+import io.muun.apollo.domain.errors.lnurl.CountryNotSupportedError
+import io.muun.apollo.domain.errors.lnurl.ExpiredLnUrlError
+import io.muun.apollo.domain.errors.lnurl.ExpiredLnUrlInvoiceError
+import io.muun.apollo.domain.errors.lnurl.InvalidLnUrlError
+import io.muun.apollo.domain.errors.lnurl.InvalidLnUrlTagError
+import io.muun.apollo.domain.errors.lnurl.LnUrlServiceUnresponsiveError
+import io.muun.apollo.domain.errors.lnurl.NoRouteError
+import io.muun.apollo.domain.errors.lnurl.NoWithdrawBalanceError
+import io.muun.apollo.domain.errors.lnurl.UnknownLnUrlError
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -17,7 +26,7 @@ sealed class LnUrlError {
     @Serializable data class ExpiredLnUrl(val msg: String, val lnUrl: String) : LnUrlError()
     @Serializable data class NoWithdrawBalance(val msg: String, val domain: String) : LnUrlError()
     @Serializable data class NoRoute(val msg: String, val domain: String) : LnUrlError()
-    @Serializable data class Forbidden(val msg: String, val domain: String) : LnUrlError()
+    @Serializable data class CountryNotSupported(val msg: String, val domain: String) : LnUrlError()
     @Serializable data class AlreadyUsed(val msg: String, val domain: String) : LnUrlError()
 
     fun toMuunError(): MuunError {
@@ -30,7 +39,7 @@ sealed class LnUrlError {
             is ExpiredLnUrl -> ExpiredLnUrlError(msg, lnUrl)
             is NoWithdrawBalance -> NoWithdrawBalanceError(msg, domain)
             is NoRoute -> NoRouteError(msg, domain)
-            is Forbidden -> ForbiddenError(msg, domain)
+            is CountryNotSupported -> CountryNotSupportedError(msg, domain)
             is AlreadyUsed -> AlreadyUsedError(msg, domain)
         }
     }

@@ -4,19 +4,22 @@ import io.muun.apollo.R;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
 import io.muun.apollo.presentation.ui.view.HtmlTextView;
+import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.RichText;
 
 import android.Manifest;
 import android.text.TextUtils;
 import android.view.View;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
         implements SyncContactsView {
 
     @BindView(R.id.sync_contacts_explanation)
     HtmlTextView explanation;
+
+    @BindView(R.id.sync_contacts_button)
+    MuunButton button;
 
     @Override
     protected void inject() {
@@ -41,13 +44,9 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
         );
 
         explanation.setText(content);
+        button.setOnClickListener(v -> requestPermissions(Manifest.permission.READ_CONTACTS));
 
         hideKeyboard(view);
-    }
-
-    @OnClick(R.id.sync_contacts_button)
-    void onButtonClick() {
-        requestPermissions(Manifest.permission.READ_CONTACTS);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
                 Manifest.permission.READ_CONTACTS
         );
 
-        if (! canRequestPermissionRationale) {
+        if (!canRequestPermissionRationale) {
             // User has checked never ask again
             presenter.reportContactsPermissionNeverAskAgain();
         }

@@ -19,13 +19,13 @@ import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import androidx.annotation.Nullable;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import butterknife.BindView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 public class HomeActivity extends SingleFragmentActivity<HomePresenter>
@@ -82,18 +82,6 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        presenter.onActivityCreated();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        presenter.onActivityDestroyed();
-    }
-
-    @Override
     protected void initializeUi() {
         super.initializeUi();
 
@@ -103,7 +91,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
                 .findFragmentById(R.id.nav_host_fragment);
         final BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
-        navController = navHostFragment.getNavController();
+        navController = Objects.requireNonNull(navHostFragment).getNavController();
         final Bundle initialBundle = new Bundle();
         initialBundle.putAll(new HomeFragmentArgs
                 .Builder()

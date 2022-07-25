@@ -5,10 +5,10 @@ package io.muun.apollo.domain.errors
  * cumbersome) or a local storage wipe.
  */
 class LocalStorageIntegrityError(
-    validSessionButNoJwt: Boolean,
-    jwtButInvalidSession: Boolean,
-    newFcmToken: String
-): MuunError("Integrity error! Probably something went wrong with a logout") {
+        validSessionButNoJwt: Boolean,
+        jwtButInvalidSession: Boolean,
+        newFcmToken: String
+) : MuunError("Integrity error! Probably something went wrong with a logout") {
 
     init {
         metadata["hasValidSessionButNoJwt"] = validSessionButNoJwt

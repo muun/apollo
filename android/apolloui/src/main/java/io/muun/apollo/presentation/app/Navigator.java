@@ -233,12 +233,8 @@ public class Navigator {
      * Open app chooser to send an email to Muun support.
      */
     public void sendSupportEmail(@NotNull Context context) {
-        final String uri = "mailto:" + Uri.encode("support@muun.com");
-
-        final Intent intent = new Intent(Intent.ACTION_SENDTO)
-                .setData(Uri.parse(uri));
-
-        context.startActivity(Intent.createChooser(intent, "Muun"));
+        final Intent emailIntent = Email.INSTANCE.composeSupportEmail();
+        context.startActivity(Intent.createChooser(emailIntent, "Muun"));
     }
 
     /**
@@ -564,8 +560,10 @@ public class Navigator {
      * Takes the user to their email client.
      */
     public void navigateToEmailClient(@NotNull Context context) {
-        final Intent intent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_EMAIL);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        final Intent intent = Email.INSTANCE.getEmailClientIntent()
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException e) {

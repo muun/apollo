@@ -19,7 +19,7 @@ import io.muun.apollo.presentation.ui.utils.locale
 import io.muun.apollo.presentation.ui.utils.setDrawableTint
 import javax.money.MonetaryAmount
 
-class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     interface EditAmountHandler {
@@ -77,7 +77,7 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
     fun setAmount(amount: MonetaryAmount, bitcoinUnit: BitcoinUnit) {
         this.amount = amount
         selectedAmount.text = MoneyHelper.formatLongMonetaryAmount(
-                amount, true, bitcoinUnit, locale()
+            amount, true, bitcoinUnit, locale()
         )
         selectedAmount.visibility = View.VISIBLE
         addAmountButton.visibility = View.GONE

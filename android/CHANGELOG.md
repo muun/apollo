@@ -6,6 +6,25 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.8] - 2022-07-21
+
+### CHANGED
+- Enhanced errors' metadata with Crashlytics Breadcrumbs (e.g detecting when app was updated).
+- Enhanced LNURL Withdraw error handling for 403 errors returned by some providers (e.g special
+handling only for ZEBEDEE).
+- Enhanced Receive Lightning screen for low/no connection scenarios
+
+### FIXED
+- Right margin on several dialog titles.
+- Home balance not fitting screen when amount is to large (in btc) or system font size is enlarged.
+- "Open email app" button not working (and other attempts to detect if an email client is installed
+in the device) in Android 11 (30) or newer (by declaring package visibility needs).
+- A proguard-related problem when adding new feature flags which resulted in apps getting bricked.
+
+### ADDED
+- Apps logs now get attached to error report emails to have extra metadata for resolving issues
+and customer support issues.
+
 ## [49.7] - 2022-06-13
 
 ### CHANGED

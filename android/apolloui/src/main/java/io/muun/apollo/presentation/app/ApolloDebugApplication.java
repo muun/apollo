@@ -2,14 +2,12 @@ package io.muun.apollo.presentation.app;
 
 import io.muun.apollo.data.external.Globals;
 
-import android.annotation.SuppressLint;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.timber.StethoTree;
 import com.github.moduth.blockcanary.BlockCanary;
 import com.github.moduth.blockcanary.BlockCanaryContext;
 import timber.log.Timber;
 
-@SuppressLint("Registered")
 public class ApolloDebugApplication extends ApolloApplication {
 
     @Override

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import butterknife.BindView
-import butterknife.OnClick
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
@@ -16,17 +15,13 @@ import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
 import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
-import io.muun.apollo.presentation.ui.view.EditAmountItem
 import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
 import io.muun.apollo.presentation.ui.view.LoadingView
-import io.muun.apollo.presentation.ui.view.MuunButton
 import javax.money.MonetaryAmount
 
 
-class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
-    LnInvoiceView,
-    EditAmountItem.EditAmountHandler {
+class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
 
     companion object {
         private const val REQUEST_AMOUNT = 2
@@ -44,23 +39,17 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     @BindView(R.id.invoice_settings_content)
     lateinit var invoiceSettingsContent: View
 
-    @BindView(R.id.edit_amount_item)
-    lateinit var editAmountItem: EditAmountItem
-
     @BindView(R.id.expiration_time_item)
     lateinit var expirationTimeItem: ExpirationTimeItem
 
     @BindView(R.id.invoice_loading)
     lateinit var loadingView: LoadingView
 
-    @BindView(R.id.show_qr_copy)
-    lateinit var copyButton: MuunButton
-
-    @BindView(R.id.show_qr_share)
-    lateinit var shareButton: MuunButton
-
     @BindView(R.id.invoice_expired_overlay)
     lateinit var invoiceExpiredOverlay: View
+
+    @BindView(R.id.create_other_invoice)
+    lateinit var createOtherInvoice: View
 
     // State:
 
@@ -80,7 +69,8 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
 
     override fun initializeUi(view: View?) {
         super.initializeUi(view)
-        editAmountItem.setEditAmountHandler(this)
+        hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
+        createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
     }
 
     override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
@@ -134,15 +124,12 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.L  // Bech 32 already has its own error correction.
 
-    @OnClick(R.id.create_other_invoice)
     fun onCreateInvoiceClick() {
         presenter.generateNewEmptyInvoice()
         resetViewState()
     }
 
-    @OnClick(R.id.invoice_settings)
-    fun onInvoiceSettingsClick() {
-        presenter.toggleAdvancedSettings()
+    override fun toggleAdvancedSettings() {
         hiddenSection.toggleSection()
 
         if (invoiceSettingsContent.visibility == View.VISIBLE) {
@@ -160,7 +147,9 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     override fun onEditAmount(amount: MonetaryAmount?) {
         requestDelegatedExternalResult(
             REQUEST_AMOUNT,
-            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(), amount, satSelectedAsCurrency)
+            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(),
+                amount,
+                satSelectedAsCurrency)
         )
     }
 

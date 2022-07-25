@@ -12,23 +12,27 @@ import javax.inject.Inject
 typealias UserPreferencesMutator = (UserPreferences) -> UserPreferences
 
 class UpdateUserPreferencesAction @Inject constructor(
-        private val userPreferencesRepository: UserPreferencesRepository,
-        private val houstonClient: HoustonClient
-): BaseAsyncAction1<UserPreferencesMutator, Unit>() {
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val houstonClient: HoustonClient,
+) : BaseAsyncAction1<UserPreferencesMutator, Unit>() {
 
     override fun action(mutator: UserPreferencesMutator): Observable<Unit> {
         return userPreferencesRepository.watch()
-                .first()
-                .toSingle()
-                .map(mutator)
-                .flatMap { prefs -> Single.defer {
+            .first()
+            .toSingle()
+            .map(mutator)
+            .flatMap { prefs ->
+                Single.defer {
                     houstonClient.updateUserPreferences(prefs)
-                            .andThen(Single.just(prefs))
-                } }
-                .flatMapCompletable { prefs -> Completable.fromAction {
-                        userPreferencesRepository.update(prefs)
-                } }
-                .andThen(Observable.just(Unit))
+                        .andThen(Single.just(prefs))
+                }
+            }
+            .flatMapCompletable { prefs ->
+                Completable.fromAction {
+                    userPreferencesRepository.update(prefs)
+                }
+            }
+            .andThen(Observable.just(Unit))
     }
 
 }

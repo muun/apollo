@@ -28,12 +28,12 @@ import io.muun.apollo.presentation.ui.base.ExtensibleActivity
 import timber.log.Timber
 import java.util.*
 
-val ViewGroup.children get() =
-    (0 until childCount).map { getChildAt(it) }
-
+val ViewGroup.children: List<View>
+    get() =
+        (0 until childCount).map { getChildAt(it) }
 
 fun View.addOnNextLayoutListener(f: () -> Unit) {
-    val listener = object: ViewTreeObserver.OnGlobalLayoutListener {
+    val listener = object : ViewTreeObserver.OnGlobalLayoutListener {
         override fun onGlobalLayout() {
             viewTreeObserver.removeOnGlobalLayoutListener(this)
             f()
@@ -237,12 +237,21 @@ fun TextView.setStyledText(@StringRes resId: Int, vararg args: Any) {
     setStyledText(resId, {}, *args)
 }
 
-fun TextView.setStyledText(@StringRes resId: Int, onLinkClick: (String) -> Unit = {}, vararg args: Any) {
+fun TextView.setStyledText(
+    @StringRes resId: Int,
+    onLinkClick: (String) -> Unit = {},
+    vararg args: Any,
+) {
     StyledStringRes(context, resId, onLinkClick)
         .toCharSequence(*args.map { it.toString() }.toTypedArray())
         .let(::setText)
 }
 
+/**
+ * WARNING: Starting with Android 11 (API level 30) queryIntentActivities() requires the app
+ * the declare the package visibility that it needs in the AndroidManifest. Otherwise SO will
+ * filter apps/packages in the response. (https://developer.android.com/training/package-visibility)
+ */
 fun PackageManager.hasAppInstalled(intent: Intent) =
     queryIntentActivities(intent, 0).size != 0
 

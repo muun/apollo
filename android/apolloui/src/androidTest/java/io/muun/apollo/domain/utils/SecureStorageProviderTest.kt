@@ -94,7 +94,7 @@ class SecureStorageProviderTest {
             println("testConcurrentAccess: unrecoverableKeyException: $unrecoverableKeyException")
 
             val keyStoreCorruptedError = howManyOfType<KeyStoreCorruptedError>(errors)
-            println("testConcurrentAccess: unrecoverableKeyException: $keyStoreCorruptedError")
+            println("testConcurrentAccess: keyStoreCorruptedError: $keyStoreCorruptedError")
 
             val sharePrefsCorrupted = howManyOfType<SharedPreferencesCorruptedError>(errors)
             println("testConcurrentAccess: sharedPreferencesCorruptedError: $sharePrefsCorrupted")

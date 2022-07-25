@@ -213,7 +213,6 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
                 }
             }
 
-
             else ->
                 super.onExternalResult(requestCode, resultCode, data)
         }

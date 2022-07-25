@@ -13,6 +13,7 @@ class SignupDraft(
     var isExistingUser: Boolean = false,
     var canUseRecoveryCode: Boolean = false,
     var step: SignupStep = SignupStep.START,
+    var obfuscatedEmail: String? = null,
     var email: String? = null,
     var loginWithRc: LoginWithRc? = null
 )

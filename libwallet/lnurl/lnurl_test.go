@@ -583,6 +583,39 @@ func TestForbidden(t *testing.T) {
 	})
 }
 
+func TestZebedee403MapsToCountryNotSupported(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(403)
+		w.Write([]byte("Forbidden"))
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	// Super ugly hack to emulate that local endpoint is zebedee
+	zebedeeHost = "127.0.0.1"
+	t.Cleanup(func() {
+		zebedeeHost = zebedeeHostConst // after test reset to its original value
+	})
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		panic("should not reach here")
+	}
+
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 {
+			if e.Code != ErrCountryNotSupported {
+				t.Fatalf("unexpected error code: %v", e.Code)
+			}
+		}
+		if e.Code == StatusInvoiceCreated {
+			t.Fatal("should not reach invoice creation")
+		}
+	})
+}
+
 func encode(url string) (string, error) {
 	return lnurl.LNURLEncode(url)
 }

@@ -16,17 +16,20 @@ import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.Companion.ARG
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 
-class StyledStringRes(private val context: Context,
-                      @StringRes private val resId: Int,
-                      private val onLinkClick: (String) -> Unit) {
+class StyledStringRes(
+    private val context: Context,
+    @StringRes private val resId: Int,
+    private val onLinkClick: (String) -> Unit,
+) {
 
-    constructor(context: Context, @StringRes resId: Int): this(context, resId, {}) // for Java
+    constructor(context: Context, @StringRes resId: Int) : this(context, resId, {}) // for Java
 
     companion object {
         private const val FONT_COLOR = "fontColor"
@@ -64,13 +67,16 @@ class StyledStringRes(private val context: Context,
     }
 
     @Serializable
+    @Suppress("ArrayInDataClass")
     data class StringResWithArgs(val resId: Int, val args: Array<String> = arrayOf()) {
 
         companion object {
+            @ExperimentalSerializationApi
             fun deserialize(serialization: String): StringResWithArgs =
                 Json.decodeFromString(serialization)
         }
 
+        @ExperimentalSerializationApi
         fun serialize() =
             Json.encodeToString(this)
     }
@@ -137,7 +143,7 @@ class StyledStringRes(private val context: Context,
         // Match annotation to style ID:
         val newSpan: ParcelableSpan = when (a.value) {
             FONT_STYLE_NORMAL -> StyleSpan(Typeface.NORMAL)
-            FONT_STYLE_BOLD   -> StyleSpan(Typeface.BOLD)
+            FONT_STYLE_BOLD -> StyleSpan(Typeface.BOLD)
             FONT_STYLE_ITALIC -> StyleSpan(Typeface.ITALIC)
             FONT_STYLE_UNDERLINED -> UnderlineSpan()
 
@@ -220,8 +226,9 @@ private class StyleBuilder(source: CharSequence) {
 
     val ssb = SpannableStringBuilder(source)
 
-    val length get() =
-        ssb.length
+    val length
+        get() =
+            ssb.length
 
     /**
      * Get all annotations except for "arg" annotations. They have different, special "regime". To
@@ -229,8 +236,8 @@ private class StyleBuilder(source: CharSequence) {
      */
     fun getAnnotations() =
         ssb.getSpans(0, ssb.length, Annotation::class.java)
-            .filter {
-                annotation -> annotation.key != ARG
+            .filter { annotation ->
+                annotation.key != ARG
             }
 
     fun getAnnotationCount() =

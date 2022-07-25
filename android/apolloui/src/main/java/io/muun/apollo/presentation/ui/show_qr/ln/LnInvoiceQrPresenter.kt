@@ -6,7 +6,6 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.di.PerFragment
@@ -26,12 +25,6 @@ class LnInvoiceQrPresenter @Inject constructor(
     @State(BitcoinAmountBundler::class)
     @JvmField
     var amount: BitcoinAmount? = null
-
-    // We need to state-save in presenter 'cause apparently this fragment being inside ViewPager
-    // messes up our state saving/restoring for our custom views :'(
-    @State
-    @JvmField
-    var showingAdvancedSettings = false
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -64,7 +57,7 @@ class LnInvoiceQrPresenter @Inject constructor(
         return invoice
     }
 
-    override fun showFullContent() {
+    override fun showFullContentInternal() {
         view.showFullContent(invoice)
     }
 
@@ -78,10 +71,6 @@ class LnInvoiceQrPresenter @Inject constructor(
     fun setAmount(bitcoinAmount: BitcoinAmount?) {
         this.amount = bitcoinAmount
         generateNewInvoice()
-    }
-
-    fun toggleAdvancedSettings() {
-        showingAdvancedSettings = !showingAdvancedSettings
     }
 
     private fun handleLoading(loading: Boolean) {

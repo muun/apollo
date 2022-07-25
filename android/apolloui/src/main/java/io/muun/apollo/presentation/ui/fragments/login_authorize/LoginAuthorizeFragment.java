@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.login_authorize;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.app.Email;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailView;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
@@ -13,7 +14,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 public class LoginAuthorizeFragment
         extends SingleFragment<LoginAuthorizePresenter>
@@ -55,18 +55,14 @@ public class LoginAuthorizeFragment
 
         titleView.setText(R.string.signup_email_authorize);
 
-        openEmailAppButton.setEnabled(presenter.hasEmailAppInstalled());
+        openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(requireContext()));
+        openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
     }
 
     @Override
     public boolean onBackPressed() {
         presenter.goBack();
         return true;
-    }
-
-    @OnClick(R.id.signup_waiting_for_email_open_email_client)
-    public void onOpenEmailClient() {
-        presenter.onOpenEmailClient();
     }
 
     @Override

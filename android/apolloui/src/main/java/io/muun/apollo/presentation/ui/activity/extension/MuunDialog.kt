@@ -31,7 +31,7 @@ class MuunDialog private constructor(
     private val dismissActions: MutableList<DialogInterface.OnDismissListener> = mutableListOf(),
     // Only for custom layout dialogs
     private val onClickActions: MutableMap<Int, View.OnClickListener> = mutableMapOf(),
-    private val cancelOnTouchOutside: Boolean?
+    private val cancelOnTouchOutside: Boolean?,
 ) {
 
     class Builder {
@@ -47,6 +47,7 @@ class MuunDialog private constructor(
         private var negativeButtonResId: Int = 0
         private var negativeButtonAction: Action0? = null
         private val dismissActions: MutableList<DialogInterface.OnDismissListener> = mutableListOf()
+
         // Only for custom layout dialogs
         private val onClickActions: MutableMap<Int, View.OnClickListener> = mutableMapOf()
         private var cancelOnTouchOutside: Boolean? = null
@@ -65,14 +66,17 @@ class MuunDialog private constructor(
             this.titleResId = titleResId
             this.title = null
         }
+
         fun title(title: CharSequence) = apply {
             this.title = title
             this.titleResId = 0
         }
+
         fun message(@StringRes messageResId: Int) = apply {
             this.messageResId = messageResId
             this.message = null
         }
+
         fun message(message: CharSequence) = apply {
             this.message = message
             this.messageResId = 0

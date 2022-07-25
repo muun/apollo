@@ -23,6 +23,8 @@ import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.presentation.app.Email;
+import io.muun.apollo.presentation.app.Logcat;
 import io.muun.apollo.presentation.app.Navigator;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.common.Optional;
@@ -33,9 +35,7 @@ import io.muun.common.rx.RxHelper;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
@@ -49,7 +49,6 @@ import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
-import java.util.List;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
@@ -111,6 +110,9 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     @Inject
     protected EmailReportManager emailReportManager;
+
+    @Inject
+    protected Logcat logcat;
 
     @Inject
     protected BasePresenter() {
@@ -180,6 +182,11 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     }
 
     @Override
+    public void destroy() {
+
+    }
+
+    @Override
     public void setView(@NotNull ViewT view) {
         this.view = view;
     }
@@ -202,24 +209,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         if (available != GooglePlayServicesHelper.AVAILABLE) {
             view.showPlayServicesDialog(googlePlayServicesHelper.showDownloadDialog(available));
         }
-    }
-
-    /**
-     * Check if there's an email app installed on the device (without actually resolving intent,
-     * which can cause an Intent chooser from the OS to pop up).
-     */
-    public boolean hasEmailAppInstalled() {
-        final Intent intent = getEmailIntent();
-        final PackageManager pm = getContext().getPackageManager();
-
-        final List<ResolveInfo> list = pm.queryIntentActivities(intent, 0);
-
-        // This is to account for a weird case that happens on Android emulators
-        // See: https://stackoverflow.com/a/31051791/901465
-        final boolean theOnlyAppInstalledIsAndroidFallback = list.size() == 1
-                && list.get(0).activityInfo.packageName.equals("com.android.fallback");
-
-        return list.size() != 0 && !theOnlyAppInstalledIsAndroidFallback;
     }
 
     /**
@@ -273,15 +262,21 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             Timber.e(error);
         }
 
-        final boolean wasHandled = maybeHandleFatalError(error)
-                || maybeHandleNonFatalError(error)
-                || maybeHandleUnknownError(error);
-
-        // Unlike internal methods, we don't return a boolean here. This is mostly due to legacy
-        // reasons, but so far there has been no need.
+        // Our current error handling logic is this:
+        // - If error is one of our known fatal error -> handleFatalError()
+        // - Else if error is one of our known non fatal error -> handleNonFatalError()
+        // - Otherwise -> handleUnknownError()
+        if (!handleFatalError(error) && !handleNonFatalError(error)) {
+            handleUnknownError(error);
+        }
     }
 
-    protected boolean maybeHandleFatalError(Throwable error) {
+    /**
+     * Handle a fatal error (e.g an error that prevent users to continue using wallet correctly).
+     * Returns a boolean informing whether the received error was handled (because its was fatal)
+     * or not.
+     */
+    protected boolean handleFatalError(Throwable error) {
         final boolean isRecoverableWallet = logoutOptionsSel.isRecoverable();
 
         if (error instanceof DeprecatedClientVersionError && isRecoverableWallet) {
@@ -320,9 +315,10 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     }
 
     /**
-     * Try to handle some common, known non fatal errors. Return whether the error's handled or not.
+     * Handle some common, known non fatal errors.
+     * Returns a boolean informing whether the received error was handled or not.
      */
-    protected boolean maybeHandleNonFatalError(Throwable error) {
+    protected boolean handleNonFatalError(Throwable error) {
 
         if (error instanceof UserFacingError) {
             view.showErrorDialog(
@@ -348,15 +344,17 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         return false;
     }
 
-    protected boolean maybeHandleUnknownError(Throwable error) {
+    /**
+     * Handle an unknown error (e.g an error for which we don't have a custom or explicit handling).
+     * Our default (what this method does) is showing our send error report dialog.
+     */
+    protected void handleUnknownError(Throwable error) {
         // If not already logged, send it to Crashlytics:
         if (!(error instanceof PotentialBug)) {
             Timber.e(error);
         }
 
         showErrorReportDialog(error, true);
-
-        return true;
     }
 
     /**
@@ -371,20 +369,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         bundle.remove(key);
 
         return Optional.of(value);
-    }
-
-    /**
-     * Returns a String argument by its key from an argument, and removes it.
-     */
-    protected Optional<String> takeStringArgument(@NotNull Bundle bundle, @NotNull String key) {
-        if (!bundle.containsKey(key)) {
-            return Optional.empty();
-        }
-
-        final String value = bundle.getString(key);
-        bundle.remove(key);
-
-        return Optional.ofNullable(value);
     }
 
     /**
@@ -529,17 +513,13 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         final CrashReport report = CrashReportBuilder.INSTANCE.build(error);
         analytics.attachAnalyticsMetadata(report);
 
-        final String presenterName = this.getClass().getSimpleName();
-
         final EmailReport emailReport = emailReportManager
-                .buildEmailReport(report, presenterName);
+                .buildEmailReport(report, this.getClass().getSimpleName());
 
-        final String subjectPrefix = getContext().getString(R.string.error_report_email_subject);
-        final String subject = emailReport.subject(subjectPrefix);
-        final String body = emailReport.getBody();
-        final Intent emailIntent = composeEmail("support@muun.com", subject, body);
+        final Intent emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), emailReport);
+        logcat.addLogsAsAttachment(emailIntent);
 
-        if (hasEmailAppInstalled()) {
+        if (Email.INSTANCE.hasEmailAppInstalled(getContext())) {
             getContext().startActivity(emailIntent);
 
         } else {
@@ -551,33 +531,12 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                     .message(R.string.error_copy_report_dialog_body)
                     .positiveButton(
                             R.string.error_copy_report_dialog_yes,
-                            () -> clipboardManager.copy("Muun Error Report", body)
+                            () -> clipboardManager.copy("Muun Error Report", emailReport.getBody())
                     )
                     .negativeButton(R.string.cancel, null)
                     .build();
 
             view.showDialog(muunDialog);
         }
-    }
-
-    private Intent composeEmail(String address, String subject, String body) {
-        return composeEmail(new String[] { address }, subject, body);
-    }
-
-    /**
-     * Correct way of opening email intent. According to android docs:
-     * https://developer.android.com/guide/components/intents-common.html#Email
-     */
-    private Intent composeEmail(String[] addresses, String subject, String body) {
-        final Intent intent = getEmailIntent();
-        intent.putExtra(Intent.EXTRA_EMAIL, addresses);
-        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        intent.putExtra(Intent.EXTRA_TEXT, body);
-        return intent;
-    }
-
-    private Intent getEmailIntent() {
-        final Intent intent = new Intent(Intent.ACTION_SENDTO);
-        return intent.setData(Uri.parse("mailto:")); // only email apps should handle this
     }
 }

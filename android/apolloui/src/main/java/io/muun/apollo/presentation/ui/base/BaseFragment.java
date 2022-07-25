@@ -128,6 +128,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * Override this method to add any clean up logic.
      */
     protected void tearDownUi() {
+        presenter.destroy();
     }
 
     @NotNull

@@ -26,9 +26,15 @@ public interface Presenter<ViewT extends BaseView> extends ParentPresenter {
     void afterSetUp();
 
     /**
-     * Override this method to add any clean up logic that the presenter needs.
+     * Override this method to add any clean up logic that the presenter needs when going to
+     * background.
      */
     void tearDown();
+
+    /**
+     * Override this method to add any final actions before presenter gets destroyed.
+     */
+    void destroy();
 
     /**
      * Saves the state of the presenter.

@@ -42,7 +42,10 @@ public class AnonFeedbackPresenter extends BasePresenter<AnonFeedbackView> {
         return new AnalyticsEvent.S_SUPPORT(S_SUPPORT_TYPE.ANON_SUPPORT);
     }
 
-    public void onOpenEmailClient() {
-        navigator.navigateToEmailClient(getContext());
+    /**
+     * Open Email client, already at the compose/send email (to our support team) screen.
+     */
+    void openEmailClient() {
+        navigator.sendSupportEmail(getContext());
     }
 }

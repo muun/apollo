@@ -1,23 +1,54 @@
 package io.muun.apollo.presentation.ui.show_qr
 
+import icepick.State
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
+import io.muun.apollo.presentation.ui.view.EditAmountItem
+import javax.money.MonetaryAmount
 
-abstract class QrPresenter<ViewT : BaseView> : SingleFragmentPresenter<ViewT, QrParentPresenter>() {
+abstract class QrPresenter<ViewT : QrView> : SingleFragmentPresenter<ViewT, QrParentPresenter>(),
+    EditAmountItem.EditAmountHandler {
 
-    abstract fun hasLoadedCorrectly(): Boolean
+    // We need to state-save in presenter 'cause apparently this fragment being inside ViewPager
+    // messes up our state saving/restoring for our custom views :'(
+    @State
+    @JvmField
+    var showingAdvancedSettings = false
+
+    protected abstract fun hasLoadedCorrectly(): Boolean
 
     protected abstract fun getQrContent(): String
 
+    protected abstract fun showFullContentInternal()
+
+    fun showFullContent() {
+        if (hasLoadedCorrectly()) {
+            showFullContentInternal()
+        }
+    }
+
     fun copyQrContent(origin: AnalyticsEvent.ADDRESS_ORIGIN) {
-        parentPresenter.copyQrContent(getQrContent(), origin)
+        if (hasLoadedCorrectly()) {
+            parentPresenter.copyQrContent(getQrContent(), origin)
+        }
     }
 
     fun shareQrContent() {
-        parentPresenter.shareQrContent(getQrContent())
+        if (hasLoadedCorrectly()) {
+            parentPresenter.shareQrContent(getQrContent())
+        }
     }
 
-    abstract fun showFullContent()
+    override fun onEditAmount(amount: MonetaryAmount?) {
+        if (hasLoadedCorrectly()) {
+            view.onEditAmount(amount)
+        }
+    }
 
+    fun toggleAdvancedSettings() {
+        if (hasLoadedCorrectly()) {
+            showingAdvancedSettings = !showingAdvancedSettings
+            view.toggleAdvancedSettings()
+        }
+    }
 }

@@ -16,9 +16,9 @@ class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null,
     companion object {
         val viewProps: ViewProps<MuunInfoBox> = ViewProps.Builder<MuunInfoBox>()
             .addRef(R.attr.pictureDrawable) { v, resId -> v.setPicture(resId) }
-            .addString(R.attr.title) { v: MuunInfoBox, str: String? -> v.setTitle(str!!) }
-            .addString(R.attr.description) { v: MuunInfoBox, str: String? ->
-                v.setDescription(str!!)
+            .addString(R.attr.title) { v: MuunInfoBox, str: String -> v.setTitle(str) }
+            .addString(R.attr.description) { v: MuunInfoBox, str: String ->
+                v.setDescription(str)
             }
             .build()
     }

@@ -1,6 +1,7 @@
 package io.muun.apollo.data.fs
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.content.FileProvider
 import io.muun.apollo.data.external.Globals
 import java.io.File
@@ -19,19 +20,20 @@ class FileCache @Inject constructor(val context: Context) {
 
     enum class Entry(val fileName: String) {
         EMERGENCY_KIT_NO_META("tmp_ek_no_meta.pdf"),
-        EMERGENCY_KIT("Muun-Emergency-Kit.pdf")
+        EMERGENCY_KIT("Muun-Emergency-Kit.pdf"),
+        LOGCAT("logcat.txt")
     }
 
-    fun get(entry: Entry) =
+    fun get(entry: Entry): LocalFile =
         LocalFile(getUri(entry), getMimeType(entry), getFile(entry).absolutePath)
 
-    fun getFile(entry: Entry) =
+    fun getFile(entry: Entry): File =
         File(File(context.filesDir, DIRECTORY), entry.fileName)
 
-    fun getUri(entry: Entry) =
+    private fun getUri(entry: Entry): Uri =
         FileProvider.getUriForFile(context, AUTHORITY, getFile(entry))
 
-    fun getMimeType(entry: Entry) =
+    private fun getMimeType(entry: Entry): String =
         context.contentResolver.getType(getUri(entry)) ?: "application/octet-stream"
 
     fun delete(entry: Entry) =

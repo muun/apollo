@@ -23,7 +23,7 @@ class RcLoginEmailAuthorizePresenter @Inject constructor(
     private val useMuunLinkAction: UseMuunLinkAction,
     private val emailLinkAction: EmailLinkAction,
     private val loginAuthorizedSelector: LoginAuthorizedSelector
-) : SingleFragmentPresenter<VerifyEmailView, RcLoginEmailAuthorizeParentPresenter>() {
+) : SingleFragmentPresenter<RcLoginEmailAuthorizeView, RcLoginEmailAuthorizeParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -34,8 +34,8 @@ class RcLoginEmailAuthorizePresenter @Inject constructor(
 
         notificationPoller.start()
 
-        // Show ofuscated email in message, we'll store it in and get from signUpDraft
-        view.setEmail(parentPresenter.getOfuscatedEmail())
+        // Show obfuscated email in message, we'll store it in and get from signUpDraft
+        view.setObfuscatedEmail(parentPresenter.getObfuscatedEmail())
     }
 
     override fun tearDown() {

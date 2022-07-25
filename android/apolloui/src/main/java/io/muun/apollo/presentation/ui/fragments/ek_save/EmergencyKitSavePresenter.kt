@@ -27,6 +27,7 @@ import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_SAVE
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_ERROR
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_CLOUD_FEEDBACK
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_MANUAL_ADVICE
+import io.muun.apollo.presentation.analytics.PdfFontIssueTracker
 import io.muun.apollo.presentation.export.PdfExportError
 import io.muun.apollo.presentation.export.PdfExporter
 import io.muun.apollo.presentation.export.SaveToDiskExporter
@@ -42,9 +43,9 @@ class EmergencyKitSavePresenter @Inject constructor(
     private val addEmergencyKitMetadata: AddEmergencyKitMetadataAction,
     private val uploadToDrive: UploadToDriveAction,
     private val driveAuthenticator: DriveAuthenticator,
-    private val userActions: UserActions
+    private val userActions: UserActions,
 
-): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
+    ): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
     var isExportingPdf = false
 
@@ -176,6 +177,9 @@ class EmergencyKitSavePresenter @Inject constructor(
         parentPresenter.setGeneratedEmergencyKit(kitGen)
 
         addEmergencyKitMetadata.run(kitGen.metadata)
+
+        PdfFontIssueTracker(context, analytics)
+            .track(AnalyticsEvent.PDF_FONT_ISSUE_TYPE.PDF_EXPORTED)
     }
 
     private fun onMetadataAdded() {

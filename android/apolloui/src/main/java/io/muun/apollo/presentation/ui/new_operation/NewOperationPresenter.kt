@@ -43,7 +43,7 @@ class NewOperationPresenter @Inject constructor(
     private val exchangeRateSel: ExchangeRateSelector,
     private val bitcoinUnitSel: BitcoinUnitSelector,
     private val submitPaymentAction: SubmitPaymentAction,
-    private val resolveOperationUriAction: ResolveOperationUriAction
+    private val resolveOperationUriAction: ResolveOperationUriAction,
 ) : BasePresenter<NewOperationView>(),
     RecommendedFeeParentPresenter,
     ManualFeeParentPresenter,
@@ -99,7 +99,7 @@ class NewOperationPresenter @Inject constructor(
 
         if (operationUri.isAsync) {
             // We're just using it to show loading state "earlier"
-             view.goToResolvingState()
+            view.goToResolvingState()
         }
     }
 
@@ -212,7 +212,7 @@ class NewOperationPresenter @Inject constructor(
         super.handleError(error)
     }
 
-    override fun maybeHandleNonFatalError(error: Throwable): Boolean {
+    override fun handleNonFatalError(error: Throwable): Boolean {
         when (error) {
             is UnreachableNodeException ->
                 handleNewOpError(NewOperationErrorType.INVOICE_UNREACHABLE_NODE)
@@ -258,18 +258,21 @@ class NewOperationPresenter @Inject constructor(
             }
 
             else ->
-                return super.maybeHandleNonFatalError(error)
+                return super.handleNonFatalError(error)
         }
         return true
     }
 
-    override fun maybeHandleUnknownError(error: Throwable?): Boolean {
+    override fun handleUnknownError(error: Throwable) {
         unknownError = error
         handleNewOpError(NewOperationErrorType.GENERIC)
-        return true
     }
 
-    fun updateAmount(oldAmount: MonetaryAmount, newAmount: MonetaryAmount, state: EnterAmountState) {
+    fun updateAmount(
+        oldAmount: MonetaryAmount,
+        newAmount: MonetaryAmount,
+        state: EnterAmountState,
+    ) {
 
         // This is our way of detecting a currency change. Since the feature is abstracted into
         // MuunAmountInput and the exposed API reports the new amount.
@@ -580,7 +583,7 @@ class NewOperationPresenter @Inject constructor(
         amountInfo: AmountInfo,
         fee: newop.BitcoinAmount,
         note: String,
-        swap: SubmarineSwap? = null
+        swap: SubmarineSwap? = null,
     ) {
         val preparedPayment = PreparedPayment(
             BitcoinAmount.fromLibwallet(amountInfo.amount),
@@ -618,7 +621,7 @@ class NewOperationPresenter @Inject constructor(
         operationId: Long,
         paymentContext: newop.PaymentContext,
         paymentIntent: PaymentIntent,
-        amountInfo: AmountInfo
+        amountInfo: AmountInfo,
     ) {
         analytics.report(
             E_NEW_OP_COMPLETED(
@@ -631,7 +634,7 @@ class NewOperationPresenter @Inject constructor(
         operationId: Long,
         paymentContext: newop.PaymentContext,
         paymentIntent: PaymentIntent,
-        amountInfo: AmountInfo
+        amountInfo: AmountInfo,
     ): Array<Pair<String, Any>> {
 
         val objects = java.util.ArrayList<Pair<String, Any>>()
@@ -651,7 +654,7 @@ class NewOperationPresenter @Inject constructor(
     private fun opSubmittedMetadata(
         paymentType: Type,
         payCtx: newop.PaymentContext,
-        feeRate: Double
+        feeRate: Double,
     ): ArrayList<Pair<String, Any>> {
 
         val objects = java.util.ArrayList<Pair<String, Any>>()
@@ -668,7 +671,7 @@ class NewOperationPresenter @Inject constructor(
 
     private fun getFeeOptionTypeParam(
         selectedFeeRate: Double,
-        payCtx: newop.PaymentContext
+        payCtx: newop.PaymentContext,
     ): AnalyticsEvent.E_FEE_OPTION_TYPE {
 
 

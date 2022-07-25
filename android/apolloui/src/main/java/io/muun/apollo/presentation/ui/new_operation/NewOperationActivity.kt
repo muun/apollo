@@ -351,10 +351,10 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         val paymentContext = state.resolved.paymentContext
         amountInput.setExchangeRateProvider(paymentContext.buildExchangeRateProvider())
-        amountInput.setOnChangeListener { oldAmount: MonetaryAmount, newAmount: MonetaryAmount ->
+        amountInput.setOnChangeListener { old: MonetaryAmount, new: MonetaryAmount ->
             amountInput.setAmountError(false)
             actionButton.isEnabled = true
-            presenter.updateAmount(oldAmount, newAmount, state)
+            presenter.updateAmount(old, new, state)
         }
 
         useAllFundsView.isEnabled = !balance.isZero

@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.selector
 
-import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.model.user.User
 import io.muun.common.Optional
@@ -15,7 +14,7 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
     private fun watchOptional(): Observable<Optional<User>> =
         userRepository.fetchOptional()
 
-    @VisibleForTesting // open so mockito can mock/spy
+    // open so mockito can mock/spy
     open fun get(): User =
         watch().toBlocking().first()
 

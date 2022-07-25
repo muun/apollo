@@ -8,11 +8,9 @@ import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import javax.inject.Inject
 
-class MigrationPresenter
-@Inject
-constructor(
-        private val apiMigrationsManager: ApiMigrationsManager
-): BasePresenter<BaseView>() {
+class MigrationPresenter @Inject constructor(
+    private val apiMigrationsManager: ApiMigrationsManager,
+) : BasePresenter<BaseView>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -27,12 +25,12 @@ constructor(
         }
     }
 
-    override fun maybeHandleNonFatalError(error: Throwable): Boolean {
+    override fun handleNonFatalError(error: Throwable): Boolean {
         val errorDialog = MuunDialog.Builder()
-                .layout(R.layout.dialog_custom_layout)
-                .message(R.string.migration_error_message)
-                .positiveButton(R.string.migration_error_retry, this::runMigrations)
-                .build()
+            .layout(R.layout.dialog_custom_layout)
+            .message(R.string.migration_error_message)
+            .positiveButton(R.string.migration_error_retry, this::runMigrations)
+            .build()
 
         view.showDialog(errorDialog)
 

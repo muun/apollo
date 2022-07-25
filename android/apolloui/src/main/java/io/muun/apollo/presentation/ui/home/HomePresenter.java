@@ -9,6 +9,8 @@ import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus;
 import io.muun.apollo.domain.selector.FeatureStatusSelector;
 import io.muun.apollo.domain.selector.UserSelector;
+import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.presentation.analytics.PdfFontIssueTracker;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler;
@@ -76,7 +78,10 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     /**
      * Call to report HomeActivity was first created.
      */
-    public void onActivityCreated() {
+    @Override
+    public void onViewCreated(Bundle savedInstanceState) {
+        super.onViewCreated(savedInstanceState);
+
         assertGooglePlayServicesPresent();
 
         taskScheduler.scheduleAllTasks();
@@ -86,13 +91,17 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
         operationsCache.start();
 
         fetchRealTimeData.runForced();
+
+        new PdfFontIssueTracker(getContext(), analytics)
+                .track(AnalyticsEvent.PDF_FONT_ISSUE_TYPE.HOME_VIEW);
     }
+
 
     /**
      * Call to report activity was destroyed.
-     * TODO: this should have a base presenter method associated
      */
-    public void onActivityDestroyed() {
+    @Override
+    public void destroy() {
         operationsCache.stop();
     }
 

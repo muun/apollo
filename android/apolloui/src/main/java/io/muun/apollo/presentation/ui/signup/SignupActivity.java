@@ -96,11 +96,11 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
             case LOGIN_RECOVERY_CODE_EMAIL_AUTH:
                 return new RcLoginEmailAuthorizeFragment();
 
-            case LOGIN_PASSWORD:
-                return new EnterPasswordFragment();
-
             case LOGIN_WAIT_VERIFICATION:
                 return new LoginAuthorizeFragment();
+
+            case LOGIN_PASSWORD:
+                return new EnterPasswordFragment();
 
             case SYNC:
                 return SyncFragment.create(previousStep);

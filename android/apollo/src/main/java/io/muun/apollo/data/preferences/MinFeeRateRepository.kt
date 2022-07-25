@@ -35,8 +35,8 @@ open class MinFeeRateRepository @Inject constructor(
     /**
      * Fetch the current value of min fee rate in weight units.
      */
-    fun fetchOne(): Double? {
-        return preference.get()
+    fun fetchOne(): Double {
+        return preference.get()!!
     }
 
     open fun store(value: Double) {
