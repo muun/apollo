@@ -6,6 +6,11 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.9] - 2022-07-31
+
+### FIXED
+- Reverted home balance resize fix due to unexpected ANRs on some devices
+
 ## [49.8] - 2022-07-21
 
 ### CHANGED

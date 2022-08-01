@@ -15,7 +15,10 @@
     <!-- Suppress errors caused by missing comments in api models -->
     <suppress checks="MissingJavadocMethod"
             files=".*[\\/]src[\\/]main[\\/]java[\\/]io[\\/]muun[\\/]common[\\/]api[\\/].*"/>
+    <!-- Suppress errors caused by exceeding line length -->
     <suppress checks="LineLength" files=".*[\\/]migrations(-[^.\\/]+)?\.xml" />
     <suppress checks="LineLength" files=".*[\\/]logback[^.\\/]*\.xml" />
     <suppress checks="LineLength" files=".*[\\/]AndroidManifest[^.\\/]*\.xml" />
+    <suppress checks="LineLength" files=".*[\\/]strings[^.\\/]*\.xml" />
+    <suppress checks="LineLength" files=".*[\\/]suppression[^.\\/]*\.xml" />
 </suppressions>
