@@ -126,4 +126,10 @@ public class Supports {
     public interface BrokenTransactionHashProcessing {
         int APOLLO = 901;
     }
+
+    // Up until version 907 (included), apollo didn't support additional feature flags (added after
+    // the initial ones) due to a proguard bug regarding MuunFeatureJson
+    public interface AdditionalFeatureFlags {
+        int APOLLO = 908;
+    }
 }

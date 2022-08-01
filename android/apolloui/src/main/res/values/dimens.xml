@@ -34,10 +34,4 @@
 
     <!--  Calculated as: ?android/?android:actionBarSize + gradientHeight = 56dp + 10dp  -->
     <dimen name="muun_header_plus_shadow_height">66dp</dimen>
-
-    <!-- balance view paddings to calculate parent max width dynamically -->
-    <dimen name="home_fragment_padding">32dp</dimen>
-    <dimen name="balance_clock_icon_margin_end">8dp</dimen>
-    <dimen name="balance_main_currency_code_margin_start">8dp</dimen>
-    <dimen name="balance_view_extra">4dp</dimen>
 </resources>
