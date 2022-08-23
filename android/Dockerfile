@@ -3,7 +3,7 @@ FROM openjdk:17-jdk-buster@sha256:9217da81dcff19e60861791511ce57c019e47eaf5ca40d
 ENV NDK_VERSION 22.0.7026061
 ENV ANDROID_PLATFORM_VERSION 28
 ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
-ENV GO_VERSION 1.18.1
+ENV GO_VERSION 1.16.8
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
