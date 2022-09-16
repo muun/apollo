@@ -4,10 +4,12 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
-        classpath 'com.squareup.sqldelight:gradle-plugin:1.5.3'
+        // We're using a patched version of SQLDelight, for reproducible builds. Thanks JitPack!
+        classpath 'com.github.muun.sqldelight:gradle-plugin:1.5.3-reproducible-build'
     }
 }
 

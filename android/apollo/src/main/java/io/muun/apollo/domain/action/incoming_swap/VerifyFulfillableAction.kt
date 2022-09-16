@@ -22,9 +22,12 @@ class VerifyFulfillableAction @Inject constructor(
                 try {
                     swap.verifyFulfillable(userKey, networkParameters)
                 } catch (e: UnfulfillableIncomingSwapError) {
-                    Timber.e("Will expire invoice due to unfulfillable swap", e)
+                    Timber.e(
+                        "Will expire invoice ${swap.getPaymentHash()} due to unfulfillable swap",
+                        e
+                    )
 
-                    houstonClient.expireInvoice(swap.getPaymentHash())
+                    return@flatMapCompletable houstonClient.expireInvoice(swap.getPaymentHash())
                 }
 
                 Completable.complete()

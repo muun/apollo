@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-buster@sha256:9217da81dcff19e60861791511ce57c019e47eaf5ca40dc73defe454ba7ea320 AS muun_android_builder
+FROM --platform=linux/amd64 openjdk:17-jdk-buster@sha256:9217da81dcff19e60861791511ce57c019e47eaf5ca40dc73defe454ba7ea320 AS muun_android_builder
 
 ENV NDK_VERSION 22.0.7026061
 ENV ANDROID_PLATFORM_VERSION 28
