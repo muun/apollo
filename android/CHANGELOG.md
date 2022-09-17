@@ -6,6 +6,19 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.10] - 2022-09-16
+
+### FIXED
+- Reproducible builds! We finally fixed issues in SqlDelight gradle plugin and
+Go Mobile that messed up build reproducibility
+- A problem where we didn't correclty expire invoices for unfulfillable swaps
+
+### CHANGED
+- Moved away from using personal forks and started using forks from official
+Muun org
+- Upgraded protobuf go package (really dropped github.com/golang/protobuf) and re-generate
+bip70 Go code base on its proto file
+
 ## [49.9] - 2022-07-31
 
 ### FIXED

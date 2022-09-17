@@ -35,7 +35,7 @@ dependencies {
     implementation 'io.reactivex:rxjava:1.3.8'
 
     // bitcoin
-    api 'com.github.acrespo:bitcoinj:0.15.4-taproot-patch'
+    api 'com.github.muun:bitcoinj:0.15.4-taproot'
 
     // Previously bundled with bitcoinj, no longer so we manually add it
     api 'com.google.code.findbugs:jsr305:3.0.2'
