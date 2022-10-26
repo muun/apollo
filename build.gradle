@@ -62,3 +62,7 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+tasks.named('wrapper') {
+    distributionType = Wrapper.DistributionType.ALL
+}
