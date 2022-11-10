@@ -43,10 +43,13 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
         provider.dataComponent.inject(this)
     }
 
-    override fun createWorker(appContext: Context,
-                              workerClassName: String,
-                              workerParameters: WorkerParameters): ListenableWorker {
+    override fun createWorker(
+        appContext: Context,
+        workerClassName: String,
+        workerParameters: WorkerParameters,
+    ): ListenableWorker {
 
+        Timber.d("[MuunWorkerFactory] Create worker for $workerClassName")
         val workerClass = Class.forName(workerClassName)
 
         // Should be enforce by WorkManager API but still (why don't they use Class param?!)

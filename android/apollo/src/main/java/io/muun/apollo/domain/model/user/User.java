@@ -159,12 +159,16 @@ public class User {
      * Get the user's primary currency, if exchange rate is available, BTC otherwise.
      */
     public CurrencyUnit getPrimaryCurrency(ExchangeRateProvider rateProvider) {
+        CurrencyUnit targetCurrency = primaryCurrency;
+
         if (Currency.OVERRIDES.get(primaryCurrency.getCurrencyCode()) != null) {
-            return Currency.OVERRIDES.get(primaryCurrency.getCurrencyCode());
+            targetCurrency = Currency.OVERRIDES.get(primaryCurrency.getCurrencyCode());
         }
 
-        if (rateProvider.isAvailable(primaryCurrency, Currency.getUnit("BTC").get())) {
-            return primaryCurrency;
+        // Note: DO NOT use rateProvider.isAvailable(CurrencyUnit,CurrencyUnit). Apparently its
+        // flawed. It will (strangely) return true when there's no rate for ceratin currencies.
+        if (rateProvider.getCurrencies().contains(targetCurrency)) {
+            return targetCurrency;
         } else {
             return Currency.getUnit("BTC").get();
         }

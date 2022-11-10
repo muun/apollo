@@ -2,28 +2,30 @@ package io.muun.apollo.data.net.base;
 
 import io.muun.apollo.data.logging.LoggingRequestTracker;
 import io.muun.apollo.data.serialization.SerializationUtils;
-import io.muun.apollo.domain.errors.AmountTooSmallError;
-import io.muun.apollo.domain.errors.CountryNotSupportedError;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
-import io.muun.apollo.domain.errors.EmailAlreadyUsedError;
-import io.muun.apollo.domain.errors.EmailNotRegisteredError;
-import io.muun.apollo.domain.errors.ExchangeRateWindowTooOldError;
 import io.muun.apollo.domain.errors.ExpiredActionLinkError;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
-import io.muun.apollo.domain.errors.ExpiredVerificationCodeError;
-import io.muun.apollo.domain.errors.IncorrectPasswordError;
-import io.muun.apollo.domain.errors.InsufficientFundsError;
 import io.muun.apollo.domain.errors.InvalidActionLinkError;
-import io.muun.apollo.domain.errors.InvalidAddressError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.InvalidJsonError;
-import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
-import io.muun.apollo.domain.errors.InvalidRecoveryCodeV2Error;
-import io.muun.apollo.domain.errors.InvalidVerificationCodeError;
-import io.muun.apollo.domain.errors.PhoneNumberAlreadyUsedError;
-import io.muun.apollo.domain.errors.RevokedVerificationCodeError;
 import io.muun.apollo.domain.errors.TooManyRequestsError;
-import io.muun.apollo.domain.errors.TooManyWrongVerificationCodesError;
+import io.muun.apollo.domain.errors.newop.AmountTooSmallError;
+import io.muun.apollo.domain.errors.newop.ExchangeRateWindowTooOldError;
+import io.muun.apollo.domain.errors.newop.InsufficientFundsError;
+import io.muun.apollo.domain.errors.newop.InvalidAddressError;
+import io.muun.apollo.domain.errors.p2p.CountryNotSupportedError;
+import io.muun.apollo.domain.errors.p2p.ExpiredVerificationCodeError;
+import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError;
+import io.muun.apollo.domain.errors.p2p.InvalidVerificationCodeError;
+import io.muun.apollo.domain.errors.p2p.PhoneNumberAlreadyUsedError;
+import io.muun.apollo.domain.errors.p2p.RevokedVerificationCodeError;
+import io.muun.apollo.domain.errors.p2p.TooManyWrongVerificationCodesError;
+import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError;
+import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError;
+import io.muun.apollo.domain.errors.passwd.IncorrectPasswordError;
+import io.muun.apollo.domain.errors.rc.CredentialsDontMatchError;
+import io.muun.apollo.domain.errors.rc.InvalidRecoveryCodeV2Error;
+import io.muun.apollo.domain.errors.rc.StaleChallengeKeyError;
 import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
 import io.muun.common.exception.HttpException;
@@ -167,6 +169,12 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
                         case HTTP_TOO_MANY_REQUESTS:
                             return new TooManyRequestsError();
+
+                        case STALE_CHALLENGE_KEY:
+                            return new StaleChallengeKeyError();
+
+                        case CREDENTIALS_DONT_MATCH:
+                            return new CredentialsDontMatchError();
 
                         default:
                             return error;

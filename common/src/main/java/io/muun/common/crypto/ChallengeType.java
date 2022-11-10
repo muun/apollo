@@ -7,11 +7,15 @@ public enum ChallengeType {
 
     /**
      * Client-generated public key before any other key was set up.
+     * DEPRECATED, due to UX problems. USER_KEY "fake" chalenge key was introduced instead. See:
+     * https://www.notion.so/muunwallet/Email-less-recovery-and-ANON-challenge-keys-77e381289dd843659f531c8265603fd5
      */
     ANON(false),
 
     /**
      * Fake challenge key type used to sign/verify challenges with the user's private/public key.
+     * Replaces ANON. See:
+     * https://www.notion.so/muunwallet/Email-less-recovery-and-ANON-challenge-keys-77e381289dd843659f531c8265603fd5
      */
     USER_KEY(false),
 

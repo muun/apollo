@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.new_operation
 
-import io.muun.apollo.domain.errors.NewOpStateError
+import io.muun.apollo.domain.errors.newop.NewOpStateError
 import newop.*
 import rx.Observable
 import rx.subjects.BehaviorSubject

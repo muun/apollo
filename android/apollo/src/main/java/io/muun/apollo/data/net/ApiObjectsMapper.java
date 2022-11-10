@@ -25,6 +25,7 @@ import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.IncomingSwapFulfillmentDataJson;
+import io.muun.common.api.LoginJson;
 import io.muun.common.api.OperationJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneNumberJson;
@@ -34,6 +35,7 @@ import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserProfileJson;
+import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.exception.MissingCaseError;
@@ -49,6 +51,7 @@ import libwallet.MusigNonces;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -310,6 +313,29 @@ public class ApiObjectsMapper {
                 Encodings.bytesToHex(setup.salt),
                 setup.encryptedPrivateKey,
                 setup.version
+        );
+    }
+
+    /**
+     * Map to LoginJson.
+     */
+    public LoginJson mapLogin(
+            final ChallengeSignature chSignature,
+            final ChallengePublicKey challengePublicKey
+    ) {
+
+        final ChallengeSignatureJson challengeSignatureJson = mapChallengeSignature(chSignature);
+        final ChallengeKeyJson challengeKeyJson = new ChallengeKeyJson(
+                challengeSignatureJson.type,
+                Encodings.bytesToHex(challengePublicKey.toBytes()),
+                Encodings.bytesToHex(Objects.requireNonNull(challengePublicKey.getSalt())),
+                challengePublicKey.getVersion()
+        );
+
+        return new LoginJson(
+                challengeKeyJson.type,
+                challengeSignatureJson.hex,
+                challengeKeyJson
         );
     }
 

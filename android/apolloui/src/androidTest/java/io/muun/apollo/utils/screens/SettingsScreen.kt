@@ -38,4 +38,12 @@ class SettingsScreen(
 
         device.pressBack()
     }
+
+    fun toggleLightningDefault() {
+        id(R.id.settings_lightning).click()
+
+        id(R.id.lightning_default_switch).click()
+
+        device.pressBack()
+    }
 }

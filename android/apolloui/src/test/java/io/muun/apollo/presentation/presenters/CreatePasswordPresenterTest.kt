@@ -9,8 +9,8 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.domain.errors.EmptyFieldError
-import io.muun.apollo.domain.errors.PasswordTooShortError
-import io.muun.apollo.domain.errors.PasswordsDontMatchError
+import io.muun.apollo.domain.errors.passwd.PasswordTooShortError
+import io.muun.apollo.domain.errors.passwd.PasswordsDontMatchError
 import io.muun.apollo.presentation.BasePresentationTest
 import io.muun.apollo.presentation.ui.fragments.create_password.CreatePasswordParentPresenter
 import io.muun.apollo.presentation.ui.fragments.create_password.CreatePasswordPresenter

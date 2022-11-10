@@ -60,6 +60,9 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
         view.setIsExistingUser(signupDraft.isExistingUser());
     }
 
+    /**
+     * Signal PIN code setup ended successfully.
+     */
     public void pinCodeSetUpSuccess() {
         isPinSetUp = true;
         finishSignupIfReady();
@@ -115,6 +118,19 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
         } else {
             analytics.report(new AnalyticsEvent.E_WALLET_CREATED());
         }
+
+        // If the RC used for wallet recovery was UNVERIFIED, we'll show a warning prompting the
+        // user to finish their Security Center setup.
+        // For the scenario where a user recovers their wallet using their RC, and has an email
+        // associated, an email authorization link will be sent. Once the user clicks it, we allow
+        // the wallet recovery to take place. In this scenario, this is where we perform the check
+        // to decide if we need to show the warning.
+        final LoginWithRc loginWithRc = getParentPresenter().getSignupDraft().getLoginWithRc();
+        if (loginWithRc != null) {
+            if (!userSel.get().hasRecoveryCode) {
+                getParentPresenter().getSignupDraft().setShowUnverifiedRcWarning(true);
+            }
+        }
     }
 
     private AnalyticsEvent.LoginType getLoginType() {
@@ -141,11 +157,11 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
     }
 
     private SignupStep getPreviousStep() {
-        final String stepName = view.getArgumentsBundle().getString(SyncView.ARG_FROM_STEP);
+        final SignupStep previousStep = getParentPresenter().getSignupDraft().getPreviousStep();
 
-        Preconditions.checkState(stepName != null);
+        Preconditions.checkState(previousStep != null);
 
-        return SignupStep.valueOf(stepName);
+        return SignupStep.valueOf(previousStep.name());
     }
 
     @Override

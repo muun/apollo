@@ -16,7 +16,7 @@ class MoneyDecorationError(
     selectionStart: Int,
     start: Int,
     after: Int,
-): MuunError(message), PotentialBug {
+) : MuunError(message), PotentialBug {
 
     init {
         metadata["newCaretPosition"] = newCaretPosition

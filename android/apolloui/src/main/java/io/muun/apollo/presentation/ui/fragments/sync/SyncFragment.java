@@ -1,14 +1,12 @@
 package io.muun.apollo.presentation.ui.fragments.sync;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.SignupStep;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity;
 import io.muun.apollo.presentation.ui.view.LoadingView;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
 import butterknife.BindString;
 import butterknife.BindView;
@@ -16,19 +14,6 @@ import butterknife.BindView;
 public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncView {
 
     private static final int REQUEST_PIN_CODE_SETUP = 5;
-
-    /**
-     * Create a SyncFragment with arguments.
-     */
-    public static SyncFragment create(SignupStep fromStep) {
-        final SyncFragment fragment = new SyncFragment();
-
-        final Bundle arguments = new Bundle();
-        arguments.putString(ARG_FROM_STEP, fromStep.name());
-        fragment.setArguments(arguments);
-
-        return fragment;
-    }
 
     @BindView(R.id.initial_sync_loading)
     LoadingView loadingView;

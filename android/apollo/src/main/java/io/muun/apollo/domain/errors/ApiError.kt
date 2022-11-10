@@ -3,7 +3,7 @@ package io.muun.apollo.domain.errors
 import io.muun.common.exception.HttpException
 
 
-class ApiError(cause: HttpException): MuunError(cause) {
+class ApiError(cause: HttpException) : MuunError(cause) {
 
     init {
         metadata["errorCode"] = cause.errorCode.name

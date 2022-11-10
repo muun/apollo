@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.widget.TextView
 import butterknife.BindView
-import butterknife.OnClick
 import com.airbnb.lottie.LottieAnimationView
 import com.skydoves.balloon.ArrowConstraints
 import com.skydoves.balloon.ArrowOrientation
@@ -25,13 +24,14 @@ import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getDrawable
 import io.muun.apollo.presentation.ui.view.BalanceView
 import io.muun.apollo.presentation.ui.view.BlockClock
+import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHomeCard
 import io.muun.apollo.presentation.ui.view.NewOpBadge
 import io.muun.common.utils.BitcoinUtils
 import org.threeten.bp.ZonedDateTime
 import kotlin.math.abs
 
-class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
+class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
 
     companion object {
         private const val NEW_OP_ANIMATION_WINDOW = 15L   // In Seconds
@@ -48,6 +48,12 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
 
     @BindView(R.id.home_balance_view)
     lateinit var balanceView: BalanceView
+
+    @BindView(R.id.home_receive_button)
+    lateinit var receiveButton: MuunButton
+
+    @BindView(R.id.home_send_button)
+    lateinit var sendButton: MuunButton
 
     @BindView(R.id.home_security_center_card)
     lateinit var securityCenterCard: MuunHomeCard
@@ -84,14 +90,31 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         val containerDetector = GestureDetector(
             requireContext(), GestureListener(chevron, requireContext(), true)
         )
-        chevronContainer.setOnTouchListener { _, event -> containerDetector.onTouchEvent(event) }
+        chevronContainer.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                chevronContainer.performClick()
+            } else {
+                containerDetector.onTouchEvent(event)
+            }
+        }
 
         val chevronDetector = GestureDetector(
             requireContext(), GestureListener(chevron, requireContext(), false)
         )
-        chevron.setOnTouchListener { _, event -> chevronDetector.onTouchEvent(event) }
+        chevron.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                chevronContainer.performClick()
+            } else {
+                chevronDetector.onTouchEvent(event)
+            }
+        }
 
         initializeCards()
+
+        balanceView.setOnClickListener { onBalanceClick() }
+        receiveButton.setOnClickListener { presenter.navigateToReceiveScreen() }
+        sendButton.setOnClickListener { presenter.navigateToSendScreen() }
+        chevron.setOnClickListener { presenter.navigateToOperations() }
 
         blockClock.setOnClickListener {
             presenter.navigateToClockDetail()
@@ -120,7 +143,7 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         }
     }
 
-    class GestureListener(private val chevron: View, context: Context, private val down: Boolean):
+    class GestureListener(private val chevron: View, context: Context, private val down: Boolean) :
         GestureDetector.SimpleOnGestureListener() {
 
         private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
@@ -185,7 +208,7 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             setMarginLeft(53)
             setCornerRadius(4f)
             setBackgroundColorResource(R.color.new_home_tooltip)
-            setOnBalloonClickListener(OnBalloonClickListener { onOperationHistoryChevronClick() })
+            setOnBalloonClickListener(OnBalloonClickListener { presenter.navigateToOperations() })
             setBalloonAnimation(BalloonAnimation.NONE)
             setDismissWhenTouchOutside(false)
             setLifecycleOwner(this@HomeFragment)
@@ -214,12 +237,12 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             displayedMuunHomeCard = securityCenterCard
 
         } else when (homeState.taprootFeatureStatus) {
-            UserActivatedFeatureStatus.OFF -> { } // Do nothing
+            UserActivatedFeatureStatus.OFF -> {} // Do nothing
             UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = taprootCard
             UserActivatedFeatureStatus.CAN_ACTIVATE -> displayedMuunHomeCard = taprootCard
             UserActivatedFeatureStatus.PREACTIVATED -> blockClock.visibility = View.VISIBLE
             UserActivatedFeatureStatus.SCHEDULED_ACTIVATION -> {} // Do nothing
-            UserActivatedFeatureStatus.ACTIVE -> { } // Do nothing
+            UserActivatedFeatureStatus.ACTIVE -> {} // Do nothing
         }
 
         blockClock.value = homeState.blocksToTaproot
@@ -266,27 +289,11 @@ class HomeFragment: SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         }
     }
 
-    @OnClick(R.id.home_balance_view)
     fun onBalanceClick() {
         if (balanceView.isFullyInitialized()) {
             val hidden = balanceView.toggleVisibility()
             presenter.setBalanceHidden(hidden)
         }
-    }
-
-    @OnClick(R.id.home_receive_button)
-    fun onReceiveClick() {
-        presenter.navigateToReceiveScreen()
-    }
-
-    @OnClick(R.id.home_send_button)
-    fun onSendClick() {
-        presenter.navigateToSendScreen()
-    }
-
-    @OnClick(R.id.chevron)
-    fun onOperationHistoryChevronClick() {
-        presenter.navigateToOperations()
     }
 
     private fun setChevronAnimation(utxoSetState: UtxoSetStateSelector.UtxoSetState) {

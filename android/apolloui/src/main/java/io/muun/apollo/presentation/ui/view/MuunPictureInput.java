@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
 import io.muun.apollo.domain.action.images.DecodeImageAction;
-import io.muun.apollo.domain.errors.InvalidPictureError;
 import io.muun.apollo.domain.errors.UserFacingError;
+import io.muun.apollo.domain.errors.p2p.InvalidPictureError;
 import io.muun.common.Optional;
 import io.muun.common.exception.MissingCaseError;
 

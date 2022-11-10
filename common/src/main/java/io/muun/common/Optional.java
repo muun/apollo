@@ -161,6 +161,14 @@ public final class Optional<ValueT> {
     }
 
     /**
+     * Returns a value if present, or {other Optional} otherwise.
+     * In some cases, we might want to fallback to another Optional instance if one is empty.
+     */
+    public Optional<ValueT> or(Producer<Optional<ValueT>> fallback) {
+        return isPresent() ? this : fallback.produce();
+    }
+
+    /**
      * Returns a value if present, or {other} otherwise.
      */
     public ValueT orElse(@Nullable ValueT other) {

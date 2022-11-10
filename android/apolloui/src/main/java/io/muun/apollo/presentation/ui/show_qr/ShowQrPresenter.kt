@@ -39,4 +39,6 @@ class ShowQrPresenter @Inject constructor(
             navigator.navigateToLnUrlIntro(context)
         }
     }
+
+    fun getDefaultTabSelected(): ShowQrPage = if (userPreferencesSel.get().lightningDefaultForReceiving) ShowQrPage.LN else ShowQrPage.BITCOIN
 }

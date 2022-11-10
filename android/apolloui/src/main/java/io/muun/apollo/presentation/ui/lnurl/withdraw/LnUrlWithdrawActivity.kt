@@ -9,6 +9,7 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.model.LnUrlWithdraw
 import io.muun.apollo.domain.model.lnurl.LnUrlError
 import io.muun.apollo.domain.model.lnurl.LnUrlState
+import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
@@ -16,6 +17,7 @@ import io.muun.apollo.presentation.ui.utils.postDelayed
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
+import io.muun.common.utils.Preconditions
 
 class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), LnUrlWithdrawView,
     ErrorFragmentDelegate {
@@ -93,7 +95,9 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
         presenter.handleErrorDescriptionClicked()
     }
 
-    override fun handleRetry() {
+    override fun handleRetry(errorType: AnalyticsEvent.ERROR_TYPE) {
+        // There's only one retriable error here
+        Preconditions.checkArgument(errorType == AnalyticsEvent.ERROR_TYPE.LNURL_UNRESPONSIVE)
         hideError()
         presenter.handleRetry()
     }

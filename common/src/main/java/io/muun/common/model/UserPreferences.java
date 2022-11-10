@@ -29,6 +29,8 @@ public class UserPreferences {
 
     public Boolean seenLnurlFirstTime = false;
 
+    public Boolean lightningDefaultForReceiving = false;
+
     public String defaultAddressType = "segwit";
 
     /**
@@ -43,11 +45,13 @@ public class UserPreferences {
     public UserPreferences(final boolean receiveStrictMode,
                            final boolean seenNewHome,
                            final boolean seenLnurlFirstTime,
-                           final String defaultAddressType) {
+                           final String defaultAddressType,
+                           final boolean lightningDefaultForReceiving) {
         this.receiveStrictMode = receiveStrictMode;
         this.seenNewHome = seenNewHome;
         this.seenLnurlFirstTime = seenLnurlFirstTime;
         this.defaultAddressType = defaultAddressType;
+        this.lightningDefaultForReceiving = lightningDefaultForReceiving;
     }
 
     /**
@@ -80,6 +84,9 @@ public class UserPreferences {
             );
         }
 
+        if (other.lightningDefaultForReceiving != null) {
+            this.lightningDefaultForReceiving = other.lightningDefaultForReceiving;
+        }
     }
 
 }

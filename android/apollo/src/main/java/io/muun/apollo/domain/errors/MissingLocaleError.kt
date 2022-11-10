@@ -4,8 +4,8 @@ import io.muun.common.exception.PotentialBug
 import java.util.*
 
 class MissingLocaleError(
-    countryCode: String
-): MuunError("No locales found for country:$countryCode"), PotentialBug {
+    countryCode: String,
+) : MuunError("No locales found for country:$countryCode"), PotentialBug {
 
     init {
 

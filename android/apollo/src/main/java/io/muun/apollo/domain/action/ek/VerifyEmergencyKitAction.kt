@@ -2,8 +2,8 @@ package io.muun.apollo.domain.action.ek
 
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
-import io.muun.apollo.domain.errors.EmergencyKitInvalidCodeError
-import io.muun.apollo.domain.errors.EmergencyKitOldCodeError
+import io.muun.apollo.domain.errors.ek.EmergencyKitInvalidCodeError
+import io.muun.apollo.domain.errors.ek.EmergencyKitOldCodeError
 import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import rx.Observable

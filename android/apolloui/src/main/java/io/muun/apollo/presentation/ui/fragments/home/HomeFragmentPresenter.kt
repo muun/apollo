@@ -129,6 +129,7 @@ class HomeFragmentPresenter @Inject constructor(
     }
 
     fun setBalanceHidden(hidden: Boolean) {
+        analytics.report(AnalyticsEvent.E_BALANCE_TAP())
         userSel.setBalanceHidden(hidden)
     }
 

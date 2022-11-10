@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.provider.MediaStore
-import io.muun.apollo.domain.errors.InvalidPictureError
+import io.muun.apollo.domain.errors.p2p.InvalidPictureError
 import java.io.IOException
 import javax.inject.Inject
 

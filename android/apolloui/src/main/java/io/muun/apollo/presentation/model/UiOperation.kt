@@ -31,7 +31,7 @@ abstract class UiOperation(
     @JvmField internal val operation: Operation,
     private val linkBuilder: LinkBuilder,
     private val bitcoinUnit: BitcoinUnit,
-    private val context: Context
+    private val context: Context,
 ) {
 
     companion object {
@@ -47,7 +47,7 @@ abstract class UiOperation(
             operation: Operation,
             linkBuilder: LinkBuilder,
             bitcoinUnit: BitcoinUnit,
-            context: Context
+            context: Context,
         ): UiOperation {
             return if (operation.isExternal) {
                 ExternalOperation(operation, linkBuilder, bitcoinUnit, context)
@@ -83,24 +83,8 @@ abstract class UiOperation(
      */
     val detailedFee: String
         get() {
-            var feeInSats = operation.fee.inSatoshis
-            var feeInPrimaryCurr = operation.fee.inPrimaryCurrency
-
-            // If operation is a swap we display both funding and sweep tx as the operation fee
-            if (operation.swap != null) {
-                val totalFeeInSats = feeInSats + (operation.swap!!.totalFeesInSat() ?: 0)
-
-                // As we don't have the value in primary currency for some of the fees involved in a
-                // swap, we use a Rule of 3 to calculate their value in primary currency using amount as
-                // a reference (we know the amount in sats/primaryCurrency and it's never zero)
-                feeInSats = totalFeeInSats
-                feeInPrimaryCurr = UiUtils.convertWithSameRate(
-                    totalFeeInSats,
-                    operation.amount.inSatoshis,
-                    operation.amount.inPrimaryCurrency
-                )
-            }
-            return getFormattedAmount(feeInSats, feeInPrimaryCurr)
+            val (feeInSats, feeInPrimaryCurr) = calculateFee()
+            return getFormattedAmount(`feeInSats`, feeInPrimaryCurr)
         }
 
     /**
@@ -108,9 +92,30 @@ abstract class UiOperation(
      */
     val copyableNetworkFee: String
         get() {
-            val feeInSats = operation.fee.inSatoshis
+            val (feeInSats, _) = calculateFee()
             return BitcoinHelper.formatLongBitcoinAmount(feeInSats, bitcoinUnit, locale)
         }
+
+    private fun calculateFee(): Pair<Long, MonetaryAmount> {
+        var feeInSats = operation.fee.inSatoshis
+        var feeInPrimaryCurr = operation.fee.inPrimaryCurrency
+
+        // If operation is a swap we display both funding and sweep tx as the operation fee
+        if (operation.swap != null) {
+            val totalFeeInSats = feeInSats + (operation.swap!!.totalFeesInSat() ?: 0)
+
+            // As we don't have the value in primary currency for some of the fees involved in a
+            // swap, we use a Rule of 3 to calculate their value in primary currency using amount as
+            // a reference (we know the amount in sats/primaryCurrency and it's never zero)
+            feeInSats = totalFeeInSats
+            feeInPrimaryCurr = UiUtils.convertWithSameRate(
+                totalFeeInSats,
+                operation.amount.inSatoshis,
+                operation.amount.inPrimaryCurrency
+            )
+        }
+        return Pair(feeInSats, feeInPrimaryCurr)
+    }
 
     /**
      * Get the amount in BTC copyable string.
@@ -201,6 +206,7 @@ abstract class UiOperation(
      */
     val swapReceiverAlias: CharSequence
         get() = operation.swap?.receiver?.alias ?: ""
+
     /**
      * Get the preimage of swap or incomingSwap, if this is a LN payment. Empty String otherwise.
      */

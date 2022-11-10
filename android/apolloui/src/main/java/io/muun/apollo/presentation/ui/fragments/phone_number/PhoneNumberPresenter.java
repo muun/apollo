@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.phone_number;
 
-import io.muun.apollo.domain.errors.CountryNotSupportedError;
-import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
+import io.muun.apollo.domain.errors.p2p.CountryNotSupportedError;
+import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
@@ -87,6 +87,9 @@ public class PhoneNumberPresenter
         return new AnalyticsEvent.S_P2P_SETUP_PHONE();
     }
 
+    /**
+     * Called when phone number extra info is shown.
+     */
     public void reportShowPhoneNumberInfo() {
         analytics.report(new AnalyticsEvent.S_MORE_INFO(S_MORE_INFO_TYPE.PHONE_NUMBER));
     }

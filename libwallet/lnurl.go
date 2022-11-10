@@ -3,6 +3,7 @@ package libwallet
 import (
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/muun/libwallet/lnurl"
+	"reflect"
 )
 
 type LNURLEvent struct {
@@ -12,8 +13,8 @@ type LNURLEvent struct {
 }
 
 type LNURLEventMetadata struct {
-	Host      string
-	Invoice   string
+	Host    string
+	Invoice string
 }
 
 const (
@@ -45,7 +46,7 @@ func LNURLValidate(qr string) bool {
 	return lnurl.Validate(qr)
 }
 
-// Withdraw will parse an LNURL withdraw QR and begin a withdraw process.
+// LNURLWithdraw will parse an LNURL withdraw QR and begin a withdraw process.
 // Caller must wait for the actual payment after this function has notified success.
 func LNURLWithdraw(invoiceBuilder *InvoiceBuilder, qr string, listener LNURLListener) {
 	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
@@ -59,15 +60,15 @@ func LNURLWithdraw(invoiceBuilder *InvoiceBuilder, qr string, listener LNURLList
 			Build()
 	}
 
-	allowUnsafe := invoiceBuilder.net != Mainnet()
+	allowUnsafe := !reflect.DeepEqual(invoiceBuilder.net, Mainnet())
 
 	go lnurl.Withdraw(qr, createInvoiceFunc, allowUnsafe, func(e *lnurl.Event) {
 		event := &LNURLEvent{
 			Code:    e.Code,
 			Message: e.Message,
 			Metadata: &LNURLEventMetadata{
-				Host:      e.Metadata.Host,
-				Invoice:   e.Metadata.Invoice,
+				Host:    e.Metadata.Host,
+				Invoice: e.Metadata.Invoice,
 			},
 		}
 		if event.Code < 100 {

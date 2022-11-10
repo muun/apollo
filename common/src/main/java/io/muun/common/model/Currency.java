@@ -179,6 +179,7 @@ public class Currency {
         load(new Currency("UYU", "$U", "Uruguayan Peso", "\uD83C\uDDFA\uD83C\uDDFE"));
         load(new Currency("UZS", "лв", "Uzbekistan Som", "\uD83C\uDDFA\uD83C\uDDFF"));
         load(new Currency("VEF", "Bs.F", "Venezuelan Bolívar Fuerte", "\uD83C\uDDFB\uD83C\uDDEA"));
+        load(new Currency("VES", "Bs.", "Venezuelan Bolívar", "\uD83C\uDDFB\uD83C\uDDEA"));
         load(new Currency("VND", "₫", "Vietnamese Dong", "\uD83C\uDDFB\uD83C\uDDF3"));
         load(new Currency("VUV", "Vt", "Vanuatu Vatu", "\uD83C\uDDFB\uD83C\uDDFA"));
         load(new Currency("WST", "WS$", "Samoan Tala", "\uD83C\uDDFC\uD83C\uDDF8"));

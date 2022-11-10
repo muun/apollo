@@ -50,6 +50,9 @@ class ShowQrFragmentPagerAdapter(
      * attached, even across recreations, since the FragmentManager preserves state.
      */
     fun getExistingItem(position: Int): Fragment {
+        if (fm.fragments.isEmpty()) {
+            return Fragment();
+        }
         return fm.fragments.find { ShowQrPage.classAt(position).isInstance(it) }!!
     }
 

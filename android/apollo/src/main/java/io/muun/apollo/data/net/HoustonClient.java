@@ -2,14 +2,14 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
-import io.muun.apollo.domain.errors.CyclicalSwapError;
-import io.muun.apollo.domain.errors.InvalidInvoiceException;
-import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException;
-import io.muun.apollo.domain.errors.InvoiceExpiredException;
-import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException;
-import io.muun.apollo.domain.errors.InvoiceMissingAmountException;
-import io.muun.apollo.domain.errors.NoPaymentRouteException;
-import io.muun.apollo.domain.errors.UnreachableNodeException;
+import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
+import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
+import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException;
+import io.muun.apollo.domain.errors.newop.InvoiceExpiredException;
+import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException;
+import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException;
+import io.muun.apollo.domain.errors.newop.NoPaymentRouteException;
+import io.muun.apollo.domain.errors.newop.UnreachableNodeException;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
@@ -32,6 +32,7 @@ import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserPreferences;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.api.ChallengeSetupVerifyJson;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
@@ -52,6 +53,7 @@ import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.api.error.ErrorCode;
 import io.muun.common.api.houston.HoustonService;
+import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.CreateSessionOk;
@@ -66,6 +68,7 @@ import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Pair;
+import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.net.Uri;
@@ -227,6 +230,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     /**
      * Asks Houston for a new verification code, to be sent via sms or phone call.
+     *
      * @param verificationType the way to deliver the verification code, either sms or phone call
      */
     public Observable<Void> resendVerificationCode(@NotNull VerificationType verificationType) {
@@ -261,11 +265,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
-     * Login by sending a challenge signature.
+     * Login by sending a challenge signature and the associated challenge public key.
      */
-    public Observable<KeySet> login(ChallengeSignature challengeSignature) {
+    public Observable<KeySet> login(
+            final ChallengeSignature challengeSignature,
+            final ChallengePublicKey challengePublicKey
+    ) {
         return getService()
-                .login(apiMapper.mapChallengeSignature(challengeSignature));
+                .login(apiMapper.mapLogin(challengeSignature, challengePublicKey));
     }
 
     /**
@@ -570,10 +577,37 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     /**
      * Setup a challenge in Houston.
+     * Note: this should no longer be used to setup Recovery Code's challenge. We've a new 2-step
+     * flow for that.
      */
     public Observable<SetupChallengeResponse> setupChallenge(ChallengeSetup setup) {
+        Preconditions.checkArgument(setup.type != ChallengeType.RECOVERY_CODE);
         return getService()
                 .setupChallenge(apiMapper.mapChallengeSetup(setup));
+    }
+
+    /**
+     * Start a challenge setup in Houston.
+     */
+    public Observable<SetupChallengeResponse> startChallengeSetup(final ChallengeSetup setup) {
+        Preconditions.checkArgument(setup.type == ChallengeType.RECOVERY_CODE);
+        return getService()
+                .startChallengeSetup(apiMapper.mapChallengeSetup(setup));
+    }
+
+    /**
+     * Finish/Verify a challenge setup in Houston.
+     */
+    public Completable finishChallengeSetup(
+            final ChallengeType challengeType,
+            final ChallengePublicKey challengePublicKey
+    ) {
+
+        Preconditions.checkArgument(challengeType == ChallengeType.RECOVERY_CODE);
+        return getService().finishChallengeSetup(new ChallengeSetupVerifyJson(
+                challengeType,
+                Encodings.bytesToHex(challengePublicKey.toBytes())
+        ));
     }
 
     /**

@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.settings;
 
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.action.challenge_keys.password_change.StartPasswordChangeAction;
-import io.muun.apollo.domain.errors.IncorrectPasswordError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
+import io.muun.apollo.domain.errors.passwd.IncorrectPasswordError;
 import io.muun.apollo.domain.model.ChangePasswordStep;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.selector.UserSelector;
@@ -85,6 +85,9 @@ public class OldPasswordPresenter extends BaseEditPasswordPresenter<OldPasswordV
         }
     }
 
+    /**
+     * Submit password to continue change password flow.
+     */
     public void submitPassword(String password) {
         startPasswordChange.run(password, ChallengeType.PASSWORD);
     }

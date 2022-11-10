@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.recovery_code.verify;
 
 
 import io.muun.apollo.data.external.Globals;
-import io.muun.apollo.domain.errors.InvalidCharacterRecoveryCodeError;
-import io.muun.apollo.domain.errors.RecoveryCodeVerificationError;
+import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError;
+import io.muun.apollo.domain.errors.rc.RecoveryCodeVerificationError;
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2;
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.RecoveryCode;

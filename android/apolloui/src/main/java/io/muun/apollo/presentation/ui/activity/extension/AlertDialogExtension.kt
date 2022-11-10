@@ -31,9 +31,9 @@ class AlertDialogExtension @Inject constructor() : ActivityExtension() {
         dismissDialog()
 
         // ON dialog dismiss, dispose android's dialog reference to avoid memory leaks
-        dialog.addOnDismissAction(DialogInterface.OnDismissListener {
+        dialog.addOnDismissAction {
             activeDialog = null
-        })
+        }
 
         activeDialog = dialog.show(activity)
         activeDialog!!.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(negativeButtonColor)
@@ -43,18 +43,26 @@ class AlertDialogExtension @Inject constructor() : ActivityExtension() {
     /**
      * Show a simple, standard muun error dialog.
      */
-    fun showErrorDialog(@StringRes resId: Int, followup: Action0? = null, onDismiss: Action0? = null) {
+    fun showErrorDialog(
+        @StringRes resId: Int,
+        followup: Action0? = null,
+        onDismiss: Action0? = null,
+    ) {
         showErrorDialog(activity.getStyledString(resId), followup, onDismiss)
     }
 
     /**
      * Show a simple, standard muun error dialog.
      */
-    fun showErrorDialog(msg: CharSequence, followupAction: Action0? = null, onDismiss: Action0? = null) {
+    fun showErrorDialog(
+        msg: CharSequence,
+        followupAction: Action0? = null,
+        onDismiss: Action0? = null,
+    ) {
         val builder = MuunDialog.Builder()
             .layout(R.layout.dialog_custom_layout)
             .message(msg)
-            .onDismiss(DialogInterface.OnDismissListener { onDismiss?.call() })
+            .onDismiss { onDismiss?.call() }
 
         if (followupAction != null) {
             builder.positiveButton(R.string.error_dialog_let_us_know, followupAction)

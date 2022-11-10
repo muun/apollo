@@ -12,5 +12,6 @@ public enum SignupStep {
     LOGIN_PASSWORD,
     LOGIN_RECOVERY_CODE,
 
-    SYNC
+    SYNC,
+    UNVERIFIED_RC_WARNING
 }

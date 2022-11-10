@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.ek_verify
 
 import android.os.Bundle
 import io.muun.apollo.domain.action.ek.VerifyEmergencyKitAction
-import io.muun.apollo.domain.errors.EmergencyKitVerificationError
+import io.muun.apollo.domain.errors.ek.EmergencyKitVerificationError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment

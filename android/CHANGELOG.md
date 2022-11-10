@@ -6,12 +6,29 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.11] - 2022-11-10
+
+### ADDED
+- Support for VES (Venezuelan Bolívar) currency.
+
+### FIXED
+- A problem with "copy to clipboard" of Payment Detail's Network Fee cell that resulted in just a
+fraction of the total fee amount getting copied to the clipboard.
+- A problem that allowed screenshots of a screen supposed to be "blocked for screenshots"
+- Periodic task worker config. Probably broken since apollo-49.7 (upgrade targetSdkVersion to 31)
+- Reliability problems during wallet recovery regarding activity destroy while app in background
+- Handling of wallet recovery when Recovery Code Setup flow is interrupted or aborted half way
+- A problem where we inadvertently allowed "unsafe" (not https) urls to be used for lnurl withdraws
+
+### CHANGED
+- Grouped related error classes in packages
+
 ## [49.10] - 2022-09-16
 
 ### FIXED
 - Reproducible builds! We finally fixed issues in SqlDelight gradle plugin and
 Go Mobile that messed up build reproducibility
-- A problem where we didn't correclty expire invoices for unfulfillable swaps
+- A problem where we didn't correctly expire invoices for unfulfillable swaps
 
 ### CHANGED
 - Moved away from using personal forks and started using forks from official

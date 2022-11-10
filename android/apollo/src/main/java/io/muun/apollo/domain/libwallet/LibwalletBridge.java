@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.libwallet;
 
 import io.muun.apollo.data.external.Globals;
-import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
+import io.muun.apollo.domain.errors.newop.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.errors.AddressDerivationError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletEmergencyKitError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;

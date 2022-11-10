@@ -14,7 +14,8 @@ import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), LightningSettingsView {
+class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
+    LightningSettingsView {
 
     @BindView(R.id.lightning_settings_loading)
     lateinit var loadingView: LoadingView
@@ -28,9 +29,23 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
     @BindView(R.id.turbo_channels_learn_more)
     lateinit var learnMore: HtmlTextView
 
+    @BindView(R.id.lightning_default_section)
+    lateinit var lightningSection: ViewGroup
+
+    @BindView(R.id.lightning_default_switch)
+    lateinit var lightningSwitch: SwitchMaterial
+
+
     @State
     @JvmField
-    var latestState = false
+    var turboChannelsLatestState = false
+
+    @State
+    @JvmField
+    var lightningDefaultLatestState = false
+
+    // For now, we won't release this. Remove this flag once we do.
+    val lightningByDefaultOn = false
 
     override fun inject() {
         component.inject(this)
@@ -44,42 +59,56 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
         super.initializeUi(view)
 
         StyledStringRes(requireContext(), R.string.turbo_channels_learn_more, this::openBlog)
-                .toCharSequence()
-                .let(learnMore::setText)
+            .toCharSequence()
+            .let(learnMore::setText)
 
         turboSwitch.setOnCheckedChangeListener { _, state ->
-            this.toggle(state)
+            this.toggleTurboChannels(state)
+        }
+
+        lightningSwitch.setOnCheckedChangeListener { _, state ->
+            this.toggleLightningDefault(state)
         }
 
         parentActivity.header.apply {
             showTitle(R.string.settings_lightning)
             setNavigation(MuunHeader.Navigation.BACK)
         }
+
+        lightningSection.visibility = if (lightningByDefaultOn) View.VISIBLE else View.GONE
     }
 
-    private fun toggle(toState: Boolean) {
-        if (toState == latestState) {
+    private fun toggleLightningDefault(toState: Boolean) {
+        if (toState == lightningDefaultLatestState) {
+            return
+        }
+
+        presenter.toggleLightningForReceiving()
+    }
+
+    private fun toggleTurboChannels(toState: Boolean) {
+        if (toState == turboChannelsLatestState) {
             // This is our own notification
             return
         }
 
         if (!toState) {
             val dialog = MuunDialog.Builder()
-                    .title(R.string.turbo_channels_disable_title)
-                    .message(R.string.turbo_channels_disable_message)
-                    .negativeButton(R.string.turbo_channels_disable) {
-                        presenter.toggle()
-                    }
-                    .positiveButton(R.string.cancel) {
-                        turboSwitch.isChecked = true
-                    }
-                    .layout(R.layout.dialog_custom_layout)
-                    .build()
+                .title(R.string.turbo_channels_disable_title)
+                .message(R.string.turbo_channels_disable_message)
+                .negativeButton(R.string.turbo_channels_disable) {
+                    presenter.toggleTurboChannels()
+                }
+                .positiveButton(R.string.cancel) {
+                    turboSwitch.isChecked = true
+                }
+                .layout(R.layout.dialog_custom_layout)
+                .build()
 
             showDialog(dialog)
 
         } else {
-            presenter.toggle()
+            presenter.toggleTurboChannels()
         }
     }
 
@@ -87,13 +116,18 @@ class LightningSettingsFragment: SingleFragment<LightningSettingsPresenter>(), L
         requireContext().openInBrowser(link)
     }
 
-    override fun update(enabled: Boolean) {
-        latestState = enabled
-        turboSwitch.isChecked = enabled
+    override fun update(turboChannels: Boolean, lightningDefaultForReceiving: Boolean) {
+        turboChannelsLatestState = turboChannels
+        lightningDefaultLatestState = lightningDefaultForReceiving
+        turboSwitch.isChecked = turboChannels
+        lightningSwitch.isChecked = lightningDefaultForReceiving
     }
 
     override fun setLoading(loading: Boolean) {
-        turboSection.visibility = if (loading) { View.GONE } else { View.VISIBLE }
-        loadingView.visibility = if (loading) { View.VISIBLE } else { View.GONE }
+        turboSection.visibility = (if (loading) View.GONE else View.VISIBLE)
+        loadingView.visibility = (if (loading) View.VISIBLE else View.GONE)
+        if (lightningByDefaultOn) {
+            lightningSection.visibility = (if (loading) View.GONE else View.VISIBLE)
+        }
     }
 }

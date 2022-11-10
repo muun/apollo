@@ -4,6 +4,7 @@ package io.muun.common.api.houston;
 import io.muun.common.api.ChallengeJson;
 import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.ChallengeSetupJson;
+import io.muun.common.api.ChallengeSetupVerifyJson;
 import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.ChallengeUpdateJson;
 import io.muun.common.api.Contact;
@@ -23,6 +24,7 @@ import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeyFingerprintMigrationJson;
 import io.muun.common.api.KeySet;
 import io.muun.common.api.LinkActionJson;
+import io.muun.common.api.LoginJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
@@ -44,7 +46,6 @@ import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
-import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.model.UserPreferences;
 import io.muun.common.model.VerificationType;
@@ -95,7 +96,7 @@ public interface HoustonService {
     Observable<Void> useAuthorizeLink(@Body LinkActionJson linkActionJson);
 
     @POST("sessions/current/login")
-    Observable<KeySet> login(@Body ChallengeSignatureJson challengeSignature);
+    Observable<KeySet> login(@Body LoginJson loginJson);
 
     @POST("sessions/current/login/compat")
     Observable<KeySet> loginCompatWithoutChallenge();
@@ -105,10 +106,6 @@ public interface HoustonService {
 
     @PUT("sessions/current/gcm-token")
     Observable<Void> updateFcmToken(@Body String gcmToken);
-
-    @GET("sessions/notifications")
-    Observable<List<NotificationJson>> fetchNotificationsAfter(
-            @Query("after") @Nullable Long notificationId);
 
     @GET("sessions/notification_report")
     Observable<NotificationReportJson> fetchNotificationReportAfter(
@@ -128,6 +125,14 @@ public interface HoustonService {
 
     @POST("user/challenge/setup")
     Observable<SetupChallengeResponse> setupChallenge(@Body ChallengeSetupJson challengeSetupJson);
+
+    @POST("user/challenge/setup/start")
+    Observable<SetupChallengeResponse> startChallengeSetup(
+            @Body ChallengeSetupJson challengeSetupJson
+    );
+
+    @POST("user/challenge/setup/finish")
+    Completable finishChallengeSetup(@Body ChallengeSetupVerifyJson challengeSetupVerifyJson);
 
     // ---------------------------------------------------------------------------------------------
     // Recovery Code Only Login:

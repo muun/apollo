@@ -198,7 +198,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
             super.onResume();
             LoggingContext.setLocale(ExtensionsKt.locale(this).toString());
             if (blockScreenshots()) {
-                screenshotBlockExtension.startBlockingScreenshots();
+                screenshotBlockExtension.startBlockingScreenshots(this.getClass().getSimpleName());
             }
 
             userActions.updateContactsPermissionState(
@@ -225,7 +225,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         super.onPause();
         presenter.tearDown();
         if (blockScreenshots()) {
-            screenshotBlockExtension.stopBlockingScreenshots();
+            screenshotBlockExtension.stopBlockingScreenshots(this.getClass().getSimpleName());
         }
     }
 

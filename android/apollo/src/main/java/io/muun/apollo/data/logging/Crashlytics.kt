@@ -2,14 +2,14 @@ package io.muun.apollo.data.logging
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction
-import io.muun.apollo.domain.errors.CyclicalSwapError
-import io.muun.apollo.domain.errors.FcmTokenNotAvailableError
-import io.muun.apollo.domain.errors.InvoiceAlreadyUsedException
-import io.muun.apollo.domain.errors.InvoiceExpiredException
-import io.muun.apollo.domain.errors.InvoiceExpiresTooSoonException
-import io.muun.apollo.domain.errors.InvoiceMissingAmountException
-import io.muun.apollo.domain.errors.NoPaymentRouteException
-import io.muun.apollo.domain.errors.UnreachableNodeException
+import io.muun.apollo.domain.errors.newop.CyclicalSwapError
+import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
+import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException
+import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
+import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException
+import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
+import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
+import io.muun.apollo.domain.errors.newop.UnreachableNodeException
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
 import timber.log.Timber

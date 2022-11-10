@@ -7,14 +7,13 @@ import io.muun.apollo.domain.ApiMigrationsManager
 import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
-import io.muun.apollo.domain.action.SigninActions
 import io.muun.apollo.domain.action.base.BaseAsyncAction3
 import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction
 import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
-import io.muun.apollo.domain.errors.GooglePlayServicesNotAvailableError
+import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.errors.InitialSyncError
 import io.muun.apollo.domain.model.LoginWithRc
 import io.muun.apollo.domain.utils.toVoid

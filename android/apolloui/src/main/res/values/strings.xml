@@ -255,6 +255,7 @@
     </string>
 
     <string name="error_op_action">Go to home</string>
+    <string name="error_op_action_back">Go back</string>
 
     <!-- Operation detail -->
     <string name="operation_detail_description">Description</string>
@@ -1359,6 +1360,13 @@
         Receiving some lightning payments will take much longer.
     </string>
     <string name="turbo_channels_disable">DISABLE</string>
+    <string name="settings_lightning_default_title">Default to Lightning on Receive</string>
+    <string name="settings_lightning_default_description">
+        In Muun, you can receive funds via the Bitcoin Network or the Lightning Network.
+        \n\nMany services don\’t support Lightning yet, so when you tap on the Receive button, your
+        wallet defaults to the Bitcoin Network and shows a bitcoin address. By defaulting to
+        Lightning, your wallet will show a lightning invoice, and you\’ll need to manually switch to
+        Bitcoin each time you need a bitcoin address.</string>
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
     <string name="settings_bitcoin">Bitcoin Network</string>
@@ -1382,6 +1390,7 @@
     <string name="expiration_time">Expiration time</string>
 
     <!-- LNURL -->
+
     <string name="lnurl_intro_title">Scan and receive lightning payments</string>
     <string name="lnurl_intro_desc">
         Use LNURL to receive payments without having to share invoices. You can only use it with
@@ -1423,6 +1432,8 @@
     <string name="error_lnurl_already_used_desc">
         This code was used by another wallet, and can\'t be used again.
     </string>
+
+    <!-- TAPROOT -->
 
     <string name="tr_setup_intro_1_title">A giant leap for bitcoin</string>
     <string name="tr_setup_intro_1_desc">
@@ -1548,4 +1559,48 @@
     <string name="notification_tr_activated_desc">
         The Bitcoin Network activated Taproot. You can now enjoy cheaper payments.
     </string>
+
+    <!-- RC SETUP INTERRUPTED - UNVERIFIED RCs -->
+
+    <string name="rc_setup_start_connection_error_title">Failed to create the backup</string>
+    <string name="rc_setup_start_connection_error_desc">
+        You are about to create an encrypted backup of your private key. To save it, you need an
+        internet connection.
+        \n\n
+        Please check your connection and try again.
+    </string>
+
+    <string name="rc_setup_finish_connection_error_title">Failed to create the backup</string>
+    <string name="rc_setup_finish_connection_error_desc">
+        Your Recovery Code is used to create an encrypted backup of your private key. To save the
+        backup, you need internet connection.
+        \n\n
+        Please check your connection and try again.
+    </string>
+
+    <string name="rc_unverified_warning_title">Warning</string>
+    <string name="rc_unverified_warning_desc">
+        You haven\'t completed the setup for the Recovery Code you just used to recover your wallet.
+        \n\n
+        Please visit the Security Center to back up your wallet with a new Recovery Code, and make
+        sure you finish the setup this time.
+        \n\n
+        As soon as you create a new Recovery Code, the current one will be invalidated.
+    </string>
+    <string name="rc_unverified_warning_button">Got it!</string>
+
+    <string name="rc_error_stale_rc_title">Invalid Recovery Code</string>
+    <string name="rc_error_stale_rc_desc">
+        You haven\'t completed setting up this Recovery Code. You should have a newer one. Please,
+        find it and try again.
+    </string>
+
+    <string name="rc_error_credentials_dont_match_title">
+        Your credentials (email and Recovery Code) don\'t match.
+    </string>
+    <string name="rc_error_credentials_dont_match_desc">
+        Please make sure you enter the Recovery Code that recovers the wallet using the email
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
+    </string>
+
 </resources>

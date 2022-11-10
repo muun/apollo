@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.utils
 
 
-import io.muun.apollo.domain.errors.InsufficientFundsError
+import io.muun.apollo.domain.errors.newop.InsufficientFundsError
 import io.muun.apollo.domain.model.NextTransactionSize
 import kotlin.math.ceil
 

@@ -3,8 +3,8 @@ package io.muun.apollo.presentation.ui.fragments.create_password
 import android.text.TextUtils
 import androidx.annotation.VisibleForTesting
 import io.muun.apollo.domain.errors.EmptyFieldError
-import io.muun.apollo.domain.errors.PasswordTooShortError
-import io.muun.apollo.domain.errors.PasswordsDontMatchError
+import io.muun.apollo.domain.errors.passwd.PasswordTooShortError
+import io.muun.apollo.domain.errors.passwd.PasswordsDontMatchError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.PASSWORD_ERROR
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter

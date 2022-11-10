@@ -8,7 +8,7 @@ import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel.ErrorViewKind
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.StringResWithArgs
 
-fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
+fun LnUrlError.asViewModel(ctx: Context) = object : ErrorViewModel {
 
     override fun kind(): ErrorViewKind = with(this@asViewModel) {
         when (this) {
@@ -26,6 +26,9 @@ fun LnUrlError.asViewModel(ctx: Context) = object: ErrorViewModel {
             // values are added (e.g instead of just using else)
         }
     }
+
+    override fun canGoBack(): Boolean =
+        false
 
     override fun loggingName(): ERROR_TYPE = with(this@asViewModel) {
         when (this) {

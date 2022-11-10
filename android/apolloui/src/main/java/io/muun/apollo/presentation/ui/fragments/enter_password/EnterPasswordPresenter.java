@@ -2,8 +2,9 @@ package io.muun.apollo.presentation.ui.fragments.enter_password;
 
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.errors.EmptyFieldError;
-import io.muun.apollo.domain.errors.IncorrectPasswordError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
+import io.muun.apollo.domain.errors.passwd.IncorrectPasswordError;
+import io.muun.apollo.domain.model.auth.LoginOk;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.PASSWORD_ERROR;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
@@ -40,7 +41,7 @@ public class EnterPasswordPresenter extends
     }
 
     private void setUpSubmitPassword() {
-        final Observable<ActionState<Void>> observable = getParentPresenter()
+        final Observable<ActionState<LoginOk>> observable = getParentPresenter()
                 .watchSubmitEnterPassword()
                 .doOnNext(state -> {
                     view.setLoading(state.isLoading());
@@ -80,6 +81,9 @@ public class EnterPasswordPresenter extends
         }
     }
 
+    /**
+     * Navigate to Forgot Password screen (aka Login with Recovery Code).
+     */
     public void navigateToForgotPassword() {
         getParentPresenter().useRecoveryCodeToLogin();
     }

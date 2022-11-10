@@ -4,7 +4,7 @@ import android.view.View
 import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.domain.errors.EmailAlreadyUsedError
+import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.create_email_help.CreateEmailHelpFragment

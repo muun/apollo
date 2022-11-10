@@ -5,8 +5,8 @@ import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
-import io.muun.apollo.domain.errors.FcmTokenNotAvailableError
-import io.muun.apollo.domain.errors.GooglePlayServicesNotAvailableError
+import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
+import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.utils.replaceTypedError
 import rx.Observable
 import timber.log.Timber

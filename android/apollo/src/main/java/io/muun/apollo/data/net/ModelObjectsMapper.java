@@ -1,7 +1,7 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
-import io.muun.apollo.domain.errors.InvalidPhoneNumberError;
+import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;

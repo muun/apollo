@@ -12,7 +12,7 @@ import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction
 import io.muun.apollo.domain.action.ek.UploadToDriveAction
-import io.muun.apollo.domain.errors.SaveToDiskError
+import io.muun.apollo.domain.errors.ek.SaveEkToDiskError
 import io.muun.apollo.domain.model.FeedbackCategory
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
@@ -23,6 +23,7 @@ import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_OPTION
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SAVE_SELECT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EK_SHARE
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_CLOUD_FEEDBACK_SUBMIT
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_EXPORTED
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_EMERGENCY_KIT_SAVE_TO_DISK
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_ERROR
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_EMERGENCY_KIT_CLOUD_FEEDBACK
@@ -44,8 +45,7 @@ class EmergencyKitSavePresenter @Inject constructor(
     private val uploadToDrive: UploadToDriveAction,
     private val driveAuthenticator: DriveAuthenticator,
     private val userActions: UserActions,
-
-    ): SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
+) : SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
     var isExportingPdf = false
 
@@ -109,12 +109,14 @@ class EmergencyKitSavePresenter @Inject constructor(
         parentPresenter.confirmManualShareCompleted() // we're not really sure, though
 
         analytics.report(E_EK_SHARE(chosenShareTarget ?: ""))
+        //Report legacy tracking event too :s
+        analytics.report(E_EMERGENCY_KIT_EXPORTED(chosenShareTarget ?: ""))
     }
 
     fun reportGoogleSignInStarted() {
         analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_START))
     }
-    
+
     fun reportGoogleSignInComplete(resultIntent: Intent?) {
         try {
             driveAuthenticator.getSignedInAccount(resultIntent) // called just for error checking
@@ -232,7 +234,7 @@ class EmergencyKitSavePresenter @Inject constructor(
             val localFile = fileCache.get(FileCache.Entry.EMERGENCY_KIT)
             SaveToDiskExporter.saveToDisk(context, localFile.uri, treeUri)
         } catch (e: Exception) {
-            handleError(SaveToDiskError(e))
+            handleError(SaveEkToDiskError(e))
             analytics.report(E_ERROR(ERROR_TYPE.EMERGENCY_KIT_SAVE_ERROR, e.toString()))
         }
     }

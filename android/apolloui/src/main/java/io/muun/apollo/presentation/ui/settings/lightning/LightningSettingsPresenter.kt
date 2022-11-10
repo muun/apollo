@@ -14,16 +14,16 @@ import javax.inject.Inject
 class LightningSettingsPresenter
 @Inject constructor(
     private val userPreferencesSelector: UserPreferencesSelector,
-    private val updateUserPreferences: UpdateUserPreferencesAction
-): SingleFragmentPresenter<LightningSettingsView, ParentPresenter>() {
+    private val updateUserPreferences: UpdateUserPreferencesAction,
+) : SingleFragmentPresenter<LightningSettingsView, ParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
         val combined = Observable.combineLatest(
-                userPreferencesSelector.watch(),
-                updateUserPreferences.state,
-                UserPreferences::to
+            userPreferencesSelector.watch(),
+            updateUserPreferences.state,
+            UserPreferences::to
         )
 
         subscribeTo(combined) { pair ->
@@ -33,10 +33,10 @@ class LightningSettingsPresenter
 
     private fun handleState(prefs: UserPreferences, state: ActionState<Unit>) {
 
-        when (state.kind) {
+        when (state.kind!!) {
             ActionState.Kind.EMPTY, ActionState.Kind.ERROR -> {
                 view.setLoading(false)
-                view.update(!prefs.strictMode)
+                view.update(!prefs.strictMode, prefs.lightningDefaultForReceiving)
             }
             ActionState.Kind.LOADING -> {
                 view.setLoading(true)
@@ -45,9 +45,15 @@ class LightningSettingsPresenter
         }
     }
 
-    fun toggle() {
+    fun toggleTurboChannels() {
         updateUserPreferences.run { prefs ->
             prefs.copy(strictMode = !prefs.strictMode)
+        }
+    }
+
+    fun toggleLightningForReceiving() {
+        updateUserPreferences.run { prefs ->
+            prefs.copy(lightningDefaultForReceiving = !prefs.lightningDefaultForReceiving)
         }
     }
 

@@ -3,7 +3,7 @@ package io.muun.apollo.presentation.ui.settings.edit_password;
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.action.challenge_keys.password_change.FinishPasswordChangeAction;
 import io.muun.apollo.domain.errors.EmptyFieldError;
-import io.muun.apollo.domain.errors.PasswordTooShortError;
+import io.muun.apollo.domain.errors.passwd.PasswordTooShortError;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.common.Rules;

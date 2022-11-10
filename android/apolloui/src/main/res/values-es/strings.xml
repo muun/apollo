@@ -256,6 +256,7 @@
     </string>
 
     <string name="error_op_action">Volver al inicio</string>
+    <string name="error_op_action_back">Volver</string>
 
     <!-- Operation detail -->
     <string name="operation_detail_description">Descripción</string>
@@ -1412,7 +1413,13 @@
         Recibir algunos pagos en lightning llevará más tiempo.
     </string>
     <string name="turbo_channels_disable">APAGAR</string>
-
+    <string name="settings_lightning_default_title">Predeterminar a Lightning</string>
+    <string name="settings_lightning_default_description">
+        En Muun, puedes recibir fondos a través de la Red de Bitcoin o la Red de Lightning.
+        \n\nMuchos servicios no son compatibles con Lightning aún, así que cuando aprietas el botón de
+        Recibir, tu monedero prioriza a la Red de Bitcoin y muestra una dirección de bitcoin. Al
+        predeterminar a Lightning, tu monedero mostrará una factura de lightning, y deberás cambiar
+        manualmente a Bitcoin cada vez que necesites una dirección de bitcoin.</string>
     <string name="settings_header_advanced">Configuración avanzada</string>
     <string name="settings_lightning">Lightning Network</string>
     <string name="settings_bitcoin">Bitcoin Network</string>
@@ -1436,6 +1443,7 @@
     <string name="expiration_time">Tiempo de expiración</string>
 
     <!-- LNURL -->
+
     <string name="lnurl_intro_title">Escanea y recibe pagos de lightning</string>
     <string name="lnurl_intro_desc">
         Usa LNURL para recibir pagos sin tener que compartir facturas. Solo puedes usarlo con otros
@@ -1477,6 +1485,8 @@
     <string name="error_lnurl_already_used_desc">
         Éste código ya fue usado por otro monedero, y no puede ser usado nuevamente.
     </string>
+
+    <!-- TAPROOT -->
 
     <string name="tr_setup_intro_1_title">Un gran paso para bitcoin</string>
     <string name="tr_setup_intro_1_desc">
@@ -1603,4 +1613,48 @@
     <string name="notification_tr_activated_desc">
         La Red de Bitcoin activó Taproot. Ahora puedes disfrutar de pagos más baratos.
     </string>
+
+    <!-- RC SETUP INTERRUPTED - UNVERIFIED RCs -->
+
+    <string name="rc_setup_start_connection_error_title">Error al crear el respaldo</string>
+    <string name="rc_setup_start_connection_error_desc">
+        Estás a punto de crear un respaldo encriptado de tu clave privada. Para guardarlo, necesitas
+        conexión a Internet.
+        \n\n
+        Por favor revisa tu conexión e inténtalo de nuevo.
+    </string>
+
+    <string name="rc_setup_finish_connection_error_title">Error al crear el respaldo</string>
+    <string name="rc_setup_finish_connection_error_desc">
+        Tu Código de Recuperación se usa para crear un respaldo encriptado de tu clave privada.
+        \n\n
+        Para guardarlo, necesitas conexión a Internet.
+    </string>
+
+    <string name="rc_unverified_warning_title">Advertencia</string>
+    <string name="rc_unverified_warning_desc">
+        No has completado la configuración del Código de Recuperación que acabas de usar para
+        recuperar tu monedero.
+        \n\n
+        Visita el Centro de seguridad para respaldar tu monedero con un nuevo Código de Recuperación
+        y asegúrate de terminar la configuración esta vez.
+        \n\n
+        Tan pronto como crees un nuevo Código de Recuperación, el actual será invalidado.
+    </string>
+    <string name="rc_unverified_warning_button">¡Entendido!</string>
+
+    <string name="rc_error_stale_rc_title">Código de Recuperación inválido</string>
+    <string name="rc_error_stale_rc_desc">
+        No has completado la configuración de este Código de Recuperación. Deberías tener uno más
+        nuevo. Por favor, encuéntralo e inténtalo nuevamente.
+    </string>
+
+    <string name="rc_error_credentials_dont_match_title">
+        Tus credenciales (correo electrónico y Código de Recuperación) no coinciden.
+    </string>
+    <string name="rc_error_credentials_dont_match_desc">
+        Por favor, asegúrarte de ingresar el Código de Recuperación que recupera el monedero que usa
+        el correo <annotation fontStyle="bold"><annotation arg="0">email</annotation></annotation>.
+    </string>
+
 </resources>

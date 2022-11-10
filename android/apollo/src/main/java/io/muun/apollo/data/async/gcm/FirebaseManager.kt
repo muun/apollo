@@ -4,8 +4,8 @@ import android.os.AsyncTask
 import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction
-import io.muun.apollo.domain.errors.FcmTokenCanceledError
-import io.muun.apollo.domain.errors.FcmTokenError
+import io.muun.apollo.domain.errors.fcm.FcmTokenCanceledError
+import io.muun.apollo.domain.errors.fcm.FcmTokenError
 import io.muun.apollo.domain.errors.MuunError
 import rx.Observable
 import rx.subjects.BehaviorSubject

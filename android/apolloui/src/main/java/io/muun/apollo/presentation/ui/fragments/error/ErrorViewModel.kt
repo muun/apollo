@@ -16,6 +16,7 @@ interface ErrorViewModel {
         var descRes: Int? = null,
         var descArgs: Array<String> = arrayOf(),
         var kind: ErrorViewKind = ErrorViewKind.FINAL,
+        var canGoBack: Boolean = false
     ) {
 
         fun loggingName(loggingName: AnalyticsEvent.ERROR_TYPE) = apply {
@@ -26,6 +27,7 @@ interface ErrorViewModel {
         fun descriptionRes(@StringRes descRes: Int) = apply { this.descRes = descRes }
         fun descriptionArgs(vararg descArgs: String) = apply { this.descArgs = arrayOf(*descArgs) }
         fun kind(kind: ErrorViewKind) = apply { this.kind = kind }
+        fun canGoBack(canGoBack: Boolean) = apply { this.canGoBack = canGoBack }
 
         fun build(): ErrorViewModel {
 
@@ -45,6 +47,9 @@ interface ErrorViewModel {
 
                 override fun kind(): ErrorViewKind =
                     kind
+
+                override fun canGoBack(): Boolean =
+                    canGoBack
             }
         }
     }
@@ -72,11 +77,14 @@ interface ErrorViewModel {
     fun kind(): ErrorViewKind =
         ErrorViewKind.FINAL
 
+    fun canGoBack(): Boolean
+
     fun serialize(): String =
         loggingName().name +
             "$separator${title()}" +
             "$separator${serializeDesc()}" +
-            "$separator${kind().name}"
+            "$separator${kind().name}" +
+            "$separator${canGoBack()}"
 
     private fun serializeDesc(): String =
         description.serialize()
@@ -84,7 +92,7 @@ interface ErrorViewModel {
     companion object {
         const val separator = "!@#$"
 
-        private const val numberOfFields = 4
+        private const val numberOfFields = 5
 
         fun deserialize(serialization: String): ErrorViewModel {
 
@@ -95,6 +103,7 @@ interface ErrorViewModel {
             val title = chunks[1]
             val description = StringResWithArgs.deserialize(chunks[2])
             val kind = ErrorViewKind.valueOf(chunks[3])
+            val canGoBack = chunks[4].toBoolean()
 
             return object : ErrorViewModel {
 
@@ -109,6 +118,9 @@ interface ErrorViewModel {
 
                 override fun kind(): ErrorViewKind =
                     kind
+
+                override fun canGoBack(): Boolean =
+                    canGoBack
             }
         }
     }
