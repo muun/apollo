@@ -8,4 +8,8 @@ internal interface SetupRecoveryCodeView : SingleFragmentView {
     fun setUser(user: User)
 
     fun showAbortDialog()
+
+    fun handleStartRecoveryCodeSetupConnectionError()
+
+    fun handleFinishRecoveryCodeSetupConnectionError()
 }

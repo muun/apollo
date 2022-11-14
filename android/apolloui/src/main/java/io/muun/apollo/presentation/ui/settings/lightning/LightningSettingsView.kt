@@ -4,7 +4,7 @@ import io.muun.apollo.presentation.ui.base.BaseView
 
 interface LightningSettingsView: BaseView {
 
-    fun update(enabled: Boolean)
+    fun update(turboChannels: Boolean, lightningDefaultForReceiving: Boolean)
 
     fun setLoading(loading: Boolean)
 

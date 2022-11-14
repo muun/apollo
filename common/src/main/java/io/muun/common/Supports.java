@@ -40,6 +40,11 @@ public class Supports {
         int FALCON = NOT_SUPPORTED;
     }
 
+    public interface FcmV1 {
+        int APOLLO = NOT_SUPPORTED;
+        int FALCON = NOT_SUPPORTED;
+    }
+
     public interface TransactionSchemeV2 {
         int APOLLO = 13;
     }
@@ -131,5 +136,12 @@ public class Supports {
     // the initial ones) due to a proguard bug regarding MuunFeatureJson
     public interface AdditionalFeatureFlags {
         int APOLLO = 908;
+    }
+
+    // This marks the start of the support for Unverified Challenge Keys and the implementation of
+    // our 2-step Recovery Code Setup flow, part of our RC Setup Interrupted initiative.
+    public interface UnverifiedRecoveryCodes {
+        int APOLLO = 911;
+        int FALCON = 1000;
     }
 }

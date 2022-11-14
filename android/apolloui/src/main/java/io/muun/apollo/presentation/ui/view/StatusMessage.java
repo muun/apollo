@@ -32,7 +32,7 @@ public class StatusMessage extends MuunView {
     @BindView(R.id.message_text)
     TextView textView;
 
-    @BindDrawable(R.drawable.alert_badge)
+    @BindDrawable(R.drawable.ic_baseline_warning_24px)
     Drawable warningIcon;
 
     @BindColor(R.color.warning_color)
@@ -68,14 +68,23 @@ public class StatusMessage extends MuunView {
         viewProps.transfer(attrs, this);
     }
 
+    /**
+     * Set this StatusMessage main image, from a Drawable resource.
+     */
     public void setImage(@DrawableRes int resId) {
         imageView.setImageResource(resId);
     }
 
+    /**
+     * Set this StatusMessage main text, from a String resource.
+     */
     public void setText(@StringRes int resId) {
         textView.setText(resId);
     }
 
+    /**
+     * Set this StatusMessage main text, from a CharSequence.
+     */
     public void setText(CharSequence text) {
         textView.setText(text);
     }

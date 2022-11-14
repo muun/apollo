@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.login_email
 
 import android.os.Bundle
-import io.muun.apollo.domain.errors.EmailNotRegisteredError
+import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SIGN_IN_EMAIL
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter

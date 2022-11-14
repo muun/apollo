@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class SetUpChallengeKeyAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val createChallengeSetup: CreateChallengeSetupAction,
-    private val storeChallengeKey: StoreChallengeKeyAction
+    private val storeChallengeKey: StoreVerifiedChallengeKeyAction
 ) : BaseAsyncAction2<ChallengeType, String, SetupChallengeResponse>() {
 
     /**

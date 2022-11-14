@@ -16,7 +16,7 @@ public class ChallengeKeyJson {
     public ChallengeType type;
 
     @NotNull
-    public String publicKey;
+    public String publicKey; // Hex representation
 
     @Nullable // For RC only login (it ignores the salt). NotNull otherwise.
     public String salt;

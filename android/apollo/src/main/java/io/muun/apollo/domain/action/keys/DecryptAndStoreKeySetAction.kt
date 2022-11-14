@@ -2,8 +2,8 @@ package io.muun.apollo.domain.action.keys
 
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
-import io.muun.apollo.domain.action.challenge_keys.StoreChallengeKeyAction
-import io.muun.apollo.domain.errors.PasswordIntegrityError
+import io.muun.apollo.domain.action.challenge_keys.StoreVerifiedChallengeKeyAction
+import io.muun.apollo.domain.errors.passwd.PasswordIntegrityError
 import io.muun.common.api.KeySet
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.hd.KeyCrypter
@@ -15,9 +15,9 @@ import javax.inject.Singleton
 
 @Singleton
 class DecryptAndStoreKeySetAction @Inject constructor(
-    private val storeChallengeKey: StoreChallengeKeyAction,
+    private val storeChallengeKey: StoreVerifiedChallengeKeyAction,
     private val keysRepository: KeysRepository
-): BaseAsyncAction2<KeySet, String, Void>() {
+) : BaseAsyncAction2<KeySet, String, Void>() {
 
     override fun action(keyset: KeySet, userInput: String): Observable<Void> =
         Observable.defer { decryptAndStore(keyset, userInput) }

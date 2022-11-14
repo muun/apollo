@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.enter_email
 
 import android.os.Bundle
-import io.muun.apollo.domain.errors.EmailAlreadyUsedError
+import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment

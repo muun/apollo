@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.enter_recovery_code;
 
 import io.muun.apollo.domain.errors.IncorrectRecoveryCodeError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
-import io.muun.apollo.domain.errors.InvalidCharacterRecoveryCodeError;
+import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError;
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.RecoveryCode;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
@@ -14,6 +14,8 @@ import android.os.Bundle;
 import rx.Observable;
 
 import javax.inject.Inject;
+
+import static io.muun.apollo.presentation.analytics.AnalyticsEvent.S_INPUT_RECOVERY_CODE;
 
 @PerFragment
 public class EnterRecoveryCodePresenter
@@ -45,11 +47,15 @@ public class EnterRecoveryCodePresenter
     public void handleError(Throwable error) {
         if (error instanceof InvalidChallengeSignatureError) {
             view.setRecoveryCodeError(new IncorrectRecoveryCodeError());
+
         } else {
             super.handleError(error);
         }
     }
 
+    /**
+     * Dismiss this presenter's fragment and go back to the previous one in the flow.
+     */
     public void goBack() {
         getParentPresenter().cancelEnterRecoveryCode();
     }
@@ -85,6 +91,6 @@ public class EnterRecoveryCodePresenter
 
     @Override
     protected AnalyticsEvent getEntryEvent() {
-        return new AnalyticsEvent.S_INPUT_RECOVERY_CODE();
+        return new S_INPUT_RECOVERY_CODE();
     }
 }

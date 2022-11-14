@@ -192,15 +192,17 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
             // onAttach call, and screenshotBlockExtension will be null.
 
             // This is not theoretical, we've seen this in the wild.
-            getParentActivity().screenshotBlockExtension.startBlockingScreenshots();
+            final String caller = this.getClass().getSimpleName();
+            getParentActivity().screenshotBlockExtension.startBlockingScreenshots(caller);
         }
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onStop() {
+        super.onStop();
         if (blockScreenshots()) {
-            getParentActivity().screenshotBlockExtension.stopBlockingScreenshots();
+            final String caller = this.getClass().getSimpleName();
+            getParentActivity().screenshotBlockExtension.stopBlockingScreenshots(caller);
         }
     }
 

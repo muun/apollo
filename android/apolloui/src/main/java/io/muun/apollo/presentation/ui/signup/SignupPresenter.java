@@ -1,17 +1,22 @@
 package io.muun.apollo.presentation.ui.signup;
 
+import io.muun.apollo.R;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.action.session.CreateLoginSessionAction;
 import io.muun.apollo.domain.action.session.LogInAction;
 import io.muun.apollo.domain.action.session.rc_only.LogInWithRcAction;
-import io.muun.apollo.domain.errors.EmailNotRegisteredError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
+import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError;
+import io.muun.apollo.domain.errors.rc.CredentialsDontMatchError;
+import io.muun.apollo.domain.errors.rc.StaleChallengeKeyError;
 import io.muun.apollo.domain.model.LoginWithRc;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.SignupStep;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.model.auth.LoginOk;
+import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.fragments.enter_password.EnterPasswordParentPresenter;
@@ -20,18 +25,25 @@ import io.muun.apollo.presentation.ui.fragments.login_authorize.LoginAuthorizePa
 import io.muun.apollo.presentation.ui.fragments.login_email.LoginEmailParentPresenter;
 import io.muun.apollo.presentation.ui.fragments.rc_only_login.RcOnlyLoginParentPresenter;
 import io.muun.apollo.presentation.ui.fragments.rc_only_login_auth.RcLoginEmailAuthorizeParentPresenter;
+import io.muun.apollo.presentation.ui.utils.StyledStringRes;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.CreateSessionOk;
 import io.muun.common.model.CreateSessionRcOk;
+import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Preconditions;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import rx.Observable;
+import rx.functions.Actions;
 
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+
+import static io.muun.apollo.presentation.analytics.AnalyticsEvent.ERROR_TYPE;
+import static io.muun.apollo.presentation.analytics.AnalyticsEvent.E_ERROR;
+import static io.muun.apollo.presentation.analytics.AnalyticsEvent.E_SIGN_IN_ABORTED;
 
 @PerActivity
 public class SignupPresenter extends BasePresenter<SignupView> implements
@@ -98,9 +110,25 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         final Observable<?> observable = watchSubmitEnterPassword() // its same for SubmitEnterRC
                 .filter(ActionState::isValue)   // Child presenters handle errors
                 .map(ActionState::getValue)
-                .doOnNext(ignored -> navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep()));
+                .doOnNext(loginOk -> {
+
+                    checkForUnverifiedRcLogin(loginOk);
+                    navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep());
+                });
 
         subscribeTo(observable);
+    }
+
+    private void checkForUnverifiedRcLogin(LoginOk loginOk) {
+        final boolean rcLogin = loginOk.getLoginType() == ChallengeType.RECOVERY_CODE;
+        final boolean userHasVerifiedRc = CollectionUtils.any(
+                loginOk.getKeySet().challengeKeys,
+                challengeKeyJson -> challengeKeyJson.type == ChallengeType.RECOVERY_CODE
+        );
+
+        if (rcLogin && !userHasVerifiedRc) {
+            signupDraft.setShowUnverifiedRcWarning(true);
+        }
     }
 
     private void setUpLoginWithRcAction() {
@@ -119,7 +147,6 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                         );
 
                     } else {
-
                         navigateToStepFrom(SignupStep.SYNC, signupDraft.getStep());
                     }
                 });
@@ -144,8 +171,9 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     public void resumeSignupIfStarted() {
         final SignupStep step = signupDraft.getStep();
 
+        Crashlytics.logBreadcrumb("SignupPresenter: resumeSignupIfStarted. Step: " + step.name());
         if (step != SignupStep.START) {
-            navigateToStepFrom(step, SignupStep.START);
+            navigateToStepFrom(step, signupDraft.getPreviousStep());
         }
     }
 
@@ -211,12 +239,12 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     }
 
     @Override
-    public Observable<ActionState<Void>> watchSubmitEnterPassword() {
+    public Observable<ActionState<LoginOk>> watchSubmitEnterPassword() {
         return logIn.getState();
     }
 
     @Override
-    public Observable<ActionState<Void>> watchSubmitEnterRecoveryCode() {
+    public Observable<ActionState<LoginOk>> watchSubmitEnterRecoveryCode() {
         return logIn.getState();
     }
 
@@ -276,7 +304,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     @Override
     public void cancelEnterPassword() {
         checkStep(SignupStep.LOGIN_PASSWORD);
-        analytics.report(new AnalyticsEvent.E_SIGN_IN_ABORTED());
+        analytics.report(new E_SIGN_IN_ABORTED());
 
         logIn.reset();
         signinActions.clearSession();
@@ -311,6 +339,34 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                 || error instanceof EmailNotRegisteredError) {
             // This error is caught by child presenters. By checking, we avoid double-handling it.
             // TODO this is not enforced by design, we must find a better solution.
+
+        } else if (error instanceof StaleChallengeKeyError) {
+            analytics.report(new E_ERROR(ERROR_TYPE.RC_STALE_ERROR));
+            final MuunDialog errorDialog = new MuunDialog.Builder()
+                    .layout(R.layout.dialog_custom_layout)
+                    .title(R.string.rc_error_stale_rc_title)
+                    .message(R.string.rc_error_stale_rc_desc)
+                    .positiveButton(R.string.dismiss, Actions.empty())
+                    .build();
+
+            view.showDialog(errorDialog);
+
+        } else if (error instanceof CredentialsDontMatchError) {
+            analytics.report(new E_ERROR(ERROR_TYPE.RC_CREDENTIALS_DONT_MATCH_ERROR));
+            final StyledStringRes styledDesc = new StyledStringRes(
+                    getContext(),
+                    R.string.rc_error_credentials_dont_match_desc
+            );
+
+            final MuunDialog errorDialog = new MuunDialog.Builder()
+                    .layout(R.layout.dialog_custom_layout)
+                    .title(R.string.rc_error_credentials_dont_match_title)
+                    .message(styledDesc.toCharSequence(getSignupDraft().getEmail()))
+                    .positiveButton(R.string.dismiss, Actions.empty())
+                    .build();
+
+            view.showDialog(errorDialog);
+
         } else {
             super.handleError(error);
         }
@@ -323,13 +379,19 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
         checkStep(SignupStep.SYNC);
 
         if (signupDraft.isExistingUser()) {
-            navigator.navigateToHome(getContext());
+
+            if (signupDraft.getShowUnverifiedRcWarning()) {
+                navigateToStepFrom(SignupStep.UNVERIFIED_RC_WARNING, SignupStep.SYNC);
+
+            } else {
+                navigator.navigateToHome(getContext());
+                view.finishActivity();
+            }
 
         } else {
             navigator.navigateNewUserToHome(getContext());
+            view.finishActivity();
         }
-
-        view.finishActivity();
     }
 
     /**
@@ -344,10 +406,15 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
             restoreSignupDraft();
         } else {
             signupDraft.setStep(step);
+            signupDraft.setPreviousStep(previousStep);
             signupDraftManager.save(signupDraft);
         }
 
-        view.changeStep(step, previousStep);
+        Crashlytics.logBreadcrumb(
+                "SignupPresenter: navigateToStepFrom:(" + step + "," + previousStep + ")"
+        );
+
+        view.changeStep(step);
     }
 
     private void checkStep(SignupStep... allowed) {

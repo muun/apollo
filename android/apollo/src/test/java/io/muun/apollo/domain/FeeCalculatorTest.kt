@@ -2,7 +2,7 @@ package io.muun.apollo.domain
 
 import io.muun.apollo.BaseTest
 import io.muun.apollo.data.external.Gen
-import io.muun.apollo.domain.errors.InsufficientFundsError
+import io.muun.apollo.domain.errors.newop.InsufficientFundsError
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.utils.FeeCalculator
 import org.assertj.core.api.Assertions.assertThat

@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.fragments.rc_only_login
 
 import android.os.Bundle
-import io.muun.apollo.domain.errors.InvalidCharacterRecoveryCodeError
-import io.muun.apollo.domain.errors.InvalidRecoveryCodeV2Error
+import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError
+import io.muun.apollo.domain.errors.rc.InvalidRecoveryCodeV2Error
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError
 import io.muun.apollo.domain.model.RecoveryCode
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
@@ -57,11 +57,9 @@ class RcOnlyLoginPresenter @Inject constructor() :
     }
 
     override fun handleError(error: Throwable?) {
-        if (error is InvalidRecoveryCodeV2Error) {
-            view.setRecoveryCodeError(error)
-
-        } else {
-            super.handleError(error)
+        when (error) {
+            is InvalidRecoveryCodeV2Error -> view.setRecoveryCodeError(error)
+            else -> super.handleError(error)
         }
     }
 

@@ -91,8 +91,8 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
         );
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(adapter.onPageChangeListener);
-
         tabLayout.setupWithViewPager(viewPager);
+        viewPager.setCurrentItem(presenter.getDefaultTabSelected().getIndex());
     }
 
     @Override

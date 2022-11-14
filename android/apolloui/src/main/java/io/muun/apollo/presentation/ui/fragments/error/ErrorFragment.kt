@@ -5,12 +5,13 @@ import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.utils.applyArgs
+import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel.*
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.common.utils.Preconditions
 
-class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
+class ErrorFragment : SingleFragment<ErrorFragmentPresenter>(), ErrorView {
 
     companion object {
         const val VIEW_MODEL_ARG = "view_model"
@@ -60,7 +61,7 @@ class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
 
             ErrorViewKind.RETRYABLE -> {
                 primaryButton.setText(R.string.retry)
-                primaryButton.setOnClickListener { handleRetry() }
+                primaryButton.setOnClickListener { handleRetry(viewModel.loggingName()) }
                 setUpSecondaryButton()
             }
 
@@ -83,9 +84,18 @@ class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
 
     private fun setUpSecondaryButton() {
         secondaryButton.visibility = View.VISIBLE
-        secondaryButton.setText(R.string.error_op_action)
-        secondaryButton.setOnClickListener {
-            presenter.goHomeInDefeat()
+
+        if (viewModel.canGoBack()) {
+            secondaryButton.setText(R.string.error_op_action_back)
+            secondaryButton.setOnClickListener {
+                delegate.handleBack(viewModel.loggingName())
+            }
+
+        } else {
+            secondaryButton.setText(R.string.error_op_action)
+            secondaryButton.setOnClickListener {
+                presenter.goHomeInDefeat()
+            }
         }
     }
 
@@ -94,9 +104,9 @@ class ErrorFragment: SingleFragment<ErrorFragmentPresenter>(), ErrorView {
         delegate.handleErrorDescriptionClicked()
     }
 
-    private fun handleRetry() {
+    private fun handleRetry(errorType: AnalyticsEvent.ERROR_TYPE) {
         Preconditions.checkArgument(::delegate.isInitialized, "ErrorFragmentDelegate not set")
-        delegate.handleRetry()
+        delegate.handleRetry(errorType)
     }
 
     private fun handleSendReport() {

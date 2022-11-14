@@ -9,7 +9,6 @@ import io.muun.common.utils.Hashes
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
-import org.threeten.bp.format.DateTimeFormatter
 import java.util.*
 
 class EmailReport private constructor(val body: String) {

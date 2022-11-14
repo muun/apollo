@@ -55,6 +55,7 @@ import io.muun.apollo.presentation.ui.settings.edit_password.success.EditPasswor
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment;
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment;
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment;
+import io.muun.apollo.presentation.ui.signup.unverified_rc.UnverifiedRcWarningFragment;
 
 import dagger.Subcomponent;
 
@@ -73,6 +74,8 @@ public interface FragmentComponent {
     void inject(CreatePasswordFragment createPasswordFragment);
 
     void inject(SyncFragment syncFragment);
+
+    void inject(UnverifiedRcWarningFragment unverifiedRcWarningFragment);
 
     void inject(EnterPasswordFragment enterPasswordFragment);
 

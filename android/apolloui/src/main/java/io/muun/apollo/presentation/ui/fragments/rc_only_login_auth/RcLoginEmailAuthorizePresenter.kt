@@ -10,7 +10,6 @@ import io.muun.apollo.domain.errors.InvalidActionLinkError
 import io.muun.apollo.domain.selector.LoginAuthorizedSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
-import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailView
 import io.muun.apollo.presentation.ui.utils.UiNotificationPoller
 import io.muun.common.model.SessionStatus
 import rx.Observable
@@ -30,7 +29,7 @@ class RcLoginEmailAuthorizePresenter @Inject constructor(
 
         emailLinkAction.setPending(Globals.INSTANCE.rcLoginAuthorizePath)
         watchForEmailLinkErrors()
-        watchForAuthorizeSignin()
+        watchForAuthorizeRcSignin()
 
         notificationPoller.start()
 
@@ -61,7 +60,7 @@ class RcLoginEmailAuthorizePresenter @Inject constructor(
         subscribeTo(observable)
     }
 
-    private fun watchForAuthorizeSignin() {
+    private fun watchForAuthorizeRcSignin() {
         val observable = loginAuthorizedSelector.watch(SessionStatus.LOGGED_IN)
             .filter { isAuthorized: Boolean -> isAuthorized }
             .doOnNext {

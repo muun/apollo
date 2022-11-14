@@ -6,13 +6,30 @@ import io.muun.apollo.domain.action.base.CombineLatestAsyncAction
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
-import io.muun.apollo.domain.errors.*
+import io.muun.apollo.domain.errors.BugDetected
+import io.muun.apollo.domain.errors.UserFacingError
+import io.muun.apollo.domain.errors.newop.AmountTooSmallError
+import io.muun.apollo.domain.errors.newop.CyclicalSwapError
+import io.muun.apollo.domain.errors.newop.ExchangeRateWindowTooOldError
+import io.muun.apollo.domain.errors.newop.InsufficientFundsError
+import io.muun.apollo.domain.errors.newop.InvalidInvoiceException
+import io.muun.apollo.domain.errors.newop.InvalidSwapException
+import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException
+import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
+import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException
+import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
+import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
+import io.muun.apollo.domain.errors.newop.UnreachableNodeException
 import io.muun.apollo.domain.libwallet.Invoice.parseInvoice
 import io.muun.apollo.domain.libwallet.toLibwallet
-import io.muun.apollo.domain.model.*
 import io.muun.apollo.domain.model.BitcoinAmount
+import io.muun.apollo.domain.model.Contact
+import io.muun.apollo.domain.model.Operation
+import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentContext
+import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.PaymentRequest.Type
+import io.muun.apollo.domain.model.PreparedPayment
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
@@ -30,9 +47,27 @@ import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorPa
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeParentPresenter
 import io.muun.common.Rules
 import io.muun.common.utils.Preconditions
-import newop.*
+import newop.AbortState
+import newop.AmountInfo
+import newop.BalanceErrorState
+import newop.ConfirmLightningState
+import newop.ConfirmState
+import newop.EditFeeState
+import newop.EnterAmountState
+import newop.EnterDescriptionState
+import newop.ErrorState
+import newop.Newop
+import newop.PaymentIntent
+import newop.ResolveState
+import newop.Resolved
+import newop.StartState
+import newop.State
+import newop.ValidateLightningState
+import newop.ValidateState
+import newop.Validated
 import rx.Observable
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 import javax.money.MonetaryAmount
 
@@ -661,7 +696,7 @@ class NewOperationPresenter @Inject constructor(
         val selectedFeeRate = Preconditions.checkNotNull(feeRate)
         val type: AnalyticsEvent.E_FEE_OPTION_TYPE = getFeeOptionTypeParam(selectedFeeRate, payCtx)
         val feeRateInSatsPerVbyte = Rules.toSatsPerVbyte(selectedFeeRate)
-        objects.add(Pair<String, Any>("fee_type", type.name.toLowerCase()))
+        objects.add(Pair<String, Any>("fee_type", type.name.lowercase(Locale.getDefault())))
         objects.add(Pair<String, Any>("sats_per_virtual_byte", feeRateInSatsPerVbyte))
 
         // Also add previously known metadata

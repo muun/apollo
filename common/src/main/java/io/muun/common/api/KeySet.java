@@ -19,7 +19,7 @@ public class KeySet {
     @NotEmpty
     public String encryptedPrivateKey;
 
-    @Nullable
+    @Nullable // If user has not set up RC
     public String muunKey; // This is the encryptedMuunKey
 
     @Nullable

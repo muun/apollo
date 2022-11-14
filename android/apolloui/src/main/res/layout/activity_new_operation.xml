@@ -323,7 +323,7 @@
                     android:layout_height="wrap_content"
                     android:visibility="gone"
                     android:background="@drawable/notice_banner_background"
-                    app:icon="@drawable/alert_badge"
+                    app:icon="@drawable/ic_baseline_warning_24px"
                     app:tint="@color/warning_color"
                     tools:visibility="visible"
                     />

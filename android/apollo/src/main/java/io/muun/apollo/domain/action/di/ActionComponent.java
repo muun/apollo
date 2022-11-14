@@ -12,7 +12,7 @@ import io.muun.apollo.domain.action.challenge_keys.password_change.FinishPasswor
 import io.muun.apollo.domain.action.challenge_keys.password_change.StartPasswordChangeAction;
 import io.muun.apollo.domain.action.challenge_keys.password_setup.SetUpPasswordAction;
 import io.muun.apollo.domain.action.challenge_keys.password_setup.StartEmailSetupAction;
-import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.SetUpRecoveryCodeAction;
+import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.StartRecoveryCodeSetupAction;
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction;
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction;
 import io.muun.apollo.domain.action.ek.ReportEmergencyKitExportedAction;
@@ -89,8 +89,6 @@ public interface ActionComponent {
 
     ForceFetchFcmAction forceFetchFcmTokenAction();
 
-    SetUpRecoveryCodeAction setUpRecoveryCodeAction();
-
     LogInWithRcAction logInWithRcAction();
 
     StartEmailSetupAction startEmailSetupAction();
@@ -120,4 +118,6 @@ public interface ActionComponent {
     GenerateInvoiceAction generateInvoiceAction();
 
     AddEmergencyKitMetadataAction addEmergencyKitMetadata();
+
+    StartRecoveryCodeSetupAction startRecoveryCodeSetupAction();
 }

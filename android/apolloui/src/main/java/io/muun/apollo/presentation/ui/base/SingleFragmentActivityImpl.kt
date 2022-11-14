@@ -6,14 +6,16 @@ import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class SingleFragmentActivityImpl:
-        SingleFragmentActivity<SingleFragmentPresenter<SingleFragmentView, ParentPresenter>>() {
+class SingleFragmentActivityImpl :
+    SingleFragmentActivity<SingleFragmentPresenter<SingleFragmentView, ParentPresenter>>() {
 
     companion object {
         private const val FRAGMENT_CLASS = "fragmentClass"
 
-        fun getStartActivityIntent(context: Context,
-                                   fragment: Class<out SingleFragment<*>>): Intent {
+        fun getStartActivityIntent(
+            context: Context,
+            fragment: Class<out SingleFragment<*>>,
+        ): Intent {
 
             val intent = Intent(context, SingleFragmentActivityImpl::class.java)
             intent.putExtra(FRAGMENT_CLASS, fragment)
@@ -29,13 +31,13 @@ class SingleFragmentActivityImpl:
     }
 
     override fun getLayoutResource(): Int =
-            R.layout.activity_single_fragment
+        R.layout.activity_single_fragment
 
     override fun getFragmentsContainer() =
-            R.id.container
+        R.id.container
 
     override fun getHeader(): MuunHeader =
-            headerView
+        headerView
 
     override fun initializeUi() {
         super.initializeUi()

@@ -49,9 +49,11 @@ android {
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError true
         htmlReport true
+        textReport true
         lintConfig file("${project.rootDir}/linters/android-lint/config.xml")
+        baseline file("lint-baseline.xml")
     }
 
     testOptions {

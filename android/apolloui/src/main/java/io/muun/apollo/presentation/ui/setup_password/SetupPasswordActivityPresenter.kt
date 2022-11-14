@@ -4,7 +4,7 @@ import android.os.Bundle
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.challenge_keys.password_setup.SetUpPasswordAction
 import io.muun.apollo.domain.action.challenge_keys.password_setup.StartEmailSetupAction
-import io.muun.apollo.domain.errors.EmailAlreadyUsedError
+import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.fragments.create_password.CreatePasswordParentPresenter

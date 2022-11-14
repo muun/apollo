@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -36,10 +37,10 @@ public class ChallengeSetupJson {
     /**
      * Constructor.
      */
-    public ChallengeSetupJson(ChallengeType type,
-                              String publicKey,
-                              String salt,
-                              String encryptedPrivateKey,
+    public ChallengeSetupJson(@Nonnull ChallengeType type,
+                              @Nonnull String publicKey,
+                              @Nonnull String salt,
+                              @Nonnull String encryptedPrivateKey,
                               int version) {
         this.type = type;
         this.publicKey = publicKey;

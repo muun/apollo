@@ -451,6 +451,30 @@ public class UserRepository extends BaseRepository {
         userPreference.set(value);
     }
 
+    /**
+     * Record that this user has successfully completed the password backup (e.g they have set up
+     * their password Challenge Key).
+     * Note: Assumes there's currently a LOGGED_IN user store in this repository.
+     */
+    public void setHasPassword() {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
+
+        value.hasPassword = true;
+        userPreference.set(value);
+    }
+
+    /**
+     * Record that this user has successfully completed the Recovery Code backup (e.g they have set
+     * up their Recovery Code Challenge Key).
+     * Note: Assumes there's currently a LOGGED_IN user store in this repository.
+     */
+    public void setHasRecoveryCode() {
+        final StoredUserJson value = Preconditions.checkNotNull(userPreference.get());
+
+        value.hasRecoveryCode = true;
+        userPreference.set(value);
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class StoredUserJson {

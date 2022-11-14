@@ -11,7 +11,6 @@ import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox;
 
 import android.view.View;
 import butterknife.BindView;
-import butterknife.OnClick;
 
 public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodePresenter>
         implements RecoveryCodeView {
@@ -42,7 +41,7 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
         header.setElevated(true);
 
         recoveryCodeBox.setEditable(true);
-        recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited);
+        recoveryCodeBox.setOnEditedListener(presenter::onRecoveryCodeEdited);
         recoveryCodeBox.requestFocusOnFirstEditableSegment();
         recoveryCodeBox.setOnKeyboardNextListeners();
         recoveryCodeBox.setOnKeyboardDoneListener(() -> {
@@ -50,12 +49,17 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
                 continueButton.callOnClick();
             }
         });
+
+        continueButton.setOnClickListener(v -> {
+            presenter.submitRecoveryCode(recoveryCodeBox.getSegmentInputsContent());
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        onRecoveryCodeEdited(recoveryCodeBox.getSegmentInputsContent()); // re-trigger validation
+        // re-trigger validation
+        presenter.onRecoveryCodeEdited(recoveryCodeBox.getSegmentInputsContent());
         recoveryCodeBox.requestFocusOnFirstEditableSegment();
     }
 
@@ -84,14 +88,5 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
     @Override
     public void setConfirmEnabled(boolean isEnabled) {
         continueButton.setEnabled(isEnabled);
-    }
-
-    public void onRecoveryCodeEdited(String recoveryCodeString) {
-        presenter.onRecoveryCodeEdited(recoveryCodeString);
-    }
-
-    @OnClick(R.id.signup_forgot_password_continue)
-    public void onContinueButtonClick() {
-        presenter.submitRecoveryCode(recoveryCodeBox.getSegmentInputsContent());
     }
 }

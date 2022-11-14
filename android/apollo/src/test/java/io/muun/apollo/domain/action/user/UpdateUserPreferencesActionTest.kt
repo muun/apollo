@@ -31,12 +31,13 @@ class UpdateUserPreferencesActionTest: BaseTest() {
     @Before
     fun before() {
         doReturn(Observable.just(
-                UserPreferences(
-                        strictMode = false,
-                        seenNewHome = false,
-                        seenLnurlFirstTime = false,
-                        defaultAddressType = "segwit"
-                )
+            UserPreferences(
+                strictMode = false,
+                seenNewHome = false,
+                seenLnurlFirstTime = false,
+                lightningDefaultForReceiving = false,
+                defaultAddressType = "segwit"
+            )
         )).whenever(repository).watch()
     }
 

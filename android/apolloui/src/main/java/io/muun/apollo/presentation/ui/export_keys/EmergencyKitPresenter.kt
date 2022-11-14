@@ -5,6 +5,7 @@ import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.apis.DriveUploader
 import io.muun.apollo.domain.errors.ChallengeKeyMigrationError
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveParentPresenter
@@ -112,5 +113,10 @@ class EmergencyKitPresenter @Inject constructor(
         } else {
             super.handleError(error)
         }
+    }
+
+    fun abortEmergencyKitFlow() {
+        analytics.report(AnalyticsEvent.E_EMERGENCY_KIT_ABORTED())
+        view.finishActivity()
     }
 }

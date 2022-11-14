@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 7.0.4" type="baseline" client="gradle" name="AGP (7.0.4)" variant="all" version="7.0.4">
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        message="Lint found one or more custom checks that could not be loaded. The most likely reason for this is that it is using an older, incompatible or unsupported API in lint. Make sure these lint checks are updated to the new APIs. The issue registry class is timber.lint.IssueRegistry. The class loading issue is com/android/tools/lint/detector/api/Detector$JavaPsiScanner: ClassLoader.defineClass1(ClassLoader.java:-2)←ClassLoader.defineClass(ClassLoader.java:1012)←ClassLoader.defineClass(ClassLoader.java:874)←UrlClassLoader._defineClass(UrlClassLoader.java:400)←UrlClassLoader.defineClass(UrlClassLoader.java:392)←UrlClassLoader._findClass(UrlClassLoader.java:350)←UrlClassLoader.findClass(UrlClassLoader.java:336)←ClassLoader.loadClass(ClassLoader.java:587)">
+        <location
+            file="../../../../../.gradle/caches/transforms-3/43e08c52115994ad0d4f18e987eae308/transformed/jetified-timber-4.5.1/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        message="Lint found one or more custom checks that could not be loaded. The most likely reason for this is that it is using an older, incompatible or unsupported API in lint. Make sure these lint checks are updated to the new APIs. The issue registry class is timber.lint.IssueRegistry. The class loading issue is com/android/tools/lint/detector/api/Detector$JavaPsiScanner: ClassLoader.defineClass1(ClassLoader.java:-2)←ClassLoader.defineClass(ClassLoader.java:1012)←ClassLoader.defineClass(ClassLoader.java:874)←UrlClassLoader._defineClass(UrlClassLoader.java:400)←UrlClassLoader.defineClass(UrlClassLoader.java:392)←UrlClassLoader._findClass(UrlClassLoader.java:350)←UrlClassLoader.findClass(UrlClassLoader.java:336)←ClassLoader.loadClass(ClassLoader.java:587)">
+        <location
+            file="../../../../../.gradle/caches/transforms-3/43e08c52115994ad0d4f18e987eae308/transformed/jetified-timber-4.5.1/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="DuplicatePlatformClasses"
+        message="`commons-logging` defines classes that conflict with classes now provided by Android. Solutions include finding newer versions or alternative libraries that don&apos;t have the same problem (for example, for `httpclient` use `HttpUrlConnection` or `okhttp` instead), or repackaging the library using something like `jarjar`.">
+        <location
+            file="build.gradle"/>
+    </issue>
+
+    <issue
+        id="DuplicatePlatformClasses"
+        message="`httpclient` defines classes that conflict with classes now provided by Android. Solutions include finding newer versions or alternative libraries that don&apos;t have the same problem (for example, for `httpclient` use `HttpUrlConnection` or `okhttp` instead), or repackaging the library using something like `jarjar`.">
+        <location
+            file="build.gradle"/>
+    </issue>
+
+    <issue
+        id="ApplySharedPref"
+        message="Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+        errorLine1="                .commit();"
+        errorLine2="                 ~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/BaseRepository.java"
+            line="36"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        Timber.d(String.format("
+        errorLine2="                 ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/ContactActions.java"
+            line="334"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (bitcoinUri.toLowerCase().startsWith(uriScheme)) {"
+        errorLine2="                       ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="130"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!lnUri.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                   ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="151"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnInvoice.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="162"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnInvoice.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="168"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnUrl.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                  ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="221"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnUrl.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                  ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="227"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!lnUrlUri.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="244"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!muunLnUrlUri.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                          ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="255"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toUpperCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="                currencyParam.toUpperCase()"
+        errorLine2="                              ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/operation/ResolveMuunUriAction.java"
+            line="71"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                cursor.getColumnIndex(Phone.CONTACT_ID)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="78"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                cursor.getColumnIndex(Phone.DISPLAY_NAME)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="82"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                cursor.getColumnIndex(Phone.CONTACT_LAST_UPDATED_TIMESTAMP)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="86"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                cursor.getColumnIndex(Phone.NUMBER)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="90"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/db/base/HoustonIdDao.java"
+            line="45"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0"
+        errorLine1="                element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/db/base/HoustonUuidDao.java"
+            line="43"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.appcompat:appcompat than 1.2.0 is available: 1.5.1"
+        errorLine1="    api &apos;androidx.appcompat:appcompat:1.2.0&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="87"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.sqlite:sqlite-framework than 2.0.1 is available: 2.2.0"
+        errorLine1="    implementation &apos;androidx.sqlite:sqlite-framework:2.0.1&apos;"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="89"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of io.reactivex:rxjava than 1.3.0 is available: 1.3.8"
+        errorLine1="    api &apos;io.reactivex:rxjava:1.3.0&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="92"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.javamoney:moneta-bp than 1.0 is available: 1.1"
+        errorLine1="    api &apos;org.javamoney:moneta-bp:1.0&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="106"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.zalando:jackson-datatype-money than 0.12.0 is available: 1.0.0"
+        errorLine1="    api &apos;org.zalando:jackson-datatype-money:0.12.0&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="107"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.firebase:firebase-bom than 30.1.0 is available: 31.0.2"
+        errorLine1="    api platform(&apos;com.google.firebase:firebase-bom:30.1.0&apos;)"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="111"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.squareup.retrofit2:retrofit than 2.5.0 is available: 2.8.0"
+        errorLine1="    implementation &quot;com.squareup.retrofit2:retrofit:$version_retrofit&quot;"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="137"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.gms:play-services-auth than 18.1.0 is available: 20.3.0"
+        errorLine1="    implementation &apos;com.google.android.gms:play-services-auth:18.1.0&apos;"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="144"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.http-client:google-http-client-gson than 1.26.0 is available: 1.40.1"
+        errorLine1="    implementation &apos;com.google.http-client:google-http-client-gson:1.26.0&apos;"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="147"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.jetbrains.kotlin:kotlin-stdlib than 1.6.10 is available: 1.7.10"
+        errorLine1="    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version&quot;"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="150"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.mockito:mockito-core than 2.8.47 is available: 3.10.0"
+        errorLine1="    testImplementation &apos;org.mockito:mockito-core:2.8.47&apos;"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="162"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.assertj:assertj-core than 3.8.0 is available: 3.9.1"
+        errorLine1="    testImplementation &apos;org.assertj:assertj-core:3.8.0&apos;"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="164"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of junit:junit than 4.12 is available: 4.13.1"
+        errorLine1="    testImplementation &apos;junit:junit:4.12&apos;"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="165"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of org.threeten:threetenbp than 1.3.5 is available: 1.5.1"
+        errorLine1="    testImplementation &apos;org.threeten:threetenbp:1.3.5&apos;"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="168"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="TrustAllX509TrustManager"
+        message="`checkClientTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers">
+        <location
+            file="com/google/api/client/util/SslUtils$1.class"/>
+    </issue>
+
+    <issue
+        id="TrustAllX509TrustManager"
+        message="`checkServerTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers">
+        <location
+            file="com/google/api/client/util/SslUtils$1.class"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.app_name` appears to be unused"
+        errorLine1="    &lt;string name=&quot;app_name&quot;>ApolloLib&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="2"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
+            line="70"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
+            line="90"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
+            line="108"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="@Ignore"
+        errorLine2="~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/ContactActionsTest.java"
+            line="48"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/ContactActionsTest.java"
+            line="121"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="@Ignore"
+        errorLine2="~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/action/OperationActionsTest.java"
+            line="48"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/model/OperationTest.java"
+            line="15"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="IgnoreWithoutReason"
+        message="Test is ignored without giving any explanation"
+        errorLine1="    @Ignore"
+        errorLine2="    ~~~~~~~">
+        <location
+            file="src/test/java/io/muun/apollo/domain/model/OperationTest.java"
+            line="40"
+            column="5"/>
+    </issue>
+
+</issues>

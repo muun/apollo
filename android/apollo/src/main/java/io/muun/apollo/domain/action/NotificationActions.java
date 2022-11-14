@@ -8,7 +8,7 @@ import io.muun.apollo.domain.NotificationProcessor;
 import io.muun.apollo.domain.action.base.AsyncAction0;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.errors.BugDetected;
-import io.muun.apollo.domain.errors.NotificationProcessingError;
+import io.muun.apollo.domain.errors.notifications.NotificationProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationJson;
 import io.muun.common.api.messages.FulfillIncomingSwapMessage;

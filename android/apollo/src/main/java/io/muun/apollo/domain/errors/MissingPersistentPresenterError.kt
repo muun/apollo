@@ -1,7 +1,9 @@
 package io.muun.apollo.domain.errors
 
-class MissingPersistentPresenterError(presenterClass: Class<Any>,
-                                      presentersInCache: List<String>) : MuunError() {
+class MissingPersistentPresenterError(
+    presenterClass: Class<Any>,
+    presentersInCache: List<String>,
+) : MuunError() {
 
     init {
         metadata["presenter"] = presenterClass.simpleName

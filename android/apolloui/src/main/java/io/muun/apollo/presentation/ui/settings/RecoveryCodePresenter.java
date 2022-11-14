@@ -4,7 +4,7 @@ import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.action.challenge_keys.password_change.StartPasswordChangeAction;
 import io.muun.apollo.domain.errors.IncorrectRecoveryCodeError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
-import io.muun.apollo.domain.errors.InvalidCharacterRecoveryCodeError;
+import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError;
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.ChangePasswordStep;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;

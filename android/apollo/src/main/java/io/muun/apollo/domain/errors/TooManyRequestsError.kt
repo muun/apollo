@@ -1,4 +1,4 @@
 package io.muun.apollo.domain.errors
 
 
-class TooManyRequestsError: MuunError()
+class TooManyRequestsError : MuunError()

@@ -19,9 +19,8 @@ import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
 import io.muun.apollo.presentation.ui.fragments.loading.LoadingFragment
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
-import rx.functions.Action0
 
-class EmergencyKitActivity: SingleFragmentActivity<EmergencyKitPresenter?>(), EmergencyKitView {
+class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), EmergencyKitView {
 
     companion object {
         fun getStartActivityIntent(context: Context): Intent {
@@ -70,7 +69,7 @@ class EmergencyKitActivity: SingleFragmentActivity<EmergencyKitPresenter?>(), Em
         MuunDialog.Builder()
             .title(R.string.ek_abort_title)
             .message(R.string.ek_abort_body)
-            .positiveButton(R.string.abort, Action0 { finishActivity() })
+            .positiveButton(R.string.abort) { presenter.abortEmergencyKitFlow() }
             .negativeButton(R.string.cancel, null)
             .build()
             .let(this::showDialog)

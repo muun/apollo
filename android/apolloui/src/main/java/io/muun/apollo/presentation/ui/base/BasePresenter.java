@@ -262,6 +262,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             Timber.e(error);
         }
 
+        analytics.report(new AnalyticsEvent.E_ERROR(AnalyticsEvent.ERROR_TYPE.GENERIC));
+
         // Our current error handling logic is this:
         // - If error is one of our known fatal error -> handleFatalError()
         // - Else if error is one of our known non fatal error -> handleNonFatalError()
@@ -485,6 +487,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      * dialog stands on its own or is a followup of an error dialog.
      */
     private void showErrorReportDialog(Throwable error, boolean standalone) {
+
+        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG());
 
         final MuunDialog.Builder builder = new MuunDialog.Builder()
                 .layout(R.layout.dialog_custom_layout)

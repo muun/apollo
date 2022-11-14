@@ -2,7 +2,7 @@ package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
-import io.muun.apollo.domain.errors.InvalidPaymentRequestError;
+import io.muun.apollo.domain.errors.newop.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.FeeWindow;

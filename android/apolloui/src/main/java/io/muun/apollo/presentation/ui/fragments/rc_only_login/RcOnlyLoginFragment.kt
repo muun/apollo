@@ -12,7 +12,7 @@ import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
 
-class RcOnlyLoginFragment: SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginView {
+class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginView {
 
     @BindView(R.id.rc_only_login_whats_this)
     lateinit var whatsThis: TextView

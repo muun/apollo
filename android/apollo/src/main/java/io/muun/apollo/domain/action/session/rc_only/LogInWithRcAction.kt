@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.session.rc_only
 
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
@@ -10,6 +11,7 @@ import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.common.Optional
 import io.muun.common.api.KeySet
 import io.muun.common.model.CreateSessionRcOk
+import io.muun.common.model.challenge.Challenge
 import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
@@ -47,17 +49,21 @@ class LogInWithRcAction @Inject constructor(
     /**
      * Creates a new session to log into Houston, associated with a given Recovery Code.
      */
-    private fun createRcLoginSession(@NotNull recoveryCode: String) =
-        getFcmToken.action()
+    private fun createRcLoginSession(@NotNull recoveryCode: String): Observable<Challenge> {
+        val pubKeyHex = Libwallet.recoveryCodeToKey(recoveryCode, null).pubKeyHex()
+        val bigQueryPseudoId = firebaseInstallationIdRepository.getBigQueryPseudoId()
+        Crashlytics.logBreadcrumb("Rc Login: $pubKeyHex")
+        Crashlytics.logBreadcrumb("Rc Login: $bigQueryPseudoId")
+        return getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createRcLoginSession(
                     fcmToken,
-                    Libwallet.recoveryCodeToKey(recoveryCode, null).pubKeyHex(),
-                    firebaseInstallationIdRepository.getBigQueryPseudoId(),
+                    pubKeyHex,
+                    bigQueryPseudoId,
                     isRootedDeviceAction.actionNow()
                 )
             }
-    // TODO set RcChallengePublicKey in logging Context to help debug login issues
+    }
 
     private fun decryptAndStoreKeySet(maybeKeySet: Optional<KeySet>, rc: String): Observable<Void> =
         if (maybeKeySet.isPresent) {

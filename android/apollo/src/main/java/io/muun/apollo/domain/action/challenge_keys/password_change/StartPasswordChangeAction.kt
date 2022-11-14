@@ -12,10 +12,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StartPasswordChangeAction @Inject constructor (
+class StartPasswordChangeAction @Inject constructor(
     private val houstonClient: HoustonClient,
-    private val signChallenge: SignChallengeAction
-): BaseAsyncAction2<String, ChallengeType, PendingChallengeUpdate>() {
+    private val signChallenge: SignChallengeAction,
+) : BaseAsyncAction2<String, ChallengeType, PendingChallengeUpdate>() {
 
     /**
      * Starts password change process by requesting a challenge and sending a challenge signature,
@@ -23,9 +23,9 @@ class StartPasswordChangeAction @Inject constructor (
      */
     override fun action(secret: String, type: ChallengeType): Observable<PendingChallengeUpdate> {
         return houstonClient.requestChallenge(type)
-            .flatMap { maybeChallenge: Optional<Challenge?> ->
+            .flatMap { maybeChallenge: Optional<Challenge> ->
 
-                val challenge = maybeChallenge.orElseThrow()!! // empty only for legacy apps
+                val challenge = maybeChallenge.orElseThrow() // empty only for legacy apps
 
                 houstonClient.beginPasswordChange(signChallenge.sign(secret, challenge))
             }

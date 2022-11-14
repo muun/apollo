@@ -9,7 +9,7 @@ import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.LoggingContextManager;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.fcm.UpdateFcmTokenAction;
-import io.muun.apollo.domain.errors.FcmMessageProcessingError;
+import io.muun.apollo.domain.errors.fcm.FcmMessageProcessingError;
 import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 

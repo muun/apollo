@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation
 
 import io.muun.apollo.utils.RandomUser
+import org.junit.Ignore
 import org.junit.Test
 
 open class SettingsTests : BaseInstrumentationTest() {
@@ -37,5 +38,18 @@ open class SettingsTests : BaseInstrumentationTest() {
         autoFlows.logOut()
 
         autoFlows.signIn(user.email, user.password, pin = user.pin)
+    }
+
+    @Test
+    @Ignore("feature is not yet turned on")
+    fun test_03_a_user_can_change_lightning_default() {
+        val user = RandomUser()
+
+        autoFlows.signUp(user.pin)
+        autoFlows.checkOnReceiveIfQRIs(false)
+        autoFlows.toggleLightningDefaultOnReceive()
+        autoFlows.checkOnReceiveIfQRIs(true)
+        autoFlows.toggleLightningDefaultOnReceive()
+        autoFlows.checkOnReceiveIfQRIs(false)
     }
 }

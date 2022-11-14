@@ -529,6 +529,26 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
+    fun toggleLightningDefaultOnReceive() {
+        homeScreen.goToSettings()
+
+        settingsScreen.toggleLightningDefault()
+        backToHome()
+    }
+
+    fun checkOnReceiveIfQRIs(lightning: Boolean) {
+        homeScreen.goToReceive()
+        if (lightning) {
+            receiveScreen.id(R.id.address_settings).assertDoesntExist()
+            receiveScreen.id(R.id.invoice_settings).exists()
+        } else {
+            receiveScreen.id(R.id.address_settings).exists()
+            receiveScreen.id(R.id.invoice_settings).assertDoesntExist()
+        }
+
+        device.pressBack()
+    }
+
     fun setBitcoinUnitToSat() {
         homeScreen.goToSettings()
 

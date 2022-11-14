@@ -169,6 +169,7 @@ public abstract class ApolloApplication extends Application
     @NonNull
     @Override
     public Configuration getWorkManagerConfiguration() {
+        Timber.d("[MuunWorkerFactory] Application#getWorkManagerConfiguration()");
         return new Configuration.Builder()
                 .setWorkerFactory(new MuunWorkerFactory(this))
                 .setMinimumLoggingLevel(Globals.isReleaseBuild() ? Log.ASSERT : Log.VERBOSE)

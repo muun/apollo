@@ -9,6 +9,10 @@ enum class ShowQrPage(@StringRes val titleRes: Int) {
     BITCOIN(R.string.tab_bitcoin_address),
     LN(R.string.tab_ln_invoice);
 
+    fun getIndex(): Int {
+        return inOrder.indexOf(this)
+    }
+
     companion object {
         val inOrder = arrayOf(BITCOIN, LN)
 

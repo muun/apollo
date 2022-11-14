@@ -13,6 +13,7 @@ import io.muun.apollo.presentation.ui.fragments.login_email.LoginEmailFragment;
 import io.muun.apollo.presentation.ui.fragments.rc_only_login.RcOnlyLoginFragment;
 import io.muun.apollo.presentation.ui.fragments.rc_only_login_auth.RcLoginEmailAuthorizeFragment;
 import io.muun.apollo.presentation.ui.fragments.sync.SyncFragment;
+import io.muun.apollo.presentation.ui.signup.unverified_rc.UnverifiedRcWarningFragment;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.common.exception.MissingCaseError;
@@ -74,15 +75,15 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
     }
 
     @Override
-    public void changeStep(SignupStep step, SignupStep previousStep) {
-        replaceFragment(createStepFragment(step, previousStep), false);
+    public void changeStep(SignupStep step) {
+        replaceFragment(createStepFragment(step), false);
     }
 
     public MuunHeader getHeader() {
         return header;
     }
 
-    private Fragment createStepFragment(SignupStep step, SignupStep previousStep) {
+    private Fragment createStepFragment(SignupStep step) {
         switch (step) {
             case START:
                 return LandingFragment.newInstance();
@@ -103,7 +104,10 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
                 return new EnterPasswordFragment();
 
             case SYNC:
-                return SyncFragment.create(previousStep);
+                return new SyncFragment();
+
+            case UNVERIFIED_RC_WARNING:
+                return new UnverifiedRcWarningFragment();
 
             case LOGIN_RECOVERY_CODE:
                 return new EnterRecoveryCodeFragment();

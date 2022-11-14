@@ -11,7 +11,7 @@
             android:layout_height="18dp"
             android:layout_marginStart="12dp"
             android:layout_centerVertical="true"
-            tools:src="@drawable/alert_badge"
+            tools:src="@drawable/ic_baseline_warning_24px"
             android:contentDescription="@null" />
 
     <!--

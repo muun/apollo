@@ -1,4 +1,3 @@
 package io.muun.apollo.domain.errors
 
-class WrappedErrorMessage(message: String):
-    MuunError(message)
+class WrappedErrorMessage(message: String) : MuunError(message)

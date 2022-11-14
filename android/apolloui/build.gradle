@@ -87,8 +87,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 910
-        versionName "49.10"
+        versionCode 911
+        versionName "49.11"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -276,9 +276,11 @@ android {
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError true
         htmlReport true
+        textReport true
         lintConfig file("${project.rootDir}/linters/android-lint/config.xml")
+        baseline file("lint-baseline.xml")
     }
 
     packagingOptions {

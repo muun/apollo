@@ -10,8 +10,8 @@ import javax.money.spi.CurrencyProviderSpi
 
 class MissingCurrencyError(
     cause: UnknownCurrencyException,
-    regionLocales: List<Locale> = listOf()
-): MuunError(cause), PotentialBug {
+    regionLocales: List<Locale> = listOf(),
+) : MuunError(cause), PotentialBug {
 
     constructor(cause: UnknownCurrencyException) : this(cause, listOf()) // oh Java!!! OMG
 

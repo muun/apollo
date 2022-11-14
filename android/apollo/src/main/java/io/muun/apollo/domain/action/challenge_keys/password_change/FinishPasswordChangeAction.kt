@@ -3,7 +3,7 @@ package io.muun.apollo.domain.action.challenge_keys.password_change
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.action.challenge_keys.CreateChallengeSetupAction
-import io.muun.apollo.domain.action.challenge_keys.StoreChallengeKeyAction
+import io.muun.apollo.domain.action.challenge_keys.StoreVerifiedChallengeKeyAction
 import io.muun.common.crypto.ChallengeType
 import io.muun.common.model.challenge.ChallengeSetup
 import rx.Observable
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 class FinishPasswordChangeAction @Inject constructor (
     private val houstonClient: HoustonClient,
     private val createChallengeSetup: CreateChallengeSetupAction,
-    private val storeChallengeKey: StoreChallengeKeyAction
+    private val storeChallengeKey: StoreVerifiedChallengeKeyAction
 ) : BaseAsyncAction2<String, String, Void>() {
 
     /**

@@ -5,8 +5,8 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.domain.errors.InvalidSwapException
-import io.muun.apollo.domain.errors.InvoiceExpiredException
+import io.muun.apollo.domain.errors.newop.InvalidSwapException
+import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.libwallet.Invoice.decodeInvoice
 import io.muun.apollo.domain.model.PaymentRequest

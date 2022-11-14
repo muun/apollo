@@ -4,7 +4,7 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.challenge_keys.CreateChallengeSetupAction
 import io.muun.apollo.domain.action.challenge_keys.SignChallengeAction
-import io.muun.apollo.domain.action.challenge_keys.StoreChallengeKeyAction
+import io.muun.apollo.domain.action.challenge_keys.StoreVerifiedChallengeKeyAction
 import io.muun.apollo.domain.utils.flatDoOnNext
 import io.muun.common.crypto.ChallengeType
 import rx.Observable
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 class SetUpPasswordAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val createChallengeSetup: CreateChallengeSetupAction,
-    private val storeChallengeKey: StoreChallengeKeyAction,
+    private val storeChallengeKey: StoreVerifiedChallengeKeyAction,
     private val signChallengeAction: SignChallengeAction
 
 ): BaseAsyncAction1<String, Void>() {
