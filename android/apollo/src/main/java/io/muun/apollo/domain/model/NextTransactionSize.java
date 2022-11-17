@@ -81,7 +81,9 @@ public class NextTransactionSize {
 
         if (expectedDebtInSat < 0) {
             // We can't allow negative debt
-            Timber.e(new DebtNegativeError(this));
+            Timber.e(
+                    new DebtNegativeError(validAtOperationHid, getUtxoBalance(), expectedDebtInSat)
+            );
             expectedDebtInSat = 0L;
         }
 

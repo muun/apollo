@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [49.12] - 2022-11-17
+
+### FIXED
+- A problem when reporting an inconsistency error with the user NTS state, which resulted in those
+users unable to process notifications and use the app.
+- A rare and infrequent crash in Emergency Kit export flow
+
 ## [49.11] - 2022-11-10
 
 ### ADDED
