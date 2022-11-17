@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.ek
 
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
@@ -8,9 +9,8 @@ import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import rx.Observable
-import rx.schedulers.Schedulers
+import timber.log.Timber
 import java.util.*
-import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,15 +19,14 @@ class RenderEmergencyKitAction @Inject constructor(
     private val userRepository: UserRepository,
     private val keysRepository: KeysRepository,
     private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
-    private val transformerFactory: ExecutionTransformerFactory
-
-): BaseAsyncAction0<GeneratedEmergencyKit>() {
+    private val transformerFactory: ExecutionTransformerFactory,
+) : BaseAsyncAction0<GeneratedEmergencyKit>() {
 
     inner class RequiredData(
         val userKey: String,
         val userFingerprint: String,
         val muunKey: String,
-        val muunFingerprint: String
+        val muunFingerprint: String,
     )
 
     /**
@@ -46,6 +45,12 @@ class RenderEmergencyKitAction @Inject constructor(
                     // Remember: this is a fire-and-forget call
                     reportEmergencyKitExported.action(export)
                         .subscribeOn(transformerFactory.backgroundScheduler)
+                        .doOnError { error ->
+                            Crashlytics.logBreadcrumb(
+                                "Error while reportEmergencyKitExported"
+                            )
+                            Timber.e(error)
+                        }
                         .subscribe()
                 }
         }

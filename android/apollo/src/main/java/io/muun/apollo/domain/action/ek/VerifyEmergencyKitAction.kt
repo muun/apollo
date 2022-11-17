@@ -13,8 +13,8 @@ import javax.inject.Singleton
 @Singleton
 class VerifyEmergencyKitAction @Inject constructor(
     private val userRepository: UserRepository,
-    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction
-): BaseAsyncAction2<String, GeneratedEmergencyKit, Void>() {
+    private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
+) : BaseAsyncAction2<String, GeneratedEmergencyKit, Void>() {
 
     /**
      * Verify a given EK verification code matches expectations.
@@ -39,12 +39,9 @@ class VerifyEmergencyKitAction @Inject constructor(
                 // Not even an old code, just plain invalid:
                 throw EmergencyKitInvalidCodeError(providedCode)
             }
-        }
-        .flatMap {
-            reportEmergencyKitExported.actionNow(
+        }.flatMap {
+            reportEmergencyKitExported.action(
                 EmergencyKitExport(kitGen, true, EmergencyKitExport.Method.MANUAL)
             )
-
-            Observable.just(null)
         }
 }

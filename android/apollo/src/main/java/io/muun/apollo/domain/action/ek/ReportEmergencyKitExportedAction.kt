@@ -13,8 +13,8 @@ import javax.inject.Singleton
 @Singleton
 class ReportEmergencyKitExportedAction @Inject constructor(
     private val houstonClient: HoustonClient,
-    private val userRepository: UserRepository
-): BaseAsyncAction1<EmergencyKitExport, Void>() {
+    private val userRepository: UserRepository,
+) : BaseAsyncAction1<EmergencyKitExport, Void>() {
 
     /**
      * Tell Houston we have exported our keys.
