@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.View
 import io.muun.apollo.presentation.ui.base.BaseActivity
 
-class PickerDialogFragment: MuunBottomSheetDialogFragment(), Picker.OnOptionPickListener {
+class PickerDialogFragment : MuunBottomSheetDialogFragment(), Picker.OnOptionPickListener {
 
     private var pickerFactory: ((Context) -> Picker<*>)? = null
 

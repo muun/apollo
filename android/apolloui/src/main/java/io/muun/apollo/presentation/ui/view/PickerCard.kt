@@ -7,7 +7,7 @@ import butterknife.BindColor
 import butterknife.BindView
 import io.muun.apollo.R
 
-class AddressTypeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
+class PickerCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     MuunView(c, a, s) {
 
     enum class Status {
@@ -26,12 +26,12 @@ class AddressTypeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     @JvmField
     internal var textPrimaryColor = 0
 
-    @BindColor(R.color.address_picker_disabled_color)
+    @BindColor(R.color.picker_disabled_color)
     @JvmField
     internal var disabledTintColor = 0
 
     override val layoutResource: Int
-        get() = R.layout.muun_address_type_card
+        get() = R.layout.muun_picker_card
 
     var title: CharSequence
         get() = titleView.text

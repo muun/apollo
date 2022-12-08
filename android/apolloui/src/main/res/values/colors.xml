@@ -123,7 +123,7 @@
     <color name="slider_dot_active">@color/blue</color>
     <color name="slider_dot_inactive">@color/blue_light</color>
     <color name="muun_ripple_circle_bg">@color/white</color>
-    <color name="address_type_card_bg_border">@color/gray_light</color>
+    <color name="address_type_card_bg_border">@color/gray_lightest</color>
 
     <!-- Code References -->
     <color name="toolbarColor">@color/background</color>
@@ -136,5 +136,5 @@
     <color name="invoice_qr_loading_background">@color/gray_lightest</color>
 
     <!-- Temporary while fixing taproot -->
-    <color name="address_picker_disabled_color">@color/gray_light</color>
+    <color name="picker_disabled_color">@color/gray_light</color>
 </resources>

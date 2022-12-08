@@ -2,6 +2,7 @@ package libwallet
 
 import (
 	"fmt"
+	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -84,26 +85,32 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		amount = queryValues["amount"][0]
 	}
 
+	var invoice *Invoice
 	if len(queryValues["lightning"]) != 0 {
-		invoice, err := ParseInvoice(queryValues["lightning"][0], network)
+		invoice, err = ParseInvoice(queryValues["lightning"][0], network)
 
-		if err == nil {
-			return &MuunPaymentURI{Invoice: invoice}, nil
+		if err != nil {
+			return nil, errors.Errorf(ErrInvalidURI, "Couldn't parse query: %v", err)
 		}
 	}
 
 	// legacy Apollo P2P/contacts check
-	if (strings.Contains(rawInput, "contacts/")) {
+	if strings.Contains(rawInput, "contacts/") {
 		return &MuunPaymentURI{
-			Label:    label,
-			Message:  message,
-			Amount:   amount,
-			Uri:      bitcoinUri,
+			Label:   label,
+			Message: message,
+			Amount:  amount,
+			Uri:     bitcoinUri,
 		}, nil
 	}
 
 	//BIP70 check
 	if len(queryValues["r"]) != 0 {
+
+		if invoice != nil && invoice.Sats != 0 {
+			return nil, errors.New(ErrInvalidURI, "Bip70 uris can't be used with lightning invoices with amount")
+		}
+
 		if len(address) > 0 {
 			return &MuunPaymentURI{
 				Address:  address,
@@ -112,6 +119,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 				Amount:   amount,
 				Uri:      bitcoinUri,
 				Bip70Url: queryValues["r"][0],
+				Invoice:  invoice,
 			}, nil
 		}
 
@@ -121,6 +129,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 			Amount:   amount,
 			Uri:      bitcoinUri,
 			Bip70Url: queryValues["r"][0],
+			Invoice:  invoice,
 		}, nil
 	}
 
@@ -134,12 +143,21 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		return nil, errors.New(ErrInvalidURI, "Network mismatch")
 	}
 
+	// Check for unified QR Uris to have same amount if they have one
+	if invoice != nil && invoice.Sats != 0 {
+		invoiceAmount := decimal.NewFromInt(invoice.Sats).Div(decimal.NewFromInt(100_000_000)).String()
+		if invoiceAmount != amount {
+			return nil, errors.New(ErrInvalidURI, "Amount mismatch")
+		}
+	}
+
 	return &MuunPaymentURI{
 		Address: decodedAddress.String(),
 		Label:   label,
 		Message: message,
 		Amount:  amount,
 		Uri:     bitcoinUri,
+		Invoice: invoice,
 	}, nil
 
 }

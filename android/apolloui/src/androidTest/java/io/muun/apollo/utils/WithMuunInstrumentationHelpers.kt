@@ -71,8 +71,9 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         get() =
             SettingsScreen(device, context)
 
-    val p2pScreen get() =
-        SetupP2PScreen(device, context)
+    val p2pScreen
+        get() =
+            SetupP2PScreen(device, context)
 
     val recoveryCodeScreen
         get() =
@@ -188,7 +189,8 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      *  target what is actually rendered on screen while others target the string resource.
      *  This introduces differences when flags like textAllCaps or ellipsize are used.
      */
-    fun normalizedLabel(@StringRes stringResId: Int): UiObject = label(MuunTexts.normalize(stringResId))
+    fun normalizedLabel(@StringRes stringResId: Int): UiObject =
+        label(MuunTexts.normalize(stringResId))
 
     /** Obtain a view matching a string. */
     fun label(@StringRes stringResId: Int): UiObject = label(context.getString(stringResId))
@@ -200,10 +202,12 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun labelWith(text: String): UiObject = device.findObject(UiSelector().textContains(text))
 
     /** Obtain a view matching a string, that must be contained somewhere. */
-    fun labelWith(@StringRes stringResId: Int): UiObject = device.findObject(UiSelector().textContains(context.getString(stringResId)))
+    fun labelWith(@StringRes stringResId: Int): UiObject =
+        device.findObject(UiSelector().textContains(context.getString(stringResId)))
 
     /** Obtain a view matching a string, found in the description. */
-    fun desc(@StringRes stringResId: Int): UiObject = device.findObject(UiSelector().description(context.getString(stringResId)))
+    fun desc(@StringRes stringResId: Int): UiObject =
+        device.findObject(UiSelector().description(context.getString(stringResId)))
 
     /** Obtain a view (if it exists) matching by id. */
     fun maybeViewId(@IdRes id: Int): UiObject2 = device.findObject(By.res(resourceName(id)))
@@ -224,48 +228,48 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     /** Obtain a MuunButton as a domain object, matching by id resource name. */
     fun muunButton(@IdRes id: Int): MuunButton =
-            MuunButton(device, context, button(id))
+        MuunButton(device, context, button(id))
 
     /** Obtain a MuunDetailItem, matching by id resource name. */
     fun detailItem(@IdRes id: Int): UiObject = device.findObject(idSelector(id))
 
     /** Obtain a MuunDetailItem's content, matching by id resource name. */
     fun detailItemContent(@IdRes id: Int): UiObject =
-            detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_content))
+        detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_content))
 
     fun maybeDetailItemTitle(@IdRes id: Int): UiObject2 =
-            maybeViewId(id).findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
+        maybeViewId(id).findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
 
     /** Obtain a MuunDetailItem's title, matching by id resource name. */
     fun detailItemTitle(@IdRes id: Int): UiObject =
-            detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_title))
+        detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_title))
 
     /** Obtain a MuunDetailItem's image, matching by id resource name. */
     fun detailItemImage(@IdRes id: Int): UiObject =
-            detailItem(id).getChild(idSelector(R.id.operation_detail_item_icon))
+        detailItem(id).getChild(idSelector(R.id.operation_detail_item_icon))
 
 
     /** Obtain a MuunSettingsItem's title, matching by id resource name. */
     fun settingsItemTitle(@IdRes id: Int): UiObject =
-            detailItem(id).getChild(idSelector(R.id.setting_item_label))
+        detailItem(id).getChild(idSelector(R.id.setting_item_label))
 
     /** Obtain a MuunDetailItem's content, matching by id resource name. */
     fun settingsItemContent(@IdRes id: Int): UiObject =
-            detailItem(id).getChild(idSelector(R.id.setting_item_description))
+        detailItem(id).getChild(idSelector(R.id.setting_item_description))
 
     /** Obtain a MuunTextInput, matching by id resource name. */
     fun input(@IdRes id: Int): UiObject =
-            id(id).getChild(idSelector(R.id.muun_text_input_edit_text))
+        id(id).getChild(idSelector(R.id.muun_text_input_edit_text))
 
     fun inputError(@IdRes id: Int): UiObject2 =
-            maybeViewId(id).wait(Until.findObject(ByShortName("textinput_error")), 30000)
+        maybeViewId(id).wait(Until.findObject(ByShortName("textinput_error")), 30000)
 
     /** Obtain a Muun's empty screen action button, matching by id resource name. */
     fun emptyScreenButton(@IdRes id: Int): UiObject =
-            id(id).getChild(idSelector(R.id.muun_button_button))
+        id(id).getChild(idSelector(R.id.muun_button_button))
 
     fun androidPackageInstaller(id: String): UiObject =
-            device.findObject(fullId("com.android.packageinstaller:id/$id"))
+        device.findObject(fullId("com.android.packageinstaller:id/$id"))
 
     /**
      * Scroll to find or do something, but first try to find/do it without scrolling, to avoid
@@ -293,7 +297,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun waitUntilGone(@IdRes id: Int) =
-            device.wait(Until.gone(By.res(resourceName(id))), 4000) ?: false
+        device.wait(Until.gone(By.res(resourceName(id))), 4000) ?: false
 
     /**
      * Press the BACK key until a view with a given ID exists on screen, no more than `limit`
@@ -313,10 +317,10 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun sleep() =
-            sleep(10)
+        sleep(10)
 
     fun sleep(seconds: Long) =
-            Thread.sleep(seconds * 1000)
+        Thread.sleep(seconds * 1000)
 
     fun assertMoneyEqualsWithRoundingHack(actual: MonetaryAmount, expected: MonetaryAmount) {
         assertThat(actual.currency == expected.currency)
@@ -334,7 +338,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
      * Check MuunButton is enabled and press/click it.
      */
     fun pressMuunButton(@IdRes id: Int) =
-            button(id).assertEnabledAndClick()
+        button(id).assertEnabledAndClick()
 
     /**
      * Check MuunButton is enabled and press/click it, waiting for next activity, dialog, etc..
@@ -365,12 +369,13 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     private fun fullId(id: String): UiSelector = UiSelector().resourceId(id)
 
-    private fun resourceShortName(@IdRes id: Int): String = context.resources.getResourceEntryName(id)
+    private fun resourceShortName(@IdRes id: Int): String =
+        context.resources.getResourceEntryName(id)
 
     private fun resourceName(@IdRes id: Int): String = context.resources.getResourceName(id)
 
     private fun resourceId(resourceName: String) =
-            context.resources.getIdentifier(resourceName, "id", BuildConfig.APPLICATION_ID)
+        context.resources.getIdentifier(resourceName, "id", BuildConfig.APPLICATION_ID)
 
     /**
      *  Scroll to the bottom of the screen.
@@ -441,19 +446,19 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun String.dropParenthesis() =
-            drop(1).dropLast(1)
+        drop(1).dropLast(1)
 
     fun String.dropUnit() =
-            split(" ")[0]
+        split(" ")[0]
 
     fun UiObject.child(@IdRes childResId: Int) =
-            getChild(idSelector(childResId))
+        getChild(idSelector(childResId))
 
     fun UiObject.await() =
-            await(2000)
+        await(2000)
 
     fun UiObject.await(millis: Long) =
-            waitForExists(millis)
+        waitForExists(millis)
 
     fun UiObject.assertExists() {
         assertThat(this.waitForExists(3000)).isTrue()
@@ -490,9 +495,9 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     // I WISH I could made these extension functions but we can't (as of this writing) static
     // static extension methods of JAVA classes (we can if the extended class is in Kotlin)
     fun Byid(@IdRes id: Int): BySelector =
-            ByShortName(resourceShortName(id))
+        ByShortName(resourceShortName(id))
 
     fun ByShortName(resourceShortName: String) =
-            By.res(BuildConfig.APPLICATION_ID, resourceShortName)
+        By.res(BuildConfig.APPLICATION_ID, resourceShortName)
 
 }

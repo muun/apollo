@@ -50,9 +50,9 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
             }
         });
 
-        continueButton.setOnClickListener(v -> {
-            presenter.submitRecoveryCode(recoveryCodeBox.getSegmentInputsContent());
-        });
+        continueButton.setOnClickListener(v ->
+                presenter.submitRecoveryCode(recoveryCodeBox.getSegmentInputsContent())
+        );
     }
 
     @Override

@@ -12,7 +12,6 @@ import butterknife.OnClick
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.BitcoinUnit
-import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.bundler.MonetaryAmountBundler
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.utils.locale

@@ -233,8 +233,8 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
             final CurrencyViewModel currencyViewModel = (CurrencyViewModel) viewModel;
             final Currency currency = currencyViewModel.model.currencyInfo;
 
-            return currency.getCode().toLowerCase().contains(query)
-                    || currency.getName().toLowerCase().contains(query);
+            return currency.getCode().toLowerCase().contains(query.toLowerCase())
+                    || currency.getName().toLowerCase().contains(query.toLowerCase());
         }
         return false;
     }

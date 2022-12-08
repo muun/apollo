@@ -16,7 +16,6 @@
             android:orientation="vertical">
 
         <TextView
-                android:id="@+id/address_type_label"
                 style="@style/muun_new_operation_label_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -38,7 +37,7 @@
             android:textColor="@color/text_secondary_color"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:drawablePadding="8dp"
+            android:drawablePadding="4dp"
             app:drawableEndCompat="@drawable/chevron_down"
             app:drawableTint="@color/blue"
             tools:text="@string/legacy" />

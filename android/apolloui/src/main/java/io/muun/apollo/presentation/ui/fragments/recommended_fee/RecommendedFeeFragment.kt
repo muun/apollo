@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.recommended_fee
 
+import android.text.TextUtils
 import android.view.View
 import butterknife.BindString
 import butterknife.BindView
@@ -10,7 +11,13 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.new_operation.estimateTimeInMs
-import io.muun.apollo.presentation.ui.view.*
+import io.muun.apollo.presentation.ui.view.FeeManualItem
+import io.muun.apollo.presentation.ui.view.FeeOptionItem
+import io.muun.apollo.presentation.ui.view.HtmlTextView
+import io.muun.apollo.presentation.ui.view.MuunButton
+import io.muun.apollo.presentation.ui.view.MuunHeader
+import io.muun.apollo.presentation.ui.view.RichText
+import io.muun.apollo.presentation.ui.view.StatusMessage
 import io.muun.common.Rules
 import newop.EditFeeState
 import newop.FeeState
@@ -63,7 +70,11 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
         parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
         parentActivity.header.showTitle(R.string.edit_fee_title)
 
-        message.text = "$messageText. ${RichText(whatsThisText).setLink { onWhatsThisClick() }}"
+        message.text = TextUtils.concat(
+            messageText,
+            ". ",
+            RichText(whatsThisText).setLink { onWhatsThisClick() }
+        )
 
         if (selectedFeeRateInVBytes == null) {
             confirmButton.isEnabled = false
@@ -132,9 +143,9 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
 
     private fun alreadySomeOptionSelected(): Boolean =
         feeOptionItemFast.isSelected
-                || feeOptionItemMedium.isSelected
-                || feeOptionItemSlow.isSelected
-                || feeManualItem.isSelected
+            || feeOptionItemMedium.isSelected
+            || feeOptionItemSlow.isSelected
+            || feeManualItem.isSelected
 
     private fun showManuallySelectedFee(feeData: FeeState, currentFeeRateInVBytes: Double) {
         if (feeData.isFinal) {

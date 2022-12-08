@@ -1,4 +1,4 @@
-package io.muun.apollo.presentation.ui.show_qr.bitcoin
+package io.muun.apollo.domain.model
 
 enum class AddressType {
     SEGWIT,

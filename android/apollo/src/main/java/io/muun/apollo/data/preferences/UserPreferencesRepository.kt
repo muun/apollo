@@ -4,6 +4,7 @@ import android.content.Context
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
 import io.muun.apollo.domain.model.user.UserPreferences
+import io.muun.common.model.ReceiveFormatPreference
 import rx.Observable
 import javax.inject.Inject
 
@@ -53,6 +54,7 @@ open class UserPreferencesRepository @Inject constructor(
         var seenLnurlFirstTime: Boolean = false
         var defaultAddressType: String = "segwit"
         var lightningDefaultForReceiving: Boolean = false
+        var receivePreference: ReceiveFormatPreference = ReceiveFormatPreference.ONCHAIN
 
         // JSON constructor
         constructor()
@@ -63,6 +65,7 @@ open class UserPreferencesRepository @Inject constructor(
             seenLnurlFirstTime = prefs.seenLnurlFirstTime
             defaultAddressType = prefs.defaultAddressType
             lightningDefaultForReceiving = prefs.lightningDefaultForReceiving
+            receivePreference = prefs.receivePreference
         }
 
         fun toModel(): UserPreferences {
@@ -71,7 +74,8 @@ open class UserPreferencesRepository @Inject constructor(
                 seenNewHome,
                 seenLnurlFirstTime,
                 defaultAddressType,
-                lightningDefaultForReceiving
+                lightningDefaultForReceiving,
+                receivePreference
             )
         }
     }

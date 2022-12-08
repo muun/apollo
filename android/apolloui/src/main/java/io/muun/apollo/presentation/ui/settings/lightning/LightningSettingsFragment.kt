@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.settings.lightning
 
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import butterknife.BindView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import icepick.State
@@ -13,6 +14,9 @@ import io.muun.apollo.presentation.ui.utils.openInBrowser
 import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunHeader
+import io.muun.apollo.presentation.ui.view.ReceivePreferenceItem
+import io.muun.apollo.presentation.ui.view.ReceivePreferenceItem.ReceivePreferenceChangedListener
+import io.muun.common.model.ReceiveFormatPreference
 
 class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
     LightningSettingsView {
@@ -29,12 +33,14 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
     @BindView(R.id.turbo_channels_learn_more)
     lateinit var learnMore: HtmlTextView
 
-    @BindView(R.id.lightning_default_section)
-    lateinit var lightningSection: ViewGroup
+    @BindView(R.id.receive_preference_section)
+    lateinit var receivePreference: ViewGroup
 
-    @BindView(R.id.lightning_default_switch)
-    lateinit var lightningSwitch: SwitchMaterial
+    @BindView(R.id.receive_preference_item)
+    lateinit var receivePreferenceItem: ReceivePreferenceItem
 
+    @BindView(R.id.receive_preference_description)
+    lateinit var receivePreferenceDescription: HtmlTextView
 
     @State
     @JvmField
@@ -42,10 +48,7 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
 
     @State
     @JvmField
-    var lightningDefaultLatestState = false
-
-    // For now, we won't release this. Remove this flag once we do.
-    val lightningByDefaultOn = false
+    var currentReceivePreference = ReceiveFormatPreference.ONCHAIN
 
     override fun inject() {
         component.inject(this)
@@ -55,10 +58,10 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
         return R.layout.lightning_settings_fragment
     }
 
-    override fun initializeUi(view: View?) {
+    override fun initializeUi(view: View) {
         super.initializeUi(view)
 
-        StyledStringRes(requireContext(), R.string.turbo_channels_learn_more, this::openBlog)
+        StyledStringRes(requireContext(), R.string.turbo_channels_learn_more, this::openInBrowser)
             .toCharSequence()
             .let(learnMore::setText)
 
@@ -66,24 +69,26 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
             this.toggleTurboChannels(state)
         }
 
-        lightningSwitch.setOnCheckedChangeListener { _, state ->
-            this.toggleLightningDefault(state)
-        }
+        receivePreferenceItem.setOnReceivePreferenceChangedListener(
+            ReceivePreferenceChangedListener { newReceivePreference ->
+                if (newReceivePreference == currentReceivePreference) {
+                    return@ReceivePreferenceChangedListener
+                }
+
+                presenter.updateReceivePreference(newReceivePreference)
+            }
+        )
+
+        receivePreferenceDescription.text = StyledStringRes(
+            requireContext(),
+            R.string.settings_receive_preference_description,
+            this::openInBrowser
+        ).toCharSequence()
 
         parentActivity.header.apply {
             showTitle(R.string.settings_lightning)
             setNavigation(MuunHeader.Navigation.BACK)
         }
-
-        lightningSection.visibility = if (lightningByDefaultOn) View.VISIBLE else View.GONE
-    }
-
-    private fun toggleLightningDefault(toState: Boolean) {
-        if (toState == lightningDefaultLatestState) {
-            return
-        }
-
-        presenter.toggleLightningForReceiving()
     }
 
     private fun toggleTurboChannels(toState: Boolean) {
@@ -112,22 +117,20 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
         }
     }
 
-    private fun openBlog(link: String) {
+    private fun openInBrowser(link: String) {
         requireContext().openInBrowser(link)
     }
 
-    override fun update(turboChannels: Boolean, lightningDefaultForReceiving: Boolean) {
+    override fun update(turboChannels: Boolean, receivePreference: ReceiveFormatPreference) {
         turboChannelsLatestState = turboChannels
-        lightningDefaultLatestState = lightningDefaultForReceiving
+        currentReceivePreference = receivePreference
         turboSwitch.isChecked = turboChannels
-        lightningSwitch.isChecked = lightningDefaultForReceiving
+        receivePreferenceItem.show(receivePreference)
     }
 
     override fun setLoading(loading: Boolean) {
         turboSection.visibility = (if (loading) View.GONE else View.VISIBLE)
         loadingView.visibility = (if (loading) View.VISIBLE else View.GONE)
-        if (lightningByDefaultOn) {
-            lightningSection.visibility = (if (loading) View.GONE else View.VISIBLE)
-        }
+        receivePreference.visibility = (if (loading) View.GONE else View.VISIBLE)
     }
 }

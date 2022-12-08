@@ -6,6 +6,20 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50] - 2022-12-8
+
+### ADDED
+- Support for "Lightning First" preference! Users can now choose to make lightning their preferred
+way of receiving payments.
+- Support for Unified QRs! Users can choose to activate our first experimental feature: a unified QR
+that can enabled them to receive both on-chain (via bitcoin address) and offchain (via ln invoice).
+
+### FIXED
+
+- A problem with an inlined "What's this?" link in Recommended Fees screen
+- Currency search in Select Currency screen was case-sensitive, now its insensitive.
+- An issue that allowed users to submit incomplete or empty RCs using the softkeyboard.
+
 ## [49.12] - 2022-11-17
 
 ### FIXED

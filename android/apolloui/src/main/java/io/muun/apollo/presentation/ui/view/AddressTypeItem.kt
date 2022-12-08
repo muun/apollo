@@ -8,9 +8,9 @@ import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
-import io.muun.apollo.presentation.ui.show_qr.bitcoin.AddressType
+import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.presentation.ui.utils.getStyledString
-import io.muun.apollo.presentation.ui.view.AddressTypeCard.Status
+import io.muun.apollo.presentation.ui.view.PickerCard.Status
 
 class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
     MuunView(c, a, s) {
@@ -27,9 +27,6 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
 
     @BindView(R.id.edit_address_type)
     lateinit var editAddressTypeButton: TextView
-
-    @BindView(R.id.address_type_label)
-    lateinit var editAddressTypeLabel: TextView
 
     @State
     lateinit var addressType: AddressType
@@ -72,7 +69,9 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         val dialog = PickerDialogFragment()
 
         dialog.setPickerFactory {
-            AddressTypePicker(context).also { options.forEach(it::addOption) }
+            MuunPicker(context)
+                .also { options.forEach(it::addOption) }
+                .also { it.setTitle(context.getString(R.string.address_picker_title)) }
         }
 
         requestExternalResult(REQUEST_ADDRESS_TYPE, dialog)
@@ -101,25 +100,25 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         editAddressTypeButton.setText(buttonText)
     }
 
-    private fun getLegacyOption(): AddressTypePicker.Option {
+    private fun getLegacyOption(): MuunPicker.Option {
         val title = getStyledString(R.string.address_picker_legacy_title)
         val description = getStyledString(R.string.address_picker_legacy_desc)
 
         val status = if (addressType == AddressType.LEGACY) Status.SELECTED else Status.NORMAL
 
-        return AddressTypePicker.Option(AddressType.LEGACY.ordinal, title, description, status)
+        return MuunPicker.Option(AddressType.LEGACY.ordinal, title, description, status)
     }
 
-    private fun getSegwitOption(): AddressTypePicker.Option {
+    private fun getSegwitOption(): MuunPicker.Option {
         val title = getStyledString(R.string.address_picker_segwit_title)
         val description = getStyledString(R.string.address_picker_segwit_desc)
 
         val status = if (addressType == AddressType.SEGWIT) Status.SELECTED else Status.NORMAL
 
-        return AddressTypePicker.Option(AddressType.SEGWIT.ordinal, title, description, status)
+        return MuunPicker.Option(AddressType.SEGWIT.ordinal, title, description, status)
     }
 
-    private fun getTaprootOption(): AddressTypePicker.Option {
+    private fun getTaprootOption(): MuunPicker.Option {
         val title = getStyledString(R.string.address_picker_taproot_title)
 
         val description = when {
@@ -135,7 +134,7 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
             else -> Status.NORMAL
         }
 
-        return AddressTypePicker.Option(AddressType.TAPROOT.ordinal, title, description, status)
+        return MuunPicker.Option(AddressType.TAPROOT.ordinal, title, description, status)
     }
 
     private fun isTaprootOptionIncluded() =

@@ -7,7 +7,6 @@ import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -15,7 +14,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import butterknife.BindView
-import butterknife.ButterKnife
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.utils.UiUtils
@@ -150,6 +148,7 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
     }
 
     override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
         mIsEnabled = enabled
         updateFromState()
     }

@@ -2,6 +2,7 @@ package libwallet
 
 import (
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -23,19 +24,38 @@ const (
 	bip70URL                   = "https://bitpay.com/i/KXCEAtJQssR9vG2BxdjFwx"
 	bip70NonRetroCompatAddress = bitcoinScheme + "?r=" + bip70URL
 	bip70RetroCompatAddress    = bitcoinScheme + address + "?r=" + bip70URL
+
+	invoice               = "lnbcrt1pwtpd4xpp55meuklpslk5jtxytyh7u2q490c2xhm68dm3a94486zntsg7ad4vsdqqcqzys763w70h39ze44ngzhdt2mag84wlkefqkphuy7ssg4la5gt9vcpmqts00fnapf8frs928mc5ujfutzyu8apkezhrfvydx82l40w0fckqqmerzjc"
+	invoiceHashHex        = "a6f3cb7c30fda925988b25fdc502a57e146bef476ee3d2d6a7d0a6b823dd6d59"
+	invoiceDestinationHex = "028cfad4e092191a41f081bedfbe5a6e8f441603c78bf9001b8fb62ac0858f20edasd"
+
+	invoice100Sat               = "lnbcrt1u1p3hdgr2pp50m67ca8yyejjlzwmf02fvlu4kejf8twmftxfu7l3jhesnlfu0hjqdqqcqzpgxqyz5vqsp56yu7l6qqftslzhclnfwtnrlwtsrpn2nvy08kzskarhj76lqspenq9qyyssqet8mqeg5yqh06aqf9sqnkya6mud3qat84s0gdplmd3dpncsjjesj5ja24n8qxwt2d968g4laeggl0txtjy48razr7unpnk4fmga87dgqj88quh"
+	invoice100SatHashHex        = "7ef5ec74e426652f89db4bd4967f95b66493addb4acc9e7bf195f309fd3c7de4"
+	invoice100SatDestinationHex = "03373f5fb6babc2627cc3003646cc19cc2225bd699013e3e29c6b94857596c1c15"
+
+	invoice19Sat               = "lnbcrt190n1p3clxyrpp5w0l3cr5s49vasv3npx9ud6apw6agpv02aq5r70fhhvz5vatlhglsdqqcqzpgxqyz5vqsp5pjdr6rjpghugd5pyafa7shphqup744rtr4d7smrkfjs26cgyshyq9qyyssqx0gfkqdf3y344ejpzl3zqjyl4qwgw3xm4x4v5da73rrshw94ch0nqz3rfrgeykkws3nypystqttty562r604scgqv09agq3t7cxz8zcpf5em4q"
+	invoice19SatHashHex        = "73ff1c0e90a959d83233098bc6eba176ba80b1eae8283f3d37bb0546757fba3f"
+	invoice19SatDestinationHex = "03373f5fb6babc2627cc3003646cc19cc2225bd699013e3e29c6b94857596c1c15"
+
+	lightningParam                              = "lightning="
+	bip21UnifiedQr                              = bitcoinScheme + address + "?" + lightningParam + invoice
+	bip21UnifiedQrWithAmount                    = bitcoinScheme + address + "?amount=0.000001&" + lightningParam + invoice100Sat
+	bip21UnifiedQrWithAmountMismatch            = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice100Sat
+	bip21UnifiedQrBip70RetroCompat              = bip70RetroCompatAddress + "&" + lightningParam + invoice
+	bip21UnifiedQrBip70RetroCompatWithAmount    = bip70RetroCompatAddress + "&" + lightningParam + invoice100Sat
+	bip21UnifiedQrBip70NonRetroCompat           = bip70NonRetroCompatAddress + "&" + lightningParam + invoice
+	bip21UnifiedQrBip70NonRetroCompatWithAmount = bip70NonRetroCompatAddress + "&" + lightningParam + invoice100Sat
 )
 
 func TestGetPaymentURI(t *testing.T) {
 
-	const (
-		invoice               = "lnbcrt1pwtpd4xpp55meuklpslk5jtxytyh7u2q490c2xhm68dm3a94486zntsg7ad4vsdqqcqzys763w70h39ze44ngzhdt2mag84wlkefqkphuy7ssg4la5gt9vcpmqts00fnapf8frs928mc5ujfutzyu8apkezhrfvydx82l40w0fckqqmerzjc"
-		invoiceHashHex        = "a6f3cb7c30fda925988b25fdc502a57e146bef476ee3d2d6a7d0a6b823dd6d59"
-		invoiceDestinationHex = "028cfad4e092191a41f081bedfbe5a6e8f441603c78bf9001b8fb62ac0858f20edasd"
-	)
-
 	invoiceDestination, _ := hex.DecodeString(invoiceDestinationHex)
 	invoicePaymentHash := make([]byte, 32)
 	hex.Decode(invoicePaymentHash[:], []byte(invoiceHashHex))
+
+	invoiceWithAmountDestination, _ := hex.DecodeString(invoice100SatDestinationHex)
+	invoiceWithAmountPaymentHash := make([]byte, 32)
+	hex.Decode(invoiceWithAmountPaymentHash[:], []byte(invoice100SatHashHex))
 
 	type args struct {
 		address string
@@ -162,20 +182,109 @@ func TestGetPaymentURI(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "BIP with lightning",
+			name: "BIP21 with lightning",
 			args: args{
-				address: "bitcoin:123123?lightning=" + invoice,
+				address: bip21UnifiedQr,
 				network: *network,
 			},
-			want: &MuunPaymentURI{Invoice: &Invoice{
-				RawInvoice:      invoice,
-				FallbackAddress: nil,
-				Network:         network,
-				MilliSat:        "",
-				Destination:     invoiceDestination,
-				PaymentHash:     invoicePaymentHash,
-				Description:     "",
-			}},
+			want: &MuunPaymentURI{
+				Address: address,
+				Uri:     bitcoinScheme + address + "?lightning=" + invoice,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice,
+					FallbackAddress: nil,
+					Network:         network,
+					MilliSat:        "",
+					Destination:     invoiceDestination,
+					PaymentHash:     invoicePaymentHash,
+					Description:     "",
+				}},
+		},
+		{
+			name: "BIP21 with lightning with amount",
+			args: args{
+				address: bip21UnifiedQrWithAmount,
+				network: *network,
+			},
+			want: &MuunPaymentURI{
+				Address: address,
+				Amount:  "0.000001",
+				Uri:     bip21UnifiedQrWithAmount,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice100Sat,
+					FallbackAddress: nil,
+					Network:         network,
+					MilliSat:        "100000",
+					Sats:            100,
+					Destination:     invoiceWithAmountDestination,
+					PaymentHash:     invoiceWithAmountPaymentHash,
+					Description:     "",
+				}},
+		},
+		{
+			name: "BIP21 with lightning with amount mismatch error",
+			args: args{
+				address: bip21UnifiedQrWithAmountMismatch,
+				network: *network,
+			},
+			wantErr: true,
+		},
+		{
+			name: "BIP70 retrocompat with lightning",
+			args: args{
+				address: bip21UnifiedQrBip70RetroCompat,
+				network: *network,
+			},
+			want: &MuunPaymentURI{
+				Address:  address,
+				Uri:      bip21UnifiedQrBip70RetroCompat,
+				Bip70Url: bip70URL,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice,
+					FallbackAddress: nil,
+					Network:         network,
+					Destination:     invoiceDestination,
+					PaymentHash:     invoicePaymentHash,
+					Description:     "",
+				}},
+		},
+		{
+			name: "BIP70 retrocompat with lightning with amount",
+			args: args{
+				address: bip21UnifiedQrBip70RetroCompatWithAmount,
+				network: *network,
+			},
+			wantErr: true,
+		},
+		{
+			name: "BIP70 non retrocompat with lightning",
+			args: args{
+				address: bip21UnifiedQrBip70NonRetroCompat,
+				network: *network,
+			},
+			want: &MuunPaymentURI{
+				Uri:      bip21UnifiedQrBip70NonRetroCompat,
+				Bip70Url: bip70URL,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice,
+					FallbackAddress: nil,
+					Network:         network,
+					Destination:     invoiceDestination,
+					PaymentHash:     invoicePaymentHash,
+					Description:     "",
+				}},
+		},
+		{
+			name: "BIP70 non retrocompat with lightning with amount",
+			args: args{
+				address: bip21UnifiedQrBip70NonRetroCompatWithAmount,
+				network: *network,
+			},
+			wantErr: true,
 		},
 		{
 			name: "ALL CAPS",
@@ -213,7 +322,11 @@ func TestGetPaymentURI(t *testing.T) {
 				got.Invoice.Expiry = 0
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetPaymentURI() = %+v, want %+v", got, tt.want)
+				var invoiceDiff = ""
+				if !reflect.DeepEqual(got.Invoice, tt.want.Invoice) {
+					invoiceDiff = fmt.Sprintf("Invoice = %+v, want %+v", got.Invoice, tt.want.Invoice)
+				}
+				t.Errorf("GetPaymentURI() = %+v, want %+v. %v", got, tt.want, invoiceDiff)
 			}
 		})
 	}

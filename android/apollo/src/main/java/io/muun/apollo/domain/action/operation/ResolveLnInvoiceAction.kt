@@ -51,7 +51,7 @@ class ResolveLnInvoiceAction @Inject internal constructor(
     private val network: NetworkParameters,
     private val houstonClient: HoustonClient,
     private val keysRepository: KeysRepository,
-    private val feeWindowRepository: FeeWindowRepository
+    private val feeWindowRepository: FeeWindowRepository,
 ) : BaseAsyncAction1<String, PaymentRequest>() {
 
     companion object {
@@ -141,18 +141,18 @@ class ResolveLnInvoiceAction @Inject internal constructor(
     fun prepareSwap(request: SubmarineSwapRequest): Observable<SubmarineSwap> {
         val basePublicKeyPair = keysRepository.basePublicKeyPair
         return houstonClient.createSubmarineSwap(request)
-                .doOnNext { submarineSwap: SubmarineSwap ->
-                    val isValid = validateSwap(
-                            request.invoice,
-                            request.swapExpirationInBlocks,
-                            basePublicKeyPair,
-                            submarineSwap.toJson(),  // Needs to be a common's class
-                            network
-                    )
-                    if (!isValid) {
-                        throw InvalidSwapException(submarineSwap.houstonUuid)
-                    }
+            .doOnNext { submarineSwap: SubmarineSwap ->
+                val isValid = validateSwap(
+                    request.invoice,
+                    request.swapExpirationInBlocks,
+                    basePublicKeyPair,
+                    submarineSwap.toJson(),  // Needs to be a common's class
+                    network
+                )
+                if (!isValid) {
+                    throw InvalidSwapException(submarineSwap.houstonUuid)
                 }
+            }
     }
 
     // TODO everything down this line should be removed and libwallet code be used instead
@@ -161,11 +161,13 @@ class ResolveLnInvoiceAction @Inject internal constructor(
      * Validate Submarine Swap Server response. The end goal is to verify that the redeem script
      * returned by the server is the script that is actually encoded in the reported swap address.
      */
-    fun validateSwap(originalInvoice: String,
-                     originalExpirationInBlocks: Int,
-                     userPublicKeyPair: PublicKeyPair,
-                     swapJson: SubmarineSwapJson,
-                     network: NetworkParameters?): Boolean {
+    fun validateSwap(
+        originalInvoice: String,
+        originalExpirationInBlocks: Int,
+        userPublicKeyPair: PublicKeyPair,
+        swapJson: SubmarineSwapJson,
+        network: NetworkParameters?,
+    ): Boolean {
         val fundingOutput = swapJson.fundingOutput
 
         // Check to avoid handling older swaps (e.g Swaps V1). With every swap version upgrade,
@@ -198,7 +200,7 @@ class ResolveLnInvoiceAction @Inject internal constructor(
         val userPublicKey: PublicKey = PublicKey.fromJson(fundingOutput.userPublicKey)!!
         val muunPublicKey: PublicKey = PublicKey.fromJson(fundingOutput.muunPublicKey)!!
         val derivedPublicKeyPair = userPublicKeyPair
-                .deriveFromAbsolutePath(fundingOutput.userPublicKey!!.path)
+            .deriveFromAbsolutePath(fundingOutput.userPublicKey!!.path)
 
         // Check that the user public key belongs to the user
         if (derivedPublicKeyPair.userPublicKey != userPublicKey) {
@@ -213,11 +215,11 @@ class ResolveLnInvoiceAction @Inject internal constructor(
 
         // Check that the witness script was computed according to the given parameters
         val witnessScript = createWitnessScript(
-                Encodings.hexToBytes(paymentHashInHex),
-                userPublicKey.getPublicKeyBytes(),
-                muunPublicKey.getPublicKeyBytes(),
-                Encodings.hexToBytes(fundingOutput.serverPublicKeyInHex),
-                fundingOutput.expirationInBlocks!!.toLong()
+            Encodings.hexToBytes(paymentHashInHex),
+            userPublicKey.getPublicKeyBytes(),
+            muunPublicKey.getPublicKeyBytes(),
+            Encodings.hexToBytes(fundingOutput.serverPublicKeyInHex),
+            fundingOutput.expirationInBlocks!!.toLong()
         )
 
         // Check that the script hashes to the output address we'll be using
@@ -241,11 +243,13 @@ class ResolveLnInvoiceAction @Inject internal constructor(
     /**
      * Create the witness script for spending the submarine swap output.
      */
-    fun createWitnessScript(swapPaymentHash256: ByteArray?,
-                            userPublicKey: ByteArray?,
-                            muunPublicKey: ByteArray?,
-                            swapServerPublicKey: ByteArray?,
-                            numBlocksForExpiration: Long): ByteArray {
+    fun createWitnessScript(
+        swapPaymentHash256: ByteArray?,
+        userPublicKey: ByteArray?,
+        muunPublicKey: ByteArray?,
+        swapServerPublicKey: ByteArray?,
+        numBlocksForExpiration: Long,
+    ): ByteArray {
 
         // per bip 68 (the one where relative lock-time is defined)
         val maxRelativeLockTimeBlocks = 0xFFFF
@@ -270,45 +274,45 @@ class ResolveLnInvoiceAction @Inject internal constructor(
         // first two branches (the collaborative close and the unilateral close by swapper), which
         // are the most probable to be used.
         return ScriptBuilder() // Push the user public key to the second position of the stack
-                .data(userPublicKey)
-                .op(OP_SWAP) // Check whether the first stack item was a valid swap server signature
-                .data(swapServerPublicKey)
-                .op(OP_CHECKSIG) // If the swap server signature was correct
-                .op(OP_IF)
-                .op(OP_SWAP) // Check whether the second stack item was the payment preimage
-                .op(OP_DUP)
-                .op(OP_HASH160)
-                .data(swapPaymentHash160)
-                .op(OP_EQUAL) // If the preimage was correct
-                .op(OP_IF) // We are done, leave just one true-ish item in the stack (there're 2
-                // remaining items)
-                .op(OP_DROP) // If the second stack item wasn't a valid payment preimage
-                .op(OP_ELSE) // Validate that the second stack item was a valid user signature
-                .op(OP_SWAP)
-                .op(OP_CHECKSIG)
-                .op(OP_ENDIF) // If the first stack item wasn't a valid server signature
-                .op(OP_ELSE) // Validate that the blockchain height is big enough
-                .number(numBlocksForExpiration)
-                .op(OP_CHECKSEQUENCEVERIFY)
-                .op(OP_DROP) // Validate that the second stack item was a valid user signature
-                .op(OP_CHECKSIGVERIFY) // Validate that the third stack item was the muun public key
-                .op(OP_DUP)
-                .op(OP_HASH160)
-                .data(serverPublicKeyHash160)
-                .op(OP_EQUALVERIFY)
-                // Notice that instead of directly pushing the public key here and checking the
-                // signature P2PK-style, we pushed the hash of the public key, and require an
-                // extra stack item with the actual public key, verifying the signature and
-                // public key P2PKH-style.
-                //
-                // This trick reduces the on-chain footprint of the muun key from 33 bytes to
-                // 20 bytes for the collaborative, and swap server's non-collaborative branches,
-                // which are the most frequent ones.
-                // Validate that the fourth stack item was a valid server signature
-                .op(OP_CHECKSIG)
-                .op(OP_ENDIF)
-                .build()
-                .getProgram()
+            .data(userPublicKey)
+            .op(OP_SWAP) // Check whether the first stack item was a valid swap server signature
+            .data(swapServerPublicKey)
+            .op(OP_CHECKSIG) // If the swap server signature was correct
+            .op(OP_IF)
+            .op(OP_SWAP) // Check whether the second stack item was the payment preimage
+            .op(OP_DUP)
+            .op(OP_HASH160)
+            .data(swapPaymentHash160)
+            .op(OP_EQUAL) // If the preimage was correct
+            .op(OP_IF) // We are done, leave just one true-ish item in the stack (there're 2
+            // remaining items)
+            .op(OP_DROP) // If the second stack item wasn't a valid payment preimage
+            .op(OP_ELSE) // Validate that the second stack item was a valid user signature
+            .op(OP_SWAP)
+            .op(OP_CHECKSIG)
+            .op(OP_ENDIF) // If the first stack item wasn't a valid server signature
+            .op(OP_ELSE) // Validate that the blockchain height is big enough
+            .number(numBlocksForExpiration)
+            .op(OP_CHECKSEQUENCEVERIFY)
+            .op(OP_DROP) // Validate that the second stack item was a valid user signature
+            .op(OP_CHECKSIGVERIFY) // Validate that the third stack item was the muun public key
+            .op(OP_DUP)
+            .op(OP_HASH160)
+            .data(serverPublicKeyHash160)
+            .op(OP_EQUALVERIFY)
+            // Notice that instead of directly pushing the public key here and checking the
+            // signature P2PK-style, we pushed the hash of the public key, and require an
+            // extra stack item with the actual public key, verifying the signature and
+            // public key P2PKH-style.
+            //
+            // This trick reduces the on-chain footprint of the muun key from 33 bytes to
+            // 20 bytes for the collaborative, and swap server's non-collaborative branches,
+            // which are the most frequent ones.
+            // Validate that the fourth stack item was a valid server signature
+            .op(OP_CHECKSIG)
+            .op(OP_ENDIF)
+            .build()
+            .getProgram()
     }
 
     /**

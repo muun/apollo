@@ -87,8 +87,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 912
-        versionName "49.12"
+        versionCode 1000
+        versionName "50"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -349,6 +349,9 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.annotation:annotation:1.0.0'
     implementation 'androidx.preference:preference:1.0.0'
+    def emojiVersion = "1.1.0" // We need targetSdkVersion 32 to bump
+    implementation "androidx.emoji2:emoji2:$emojiVersion"
+
     // Remove gridrlayout-v7 once we drop minSDK version 19
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.multidex:multidex:2.0.0'

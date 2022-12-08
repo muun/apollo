@@ -8,12 +8,13 @@ import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.scan_qr.LnUrlFlow
 import io.muun.apollo.presentation.ui.show_qr.ShowQrActivity.ORIGIN
+import io.muun.common.model.ReceiveFormatPreference
 import javax.inject.Inject
 
 @PerActivity
 class ShowQrPresenter @Inject constructor(
-    private val userPreferencesSel: UserPreferencesSelector
-): BasePresenter<BaseView>(), QrParentPresenter {
+    private val userPreferencesSel: UserPreferencesSelector,
+) : BasePresenter<BaseView>(), QrParentPresenter {
 
     override fun shareQrContent(content: String) {
         navigator.shareText(context, content, context.getString(R.string.address_share_title))
@@ -40,5 +41,7 @@ class ShowQrPresenter @Inject constructor(
         }
     }
 
-    fun getDefaultTabSelected(): ShowQrPage = if (userPreferencesSel.get().lightningDefaultForReceiving) ShowQrPage.LN else ShowQrPage.BITCOIN
+    // TODO fragment should "query" presenter. Presenter should convey state to fragment/view
+    fun showUnifiedQr(): Boolean =
+        userPreferencesSel.get().receivePreference == ReceiveFormatPreference.UNIFIED
 }

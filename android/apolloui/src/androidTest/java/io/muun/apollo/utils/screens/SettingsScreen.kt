@@ -39,10 +39,22 @@ class SettingsScreen(
         device.pressBack()
     }
 
-    fun toggleLightningDefault() {
+    fun turnOnReceiveLightningByDefault() {
         id(R.id.settings_lightning).click()
 
-        id(R.id.lightning_default_switch).click()
+        id(R.id.receive_preference_value).click()
+
+        label(R.string.tab_ln_invoice).click()
+
+        device.pressBack()
+    }
+
+    fun turnOnReceiveBitcoinByDefault() {
+        id(R.id.settings_lightning).click()
+
+        id(R.id.receive_preference_value).click()
+
+        label(R.string.tab_bitcoin_address).click()
 
         device.pressBack()
     }

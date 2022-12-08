@@ -15,8 +15,10 @@ import io.muun.common.utils.LnInvoice
 import org.javamoney.moneta.Money
 import javax.money.MonetaryAmount
 
-class AutoFlows(override val device: UiDevice,
-                override val context: Context) : WithMuunInstrumentationHelpers {
+class AutoFlows(
+    override val device: UiDevice,
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun signUp(pin: List<Int> = Gen.pin()) {
 
@@ -112,10 +114,12 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
-    fun signIn(email: String = Gen.email(),
-               password: String? = null,
-               recoveryCodeParts: List<String>? = null,
-               pin: List<Int> = Gen.pin()) {
+    fun signIn(
+        email: String = Gen.email(),
+        password: String? = null,
+        recoveryCodeParts: List<String>? = null,
+        pin: List<Int> = Gen.pin(),
+    ) {
 
         signInScreen.fillSignInForm(email, password, recoveryCodeParts)
 
@@ -258,10 +262,12 @@ class AutoFlows(override val device: UiDevice,
         homeScreen.waitUntilBalanceEquals(balanceAfter)
     }
 
-    fun setupP2P(phoneNumber: UserPhoneNumber = Gen.userPhoneNumber(),
-                 verificationCode: String = Gen.numeric(6),
-                 firstName: String = Gen.alpha(5),
-                 lastName: String = Gen.alpha(5)) {
+    fun setupP2P(
+        phoneNumber: UserPhoneNumber = Gen.userPhoneNumber(),
+        verificationCode: String = Gen.numeric(6),
+        firstName: String = Gen.alpha(5),
+        lastName: String = Gen.alpha(5),
+    ) {
 
         homeScreen.goToP2PSetup()
         p2pScreen.fillForm(phoneNumber, verificationCode, firstName, lastName)
@@ -301,8 +307,7 @@ class AutoFlows(override val device: UiDevice,
      * <p>
      * To confirm or settle operation see settleOperation AutoFlow.
      */
-    fun spendAllFunds(descriptionToEnter: String? = null,
-                      reachNewOperation: () -> Unit) {
+    private fun spendAllFunds(descriptionToEnter: String? = null, reachNewOperation: () -> Unit) {
 
         val balanceBefore = homeScreen.balanceInBtc
 
@@ -336,9 +341,11 @@ class AutoFlows(override val device: UiDevice,
      * <p>
      * To confirm or settle operation see settleOperation auto flow.
      */
-    fun newOperation(amountToEnter: MonetaryAmount,
-                     descriptionToEnter: String,
-                     reachNewOperation: () -> Unit) {
+    fun newOperation(
+        amountToEnter: MonetaryAmount,
+        descriptionToEnter: String,
+        reachNewOperation: () -> Unit,
+    ) {
 
         val balanceBefore = homeScreen.balanceInBtc
 
@@ -367,7 +374,7 @@ class AutoFlows(override val device: UiDevice,
         generateBlocksAndWaitForUpdate(6)
 
         homeScreen.goToOperationDetail(description) // will fail if still pending
-        opDetailScreen.waitForStatusChange(context.getString(R.string.operation_completed));
+        opDetailScreen.waitForStatusChange(context.getString(R.string.operation_completed))
 
         exitOpDetailAndReturnHome()
     }
@@ -392,10 +399,12 @@ class AutoFlows(override val device: UiDevice,
      * AutoFlow to make a SubmarineSwap. Leaves you at OperationDetail screen, so caller can perform
      * adequate checks.
      */
-    fun newSubmarineSwap(invoice: LnInvoice,
-                         descriptionToEnter: String,
-                         debtType: DebtType = DebtType.NONE,
-                         reachNewOperation: () -> Unit) {
+    fun newSubmarineSwap(
+        invoice: LnInvoice,
+        descriptionToEnter: String,
+        debtType: DebtType = DebtType.NONE,
+        reachNewOperation: () -> Unit,
+    ) {
 
         val balanceBefore = homeScreen.balanceInBtc
 
@@ -407,7 +416,7 @@ class AutoFlows(override val device: UiDevice,
         // Keep these to check later:
         val amount = newOpScreen.confirmedAmount
         val description = newOpScreen.confirmedDescription
-        val lightningFee =  newOpScreen.confirmedFee
+        val lightningFee = newOpScreen.confirmedFee
         val total = newOpScreen.confirmedTotal
 
         newOpScreen.submit()
@@ -475,7 +484,7 @@ class AutoFlows(override val device: UiDevice,
         val optionMedium = recomFeeScreen.selectFeeOptionMedium()
         recomFeeScreen.confirmFee()
 
-        newOpScreen.checkConfirmedData(fee=optionMedium)
+        newOpScreen.checkConfirmedData(fee = optionMedium)
 
         // Try slow fee (TODO we should control whether it appears, instead of asking):
         newOpScreen.goToEditFee()
@@ -483,7 +492,7 @@ class AutoFlows(override val device: UiDevice,
             val optionSlow = recomFeeScreen.selectFeeOptionSlow()
             recomFeeScreen.confirmFee()
 
-            newOpScreen.checkConfirmedData(fee=optionSlow)
+            newOpScreen.checkConfirmedData(fee = optionSlow)
         } else {
             device.pressBack()
         }
@@ -493,7 +502,7 @@ class AutoFlows(override val device: UiDevice,
         val optionFast = recomFeeScreen.selectFeeOptionFast()
         recomFeeScreen.confirmFee()
 
-        newOpScreen.checkConfirmedData(fee=optionFast)
+        newOpScreen.checkConfirmedData(fee = optionFast)
 
         // Try manual fee:
         newOpScreen.goToEditFee()
@@ -503,7 +512,7 @@ class AutoFlows(override val device: UiDevice,
 
         // TODO test mempool congested?
 
-        newOpScreen.checkConfirmedData(fee=optionManual)
+        newOpScreen.checkConfirmedData(fee = optionManual)
 
         // Abort operation like a boss:
         device.pressBack()
@@ -529,10 +538,17 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
-    fun toggleLightningDefaultOnReceive() {
+    fun turnOnReceiveLightningByDefault() {
         homeScreen.goToSettings()
 
-        settingsScreen.toggleLightningDefault()
+        settingsScreen.turnOnReceiveLightningByDefault()
+        backToHome()
+    }
+
+    fun turnOnReceiveBitcoinByDefault() {
+        homeScreen.goToSettings()
+
+        settingsScreen.turnOnReceiveBitcoinByDefault()
         backToHome()
     }
 
@@ -557,11 +573,13 @@ class AutoFlows(override val device: UiDevice,
         backToHome()
     }
 
-    fun checkOperationDetails(amount: MonetaryAmount,
-                              description: String? = null,
-                              fee: MonetaryAmount? = null,
-                              statusPending: Boolean = true,
-                              reachOperationDetail: () -> Unit) {
+    fun checkOperationDetails(
+        amount: MonetaryAmount,
+        description: String? = null,
+        fee: MonetaryAmount? = null,
+        statusPending: Boolean = true,
+        reachOperationDetail: () -> Unit,
+    ) {
 
         reachOperationDetail()
 

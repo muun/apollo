@@ -7,10 +7,12 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment
+import java.util.*
 
 class ShowQrFragmentPagerAdapter(
     private val fm: FragmentManager,
-    private val context: Context
+    private val context: Context,
+    private val showQrPager: ShowQrPager
 ) : FragmentPagerAdapter(fm) {
 
     // This is what we need to do in order to re-generate ln invoice each time the user swipes back
@@ -39,7 +41,7 @@ class ShowQrFragmentPagerAdapter(
      */
     override fun getItem(position: Int): Fragment {
 
-        return when (ShowQrPage.at(position)) {
+        return when (showQrPager.at(position)) {
             ShowQrPage.BITCOIN -> BitcoinAddressQrFragment()
             ShowQrPage.LN -> LnInvoiceQrFragment()
         }
@@ -50,14 +52,12 @@ class ShowQrFragmentPagerAdapter(
      * attached, even across recreations, since the FragmentManager preserves state.
      */
     fun getExistingItem(position: Int): Fragment {
-        if (fm.fragments.isEmpty()) {
-            return Fragment();
-        }
-        return fm.fragments.find { ShowQrPage.classAt(position).isInstance(it) }!!
+        return fm.fragments.find { showQrPager.classAt(position).isInstance(it) }!!
     }
 
 
     override fun getPageTitle(position: Int): CharSequence {
-        return context.resources.getString(ShowQrPage.at(position).titleRes).toUpperCase()
+        return context.resources.getString(showQrPager.at(position).titleRes)
+            .uppercase(Locale.getDefault())
     }
 }
