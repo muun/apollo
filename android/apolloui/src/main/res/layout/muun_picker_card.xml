@@ -28,7 +28,7 @@
         android:lineSpacingMultiplier="1.25"
         android:text="@string/new_operation_to"
         android:textColor="@color/text_secondary_color"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:typeface="normal"
         tools:text="This the best type of Bitcoin address ever not-created." />
 

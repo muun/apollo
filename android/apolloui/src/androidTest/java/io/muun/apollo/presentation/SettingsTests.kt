@@ -46,10 +46,13 @@ open class SettingsTests : BaseInstrumentationTest() {
         val user = RandomUser()
 
         autoFlows.signUp(user.pin)
+
         autoFlows.checkOnReceiveIfQRIs(false)
-        autoFlows.toggleLightningDefaultOnReceive()
+
+        autoFlows.turnOnReceiveLightningByDefault()
         autoFlows.checkOnReceiveIfQRIs(true)
-        autoFlows.toggleLightningDefaultOnReceive()
+
+        autoFlows.turnOnReceiveBitcoinByDefault()
         autoFlows.checkOnReceiveIfQRIs(false)
     }
 }

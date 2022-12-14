@@ -96,7 +96,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
         super.setQrContent(invoice.original, invoice.original.toUpperCase())
 
-        // Detect if 1h left of expiration time, and show countdown
         stopTimer()
         countdownTimer = buildCountDownTimer(invoice.remainingMillis())
         countdownTimer!!.start()

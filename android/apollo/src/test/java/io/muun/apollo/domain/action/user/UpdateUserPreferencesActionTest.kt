@@ -4,14 +4,15 @@ import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doNothing
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.whenever
-import org.junit.Test
 import io.muun.apollo.BaseTest
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.domain.model.user.UserPreferences
+import io.muun.common.model.ReceiveFormatPreference
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import rx.Completable
@@ -36,7 +37,8 @@ class UpdateUserPreferencesActionTest: BaseTest() {
                 seenNewHome = false,
                 seenLnurlFirstTime = false,
                 lightningDefaultForReceiving = false,
-                defaultAddressType = "segwit"
+                defaultAddressType = "segwit",
+                receivePreference = ReceiveFormatPreference.ONCHAIN
             )
         )).whenever(repository).watch()
     }

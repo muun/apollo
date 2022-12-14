@@ -9,6 +9,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
@@ -16,15 +17,13 @@ import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
 import io.muun.apollo.presentation.ui.view.AddressTypeItem
-import io.muun.apollo.presentation.ui.view.EditAmountItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
 import io.muun.common.bitcoinj.BitcoinUri
 import javax.money.MonetaryAmount
 
 class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     BitcoinAddressView,
-    AddressTypeItem.AddressTypeChangedListener,
-    EditAmountItem.EditAmountHandler {
+    AddressTypeItem.AddressTypeChangedListener {
 
     companion object {
         private const val REQUEST_AMOUNT = 1

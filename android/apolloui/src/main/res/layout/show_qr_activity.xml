@@ -49,4 +49,12 @@
         <View style="@style/drop_shadow_bottom"/>
 
     </FrameLayout>
+
+    <FrameLayout
+            android:id="@+id/show_qr_unified_qr_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/background"
+            android:visibility="gone" />
+
 </LinearLayout>

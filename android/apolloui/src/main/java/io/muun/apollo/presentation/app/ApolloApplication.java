@@ -35,6 +35,7 @@ import android.util.Log;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.emoji2.text.EmojiCompat;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 import androidx.work.Configuration;
@@ -122,6 +123,8 @@ public abstract class ApolloApplication extends Application
         registerReceiver(lockWhenDisplayIsOff, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 
         RxJavaHooks.enableAssemblyTracking();
+
+        EmojiCompat.init(new BundledEmojiCompatConfig(this));
 
         if (lockManager.isLockConfigured()) {
             lockManager.setLock();

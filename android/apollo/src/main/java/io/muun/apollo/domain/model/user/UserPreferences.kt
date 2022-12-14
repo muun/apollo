@@ -1,11 +1,14 @@
 package io.muun.apollo.domain.model.user
 
+import io.muun.common.model.ReceiveFormatPreference
+
 data class UserPreferences(
     val strictMode: Boolean,
     val seenNewHome: Boolean,
     val seenLnurlFirstTime: Boolean,
     val defaultAddressType: String,
-    val lightningDefaultForReceiving: Boolean
+    val lightningDefaultForReceiving: Boolean,
+    val receivePreference: ReceiveFormatPreference
 ) {
     fun toJson(): io.muun.common.model.UserPreferences {
         return io.muun.common.model.UserPreferences(
@@ -13,7 +16,9 @@ data class UserPreferences(
             seenNewHome,
             seenLnurlFirstTime,
             defaultAddressType,
-            lightningDefaultForReceiving
+            lightningDefaultForReceiving,
+            false,
+            receivePreference
         )
     }
 
@@ -26,7 +31,8 @@ data class UserPreferences(
                 prefs.seenNewHome,
                 prefs.seenLnurlFirstTime,
                 prefs.defaultAddressType,
-                prefs.lightningDefaultForReceiving
+                prefs.lightningDefaultForReceiving,
+                prefs.receiveFormatPreference
             )
         }
     }

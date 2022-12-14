@@ -33,6 +33,10 @@ public class UserPreferences {
 
     public String defaultAddressType = "segwit";
 
+    public Boolean skippedEmailSetup = false;
+
+    public ReceiveFormatPreference receiveFormatPreference = ReceiveFormatPreference.ONCHAIN;
+
     /**
      * JSON constructor.
      */
@@ -42,16 +46,22 @@ public class UserPreferences {
     /**
      * Apollo constructor.
      */
-    public UserPreferences(final boolean receiveStrictMode,
-                           final boolean seenNewHome,
-                           final boolean seenLnurlFirstTime,
-                           final String defaultAddressType,
-                           final boolean lightningDefaultForReceiving) {
+    public UserPreferences(
+            final boolean receiveStrictMode,
+            final boolean seenNewHome,
+            final boolean seenLnurlFirstTime,
+            final String defaultAddressType,
+            final boolean lightningDefaultForReceiving,
+            final boolean skippedEmailSetup,
+            final ReceiveFormatPreference receiveFormatPreference
+    ) {
         this.receiveStrictMode = receiveStrictMode;
         this.seenNewHome = seenNewHome;
         this.seenLnurlFirstTime = seenLnurlFirstTime;
         this.defaultAddressType = defaultAddressType;
         this.lightningDefaultForReceiving = lightningDefaultForReceiving;
+        this.skippedEmailSetup = skippedEmailSetup;
+        this.receiveFormatPreference = receiveFormatPreference;
     }
 
     /**
@@ -86,6 +96,14 @@ public class UserPreferences {
 
         if (other.lightningDefaultForReceiving != null) {
             this.lightningDefaultForReceiving = other.lightningDefaultForReceiving;
+        }
+
+        if (other.skippedEmailSetup != null) {
+            this.skippedEmailSetup = other.skippedEmailSetup;
+        }
+
+        if (other.receiveFormatPreference != null) {
+            this.receiveFormatPreference = other.receiveFormatPreference;
         }
     }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -8,6 +9,43 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
+        <LinearLayout
+                android:id="@+id/receive_preference_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/lightning_settings_background">
+
+                <!-- Using specially tuned margin top/bottom params to have same height as
+                 turbo channels setting component-->
+                <io.muun.apollo.presentation.ui.view.ReceivePreferenceItem
+                        android:id="@+id/receive_preference_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="11dp"
+                        android:layout_marginBottom="15dp" />
+
+            </LinearLayout>
+
+            <io.muun.apollo.presentation.ui.view.HtmlTextView
+                    android:id="@+id/receive_preference_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/muun_screen_margin"
+                    android:layout_marginBottom="@dimen/muun_screen_margin"
+                    android:layout_marginStart="@dimen/muun_screen_margin"
+                    android:layout_marginEnd="@dimen/muun_screen_margin"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_secondary_color"
+                    android:textAlignment="viewStart"
+                    tools:text="@string/settings_receive_preference_description" />
+
+        </LinearLayout>
 
         <LinearLayout
                 android:id="@+id/turbo_channels_section"
@@ -37,53 +75,14 @@
                     android:id="@+id/turbo_channels_learn_more"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/muun_screen_margin"
-                    android:layout_marginBottom="@dimen/muun_screen_margin"
+                    android:paddingTop="@dimen/muun_screen_margin"
+                    android:paddingBottom="@dimen/muun_screen_margin"
                     android:layout_marginStart="@dimen/muun_screen_margin"
                     android:layout_marginEnd="@dimen/muun_screen_margin"
                     android:textSize="16sp"
                     android:textColor="@color/text_secondary_color"
                     android:textAlignment="viewStart"
                     android:text="@string/turbo_channels_learn_more" />
-
-        </LinearLayout>
-
-        <LinearLayout
-                android:id="@+id/lightning_default_section"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/lightning_settings_background">
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/lightning_default_switch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/settings_lightning_default_title"
-                        android:layout_marginTop="@dimen/muun_screen_margin"
-                        android:layout_marginBottom="@dimen/muun_screen_margin"
-                        android:layout_marginStart="@dimen/muun_screen_margin"
-                        android:layout_marginEnd="@dimen/muun_screen_margin"
-                        android:textSize="@dimen/muun_text_size_body" />
-
-            </LinearLayout>
-
-            <TextView
-                    android:id="@+id/lightning_default_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/muun_screen_margin"
-                    android:layout_marginBottom="@dimen/muun_screen_margin"
-                    android:layout_marginStart="@dimen/muun_screen_margin"
-                    android:layout_marginEnd="@dimen/muun_screen_margin"
-                    android:textSize="16sp"
-                    android:textColor="@color/text_secondary_color"
-                    android:textAlignment="viewStart"
-                    android:text="@string/settings_lightning_default_description" />
 
         </LinearLayout>
 

@@ -8,6 +8,7 @@ import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
+import io.muun.common.model.ReceiveFormatPreference
 import rx.Observable
 import javax.inject.Inject
 
@@ -36,7 +37,7 @@ class LightningSettingsPresenter
         when (state.kind!!) {
             ActionState.Kind.EMPTY, ActionState.Kind.ERROR -> {
                 view.setLoading(false)
-                view.update(!prefs.strictMode, prefs.lightningDefaultForReceiving)
+                view.update(!prefs.strictMode, prefs.receivePreference)
             }
             ActionState.Kind.LOADING -> {
                 view.setLoading(true)
@@ -51,9 +52,9 @@ class LightningSettingsPresenter
         }
     }
 
-    fun toggleLightningForReceiving() {
+    fun updateReceivePreference(newReceivePreference: ReceiveFormatPreference) {
         updateUserPreferences.run { prefs ->
-            prefs.copy(lightningDefaultForReceiving = !prefs.lightningDefaultForReceiving)
+            prefs.copy(receivePreference = newReceivePreference)
         }
     }
 

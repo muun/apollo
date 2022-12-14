@@ -4,7 +4,13 @@ import io.muun.apollo.BaseTest
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.DecodedInvoice
-import io.muun.apollo.domain.model.*
+import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.FeeWindow
+import io.muun.apollo.domain.model.NextTransactionSize
+import io.muun.apollo.domain.model.PaymentContext
+import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.Sha256Hash
+import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.user.User
 import io.muun.common.bitcoinj.NetworkParametersHelper
 import io.muun.common.model.DebtType
@@ -18,7 +24,7 @@ import org.mockito.Mockito.doReturn
 import java.lang.Math.pow
 import javax.money.Monetary
 
-class PaymentContextTest: BaseTest() {
+class PaymentContextTest : BaseTest() {
 
     private val USD = Monetary.getCurrency("USD")
 
@@ -258,7 +264,7 @@ class PaymentContextTest: BaseTest() {
         val payReq = submarineSwapPayReq(amountInSatoshis, swap)
 
         val expectedFee = feeCalculatorForSwap(swap)
-                .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
+            .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
 
         val expectedTotal = outputAmountInSatohis + expectedFee
 
@@ -286,7 +292,7 @@ class PaymentContextTest: BaseTest() {
         val payReq = submarineSwapPayReq(amountInSatoshis, swap)
 
         val expectedFee = feeCalculatorForSwap(swap)
-                .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
+            .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
 
         val expectedTotal = outputAmountInSatohis + expectedFee
 
@@ -314,7 +320,7 @@ class PaymentContextTest: BaseTest() {
         val payReq = submarineSwapPayReq(amountInSatoshis, swap)
 
         val expectedFee = feeCalculatorForSwap(swap)
-                .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
+            .calculate(outputAmountInSatohis, takeFeeFromAmount = true)
 
         val expectedTotal = outputAmountInSatohis + expectedFee
 
@@ -767,30 +773,33 @@ class PaymentContextTest: BaseTest() {
         }
     }
 
-    private val defaultFeeCalculator get() =
-        FeeCalculator(defaultFeeRate, nextTransactionSize)
+    private val defaultFeeCalculator
+        get() =
+            FeeCalculator(defaultFeeRate, nextTransactionSize)
 
-    private val totalBalance get() =
-        nextTransactionSize.userBalance
+    private val totalBalance
+        get() =
+            nextTransactionSize.userBalance
 
     private fun submarineSwapPayReq(amountInSatoshis: Long, swap: SubmarineSwap): PaymentRequest {
         // We can't use libwallet in tests yet :(
         val invoice = LnInvoice.decode(Globals.INSTANCE.network, swap.invoice)
 
         return PaymentRequest(
-                type = PaymentRequest.Type.TO_LN_INVOICE,
-                amount = payCtx.convertToBitcoin(amountInSatoshis),
-                description = "Some swap",
-                invoice = DecodedInvoice(
-                        swap.invoice,
-                        invoice.amount?.amountInSatoshis,
-                        invoice.description ?: "",
-                        invoice.expirationTime,
-                        invoice.destinationPubKey,
-                        Sha256Hash.fromHex(invoice.id)
-                ),
-                swap = swap,
-                feeInSatoshisPerByte = defaultFeeCalculator.satoshisPerByte
+            type = PaymentRequest.Type.TO_LN_INVOICE,
+            amount = payCtx.convertToBitcoin(amountInSatoshis),
+            description = "Some swap",
+            invoice = DecodedInvoice(
+                swap.invoice,
+                invoice.amount?.amountInSatoshis,
+                invoice.description ?: "",
+                invoice.expirationTime,
+                invoice.destinationPubKey,
+                Sha256Hash.fromHex(invoice.id),
+                NetworkParametersHelper.getNetworkParametersFromName("regtest")
+            ),
+            swap = swap,
+            feeInSatoshisPerByte = defaultFeeCalculator.satoshisPerByte
         )
     }
 

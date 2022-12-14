@@ -103,7 +103,8 @@ object Invoice {
             invoice.description,
             ZonedDateTime.ofInstant(Instant.ofEpochSecond(invoice.expiry), ZoneId.of("Z")),
             Encodings.bytesToHex(invoice.destination),
-            Sha256Hash.fromBytes(invoice.paymentHash)
+            Sha256Hash.fromBytes(invoice.paymentHash),
+            params
         )
     }
 

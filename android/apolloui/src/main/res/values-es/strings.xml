@@ -1413,13 +1413,7 @@
         Recibir algunos pagos en lightning llevará más tiempo.
     </string>
     <string name="turbo_channels_disable">APAGAR</string>
-    <string name="settings_lightning_default_title">Predeterminar a Lightning</string>
-    <string name="settings_lightning_default_description">
-        En Muun, puedes recibir fondos a través de la Red de Bitcoin o la Red de Lightning.
-        \n\nMuchos servicios no son compatibles con Lightning aún, así que cuando aprietas el botón de
-        Recibir, tu monedero prioriza a la Red de Bitcoin y muestra una dirección de bitcoin. Al
-        predeterminar a Lightning, tu monedero mostrará una factura de lightning, y deberás cambiar
-        manualmente a Bitcoin cada vez que necesites una dirección de bitcoin.</string>
+
     <string name="settings_header_advanced">Configuración avanzada</string>
     <string name="settings_lightning">Lightning Network</string>
     <string name="settings_bitcoin">Bitcoin Network</string>
@@ -1655,6 +1649,43 @@
     <string name="rc_error_credentials_dont_match_desc">
         Por favor, asegúrarte de ingresar el Código de Recuperación que recupera el monedero que usa
         el correo <annotation fontStyle="bold"><annotation arg="0">email</annotation></annotation>.
+    </string>
+
+    <string name="edit_receive_preference">Protocolo para recibir</string>
+    <string name="settings_receive_preference_description">
+        Al recibir fondos, debes elegir entre usar la Red de Bitcoin o la Red de Lightning.
+        \n\n
+        En el futuro, ya no necesitarás hacerlo
+        (<annotation link="https://bitcoinqr.dev/">más información</annotation>).
+    </string>
+    <string name="receive_preference_picker_title">Elige tu protocolo para recibir</string>
+    <string name="receive_preference_bitcoin">Priorizar bitcoin</string>
+    <string name="receive_preference_bitcoin_desc">
+        Mostrar primero una dirección de bitcoin. La forma más aceptada y confiable de realizar
+        transacciones en bitcoin.
+    </string>
+    <string name="receive_preference_lightning">Priorizar lightning</string>
+    <string name="receive_preference_lightning_desc">
+        Mostrar primero una factura de lightning. Los pagos en lightning pueden ser más rápidos y
+        económicos, pero algunos servicios aún no los soportan.
+    </string>
+    <string name="receive_preference_unified">Unificado</string>
+    <string name="receive_preference_unified_desc">
+        🧪 <annotation fontColor="muunBlack">Experimental.</annotation> Mostrar un código QR
+        unificado que codifica tanto una dirección de bitcoin como una factura de lightning. Muchos
+        servicios no soportan este formato unificado aún.
+    </string>
+    <string name="show_unified_qr_title">Recibir bitcoin</string>
+    <string name="show_unified_qr_advanced_settings">Configuración</string>
+    <string name="show_unified_qr_full_content">
+        🧪 Los códigos QR unificados son experimentales
+        (<annotation link="https://bitcoinqr.dev/">más información</annotation>)
+        \n\n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu dirección de bitcoin
+        </annotation></annotation>
+        \n\n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu factura de lightning
+        </annotation></annotation>
+        \n\n<annotation arg="1">some_lightning_invoice</annotation>
     </string>
 
 </resources>

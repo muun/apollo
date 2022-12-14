@@ -14,7 +14,7 @@ import io.muun.apollo.presentation.ui.utils.setTextAppearanceCompat
 class RadioPicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
     Picker<RadioPicker.Option>(c, a, s) {
 
-    class Option(id: Int, val label: CharSequence, val isChecked: Boolean):
+    class Option(id: Int, val label: CharSequence, val isChecked: Boolean) :
         Picker.Option(id)
 
     @BindView(R.id.picker_title)
@@ -27,7 +27,11 @@ class RadioPicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null,
         get() = R.layout.view_radio_picker
 
     fun setTitle(@StringRes resId: Int) {
-        titleView.setText(resId)
+        setTitle(context.getString(resId))
+    }
+
+    override fun setTitle(title: CharSequence) {
+        titleView.text = title
         titleView.visibility = VISIBLE
     }
 
@@ -49,7 +53,7 @@ class RadioPicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null,
         radioGroup.addView(radioButton)
     }
 
-    override fun setOnOptionPickListener(listener: Picker.OnOptionPickListener) {
+    override fun setOnOptionPickListener(listener: OnOptionPickListener) {
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             listener.onOptionPick(checkedId)
         }

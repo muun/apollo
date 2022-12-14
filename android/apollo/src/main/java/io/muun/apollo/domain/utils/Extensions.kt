@@ -121,7 +121,7 @@ fun String?.isEmpty(): Boolean =
     this == null || TextUtils.isEmpty(this)
 
 fun Context.locale(): Locale =
-    ConfigurationCompat.getLocales(resources.configuration)[0]
+    ConfigurationCompat.getLocales(resources.configuration)[0]!!
 
 fun List<String>.toLibwalletModel(): StringList =
     Libwallet.newStringList().also { this.forEach(it::add) }

@@ -1360,13 +1360,7 @@
         Receiving some lightning payments will take much longer.
     </string>
     <string name="turbo_channels_disable">DISABLE</string>
-    <string name="settings_lightning_default_title">Default to Lightning on Receive</string>
-    <string name="settings_lightning_default_description">
-        In Muun, you can receive funds via the Bitcoin Network or the Lightning Network.
-        \n\nMany services don\’t support Lightning yet, so when you tap on the Receive button, your
-        wallet defaults to the Bitcoin Network and shows a bitcoin address. By defaulting to
-        Lightning, your wallet will show a lightning invoice, and you\’ll need to manually switch to
-        Bitcoin each time you need a bitcoin address.</string>
+
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
     <string name="settings_bitcoin">Bitcoin Network</string>
@@ -1602,5 +1596,43 @@
         Please make sure you enter the Recovery Code that recovers the wallet using the email
         <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>.
     </string>
+
+    <string name="edit_receive_preference">Receiving protocol</string>
+    <string name="settings_receive_preference_description">
+        When receiving funds, you have to choose between using the Bitcoin Network or the Lightning
+        Network.
+        \n\nIn the future, you won\'t need to do it anymore
+        (<annotation link="https://bitcoinqr.dev/">learn more</annotation>).
+    </string>
+    <string name="receive_preference_picker_title">Choose your receiving protocol</string>
+    <string name="receive_preference_bitcoin">Bitcoin first</string>
+    <string name="receive_preference_bitcoin_desc">
+        Default to show a bitcoin address. The most widely accepted and reliable way of transacting
+        in bitcoin.
+    </string>
+    <string name="receive_preference_lightning">Lightning first</string>
+    <string name="receive_preference_lightning_desc">
+        Default to show a lightning invoice. Lightning payments can be faster and cheaper, but some
+        services don\'t support them yet.
+    </string>
+    <string name="receive_preference_unified">Unified</string>
+    <string name="receive_preference_unified_desc">
+        🧪 <annotation fontColor="muunBlack">Experimental.</annotation> Default to a unified QR
+        code that encodes both a bitcoin address and a lightning invoice. Many services don\'t
+        support this unified format yet.
+    </string>
+    <string name="show_unified_qr_title">Receive bitcoin</string>
+    <string name="show_unified_qr_advanced_settings">Settings</string>
+    <string name="show_unified_qr_full_content">
+        🧪 Unified QR codes are experimental
+        (<annotation link="https://bitcoinqr.dev/">learn more</annotation>)
+        \n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Your bitcoin address
+        </annotation></annotation>
+        \n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Your lightning invoice
+        </annotation></annotation>
+        \n<annotation arg="1">some_lightning_invoice</annotation>
+    </string>
+
 
 </resources>

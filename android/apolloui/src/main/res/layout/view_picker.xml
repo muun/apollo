@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background"
-    android:padding="@dimen/muun_screen_margin">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/background"
+        android:padding="@dimen/muun_screen_margin">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,16 +13,19 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/picker_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp"
             android:fontFamily="sans-serif-medium"
             android:lineSpacingExtra="0sp"
-            android:text="@string/address_picker_title"
             android:textColor="@color/text_primary_color"
             android:textSize="24sp"
-            android:textStyle="normal" />
+            android:textStyle="normal"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="@string/address_picker_title" />
 
         <LinearLayout
             android:id="@+id/picker_card_container"

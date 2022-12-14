@@ -3,7 +3,6 @@ package io.muun.apollo.utils.screens
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.new_operation.NewOperationStep
 import io.muun.apollo.presentation.ui.show_qr.ShowQrPage
 import io.muun.apollo.utils.Clipboard
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
@@ -12,19 +11,21 @@ import javax.money.MonetaryAmount
 
 class ReceiveScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
-    val address: String get() {
-        id(R.id.show_qr_copy).click()
-        return Clipboard.read()
-    }
+    val address: String
+        get() {
+            id(R.id.show_qr_copy).click()
+            return Clipboard.read()
+        }
 
-    val invoice: String get() {
-        normalizedLabel(ShowQrPage.LN.titleRes).click()
-        id(R.id.show_qr_copy).click()
-        return Clipboard.read()
-    }
+    val invoice: String
+        get() {
+            normalizedLabel(ShowQrPage.LN.titleRes).click()
+            id(R.id.show_qr_copy).click()
+            return Clipboard.read()
+        }
 
     fun goToScanLnUrl() {
         desc(R.string.scan_lnurl).click()
