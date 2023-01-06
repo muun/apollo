@@ -41,6 +41,9 @@ const (
 	bip21UnifiedQr                              = bitcoinScheme + address + "?" + lightningParam + invoice
 	bip21UnifiedQrWithAmount                    = bitcoinScheme + address + "?amount=0.000001&" + lightningParam + invoice100Sat
 	bip21UnifiedQrWithAmountMismatch            = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice100Sat
+  bip21UnifiedQrInconsistentCase1             = bitcoinScheme + address + "?" + lightningParam + invoice100Sat
+	bip21UnifiedQrInconsistentCase2             = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice
+  
 	bip21UnifiedQrBip70RetroCompat              = bip70RetroCompatAddress + "&" + lightningParam + invoice
 	bip21UnifiedQrBip70RetroCompatWithAmount    = bip70RetroCompatAddress + "&" + lightningParam + invoice100Sat
 	bip21UnifiedQrBip70NonRetroCompat           = bip70NonRetroCompatAddress + "&" + lightningParam + invoice
@@ -232,6 +235,51 @@ func TestGetPaymentURI(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "BIP21 with lightning invoice with amount but without amount uri/query param",
+			args: args{
+				address: bip21UnifiedQrInconsistentCase1,
+				network: *network,
+			},
+			// Instead of marking this uri as invalid (technically correct) and showing an error we allow a way forward
+			// for the payment and assume the lightning part is the correct one
+			want: &MuunPaymentURI{
+				Address: address,
+				Uri:     bip21UnifiedQrInconsistentCase1,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice100Sat,
+					FallbackAddress: nil,
+					Network:         network,
+					MilliSat:        "100000",
+					Sats:            100,
+					Destination:     invoiceWithAmountDestination,
+					PaymentHash:     invoiceWithAmountPaymentHash,
+					Description:     "",
+				}},
+		},
+		{
+			name: "BIP21 with lightning invoice without amount but with amount uri/query param",
+			args: args{
+				address: bip21UnifiedQrInconsistentCase2,
+				network: *network,
+			},
+			// Instead of marking this uri as invalid (technically correct) and showing an error we allow a way forward
+			// for the payment and assume the lightning part is the correct one
+			want: &MuunPaymentURI{
+				Address: address,
+				Amount:  "2",
+				Uri:     bip21UnifiedQrInconsistentCase2,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice,
+					FallbackAddress: nil,
+					Network:         network,
+					Destination:     invoiceDestination,
+					PaymentHash:     invoicePaymentHash,
+					Description:     "",
+				}},
+		},
+		{
 			name: "BIP70 retrocompat with lightning",
 			args: args{
 				address: bip21UnifiedQrBip70RetroCompat,
@@ -307,6 +355,26 @@ func TestGetPaymentURI(t *testing.T) {
 				Address: strings.ToLower("BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2"),
 				Uri:     "BiTcOiN:BC1QSQP0D3TY8AAA8N9J8R0D2PF3G40VN4AS9TPWY3J9R3GK5K64VX6QWPAXH2",
 			},
+		},
+		{
+			name: "MiXeD Case lightning param",
+			args: args{
+				address: "BiTcOiN:" + address + "?LiGhTnInG=" + invoice,
+				network: *Regtest(),
+			},
+			want: &MuunPaymentURI{
+				Address: address,
+				Uri:     "BiTcOiN:" + address + "?LiGhTnInG=" + invoice,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice,
+					FallbackAddress: nil,
+					Network:         network,
+					MilliSat:        "",
+					Destination:     invoiceDestination,
+					PaymentHash:     invoicePaymentHash,
+					Description:     "",
+				}},
 		},
 	}
 

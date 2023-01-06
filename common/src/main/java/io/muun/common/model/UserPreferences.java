@@ -1,5 +1,8 @@
 package io.muun.common.model;
 
+import io.muun.common.utils.Deprecated;
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -18,23 +21,37 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *  * Add the field to UserPreferences as non-optional without a default
  *  * In StoredUserPreferences add the field with a default value
  *  * In StoredUserPreferences map the field in the constructor and toModel method
+ *
+ *  <p>How to modify or remove preferences:
+ *  YOU DON'T.
+ *  This Json is consumed by both Android and iOS clients. And iOS clients don't ignore unknown
+ *  fields so altering or deleting preferences that are already in production is stricyly forbidden.
+ *  </p>
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true) // This is a foot-gun! Falcon does not honor this :(
 public class UserPreferences {
 
+    @Since(apolloVersion = 201)
     public Boolean receiveStrictMode = false;
 
+    @Since(apolloVersion = 201)
     public Boolean seenNewHome = false;
 
+    @Since(apolloVersion = 600)
     public Boolean seenLnurlFirstTime = false;
 
+    @Deprecated(atApolloVersion = 1001, atFalconVersion = 1008) // Though ignored previously
+    @Since(apolloVersion = 911)
     public Boolean lightningDefaultForReceiving = false;
 
+    @Since(apolloVersion = 700)
     public String defaultAddressType = "segwit";
 
+    @Since(apolloVersion = 1001, falconVersion = 1008)
     public Boolean skippedEmailSetup = false;
 
+    @Since(apolloVersion = 1000)
     public ReceiveFormatPreference receiveFormatPreference = ReceiveFormatPreference.ONCHAIN;
 
     /**

@@ -184,9 +184,9 @@ object Gen {
             pastDate(),
             EkVersion.VERSION_DESCRIPTORS
         ),
-        createdAt: ZonedDateTime? = pastDate()
+        createdAt: ZonedDateTime? = pastDate(),
 
-    ) = User(
+        ) = User(
         hid,
         Optional.ofNullable(email),
         isEmailVerified,
@@ -218,12 +218,12 @@ object Gen {
         }
 
         return FeeWindow(
-                1,
-                ZonedDateTime.now(),
-                targetedFees,
-                1,
-                5,
-                9
+            1,
+            ZonedDateTime.now(),
+            targetedFees,
+            1,
+            5,
+            9
         )
     }
 
@@ -234,7 +234,8 @@ object Gen {
         ExchangeRateWindow(
             1,
             ZonedDateTime.now(),
-            if (exchangeRates.isNotEmpty()) mapOf(*exchangeRates) else mapOf("USD" to 10.0, "BTC" to 30.0)
+            if (exchangeRates.isNotEmpty()) mapOf(*exchangeRates) else mapOf("USD" to 10.0,
+                "BTC" to 30.0)
         )
 
     /**
@@ -242,11 +243,11 @@ object Gen {
      */
     fun sizeForAmount(pair: Pair<Long, Int>) =
         SizeForAmount(
-                pair.first,
-                pair.second,
-                transactionHash() + ":0",
-                UtxoStatus.CONFIRMED,
-                pair.second
+            pair.first,
+            pair.second,
+            transactionHash() + ":0",
+            UtxoStatus.CONFIRMED,
+            pair.second
         )
 
     /**
@@ -291,11 +292,12 @@ object Gen {
     /**
      * Get a PaymentRequest
      */
-    fun payReq(amount: MonetaryAmount = Money.of(0, "USD"),
-               feeRate: Double = 10.0,
-               takeFeeFromAmount: Boolean = false
+    fun payReq(
+        amount: MonetaryAmount = Money.of(0, "USD"),
+        feeRate: Double = 10.0,
+        takeFeeFromAmount: Boolean = false,
 
-    ) = PaymentRequest(
+        ) = PaymentRequest(
         type = PaymentRequest.Type.TO_ADDRESS,
         amount = amount,
         description = "foo",
@@ -304,11 +306,13 @@ object Gen {
         takeFeeFromAmount = takeFeeFromAmount
     )
 
-    fun submarineSwap(outputAmountInSatoshis: Long,
-                      sweepFeeInSatoshis: Long = 0,
-                      lightningFeeInSatoshis: Long = 0,
-                      debtType: DebtType = DebtType.NONE,
-                      debtAmountInSatoshis: Long = 0) =
+    fun submarineSwap(
+        outputAmountInSatoshis: Long,
+        sweepFeeInSatoshis: Long = 0,
+        lightningFeeInSatoshis: Long = 0,
+        debtType: DebtType = DebtType.NONE,
+        debtAmountInSatoshis: Long = 0,
+    ) =
         SubmarineSwap(
             houstonId(),
             "1234-5675",
@@ -325,11 +329,13 @@ object Gen {
             null
         )
 
-    fun amountlessSubmarineSwap(proportionalFee: Long = 1000,
-                                baseFee: Long = 1,
-                                maxDebt: Long = Long.MAX_VALUE,
-                                potentialCollect: Long = 0,
-                                maxAmountFor0Conf: Long = Long.MAX_VALUE) =
+    fun amountlessSubmarineSwap(
+        proportionalFee: Long = 1000,
+        baseFee: Long = 1,
+        maxDebt: Long = Long.MAX_VALUE,
+        potentialCollect: Long = 0,
+        maxAmountFor0Conf: Long = Long.MAX_VALUE,
+    ) =
         SubmarineSwap(
             houstonId(),
             "1234-1234",
@@ -366,12 +372,14 @@ object Gen {
     fun submarineSwapReceiver() =
         SubmarineSwapReceiver("Some ln node", lnAddress(), lnPublicKey())
 
-    fun submarineSwapFundingOutput(outputAmountInSatoshis: Long,
-                                   confirmationsNeeded: Int = 0,
-                                   userLockTime: Int = 30,
-                                   userRefundAddress: MuunAddress = muunAddress(),
-                                   debtType: DebtType = DebtType.NONE,
-                                   debtAmountInSatoshis: Long = 0) =
+    fun submarineSwapFundingOutput(
+        outputAmountInSatoshis: Long,
+        confirmationsNeeded: Int = 0,
+        userLockTime: Int = 30,
+        userRefundAddress: MuunAddress = muunAddress(),
+        debtType: DebtType = DebtType.NONE,
+        debtAmountInSatoshis: Long = 0,
+    ) =
         SubmarineSwapFundingOutput(
             address(),
             outputAmountInSatoshis,
@@ -426,7 +434,7 @@ object Gen {
         paymentHash: ByteArray = RandomGenerator.getBytes(32),
         amount: Long = 0,
         sphinxPacket: ByteArray? = null,
-        htlc: IncomingSwapHtlc? = incomingSwapHtlc()
+        htlc: IncomingSwapHtlc? = incomingSwapHtlc(),
     ) =
         IncomingSwap(
             0,

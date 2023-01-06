@@ -21,12 +21,6 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
     fun getOptional(): Optional<User> =
         watchOptional().toBlocking().first()
 
-    fun emailSetupSkipped(): Boolean =
-        userRepository.emailSetupSkipped
-
-    fun skipEmailSetup() =
-        userRepository.setEmailSetupSkipped()
-
     fun watchBalanceHidden(): Observable<Boolean> =
         userRepository.watchBalanceHidden()
 

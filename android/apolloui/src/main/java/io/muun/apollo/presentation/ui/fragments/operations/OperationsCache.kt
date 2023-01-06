@@ -67,7 +67,7 @@ class OperationsCache @Inject constructor(
         subscription = null
 
         // Reset the subject, to free up memory when observers unsubscribe:
-        cacheSubject = BehaviorSubject.create<OperationsPresenter.ReactiveState<ItemViewModel>>()
+        cacheSubject = BehaviorSubject.create()
     }
 
     fun watch() =

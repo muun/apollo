@@ -1,11 +1,13 @@
 package io.muun.apollo.domain.action.challenge_keys.password_setup
 
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.challenge_keys.CreateChallengeSetupAction
 import io.muun.apollo.domain.action.challenge_keys.SignChallengeAction
 import io.muun.apollo.domain.action.challenge_keys.StoreVerifiedChallengeKeyAction
 import io.muun.apollo.domain.utils.flatDoOnNext
+import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.crypto.ChallengeType
 import rx.Observable
 import javax.inject.Inject
@@ -16,9 +18,9 @@ class SetUpPasswordAction @Inject constructor(
     private val houstonClient: HoustonClient,
     private val createChallengeSetup: CreateChallengeSetupAction,
     private val storeChallengeKey: StoreVerifiedChallengeKeyAction,
-    private val signChallengeAction: SignChallengeAction
-
-): BaseAsyncAction1<String, Void>() {
+    private val signChallengeAction: SignChallengeAction,
+    private val userPreferencesRepository: UserPreferencesRepository,
+) : BaseAsyncAction1<String, Void>() {
 
     /**
      * Finish the password + email setup process. Sign a challenge and create a new ChallengeSetup
@@ -39,6 +41,10 @@ class SetUpPasswordAction @Inject constructor(
                             .flatDoOnNext {
                                 storeChallengeKey.action(chSetup.type, chSetup.publicKey)
                             }
+                            .map {
+                                userPreferencesRepository.updateSkippedEmail(false)
+                            }
+                            .toVoid()
                     }
             }
 }

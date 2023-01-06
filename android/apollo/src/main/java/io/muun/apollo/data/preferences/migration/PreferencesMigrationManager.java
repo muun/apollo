@@ -33,21 +33,16 @@ public class PreferencesMigrationManager {
 
     private final Context context;
 
+    private final SignupDraftManager signupDraftManager;
+    private final LogoutActions logoutActions;
+
     private final SchemaVersionRepository schemaVersionRepository;
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
-
-    private final LogoutActions logoutActions;
-
     private final FeeWindowRepository feeWindowRepository;
-
     private final TransactionSizeRepository transactionSizeRepository;
-
     private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
-
     private final KeysRepository keysRepository;
-
-    private final SignupDraftManager signupDraftManager;
 
     /**
      * An array of migrations, in the order that they must be run.
@@ -117,29 +112,29 @@ public class PreferencesMigrationManager {
     @Inject
     public PreferencesMigrationManager(
             Context context,
-            AuthRepository authRepository,
-            SchemaVersionRepository schemaVersionRepository,
-            UserRepository userRepository,
+            SignupDraftManager signupDraftManager,
             LogoutActions logoutActions,
+            SchemaVersionRepository schemaVersionRepository,
+            AuthRepository authRepository,
+            UserRepository userRepository,
             FeeWindowRepository feeWindowRepository,
             TransactionSizeRepository transactionSizeRepository,
             FirebaseInstallationIdRepository firebaseInstallationIdRepository,
-            KeysRepository keysRepository,
-            SignupDraftManager signupDraftManager
+            KeysRepository keysRepository
     ) {
+
         this.context = context;
 
-        this.schemaVersionRepository = schemaVersionRepository;
+        this.signupDraftManager = signupDraftManager;
+        this.logoutActions = logoutActions;
 
+        this.schemaVersionRepository = schemaVersionRepository;
         this.authRepository = authRepository;
         this.userRepository = userRepository;
         this.feeWindowRepository = feeWindowRepository;
-
-        this.logoutActions = logoutActions;
         this.transactionSizeRepository = transactionSizeRepository;
         this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.keysRepository = keysRepository;
-        this.signupDraftManager = signupDraftManager;
     }
 
     /**

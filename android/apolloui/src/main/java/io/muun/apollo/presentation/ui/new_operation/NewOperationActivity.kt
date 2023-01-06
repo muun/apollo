@@ -510,9 +510,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         MuunDialog.Builder()
             .title(R.string.new_operation_abort_alert_title)
             .message(R.string.new_operation_abort_alert_body)
-            .positiveButton(R.string.abort, Action0 { finishAndGoHome() })
+            .positiveButton(R.string.abort) { finishAndGoHome() }
             .negativeButton(R.string.cancel, null)
-            .onDismiss(DialogInterface.OnDismissListener { presenter.cancelAbort() })
+            .onDismiss { presenter.cancelAbort() }
             .build()
             .let(this::showDialog)
     }

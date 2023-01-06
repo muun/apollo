@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp"
+        android:paddingLeft="@dimen/muun_screen_margin"
+        android:paddingRight="@dimen/muun_screen_margin"
+        android:background="@color/dialog_background">
+
+    <io.muun.apollo.presentation.ui.view.HtmlTextView
+            android:id="@+id/drawer_unified_qr_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:textStyle="normal"
+            android:textColor="@color/text_secondary_color"
+            android:lineSpacingExtra="8sp"
+            tools:text="@string/show_unified_qr_full_content_header" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/muun_screen_margin"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:baselineAligned="false">
+
+        <TextView
+                android:id="@+id/drawer_unified_qr_address"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"
+                android:textColor="@color/text_secondary_color"
+                android:lineSpacingExtra="8sp"
+                tools:text="bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9" />
+
+        <FrameLayout
+                android:id="@+id/drawer_unified_qr_address_copy_clickable_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="34dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="visible">
+
+
+            <ImageView
+                    android:id="@+id/drawer_unified_qr_address_copy_icon"
+                    android:contentDescription="@null"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_copy"
+                    app:tint="@color/icon_color" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/muun_screen_margin"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:baselineAligned="false">
+
+        <TextView
+                android:id="@+id/drawer_unified_qr_invoice"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"
+                android:textColor="@color/text_secondary_color"
+                android:lineSpacingExtra="8sp"
+                tools:text="bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9" />
+
+        <FrameLayout
+                android:id="@+id/drawer_unified_qr_invoice_copy_clickable_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="34dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:visibility="visible">
+
+            <ImageView
+                    android:id="@+id/drawer_unified_qr_invoice_copy_icon"
+                    android:contentDescription="@null"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_copy"
+                    app:tint="@color/icon_color" />
+        </FrameLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1600,8 +1600,7 @@
     <string name="edit_receive_preference">Receiving protocol</string>
     <string name="settings_receive_preference_description">
         When receiving funds, you have to choose between using the Bitcoin Network or the Lightning
-        Network.
-        \n\nIn the future, you won\'t need to do it anymore
+        Network. In the future, you won\'t need to do it anymore
         (<annotation link="https://bitcoinqr.dev/">learn more</annotation>).
     </string>
     <string name="receive_preference_picker_title">Choose your receiving protocol</string>
@@ -1623,16 +1622,20 @@
     </string>
     <string name="show_unified_qr_title">Receive bitcoin</string>
     <string name="show_unified_qr_advanced_settings">Settings</string>
-    <string name="show_unified_qr_full_content">
+
+    <string name="show_unified_qr_full_content_header">
         🧪 Unified QR codes are experimental
         (<annotation link="https://bitcoinqr.dev/">learn more</annotation>)
-        \n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Your bitcoin address
-        </annotation></annotation>
-        \n<annotation arg="0">some_bitcoin_address</annotation>
-        \n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Your lightning invoice
-        </annotation></annotation>
-        \n<annotation arg="1">some_lightning_invoice</annotation>
+        \n\n
     </string>
-
+    <string name="show_unified_qr_full_content_address">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Your bitcoin address
+        </annotation></annotation>\n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_invoice">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Your lightning invoice
+        </annotation></annotation>\n<annotation arg="0">some_lightning_invoice</annotation>
+    </string>
 
 </resources>

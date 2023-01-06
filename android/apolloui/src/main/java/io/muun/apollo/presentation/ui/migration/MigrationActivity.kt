@@ -5,14 +5,13 @@ import android.content.Intent
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.base.BaseActivity
-import io.muun.apollo.presentation.ui.setup_password.SetupPasswordActivity
 import io.muun.apollo.presentation.ui.view.LoadingView
 
-class MigrationActivity: BaseActivity<MigrationPresenter>(), MigrationView {
+class MigrationActivity : BaseActivity<MigrationPresenter>(), MigrationView {
 
     companion object {
         fun getStartActivityIntent(context: Context) =
-                Intent(context, MigrationActivity::class.java)
+            Intent(context, MigrationActivity::class.java)
     }
 
     @BindView(R.id.migration_loading)

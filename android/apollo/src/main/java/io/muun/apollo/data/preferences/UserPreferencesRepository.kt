@@ -1,6 +1,9 @@
 package io.muun.apollo.data.preferences
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
 import io.muun.apollo.domain.model.user.UserPreferences
@@ -37,6 +40,12 @@ open class UserPreferencesRepository @Inject constructor(
         preference.set(StoredUserPreferences(prefs))
     }
 
+    fun updateSkippedEmail(value: Boolean): UserPreferences {
+        val updatedPrefs = preference.get()!!.toModel().copy(skippedEmailSetup = value)
+        update(updatedPrefs)
+        return updatedPrefs
+    }
+
     /*
      When adding a new field:
       * Always set a default value, make sure it matches what houston and falcon say
@@ -47,14 +56,18 @@ open class UserPreferencesRepository @Inject constructor(
 
      For complete instructions, see UserPreferences in common.
      */
-    private class StoredUserPreferences {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @VisibleForTesting // internal should work but kotlin and project setup are preventing it
+    class StoredUserPreferences {
 
         var strictMode: Boolean = false
         var seenNewHome: Boolean = false
         var seenLnurlFirstTime: Boolean = false
         var defaultAddressType: String = "segwit"
-        var lightningDefaultForReceiving: Boolean = false
+        var skippedEmailSetup: Boolean = false
         var receivePreference: ReceiveFormatPreference = ReceiveFormatPreference.ONCHAIN
+
 
         // JSON constructor
         constructor()
@@ -64,7 +77,7 @@ open class UserPreferencesRepository @Inject constructor(
             seenNewHome = prefs.seenNewHome
             seenLnurlFirstTime = prefs.seenLnurlFirstTime
             defaultAddressType = prefs.defaultAddressType
-            lightningDefaultForReceiving = prefs.lightningDefaultForReceiving
+            skippedEmailSetup = prefs.skippedEmailSetup
             receivePreference = prefs.receivePreference
         }
 
@@ -74,7 +87,7 @@ open class UserPreferencesRepository @Inject constructor(
                 seenNewHome,
                 seenLnurlFirstTime,
                 defaultAddressType,
-                lightningDefaultForReceiving,
+                skippedEmailSetup,
                 receivePreference
             )
         }

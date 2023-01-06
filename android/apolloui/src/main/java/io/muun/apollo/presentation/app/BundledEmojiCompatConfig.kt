@@ -2,11 +2,11 @@ package io.muun.apollo.presentation.app
 
 import android.content.Context
 import androidx.annotation.RequiresApi
-import androidx.core.util.Preconditions
 import androidx.emoji2.text.EmojiCompat
 import androidx.emoji2.text.EmojiCompat.MetadataRepoLoader
 import androidx.emoji2.text.EmojiCompat.MetadataRepoLoaderCallback
 import androidx.emoji2.text.MetadataRepo
+import io.muun.common.utils.Preconditions
 
 /**
  * [EmojiCompat.Config] implementation that loads the metadata using AssetManager and

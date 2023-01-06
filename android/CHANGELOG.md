@@ -6,6 +6,28 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.1] - 2023-01-06
+
+### ADDED
+
+- The option to copy to clipboard the separate parts of a unified qr.
+
+### FIXED
+
+- A problem with Android Keystore (secure storage) in J_MODE (api levels between 19 and 22)
+when storing more than 256 bytes.
+- A problem with screen scrolling in Unified QR screen in devices with small screens.
+- Handling of "skipped email setup" preference which could lead users to a poor UX when recovering
+a wallet with an unverified Recovery Code.
+
+### CHANGED
+
+- Added support for mixed cased query params (someone mentioned this was a problem for Alby) AND
+  for bitcoin uris FULLY in uppercase
+- Added better support for "unified qr" bitcoin uris and several test cases for bitcoin uris
+- Removed deprecated lightningDefaultForReceiving preference (dead code)
+- Removed deprecated payment analyzer code (dead code)
+
 ## [50] - 2022-12-8
 
 ### ADDED

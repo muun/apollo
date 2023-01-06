@@ -72,25 +72,28 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	}
 
 	var label, message, amount string
-
-	if len(queryValues["label"]) != 0 {
-		label = queryValues["label"][0]
-	}
-
-	if len(queryValues["message"]) != 0 {
-		message = queryValues["message"][0]
-	}
-
-	if len(queryValues["amount"]) != 0 {
-		amount = queryValues["amount"][0]
-	}
-
 	var invoice *Invoice
-	if len(queryValues["lightning"]) != 0 {
-		invoice, err = ParseInvoice(queryValues["lightning"][0], network)
 
-		if err != nil {
-			return nil, errors.Errorf(ErrInvalidURI, "Couldn't parse query: %v", err)
+	for queryParam := range queryValues {
+
+		if strings.ToLower(queryParam) == "label" {
+			label = queryValues[queryParam][0]
+		}
+
+		if strings.ToLower(queryParam) == "message" {
+			message = queryValues[queryParam][0]
+		}
+
+		if strings.ToLower(queryParam) == "amount" {
+			amount = queryValues[queryParam][0]
+		}
+
+		if strings.ToLower(queryParam) == "lightning" {
+			invoice, err = ParseInvoice(queryValues[queryParam][0], network)
+
+			if err != nil {
+				return nil, errors.Errorf(ErrInvalidURI, "Couldn't parse query: %v", err)
+			}
 		}
 	}
 
@@ -144,10 +147,18 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	}
 
 	// Check for unified QR Uris to have same amount if they have one
-	if invoice != nil && invoice.Sats != 0 {
-		invoiceAmount := decimal.NewFromInt(invoice.Sats).Div(decimal.NewFromInt(100_000_000)).String()
-		if invoiceAmount != amount {
-			return nil, errors.New(ErrInvalidURI, "Amount mismatch")
+	if invoice != nil {
+
+		if invoice.Sats != 0 {
+			invoiceAmount := decimal.NewFromInt(invoice.Sats).Div(decimal.NewFromInt(100_000_000)).String()
+
+			// We ONLY mark the uri as invalid (and return an error) if both amount exists and are different. Otherwise,
+			// we will allow a way to move forward with the payment by assuming the lightning part is the correct one.
+			if amount != "" {
+				if invoiceAmount != amount {
+					return nil, errors.New(ErrInvalidURI, "Amount mismatch")
+				}
+			}
 		}
 	}
 

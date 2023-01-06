@@ -6,13 +6,6 @@ import io.muun.common.model.DebtType
 
 class SubmarineSwapFees(val lightningInSats: Long = 0, private val outputPaddingInSats: Long = 0) {
 
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    val total = lightningInSats + outputPaddingInSats
-
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun getSweepInSats() =
-        outputPaddingInSats
-
     /**
      * LEND swaps have no associated on-chain tx, so sweepFee/outputPadding does not apply. This
      * is enforced here as our backend (namely Swapper), was designed so that Swaps were categorized

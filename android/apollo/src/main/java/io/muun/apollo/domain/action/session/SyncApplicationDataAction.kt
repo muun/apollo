@@ -13,8 +13,8 @@ import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
-import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.errors.InitialSyncError
+import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.model.LoginWithRc
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.rx.RxHelper

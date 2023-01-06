@@ -13,12 +13,10 @@ import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
-import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
+import io.muun.apollo.presentation.ui.show_qr.UnifiedQrFullContentDialogFragment
 import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
-import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.utils.openInBrowser
 import io.muun.apollo.presentation.ui.view.AddressTypeItem
 import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
@@ -141,17 +139,16 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     }
 
     override fun showFullContent(bitcoinUri: String, address: String, invoice: String) {
-        val dialog = TitleAndDescriptionDrawer()
+        val dialog = UnifiedQrFullContentDialogFragment()
 
-        StyledStringRes(requireContext(), R.string.show_unified_qr_full_content, this::learnMore)
-            .toCharSequence(address, invoice)
-            .let(dialog::setDescription)
+        dialog.setAddress(address)
+        dialog.setInvoice(invoice)
+
+        dialog.setOnAddressClickListener { presenter.copyAddress() }
+        dialog.setOnInvoiceClickListener { presenter.copyInvoice() }
+
 
         showDrawerDialog(dialog)
-    }
-
-    private fun learnMore(link: String) {
-        requireContext().openInBrowser(link)
     }
 
     override fun toggleAdvancedSettings() {

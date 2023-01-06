@@ -329,7 +329,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     enum class ADDRESS_ORIGIN {
         QR,
-        COPY_BUTTON
+        COPY_BUTTON,
+        UNIFIED_QR_ADDRESS_ONLY,
+        UNIFIED_QR_INVOICE_ONLY
     }
 
     class E_ADDRESS_COPIED(origin: ADDRESS_ORIGIN) : AnalyticsEvent(listOf(

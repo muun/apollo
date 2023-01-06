@@ -27,6 +27,7 @@ public class MuunActionDrawer extends MuunView {
     @BindView(R.id.muun_action_drawer_container)
     ViewGroup container;
 
+    @Nullable   // Subclasses may not have this view
     @BindView(R.id.muun_action_drawer_title)
     TextView title;
 

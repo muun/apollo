@@ -8,9 +8,9 @@ import rx.Observable
 import javax.inject.Inject
 
 class FetchSwapServerKeyAction @Inject constructor(
-        val keysRepository: KeysRepository,
-        val houstonClient: HoustonClient
-): BaseAsyncAction0<Void>() {
+    val keysRepository: KeysRepository,
+    val houstonClient: HoustonClient,
+) : BaseAsyncAction0<Void>() {
 
     override fun action(): Observable<Void> {
         return Observable.defer {

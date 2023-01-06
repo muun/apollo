@@ -16,4 +16,8 @@ class UserPreferencesSelector @Inject constructor(
     fun get(): UserPreferences {
         return watch().toBlocking().first()
     }
+
+    fun emailSetupSkipped(): Boolean {
+        return get().skippedEmailSetup
+    }
 }

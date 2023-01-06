@@ -4,10 +4,6 @@ import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime
 import io.muun.apollo.domain.model.base.HoustonUuidModel
 import io.muun.common.api.SubmarineSwapJson
 import io.muun.common.model.DebtType
-import libwallet.BestRouteFees
-import libwallet.BestRouteFeesList
-import libwallet.FundingOutputPolicies
-import libwallet.Libwallet
 import newop.SwapInfo
 import org.threeten.bp.ZonedDateTime
 
@@ -26,8 +22,8 @@ class SubmarineSwap(
     val expiresAt: ZonedDateTime,
     val payedAt: ZonedDateTime?,                                            // may not be payed yet
     private val preimageInHex: String?,
-    val bestRouteFees: List<SubmarineSwapBestRouteFees>? = null,            // Transient
-    val fundingOutputPolicies: SubmarineSwapFundingOutputPolicies? = null,  // Transient
+    private val bestRouteFees: List<SubmarineSwapBestRouteFees>? = null,            // Transient
+    private val fundingOutputPolicies: SubmarineSwapFundingOutputPolicies? = null,  // Transient
 ) : HoustonUuidModel(id, houstonUuid) {
 
     companion object {
@@ -76,79 +72,6 @@ class SubmarineSwap(
             preimageInHex
         )
 
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun getParamsForAmount(amountInSats: Long, takeFeeFromAmount: Boolean): SubmarineSwapExecutionParameters {
-
-        checkNotNull(bestRouteFees)
-        checkNotNull(fundingOutputPolicies)
-
-        val bestRouteFeesList = BestRouteFeesList()
-
-        bestRouteFees.forEach { route ->
-
-            val item = BestRouteFees()
-            item.maxCapacity = route.maxCapacityInSat
-            item.feeProportionalMillionth = route.proportionalMillionth
-            item.feeBase = route.baseInSat
-
-            bestRouteFeesList.add(item)
-        }
-
-        val policies = FundingOutputPolicies()
-        policies.maximumDebt = if (takeFeeFromAmount) {
-            0
-        } else {
-            fundingOutputPolicies.maximumDebtInSat
-        }
-        policies.potentialCollect = fundingOutputPolicies.potentialCollectInSat
-        policies.maxAmountFor0Conf = fundingOutputPolicies.maxAmountInSatFor0Conf
-
-        val fees = Libwallet.computeSwapFees(amountInSats, bestRouteFeesList, policies)!!
-
-        return SubmarineSwapExecutionParameters(
-            fees.sweepFee,
-            fees.routingFee,
-            DebtType.valueOf(fees.debtType),
-            fees.debtAmount,
-            fees.confirmationsNeeded.toInt()
-        )
-    }
-
-    /**
-     * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
-     */
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun withAmount(newAmountInSat: Long): SubmarineSwap =
-        SubmarineSwap(
-            id,
-            houstonUuid,
-            invoice,
-            receiver,
-            fundingOutput.withOutputAmount(newAmountInSat + fees!!.total),
-            fees,
-            expiresAt,
-            payedAt,
-            preimageInHex
-        )
-
-    /**
-     * Return a cloned SubmarineSwap adding certain SubmarineSwapExecutionParameters.
-     * Used for AmountLess Invoice swaps.
-     */
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun withParams(params: SubmarineSwapExecutionParameters, outputAmountInSats: Long) =
-        SubmarineSwap(
-            id,
-            houstonUuid,
-            invoice,
-            receiver,
-            fundingOutput.withSwapParams(params, outputAmountInSats),
-            SubmarineSwapFees(params.routingFeeInSats, params.sweepFeeInSats),
-            expiresAt,
-            payedAt,
-            preimageInHex
-        )
-
     /**
      * Return a cloned SubmarineSwap adding certain params calculated after specifying amount.
      * Used for AmountLess Invoice swaps.
@@ -168,11 +91,12 @@ class SubmarineSwap(
         )
     }
 
-    fun outputPaddingInSat(): Long?  =
+    private fun outputPaddingInSat(): Long? =
         fees?.outputPaddingInSat(fundingOutput.debtType!!)
 
     fun totalFeesInSat(): Long? =
         fees?.totalInSat(fundingOutput.debtType!!)
+
     /**
      * Adapt apollo's (java) model to libwallet's (go).
      */
