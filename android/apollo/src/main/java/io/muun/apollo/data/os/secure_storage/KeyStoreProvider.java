@@ -1,6 +1,7 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.common.crypto.CryptographyException;
+import io.muun.common.utils.Preconditions;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -46,6 +47,17 @@ public class KeyStoreProvider {
             SUBJECT = new X500Principal("CN=io.muun.apollo, O=Android Authority");
     private static final String RSA = "RSA";
 
+    // Note: this constant is used for J_MODE (api 19 to 22) only, though it may generate
+    // limitations for M_MODE (api 23 and up) too.
+    // The RSA algorithm can only encrypt data that has a maximum byte length of the RSA key length
+    // in bits divided with eight minus eleven padding bytes, i.e.
+    // number of maximum bytes = key length in bits / 8 (-11 if you have padding).
+    // Default RSA key size is 2048, which gives us a max data storage size of 256 bytes. Since we
+    // need to store more than that in some places (e.g SignupDraftManager) we are doubling it to
+    // 4096 which allow us to store up to 512 (which should be more than enough).
+    private static final int RSA_KEY_SIZE_IN_BITS = 4096;
+    private static final int RSA_MAX_STORAGE_SIZE_IN_BYTES = RSA_KEY_SIZE_IN_BITS / 8;
+
     private final Context context;
 
     @Inject
@@ -90,6 +102,11 @@ public class KeyStoreProvider {
      * @return encrypted data.
      */
     public byte[] encryptData(byte[] input, String alias, byte[] iv) {
+
+        // This constraint should really apply to J_MODE only, but we enforce it across all versions
+        // to keep consistency and to avoid errors or mistakes going unnoticed.
+        Preconditions.checkArgument(input.length <= RSA_MAX_STORAGE_SIZE_IN_BYTES);
+
         try {
             final KeyStore keyStore = loadKeystore();
             final String keyAlias = getAlias(alias);
@@ -207,11 +224,12 @@ public class KeyStoreProvider {
                     .setSubject(SUBJECT)
                     .setSerialNumber(BigInteger.ONE)
                     .setStartDate(start)
+                    .setKeySize(RSA_KEY_SIZE_IN_BITS)
                     .setEndDate(end)
                     .build();
 
-            final KeyPairGenerator generator = KeyPairGenerator.getInstance(RSA,
-                    ANDROID_KEY_STORE);
+            final KeyPairGenerator generator = KeyPairGenerator.getInstance(RSA, ANDROID_KEY_STORE);
+
             generator.initialize(spec);
             generator.generateKeyPair();
 

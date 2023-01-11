@@ -10,20 +10,19 @@ import javax.inject.Singleton
 
 @Singleton
 class RegisterInvoicesAction @Inject constructor(
-        private val keysRepository: KeysRepository,
-        private val houstonClient: HoustonClient
-): BaseAsyncAction0<Void>() {
+    private val keysRepository: KeysRepository,
+    private val houstonClient: HoustonClient,
+) : BaseAsyncAction0<Void>() {
 
     override fun action(): Observable<Void> {
         return Observable.defer {
             val invoices = Invoice.generateSecrets(keysRepository.basePublicKeyPair)
 
             houstonClient.registerInvoices(invoices.list())
-                    .andThen(Observable.fromCallable {
-                        Invoice.persistSecrets(invoices)
-                        null
-                    })
+                .andThen(Observable.fromCallable {
+                    Invoice.persistSecrets(invoices)
+                    null
+                })
         }
     }
-
 }

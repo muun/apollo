@@ -47,6 +47,9 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
     @BindView(R.id.show_qr_viewpager)
     ViewPager viewPager;
 
+    @BindView(R.id.show_qr_viewpager_container)
+    View viewPagerContainer;
+
     @BindView(R.id.show_qr_unified_qr_container)
     View unifiedQrLayoutContainer;
 
@@ -98,6 +101,7 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> {
         if (presenter.showUnifiedQr()) {
             viewPager.setVisibility(View.GONE);
             tabLayout.setVisibility(View.GONE);
+            viewPagerContainer.setVisibility(View.GONE);
 
             replaceFragment(new ShowUnifiedQrFragment(), false);
             unifiedQrLayoutContainer.setVisibility(View.VISIBLE);

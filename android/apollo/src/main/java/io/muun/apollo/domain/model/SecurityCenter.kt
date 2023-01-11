@@ -6,7 +6,7 @@ class SecurityCenter(private val user: User, private val emailSetupSkipped: Bool
 
     fun getLevel(): SecurityLevel {
 
-        val hasSkippedEmailSetup = emailSetupSkipped || (user.hasRecoveryCode && !user.hasPassword)
+        val hasSkippedEmailSetup = emailSetupSkipped()
 
         val hasEmergencyKit = user.emergencyKit.isPresent
         val didExportKeys = hasEmergencyKit || user.hasExportedKeys // retroCompat
@@ -47,6 +47,5 @@ class SecurityCenter(private val user: User, private val emailSetupSkipped: Bool
         user.email.orElse(null)
 
     fun emailSetupSkipped(): Boolean =
-        emailSetupSkipped || (user.hasRecoveryCode && !user.hasPassword)
-
+        !user.hasPassword && emailSetupSkipped
 }

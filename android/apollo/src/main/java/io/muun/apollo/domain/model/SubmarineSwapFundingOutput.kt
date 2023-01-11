@@ -68,27 +68,6 @@ data class SubmarineSwapFundingOutput(
         )
 
     /**
-     * Use this with caution. So far, we use it ONLY for special analysis after INSUFFICIENT_FUNDS.
-     */
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun withOutputAmount(newAmountInSat: Long): SubmarineSwapFundingOutput =
-        copy(outputAmountInSatoshis = newAmountInSat + debtAmountInSatoshis!!)
-
-    /**
-     * Return a cloned SubmarineSwapFundingOutput adding certain SubmarineSwapExecutionParameters.
-     * Used for AmountLess Invoice swaps.
-     */
-    @Deprecated("Should be remove with old NewOp Presenter and PaymentAnalyzer", ReplaceWith(""))
-    fun withSwapParams(params: SubmarineSwapExecutionParameters, outputAmountInSats: Long) =
-        copy(
-            outputAmountInSatoshis = outputAmountInSats,
-            debtType = params.debtType,
-            debtAmountInSatoshis =  params.debtAmountInSats,
-            confirmationsNeeded = params.confirmationsNeeded
-        )
-
-
-    /**
      * Return a cloned SubmarineSwapFundingOutput adding certain SubmarineSwapExecutionParameters.
      * Used for AmountLess Invoice swaps.
      */

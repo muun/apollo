@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.setup_password
 
 import android.os.Bundle
+import io.muun.apollo.data.preferences.migration.MigrateSkippedEmailSetupAction
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.challenge_keys.password_setup.SetUpPasswordAction
 import io.muun.apollo.domain.action.challenge_keys.password_setup.StartEmailSetupAction
@@ -18,15 +19,15 @@ import javax.inject.Inject
 
 class SetupPasswordActivityPresenter @Inject constructor(
     private val startEmailSetup: StartEmailSetupAction,
-    private val setUpPassword: SetUpPasswordAction
-
-): BasePresenter<SetupPasswordActivityView>(),
-   SetupPasswordIntroParentPresenter,
-   CreateEmailParentPresenter,
-   VerifyEmailParentPresenter,
-   CreatePasswordParentPresenter,
-   SetupPasswordAcceptParentPresenter,
-   SetupPasswordSuccessParentPresenter {
+    private val setUpPassword: SetUpPasswordAction,
+    private val migrateSkippedEmailSetup: MigrateSkippedEmailSetupAction,
+) : BasePresenter<SetupPasswordActivityView>(),
+    SetupPasswordIntroParentPresenter,
+    CreateEmailParentPresenter,
+    VerifyEmailParentPresenter,
+    CreatePasswordParentPresenter,
+    SetupPasswordAcceptParentPresenter,
+    SetupPasswordSuccessParentPresenter {
 
     private var form = SetupPasswordForm(
         step = SetupPasswordStep.INTRO,
@@ -122,7 +123,8 @@ class SetupPasswordActivityPresenter @Inject constructor(
 
     fun skipPasswordSetup() {
         analytics.report(AnalyticsEvent.E_EMAIL_SETUP_SKIPPED())
-        userSel.skipEmailSetup()
+        // This is a best effort, we're not handling loading or failures, we accept it is imperfect
+        migrateSkippedEmailSetup.run(true)
         view.finishActivity()
     }
 

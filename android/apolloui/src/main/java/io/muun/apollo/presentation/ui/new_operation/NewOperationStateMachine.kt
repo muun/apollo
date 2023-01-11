@@ -1,13 +1,27 @@
 package io.muun.apollo.presentation.ui.new_operation
 
 import io.muun.apollo.domain.errors.newop.NewOpStateError
-import newop.*
+import newop.AbortState
+import newop.BalanceErrorState
+import newop.ConfirmLightningState
+import newop.ConfirmState
+import newop.EditFeeState
+import newop.EnterAmountState
+import newop.EnterDescriptionState
+import newop.ErrorState
+import newop.Newop
+import newop.ResolveState
+import newop.StartState
+import newop.State
+import newop.TransitionListener
+import newop.ValidateLightningState
+import newop.ValidateState
 import rx.Observable
 import rx.subjects.BehaviorSubject
 
 class NewOperationStateMachine {
 
-    private val subject: BehaviorSubject <State> = BehaviorSubject.create()
+    private val subject: BehaviorSubject<State> = BehaviorSubject.create()
     private val listener: Listener = Listener(subject)
 
     init {
@@ -33,7 +47,7 @@ class NewOperationStateMachine {
     }
 }
 
-class Listener(private val subject: BehaviorSubject<State>): TransitionListener {
+class Listener(private val subject: BehaviorSubject<State>) : TransitionListener {
 
     override fun onResolve(nextState: ResolveState) {
         subject.onNext(nextState)

@@ -12,12 +12,11 @@ import javax.inject.Inject
 
 class MigrateChallengeKeysAction @Inject constructor(
     val keysRepository: KeysRepository,
-    val houstonClient: HoustonClient
-
-): BaseAsyncAction0<Void>() {
+    val houstonClient: HoustonClient,
+) : BaseAsyncAction0<Void>() {
 
     override fun action(): Observable<Void> =
-        if (! keysRepository.hasMigratedChallengeKeys())
+        if (!keysRepository.hasMigratedChallengeKeys())
             executeMigration()
         else
             Observable.just(null)

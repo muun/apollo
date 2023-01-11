@@ -5,6 +5,7 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.StringRes
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.SecurityCenter
@@ -18,7 +19,7 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunProgressBar
 import io.muun.apollo.presentation.ui.view.MuunTaskCard
 
-class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), SecurityCenterView {
+class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), SecurityCenterView {
 
     @BindView(R.id.tag_email_skipped)
     lateinit var emailSkippedTag: View
@@ -82,10 +83,12 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
         menu.clear() // Effectively state that we don't want menu items. Yeap, this is how its done.
     }
 
-    override fun setTaskStatus(emailStatus: TaskStatus,
-                               recoveryCodeStatus: TaskStatus,
-                               exportKeysStatus: TaskStatus,
-                               securityCenter: SecurityCenter) {
+    override fun setTaskStatus(
+        emailStatus: TaskStatus,
+        recoveryCodeStatus: TaskStatus,
+        exportKeysStatus: TaskStatus,
+        securityCenter: SecurityCenter,
+    ) {
 
         // Reset visibility, will be corrected below:
         progressBar.visibility = View.VISIBLE
@@ -94,7 +97,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
         exportAgainButton.visibility = View.GONE
 
         // Configure global views:
-        when (securityCenter.getLevel()){
+        when (securityCenter.getLevel()) {
 
             SecurityLevel.ANON, SecurityLevel.SKIPPED_EMAIL_ANON -> {
                 progressBarSubtitle.setText(R.string.sc_task_header_0)
@@ -140,9 +143,9 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
         }
     }
 
-    private fun setEmailSetupStatus(status: TaskStatus, securityCenter: SecurityCenter) {
+    private fun setEmailSetupStatus(status: TaskStatus, sc: SecurityCenter) {
 
-        if (securityCenter.emailSetupSkipped()) {
+        if (sc.emailSetupSkipped()) {
             emailTaskCard.status = MuunTaskCard.Status.SKIPPED
             emailSkippedTag.visibility = View.VISIBLE
             if (!OS.supportsTranslateZ()) { // we can't use translateZ in api levels below 21 :(
@@ -163,14 +166,13 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
         }
 
         emailTaskCard.body = when (emailTaskCard.status) {
-            MuunTaskCard.Status.DONE -> StyledStringRes(requireContext(), R.string.task_email_done_body)
-                .toCharSequence(securityCenter.email()!!)
+            MuunTaskCard.Status.DONE -> stringWithEmail(R.string.task_email_done_body, sc.email()!!)
             MuunTaskCard.Status.ACTIVE -> getString(R.string.task_email_pending_body)
             MuunTaskCard.Status.SKIPPED -> getString(R.string.task_email_skipped_body)
             else -> throw IllegalStateException("This should never happen!")
         }
 
-        if (securityCenter.emailSetupSkipped()) {
+        if (sc.emailSetupSkipped()) {
             emailTaskCard.icon = getDrawable(R.drawable.ic_step_1_skipped)
 
         } else {
@@ -197,8 +199,7 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
             SecurityLevel.SKIPPED_EMAIL_RC -> getString(R.string.task_rc_body_done_email_skipped)
             SecurityLevel.SKIPPED_EMAIL_DONE -> getString(R.string.task_rc_body_done_email_skipped)
             SecurityLevel.EMAIL_AND_RC, SecurityLevel.DONE ->
-                StyledStringRes(requireContext(), R.string.task_rc_body_done)
-                    .toCharSequence(securityCenter.email()!!)
+                stringWithEmail(R.string.task_rc_body_done, securityCenter.email()!!)
         }
 
         recoveryCodeTaskCard.icon = getDrawable(when (status) {
@@ -246,4 +247,8 @@ class SecurityCenterFragment: SingleFragment<SecurityCenterPresenter>(), Securit
             TaskStatus.PENDING -> MuunTaskCard.Status.ACTIVE
             TaskStatus.DONE -> MuunTaskCard.Status.DONE
         }
+
+    private fun stringWithEmail(@StringRes resId: Int, email: String) =
+        StyledStringRes(requireContext(), resId)
+            .toCharSequence(email)
 }

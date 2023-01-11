@@ -4,6 +4,7 @@ import android.os.Bundle
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.user.User
+import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -13,13 +14,14 @@ import javax.validation.constraints.NotNull
 
 @PerFragment
 class OperationsPresenter @Inject constructor(
-    private val operationsCache: OperationsCache
+    private val operationsCache: OperationsCache,
+    private val userPreferencesSel: UserPreferencesSelector,
 ) : SingleFragmentPresenter<OperationsView, ParentPresenter>() {
 
     class ReactiveState<T>(
         val operations: List<T>,
         val bitcoinUnit: BitcoinUnit,
-        val user: User
+        val user: User,
     )
 
     override fun setUp(@NotNull arguments: Bundle) {
@@ -30,7 +32,7 @@ class OperationsPresenter @Inject constructor(
     private fun setUpViewState() {
         val observable = operationsCache.watch()
             .doOnNext {
-                val securityCenter = SecurityCenter(it.user, userSel.emailSetupSkipped())
+                val securityCenter = SecurityCenter(it.user, userPreferencesSel.emailSetupSkipped())
                 view.setViewState(it.operations, securityCenter)
             }
 
@@ -49,7 +51,10 @@ class OperationsPresenter @Inject constructor(
         analytics.report(AnalyticsEvent.S_HOME(getHomeType(isAnonUser, hashOperations)))
     }
 
-    private fun getHomeType(isAnonUser: Boolean, hasOperations: Boolean): AnalyticsEvent.S_HOME_TYPE {
+    private fun getHomeType(
+        isAnonUser: Boolean,
+        hasOperations: Boolean,
+    ): AnalyticsEvent.S_HOME_TYPE {
         return if (isAnonUser) {
             if (hasOperations) {
                 AnalyticsEvent.S_HOME_TYPE.ANON_USER_WITH_OPERATIONS

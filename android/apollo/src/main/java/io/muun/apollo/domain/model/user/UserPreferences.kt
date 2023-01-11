@@ -7,8 +7,8 @@ data class UserPreferences(
     val seenNewHome: Boolean,
     val seenLnurlFirstTime: Boolean,
     val defaultAddressType: String,
-    val lightningDefaultForReceiving: Boolean,
-    val receivePreference: ReceiveFormatPreference
+    val skippedEmailSetup: Boolean,
+    val receivePreference: ReceiveFormatPreference,
 ) {
     fun toJson(): io.muun.common.model.UserPreferences {
         return io.muun.common.model.UserPreferences(
@@ -16,8 +16,8 @@ data class UserPreferences(
             seenNewHome,
             seenLnurlFirstTime,
             defaultAddressType,
-            lightningDefaultForReceiving,
             false,
+            skippedEmailSetup,
             receivePreference
         )
     }
@@ -31,7 +31,7 @@ data class UserPreferences(
                 prefs.seenNewHome,
                 prefs.seenLnurlFirstTime,
                 prefs.defaultAddressType,
-                prefs.lightningDefaultForReceiving,
+                prefs.skippedEmailSetup,
                 prefs.receiveFormatPreference
             )
         }

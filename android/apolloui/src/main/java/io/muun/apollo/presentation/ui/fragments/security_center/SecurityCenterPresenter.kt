@@ -3,7 +3,7 @@ package io.muun.apollo.presentation.ui.fragments.security_center
 import android.os.Bundle
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.SecurityLevel
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER_EMAIL_STATUS
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER_NEXT_STEP
@@ -14,8 +14,9 @@ import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterVi
 import javax.inject.Inject
 
 @PerFragment
-class SecurityCenterPresenter @Inject constructor():
-    SingleFragmentPresenter<SecurityCenterView, ParentPresenter>() {
+class SecurityCenterPresenter @Inject constructor(
+    private val userPreferencesSel: UserPreferencesSelector,
+) : SingleFragmentPresenter<SecurityCenterView, ParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -29,7 +30,7 @@ class SecurityCenterPresenter @Inject constructor():
             .first()
             .doOnNext { user ->
 
-                val emailSetupSkipped = userSel.emailSetupSkipped()
+                val emailSetupSkipped = userPreferencesSel.emailSetupSkipped()
 
                 val emailStatus = when {
                     user.hasPassword -> TaskStatus.DONE

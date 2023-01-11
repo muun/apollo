@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.show_qr.unified
 import android.annotation.SuppressLint
 import android.os.Bundle
 import icepick.State
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.address.GenerateBip21UriAction
 import io.muun.apollo.domain.libwallet.DecodedBitcoinUri
 import io.muun.apollo.domain.libwallet.Invoice
@@ -12,9 +13,11 @@ import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.selector.FeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
+import io.muun.apollo.presentation.analytics.AnalyticsEvent.ADDRESS_ORIGIN
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
+import io.muun.common.bitcoinj.BitcoinUri
 import libwallet.Libwallet
 import org.bitcoinj.core.NetworkParameters
 import javax.inject.Inject
@@ -135,4 +138,27 @@ class ShowUnifiedQrPresenter @Inject constructor(
         } catch (e: Throwable) {
             AddressType.SEGWIT
         }
+
+    fun copyAddress() {
+        if (hasLoadedCorrectly()) {
+            val decodeBitcoinUri = buildDecodeBitcoinUri()
+
+            val copyContent = if (amount != null) {
+                BitcoinUri.convertToBitcoinUri(
+                    Globals.INSTANCE.network,
+                    decodeBitcoinUri.addressGroup.getAddress(addressType),
+                    amount!!.inSatoshis
+                )
+            } else {
+                decodeBitcoinUri.addressGroup.getAddress(addressType)
+            }
+            parentPresenter.copyQrContent(copyContent, ADDRESS_ORIGIN.UNIFIED_QR_ADDRESS_ONLY)
+        }
+    }
+
+    fun copyInvoice() {
+        if (hasLoadedCorrectly()) {
+            parentPresenter.copyQrContent(invoice, ADDRESS_ORIGIN.UNIFIED_QR_INVOICE_ONLY)
+        }
+    }
 }

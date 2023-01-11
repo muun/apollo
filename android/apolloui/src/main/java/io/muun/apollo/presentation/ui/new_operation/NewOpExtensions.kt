@@ -1,15 +1,12 @@
 package io.muun.apollo.presentation.ui.new_operation
 
 import android.app.Activity
-import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import io.muun.apollo.R
-import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.PaymentRequestJson
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.utils.getColorCompat
@@ -22,26 +19,6 @@ import org.threeten.bp.ZonedDateTime
 import javax.money.MonetaryAmount
 
 private const val CONF_CERTAINTY = 0.75
-
-private const val ARG_PAY_REQ = "payment_request"
-
-fun PaymentRequest.toBundle() = Bundle().apply {
-    putString(
-        ARG_PAY_REQ, SerializationUtils.serializeJson(PaymentRequestJson::class.java, toJson())
-    )
-}
-
-object PaymentRequestCompanion {
-
-    @JvmStatic
-    fun fromBundle(bundle: Bundle) =
-        PaymentRequest.fromJson(
-            SerializationUtils.deserializeJson(
-                PaymentRequestJson::class.java,
-                bundle.getString(ARG_PAY_REQ)
-            )
-        )
-}
 
 fun PaymentIntent.getPaymentType() =
     when {

@@ -54,8 +54,6 @@ public class UserRepository extends BaseRepository {
 
     private static final String PENDING_EMAIL_LINK = "pending_email_link";
 
-    private static final String EMAIL_SETUP_SKIPPED_KEY = "email_setup_skipped_key";
-
     private static final String BALANCE_HIDDEN_KEY = "balance_hidden_key";
 
     private static final String TAPROOT_CELEBRATION_PENDING = "taproot_celebration_pending";
@@ -77,9 +75,6 @@ public class UserRepository extends BaseRepository {
     private final Preference<StoredUserJson> userPreference;
 
     private final Preference<String> pendingEmailLinkPreference;
-
-    // Only meaningful until 1st RecoveryMethod is setup. Afterward, user tracks its RecoveryMethods
-    private final Preference<Boolean> emailSetupSkippedPreference;
 
     private final Preference<Boolean> balanceHiddenPreference;
 
@@ -128,11 +123,6 @@ public class UserRepository extends BaseRepository {
         // Non-nullable default to assure non-nullability of values
         pendingEmailLinkPreference = rxSharedPreferences.getString(PENDING_EMAIL_LINK, "default");
 
-        emailSetupSkippedPreference = rxSharedPreferences.getBoolean(
-                EMAIL_SETUP_SKIPPED_KEY,
-                false
-        );
-
         balanceHiddenPreference = rxSharedPreferences.getBoolean(
                 BALANCE_HIDDEN_KEY,
                 false
@@ -154,10 +144,6 @@ public class UserRepository extends BaseRepository {
      */
     public synchronized void store(User user) {
         userPreference.set(StoredUserJson.fromUser(user));
-
-        if (user.hasPassword) {
-            emailSetupSkippedPreference.set(false);
-        }
     }
 
     /**
@@ -387,18 +373,6 @@ public class UserRepository extends BaseRepository {
 
     public String getPendingEmailLink() {
         return pendingEmailLinkPreference.get();
-    }
-
-    /**
-     * Save user's choice to NOT want to use email backup, and thus skip that optional step in the
-     * security setup.
-     */
-    public void setEmailSetupSkipped() {
-        emailSetupSkippedPreference.set(true);
-    }
-
-    public boolean getEmailSetupSkipped() {
-        return Preconditions.checkNotNull(emailSetupSkippedPreference.get());
     }
 
     /**

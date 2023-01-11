@@ -1653,9 +1653,8 @@
 
     <string name="edit_receive_preference">Protocolo para recibir</string>
     <string name="settings_receive_preference_description">
-        Al recibir fondos, debes elegir entre usar la Red de Bitcoin o la Red de Lightning.
-        \n\n
-        En el futuro, ya no necesitarás hacerlo
+        Al recibir fondos, debes elegir entre usar la Red de Bitcoin o la Red de Lightning. En el
+        futuro, ya no necesitarás hacerlo
         (<annotation link="https://bitcoinqr.dev/">más información</annotation>).
     </string>
     <string name="receive_preference_picker_title">Elige tu protocolo para recibir</string>
@@ -1677,15 +1676,21 @@
     </string>
     <string name="show_unified_qr_title">Recibir bitcoin</string>
     <string name="show_unified_qr_advanced_settings">Configuración</string>
-    <string name="show_unified_qr_full_content">
+
+    <string name="show_unified_qr_full_content_header">
         🧪 Los códigos QR unificados son experimentales
         (<annotation link="https://bitcoinqr.dev/">más información</annotation>)
-        \n\n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu dirección de bitcoin
-        </annotation></annotation>
-        \n\n<annotation arg="0">some_bitcoin_address</annotation>
-        \n\n\n<annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu factura de lightning
-        </annotation></annotation>
-        \n\n<annotation arg="1">some_lightning_invoice</annotation>
+        \n\n
     </string>
+    <string name="show_unified_qr_full_content_address">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu dirección de bitcoin
+        </annotation></annotation>\n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_invoice">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Tu factura de lightning
+        </annotation></annotation>\n<annotation arg="0">some_lightning_invoice</annotation>
+    </string>
+
 
 </resources>

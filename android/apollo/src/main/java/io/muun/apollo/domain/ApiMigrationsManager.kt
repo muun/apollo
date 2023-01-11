@@ -5,6 +5,7 @@ import io.muun.apollo.domain.action.incoming_swap.RegisterInvoicesAction
 import io.muun.apollo.domain.action.migration.FetchSwapServerKeyAction
 import io.muun.apollo.domain.action.migration.MigrateChallengeKeysAction
 import io.muun.apollo.domain.action.migration.MigrateFingerprintsAction
+import io.muun.apollo.domain.action.migration.MigrateSkippedEmailSetupToRemotePrefsAction
 import io.muun.common.utils.Preconditions
 import rx.Observable
 import rx.functions.Action0
@@ -13,11 +14,12 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ApiMigrationsManager @Inject constructor(
-        private val apiMigrationsVersionRepository: ApiMigrationsVersionRepository,
-        private val registerInvoices: RegisterInvoicesAction,
-        private val fetchSwapServerKeyAction: FetchSwapServerKeyAction,
-        private val migrateChallengeKeys: MigrateChallengeKeysAction,
-        private val migrateFingerprints: MigrateFingerprintsAction
+    private val apiMigrationsVersionRepository: ApiMigrationsVersionRepository,
+    private val registerInvoices: RegisterInvoicesAction,
+    private val fetchSwapServerKeyAction: FetchSwapServerKeyAction,
+    private val migrateChallengeKeys: MigrateChallengeKeysAction,
+    private val migrateFingerprints: MigrateFingerprintsAction,
+    private val migrateSkippedEmailSetupToRemotePrefs: MigrateSkippedEmailSetupToRemotePrefsAction
 ) {
 
     private val migrations: MutableMap<Int, Action0> = mutableMapOf()
@@ -29,6 +31,7 @@ class ApiMigrationsManager @Inject constructor(
         add(2, fetchSwapServerKeyAction::actionNow)
         add(3, migrateChallengeKeys::actionNow)
         add(4, migrateFingerprints::actionNow)
+        add(5, migrateSkippedEmailSetupToRemotePrefs::actionNow)
     }
 
     private fun add(version: Int, action: Action0) {
@@ -39,7 +42,7 @@ class ApiMigrationsManager @Inject constructor(
 
     fun run(): Observable<Unit> {
         return Observable.fromCallable(this::migrate)
-                .subscribeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
     }
 
     fun reset() {

@@ -18,7 +18,7 @@ import org.mockito.Mock
 import rx.Completable
 import rx.Observable
 
-class UpdateUserPreferencesActionTest: BaseTest() {
+class UpdateUserPreferencesActionTest : BaseTest() {
 
     @Mock
     private lateinit var houstonClient: HoustonClient
@@ -36,8 +36,8 @@ class UpdateUserPreferencesActionTest: BaseTest() {
                 strictMode = false,
                 seenNewHome = false,
                 seenLnurlFirstTime = false,
-                lightningDefaultForReceiving = false,
                 defaultAddressType = "segwit",
+                skippedEmailSetup = false,
                 receivePreference = ReceiveFormatPreference.ONCHAIN
             )
         )).whenever(repository).watch()
