@@ -5,7 +5,6 @@ import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
 import io.muun.apollo.data.preferences.stored.StoredBackendFeatures
 import io.muun.apollo.domain.model.MuunFeature
-import io.muun.common.utils.Preconditions
 import rx.Observable
 import javax.inject.Inject
 

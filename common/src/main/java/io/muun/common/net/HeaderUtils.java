@@ -22,6 +22,7 @@ public class HeaderUtils {
     public static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
     public static final String DEFAULT_LANGUAGE_VALUE = "en";
     public static final String REQUEST_ID = "X-Request-Id";
+    public static final String BACKGROUND_EXECUTION_METRICS = "X-Background-Execution-Metrics";
 
     /**
      * Returns a token from a "Bearer token" header, or empty if malformed or absent.

@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.libwallet.model
 
-import io.muun.common.Temporary
 import io.muun.common.crypto.hd.MuunInput
 
 class Input(val input: MuunInput) : libwallet.Input {

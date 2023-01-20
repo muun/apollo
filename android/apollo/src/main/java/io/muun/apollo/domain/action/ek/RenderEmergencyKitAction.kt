@@ -45,13 +45,12 @@ class RenderEmergencyKitAction @Inject constructor(
                     // Remember: this is a fire-and-forget call
                     reportEmergencyKitExported.action(export)
                         .subscribeOn(transformerFactory.backgroundScheduler)
-                        .doOnError { error ->
+                        .subscribe({}, { error ->
                             Crashlytics.logBreadcrumb(
                                 "Error while reportEmergencyKitExported"
                             )
                             Timber.e(error)
-                        }
-                        .subscribe()
+                        })
                 }
         }
 
@@ -69,12 +68,11 @@ class RenderEmergencyKitAction @Inject constructor(
         return kitGen
     }
 
-    private fun watchData() =
-        Observable.zip(
-            keysRepository.encryptedBasePrivateKey,
-            keysRepository.userKeyFingerprint,
-            keysRepository.encryptedMuunPrivateKey,
-            keysRepository.muunKeyFingerprint,
-            ::RequiredData
-        )
+    private fun watchData() = Observable.zip(
+        keysRepository.encryptedBasePrivateKey,
+        keysRepository.userKeyFingerprint,
+        keysRepository.encryptedMuunPrivateKey,
+        keysRepository.muunKeyFingerprint,
+        ::RequiredData
+    )
 }

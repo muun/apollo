@@ -4,7 +4,6 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.preferences.AppVersionRepository
 import timber.log.Timber
-import java.lang.RuntimeException
 import javax.inject.Inject
 
 class DetectAppUpdateAction @Inject constructor(private val repo: AppVersionRepository) {
