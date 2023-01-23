@@ -6,6 +6,23 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.2] - 2023-01-19
+
+### ADDED
+
+- Background notification processing improvements
+
+### FIXED
+
+- A crash when exporting Emergency Kit with poor connectivity
+
+### CHANGED
+
+- Kotlinized Http Interceptors
+- Kotlinized and simplified BaseClient
+- Kotlinized ClipboardProvider and GooglePlayServicesHelper
+
+
 ## [50.1] - 2023-01-06
 
 ### ADDED

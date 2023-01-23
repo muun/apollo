@@ -2,7 +2,6 @@ package io.muun.apollo.domain.action.migration
 
 import android.content.Context
 import android.content.SharedPreferences
-import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.data.preferences.migration.MigrateSkippedEmailSetupAction
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.selector.UserSelector

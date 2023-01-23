@@ -2,7 +2,6 @@ package io.muun.apollo.domain.errors.data
 
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.exception.PotentialBug
-import java.lang.IllegalArgumentException
 
 class MuunDeserializetionError(cause: Exception, json: String?) : MuunError(cause), PotentialBug {
 

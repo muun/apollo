@@ -71,6 +71,13 @@ object OS {
     fun supportsKeyPermanentlyInvalidatedException(): Boolean =
         isAndroidMOrNewer()
 
+    /**
+     * Whether this OS supports PowerManager#getBatteryDischargePrediction(), which was added
+     * in S-12-31.
+     */
+    fun supportsBatteryDischargePrediction(): Boolean =
+        isAndroidSOrNewer()
+
     // PRIVATE STUFF:
 
     /**
@@ -86,6 +93,13 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.M)
     private fun isAndroidMOrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+
+    /**
+     * Whether this OS version is S-12-31 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+    private fun isAndroidSOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     /**
      * Whether this OS version is EXACTLY Q-10-29.

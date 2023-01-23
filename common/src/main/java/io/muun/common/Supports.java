@@ -41,8 +41,8 @@ public class Supports {
     }
 
     public interface FcmV1 {
-        int APOLLO = NOT_SUPPORTED;
-        int FALCON = NOT_SUPPORTED;
+        int APOLLO = 1001;
+        int FALCON = 1008;
     }
 
     public interface TransactionSchemeV2 {

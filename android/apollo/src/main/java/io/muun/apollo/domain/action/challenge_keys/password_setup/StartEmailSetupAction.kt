@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.challenge_keys.password_setup
 
 import io.muun.apollo.data.logging.Crashlytics
-import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1

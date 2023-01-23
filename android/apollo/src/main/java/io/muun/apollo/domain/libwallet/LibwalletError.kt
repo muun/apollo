@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.libwallet
 
-import libwallet.Libwallet
 import io.muun.apollo.domain.errors.MuunError
+import libwallet.Libwallet
 
 class LibwalletError(val kind: Kind, msg: String, cause: Throwable) : MuunError(msg, cause) {
 

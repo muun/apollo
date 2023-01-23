@@ -95,9 +95,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * Constructor.
      */
     @Inject
-    public HoustonClient(ModelObjectsMapper modelMapper,
-                         ApiObjectsMapper apiMapper,
-                         Context context) {
+    public HoustonClient(
+            ModelObjectsMapper modelMapper,
+            ApiObjectsMapper apiMapper,
+            Context context
+    ) {
 
         super(HoustonService.class);
 

@@ -1,7 +1,6 @@
 package io.muun.apollo.data.preferences
 
 import android.content.Context
-import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.preferences.rx.Preference
 import javax.inject.Inject
 

@@ -2,8 +2,8 @@ package io.muun.apollo.data.logging
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction
-import io.muun.apollo.domain.errors.newop.CyclicalSwapError
 import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
+import io.muun.apollo.domain.errors.newop.CyclicalSwapError
 import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException
 import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
 import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException

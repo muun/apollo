@@ -2,7 +2,6 @@ package io.muun.apollo.domain
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
