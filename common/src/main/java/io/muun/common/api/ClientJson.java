@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.util.List;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -46,11 +47,28 @@ public class ClientJson {
     // TODO complete before releasing this
     @Since(apolloVersion = 999) // Apollo ?
     @Nullable // Before that ;)
-    public boolean isRootHint;
+    public Boolean isRootHint;
+
+    @Since(apolloVersion = 1003) // Apollo only field
+    @Nullable // Before that ;)
+    public Long totalInternalStorage;
+
+    @Since(apolloVersion = 1003) // Apollo only field
+    @Nullable // Before that ;)
+    public List<Long> totalExternalStorage;
+
+    @Since(apolloVersion = 1003)
+    @Nullable // Before that ;)
+    public Long totalRamStorage;
+
+    @Since(apolloVersion = 1003) // Apollo only field
+    @Nullable // Before that ;)
+    public String androidId;
 
     /**
      * Json constructor.
      */
+    @SuppressWarnings("unused") // Jackson requires it
     public ClientJson() {
     }
 
@@ -60,12 +78,17 @@ public class ClientJson {
     public ClientJson(final ClientTypeJson type,
                       final String buildType,
                       final int version,
-                      final String versionName,
-                      final String deviceModel,
-                      final Long timezoneOffsetInSeconds,
-                      final String language,
-                      final String bigQueryPseudoId,
-                      final boolean isRootHint) {
+                      @Nullable final String versionName,
+                      @Nullable final String deviceModel,
+                      @Nullable final Long timezoneOffsetInSeconds,
+                      @Nullable final String language,
+                      @Nullable final String bigQueryPseudoId,
+                      final boolean isRootHint,
+                      @Nullable Long totalInternalStorage,
+                      @Nullable List<Long> totalExternalStorage,
+                      @Nullable Long totalRamStorage,
+                      @Nullable String androidId
+    ) {
         this.type = type;
         this.buildType = buildType;
         this.version = version;
@@ -75,5 +98,9 @@ public class ClientJson {
         this.language = language;
         this.bigQueryPseudoId = bigQueryPseudoId;
         this.isRootHint = isRootHint;
+        this.totalInternalStorage = totalInternalStorage;
+        this.totalExternalStorage = totalExternalStorage;
+        this.totalRamStorage = totalRamStorage;
+        this.androidId = androidId;
     }
 }

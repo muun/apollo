@@ -94,8 +94,8 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
                 val fragmentNames = fragments.map { it.javaClass.simpleName }
                 Timber.e(
                     "View/Fragment Caller with id:${request!!.viewId} not found." +
-                            " Fallback to activity: ${activity.javaClass.simpleName}." +
-                            " Fragment ids: $fragmentIds. Fragment names: $fragmentNames"
+                        " Fallback to activity: ${activity.javaClass.simpleName}." +
+                        " Fragment ids: $fragmentIds. Fragment names: $fragmentNames"
                 )
             }
         }

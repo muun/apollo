@@ -20,6 +20,27 @@ object OS {
         isAndroidPOrNewer()
 
     /**
+     * Whether this OS supports telephonyManager#getPhoneCount(), which was introduced in
+     * M-6-23, and deprecated in R-11-30 in favour of telephonyManager#getActiveModemCount().
+     */
+    fun supportsGetPhoneCount(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports telephonyManager#getSimState(int), which was introduced in
+     * 0-8-26, and deprecated in R-11-30 in favour of telephonyManager#getActiveModemCount().
+     */
+    fun supportsGetSimStateWithSlotIndex(): Boolean =
+        isAndroidOOrNewer()
+
+    /**
+     * Whether this OS supports telephonyManager#getActiveModemCount(), which was introduced in
+     * R-11-30.
+     */
+    fun supportsGetActiveModemCount(): Boolean =
+        isAndroidROrNewer()
+
+    /**
      * Whether this OS supports Pending Intent mutability flags, which where introduced in M-6-23
      * and are required starting in S-12-31.
      *
@@ -113,4 +134,18 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     private fun isAndroidLMr1OrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+
+    /**
+     * Whether this OS version is O-8-26 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
+    private fun isAndroidOOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+    /**
+     * Whether this OS version is R-11-30 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
+    private fun isAndroidROrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 }

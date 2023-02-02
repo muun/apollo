@@ -84,11 +84,12 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
             EmergencyKitStep.VERIFY_HELP -> EmergencyKitVerifyHelpFragment()
             EmergencyKitStep.CLOUD_VERIFY -> EmergencyKitCloudVerifyFragment()
             EmergencyKitStep.SUCCESS -> EmergencyKitSuccessFragment()
-            EmergencyKitStep.ERROR -> ErrorFragment.create(ErrorViewModel.Builder()
-                .loggingName(AnalyticsEvent.ERROR_TYPE.EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR)
-                .title(getString(R.string.export_keys_preparing_error_title))
-                .descriptionRes(R.string.export_keys_preparing_error_desc)
-                .build()
+            EmergencyKitStep.ERROR -> ErrorFragment.create(
+                ErrorViewModel.Builder()
+                    .loggingName(AnalyticsEvent.ERROR_TYPE.EMERGENCY_KIT_CHALLENGE_KEY_MIGRATION_ERROR)
+                    .title(getString(R.string.export_keys_preparing_error_title))
+                    .descriptionRes(R.string.export_keys_preparing_error_desc)
+                    .build()
             )
         }
     }

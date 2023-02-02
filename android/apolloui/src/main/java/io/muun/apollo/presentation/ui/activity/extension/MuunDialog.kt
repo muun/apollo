@@ -13,6 +13,7 @@ import androidx.annotation.StyleRes
 import io.muun.apollo.R
 import io.muun.common.utils.Preconditions
 import rx.functions.Action0
+import javax.annotation.CheckReturnValue
 
 typealias MuunDialogInitializer = (View, AlertDialog) -> Unit
 
@@ -52,31 +53,39 @@ class MuunDialog private constructor(
         private val onClickActions: MutableMap<Int, View.OnClickListener> = mutableMapOf()
         private var cancelOnTouchOutside: Boolean? = null
 
+        @CheckReturnValue
         fun layout(@LayoutRes layout: Int) = apply {
             this.layout = layout
         }
 
+        @CheckReturnValue
         fun layout(@LayoutRes layout: Int, dialogInit: MuunDialogInitializer) = apply {
             this.layout = layout
             this.dialogInit = dialogInit
         }
 
+        @CheckReturnValue
         fun style(@StyleRes style: Int) = apply { this.style = style }
+
+        @CheckReturnValue
         fun title(@StringRes titleResId: Int) = apply {
             this.titleResId = titleResId
             this.title = null
         }
 
+        @CheckReturnValue
         fun title(title: CharSequence) = apply {
             this.title = title
             this.titleResId = 0
         }
 
+        @CheckReturnValue
         fun message(@StringRes messageResId: Int) = apply {
             this.messageResId = messageResId
             this.message = null
         }
 
+        @CheckReturnValue
         fun message(message: CharSequence) = apply {
             this.message = message
             this.messageResId = 0
@@ -88,24 +97,29 @@ class MuunDialog private constructor(
                 this.positiveButtonAction = action
             }
 
+        @CheckReturnValue
         fun negativeButton(@StringRes resId: Int, action: Action0? = null) =
             apply {
                 this.negativeButtonResId = resId
                 this.negativeButtonAction = action
             }
 
+        @CheckReturnValue
         fun onDismiss(action: DialogInterface.OnDismissListener) =
             apply { this.dismissActions.add(action) }
 
+        @CheckReturnValue
         fun addOnClickAction(@IdRes viewId: Int, action: View.OnClickListener) = apply {
             this.onClickActions[viewId] = action
         }
 
+        @CheckReturnValue
         fun setCancelOnTouchOutside(cancel: Boolean) =
             apply {
                 this.cancelOnTouchOutside = cancel
             }
 
+        @CheckReturnValue
         fun build() = MuunDialog(
             layout,
             dialogInit,

@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.utils
 
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
+import io.muun.apollo.data.os.OS
 
 /**
  * Utility object to group OS related queries or operations like checking supported features
@@ -26,6 +27,18 @@ object OS {
      */
     fun supportsStandByBuckets(): Boolean =
         isAndroidPOrNewer()
+
+    /**
+     * Whether this OS REQUIRES Pending Intent mutability flags, which where introduced in M-6-23
+     * and are required starting in S-12-31.
+     *
+     * See:
+     * - https://developer.android.com/about/versions/12/behavior-changes-12#pending-intent-mutability
+     * - https://developer.android.com/guide/components/intents-filters#DeclareMutabilityPendingIntent
+     * - https://stackoverflow.com/questions/70894168/targeting-s-version-31-and-above-requires-that-one-of-flag-immutable-or-flag
+     */
+    fun requiresPendingIntentMutabilityFlags(): Boolean =
+        isAndroidSOrNewer()
 
     /**
      * Whether this OS supports Pending Intent mutability flags, which where introduced in M-6-23
@@ -172,4 +185,12 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
     private fun isAndroidLOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+
+    /**
+     * Whether this OS version is S-12-31 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+    private fun isAndroidSOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
 }

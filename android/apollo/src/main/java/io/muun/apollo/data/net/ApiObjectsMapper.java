@@ -61,8 +61,7 @@ import javax.validation.constraints.NotNull;
 
 public class ApiObjectsMapper {
 
-    @Inject
-    ApiObjectsMapper() {
+    @Inject ApiObjectsMapper() {
     }
 
     /**
@@ -188,7 +187,15 @@ public class ApiObjectsMapper {
     /**
      * Map client information.
      */
-    public ClientJson mapClient(final String bigQueryPseudoId, final boolean isRootHint) {
+    public ClientJson mapClient(
+            final String bigQueryPseudoId,
+            final boolean isRootHint,
+            final long totalInternalStorageInBytes,
+            final List<Long> totalExternalStorageInBytes,
+            final long totalRamInBytes,
+            final String androidId
+    ) {
+
         return new ClientJson(
                 ClientTypeJson.APOLLO,
                 Globals.INSTANCE.getOldBuildType(),
@@ -198,7 +205,11 @@ public class ApiObjectsMapper {
                 TimeZone.getDefault().getRawOffset() / 1000L,
                 Locale.getDefault().toString(),
                 bigQueryPseudoId,
-                isRootHint
+                isRootHint,
+                totalInternalStorageInBytes,
+                totalExternalStorageInBytes,
+                totalRamInBytes,
+                androidId
         );
     }
 
@@ -210,11 +221,22 @@ public class ApiObjectsMapper {
             PublicKey basePublicKey,
             CurrencyUnit primaryCurrency,
             String bigQueryPseudoId,
-            boolean isRootHint
+            boolean isRootHint,
+            long totalInternalStorageInBytes,
+            List<Long> totalExternalStorageInBytes,
+            long totalRamInBytes,
+            String androidId
     ) {
 
         return new CreateFirstSessionJson(
-                mapClient(bigQueryPseudoId, isRootHint),
+                mapClient(
+                        bigQueryPseudoId,
+                        isRootHint,
+                        totalInternalStorageInBytes,
+                        totalExternalStorageInBytes,
+                        totalRamInBytes,
+                        androidId
+                ),
                 gcmToken,
                 primaryCurrency,
                 mapPublicKey(basePublicKey),
@@ -226,15 +248,25 @@ public class ApiObjectsMapper {
      * Map a CreateLoginSession object.
      */
     public CreateLoginSessionJson mapCreateLoginSession(
-
             String gcmToken,
             String email,
             String bigQueryPseudoId,
-            boolean isRootHint
+            boolean isRootHint,
+            long totalInternalStorageInBytes,
+            List<Long> totalExternalStorageInBytes,
+            long totalRamInBytes,
+            String androidId
     ) {
 
         return new CreateLoginSessionJson(
-                mapClient(bigQueryPseudoId, isRootHint),
+                mapClient(
+                        bigQueryPseudoId,
+                        isRootHint,
+                        totalInternalStorageInBytes,
+                        totalExternalStorageInBytes,
+                        totalRamInBytes,
+                        androidId
+                ),
                 gcmToken,
                 email
         );
@@ -247,10 +279,22 @@ public class ApiObjectsMapper {
             String gcmToken,
             String rcChallengePublicKeyHex,
             String bigQueryPseudoId,
-            boolean isRootHint
+            boolean isRootHint,
+            long totalInternalStorageInBytes,
+            List<Long> totalExternalStorageInBytes,
+            long totalRamInBytes,
+            String androidId
     ) {
+
         return new CreateRcLoginSessionJson(
-                mapClient(bigQueryPseudoId, isRootHint),
+                mapClient(
+                        bigQueryPseudoId,
+                        isRootHint,
+                        totalInternalStorageInBytes,
+                        totalExternalStorageInBytes,
+                        totalRamInBytes,
+                        androidId
+                ),
                 gcmToken,
                 new ChallengeKeyJson(
                         ChallengeType.RECOVERY_CODE,

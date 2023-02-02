@@ -165,9 +165,9 @@ public abstract class ApolloApplication extends Application
     /**
      * <pre>
      * See <a href="https://developer.android.com/topic/libraries/architecture/workmanager/
-     * advanced/custom-configuration#implement-configuration-provider">WorkManager docs</a>
+     * advanced/custom-configuration#implement-configuration-provider">WorkManager docs</a>.
      * </pre>
-     * Shortened URL: https://shorturl.at/aflsA
+     * Shortened URL: <a href="https://shorturl.at/aflsA">...</a>
      */
     @NonNull
     @Override
@@ -183,8 +183,8 @@ public abstract class ApolloApplication extends Application
      * Detect Google Play Pre-Launch report automatic tests, by identifying Firebase Test Lab
      * devices, to ignore tracking events from them.
      * See:
-     * https://firebase.google.com/docs/test-lab/android/android-studio
-     * https://stackoverflow.com/a/45070039/901465
+     * <a href="https://firebase.google.com/docs/test-lab/android/android-studio">...</a>
+     * <a href="https://stackoverflow.com/a/45070039/901465">...</a>
      */
     private boolean isFirebaseTestLabDevice() {
         return "true".equals(Settings.System.getString(getContentResolver(), "firebase.test.lab"));
@@ -247,9 +247,9 @@ public abstract class ApolloApplication extends Application
     /**
      * TODO: this should probably be called every N minutes.
      *
-     * <p>https://productforums.google.com/forum/#!msg/nexus/fslYqYrULto/lU2D3Qe1mugJ
+     * <p><a href="https://productforums.google.com/forum/#!msg/nexus/fslYqYrULto/lU2D3Qe1mugJ">...</a>
      *
-     * <p>https://github.com/schwabe/ics-openvpn/issues/246
+     * <p><a href="https://github.com/schwabe/ics-openvpn/issues/246">...</a>
      */
     private void gcmKeepAlive() {
         this.sendBroadcast(new Intent("com.google.android.intent.action.GTALK_HEARTBEAT"));

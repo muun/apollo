@@ -23,34 +23,34 @@ import timber.log.Timber
 import javax.inject.Inject
 
 open class FulfillIncomingSwapAction @Inject constructor(
-        private val houstonClient: HoustonClient,
-        private val operationDao: OperationDao,
-        private val keysRepository: KeysRepository,
-        private val network: NetworkParameters,
-        private val incomingSwapDao: IncomingSwapDao,
+    private val houstonClient: HoustonClient,
+    private val operationDao: OperationDao,
+    private val keysRepository: KeysRepository,
+    private val network: NetworkParameters,
+    private val incomingSwapDao: IncomingSwapDao,
 ) : BaseAsyncAction1<String, Unit>() {
 
     override fun action(incomingSwapUuid: String): Observable<Unit> {
 
         return operationDao.fetchByIncomingSwapUuid(incomingSwapUuid).first().toSingle()
-                .flatMapCompletable(this::fulfill)
-                .onErrorResumeNext { t ->
-                    if (t.isInstanceOrIsCausedByError<ElementNotFoundException>()) {
-                        return@onErrorResumeNext operationDao.fetchMaybeLatest()
-                                .flatMap{ maybeOp  ->
-                                    Timber.e(
-                                            "Failed fulfilled due to missing. Latest op id = %d",
-                                            maybeOp.map(Operation::hid).orElse(-1)
-                                    )
+            .flatMapCompletable(this::fulfill)
+            .onErrorResumeNext { t ->
+                if (t.isInstanceOrIsCausedByError<ElementNotFoundException>()) {
+                    return@onErrorResumeNext operationDao.fetchMaybeLatest()
+                        .flatMap { maybeOp ->
+                            Timber.e(
+                                "Failed fulfilled due to missing. Latest op id = %d",
+                                maybeOp.map(Operation::hid).orElse(-1)
+                            )
 
-                                    Observable.error<Optional<Operation>>(t)
-                                }
-                                .toCompletable()
-                    }
-
-                    Completable.error(t)
+                            Observable.error<Optional<Operation>>(t)
+                        }
+                        .toCompletable()
                 }
-                .toObservable()
+
+                Completable.error(t)
+            }
+            .toObservable()
     }
 
     private fun fulfill(op: Operation): Completable {
