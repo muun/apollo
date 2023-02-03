@@ -6,6 +6,17 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.3] - 2023-02-02
+
+### ADDED
+
+- More background notification processing reliability improvements
+
+### CHANGED
+
+- Avoid installing BlockCanary for Android12+ debug builds, prevent crash
+- Kotlinized TelephonyInfoProvider
+
 ## [50.2] - 2023-01-19
 
 ### ADDED

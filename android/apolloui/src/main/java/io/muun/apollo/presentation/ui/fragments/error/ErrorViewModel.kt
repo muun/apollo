@@ -6,6 +6,7 @@ import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.StringResWithArgs
 import io.muun.common.utils.Preconditions
+import javax.annotation.CheckReturnValue
 
 interface ErrorViewModel {
 
@@ -16,19 +17,30 @@ interface ErrorViewModel {
         var descRes: Int? = null,
         var descArgs: Array<String> = arrayOf(),
         var kind: ErrorViewKind = ErrorViewKind.FINAL,
-        var canGoBack: Boolean = false
+        var canGoBack: Boolean = false,
     ) {
 
+        @CheckReturnValue
         fun loggingName(loggingName: AnalyticsEvent.ERROR_TYPE) = apply {
             this.loggingName = loggingName
         }
 
+        @CheckReturnValue
         fun title(title: String) = apply { this.title = title }
+
+        @CheckReturnValue
         fun descriptionRes(@StringRes descRes: Int) = apply { this.descRes = descRes }
+
+        @CheckReturnValue
         fun descriptionArgs(vararg descArgs: String) = apply { this.descArgs = arrayOf(*descArgs) }
+
+        @CheckReturnValue
         fun kind(kind: ErrorViewKind) = apply { this.kind = kind }
+
+        @CheckReturnValue
         fun canGoBack(canGoBack: Boolean) = apply { this.canGoBack = canGoBack }
 
+        @CheckReturnValue
         fun build(): ErrorViewModel {
 
             checkNotNull(loggingName)

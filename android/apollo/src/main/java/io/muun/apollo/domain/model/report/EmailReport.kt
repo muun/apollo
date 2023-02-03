@@ -10,6 +10,7 @@ import org.threeten.bp.Instant
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import java.util.*
+import javax.annotation.CheckReturnValue
 
 class EmailReport private constructor(val body: String) {
 
@@ -24,18 +25,33 @@ class EmailReport private constructor(val body: String) {
         var locale: Locale? = null,
     ) {
 
+        @CheckReturnValue
         fun report(report: CrashReport) = apply { this.report = report }
+
+        @CheckReturnValue
         fun supportId(supportId: String?) = apply { this.supportId = supportId }
+
+        @CheckReturnValue
         fun fcmTokenHash(fcmTokenHash: String) = apply { this.fcmTokenHash = fcmTokenHash }
+
+        @CheckReturnValue
         fun presenterName(presenterName: String) = apply { this.presenterName = presenterName }
+
+        @CheckReturnValue
         fun defaultRegion(defaultRegion: String) = apply { this.defaultRegion = defaultRegion }
+
+        @CheckReturnValue
         fun googlePlayServices(available: Boolean) = apply {
             this.googlePlayServicesAvailable = available
         }
 
+        @CheckReturnValue
         fun rootHint(rootHint: Boolean) = apply { this.rootHint = rootHint }
+
+        @CheckReturnValue
         fun locale(locale: Locale) = apply { this.locale = locale }
 
+        @CheckReturnValue
         fun build(): EmailReport {
 
             checkNotNull(report)

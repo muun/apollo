@@ -6,10 +6,16 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.PowerManager
+import io.muun.apollo.data.net.NetworkInfoProvider
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-class BackgroundExecutionMetricsProvider @Inject constructor(private val context: Context) {
+class BackgroundExecutionMetricsProvider @Inject constructor(
+    private val context: Context,
+    private val hardwareCapabilitiesProvider: HardwareCapabilitiesProvider,
+    private val telephonyInfoProvider: TelephonyInfoProvider,
+    private val networkInfoProvider: NetworkInfoProvider,
+) {
 
     private val powerManager: PowerManager by lazy {
         context.getSystemService(POWER_SERVICE) as PowerManager
@@ -22,9 +28,17 @@ class BackgroundExecutionMetricsProvider @Inject constructor(private val context
             getMaxBatteryLevel(),
             getBatteryHealth(),
             getBatteryDischargePrediction(),
-            getBatteryStatus()
+            getBatteryStatus(),
+            hardwareCapabilitiesProvider.getFreeInternalStorageInBytes(),
+            hardwareCapabilitiesProvider.getFreeExternalStorageInBytes().toTypedArray(),
+            hardwareCapabilitiesProvider.getTotalExternalStorageInBytes().toTypedArray(),
+            hardwareCapabilitiesProvider.getFreeRamInBytes(),
+            telephonyInfoProvider.dataState,
+            telephonyInfoProvider.getSimStates().toTypedArray(),
+            networkInfoProvider.currentTransport
         )
 
+    @Suppress("ArrayInDataClass")
     @Serializable
     data class BackgroundExecutionMetrics(
         private val epochInMilliseconds: Long,
@@ -33,6 +47,13 @@ class BackgroundExecutionMetricsProvider @Inject constructor(private val context
         private val batteryHealth: String,
         private val batteryDischargePrediction: Long?,
         private val batteryState: String,
+        private val freeInternalStorage: Long,
+        private val freeExternalStorage: Array<Long>,
+        private val totalExternalStorage: Array<Long>,
+        private val freeRamStorage: Long,
+        private val dataState: String,
+        private val simStates: Array<String>,
+        private val networkTransport: String,
     )
 
     /**

@@ -40,6 +40,19 @@ public class NetworkInfoProvider {
         subject = BehaviorSubject.create(getCurrentNetworkInfo());
     }
 
+    /**
+     * Get the type of network of the current active network (e.g WIFI, MOBILE).
+     */
+    // TODO for API 23+ we should stop using NetworkInfo() and getActiveNetwork() +
+    //  NetworkCapabilities#hasTransport
+    public String getCurrentTransport() {
+        final Optional<NetworkInfo> activeNetworkInfo = watchNetworkInfo().toBlocking().first();
+        return activeNetworkInfo.map(NetworkInfo::getTypeName).orElse("UNKNOWN");
+    }
+
+    /**
+     * Observe active network info for changes in connectivity info.
+     */
     public Observable<Optional<NetworkInfo>> watchNetworkInfo() {
         return subject.asObservable();
     }
@@ -65,11 +78,11 @@ public class NetworkInfoProvider {
     }
 
     /**
-     * Unregister the system BroadcastReceiver. Stop emmiting through `watchNetworkInfo`. Note that
+     * Unregister the system BroadcastReceiver. Stop emitting through `watchNetworkInfo`. Note that
      * the Observable *does not complete* after this call.
      */
     public void stopReceiving() {
-        if (! isReceiving()) {
+        if (!isReceiving()) {
             return;
         }
 

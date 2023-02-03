@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.app;
 
 import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.presentation.ui.utils.OS;
 
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.timber.StethoTree;
@@ -20,7 +21,10 @@ public class ApolloDebugApplication extends ApolloApplication {
             Stetho.initializeWithDefaults(this);
             Timber.plant(new StethoTree());
 
-            BlockCanary.install(this, new AppBlockCanaryContext()).start();
+            if (!OS.INSTANCE.requiresPendingIntentMutabilityFlags()) {
+                // For latest android versions (require mutability flags), don't install blockCanary
+                BlockCanary.install(this, new AppBlockCanaryContext()).start();
+            }
         }
     }
 

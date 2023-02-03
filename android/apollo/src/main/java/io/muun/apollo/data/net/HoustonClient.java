@@ -2,6 +2,7 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
 import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException;
@@ -90,6 +91,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
     private final ModelObjectsMapper modelMapper;
     private final ApiObjectsMapper apiMapper;
     private final Context context;
+    private final HardwareCapabilitiesProvider hardwareCapabilitiesProvider;
 
     /**
      * Constructor.
@@ -98,7 +100,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public HoustonClient(
             ModelObjectsMapper modelMapper,
             ApiObjectsMapper apiMapper,
-            Context context
+            Context context,
+            HardwareCapabilitiesProvider hardwareCapabilitiesProvider
     ) {
 
         super(HoustonService.class);
@@ -106,6 +109,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
         this.modelMapper = modelMapper;
         this.apiMapper = apiMapper;
         this.context = context;
+        this.hardwareCapabilitiesProvider = hardwareCapabilitiesProvider;
     }
 
     /**
@@ -124,7 +128,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 basePublicKey,
                 primaryCurrency,
                 bigQueryPseudoId,
-                isRootHint
+                isRootHint,
+                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalRamInBytes(),
+                hardwareCapabilitiesProvider.getAndroidId()
         );
 
         return getService().createFirstSession(params)
@@ -145,7 +153,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 gcmRegistrationToken,
                 email,
                 bigQueryPseudoId,
-                isRootHint
+                isRootHint,
+                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalRamInBytes(),
+                hardwareCapabilitiesProvider.getAndroidId()
         );
 
         return getService().createLoginSession(params)
@@ -166,7 +178,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 gcmToken,
                 rcChallengePublicKeyHex,
                 bigQueryPseudoId,
-                isRootHint
+                isRootHint,
+                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
+                hardwareCapabilitiesProvider.getTotalRamInBytes(),
+                hardwareCapabilitiesProvider.getAndroidId()
         );
 
         return getService().createRecoveryCodeLoginSession(session)

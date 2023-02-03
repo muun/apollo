@@ -26,24 +26,25 @@ class CurrencyActionsTest : BaseTest() {
     @Test
     fun getCurrencyForLocale() {
         var currency = currencyActions.getCurrencyForLocale(LOCALE_NO_CURRENCY)
-        assertThat(currency.isPresent).isFalse()
+        assertThat(currency.isPresent).isFalse
 
         currency = currencyActions.getCurrencyForLocale(Locale.US)
-        assertThat(currency.isPresent).isTrue()
+        assertThat(currency.isPresent).isTrue
         assertThat(currency.get().currencyCode).isEqualTo("USD")
     }
 
     @Test
     fun getCurrenciesForCountryCode() {
         val currencies = currencyActions.getCurrenciesForCountryCode("US")
-        assertThat(currencies.isEmpty()).isFalse()
+        assertThat(currencies.isEmpty()).isFalse
     }
 
     @Test()
     fun `getCurrenciesForCountryCode unknown country`() {
-        var currencies = currencyActions.getCurrenciesForCountryCode("XXX")
+        val currencies = currencyActions.getCurrenciesForCountryCode("XXX")
         assertThat(currencies.size).isEqualTo(1)
-        assertThat(currencies.first().currencyCode).isEqualTo("USD")    }
+        assertThat(currencies.first().currencyCode).isEqualTo("USD")
+    }
 
     @Test
     fun `getLocalCurrencies in US`() {
