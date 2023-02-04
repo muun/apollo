@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.4] - 2023-02-04
+
+### CHANGED
+
+- Removed revoked certificate pins
+
 ## [50.3] - 2023-02-02
 
 ### ADDED
