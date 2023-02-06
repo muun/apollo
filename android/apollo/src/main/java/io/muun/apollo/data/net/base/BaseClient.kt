@@ -10,7 +10,6 @@ import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor
 import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor
 import io.muun.apollo.data.os.Configuration
 import io.muun.apollo.data.serialization.SerializationUtils
-import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -75,6 +74,7 @@ open class BaseClient<ServiceT> protected constructor(
     @get:NotNull
     private val httpClient: OkHttpClient
         get() {
+            /* Bring this back when we're sure how
             val certificatePinner = CertificatePinner.Builder()
                 // CN=HOUSTON_DOMAIN
                 .add(
@@ -87,9 +87,10 @@ open class BaseClient<ServiceT> protected constructor(
                     "sha256/JSMzqOOrtyOT1kmau6zKhgT676hGgczD5VMdRMyJZFA="
                 )
                 .build()
+             */
 
             val builder = OkHttpClient.Builder()
-                .certificatePinner(certificatePinner)
+                //.certificatePinner(certificatePinner)
                 .readTimeout(config.getLong("net.timeoutInSec"), TimeUnit.SECONDS)
                 .addInterceptor(versionHeaderInterceptor)
                 .addInterceptor(languageHeaderInterceptor)
