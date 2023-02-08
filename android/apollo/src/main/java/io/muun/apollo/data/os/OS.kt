@@ -99,6 +99,9 @@ object OS {
     fun supportsBatteryDischargePrediction(): Boolean =
         isAndroidSOrNewer()
 
+    fun supportsUserCreationTime(): Boolean =
+        isAndroidMOrNewer()
+
     // PRIVATE STUFF:
 
     /**

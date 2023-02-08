@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.5] - 2023-02-08
+
+### ADDED
+
+- More background notification processing reliability improvements
+
+### CHANGED
+
+- Removed unused JWT dependency
+
 ## [50.4] - 2023-02-04
 
 ### CHANGED

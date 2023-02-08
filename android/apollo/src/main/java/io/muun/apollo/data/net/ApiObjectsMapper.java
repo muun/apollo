@@ -46,6 +46,7 @@ import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 
+import androidx.annotation.NonNull;
 import libwallet.MusigNonces;
 
 import java.util.LinkedList;
@@ -191,9 +192,11 @@ public class ApiObjectsMapper {
             final String bigQueryPseudoId,
             final boolean isRootHint,
             final long totalInternalStorageInBytes,
-            final List<Long> totalExternalStorageInBytes,
+            @NonNull final List<Long> totalExternalStorageInBytes,
             final long totalRamInBytes,
-            final String androidId
+            @NonNull final String androidId,
+            final long creationTimestampInMilliseconds,
+            @NonNull final List<String> drmClientIds
     ) {
 
         return new ClientJson(
@@ -209,7 +212,9 @@ public class ApiObjectsMapper {
                 totalInternalStorageInBytes,
                 totalExternalStorageInBytes,
                 totalRamInBytes,
-                androidId
+                androidId,
+                creationTimestampInMilliseconds,
+                drmClientIds
         );
     }
 
@@ -223,9 +228,11 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             long totalInternalStorageInBytes,
-            List<Long> totalExternalStorageInBytes,
+            @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
-            String androidId
+            @NonNull String androidId,
+            long creationTimestampInMilliseconds,
+            @NonNull List<String> drmClientIds
     ) {
 
         return new CreateFirstSessionJson(
@@ -235,7 +242,9 @@ public class ApiObjectsMapper {
                         totalInternalStorageInBytes,
                         totalExternalStorageInBytes,
                         totalRamInBytes,
-                        androidId
+                        androidId,
+                        creationTimestampInMilliseconds,
+                        drmClientIds
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -253,9 +262,11 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             long totalInternalStorageInBytes,
-            List<Long> totalExternalStorageInBytes,
+            @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
-            String androidId
+            @NonNull String androidId,
+            long creationTimestampInMilliseconds,
+            @NonNull List<String> drmClientIds
     ) {
 
         return new CreateLoginSessionJson(
@@ -265,7 +276,9 @@ public class ApiObjectsMapper {
                         totalInternalStorageInBytes,
                         totalExternalStorageInBytes,
                         totalRamInBytes,
-                        androidId
+                        androidId,
+                        creationTimestampInMilliseconds,
+                        drmClientIds
                 ),
                 gcmToken,
                 email
@@ -281,9 +294,11 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             long totalInternalStorageInBytes,
-            List<Long> totalExternalStorageInBytes,
+            @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
-            String androidId
+            @NonNull String androidId,
+            long creationTimestampInMilliseconds,
+            @NonNull List<String> drmClientIds
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -293,7 +308,9 @@ public class ApiObjectsMapper {
                         totalInternalStorageInBytes,
                         totalExternalStorageInBytes,
                         totalRamInBytes,
-                        androidId
+                        androidId,
+                        creationTimestampInMilliseconds,
+                        drmClientIds
                 ),
                 gcmToken,
                 new ChallengeKeyJson(

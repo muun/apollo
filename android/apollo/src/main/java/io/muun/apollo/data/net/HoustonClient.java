@@ -132,7 +132,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
-                hardwareCapabilitiesProvider.getAndroidId()
+                hardwareCapabilitiesProvider.getAndroidId(),
+                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
         return getService().createFirstSession(params)
@@ -157,7 +159,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
-                hardwareCapabilitiesProvider.getAndroidId()
+                hardwareCapabilitiesProvider.getAndroidId(),
+                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
         return getService().createLoginSession(params)
@@ -182,7 +186,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
-                hardwareCapabilitiesProvider.getAndroidId()
+                hardwareCapabilitiesProvider.getAndroidId(),
+                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
         return getService().createRecoveryCodeLoginSession(session)
