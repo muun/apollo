@@ -87,8 +87,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 1004
-        versionName "50.4"
+        versionCode 1005
+        versionName "50.5"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -380,8 +380,6 @@ dependencies {
     implementation 'frankiesardo:icepick:3.2.0'
     kapt 'frankiesardo:icepick-processor:3.2.0'
 
-    // jwt
-    implementation 'io.jsonwebtoken:jjwt:0.7.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"
 

@@ -65,6 +65,18 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String androidId;
 
+    @Since(falconVersion = 1011) // Falcon only field
+    @Nullable // Before that ;)
+    public String deviceCheckToken;
+
+    @Since(apolloVersion = 1005) // Apollo only field
+    @Nullable // Before that ;)
+    public Long androidCreationTimestampInMilliseconds;
+
+    @Since(apolloVersion = 1005) // Apollo only field
+    @Nullable // Before that ;)
+    public List<String> drmClientIds;
+
     /**
      * Json constructor.
      */
@@ -83,11 +95,13 @@ public class ClientJson {
                       @Nullable final Long timezoneOffsetInSeconds,
                       @Nullable final String language,
                       @Nullable final String bigQueryPseudoId,
-                      final boolean isRootHint,
+                      @Nullable final Boolean isRootHint,
                       @Nullable Long totalInternalStorage,
                       @Nullable List<Long> totalExternalStorage,
                       @Nullable Long totalRamStorage,
-                      @Nullable String androidId
+                      @Nullable String androidId,
+                      long androidCreationTimestampInMilliseconds,
+                      List<String> drmClientIds
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -102,5 +116,7 @@ public class ClientJson {
         this.totalExternalStorage = totalExternalStorage;
         this.totalRamStorage = totalRamStorage;
         this.androidId = androidId;
+        this.androidCreationTimestampInMilliseconds = androidCreationTimestampInMilliseconds;
+        this.drmClientIds = drmClientIds;
     }
 }
