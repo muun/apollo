@@ -87,8 +87,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 1005
-        versionName "50.5"
+        versionCode 1006
+        versionName "50.6"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -310,7 +310,7 @@ android {
         // https://www.veskoiliev.com/running-android-unit-instrumentation-tests-from-the-console/
         unitTests.all {
             testLogging {
-                outputs.upToDateWhen {false}
+                outputs.upToDateWhen { false }
                 events "passed", "failed", "standardError"
                 showCauses true
                 showExceptions true
@@ -412,14 +412,14 @@ dependencies {
 
     // Android Navigation Component
 
-    // Kotlin Implementation
+    // 1. Kotlin Implementation
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
-    // Feature module Support
+    // 2. Feature module Support
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
 
-    // Testing Navigation
+    // 3. Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
     // Fancy animations

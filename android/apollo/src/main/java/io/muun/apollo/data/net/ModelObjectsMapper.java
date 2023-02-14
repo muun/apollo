@@ -6,6 +6,8 @@ import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
+import io.muun.apollo.domain.model.CreateSessionOk;
+import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
@@ -58,8 +60,6 @@ import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKeyTriple;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.exception.MissingCaseError;
-import io.muun.common.model.CreateSessionOk;
-import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.SizeForAmount;
 import io.muun.common.model.UtxoStatus;
 import io.muun.common.utils.CollectionUtils;
@@ -83,6 +83,7 @@ import javax.validation.constraints.NotNull;
 
 @Singleton
 public class ModelObjectsMapper extends CommonModelObjectsMapper {
+
     /**
      * Constructor.
      */
@@ -97,8 +98,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     public CreateFirstSessionOk mapCreateFirstSessionOk(CreateFirstSessionOkJson json) {
         return new CreateFirstSessionOk(
                 mapUser(json.user),
-                mapPublicKey(json.cosigningPublicKey),
-                mapPublicKey(json.swapServerPublicKey)
+                Objects.requireNonNull(mapPublicKey(json.cosigningPublicKey)),
+                Objects.requireNonNull(mapPublicKey(json.swapServerPublicKey)),
+                json.playIntegrityNonce
         );
     }
 
@@ -501,8 +503,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     public CreateSessionOk mapCreateSessionOk(CreateSessionOkJson json) {
         return new CreateSessionOk(
-            json.isExistingUser,
-            json.canUseRecoveryCode
+                json.isExistingUser,
+                json.canUseRecoveryCode,
+                json.playIntegrityNonce
         );
     }
 
@@ -510,7 +513,12 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      * Create a CreateSessionRcOk.
      */
     public CreateSessionRcOk mapCreateSessionRcOk(CreateSessionRcOkJson json) {
-        return new CreateSessionRcOk(json.keySet, json.hasEmailSetup, json.obfuscatedEmail);
+        return new CreateSessionRcOk(
+                json.keySet,
+                json.hasEmailSetup,
+                json.obfuscatedEmail,
+                json.playIntegrityNonce
+        );
     }
 
     /**
@@ -523,7 +531,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         final byte[] passwordKeySalt = Encodings.hexToBytes(json.passwordKeySaltInHex);
 
         final byte[] recoveryCodeKeySalt = (json.recoveryCodeKeySaltInHex != null)
-                        ? Encodings.hexToBytes(json.recoveryCodeKeySaltInHex) : null;
+                ? Encodings.hexToBytes(json.recoveryCodeKeySaltInHex) : null;
 
         return new ChallengeKeyUpdateMigration(
                 passwordKeySalt,

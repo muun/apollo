@@ -153,7 +153,10 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
 
     // Detect root devices (for error reports metadata and fraud control)
-    implementation 'com.scottyab:rootbeer-lib:0.0.8'
+    implementation 'com.scottyab:rootbeer-lib:0.1.0'
+
+    // Google Play Integrity
+    implementation('com.google.android.play:integrity:1.1.0')
 
     // Testing:
     androidTestImplementation 'androidx.test:runner:1.4.0'

@@ -12,6 +12,8 @@ import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError;
 import io.muun.apollo.domain.errors.rc.CredentialsDontMatchError;
 import io.muun.apollo.domain.errors.rc.StaleChallengeKeyError;
+import io.muun.apollo.domain.model.CreateSessionOk;
+import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.LoginWithRc;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.SignupStep;
@@ -27,8 +29,6 @@ import io.muun.apollo.presentation.ui.fragments.rc_only_login.RcOnlyLoginParentP
 import io.muun.apollo.presentation.ui.fragments.rc_only_login_auth.RcLoginEmailAuthorizeParentPresenter;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
 import io.muun.common.crypto.ChallengeType;
-import io.muun.common.model.CreateSessionOk;
-import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.utils.CollectionUtils;
 import io.muun.common.utils.Preconditions;
 
@@ -99,7 +99,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                 .map(ActionState::getValue)
                 .doOnNext(createSessionOk -> {
                     signupDraft.setExistingUser(true);
-                    signupDraft.setCanUseRecoveryCode(createSessionOk.canUseRecoveryCode());
+                    signupDraft.setCanUseRecoveryCode(createSessionOk.canUseRecoveryCode);
                     navigateToStepFrom(SignupStep.LOGIN_WAIT_VERIFICATION, signupDraft.getStep());
                 });
 
@@ -139,8 +139,8 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
                     signupDraft.setExistingUser(true);
 
-                    if (createSessionOk.hasEmailSetup()) {
-                        signupDraft.setObfuscatedEmail(createSessionOk.getObfuscatedEmail().get());
+                    if (createSessionOk.hasEmailSetup) {
+                        signupDraft.setObfuscatedEmail(createSessionOk.getObfuscatedEmail());
                         navigateToStepFrom(
                                 SignupStep.LOGIN_RECOVERY_CODE_EMAIL_AUTH,
                                 signupDraft.getStep()

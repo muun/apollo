@@ -32,6 +32,7 @@ import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PendingChallengeUpdateJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PhoneNumberJson;
+import io.muun.common.api.PlayIntegrityTokenJson;
 import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
@@ -82,6 +83,9 @@ public interface HoustonService {
 
     @POST("sessions-v2/login")
     Observable<CreateSessionOkJson> createLoginSession(@Body CreateLoginSessionJson session);
+
+    @PUT("sessions-v2/play-integrity")
+    Completable submitPlayIntegrityToken(@Body PlayIntegrityTokenJson playIntegrityTokenJson);
 
     @POST("sessions-v2/email/start")
     Observable<Void> startEmailSetup(@Body StartEmailSetupJson startEmailSetup);

@@ -1,6 +1,6 @@
 package io.muun.apollo.domain.errors
 
-class HardwareCapabilityError : MuunError {
+open class HardwareCapabilityError : MuunError {
 
     constructor() : super()
 

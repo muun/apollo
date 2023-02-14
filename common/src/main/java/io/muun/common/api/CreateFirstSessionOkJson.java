@@ -3,6 +3,7 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,6 +19,9 @@ public class CreateFirstSessionOkJson {
     @NotNull
     public UserJson user;
 
+    @Nullable
+    public String playIntegrityNonce;
+
     /**
      * Json constructor.
      */
@@ -29,10 +33,12 @@ public class CreateFirstSessionOkJson {
      */
     public CreateFirstSessionOkJson(UserJson user,
                                     PublicKeyJson cosigningPublicKey,
-                                    PublicKeyJson swapServerPublicKey) {
+                                    PublicKeyJson swapServerPublicKey,
+                                    @Nullable String playIntegrityNonce) {
 
         this.user = user;
         this.cosigningPublicKey = cosigningPublicKey;
         this.swapServerPublicKey = swapServerPublicKey;
+        this.playIntegrityNonce = playIntegrityNonce;
     }
 }

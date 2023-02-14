@@ -15,6 +15,8 @@ import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.CreateFirstSessionOk;
+import io.muun.apollo.domain.model.CreateSessionOk;
+import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
@@ -22,6 +24,7 @@ import io.muun.apollo.domain.model.NotificationReport;
 import io.muun.apollo.domain.model.OperationCreated;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PendingChallengeUpdate;
+import io.muun.apollo.domain.model.PlayIntegrityToken;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.Sha256Hash;
@@ -45,6 +48,7 @@ import io.muun.common.api.KeySet;
 import io.muun.common.api.LinkActionJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneConfirmation;
+import io.muun.common.api.PlayIntegrityTokenJson;
 import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.RawTransaction;
@@ -57,8 +61,6 @@ import io.muun.common.api.houston.HoustonService;
 import io.muun.common.crypto.ChallengePublicKey;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.model.CreateSessionOk;
-import io.muun.common.model.CreateSessionRcOk;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.model.VerificationType;
@@ -133,7 +135,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
-                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
@@ -160,7 +162,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
-                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
@@ -187,12 +189,22 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
                 hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
-                hardwareCapabilitiesProvider.getCreationTimestampInMilliseconds(),
+                hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
         );
 
         return getService().createRecoveryCodeLoginSession(session)
                 .map(modelMapper::mapChallenge);
+    }
+
+    /**
+     * Submit Google Play Integrity token (or error) to Houston for decryption and verification.
+     */
+    public Completable submitPlayIntegrityToken(final PlayIntegrityToken playIntegrityToken) {
+        return getService().submitPlayIntegrityToken(new PlayIntegrityTokenJson(
+                playIntegrityToken.getToken(),
+                playIntegrityToken.getError()
+        ));
     }
 
     /**

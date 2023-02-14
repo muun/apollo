@@ -6,6 +6,17 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.6] - 2023-02-1
+
+
+### ADDED
+
+- More background notification processing reliability improvements
+
+### CHANGED
+
+- Updated rootbeer lib version
+
 ## [50.5] - 2023-02-08
 
 ### ADDED

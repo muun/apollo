@@ -4,6 +4,7 @@ import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.data.preferences.KeysRepository
+import io.muun.apollo.data.preferences.PlayIntegrityNonceRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.CurrencyActions
 import io.muun.apollo.domain.action.LogoutActions
@@ -17,15 +18,16 @@ import javax.inject.Singleton
 
 @Singleton
 class CreateFirstSessionAction @Inject constructor(
-    private val houstonClient: HoustonClient,
-    private val userRepository: UserRepository,
-    private val keysRepository: KeysRepository,
     private val currencyActions: CurrencyActions,
     private val logoutActions: LogoutActions,
     private val getFcmToken: GetFcmTokenAction,
     private val createBasePrivateKey: CreateBasePrivateKeyAction,
-    private val firebaseInstallationIdRepository: FirebaseInstallationIdRepository,
     private val isRootedDeviceAction: IsRootedDeviceAction,
+    private val userRepo: UserRepository,
+    private val keysRepo: KeysRepository,
+    private val firebaseInstallationIdRepo: FirebaseInstallationIdRepository,
+    private val playIntegrityNonceRepo: PlayIntegrityNonceRepository,
+    private val houstonClient: HoustonClient,
 ) : BaseAsyncAction0<CreateFirstSessionOk>() {
 
     /**
@@ -49,16 +51,18 @@ class CreateFirstSessionAction @Inject constructor(
                         gcmToken,
                         basePrivateKey.publicKey,
                         currencyActions.localCurrencies.iterator().next(),
-                        firebaseInstallationIdRepository.getBigQueryPseudoId(),
+                        firebaseInstallationIdRepo.getBigQueryPseudoId(),
                         isRootedDeviceAction.actionNow()
                     )
             }
             .doOnNext {
-                userRepository.store(it.user)
-                keysRepository.storeBaseMuunPublicKey(it.cosigningPublicKey)
-                keysRepository.storeSwapServerPublicKey(it.swapServerPublicKey)
+                userRepo.store(it.user)
+                keysRepo.storeBaseMuunPublicKey(it.cosigningPublicKey)
+                keysRepo.storeSwapServerPublicKey(it.swapServerPublicKey)
 
                 Crashlytics.configure(null, it.user.hid.toString())
+
+                playIntegrityNonceRepo.store(it.playIntegrityNonce)
             }
     }
 }
