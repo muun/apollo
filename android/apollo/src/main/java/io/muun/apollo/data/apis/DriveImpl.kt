@@ -35,16 +35,15 @@ typealias FileMetadata = com.google.api.services.drive.model.File
 @Singleton
 class DriveImpl @Inject constructor(
     val context: Context,
-    val executor: Executor
-):
+    val executor: Executor,
+) :
     DriveAuthenticator,
-    DriveUploader
-{
+    DriveUploader {
 
     companion object {
-        val DRIVE_FOLDER_TYPE = "application/vnd.google-apps.folder"
-        val DRIVE_FOLDER_NAME = "Muun"
-        val DRIVE_FOLDER_PARENT = "root"
+        const val DRIVE_FOLDER_TYPE = "application/vnd.google-apps.folder"
+        const val DRIVE_FOLDER_NAME = "Muun"
+        const val DRIVE_FOLDER_PARENT = "root"
     }
 
     private val signInClient by lazy {
@@ -54,8 +53,8 @@ class DriveImpl @Inject constructor(
     override fun getSignInIntent() =
         signInClient.signInIntent
 
-    override fun getSignedInAccount(result: Intent?): GoogleSignInAccount {
-        val completedTask = GoogleSignIn.getSignedInAccountFromIntent(result)
+    override fun getSignedInAccount(resultIntent: Intent?): GoogleSignInAccount {
+        val completedTask = GoogleSignIn.getSignedInAccountFromIntent(resultIntent)
 
         // This is needlessly wrapped in a Task. If you check the implementation, you'll see it's
         // all perfectly synchronous. The Task instance is created from available data, much like
@@ -67,14 +66,16 @@ class DriveImpl @Inject constructor(
         }
     }
 
-    override fun upload(file: File,
-                        mimeType: String,
-                        uniqueProp: String,
-                        props: Map<String, String>): Observable<DriveFile> {
+    override fun upload(
+        file: File,
+        mimeType: String,
+        uniqueProp: String,
+        props: Map<String, String>,
+    ): Observable<DriveFile> {
 
         val resultSubject = PublishSubject.create<DriveFile>()
 
-        Tasks.call(executor, { executeUpload(file, mimeType, uniqueProp, props) })
+        Tasks.call(executor) { executeUpload(file, mimeType, uniqueProp, props) }
             .addOnSuccessListener {
                 resultSubject.onNext(it)
                 resultSubject.onCompleted()
@@ -127,10 +128,12 @@ class DriveImpl @Inject constructor(
         return GoogleSignIn.getClient(context, options)
     }
 
-    private fun executeUpload(file: File,
-                              mimeType: String,
-                              uniqueProp: String,
-                              props: Map<String, String>): DriveFile {
+    private fun executeUpload(
+        file: File,
+        mimeType: String,
+        uniqueProp: String,
+        props: Map<String, String>,
+    ): DriveFile {
 
         Preconditions.checkArgument(props.containsKey(uniqueProp))
 
@@ -150,11 +153,13 @@ class DriveImpl @Inject constructor(
         }
     }
 
-    private fun createFile(driveService: Drive,
-                           mimeType: String,
-                           file: File,
-                           folder: DriveFile,
-                           props: Map<String, String> = mapOf()): DriveFile {
+    private fun createFile(
+        driveService: Drive,
+        mimeType: String,
+        file: File,
+        folder: DriveFile,
+        props: Map<String, String> = mapOf(),
+    ): DriveFile {
 
         val metadata = FileMetadata()
             .setParents(listOf(folder.id))
@@ -171,11 +176,13 @@ class DriveImpl @Inject constructor(
             .let { toDriveFile(it, folder) }
     }
 
-    private fun updateFile(driveService: Drive,
-                           existingFile: DriveFile,
-                           newContent: File,
-                           newProps: Map<String, String> = mapOf(),
-                           keepRevision: Boolean = false): DriveFile {
+    private fun updateFile(
+        driveService: Drive,
+        existingFile: DriveFile,
+        newContent: File,
+        newProps: Map<String, String> = mapOf(),
+        keepRevision: Boolean = false,
+    ): DriveFile {
 
         if (keepRevision) {
             setKeepRevision(driveService, existingFile) // TODO: after 200 revisions, this will fail
@@ -216,12 +223,14 @@ class DriveImpl @Inject constructor(
     }
 
     private fun getExistingMuunFolder(driveService: Drive): DriveFile? {
-        val query = sanitizeDriveQuery("""
+        val query = sanitizeDriveQuery(
+            """
             mimeType='$DRIVE_FOLDER_TYPE' and 
             name='$DRIVE_FOLDER_NAME' and 
             '$DRIVE_FOLDER_PARENT' in parents and
             trashed=false
-        """)
+            """
+        )
 
         return driveService.files()
             .list()
@@ -233,9 +242,11 @@ class DriveImpl @Inject constructor(
             ?.let { toDriveFile(it) }
     }
 
-    private fun getFileToUpdate(candidates: List<DriveFile>,
-                                uniqueProp: String,
-                                uniqueValue: String): DriveFile? {
+    private fun getFileToUpdate(
+        candidates: List<DriveFile>,
+        uniqueProp: String,
+        uniqueValue: String,
+    ): DriveFile? {
 
         // If this is the only file, created before the addition of properties, pick it:
         if (candidates.size == 1 && !candidates[0].properties.containsKey(uniqueProp)) {
@@ -246,17 +257,21 @@ class DriveImpl @Inject constructor(
         return candidates.find { it.properties[uniqueProp] == uniqueValue }
     }
 
-    private fun getUpdateCandidates(driveService: Drive,
-                                    name: String,
-                                    mimeType: String,
-                                    folder: DriveFile): List<DriveFile> {
+    private fun getUpdateCandidates(
+        driveService: Drive,
+        name: String,
+        mimeType: String,
+        folder: DriveFile,
+    ): List<DriveFile> {
 
-        val query = sanitizeDriveQuery("""
+        val query = sanitizeDriveQuery(
+            """
             mimeType='$mimeType' and 
             name='$name' and 
             '${folder.id}' in parents and
             trashed=false
-        """)
+            """
+        )
 
         // NOTE:
         // If there's more than 100 competing files (max results at the time of writing), we only

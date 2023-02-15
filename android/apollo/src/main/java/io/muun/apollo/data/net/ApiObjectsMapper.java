@@ -10,7 +10,9 @@ import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
+import io.muun.apollo.domain.model.SystemUserInfo;
 import io.muun.apollo.domain.model.user.UserProfile;
+import io.muun.common.api.AndroidSystemUserInfoJson;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyJson;
 import io.muun.common.api.ChallengeSetupJson;
@@ -49,6 +51,7 @@ import io.muun.common.utils.Encodings;
 import androidx.annotation.NonNull;
 import libwallet.MusigNonces;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -195,7 +198,7 @@ public class ApiObjectsMapper {
             @NonNull final List<Long> totalExternalStorageInBytes,
             final long totalRamInBytes,
             @NonNull final String androidId,
-            final long creationTimestampInMilliseconds,
+            @NonNull final List<SystemUserInfo> systemUsersInfo,
             @NonNull final List<String> drmClientIds
     ) {
 
@@ -213,9 +216,21 @@ public class ApiObjectsMapper {
                 totalExternalStorageInBytes,
                 totalRamInBytes,
                 androidId,
-                creationTimestampInMilliseconds,
-                drmClientIds
+                0,
+                drmClientIds,
+                mapSystemUsersInfo(systemUsersInfo)
         );
+    }
+
+    private List<AndroidSystemUserInfoJson> mapSystemUsersInfo(List<SystemUserInfo> usersInfo) {
+        final List<AndroidSystemUserInfoJson> result = new ArrayList<>();
+        for (final SystemUserInfo model : usersInfo) {
+            result.add(new AndroidSystemUserInfoJson(
+                    model.getCreationTimestampInMillis(),
+                    model.isSystemUser()
+            ));
+        }
+        return result;
     }
 
     /**
@@ -231,7 +246,7 @@ public class ApiObjectsMapper {
             @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
             @NonNull String androidId,
-            long creationTimestampInMilliseconds,
+            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull List<String> drmClientIds
     ) {
 
@@ -243,7 +258,7 @@ public class ApiObjectsMapper {
                         totalExternalStorageInBytes,
                         totalRamInBytes,
                         androidId,
-                        creationTimestampInMilliseconds,
+                        systemUsersInfo,
                         drmClientIds
                 ),
                 gcmToken,
@@ -265,7 +280,7 @@ public class ApiObjectsMapper {
             @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
             @NonNull String androidId,
-            long creationTimestampInMilliseconds,
+            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull List<String> drmClientIds
     ) {
 
@@ -277,7 +292,7 @@ public class ApiObjectsMapper {
                         totalExternalStorageInBytes,
                         totalRamInBytes,
                         androidId,
-                        creationTimestampInMilliseconds,
+                        systemUsersInfo,
                         drmClientIds
                 ),
                 gcmToken,
@@ -297,7 +312,7 @@ public class ApiObjectsMapper {
             @NonNull List<Long> totalExternalStorageInBytes,
             long totalRamInBytes,
             @NonNull String androidId,
-            long creationTimestampInMilliseconds,
+            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull List<String> drmClientIds
     ) {
 
@@ -309,7 +324,7 @@ public class ApiObjectsMapper {
                         totalExternalStorageInBytes,
                         totalRamInBytes,
                         androidId,
-                        creationTimestampInMilliseconds,
+                        systemUsersInfo,
                         drmClientIds
                 ),
                 gcmToken,

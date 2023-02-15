@@ -17,6 +17,9 @@ public class CreateSessionRcOkJson {
     @Nullable
     public String obfuscatedEmail;
 
+    @Nullable
+    public String playIntegrityNonce;
+
     /**
      * Json constructor.
      */
@@ -28,9 +31,11 @@ public class CreateSessionRcOkJson {
      */
     public CreateSessionRcOkJson(@Nullable KeySet keySet,
                                  boolean hasEmailSetup,
-                                 @Nullable String obfuscatedEmail) {
+                                 @Nullable String obfuscatedEmail,
+                                 @Nullable String playIntegrityNonce) {
         this.keySet = keySet;
         this.hasEmailSetup = hasEmailSetup;
         this.obfuscatedEmail = obfuscatedEmail;
+        this.playIntegrityNonce = playIntegrityNonce;
     }
 }

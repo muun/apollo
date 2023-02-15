@@ -37,18 +37,19 @@ class RepositoryRegistry {
         UserPreferencesRepository::class.java,
         UserRepository::class.java,
         FeaturesRepository::class.java,
-        AppVersionRepository::class.java
+        AppVersionRepository::class.java,
+        PlayIntegrityNonceRepository::class.java,
     )
 
     // Notable exceptions:
-    // - FirebaseInstalationIdRepository
+    // - FirebaseInstallationIdRepository
     // - NightModeRepository
     // - SchemaVersionRepository
     // They get special treatment and are not wiped on logout to avoid problems.
     // Update: technically SchemaVersionRepository could be wiped with no issues, but we feel
     // its more clear and clean to keep it and avoid wiping it (there's no privacy or security
     // issues).
-    private val logoutSurvivorRepositories : Set<Class<out BaseRepository>> = setOf(
+    private val logoutSurvivorRepositories: Set<Class<out BaseRepository>> = setOf(
         FirebaseInstallationIdRepository::class.java,
         NightModeRepository::class.java,
         SchemaVersionRepository::class.java

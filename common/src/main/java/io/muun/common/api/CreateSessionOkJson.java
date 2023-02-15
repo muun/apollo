@@ -24,6 +24,9 @@ public class CreateSessionOkJson {
     @Nullable
     public MuunZonedDateTime recoveryCodeSetupDate;
 
+    @Nullable
+    public String playIntegrityNonce;
+
     /**
      * Json constructor.
      */
@@ -36,12 +39,14 @@ public class CreateSessionOkJson {
     public CreateSessionOkJson(Boolean isExistingUser,
                                Boolean canUseRecoveryCode,
                                @Nullable MuunZonedDateTime passwordSetupDate,
-                               @Nullable MuunZonedDateTime recoveryCodeSetupDate) {
+                               @Nullable MuunZonedDateTime recoveryCodeSetupDate,
+                               @Nullable String playIntegrityNonce) {
 
         this.isExistingUser = isExistingUser;
         this.canUseRecoveryCode = canUseRecoveryCode;
         this.passwordSetupDate = passwordSetupDate;
         this.recoveryCodeSetupDate = recoveryCodeSetupDate;
+        this.playIntegrityNonce = playIntegrityNonce;
     }
 
     /**
@@ -50,6 +55,6 @@ public class CreateSessionOkJson {
     public CreateSessionOkJson(Boolean isExistingUser,
                                Boolean canUseRecoveryCode) {
 
-        this(isExistingUser, canUseRecoveryCode, null, null);
+        this(isExistingUser, canUseRecoveryCode, null, null, null);
     }
 }

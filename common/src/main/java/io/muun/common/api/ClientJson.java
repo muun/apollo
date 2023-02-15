@@ -77,6 +77,10 @@ public class ClientJson {
     @Nullable // Before that ;)
     public List<String> drmClientIds;
 
+    @Since(apolloVersion = 1006) // Apollo only field
+    @Nullable // Before that ;)
+    public List<AndroidSystemUserInfoJson> androidSystemUsersInfo;
+
     /**
      * Json constructor.
      */
@@ -101,7 +105,8 @@ public class ClientJson {
                       @Nullable Long totalRamStorage,
                       @Nullable String androidId,
                       long androidCreationTimestampInMilliseconds,
-                      List<String> drmClientIds
+                      List<String> drmClientIds,
+                      @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -118,5 +123,6 @@ public class ClientJson {
         this.androidId = androidId;
         this.androidCreationTimestampInMilliseconds = androidCreationTimestampInMilliseconds;
         this.drmClientIds = drmClientIds;
+        this.androidSystemUsersInfo = systemUsersInfo;
     }
 }

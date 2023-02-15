@@ -1,9 +1,13 @@
 package io.muun.apollo.domain.action.session
 
+import android.content.Context
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
+import io.muun.apollo.data.preferences.PlayIntegrityNonceRepository
 import io.muun.apollo.data.preferences.UserPreferencesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.ApiMigrationsManager
+import io.muun.apollo.domain.GooglePlayIntegrity
 import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
@@ -16,6 +20,7 @@ import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
 import io.muun.apollo.domain.errors.InitialSyncError
 import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
 import io.muun.apollo.domain.model.LoginWithRc
+import io.muun.apollo.domain.model.PlayIntegrityToken
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.rx.RxHelper
 import rx.Observable
@@ -25,6 +30,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SyncApplicationDataAction @Inject constructor(
+    private val context: Context,
     private val houstonClient: HoustonClient,
     private val userRepository: UserRepository,
     private val contactActions: ContactActions,
@@ -38,6 +44,9 @@ class SyncApplicationDataAction @Inject constructor(
     private val registerInvoices: RegisterInvoicesAction,
     private val apiMigrationsManager: ApiMigrationsManager,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val playIntegrityNonceRepo: PlayIntegrityNonceRepository,
+    private val transformerFactory: ExecutionTransformerFactory,
+    private val googlePlayIntegrity: GooglePlayIntegrity,
 ) : BaseAsyncAction3<Boolean, Boolean, LoginWithRc?, Void>() {
 
     override fun action(
@@ -84,6 +93,7 @@ class SyncApplicationDataAction @Inject constructor(
         val step3 = Observable.zip(
             operationActions.fetchReplaceOperations(),
             registerInvoices.action(),
+            googlePlayIntegrityCheck(),
             RxHelper::toVoid
         )
 
@@ -98,6 +108,21 @@ class SyncApplicationDataAction @Inject constructor(
             }
             .doOnNext { userRepository.storeInitialSyncCompleted() }
             .toVoid()
+    }
+
+    private fun googlePlayIntegrityCheck(): Observable<out PlayIntegrityToken?> {
+        return Observable.defer {
+            // If we have a nonce from Houston, we make the Google Play Integrity API call
+            val nonce = playIntegrityNonceRepo.get()
+            return@defer if (nonce != null) {
+                googlePlayIntegrity.fetchIntegrityToken(nonce)
+                    .observeOn(transformerFactory.backgroundScheduler)
+                    .flatMapCompletable((houstonClient::submitPlayIntegrityToken))
+
+            } else {
+                Observable.just(null)
+            }
+        }
     }
 
     private fun fetchUserInfo(): Observable<Void> =

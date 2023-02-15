@@ -4,10 +4,15 @@ import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.media.MediaDrm
+import android.os.Build
 import android.os.Environment
+import android.os.UserHandle
 import android.os.UserManager
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import io.muun.apollo.domain.errors.HardwareCapabilityError
+import io.muun.apollo.domain.errors.SystemUserCreationDateError
+import io.muun.apollo.domain.model.SystemUserInfo
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import timber.log.Timber
@@ -63,24 +68,37 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
         )
     }
 
-    fun getCreationTimestampInMilliseconds(): Long {
+    fun getSystemUsersInfo(): List<SystemUserInfo> {
 
         if (OS.supportsUserCreationTime()) {
-            try {
-                for (userProfile in userManager.userProfiles) {
-                    return userManager.getUserCreationTime(userProfile)
-                }
 
-                // No profiles
-                return USER_CREATION_DATE_NO_PROFILES
-            } catch (e: Exception) {
-                Timber.e(HardwareCapabilityError("user creation date", e))
-                return USER_CREATION_DATE_READ_ERROR
+            val isSystemUser = userManager.isSystemUser
+            if (userManager.userProfiles.isEmpty()) {
+                return listOf(SystemUserInfo(USER_CREATION_DATE_NO_PROFILES, isSystemUser))
             }
+
+            val result = ArrayList<SystemUserInfo>()
+
+            for (up in userManager.userProfiles) {
+                result.add(SystemUserInfo(getCreationTimestampInMilliseconds(up), isSystemUser))
+            }
+
+            return result
         }
 
         // Can't get it
-        return USER_CREATION_DATE_UNSUPPORTED
+        return listOf(SystemUserInfo(USER_CREATION_DATE_UNSUPPORTED, false))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun getCreationTimestampInMilliseconds(userProfile: UserHandle): Long {
+        return try {
+            userManager.getUserCreationTime(userProfile)
+
+        } catch (e: Exception) {
+            Timber.e(SystemUserCreationDateError(userProfile, userManager.isSystemUser, e))
+            USER_CREATION_DATE_READ_ERROR
+        }
     }
 
     fun getTotalRamInBytes(): Long {
