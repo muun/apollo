@@ -256,17 +256,17 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
         final NetworkRetry networkRetryConfig = getAnnotation(call, NetworkRetry.class);
         final ServerRetry serverRetryConfig = getAnnotation(call, ServerRetry.class);
-        final HttpRetryTransformer retryTransformer = new HttpRetryTransformer(
+        final HttpRetryTransformer<R> retryTransformer = new HttpRetryTransformer<>(
                 networkRetryConfig,
                 serverRetryConfig
         );
 
-        final Transformer attachUrlTransformer = ObservableFn.replaceTypedError(
+        final Transformer<R,R> attachUrlTransformer = ObservableFn.replaceTypedError(
                 NetworkException.class,
                 original -> new NetworkException(url, original)
         );
 
-        final Observable<?> result = getRequestObservable(call)
+        final Observable<R> result = getRequestObservable(call)
                 .doOnSubscribe(() -> idempotencyKeyForThreadHack.put(
                         Thread.currentThread().getId(),
                         idempotencyKey
@@ -290,14 +290,14 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
     private Observable<?> getRequestObservable(@NotNull Call<R> call) {
 
         if (isSingle) {
-            return ((CallAdapter<R, Single>) wrapped).adapt(call).toObservable();
+            return ((CallAdapter<R, Single<R>>) wrapped).adapt(call).toObservable();
         }
 
         if (isCompletable) {
             return ((CallAdapter<R, Completable>) wrapped).adapt(call).toObservable();
         }
 
-        return ((CallAdapter<R, Observable>) wrapped).adapt(call);
+        return ((CallAdapter<R, Observable<R>>) wrapped).adapt(call);
     }
 
     private Object getResponseObservable(Observable<?> result) {

@@ -7,9 +7,9 @@ import io.muun.apollo.data.os.secure_storage.FakeKeyStore;
 import io.muun.apollo.data.os.secure_storage.FakePreferences;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
 
-import android.content.Context;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,9 +31,6 @@ public class ApplicationLockTest extends BaseTest {
     @Mock
     private ChallengePublicKeySelector challengePublicKeySel;
 
-    @Mock
-    private Context context; // Not really used in this tests
-
     private ApplicationLockManager lockManager;
 
     @Before
@@ -46,8 +43,7 @@ public class ApplicationLockTest extends BaseTest {
         lockManager = new ApplicationLockManager(
                 pinManager,
                 secureStorageProvider,
-                challengePublicKeySel,
-                context
+                challengePublicKeySel
         );
 
         when(pinManager.verifyPin(CORRECT_PIN)).thenReturn(true);
@@ -101,7 +97,7 @@ public class ApplicationLockTest extends BaseTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = WeirdIncorrectAttemptsBugError.class)
     public void errorOnZeroRemainingAttemptsWhenRecoverable() {
         doReturn(true).when(challengePublicKeySel).exists(any());
 

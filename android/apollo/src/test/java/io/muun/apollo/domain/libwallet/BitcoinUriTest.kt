@@ -12,7 +12,6 @@ internal class BitcoinUriTest : BaseTest() {
     @Test
     fun testBitcoinUriToString() {
 
-        val satoshisToBitcoins = BitcoinUtils.satoshisToBitcoins(19)
         val btcAmount = BitcoinAmount(
             19,
             BitcoinUtils.satoshisToBitcoins(19),

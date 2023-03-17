@@ -17,6 +17,7 @@ type LNURLEventMetadata struct {
 	Invoice string
 }
 
+//goland:noinspection GoUnusedConst (these are used by native code)
 const (
 	LNURLErrDecode              = lnurl.ErrDecode
 	LNURLErrUnsafeURL           = lnurl.ErrUnsafeURL

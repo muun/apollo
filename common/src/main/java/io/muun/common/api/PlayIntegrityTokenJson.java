@@ -16,10 +16,17 @@ public class PlayIntegrityTokenJson {
     public String token;
 
     /**
-     * The error code returned by the Play Integrity API, if any. Should be present if token is not.
+     * The "name" (aka string representation) of the error code (int( returned by the Play Integrity
+     * API, if any. Should be present if token is not.
      */
     @Nullable
     public String errorCode;
+
+    /**
+     * The error cause for errors where an errorCode couldn't be parsed successfully.
+     */
+    @Nullable
+    public String errorCause;
 
     /**
      * JSON constructor.
@@ -30,8 +37,13 @@ public class PlayIntegrityTokenJson {
     /**
      * Apollo constructor.
      */
-    public PlayIntegrityTokenJson(@Nullable String token, @Nullable String errorCode) {
+    public PlayIntegrityTokenJson(
+            @Nullable String token,
+            @Nullable String errorCode,
+            @Nullable String errorCause
+    ) {
         this.token = token;
         this.errorCode = errorCode;
+        this.errorCause = errorCause;
     }
 }

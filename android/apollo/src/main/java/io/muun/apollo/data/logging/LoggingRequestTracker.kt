@@ -14,15 +14,17 @@ object LoggingRequestTracker {
     private const val MAX_MEMORY_SIZE = 5
     private val ZDT_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
 
+    private val lock = this
+
     data class Entry(
         val url: String,
         val startedAt: ZonedDateTime,
         var endedAt: ZonedDateTime? = null,
-        var status: Int? = null
+        var status: Int? = null,
     ) {
 
         override fun toString(): String {
-            val endpoint = url.split("/", limit=4).last() // keep URL after path
+            val endpoint = url.split("/", limit = 4).last() // keep URL after path
             val time = startedAt.format(ZDT_FORMATTER)
 
             val requestInfo = "$time $endpoint"
@@ -34,8 +36,9 @@ object LoggingRequestTracker {
         private fun hasResponse() =
             status != null && endedAt != null
 
-        private val elapsedMs get() =
-            endedAt?.let { ChronoUnit.MILLIS.between(startedAt, it) }
+        private val elapsedMs
+            get() =
+                endedAt?.let { ChronoUnit.MILLIS.between(startedAt, it) }
     }
 
 
@@ -43,36 +46,39 @@ object LoggingRequestTracker {
     // that preserves addition order:
     private val lastEndpoints = LinkedHashMap<IdempotencyKey, Entry>()
 
-
-    @Synchronized
     fun getRecentRequests(): List<Entry> =
-        lastEndpoints.values.toList().reversed() // most recent first
+        synchronized(lock) {
+            lastEndpoints.values.toList().reversed() // most recent first
+        }
 
-    @Synchronized
     fun reportRecentRequest(key: IdempotencyKey, url: String) {
-        if (lastEndpoints.containsKey(key)) return
+        synchronized(lock) {
+            if (lastEndpoints.containsKey(key)) return
 
-        lastEndpoints[key] = Entry(url, ZonedDateTime.now(ZoneOffset.UTC))
+            lastEndpoints[key] = Entry(url, ZonedDateTime.now(ZoneOffset.UTC))
 
-        // Ensure the record remains at a reasonable size:
-        if (lastEndpoints.size > MAX_MEMORY_SIZE) {
-            lastEndpoints.remove(lastEndpoints.keys.first())
+            // Ensure the record remains at a reasonable size:
+            if (lastEndpoints.size > MAX_MEMORY_SIZE) {
+                lastEndpoints.remove(lastEndpoints.keys.first())
+            }
         }
     }
 
-    @Synchronized
     fun reportRecentErrorResponse(key: String, error: Error?) {
-        lastEndpoints[key]?.let {
-            it.status = error?.errorCode?.code ?: 500
-            it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
+        synchronized(lock) {
+            lastEndpoints[key]?.let {
+                it.status = error?.errorCode?.code ?: 500
+                it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
+            }
         }
     }
 
-    @Synchronized
     fun reportRecentSuccessResponse(key: IdempotencyKey) {
-        lastEndpoints[key]?.let {
-            it.status = 200
-            it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
+        synchronized(lock) {
+            lastEndpoints[key]?.let {
+                it.status = 200
+                it.endedAt = ZonedDateTime.now(ZoneOffset.UTC)
+            }
         }
     }
 }

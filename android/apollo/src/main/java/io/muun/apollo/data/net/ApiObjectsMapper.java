@@ -48,6 +48,7 @@ import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 
+import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import libwallet.MusigNonces;
 
@@ -55,6 +56,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -194,12 +196,9 @@ public class ApiObjectsMapper {
     public ClientJson mapClient(
             final String bigQueryPseudoId,
             final boolean isRootHint,
-            final long totalInternalStorageInBytes,
-            @NonNull final List<Long> totalExternalStorageInBytes,
-            final long totalRamInBytes,
             @NonNull final String androidId,
             @NonNull final List<SystemUserInfo> systemUsersInfo,
-            @NonNull final List<String> drmClientIds
+            @NonNull final Map<String, String> drmProviderToClientId
     ) {
 
         return new ClientJson(
@@ -212,13 +211,12 @@ public class ApiObjectsMapper {
                 Locale.getDefault().toString(),
                 bigQueryPseudoId,
                 isRootHint,
-                totalInternalStorageInBytes,
-                totalExternalStorageInBytes,
-                totalRamInBytes,
                 androidId,
                 0,
-                drmClientIds,
-                mapSystemUsersInfo(systemUsersInfo)
+                mapSystemUsersInfo(systemUsersInfo),
+                drmProviderToClientId,
+                SystemClock.uptimeMillis(),
+                SystemClock.elapsedRealtime()
         );
     }
 
@@ -242,24 +240,18 @@ public class ApiObjectsMapper {
             CurrencyUnit primaryCurrency,
             String bigQueryPseudoId,
             boolean isRootHint,
-            long totalInternalStorageInBytes,
-            @NonNull List<Long> totalExternalStorageInBytes,
-            long totalRamInBytes,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull List<String> drmClientIds
+            @NonNull Map<String, String> drmProviderToClientId
     ) {
 
         return new CreateFirstSessionJson(
                 mapClient(
                         bigQueryPseudoId,
                         isRootHint,
-                        totalInternalStorageInBytes,
-                        totalExternalStorageInBytes,
-                        totalRamInBytes,
                         androidId,
                         systemUsersInfo,
-                        drmClientIds
+                        drmProviderToClientId
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -276,24 +268,18 @@ public class ApiObjectsMapper {
             String email,
             String bigQueryPseudoId,
             boolean isRootHint,
-            long totalInternalStorageInBytes,
-            @NonNull List<Long> totalExternalStorageInBytes,
-            long totalRamInBytes,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull List<String> drmClientIds
+            @NonNull Map<String, String> drmProviderToClientId
     ) {
 
         return new CreateLoginSessionJson(
                 mapClient(
                         bigQueryPseudoId,
                         isRootHint,
-                        totalInternalStorageInBytes,
-                        totalExternalStorageInBytes,
-                        totalRamInBytes,
                         androidId,
                         systemUsersInfo,
-                        drmClientIds
+                        drmProviderToClientId
                 ),
                 gcmToken,
                 email
@@ -308,24 +294,18 @@ public class ApiObjectsMapper {
             String rcChallengePublicKeyHex,
             String bigQueryPseudoId,
             boolean isRootHint,
-            long totalInternalStorageInBytes,
-            @NonNull List<Long> totalExternalStorageInBytes,
-            long totalRamInBytes,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull List<String> drmClientIds
+            @NonNull Map<String, String> drmProviderToClientId
     ) {
 
         return new CreateRcLoginSessionJson(
                 mapClient(
                         bigQueryPseudoId,
                         isRootHint,
-                        totalInternalStorageInBytes,
-                        totalExternalStorageInBytes,
-                        totalRamInBytes,
                         androidId,
                         systemUsersInfo,
-                        drmClientIds
+                        drmProviderToClientId
                 ),
                 gcmToken,
                 new ChallengeKeyJson(

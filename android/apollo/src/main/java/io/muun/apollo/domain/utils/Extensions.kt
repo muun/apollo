@@ -18,7 +18,9 @@ import libwallet.Libwallet
 import libwallet.StringList
 import rx.Observable
 import java.io.Serializable
+import java.net.SocketTimeoutException
 import java.util.*
+import java.util.concurrent.TimeoutException
 import javax.crypto.BadPaddingException
 import javax.money.Monetary
 import javax.money.MonetaryException
@@ -29,7 +31,10 @@ fun <T> Observable<T>.toVoid(): Observable<Void> =
 fun <T, E : Throwable> Observable<T>.replaceTypedError(cls: Class<E>, f: (E) -> Throwable) =
     compose(ObservableFn.replaceTypedError(cls, f))
 
-fun <T, E : Throwable> Observable<T>.onTypedErrorResumeNext(cls: Class<E>, f: (E) -> Observable<T>) =
+fun <T, E : Throwable> Observable<T>.onTypedErrorResumeNext(
+    cls: Class<E>,
+    f: (E) -> Observable<T>,
+) =
     compose(ObservableFn.onTypedErrorResumeNext(cls, f))
 
 fun <T, E : Throwable> Observable<T>.onTypedErrorReturn(cls: Class<E>, f: (E) -> T) =
@@ -44,10 +49,17 @@ fun <T, U> Observable<T>.zipWith(o1: Observable<U>) =
 fun <T, U, V> Observable<T>.zipWith(o1: Observable<U>, o2: Observable<V>) =
     Observable.zip(this, o1, o2) { a, b, c -> Triple(a, b, c) }
 
-fun <T: Fragment> T.applyArgs(f: Bundle.() -> Unit) =
+fun <T : Fragment> T.applyArgs(f: Bundle.() -> Unit) =
     apply {
         arguments = (arguments ?: Bundle()).apply(f)
     }
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isInstanceOrIsCausedByTimeoutError() =
+    isInstanceOrIsCausedByError<TimeoutException>()
+        || isInstanceOrIsCausedByError<SocketTimeoutException>()
 
 /**
  * Needed as inline reified functions can't be called from Java.

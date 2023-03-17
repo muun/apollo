@@ -4,6 +4,7 @@ import io.muun.apollo.data.db.base.HoustonUuidDao;
 import io.muun.apollo.domain.model.IncomingSwapHtlc;
 import io.muun.common.utils.Encodings;
 
+import androidx.annotation.NonNull;
 import rx.Completable;
 
 import javax.inject.Inject;
@@ -26,7 +27,7 @@ public class IncomingSwapHtlcDao extends HoustonUuidDao<IncomingSwapHtlcDb> {
     }
 
     @Override
-    protected void storeUnsafe(final IncomingSwapHtlcDb element) {
+    protected void storeUnsafe(@NonNull final IncomingSwapHtlcDb element) {
         final IncomingSwapHtlc htlc = element.getHtlc();
         final byte[] fulfillmentTx = htlc.getFulfillmentTx();
 

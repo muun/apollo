@@ -26,7 +26,7 @@ object BitcoinUri {
     }
 
     @VisibleForTesting
-    fun toString(amount: BitcoinAmount) =
+    fun toString(amount: BitcoinAmount): String =
         BitcoinUtils.satoshisToBitcoins(amount.inSatoshis)
             .number
             .numberValue(BigDecimal::class.java)

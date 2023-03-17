@@ -10,10 +10,10 @@ import io.muun.apollo.domain.model.base.HoustonUuidModel
  * like to pass it as parameter or have the incoming swap handle the storing of the htlc. We can't
  * do that without a serious refactor, so we add this model to avoid the issue entirely.
  */
-data class IncomingSwapHtlcDb (
-        val swapHoustonUuid: String,
-        val htlc: IncomingSwapHtlc,
-): HoustonUuidModel(null, htlc.houstonUuid) {
+data class IncomingSwapHtlcDb(
+    val swapHoustonUuid: String,
+    val htlc: IncomingSwapHtlc,
+) : HoustonUuidModel(null, htlc.houstonUuid) {
 
     override var id: Long?
         get() = htlc.id

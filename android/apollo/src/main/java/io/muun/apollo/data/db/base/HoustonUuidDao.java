@@ -5,6 +5,7 @@ import io.muun.apollo.lib.BuildConfig;
 import io.muun.common.utils.Preconditions;
 
 import android.database.Cursor;
+import androidx.annotation.NonNull;
 import rx.Observable;
 
 public abstract class HoustonUuidDao<ModelT extends HoustonUuidModel> extends BaseDao<ModelT> {
@@ -14,7 +15,7 @@ public abstract class HoustonUuidDao<ModelT extends HoustonUuidModel> extends Ba
     }
 
     @Override
-    public Observable<ModelT> store(ModelT element) {
+    public Observable<ModelT> store(@NonNull ModelT element) {
 
         return Observable.defer(() -> {
 

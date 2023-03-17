@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/shopspring/decimal"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -85,7 +86,20 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		}
 
 		if strings.ToLower(queryParam) == "amount" {
-			amount = queryValues[queryParam][0]
+			rawAmount := queryValues[queryParam][0]
+
+			// We're adding some extra flexibility in case on-chain amount comes in scientific notation
+			// (bip21 standard doesn't allow it, but we've seen it in the wild). So, we'll try to parse the amount
+			// string into a float and then convert it back to a string but using decimal notation (that's the 'f'
+			// format in FormatFloat).
+			numericAmount, err := strconv.ParseFloat(rawAmount, 64)
+			if err != nil || math.IsNaN(numericAmount) || math.IsInf(numericAmount, 0) {
+				amount = rawAmount
+				// TODO we should probably return an error here but that breaks current assumptions in newop state
+				// machine (see TestInvalidAmountEmitsInvalidAddress in state_test.go)
+			} else {
+				amount = strconv.FormatFloat(numericAmount, 'f', -1, 64)
+			}
 		}
 
 		if strings.ToLower(queryParam) == "lightning" {
@@ -146,7 +160,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		return nil, errors.New(ErrInvalidURI, "Network mismatch")
 	}
 
-	// Check for unified QR Uris to have same amount if they have one
+	// Check for unified QR Uris to have the same amount if they have one
 	if invoice != nil {
 
 		if invoice.Sats != 0 {

@@ -31,6 +31,7 @@ public class OperationUri {
     public static final String MUUN_AMOUNT = "amount";
     public static final String MUUN_CURRENCY = "currency";
     public static final String MUUN_DESCRIPTION = "message";
+    public static final String MUUN_LN_INVOICE = "lightning";
 
     /**
      * Create an OperationUri from any input String, by trying to use the other factory methods.

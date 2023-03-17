@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.utils.Preconditions;
 
@@ -133,6 +134,8 @@ public class MuunLockOverlay extends MuunView {
      * Report to the Overlay that an unlock attempt succeeded.
      */
     public void reportSuccess() {
+        Crashlytics.logBreadcrumb("MuunLockOverlay: reportSuccess");
+
         pinInput.setSuccess();
     }
 

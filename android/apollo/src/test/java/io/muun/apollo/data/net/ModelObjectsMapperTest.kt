@@ -3,7 +3,7 @@ package io.muun.apollo.data.net
 import io.muun.apollo.BaseTest
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.common.api.MuunFeatureJson
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class ModelObjectsMapperTest : BaseTest() {

@@ -34,8 +34,8 @@ class SecureStorageProviderTest {
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
         storage = SecureStorageProvider(
-                KeyStoreProvider(context),
-                SecureStoragePreferences(context)
+            KeyStoreProvider(context),
+            SecureStoragePreferences(context)
         )
     }
 
@@ -109,15 +109,15 @@ class SecureStorageProviderTest {
             println("testConcurrentAccess: invalidKeyException: $invalidKeyException")
 
             val others = errors.size - kpi -
-                    badPaddingException -
-                    unrecoverableKeyException -
-                    keyStoreCorruptedError -
-                    sharePrefsCorrupted -
-                    noSuchElementError -
-                    illegalBlockSizeException -
-                    invalidKeyException
+                badPaddingException -
+                unrecoverableKeyException -
+                keyStoreCorruptedError -
+                sharePrefsCorrupted -
+                noSuchElementError -
+                illegalBlockSizeException -
+                invalidKeyException
 
-            println("testConcurrentAccess: others: $others" )
+            println("testConcurrentAccess: others: $others")
 
             val first = errors.first()
 
@@ -128,5 +128,5 @@ class SecureStorageProviderTest {
     }
 
     private inline fun <reified T> howManyOfType(errors: List<Throwable>) =
-            errors.filter { it.isCausedByError<T>() }.size
+        errors.filter { it.isCausedByError<T>() }.size
 }

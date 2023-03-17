@@ -19,6 +19,8 @@ package io.muun.apollo.data.preferences
  */
 class RepositoryRegistry {
 
+    private val lock = this
+
     private val registry: Set<Class<out BaseRepository>> = setOf(
         ApiMigrationsVersionRepository::class.java,
         AuthRepository::class.java,
@@ -58,12 +60,13 @@ class RepositoryRegistry {
     private val loadedRepositories: MutableSet<BaseRepository> = mutableSetOf()
 
     fun load(repo: BaseRepository) {
+        synchronized(lock) {
+            if (!isRegistered(repo)) {
+                throw IllegalStateException("${repo.javaClass} is not registered in ${this.javaClass}!")
+            }
 
-        if (!isRegistered(repo)) {
-            throw IllegalStateException("${repo.javaClass} is not registered in ${this.javaClass}!")
+            loadedRepositories.add(repo)
         }
-
-        loadedRepositories.add(repo)
     }
 
     /**
@@ -71,8 +74,10 @@ class RepositoryRegistry {
      * logoutSurvivorRepositories.
      */
     fun repositoriesToClear(): List<BaseRepository> =
-        loadedRepositories.filter {
-            !logoutSurvivorRepositories.contains(it.javaClass)
+        synchronized(lock) {
+            loadedRepositories.filter {
+                !logoutSurvivorRepositories.contains(it.javaClass)
+            }
         }
 
     private fun isRegistered(repository: BaseRepository) =

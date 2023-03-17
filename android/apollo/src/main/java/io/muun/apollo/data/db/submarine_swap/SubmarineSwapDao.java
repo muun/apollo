@@ -9,6 +9,7 @@ import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.DebtType;
 
+import androidx.annotation.NonNull;
 import rx.Completable;
 
 import javax.inject.Inject;
@@ -31,7 +32,7 @@ public class SubmarineSwapDao extends HoustonUuidDao<SubmarineSwap> {
     }
 
     @Override
-    protected void storeUnsafe(final SubmarineSwap swap) {
+    protected void storeUnsafe(@NonNull final SubmarineSwap swap) {
         final SubmarineSwapReceiver receiver = swap.getReceiver();
         final SubmarineSwapFundingOutput fundingOutput = swap.getFundingOutput();
         final MuunAddress userRefundAddress = fundingOutput.getUserRefundAddress();

@@ -28,9 +28,7 @@ import javax.inject.Singleton
 import javax.money.MonetaryAmount
 
 @Singleton
-open class OperationDao
-@Inject constructor()
-    : HoustonIdDao<Operation>("operations") {
+open class OperationDao @Inject constructor() : HoustonIdDao<Operation>("operations") {
 
     override fun deleteAll(): Completable {
         return Completable.fromAction { delightDb.operationQueries.deleteAll() }
@@ -74,7 +72,7 @@ open class OperationDao
         operationHid: Long,
         confirmations: Long,
         hash: String?,
-        status: OperationStatus
+        status: OperationStatus,
     ) {
         delightDb.operationQueries.updateStatus(
             confirmations, hash, status, operationHid
@@ -92,10 +90,12 @@ open class OperationDao
      * Fetches a single operation by its id.
      */
     fun fetchById(operationId: Long): Observable<Operation> {
-        return fetchOneOrFail(delightDb.operationQueries.selectById(
-            operationId,
-            this::fromAllFields
-        ))
+        return fetchOneOrFail(
+            delightDb.operationQueries.selectById(
+                operationId,
+                this::fromAllFields
+            )
+        )
             .doOnError { error: Throwable -> enhanceError(error, operationId.toString()) }
     }
 
@@ -103,10 +103,12 @@ open class OperationDao
      * Fetches a single operation by its Houston id.
      */
     fun fetchByHid(operationHid: Long): Observable<Operation> {
-        return fetchOneOrFail(delightDb.operationQueries.selectByHid(
-            operationHid,
-            this::fromAllFields
-        ))
+        return fetchOneOrFail(
+            delightDb.operationQueries.selectByHid(
+                operationHid,
+                this::fromAllFields
+            )
+        )
             .doOnError { error: Throwable -> enhanceError(error, operationHid.toString()) }
     }
 
@@ -124,10 +126,12 @@ open class OperationDao
     }
 
     open fun fetchByIncomingSwapUuid(incomingSwap: String): Observable<Operation> {
-        return fetchOneOrFail(delightDb.operationQueries.selectByIncomingSwap(
-            incomingSwap,
-            this::fromAllFields
-        ))
+        return fetchOneOrFail(
+            delightDb.operationQueries.selectByIncomingSwap(
+                incomingSwap,
+                this::fromAllFields
+            )
+        )
     }
 
     fun watchUtxoSetState(): Observable<UtxoSetState> {
@@ -141,9 +145,8 @@ open class OperationDao
 
         return Observable.zip(
             executeCount(hasRbfQuery),
-            executeCount(hasNonRbfQuery),
-            { f, s -> Pair.of(f, s) }
-        )
+            executeCount(hasNonRbfQuery)
+        ) { f, s -> Pair.of(f, s) }
             .map { pair ->
                 if (pair.fst > 0) {
                     return@map UtxoSetState.RBF
@@ -242,7 +245,7 @@ open class OperationDao
         htlcAddress: String?,
         htlcOutputAmountInSatoshis: Long?,
         htlcTxInHex: String?,
-        _htlcIncomingSwapHoustonUuid: String?
+        _htlcIncomingSwapHoustonUuid: String?,
     ): Operation {
 
         val senderProfile = if (senderProfileId != null) {

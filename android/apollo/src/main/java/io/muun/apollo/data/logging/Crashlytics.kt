@@ -16,15 +16,19 @@ import timber.log.Timber
 
 object Crashlytics {
 
-    private val crashlytics = FirebaseCrashlytics.getInstance()
+    private val crashlytics = if (LoggingContext.sendToCrashlytics) {
+        FirebaseCrashlytics.getInstance()
+    } else {
+        null
+    }
 
     /**
      * Set up Crashlytics metadata.
      */
     @JvmStatic
     fun configure(email: String?, userId: String) {
-        crashlytics.setUserId(userId)
-        crashlytics.setCustomKey("email", email ?: "unknown")
+        crashlytics?.setUserId(userId)
+        crashlytics?.setCustomKey("email", email ?: "unknown")
 
         // TODO: use setUserEmail, and grab Houston session UUID to attach it
     }
@@ -36,7 +40,7 @@ object Crashlytics {
     @JvmStatic
     fun logBreadcrumb(breadcrumb: String) {
         Timber.d("Breadcrumb: $breadcrumb")
-        crashlytics.log(breadcrumb);
+        crashlytics?.log(breadcrumb);
     }
 
     /**
@@ -49,15 +53,15 @@ object Crashlytics {
             return
         }
 
-        crashlytics.setCustomKey("tag", report.tag)
-        crashlytics.setCustomKey("message", report.message)
-        crashlytics.setCustomKey("locale", LoggingContext.locale)
+        crashlytics?.setCustomKey("tag", report.tag)
+        crashlytics?.setCustomKey("message", report.message)
+        crashlytics?.setCustomKey("locale", LoggingContext.locale)
 
         for (entry in report.metadata.entries) {
-            crashlytics.setCustomKey(entry.key, entry.value.toString())
+            crashlytics?.setCustomKey(entry.key, entry.value.toString())
         }
 
-        crashlytics.recordException(report.error)
+        crashlytics?.recordException(report.error)
     }
 
     /**
@@ -72,14 +76,14 @@ object Crashlytics {
         crashReportingError: Throwable,
     ) {
 
-        tag?.let { crashlytics.setCustomKey("tag", it) }
-        message?.let { crashlytics.setCustomKey("message", it) }
+        tag?.let { crashlytics?.setCustomKey("tag", it) }
+        message?.let { crashlytics?.setCustomKey("message", it) }
 
         if (originalError != null) {
-            crashlytics.recordException(originalError)
+            crashlytics?.recordException(originalError)
         }
 
-        crashlytics.recordException(crashReportingError)
+        crashlytics?.recordException(crashReportingError)
     }
 
     /**
@@ -89,7 +93,7 @@ object Crashlytics {
      * @see ForceCrashReportAction
      */
     fun forceReport(error: ForceCrashReportAction.ForcedCrashlyticsCall) {
-        crashlytics.recordException(error)
+        crashlytics?.recordException(error)
     }
 
     /**

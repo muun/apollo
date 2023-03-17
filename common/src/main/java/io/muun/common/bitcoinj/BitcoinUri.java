@@ -166,7 +166,7 @@ public class BitcoinUri {
         final String addressToken = addressSplitTokens[0];  // may be empty!
         final String[] nameValuePairTokens;
 
-        if (addressSplitTokens.length == 1) {
+        if (addressSplitTokens.length == 1 || addressSplitTokens[1].isEmpty()) {
             // Only an address is specified - use an empty '<name>=<value>' token array.
             nameValuePairTokens = new String[]{};
 
