@@ -1,22 +1,32 @@
-package io.muun.apollo.domain
+package io.muun.apollo.domain.action.integrity
 
 import android.content.Context
 import com.google.android.play.core.integrity.IntegrityManagerFactory
 import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.google.android.play.core.integrity.IntegrityTokenResponse
 import com.google.android.play.core.integrity.model.IntegrityErrorCode
+import com.google.firebase.FirebaseApp
 import io.muun.apollo.data.logging.Crashlytics
-import io.muun.apollo.data.os.Configuration
+import io.muun.apollo.domain.errors.PlayIntegrityError
 import io.muun.apollo.domain.model.PlayIntegrityToken
 import rx.Observable
+import rx.Observer
 import rx.subjects.BehaviorSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 
-class GooglePlayIntegrity @Inject constructor(
-    private val context: Context,
-    private val conf: Configuration,
-) {
+class GooglePlayIntegrity @Inject constructor(private val context: Context) {
+
+    companion object {
+
+        val retryableErrors = listOf(
+            IntegrityErrorCode.TOO_MANY_REQUESTS,
+            IntegrityErrorCode.GOOGLE_SERVER_UNAVAILABLE,
+            IntegrityErrorCode.CLIENT_TRANSIENT_ERROR,
+            IntegrityErrorCode.INTERNAL_ERROR
+        )
+    }
 
     fun fetchIntegrityToken(nonce: String): Observable<PlayIntegrityToken> {
 
@@ -24,38 +34,125 @@ class GooglePlayIntegrity @Inject constructor(
 
         val integrityManager = IntegrityManagerFactory.create(context)
 
+        // This is Google Clouds Project Number, but returned as a string so we convert to long
+        val projectNumber = FirebaseApp.getInstance().options.gcmSenderId!!
+            .toLong()
+
         // Request the integrity token by providing a nonce.
         val integrityTokenResponse = integrityManager.requestIntegrityToken(
             IntegrityTokenRequest.builder()
-                .setCloudProjectNumber(conf.getLong("googleCloud.projectNumber"))
+                .setCloudProjectNumber(projectNumber)
                 .setNonce(nonce)
                 .build()
         )
 
+        // Notice: all these listeners execute on Main Thread
         integrityTokenResponse.addOnSuccessListener { response: IntegrityTokenResponse ->
-            val integrityToken = response.token()
-            Crashlytics.logBreadcrumb("IntegrityTokenFetched: $integrityToken")
+            try {
+                handleIntegrityTokenSuccess(response, subject)
 
-            subject.onNext(PlayIntegrityToken(integrityToken, null))
-            subject.onCompleted()
+            } catch (e: Throwable) {
+                handleErrorOnMainThread(e, subject)
+            }
         }
 
         integrityTokenResponse.addOnFailureListener { e: Exception ->
+            try {
+                handleIntegrityTokenError(e, subject)
 
-            Crashlytics.logBreadcrumb("IntegrityTokenError: ${getErrorName(e)}")
-            Crashlytics.logBreadcrumb("IntegrityTokenError: ${getErrorText(e)}")
+            } catch (e: Throwable) {
+                handleErrorOnMainThread(e, subject)
+            }
+        }
 
-            subject.onNext(PlayIntegrityToken(null, getErrorName(e)))
-            subject.onCompleted()
+        integrityTokenResponse.addOnCanceledListener {
+            try {
+                handleIntegrityTokenCanceled(subject)
+
+            } catch (e: Throwable) {
+                handleErrorOnMainThread(e, subject)
+            }
         }
 
         return subject
     }
 
-    private fun getErrorName(error: Exception): String {
-        val msg = error.message ?: return "UNKNOWN_ERROR"
+    private fun handleIntegrityTokenSuccess(
+        response: IntegrityTokenResponse,
+        observer: Observer<PlayIntegrityToken>,
+    ) {
 
-        return when (getErrorCode(msg)) {
+        val integrityToken = response.token()
+        Crashlytics.logBreadcrumb("IntegrityTokenFetched: $integrityToken")
+
+        observer.onNext(PlayIntegrityToken(integrityToken))
+        observer.onCompleted()
+    }
+
+    private fun handleIntegrityTokenError(e: Exception, observer: Observer<PlayIntegrityToken>) {
+
+        val playIntegrityError = buildPlayIntegrityError(e)
+
+        Crashlytics.logBreadcrumb("IntegrityTokenError: ${playIntegrityError.getName()}")
+        Crashlytics.logBreadcrumb("IntegrityTokenError: ${playIntegrityError.getText()}")
+
+        Timber.e(playIntegrityError)
+
+        observer.onError(playIntegrityError)
+        observer.onCompleted()
+    }
+
+    private fun handleIntegrityTokenCanceled(observer: BehaviorSubject<PlayIntegrityToken>) {
+        Crashlytics.logBreadcrumb("IntegrityTokenCancelled")
+        Timber.e(PlayIntegrityError())
+
+        observer.onNext(PlayIntegrityToken(null, "CANCELLED"))
+        observer.onCompleted()
+    }
+
+    private fun handleErrorOnMainThread(e: Throwable, observer: Observer<PlayIntegrityToken>) {
+        Timber.e(e)
+        observer.onError(e)
+        observer.onCompleted()
+    }
+
+    @Suppress("FoldInitializerAndIfToElvis")
+    private fun buildPlayIntegrityError(error: Exception): PlayIntegrityError {
+        val errorCode: Int? = getErrorCode(error)
+
+        if (errorCode == null) {
+            return PlayIntegrityError(error)
+        }
+
+        return PlayIntegrityError(
+            errorCode,
+            getErrorName(errorCode),
+            getErrorText(errorCode),
+            error
+        )
+    }
+
+    @Suppress("FoldInitializerAndIfToElvis")
+    private fun getErrorCode(error: Exception): Int? {
+        val errorMessage = error.message
+
+        if (errorMessage == null) {
+            return null
+        }
+
+        // Pretty junk way of getting the error code but it works
+        return try {
+            errorMessage
+                .replace("\n".toRegex(), "")
+                .replace(":(.*)".toRegex(), "")
+                .toInt()
+        } catch (parseError: Throwable) {
+            null
+        }
+    }
+
+    private fun getErrorName(errorCode: Int): String {
+        return when (errorCode) {
             IntegrityErrorCode.API_NOT_AVAILABLE -> "API_NOT_AVAILABLE"
             IntegrityErrorCode.NO_ERROR -> "NO_ERROR"
             IntegrityErrorCode.PLAY_STORE_NOT_FOUND -> "PLAY_STORE_NOT_FOUND"
@@ -79,18 +176,8 @@ class GooglePlayIntegrity @Inject constructor(
         }
     }
 
-    private fun getErrorCode(errorMessage: String): Int {
-        // Pretty junk way of getting the error code but it works
-        return errorMessage
-            .replace("\n".toRegex(), "")
-            .replace(":(.*)".toRegex(), "")
-            .toInt()
-    }
-
-    private fun getErrorText(error: Exception): String {
-        val msg = error.message ?: return "Unknown Error"
-
-        return when (getErrorCode(msg)) {
+    private fun getErrorText(errorCode: Int): String {
+        return when (errorCode) {
             IntegrityErrorCode.API_NOT_AVAILABLE ->
                 """
                 Integrity API is not available.

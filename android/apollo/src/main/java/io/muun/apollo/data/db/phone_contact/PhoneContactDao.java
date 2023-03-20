@@ -4,6 +4,7 @@ import io.muun.apollo.data.db.base.BaseDao;
 import io.muun.apollo.domain.model.PhoneContact;
 import io.muun.common.model.Diff;
 
+import androidx.annotation.NonNull;
 import com.squareup.sqlbrite3.BriteDatabase;
 import rx.Completable;
 import rx.Observable;
@@ -29,7 +30,7 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
     }
 
     @Override
-    protected void storeUnsafe(final PhoneContact element) {
+    protected void storeUnsafe(@NonNull final PhoneContact element) {
 
         delightDb.getPhoneContactQueries().insertPhoneContact(
                 element.getId(),
@@ -45,6 +46,7 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
 
     /**
      * Synchronize the PhoneContact table with a stream of system contacts.
+     *
      * @return Diff of phone number hashes added/deleted from the table.
      */
     public Observable<Diff<String>> syncWith(List<PhoneContact> contacts, long currentTs) {
@@ -57,20 +59,20 @@ public class PhoneContactDao extends BaseDao<PhoneContact> {
                 // First, attempt to insert all newly found phone contacts. If a contact already
                 // existed, it is ignored. The lastSeen field is set for all found contacts, new
                 // and old.
-                for (PhoneContact contact: contacts) {
+                for (PhoneContact contact : contacts) {
                     insertOrIgnore(contact);
                     updateLastSeen(contact);
                 }
 
                 // Contacts where firstSeen matches currentTs were added for the first time now.
-                for (PhoneContact newContact: selectFirstSeenAt(currentTs)) {
+                for (PhoneContact newContact : selectFirstSeenAt(currentTs)) {
                     newContact.generateHash();
                     updatePhoneHash(newContact);
                     diff.added.add(newContact.phoneNumberHash);
                 }
 
                 // Contacts where lastSeen doesn't match currentTs were removed since the last scan.
-                for (PhoneContact deletedContact: selectLastSeenNotAt(currentTs)) {
+                for (PhoneContact deletedContact : selectLastSeenNotAt(currentTs)) {
                     diff.removed.add(deletedContact.phoneNumberHash);
                 }
 

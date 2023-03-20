@@ -20,12 +20,6 @@ public class OperationTest extends BaseTest {
         operation.status = OperationStatus.CREATED;
         assertThat(operation.isFailed()).isFalse();
 
-        operation.status = OperationStatus.SIGNING;
-        assertThat(operation.isFailed()).isFalse();
-
-        operation.status = OperationStatus.SIGNED;
-        assertThat(operation.isFailed()).isFalse();
-
         operation.status = OperationStatus.BROADCASTED;
         assertThat(operation.isFailed()).isFalse();
 

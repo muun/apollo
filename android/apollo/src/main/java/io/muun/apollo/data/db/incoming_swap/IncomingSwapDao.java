@@ -4,6 +4,7 @@ import io.muun.apollo.data.db.base.HoustonUuidDao;
 import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.Sha256Hash;
 
+import androidx.annotation.NonNull;
 import rx.Completable;
 
 import javax.inject.Inject;
@@ -26,7 +27,7 @@ public class IncomingSwapDao extends HoustonUuidDao<IncomingSwap> {
     }
 
     @Override
-    protected void storeUnsafe(final IncomingSwap element) {
+    protected void storeUnsafe(@NonNull final IncomingSwap element) {
         final Sha256Hash preimage = element.getPreimage();
         delightDb.getIncomingSwapQueries().insertIncomingSwap(
                 element.getId(),

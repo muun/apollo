@@ -37,13 +37,13 @@ const (
 	invoice19SatHashHex        = "73ff1c0e90a959d83233098bc6eba176ba80b1eae8283f3d37bb0546757fba3f"
 	invoice19SatDestinationHex = "03373f5fb6babc2627cc3003646cc19cc2225bd699013e3e29c6b94857596c1c15"
 
-	lightningParam                              = "lightning="
-	bip21UnifiedQr                              = bitcoinScheme + address + "?" + lightningParam + invoice
-	bip21UnifiedQrWithAmount                    = bitcoinScheme + address + "?amount=0.000001&" + lightningParam + invoice100Sat
-	bip21UnifiedQrWithAmountMismatch            = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice100Sat
-  bip21UnifiedQrInconsistentCase1             = bitcoinScheme + address + "?" + lightningParam + invoice100Sat
-	bip21UnifiedQrInconsistentCase2             = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice
-  
+	lightningParam                   = "lightning="
+	bip21UnifiedQr                   = bitcoinScheme + address + "?" + lightningParam + invoice
+	bip21UnifiedQrWithAmount         = bitcoinScheme + address + "?amount=0.000001&" + lightningParam + invoice100Sat
+	bip21UnifiedQrWithAmountMismatch = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice100Sat
+	bip21UnifiedQrInconsistentCase1  = bitcoinScheme + address + "?" + lightningParam + invoice100Sat
+	bip21UnifiedQrInconsistentCase2  = bitcoinScheme + address + "?amount=2&" + lightningParam + invoice
+
 	bip21UnifiedQrBip70RetroCompat              = bip70RetroCompatAddress + "&" + lightningParam + invoice
 	bip21UnifiedQrBip70RetroCompatWithAmount    = bip70RetroCompatAddress + "&" + lightningParam + invoice100Sat
 	bip21UnifiedQrBip70NonRetroCompat           = bip70NonRetroCompatAddress + "&" + lightningParam + invoice
@@ -110,6 +110,20 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 		},
 		{
+			name: "completeValidAddress with scientific notation amount",
+			args: args{
+				address: address + "?amount=01.2e-3" + "&label=hola&message=mensaje%20con%20espacios",
+				network: *Regtest(),
+			},
+			want: &MuunPaymentURI{
+				Address: address,
+				Amount:  "0.0012",
+				Label:   "hola",
+				Message: "mensaje con espacios",
+				Uri:     bitcoinScheme + address + "?amount=01.2e-3" + "&label=hola&message=mensaje%20con%20espacios",
+			},
+		},
+		{
 			name: "invalidAddress",
 			args: args{
 				address: invalidAddress,
@@ -161,6 +175,17 @@ func TestGetPaymentURI(t *testing.T) {
 			},
 		},
 		{
+			name: "bip21 uri edge case",
+			args: args{
+				address: "bitcoin:2NDhvuRPCYXq4fB8SprminieZ2a1i3JFXyS?",
+				network: *Regtest(),
+			},
+			want: &MuunPaymentURI{
+				Address: "2NDhvuRPCYXq4fB8SprminieZ2a1i3JFXyS",
+				Uri:     "bitcoin:2NDhvuRPCYXq4fB8SprminieZ2a1i3JFXyS?",
+			},
+		},
+		{
 			name: "bad url",
 			args: args{
 				address: ":foo#%--",
@@ -175,6 +200,38 @@ func TestGetPaymentURI(t *testing.T) {
 				network: *Regtest(),
 			},
 			wantErr: true,
+		},
+		{
+			name: "bad amount format",
+			args: args{
+				address: address + "?amount=Nan" + "&label=hola&message=mensaje%20con%20espacios",
+				network: *Regtest(),
+			},
+			// TODO we should probably return an error here but that breaks current assumptions in newop state
+			// machine (see TestInvalidAmountEmitsInvalidAddress in state_test.go)
+			want: &MuunPaymentURI{
+				Address: address,
+				Uri:     bitcoinScheme + address + "?amount=Nan" + "&label=hola&message=mensaje%20con%20espacios",
+				Amount:  "Nan",
+				Label:   "hola",
+				Message: "mensaje con espacios",
+			},
+		},
+		{
+			name: "bad amount format 2",
+			args: args{
+				address: address + "?amount=hola" + "&label=hola&message=mensaje%20con%20espacios",
+				network: *Regtest(),
+			},
+			// TODO we should probably return an error here but that breaks current assumptions in newop state
+			// machine (see TestInvalidAmountEmitsInvalidAddress in state_test.go)
+			want: &MuunPaymentURI{
+				Address: address,
+				Uri:     bitcoinScheme + address + "?amount=hola" + "&label=hola&message=mensaje%20con%20espacios",
+				Amount:  "hola",
+				Label:   "hola",
+				Message: "mensaje con espacios",
+			},
 		},
 		{
 			name: "network mismatch",
@@ -233,6 +290,28 @@ func TestGetPaymentURI(t *testing.T) {
 				network: *network,
 			},
 			wantErr: true,
+		},
+		{
+			name: "BIP21 with lightning with on-chain amount in scientific notation",
+			args: args{
+				address: bitcoinScheme + address + "?amount=1e-6&" + lightningParam + invoice100Sat,
+				network: *network,
+			},
+			want: &MuunPaymentURI{
+				Address: address,
+				Amount:  "0.000001",
+				Uri:     bitcoinScheme + address + "?amount=1e-6&" + lightningParam + invoice100Sat,
+
+				Invoice: &Invoice{
+					RawInvoice:      invoice100Sat,
+					FallbackAddress: nil,
+					Network:         network,
+					MilliSat:        "100000",
+					Sats:            100,
+					Destination:     invoiceWithAmountDestination,
+					PaymentHash:     invoiceWithAmountPaymentHash,
+					Description:     "",
+				}},
 		},
 		{
 			name: "BIP21 with lightning invoice with amount but without amount uri/query param",

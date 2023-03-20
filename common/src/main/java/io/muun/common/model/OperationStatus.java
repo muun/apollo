@@ -16,11 +16,13 @@ public enum OperationStatus {
      * Operation stored both in the server an on the signing client, in the process of being
      * signed.
      */
+    @Deprecated // Long ago. Probably years. From the time we had a Transaction Draft
     SIGNING,
 
     /**
      * Operation with an associated transaction, which has been signed but not broadcasted yet.
      */
+    @Deprecated // Long ago. Probably years. From the time we had a Transaction Draft
     SIGNED,
 
     /**

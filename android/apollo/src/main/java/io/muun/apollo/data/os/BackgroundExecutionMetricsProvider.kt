@@ -29,13 +29,15 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             getBatteryHealth(),
             getBatteryDischargePrediction(),
             getBatteryStatus(),
+            hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
             hardwareCapabilitiesProvider.getFreeInternalStorageInBytes(),
             hardwareCapabilitiesProvider.getFreeExternalStorageInBytes().toTypedArray(),
             hardwareCapabilitiesProvider.getTotalExternalStorageInBytes().toTypedArray(),
+            hardwareCapabilitiesProvider.getTotalRamInBytes(),
             hardwareCapabilitiesProvider.getFreeRamInBytes(),
             telephonyInfoProvider.dataState,
             telephonyInfoProvider.getSimStates().toTypedArray(),
-            networkInfoProvider.currentTransport
+            networkInfoProvider.currentTransport,
         )
 
     @Suppress("ArrayInDataClass")
@@ -47,9 +49,11 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val batteryHealth: String,
         private val batteryDischargePrediction: Long?,
         private val batteryState: String,
+        private val totalInternalStorage: Long,
         private val freeInternalStorage: Long,
         private val freeExternalStorage: Array<Long>,
         private val totalExternalStorage: Array<Long>,
+        private val totalRamStorage: Long,
         private val freeRamStorage: Long,
         private val dataState: String,
         private val simStates: Array<String>,

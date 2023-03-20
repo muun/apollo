@@ -3,6 +3,7 @@ package io.muun.apollo.data.db.public_profile;
 import io.muun.apollo.data.db.base.HoustonIdDao;
 import io.muun.apollo.domain.model.PublicProfile;
 
+import androidx.annotation.NonNull;
 import rx.Completable;
 import rx.Observable;
 
@@ -26,7 +27,7 @@ public class PublicProfileDao extends HoustonIdDao<PublicProfile> {
     }
 
     @Override
-    protected void storeUnsafe(final PublicProfile element) {
+    protected void storeUnsafe(@NonNull final PublicProfile element) {
         delightDb.getPublicProfileQueries().insertPublicProfile(
                 element.getId(),
                 element.getHid(),

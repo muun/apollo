@@ -131,9 +131,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 primaryCurrency,
                 bigQueryPseudoId,
                 isRootHint,
-                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
@@ -158,9 +155,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 email,
                 bigQueryPseudoId,
                 isRootHint,
-                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
@@ -185,9 +179,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 rcChallengePublicKeyHex,
                 bigQueryPseudoId,
                 isRootHint,
-                hardwareCapabilitiesProvider.getTotalInternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalExternalStorageInBytes(),
-                hardwareCapabilitiesProvider.getTotalRamInBytes(),
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds()
@@ -203,7 +194,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Completable submitPlayIntegrityToken(final PlayIntegrityToken playIntegrityToken) {
         return getService().submitPlayIntegrityToken(new PlayIntegrityTokenJson(
                 playIntegrityToken.getToken(),
-                playIntegrityToken.getError()
+                playIntegrityToken.getError(),
+                playIntegrityToken.getCause()
         ));
     }
 
@@ -518,7 +510,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<TransactionPushed> pushTransaction(@Nullable String txHex,
                                                          long operationHid) {
-
         if (txHex != null) {
             return getService()
                     .pushTransaction(new RawTransaction(txHex), operationHid)

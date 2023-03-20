@@ -5,6 +5,7 @@ import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.common.crypto.hd.PublicKey;
 
+import androidx.annotation.NonNull;
 import rx.Completable;
 import rx.Observable;
 
@@ -31,7 +32,7 @@ public class ContactDao extends HoustonIdDao<Contact> {
     }
 
     @Override
-    protected void storeUnsafe(final Contact element) {
+    protected void storeUnsafe(@NonNull final Contact element) {
         final PublicKey userPublicKey = element.publicKey;
         final PublicKey muunPublicKey = element.cosigningPublicKey;
 

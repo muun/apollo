@@ -10,6 +10,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.provider.Settings
 import androidx.annotation.RequiresApi
+import io.muun.apollo.domain.errors.DrmProviderError
 import io.muun.apollo.domain.errors.HardwareCapabilityError
 import io.muun.apollo.domain.errors.SystemUserCreationDateError
 import io.muun.apollo.domain.model.SystemUserInfo
@@ -59,13 +60,25 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
     private val userManager: UserManager =
         context.getSystemService(Context.USER_SERVICE) as UserManager
 
-    fun getDrmClientIds(): List<String> {
-        return listOf(
-            getDrmIdForProvider(COMMON_PSSH_UUID),
-            getDrmIdForProvider(CLEARKEY_UUID),
-            getDrmIdForProvider(WIDEVINE_UUID),
-            getDrmIdForProvider(PLAYREADY_UUID),
-        )
+    fun getDrmClientIds(): Map<String, String> {
+
+        val drmProviderToClientId = HashMap<String, String>()
+
+        saveClientIdForProviderIfExists(drmProviderToClientId, COMMON_PSSH_UUID)
+        saveClientIdForProviderIfExists(drmProviderToClientId, CLEARKEY_UUID)
+        saveClientIdForProviderIfExists(drmProviderToClientId, WIDEVINE_UUID)
+        saveClientIdForProviderIfExists(drmProviderToClientId, PLAYREADY_UUID)
+
+        if (OS.supportsGetSupportedCryptoSchemes()) {
+
+            val supportedCryptoSchemes = MediaDrm.getSupportedCryptoSchemes()
+
+            supportedCryptoSchemes.forEach { drmProviderUuid ->
+                saveClientIdForProviderIfExists(drmProviderToClientId, drmProviderUuid)
+            }
+        }
+
+        return drmProviderToClientId
     }
 
     fun getSystemUsersInfo(): List<SystemUserInfo> {
@@ -163,13 +176,26 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
         UNKNOWN_BYTES_AMOUNT
     }
 
-    private fun getDrmIdForProvider(drmProviderUuid: UUID): String =
+    private fun saveClientIdForProviderIfExists(map: HashMap<String, String>, providerUuid: UUID) {
+        getDrmIdForProvider(providerUuid)?.let { drmId ->
+            map[providerUuid.toString()] = drmId
+        }
+    }
+
+    private fun getDrmIdForProvider(drmProviderUuid: UUID): String? {
         try {
+
+            if (!MediaDrm.isCryptoSchemeSupported(drmProviderUuid)) {
+                return null
+            }
+
             val mediaDrm = MediaDrm(drmProviderUuid)
             val deviceIdBytes = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
-            Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
+            return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
+
         } catch (e: Exception) {
-            Timber.e(HardwareCapabilityError("mediaDRM", e))
-            UNKNOWN
+            Timber.e(DrmProviderError(drmProviderUuid, e))
+            return null
         }
+    }
 }

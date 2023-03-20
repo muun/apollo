@@ -99,8 +99,19 @@ object OS {
     fun supportsBatteryDischargePrediction(): Boolean =
         isAndroidSOrNewer()
 
+    /**
+     * Whether this OS supports UserManager#getUserCreationTime(UserHandle), which was added
+     * in M-6-23.
+     */
     fun supportsUserCreationTime(): Boolean =
         isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports MediaDrm#getSupportedCryptoSchemes(), which was introduced in
+     * R-11-30.
+     */
+    fun supportsGetSupportedCryptoSchemes(): Boolean =
+        isAndroidROrNewer()
 
     // PRIVATE STUFF:
 

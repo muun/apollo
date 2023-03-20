@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -13,9 +14,38 @@ import (
 	"github.com/lightningnetwork/lnd/lnwire"
 )
 
+type FakeWithdrawClient struct {
+	WithdrawClient WithdrawClient
+	ServerUrl      string
+}
+
+func (fwc *FakeWithdrawClient) Get(urlString string) (resp *http.Response, err error) {
+
+	URL := parseUrl(urlString)
+
+	if URL.Host == "test.com" {
+		host := parseUrl(fwc.ServerUrl).Host
+		return fwc.WithdrawClient.Get(strings.Replace(urlString, "test.com", host, 1))
+	} else {
+		return fwc.WithdrawClient.Get(urlString)
+	}
+}
+
+func parseUrl(urlString string) *url.URL {
+	URL, err := url.Parse(urlString)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return URL
+}
+
+//goland:noinspection GoUnhandledErrorResult
 func TestWithdraw(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		//goland:noinspection HttpUrlsUsage
 		json.NewEncoder(w).Encode(&WithdrawResponse{
 			K1:                 "foobar",
 			Callback:           "http://" + r.Host + "/withdraw/complete",
@@ -30,7 +60,7 @@ func TestWithdraw(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -58,6 +88,7 @@ func TestWithdraw(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestWithdrawWithCompatibilityTag(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +106,7 @@ func TestWithdrawWithCompatibilityTag(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -103,6 +134,61 @@ func TestWithdrawWithCompatibilityTag(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
+func TestWithdrawWithDifferentDomainHosts(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&WithdrawResponse{
+			K1:                 "foobar",
+			Callback:           "http://test.com/withdraw/complete", // Callback url has a different host than localhost
+			MaxWithdrawable:    1_000_000,
+			DefaultDescription: "Withdraw from Lapp",
+			Tag:                "withdraw",
+		})
+	})
+
+	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(&Response{
+			Status: StatusOK,
+		})
+	})
+	server := httptest.NewServer(mux)
+	t.Cleanup(func() { server.Close() })
+
+	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
+
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+		if amt != 1_000_000 {
+			t.Fatalf("unexpected invoice amount: %v", amt)
+		}
+		if desc != "Withdraw from Lapp" {
+			t.Fatalf("unexpected invoice description: %v", desc)
+		}
+		if host != "127.0.0.1" {
+			t.Fatalf("unexpected host: %v", host)
+		}
+		return "12345", nil
+	}
+
+	// We "inject" FakeWithdrawClient to simulate test.com responds correctly (by redirecting to localhost)
+	originalClient := withdrawClient
+	withdrawClient = &FakeWithdrawClient{originalClient, server.URL}
+	t.Cleanup(func() {
+		withdrawClient = originalClient // after test reset to its original value
+	})
+
+	var err string
+	Withdraw(qr, createInvoiceFunc, true, func(e *Event) {
+		if e.Code < 100 {
+			err = e.Message
+		}
+	})
+	if err != "" {
+		t.Fatalf("expected withdraw to succeed, got: %v", err)
+	}
+}
+
+//goland:noinspection GoUnhandledErrorResult
 func TestDecodeError(t *testing.T) {
 	qr := "lightning:abcde"
 
@@ -120,6 +206,7 @@ func TestDecodeError(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestWrongTagError(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/channelRequest", func(w http.ResponseWriter, r *http.Request) {
@@ -128,7 +215,7 @@ func TestWrongTagError(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/channelRequest", server.URL))
 
@@ -146,6 +233,7 @@ func TestWrongTagError(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestUnreachableError(t *testing.T) {
 	originalTimeout := httpClient.Timeout
 	httpClient.Timeout = 1 * time.Second
@@ -171,6 +259,7 @@ func TestUnreachableError(t *testing.T) {
 
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestServiceError(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +278,7 @@ func TestServiceError(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -216,13 +305,14 @@ func TestServiceError(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestInvalidResponseError(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("foobar"))
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -289,6 +379,7 @@ func TestOnionLinkNotSupported(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestExpiredCheck(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -303,7 +394,7 @@ func TestExpiredCheck(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -321,6 +412,7 @@ func TestExpiredCheck(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestNoAvailableBalance(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -334,7 +426,7 @@ func TestNoAvailableBalance(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -352,6 +444,7 @@ func TestNoAvailableBalance(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestNoRouteCheck(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -370,7 +463,7 @@ func TestNoRouteCheck(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -385,6 +478,7 @@ func TestNoRouteCheck(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestExtraQueryParams(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -405,7 +499,7 @@ func TestExtraQueryParams(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -433,6 +527,7 @@ func TestExtraQueryParams(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestStringlyTypedNumberFields(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -459,7 +554,7 @@ func TestStringlyTypedNumberFields(t *testing.T) {
 		})
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -487,6 +582,7 @@ func TestStringlyTypedNumberFields(t *testing.T) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestErrorContainsResponseBody(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -494,7 +590,7 @@ func TestErrorContainsResponseBody(t *testing.T) {
 		w.Write([]byte("this is a custom error response"))
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -517,6 +613,7 @@ func TestErrorContainsResponseBody(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -533,7 +630,7 @@ func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
 		w.Write([]byte("this is a custom error response"))
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -556,6 +653,7 @@ func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestForbidden(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -563,7 +661,7 @@ func TestForbidden(t *testing.T) {
 		w.Write([]byte("Forbidden"))
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
@@ -583,6 +681,7 @@ func TestForbidden(t *testing.T) {
 	})
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestZebedee403MapsToCountryNotSupported(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
@@ -590,7 +689,7 @@ func TestZebedee403MapsToCountryNotSupported(t *testing.T) {
 		w.Write([]byte("Forbidden"))
 	})
 	server := httptest.NewServer(mux)
-	defer server.Close()
+	t.Cleanup(func() { server.Close() })
 
 	// Super ugly hack to emulate that local endpoint is zebedee
 	zebedeeHost = "127.0.0.1"

@@ -1,5 +1,6 @@
 package io.muun.common.api;
 
+import io.muun.common.utils.Deprecated;
 import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -40,25 +42,28 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String language;
 
-    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
+    @Since(apolloVersion = 604) // Apollo 46.4 // Apollo only field
     @Nullable // Before that ;)
     public String bigQueryPseudoId;
 
     // TODO complete before releasing this
-    @Since(apolloVersion = 999) // Apollo ?
+    @Since(apolloVersion = 900) // Apollo 49 // Apollo only field
     @Nullable // Before that ;)
     public Boolean isRootHint;
 
     @Since(apolloVersion = 1003) // Apollo only field
-    @Nullable // Before that ;)
+    @Deprecated(atApolloVersion = 1007)
+    @Nullable // Before that ;) (and after deprecation)
     public Long totalInternalStorage;
 
     @Since(apolloVersion = 1003) // Apollo only field
+    @Deprecated(atApolloVersion = 1007)
     @Nullable // Before that ;)
     public List<Long> totalExternalStorage;
 
     @Since(apolloVersion = 1003)
-    @Nullable // Before that ;)
+    @Deprecated(atApolloVersion = 1007, atFalconVersion = 1012)
+    @Nullable // Before that ;) (and after deprecation)
     public Long totalRamStorage;
 
     @Since(apolloVersion = 1003) // Apollo only field
@@ -74,12 +79,25 @@ public class ClientJson {
     public Long androidCreationTimestampInMilliseconds;
 
     @Since(apolloVersion = 1005) // Apollo only field
-    @Nullable // Before that ;)
+    @Deprecated(atApolloVersion = 1007)
+    @Nullable // Before that ;) (and after deprecation)
     public List<String> drmClientIds;
+
+    @Since(apolloVersion = 1007) // Apollo only field
+    @Nullable // Before that ;)
+    public Map<String, String> drmProviderToClientId;
 
     @Since(apolloVersion = 1006) // Apollo only field
     @Nullable // Before that ;)
     public List<AndroidSystemUserInfoJson> androidSystemUsersInfo;
+
+    @Since(apolloVersion = 1007) // Apollo only field // Apollo 50.7
+    @Nullable // Before that ;)
+    public Long androidElapsedRealtimeAtSessionCreationInMillis;
+
+    @Since(apolloVersion = 1007) // Apollo only field // Apollo 50.7
+    @Nullable // Before that ;)
+    public Long androidUptimeAtSessionCreationInMillis;
 
     /**
      * Json constructor.
@@ -100,13 +118,13 @@ public class ClientJson {
                       @Nullable final String language,
                       @Nullable final String bigQueryPseudoId,
                       @Nullable final Boolean isRootHint,
-                      @Nullable Long totalInternalStorage,
-                      @Nullable List<Long> totalExternalStorage,
-                      @Nullable Long totalRamStorage,
                       @Nullable String androidId,
-                      long androidCreationTimestampInMilliseconds,
-                      List<String> drmClientIds,
-                      @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo
+                      final long androidCreationTimestampInMilliseconds,
+                      @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo,
+                      @SuppressWarnings("NullableProblems")
+                      final Map<String, String> drmProviderClientIds,
+                      final long androidElapsedRealtimeAtSessionCreationInMillis,
+                      final long androidUptimeAtSessionCreationInMillis
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -117,12 +135,13 @@ public class ClientJson {
         this.language = language;
         this.bigQueryPseudoId = bigQueryPseudoId;
         this.isRootHint = isRootHint;
-        this.totalInternalStorage = totalInternalStorage;
-        this.totalExternalStorage = totalExternalStorage;
-        this.totalRamStorage = totalRamStorage;
         this.androidId = androidId;
         this.androidCreationTimestampInMilliseconds = androidCreationTimestampInMilliseconds;
-        this.drmClientIds = drmClientIds;
+        this.drmClientIds = null;
         this.androidSystemUsersInfo = systemUsersInfo;
+        this.drmProviderToClientId = drmProviderClientIds;
+        this.androidElapsedRealtimeAtSessionCreationInMillis =
+                androidElapsedRealtimeAtSessionCreationInMillis;
+        this.androidUptimeAtSessionCreationInMillis = androidUptimeAtSessionCreationInMillis;
     }
 }

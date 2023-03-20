@@ -23,7 +23,6 @@ import rx.Observable
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
 
 class LnUrlWithdrawAction @Inject constructor(
     private val keysRepo: KeysRepository,
@@ -34,7 +33,7 @@ class LnUrlWithdrawAction @Inject constructor(
 
     lateinit var paymentHash: Sha256Hash
 
-    override fun action(@NotNull lnurlContent: String): Observable<LnUrlState> =
+    override fun action(lnurlContent: String): Observable<LnUrlState> =
         Observable.defer { lnUrlWithdraw(lnurlContent) }
 
     private fun lnUrlWithdraw(lnurlContent: String): Observable<LnUrlState> =
@@ -139,16 +138,20 @@ class LnUrlWithdrawAction @Inject constructor(
                         subject.onNext(LnUrlState.Contacting(domain = event.metadata.host))
 
                     Libwallet.LNURLStatusInvoiceCreated ->
-                        subject.onNext(LnUrlState.InvoiceCreated(
-                            domain = event.metadata.host,
-                            invoice = event.metadata.invoice
-                        ))
+                        subject.onNext(
+                            LnUrlState.InvoiceCreated(
+                                domain = event.metadata.host,
+                                invoice = event.metadata.invoice
+                            )
+                        )
 
                     Libwallet.LNURLStatusReceiving ->
-                        subject.onNext(LnUrlState.Receiving(
-                            domain = event.metadata.host,
-                            invoice = event.metadata.invoice
-                        ))
+                        subject.onNext(
+                            LnUrlState.Receiving(
+                                domain = event.metadata.host,
+                                invoice = event.metadata.invoice
+                            )
+                        )
 
                     else -> {
                         // ignore

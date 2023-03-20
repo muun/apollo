@@ -166,7 +166,7 @@ public class User {
         }
 
         // Note: DO NOT use rateProvider.isAvailable(CurrencyUnit,CurrencyUnit). Apparently its
-        // flawed. It will (strangely) return true when there's no rate for ceratin currencies.
+        // flawed. It will (strangely) return true when there's no rate for certain currencies.
         if (rateProvider.getCurrencies().contains(targetCurrency)) {
             return targetCurrency;
         } else {

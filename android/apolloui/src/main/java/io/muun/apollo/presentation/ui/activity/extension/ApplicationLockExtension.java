@@ -1,12 +1,15 @@
 package io.muun.apollo.presentation.ui.activity.extension;
 
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.app.Navigator;
 import io.muun.apollo.presentation.ui.base.ActivityExtension;
+import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.view.MuunLockOverlay;
 
@@ -145,6 +148,8 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void updateLockOverlayAttempts() {
+        Crashlytics.logBreadcrumb("ApplicationLockExtension: updateLockOverlayAttempts");
+
         lockOverlay.setRemainingAttempts(
                 lockManager.getRemainingAttempts(),
                 lockManager.getMaxAttempts()
@@ -152,6 +157,8 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void onUnlockAttemptFailure() {
+        Crashlytics.logBreadcrumb("ApplicationLockExtension: onUnlockAttemptFailure");
+
         if (lockOverlay != null) { // avoid race conditions
             updateLockOverlayAttempts();
 
@@ -166,6 +173,8 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void onUnlockAttemptSuccess() {
+        Crashlytics.logBreadcrumb("ApplicationLockExtension: onUnlockAttemptSuccess");
+
         if (lockOverlay != null) { // avoid race conditions
             lockOverlay.reportSuccess();
             analytics.report(new AnalyticsEvent.E_PIN(AnalyticsEvent.PIN_TYPE.CORRECT));
@@ -174,8 +183,11 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private class BoundLockOverlayListener implements MuunLockOverlay.LockOverlayListener {
+
         @Override
         public void onPinEntered(String pin) {
+            Crashlytics.logBreadcrumb("ApplicationLockExtension: onPinEntered. " + this);
+
             Single.fromCallable(() -> lockManager.tryUnlockWithPin(pin))
                     .compose(executionTransformerFactory.getSingleAsyncExecutor())
                     .subscribe(isUnlocked -> {
@@ -187,12 +199,20 @@ public class ApplicationLockExtension extends ActivityExtension {
                     }, throwable -> {
                         // Avoid crashes due to keystore's weird bugs. If it's a secure storage
                         // error, catch it, otherwise re-throw it
-                        if (!ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable)) {
-                            // IDKW but we can't throw other error than this one, go figure
-                            throw new OnErrorNotImplementedException(throwable);
-                        } else {
+                        if (ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable)) {
                             Timber.e(throwable); // Probably redundant, should already be logged
                             lockOverlay.reportError(null);
+
+                        } else if (throwable instanceof WeirdIncorrectAttemptsBugError) {
+                            // Attempt to log/track weird error we've seen in prd. Handle error will
+                            // show error report dialog and hopefully users will send it to us.
+                            Timber.e(throwable);
+                            lockOverlay.reportError(null);
+                            ((BaseActivity) getActivity()).getPresenter().handleError(throwable);
+
+                        } else {
+                            // IDKW but we can't throw other error than this one, go figure
+                            throw new OnErrorNotImplementedException(throwable);
                         }
                     });
         }

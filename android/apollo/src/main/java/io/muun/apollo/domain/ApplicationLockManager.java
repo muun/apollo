@@ -5,12 +5,12 @@ import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.authentication.PinManager;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.errors.SecureStorageError;
+import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
-import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 import rx.Observable;
 import rx.Subscription;
@@ -41,21 +41,20 @@ public class ApplicationLockManager {
     private final PinManager pinManager;
     private final SecureStorageProvider secureStorageProvider;
     private final ChallengePublicKeySelector challengePublicKeySel;
-    private final Context context;
 
     /**
      * Constructor.
      */
     @Inject
-    public ApplicationLockManager(PinManager pinManager,
-                                  SecureStorageProvider secureStorageProvider,
-                                  ChallengePublicKeySelector challengePublicKeySel1,
-                                  Context context) {
+    public ApplicationLockManager(
+            PinManager pinManager,
+            SecureStorageProvider secureStorageProvider,
+            ChallengePublicKeySelector challengePublicKeySel
+    ) {
 
         this.pinManager = pinManager;
         this.secureStorageProvider = secureStorageProvider;
-        this.challengePublicKeySel = challengePublicKeySel1;
-        this.context = context;
+        this.challengePublicKeySel = challengePublicKeySel;
     }
 
     public synchronized boolean isLockConfigured() {
@@ -70,7 +69,14 @@ public class ApplicationLockManager {
      * Attempt to unset the lock with a PIN.
      */
     public synchronized boolean tryUnlockWithPin(String pin) {
-        Preconditions.checkPositive(getRemainingAttempts());
+
+        Crashlytics.logBreadcrumb("ApplicationLockManager#tryUnlockWithPin");
+
+        try {
+            Preconditions.checkPositive(getRemainingAttempts());
+        } catch (IllegalArgumentException e) {
+            throw new WeirdIncorrectAttemptsBugError(getRemainingAttempts(), getMaxAttempts());
+        }
 
         final boolean verified = pinManager.verifyPin(pin);
 
@@ -82,6 +88,8 @@ public class ApplicationLockManager {
             // NOTE: this won't count failures for unrecoverable users.
             decrementRemainingAttempts();
         }
+
+        Crashlytics.logBreadcrumb("ApplicationLockManager#verified: " + verified);
 
         return verified;
     }
@@ -159,11 +167,17 @@ public class ApplicationLockManager {
     }
 
     private synchronized void decrementRemainingAttempts() {
+
+        Crashlytics.logBreadcrumb("ApplicationLockManager#decrementRemainingAttempts");
+
         final int incorrectAttempts = Math.min(
                 fetchIncorrectAttempts() + 1,
                 getMaxAttempts()
         );
 
+        Crashlytics.logBreadcrumb(
+                "ApplicationLockManager#storeIncorrectAttempts: " + incorrectAttempts
+        );
         storeIncorrectAttempts(incorrectAttempts);
     }
 
@@ -180,6 +194,8 @@ public class ApplicationLockManager {
     }
 
     private synchronized int fetchIncorrectAttempts() {
+        Crashlytics.logBreadcrumb("ApplicationLockManager#fetchIncorrectAttempts");
+
         try {
             return Encodings.bytesToInt(secureStorageProvider.get(KEY_INCORRECT_ATTEMPTS));
 

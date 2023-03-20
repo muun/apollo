@@ -7,6 +7,7 @@ import io.muun.apollo.data.preferences.KeysRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
+import io.muun.apollo.domain.errors.newop.PushTransactionSlowError;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.Operation;
@@ -15,6 +16,7 @@ import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
@@ -109,6 +111,25 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                                         return createOperation.action(
                                                 mergedOperation, txPushed.nextTransactionSize
                                         );
+                                    })
+                                    .onErrorResumeNext(t -> {
+                                        if (ExtensionsKt.isInstanceOrIsCausedByTimeoutError(t)) {
+
+                                            // Most times, a timeout just means that the tx will
+                                            // eventually be pushed, albeit slightly delayed. This
+                                            // way the app stores the operation/payment and can
+                                            // update its state once it receives a notification
+                                            mergedOperation.status = OperationStatus.FAILED;
+
+                                            return createOperation.saveOperation(mergedOperation)
+                                                    .flatMap(operation ->
+                                                            Observable.error(
+                                                                    new PushTransactionSlowError(t)
+                                                            )
+                                                    );
+                                        } else {
+                                            return Observable.error(t);
+                                        }
                                     });
                         }));
     }
@@ -165,7 +186,6 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
 
         // Update the Operation after signing:
         operation.hash = txInfo.getHash();
-        operation.status = OperationStatus.SIGNED;
 
         // Encode signed transaction:
         return Encodings.bytesToHex(txInfo.getBytes());

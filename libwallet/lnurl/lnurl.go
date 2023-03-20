@@ -3,7 +3,7 @@ package lnurl
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -97,7 +97,13 @@ type EventMetadata struct {
 	Invoice string
 }
 
+// Extracted to external vars make Withdraw "more testable"
 var httpClient = http.Client{Timeout: 15 * time.Second}
+var withdrawClient WithdrawClient = &http.Client{Timeout: 3 * time.Minute}
+
+type WithdrawClient interface {
+	Get(url string) (resp *http.Response, err error)
+}
 
 type CreateInvoiceFunction func(amt lnwire.MilliSatoshi, desc string, host string) (string, error)
 
@@ -170,10 +176,8 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Errorf(ErrUnsafeURL, "callback URL is not secure")
 		return
 	}
-	if callbackURL.Host != qrUrl.Host {
-		notifier.Errorf(ErrInvalidResponse, "callback URL does not match QR host")
-		return
-	}
+	// We don't check for "callbackURL.Host == qrUrl.Host" since for withdraw it does not add
+	// any security. Note: for other lnurl action it will definitely be a requirement.
 
 	// generate invoice
 	amount := lnwire.MilliSatoshi(int64(wr.MaxWithdrawable))
@@ -193,7 +197,6 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 
 	// Confirm withdraw with service
 	// Use an httpClient with a higher timeout for reliability with slow LNURL services
-	withdrawClient := http.Client{Timeout: 3 * time.Minute}
 	fresp, err := withdrawClient.Get(callbackURL.String())
 	if err != nil {
 		notifier.Errorf(ErrUnreachable, "failed to get response from callback URL: %v", err)
@@ -226,7 +229,7 @@ func validateHttpResponse(resp *http.Response) (int, string) {
 
 	if resp.StatusCode >= 400 {
 		// try to obtain response body
-		if bytesBody, err := ioutil.ReadAll(resp.Body); err == nil {
+		if bytesBody, err := io.ReadAll(resp.Body); err == nil {
 			code := ErrInvalidResponse
 			if resp.StatusCode == 403 {
 				if strings.Contains(resp.Request.URL.Host, zebedeeHost) {
@@ -305,6 +308,7 @@ func mapReasonToErrorCode(reason string) int {
 	return ErrResponse
 }
 
+//goland:noinspection HttpUrlsUsage
 func decode(qr string) (*url.URL, error) {
 	// handle fallback scheme
 	var toParse string

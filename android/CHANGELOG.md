@@ -6,8 +6,29 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-## [50.6] - 2023-02-1
+## [50.7] - 2023-03-17
 
+### ADDED
+
+- Support for (non-standard) scientific notation for amount param of bitcoin uris, in order to be
+compatible with 3rd party services.
+- More background notification processing reliability improvements
+
+### CHANGED
+- Enriched tracing code and error handling of one particularly weird problem some users are having
+involving the pin lock screen and their maximum number of attempts.
+- Removed a security restriction for lnurl-withdraws that dictated that the bech32-encoded URL and
+the callback URL returned by the lnurl service had to had the same domain/host.
+- Enhanced error handling and added network retries for 3rd party integrity service.
+
+### FIXED
+
+- A problem regarding concurrent modification of a collection during initial sync.
+- A problem occurring in times of high-traffic (of the Bitcoin Network and/or of Muun services)
+when submitting a payment. Enhanced overall reliability of payment submission.
+- A problem when trying to send non-standard bitcoin uris (e.g having '?' but no query params).
+
+## [50.6] - 2023-02-1
 
 ### ADDED
 
