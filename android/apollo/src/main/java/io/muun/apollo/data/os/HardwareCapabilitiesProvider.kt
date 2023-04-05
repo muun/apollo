@@ -29,6 +29,9 @@ private const val USER_CREATION_DATE_READ_ERROR = -3L
 
 private const val UNKNOWN_BYTES_AMOUNT = -1L
 
+private const val BOOT_COUNT_UNSUPPORTED = -1
+private const val BOOT_COUNT_ERROR = -2
+
 /**
  * UUID for the W3C
  */
@@ -54,7 +57,7 @@ private val PLAYREADY_UUID = UUID(-0x65fb0f8667bfbd7aL, -0x546d19a41f77a06bL)
 
 class HardwareCapabilitiesProvider @Inject constructor(private val context: Context) {
 
-    private val actManager: ActivityManager =
+    private val activityManager: ActivityManager =
         context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
     private val userManager: UserManager =
@@ -117,7 +120,7 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
     fun getTotalRamInBytes(): Long {
         return try {
             val memInfo = MemoryInfo()
-            actManager.getMemoryInfo(memInfo)
+            activityManager.getMemoryInfo(memInfo)
             memInfo.totalMem
         } catch (e: Exception) {
             Timber.e(HardwareCapabilityError("totalRam", e))
@@ -128,7 +131,7 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
     fun getFreeRamInBytes(): Long {
         return try {
             val memInfo = MemoryInfo()
-            actManager.getMemoryInfo(memInfo)
+            activityManager.getMemoryInfo(memInfo)
             memInfo.availMem
         } catch (e: Exception) {
             Timber.e(HardwareCapabilityError("freeRam", e))
@@ -158,6 +161,30 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
                 Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("androidId", e))
+                UNKNOWN
+            }
+        }
+
+    val bootCount: Int
+        get() {
+            if (!OS.supportsBootCountSetting()) {
+                return BOOT_COUNT_UNSUPPORTED
+            }
+
+            return try {
+                Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
+            } catch (e: Exception) {
+                Timber.e(HardwareCapabilityError("bootCount", e))
+                BOOT_COUNT_ERROR
+            }
+        }
+
+    val glEsVersion: String
+        get() {
+            return try {
+                activityManager.deviceConfigurationInfo.glEsVersion
+            } catch (e: Exception) {
+                Timber.e(HardwareCapabilityError("glEsVersion", e))
                 UNKNOWN
             }
         }

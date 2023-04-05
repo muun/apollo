@@ -1,6 +1,8 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
 import io.muun.common.utils.Deprecated;
+import io.muun.common.utils.Pair;
 import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -46,23 +48,24 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String bigQueryPseudoId;
 
-    // TODO complete before releasing this
     @Since(apolloVersion = 900) // Apollo 49 // Apollo only field
     @Nullable // Before that ;)
     public Boolean isRootHint;
 
     @Since(apolloVersion = 1003) // Apollo only field
-    @Deprecated(atApolloVersion = 1007)
+    @Deprecated(atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO)
     @Nullable // Before that ;) (and after deprecation)
     public Long totalInternalStorage;
 
     @Since(apolloVersion = 1003) // Apollo only field
-    @Deprecated(atApolloVersion = 1007)
+    @Deprecated(atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO)
     @Nullable // Before that ;)
     public List<Long> totalExternalStorage;
 
     @Since(apolloVersion = 1003)
-    @Deprecated(atApolloVersion = 1007, atFalconVersion = 1012)
+    @Deprecated(
+            atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO,
+            atFalconVersion = Supports.RefreshTotalInternalStorageAndRam.FALCON)
     @Nullable // Before that ;) (and after deprecation)
     public Long totalRamStorage;
 
@@ -99,10 +102,55 @@ public class ClientJson {
     @Nullable // Before that ;)
     public Long androidUptimeAtSessionCreationInMillis;
 
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String installSource;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String installInitiatingPackageName;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String installInitiatingPackageSigningInfo;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String fingerprint;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String hardware;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String bootloader;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public Integer bootCount;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public String glEsVersion;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public Map<String, String> cpuInfoLegacy;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public List<Pair<String, String>> cpuCommonInfo;
+
+    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
+    @Nullable // Before that ;)
+    public List<List<Pair<String, String>>> cpuPerProcessorInfo;
+
     /**
      * Json constructor.
      */
     @SuppressWarnings("unused") // Jackson requires it
+
     public ClientJson() {
     }
 
@@ -124,7 +172,18 @@ public class ClientJson {
                       @SuppressWarnings("NullableProblems")
                       final Map<String, String> drmProviderClientIds,
                       final long androidElapsedRealtimeAtSessionCreationInMillis,
-                      final long androidUptimeAtSessionCreationInMillis
+                      final long androidUptimeAtSessionCreationInMillis,
+                      @Nullable final String installSource,
+                      @Nullable final String installInitiatingPackageName,
+                      @Nullable final String installInitiatingPackageSigningInfo,
+                      @Nullable final String fingerprint,
+                      @Nullable final String hardware,
+                      @Nullable final String bootloader,
+                      final int bootCount,
+                      @Nullable final String glEsVersion,
+                      @Nullable final Map<String, String> cpuInfoLegacy,
+                      @Nullable final List<Pair<String, String>> cpuCommonInfo,
+                      @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -143,5 +202,16 @@ public class ClientJson {
         this.androidElapsedRealtimeAtSessionCreationInMillis =
                 androidElapsedRealtimeAtSessionCreationInMillis;
         this.androidUptimeAtSessionCreationInMillis = androidUptimeAtSessionCreationInMillis;
+        this.installSource = installSource;
+        this.installInitiatingPackageName = installInitiatingPackageName;
+        this.installInitiatingPackageSigningInfo = installInitiatingPackageSigningInfo;
+        this.fingerprint = fingerprint;
+        this.hardware = hardware;
+        this.bootloader = bootloader;
+        this.bootCount = bootCount;
+        this.glEsVersion = glEsVersion;
+        this.cpuInfoLegacy = cpuInfoLegacy;
+        this.cpuCommonInfo = cpuCommonInfo;
+        this.cpuPerProcessorInfo = cpuPerProcessorInfo;
     }
 }

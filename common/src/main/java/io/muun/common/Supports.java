@@ -144,4 +144,12 @@ public class Supports {
         int APOLLO = 911;
         int FALCON = 1000;
     }
+
+    // This marks the time when we migrated from sending totalInternalStorage and totalRamStorage
+    // fraud signals only once at session creation, to sending them on each request via http
+    // headers.
+    public interface RefreshTotalInternalStorageAndRam {
+        int APOLLO = 1007;
+        int FALCON = 1012;
+    }
 }
