@@ -63,6 +63,21 @@ public class GlobalsImpl extends Globals {
     }
 
     @Override
+    public String getFingerprint() {
+        return Build.FINGERPRINT;
+    }
+
+    @Override
+    public String getHardware() {
+        return Build.HARDWARE;
+    }
+
+    @Override
+    public String getBootloader() {
+        return Build.BOOTLOADER;
+    }
+
+    @Override
     public String getMuunLinkHost() {
         return BuildConfig.MUUN_LINK_HOST;
     }

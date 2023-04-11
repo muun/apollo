@@ -1,10 +1,11 @@
 package io.muun.apollo.domain.errors
 
-open class HardwareCapabilityError : MuunError {
+open class HardwareCapabilityError(capability: String, cause: Throwable) : MuunError(
+    "Error reading hardware capability",
+    cause
+) {
 
-    constructor() : super()
-
-    constructor(cap: String, cause: Throwable) : super("Error reading hardware capability", cause) {
-        metadata["capability"] = cap
+    init {
+        metadata["capability"] = capability
     }
 }

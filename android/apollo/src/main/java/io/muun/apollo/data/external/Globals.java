@@ -29,6 +29,12 @@ public abstract class Globals {
 
     public abstract String getDeviceManufacturer();
 
+    public abstract String getFingerprint();
+
+    public abstract String getHardware();
+
+    public abstract String getBootloader();
+
     public abstract NetworkParameters getNetwork();
 
     public abstract String getMuunLinkHost();

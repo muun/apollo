@@ -2,6 +2,7 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.data.os.CpuInfoProvider;
 import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
 import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
@@ -133,7 +134,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 isRootHint,
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
-                hardwareCapabilitiesProvider.getDrmClientIds()
+                hardwareCapabilitiesProvider.getDrmClientIds(),
+                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                hardwareCapabilitiesProvider.getBootCount(),
+                hardwareCapabilitiesProvider.getGlEsVersion(),
+                CpuInfoProvider.INSTANCE.getCpuInfo()
         );
 
         return getService().createFirstSession(params)
@@ -157,7 +162,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 isRootHint,
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
-                hardwareCapabilitiesProvider.getDrmClientIds()
+                hardwareCapabilitiesProvider.getDrmClientIds(),
+                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                hardwareCapabilitiesProvider.getBootCount(),
+                hardwareCapabilitiesProvider.getGlEsVersion(),
+                CpuInfoProvider.INSTANCE.getCpuInfo()
         );
 
         return getService().createLoginSession(params)
@@ -181,7 +190,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 isRootHint,
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
-                hardwareCapabilitiesProvider.getDrmClientIds()
+                hardwareCapabilitiesProvider.getDrmClientIds(),
+                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                hardwareCapabilitiesProvider.getBootCount(),
+                hardwareCapabilitiesProvider.getGlEsVersion(),
+                CpuInfoProvider.INSTANCE.getCpuInfo()
         );
 
         return getService().createRecoveryCodeLoginSession(session)

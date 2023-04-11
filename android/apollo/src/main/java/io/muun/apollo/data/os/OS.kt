@@ -16,6 +16,9 @@ import androidx.annotation.VisibleForTesting
  */
 object OS {
 
+    fun supportsInstallSourceInfo(): Boolean =
+        isAndroidROrNewer()
+
     fun supportsImageDecoderApi(): Boolean =
         isAndroidPOrNewer()
 
@@ -113,6 +116,12 @@ object OS {
     fun supportsGetSupportedCryptoSchemes(): Boolean =
         isAndroidROrNewer()
 
+    /**
+     * Whether this OS supports Settings.Global.BOOT_COUNT, which was introduced in N-7-24.
+     */
+    fun supportsBootCountSetting(): Boolean =
+        isAndroidNOrNewer()
+
     // PRIVATE STUFF:
 
     /**
@@ -162,4 +171,12 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
     private fun isAndroidROrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+
+    /**
+     * Whether this OS version is N-7-24 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
+    private fun isAndroidNOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
 }

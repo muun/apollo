@@ -1,11 +1,13 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.data.os.CpuInfo;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
+import io.muun.apollo.domain.model.InstallSourceInfo;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.SubmarineSwap;
@@ -47,6 +49,7 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
+import io.muun.common.utils.Pair;
 
 import android.os.SystemClock;
 import androidx.annotation.NonNull;
@@ -198,9 +201,12 @@ public class ApiObjectsMapper {
             final boolean isRootHint,
             @NonNull final String androidId,
             @NonNull final List<SystemUserInfo> systemUsersInfo,
-            @NonNull final Map<String, String> drmProviderToClientId
+            @NonNull final Map<String, String> drmProviderToClientId,
+            @NonNull final InstallSourceInfo installSourceInfo,
+            final int bootCount,
+            @NonNull final String glEsVersion,
+            @NonNull final CpuInfo cpuInfo
     ) {
-
         return new ClientJson(
                 ClientTypeJson.APOLLO,
                 Globals.INSTANCE.getOldBuildType(),
@@ -216,8 +222,39 @@ public class ApiObjectsMapper {
                 mapSystemUsersInfo(systemUsersInfo),
                 drmProviderToClientId,
                 SystemClock.uptimeMillis(),
-                SystemClock.elapsedRealtime()
+                SystemClock.elapsedRealtime(),
+                installSourceInfo.getInstallingPackageName(),
+                installSourceInfo.getInitiatingPackageName(),
+                installSourceInfo.getInitiatingPackageSigningInfo(),
+                Globals.INSTANCE.getFingerprint(),
+                Globals.INSTANCE.getHardware(),
+                Globals.INSTANCE.getBootloader(),
+                bootCount,
+                glEsVersion,
+                cpuInfo.getLegacyData(),
+                mapListOfPairs(cpuInfo.getCommonInfo()),
+                mapCpuPerProcessorInfo(cpuInfo.getPerProcessorInfo())
         );
+    }
+
+    private List<Pair<String, String>> mapListOfPairs(List<kotlin.Pair<String, String>> info) {
+        final List<Pair<String, String>> result = new ArrayList<>();
+
+        for (kotlin.Pair<String, String> kotlinPair : info) {
+            result.add(new Pair<>(kotlinPair.getFirst(), kotlinPair.getSecond()));
+        }
+        return result;
+    }
+
+    private List<List<Pair<String, String>>> mapCpuPerProcessorInfo(
+            List<List<kotlin.Pair<String, String>>> perProcessorInfo
+    ) {
+        final List<List<Pair<String, String>>> result = new ArrayList<>();
+
+        for (List<kotlin.Pair<String, String>> listOfPairs : perProcessorInfo) {
+            result.add(mapListOfPairs(listOfPairs));
+        }
+        return result;
     }
 
     private List<AndroidSystemUserInfoJson> mapSystemUsersInfo(List<SystemUserInfo> usersInfo) {
@@ -242,7 +279,12 @@ public class ApiObjectsMapper {
             boolean isRootHint,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull Map<String, String> drmProviderToClientId
+            @NonNull Map<String, String> drmProviderToClientId,
+            @NonNull InstallSourceInfo installSourceInfo,
+            int bootCount,
+            @NonNull String glEsVersion,
+            @NonNull CpuInfo cpuInfo
+
     ) {
 
         return new CreateFirstSessionJson(
@@ -251,7 +293,11 @@ public class ApiObjectsMapper {
                         isRootHint,
                         androidId,
                         systemUsersInfo,
-                        drmProviderToClientId
+                        drmProviderToClientId,
+                        installSourceInfo,
+                        bootCount,
+                        glEsVersion,
+                        cpuInfo
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -270,7 +316,11 @@ public class ApiObjectsMapper {
             boolean isRootHint,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull Map<String, String> drmProviderToClientId
+            @NonNull Map<String, String> drmProviderToClientId,
+            @NonNull InstallSourceInfo installSourceInfo,
+            int bootCount,
+            @NonNull String glEsVersion,
+            @NonNull CpuInfo cpuInfo
     ) {
 
         return new CreateLoginSessionJson(
@@ -279,7 +329,11 @@ public class ApiObjectsMapper {
                         isRootHint,
                         androidId,
                         systemUsersInfo,
-                        drmProviderToClientId
+                        drmProviderToClientId,
+                        installSourceInfo,
+                        bootCount,
+                        glEsVersion,
+                        cpuInfo
                 ),
                 gcmToken,
                 email
@@ -296,7 +350,11 @@ public class ApiObjectsMapper {
             boolean isRootHint,
             @NonNull String androidId,
             @NonNull List<SystemUserInfo> systemUsersInfo,
-            @NonNull Map<String, String> drmProviderToClientId
+            @NonNull Map<String, String> drmProviderToClientId,
+            @NonNull InstallSourceInfo installSourceInfo,
+            int bootCount,
+            @NonNull String glEsVersion,
+            @NonNull CpuInfo cpuInfo
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -305,7 +363,11 @@ public class ApiObjectsMapper {
                         isRootHint,
                         androidId,
                         systemUsersInfo,
-                        drmProviderToClientId
+                        drmProviderToClientId,
+                        installSourceInfo,
+                        bootCount,
+                        glEsVersion,
+                        cpuInfo
                 ),
                 gcmToken,
                 new ChallengeKeyJson(
@@ -380,7 +442,9 @@ public class ApiObjectsMapper {
             final ChallengePublicKey challengePublicKey
     ) {
 
-        final ChallengeSignatureJson challengeSignatureJson = mapChallengeSignature(chSignature);
+        final ChallengeSignatureJson
+                challengeSignatureJson =
+                mapChallengeSignature(chSignature);
         final ChallengeKeyJson challengeKeyJson = new ChallengeKeyJson(
                 challengeSignatureJson.type,
                 Encodings.bytesToHex(challengePublicKey.toBytes()),
@@ -467,7 +531,8 @@ public class ApiObjectsMapper {
     }
 
     @Nullable
-    private ExportEmergencyKitJson.Method mapExportMethod(@NotNull EmergencyKitExport.Method meth) {
+    private ExportEmergencyKitJson.Method mapExportMethod(@NotNull EmergencyKitExport.Method
+                                                                  meth) {
         switch (meth) {
             case UNKNOWN:
                 return null;
