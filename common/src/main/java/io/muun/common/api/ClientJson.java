@@ -7,6 +7,7 @@ import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
@@ -116,15 +117,18 @@ public class ClientJson {
 
     @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
     @Nullable // Before that ;)
-    public String fingerprint;
+    @JsonProperty("fingerprint")
+    public String osBuildFingerprint;
 
     @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
     @Nullable // Before that ;)
-    public String hardware;
+    @JsonProperty("hardware")
+    public String hardwareName;
 
     @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
     @Nullable // Before that ;)
-    public String bootloader;
+    @JsonProperty("bootloader")
+    public String systemBootloaderVersion;
 
     @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
     @Nullable // Before that ;)
@@ -176,9 +180,9 @@ public class ClientJson {
                       @Nullable final String installSource,
                       @Nullable final String installInitiatingPackageName,
                       @Nullable final String installInitiatingPackageSigningInfo,
-                      @Nullable final String fingerprint,
-                      @Nullable final String hardware,
-                      @Nullable final String bootloader,
+                      @Nullable final String osBuildFingerprint,
+                      @Nullable final String hardwareName,
+                      @Nullable final String systemBootloaderVersion,
                       final int bootCount,
                       @Nullable final String glEsVersion,
                       @Nullable final Map<String, String> cpuInfoLegacy,
@@ -205,9 +209,9 @@ public class ClientJson {
         this.installSource = installSource;
         this.installInitiatingPackageName = installInitiatingPackageName;
         this.installInitiatingPackageSigningInfo = installInitiatingPackageSigningInfo;
-        this.fingerprint = fingerprint;
-        this.hardware = hardware;
-        this.bootloader = bootloader;
+        this.osBuildFingerprint = osBuildFingerprint;
+        this.hardwareName = hardwareName;
+        this.systemBootloaderVersion = systemBootloaderVersion;
         this.bootCount = bootCount;
         this.glEsVersion = glEsVersion;
         this.cpuInfoLegacy = cpuInfoLegacy;

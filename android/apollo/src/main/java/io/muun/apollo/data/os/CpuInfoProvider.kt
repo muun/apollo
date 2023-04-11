@@ -22,7 +22,7 @@ data class CpuInfo(
         val EMPTY: CpuInfo = CpuInfo(
             commonInfo = emptyList(),
             perProcessorInfo = emptyList(),
-            legacyData = CpuInfoProvider.safeGetLegacyCpuInfo()
+            legacyData = emptyMap()
         )
     }
 }
@@ -33,12 +33,13 @@ object CpuInfoProvider {
         try {
             val cpuInfoContents = File(CPU_INFO_PATH).readText()
             parseCpuInfo(cpuInfoContents)
+                .copy(legacyData = safeGetLegacyCpuInfo())
         } catch (e: Exception) {
             Timber.e(CpuInfoError("structured", e))
             CpuInfo.EMPTY
         }
 
-    internal fun safeGetLegacyCpuInfo(): Map<String, String> =
+    private fun safeGetLegacyCpuInfo(): Map<String, String> =
         try {
             getLegacyCpuInfo()
         } catch (e: java.lang.Exception) {
