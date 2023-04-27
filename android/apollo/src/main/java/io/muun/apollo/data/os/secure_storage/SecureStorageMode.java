@@ -1,6 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
-import android.os.Build;
+import io.muun.apollo.data.os.OS;
 
 public enum SecureStorageMode {
     J_MODE, M_MODE;
@@ -11,8 +11,8 @@ public enum SecureStorageMode {
      * J_MODE For api levels between 19 and 22.
      */
     public static SecureStorageMode getModeForDevice() {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                ? SecureStorageMode.J_MODE
-                : SecureStorageMode.M_MODE;
+        return OS.supportsHardwareBackedKeystore()
+                ? SecureStorageMode.M_MODE
+                : SecureStorageMode.J_MODE;
     }
 }

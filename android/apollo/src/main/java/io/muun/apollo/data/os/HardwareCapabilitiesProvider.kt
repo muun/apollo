@@ -218,11 +218,22 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
 
             val mediaDrm = MediaDrm(drmProviderUuid)
             val deviceIdBytes = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
+
+            releaseMediaDRM(mediaDrm)
+
             return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
 
         } catch (e: Exception) {
             Timber.e(DrmProviderError(drmProviderUuid, e))
             return null
+        }
+    }
+
+    private fun releaseMediaDRM(drmObject: MediaDrm) {
+        if (OS.supportsMediaDrmClose()) {
+            drmObject.close()
+        } else {
+            drmObject.release()
         }
     }
 }

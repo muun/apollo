@@ -1658,12 +1658,14 @@
         (<annotation link="https://bitcoinqr.dev/">más información</annotation>).
     </string>
     <string name="receive_preference_picker_title">Elige tu protocolo para recibir</string>
-    <string name="receive_preference_bitcoin">Priorizar bitcoin</string>
+    <string name="receive_preference_bitcoin">Bitcoin</string>
+    <string name="receive_preference_bitcoin_title">Priorizar bitcoin</string>
     <string name="receive_preference_bitcoin_desc">
         Mostrar primero una dirección de bitcoin. La forma más aceptada y confiable de realizar
         transacciones en bitcoin.
     </string>
-    <string name="receive_preference_lightning">Priorizar lightning</string>
+    <string name="receive_preference_lightning">Lightning</string>
+    <string name="receive_preference_lightning_title">Priorizar lightning</string>
     <string name="receive_preference_lightning_desc">
         Mostrar primero una factura de lightning. Los pagos en lightning pueden ser más rápidos y
         económicos, pero algunos servicios aún no los soportan.

@@ -16,10 +16,26 @@ import androidx.annotation.VisibleForTesting
  */
 object OS {
 
+    /**
+     * Whether this OS supports Hardware-backed Keystore
+     * (see: https://source.android.com/docs/security/features/keystore), which was introduced in
+     * M-6-23.
+     */
+    @JvmStatic
+    fun supportsHardwareBackedKeystore(): Boolean =
+        isAndroidMOrNewer()
+
     fun supportsInstallSourceInfo(): Boolean =
         isAndroidROrNewer()
 
     fun supportsImageDecoderApi(): Boolean =
+        isAndroidPOrNewer()
+
+    /**
+     * Whether this OS supports MediaDrm#close(), which was introduced in
+     * P-9-28, deprecating MediaDrm#close().
+     */
+    fun supportsMediaDrmClose(): Boolean =
         isAndroidPOrNewer()
 
     /**

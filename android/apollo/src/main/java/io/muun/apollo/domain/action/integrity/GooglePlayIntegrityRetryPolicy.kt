@@ -2,12 +2,13 @@ package io.muun.apollo.domain.action.integrity
 
 import io.muun.apollo.domain.errors.PlayIntegrityError
 import io.muun.common.rx.ExponentialBackoffRetry
+import java.util.concurrent.TimeUnit
 
 class GooglePlayIntegrityRetryPolicy(
     baseIntervalInSecs: Long,
     maxRetries: Int,
     private val retryErrorCodes: List<Int>,
-) : ExponentialBackoffRetry(baseIntervalInSecs, maxRetries, null) {
+) : ExponentialBackoffRetry(baseIntervalInSecs, TimeUnit.SECONDS, maxRetries, null) {
 
     /**
      * Subclasses can override this method to decide whether this strategy should retry after a

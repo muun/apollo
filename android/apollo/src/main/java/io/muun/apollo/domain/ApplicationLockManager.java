@@ -202,8 +202,33 @@ public class ApplicationLockManager {
         } catch (SecureStorageProvider.SecureStorageNoSuchElementError error) {
             // Yeah, we shouldn't use exceptions for normal control flow, but for now...
             // TODO: this whole class needs some serious refactoring
+            Crashlytics.logBreadcrumb("Resetting incorrect attempts to 0");
             storeIncorrectAttempts(0);
             return 0;
+
+        } catch (SecureStorageProvider.KeyStoreCorruptedError error) {
+            // Note: KeyStoreCorruptedError is subclass of SecureStorageError so this catch needs
+            // to be above the more general one below
+
+            // KeyStoreCorruptedError implies that data for this key is stored in preference but
+            // somehow, due to a bizarre Android Keystore bug, Keystore Key for this key/label got
+            // wiped. We proceed to check if the associated IV is present in preferences to conclude
+            // that this is effectively the bug case scenario and reset the incorrect attempts to
+            // force SecureStorageProvider to resolve this data inconsistency.
+            final String ivsInPrefs = (String) error.getMetadata().get("labelsWithIvInPrefs");
+
+            Crashlytics.logBreadcrumb("KeyStoreCorruptedError in fetchIncorrectAttempts");
+
+            if (ivsInPrefs != null && ivsInPrefs.contains(KEY_INCORRECT_ATTEMPTS)) {
+
+                Timber.e(error, "WORKAROUND for KeyStoreCorruptedError in fetchIncorrectAttempts");
+                storeIncorrectAttempts(0);
+                return 0;
+
+            } else {
+                Timber.e(error, "Unsolvable KeyStoreCorruptedError in fetchIncorrectAttempts");
+                throw error;
+            }
 
         } catch (SecureStorageError error) {
             if (ExtensionsKt.isCauseByBadPaddingException(error)) {
@@ -214,8 +239,11 @@ public class ApplicationLockManager {
                 Crashlytics.logBreadcrumb("bad_padding_exception_workaround");
                 Timber.e(error, "WORKAROUND for BadPaddingException in fetchIncorrectAttempts");
                 return 0;
+
+            } else {
+                throw error;
             }
-            throw error;
+
         }
     }
 }
