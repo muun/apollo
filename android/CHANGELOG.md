@@ -10,7 +10,7 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ### ADDED
 
-- Support for Iranian Toman (IRT) currency.
+- Support for new currencies.
 
 ### CHANGED
 
