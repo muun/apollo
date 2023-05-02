@@ -1604,12 +1604,14 @@
         (<annotation link="https://bitcoinqr.dev/">learn more</annotation>).
     </string>
     <string name="receive_preference_picker_title">Choose your receiving protocol</string>
-    <string name="receive_preference_bitcoin">Bitcoin first</string>
+    <string name="receive_preference_bitcoin">Bitcoin</string>
+    <string name="receive_preference_bitcoin_title">Bitcoin first</string>
     <string name="receive_preference_bitcoin_desc">
         Default to show a bitcoin address. The most widely accepted and reliable way of transacting
         in bitcoin.
     </string>
-    <string name="receive_preference_lightning">Lightning first</string>
+    <string name="receive_preference_lightning">Lightning</string>
+    <string name="receive_preference_lightning_title">Lightning first</string>
     <string name="receive_preference_lightning_desc">
         Default to show a lightning invoice. Lightning payments can be faster and cheaper, but some
         services don\'t support them yet.

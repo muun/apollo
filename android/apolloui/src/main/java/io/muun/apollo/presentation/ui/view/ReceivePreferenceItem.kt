@@ -93,7 +93,7 @@ class ReceivePreferenceItem @JvmOverloads constructor(
     }
 
     private fun getBitcoinOption(): MuunPicker.Option {
-        val title = getStyledString(R.string.receive_preference_bitcoin)
+        val title = getStyledString(R.string.receive_preference_bitcoin_title)
         val description = getStyledString(R.string.receive_preference_bitcoin_desc)
 
         val status = if (current == ReceiveFormatPreference.ONCHAIN)
@@ -110,7 +110,7 @@ class ReceivePreferenceItem @JvmOverloads constructor(
     }
 
     private fun getLightningOption(): MuunPicker.Option {
-        val title = getStyledString(R.string.receive_preference_lightning)
+        val title = getStyledString(R.string.receive_preference_lightning_title)
         val description = getStyledString(R.string.receive_preference_lightning_desc)
 
         val status = if (current == ReceiveFormatPreference.LIGHTNING)

@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.errors
 
 import android.media.MediaDrm
-import android.os.Build
+import io.muun.apollo.data.os.OS
 import java.util.*
 
 open class DrmProviderError(
@@ -10,7 +10,7 @@ open class DrmProviderError(
 ) : HardwareCapabilityError("mediaDRM", cause) {
 
     init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (OS.supportsGetSupportedCryptoSchemes()) {
             metadata["supportedCryptoSchemes.size"] = MediaDrm.getSupportedCryptoSchemes().size
         }
         metadata["providerUuid"] = providerUuid.toString()

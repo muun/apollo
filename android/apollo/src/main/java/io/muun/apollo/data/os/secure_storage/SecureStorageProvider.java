@@ -1,5 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
@@ -144,6 +145,7 @@ public class SecureStorageProvider {
     @GuardedBy("lock")
     private void throwIfModeInconsistent() {
         if (!preferences.isCompatibleFormat()) {
+            Crashlytics.logBreadcrumb("InconsistentModeError");
             throw new InconsistentModeError(debugSnapshot());
         }
     }
@@ -154,14 +156,17 @@ public class SecureStorageProvider {
         final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
         if (!hasKeyInKeystore && !hasKeyInPreferences) {
+            Crashlytics.logBreadcrumb("SecureStorageNoSuchElementError for key: " + key);
             throw new SecureStorageNoSuchElementError(key, debugSnapshot());
         }
 
         if (!hasKeyInPreferences) {
+            Crashlytics.logBreadcrumb("SharedPreferencesCorruptedError for key: " + key);
             throw new SharedPreferencesCorruptedError(key, debugSnapshot());
         }
 
         if (!hasKeyInKeystore) {
+            Crashlytics.logBreadcrumb("KeyStoreCorruptedError for key: " + key);
             throw new KeyStoreCorruptedError(key, debugSnapshot());
         }
     }
@@ -171,6 +176,7 @@ public class SecureStorageProvider {
         try {
             return keyStore.decryptData(preferences.getBytes(key), key, preferences.getAesIv(key));
         } catch (Throwable e) {
+            Crashlytics.logBreadcrumb("SecureStorageError on READ for key: " + key);
             final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
             enhanceError(ssError, key);
             throw ssError;
@@ -182,6 +188,7 @@ public class SecureStorageProvider {
         try {
             preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
         } catch (Throwable e) {
+            Crashlytics.logBreadcrumb("SecureStorageError on WRITE for key: " + key);
             final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
             enhanceError(ssError, key);
             throw ssError;

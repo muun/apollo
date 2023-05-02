@@ -18,6 +18,11 @@
 -keepclassmembers class io.muun.common.model.SizeForAmount { *; }
 -keepclassmembernames class io.muun.common.model.SizeForAmount { *; }
 
+-keepnames class io.muun.common.utils.Pair
+-keep class io.muun.common.utils.Pair { *; }
+-keepclassmembers class io.muun.common.utils.Pair { *; }
+-keepclassmembernames class io.muun.common.utils.Pair { *; }
+
 -keep public enum io.muun.common.model.SessionStatus$** {
     **[] $VALUES;
     public *;

@@ -111,11 +111,27 @@ public class KeyStoreProvider {
             final KeyStore keyStore = loadKeystore();
             final String keyAlias = getAlias(alias);
 
-            if (!hasKey(keyAlias)) {
+            // Note that hasKey is a public method and applies getAlias to the argument
+            // so take care to supply the alias parameter instead of keyAlias.
+            if (!hasKey(alias)) {
                 // This is a racy operation and might end up creating 2 keys overwriting each other.
                 // That might mean we store the encrypted value using key 1 but keystore
                 // has key 2 stored. This should be taken care of by external locking at
                 // SecureStorageProvider.
+
+                // Android Keystore has a bug when asked to re-generate a key for the alias
+                // (e.g an alias for which generateKeyStore has already been called) in a "short
+                // period of time". It's bizarre and it somehow ends up with neither of the
+                // generated keys being kept/stored (e.g they keystore ends up with no recollection
+                // of a key for the specified alias).
+                // Now, supposedly, we already guarantee "non concurrent access" to this provider
+                // with our custom locking in SecureStorageProvider. The thing is that apparently
+                // our "non concurrent" definition is clearly not the same than the Keystore's, at
+                // least for this case in point (creation of Keystore keys).
+                // So, its important that we avoid re-generating a Keystore Key for an alias for
+                // which a has already been generated.
+                // TODO: should we pre-generate keystore keys for all the known aliases at startup?
+
                 generateKeyStore(keyAlias);
             }
 

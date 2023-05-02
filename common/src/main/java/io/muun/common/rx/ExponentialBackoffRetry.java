@@ -18,24 +18,12 @@ public class ExponentialBackoffRetry implements
     private final int maxRetries;
     private final Class<? extends Throwable> retryErrorType;
 
+    private final ShouldRetry shouldRetryGivenDelay;
+
     private Throwable lastError;
 
     private static class CallState {
         int retryCount = 0;
-    }
-
-    /**
-     * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
-     *
-     * @param baseIntervalInSecs    the initial delay magnitude in seconds
-     * @param maxRetries            the maximum amount of retries before failing
-     * @param retryErrorType        the error type that will trigger a retry
-     */
-    public ExponentialBackoffRetry(
-            long baseIntervalInSecs,
-            int maxRetries,
-            Class<? extends Throwable> retryErrorType) {
-        this(baseIntervalInSecs, TimeUnit.SECONDS, maxRetries, retryErrorType);
     }
 
     /**
@@ -46,14 +34,36 @@ public class ExponentialBackoffRetry implements
      * @param maxRetries     the maximum amount of retries before failing
      * @param retryErrorType the error type that will trigger a retry
      */
-    public ExponentialBackoffRetry(long baseInterval,
-                                   TimeUnit timeUnit,
-                                   int maxRetries,
-                                   Class<? extends Throwable> retryErrorType) {
+    public ExponentialBackoffRetry(
+            long baseInterval,
+            TimeUnit timeUnit,
+            int maxRetries,
+            Class<? extends Throwable> retryErrorType
+    ) {
+        this(baseInterval, timeUnit, maxRetries, retryErrorType, (_l, _u) -> true);
+    }
+
+    /**
+     * A Retry strategy that waits an exponentially increasing amount of time before each attempt.
+     *
+     * @param baseInterval          the initial delay magnitude
+     * @param timeUnit              the time unit for inital delay magnitude
+     * @param maxRetries            the maximum amount of retries before failing
+     * @param retryErrorType        the error type that will trigger a retry
+     * @param shouldRetryGivenDelay the hook to decide whether a given retry would take too long
+     */
+    public ExponentialBackoffRetry(
+            long baseInterval,
+            TimeUnit timeUnit,
+            int maxRetries,
+            Class<? extends Throwable> retryErrorType,
+            ShouldRetry shouldRetryGivenDelay
+    ) {
         this.baseInterval = baseInterval;
         this.timeUnit = timeUnit;
         this.maxRetries = maxRetries;
         this.retryErrorType = retryErrorType;
+        this.shouldRetryGivenDelay = shouldRetryGivenDelay;
     }
 
     @Override
@@ -64,12 +74,18 @@ public class ExponentialBackoffRetry implements
 
             lastError = error;
 
-            if (state.retryCount < maxRetries && shouldRetry(error)) {
+            final long delayForRetry = getDelayForRetry(state.retryCount + 1);
+
+            if (state.retryCount < maxRetries
+                    && shouldRetry(error)
+                    && shouldRetryGivenDelay.shouldRetry(delayForRetry, timeUnit)
+            ) {
                 state.retryCount++;
                 return Observable.timer(
-                        getDelayForRetry(state.retryCount),
+                        delayForRetry,
                         timeUnit,
-                        Schedulers.trampoline());
+                        Schedulers.trampoline()
+                );
 
             } else {
                 return Observable.error(error);
@@ -92,5 +108,13 @@ public class ExponentialBackoffRetry implements
 
     public Optional<Throwable> getLastError() {
         return Optional.ofNullable(lastError);
+    }
+
+    public interface ShouldRetry {
+
+        /**
+         * Decide whether a given retry should happen given its delay.
+         */
+        boolean shouldRetry(final long delay, final TimeUnit unit);
     }
 }

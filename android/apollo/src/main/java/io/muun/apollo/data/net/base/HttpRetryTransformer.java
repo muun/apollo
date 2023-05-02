@@ -48,12 +48,13 @@ public class HttpRetryTransformer<T> implements Observable.Transformer<T, T> {
         if (networkRetryConfig != null) {
             return new ExponentialBackoffRetry(
                     networkRetryConfig.baseIntervalInMs(),
+                    TimeUnit.MILLISECONDS,
                     networkRetryConfig.count(),
                     NetworkException.class
             );
         }
 
-        return new ExponentialBackoffRetry(1, 7, NetworkException.class);
+        return new ExponentialBackoffRetry(1, TimeUnit.SECONDS, 7, NetworkException.class);
     }
 
     private ExponentialBackoffRetry buildServerRetryPolicy() {
@@ -61,11 +62,12 @@ public class HttpRetryTransformer<T> implements Observable.Transformer<T, T> {
         if (serverRetryConfig != null) {
             return new ExponentialBackoffRetry(
                     serverRetryConfig.baseIntervalInMs(),
+                    TimeUnit.MILLISECONDS,
                     serverRetryConfig.count(),
                     ServerFailureException.class
             );
         }
 
-        return new ExponentialBackoffRetry(2, 3, ServerFailureException.class);
+        return new ExponentialBackoffRetry(2, TimeUnit.SECONDS, 3, ServerFailureException.class);
     }
 }

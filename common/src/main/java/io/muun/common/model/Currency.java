@@ -100,6 +100,7 @@ public class Currency {
         load(new Currency("INR", "₹", "Indian Rupee", "\uD83C\uDDEE\uD83C\uDDF3"));
         load(new Currency("IQD", "ع.د", "Iraqi Dinar", "\uD83C\uDDEE\uD83C\uDDF6"));
         load(new Currency("IRR", "﷼", "Iranian Rial", "\uD83C\uDDEE\uD83C\uDDF7"));
+        load(new Currency("IRT", "تومان", "Iranian Toman", "\uD83C\uDDEE\uD83C\uDDF7"));
         load(new Currency("ISK", "kr", "Icelandic Króna", "\uD83C\uDDEE\uD83C\uDDF8"));
         load(new Currency("JMD", "J$", "Jamaican Dollar", "\uD83C\uDDEF\uD83C\uDDF2"));
         load(new Currency("JOD", "د.ا", "Jordanian Dinar", "\uD83C\uDDEF\uD83C\uDDF4"));

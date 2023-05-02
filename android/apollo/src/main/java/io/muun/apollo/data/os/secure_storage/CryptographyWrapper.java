@@ -13,7 +13,7 @@ import javax.crypto.SecretKey;
 
 /**
  * This class purpose is trying to work around a known issue in Android 10 regarding the Keystore.
- * See: https://issuetracker.google.com/issues/147384380.
+ * See: <a href="https://issuetracker.google.com/issues/147384380">this issue</a>.
  * Also: why isn't this in Kotlin? To keep checked exceptions in some of the methods signatures.
  */
 class CryptographyWrapper {

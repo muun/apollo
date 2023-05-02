@@ -6,6 +6,25 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.11] - 2023-04-27
+
+### ADDED
+
+- Support for new currencies.
+
+### CHANGED
+
+- Added Proguard rule to avoid minifying Pair field names when serializing to json for http requests
+
+### FIXED
+
+- A problem involving concurrent access of Android Keystore that sometimes prevented users from
+succeeding in the Unlock Screen (PIN screen).
+- A problem with newly created timezones like 'America/Juarez' or 'Europe/Kyiv', solved by upgrading
+our ThreeTen Android Backport library to the newest version.
+- Receive protocol settings item selector text got wrapped on small screen devices. Now using a
+shorten version of the setting's name/label to better fit all screens.
+
 ## [50.10] - 2023-04-11
 
 ### ADDED
