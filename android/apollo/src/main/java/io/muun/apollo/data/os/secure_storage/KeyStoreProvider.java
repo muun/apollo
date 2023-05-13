@@ -1,5 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
+import io.muun.apollo.domain.errors.MuunError;
 import io.muun.common.crypto.CryptographyException;
 import io.muun.common.utils.Preconditions;
 
@@ -185,8 +186,8 @@ public class KeyStoreProvider {
             keyGenerator.generateKey();
 
         } catch (NoSuchAlgorithmException
-                | NoSuchProviderException
-                | InvalidAlgorithmParameterException e) {
+                 | NoSuchProviderException
+                 | InvalidAlgorithmParameterException e) {
 
             Timber.e(e);
             throw new MuunKeyStoreException(e);
@@ -250,8 +251,8 @@ public class KeyStoreProvider {
             generator.generateKeyPair();
 
         } catch (NoSuchAlgorithmException
-                | NoSuchProviderException
-                | InvalidAlgorithmParameterException e) {
+                 | NoSuchProviderException
+                 | InvalidAlgorithmParameterException e) {
 
             Timber.e(e);
             throw new MuunKeyStoreException(e);
@@ -266,11 +267,11 @@ public class KeyStoreProvider {
             return CryptographyWrapper.rsaEncrypt(inputData, entry);
 
         } catch (KeyStoreException
-                | NoSuchAlgorithmException
-                | UnrecoverableEntryException
-                | InvalidKeyException
-                | NoSuchPaddingException
-                | IOException e) {
+                 | NoSuchAlgorithmException
+                 | UnrecoverableEntryException
+                 | InvalidKeyException
+                 | NoSuchPaddingException
+                 | IOException e) {
 
             Timber.e(e);
             throw new MuunKeyStoreException(e);
@@ -285,11 +286,11 @@ public class KeyStoreProvider {
             return CryptographyWrapper.rsaDecrypt(input, entry);
 
         } catch (NoSuchAlgorithmException
-                | NoSuchPaddingException
-                | UnrecoverableEntryException
-                | KeyStoreException
-                | InvalidKeyException
-                | IOException e) {
+                 | NoSuchPaddingException
+                 | UnrecoverableEntryException
+                 | KeyStoreException
+                 | InvalidKeyException
+                 | IOException e) {
 
             Timber.e(e);
             throw new MuunKeyStoreException(e);
@@ -351,6 +352,8 @@ public class KeyStoreProvider {
                 } catch (KeyStoreException e) {
                     Timber.e(e);
                 }
+            } else {
+                Timber.e(new MuunKeyStoreException(new MuunError("Unknown alias: " + alias)));
             }
         }
     }

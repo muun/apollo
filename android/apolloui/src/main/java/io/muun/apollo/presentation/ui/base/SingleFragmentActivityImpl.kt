@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 class SingleFragmentActivityImpl :
@@ -16,6 +17,8 @@ class SingleFragmentActivityImpl :
             context: Context,
             fragment: Class<out SingleFragment<*>>,
         ): Intent {
+
+            Crashlytics.logBreadcrumb("SingleFragmentActivityImpl: startActivityIntent $fragment")
 
             val intent = Intent(context, SingleFragmentActivityImpl::class.java)
             intent.putExtra(FRAGMENT_CLASS, fragment)
@@ -45,7 +48,11 @@ class SingleFragmentActivityImpl :
     }
 
     override fun getInitialFragment(): BaseFragment<out Presenter<*>> {
+
         val fragmentClass: Class<*> = argumentsBundle.getSerializable(FRAGMENT_CLASS) as Class<*>
+
+        Crashlytics.logBreadcrumb("SingleFragmentActivityImpl: getInitialFragment $fragmentClass")
+
         try {
             return fragmentClass.getConstructor().newInstance() as BaseFragment<out Presenter<*>>
         } catch (e: NoSuchMethodException) {

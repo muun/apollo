@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.show_qr.unified
 import android.app.Activity
 import android.content.Intent
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import butterknife.BindView
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -57,6 +58,12 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     @BindView(R.id.address_type_item)
     lateinit var addressTypeItem: AddressTypeItem
 
+    @BindView(R.id.high_fees_warning_overlay)
+    lateinit var highFeesOverlay: View
+
+    @BindView(R.id.high_fees_continue_button)
+    lateinit var highFeesContinueButton: View
+
     // State:
 
     // Part of our (ugly) hack to allow SATs as an input currency option
@@ -85,7 +92,13 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         addressTypeItem.setOnAddressTypeChangedListener(this)
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
         createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
+        highFeesContinueButton.setOnClickListener { onHighFeesContinueButtonClick() }
+
         hiddenSection.setExpanded(false)
+    }
+
+    override fun showHighFeesWarning() {
+        showHighFeesOverlay()
     }
 
     override fun setLoading(loading: Boolean) {
@@ -202,12 +215,39 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.L
 
+    private fun showHighFeesOverlay() {
+        highFeesOverlay.visibility = View.VISIBLE
+        invoiceExpiredOverlay.visibility = View.GONE
+        qrOverlay.visibility = View.GONE
+        hiddenSection.visibility = View.GONE
+        uriSettingsContent.visibility = View.GONE
+    }
+
+    private fun onHighFeesContinueButtonClick() {
+        if (invoiceExpiredOverlay.isVisible) {
+            highFeesOverlay.visibility = View.GONE
+
+        } else {
+            resetViewState()
+        }
+    }
+
+    private fun showInvoiceExpiredOverlay() {
+        // highFeesOverlay may be showing at this point. This assumes that highFeesOverlay takes
+        // precedence when both highFeesOverlay and invoiceExpiredOverlay are visible.
+        invoiceExpiredOverlay.visibility = View.VISIBLE
+        qrOverlay.visibility = View.GONE
+        hiddenSection.visibility = View.GONE
+        uriSettingsContent.visibility = View.GONE
+    }
+
     private fun onCreateInvoiceClick() {
         presenter.generateNewEmptyUri()
         resetViewState()
     }
 
     private fun resetViewState() {
+        highFeesOverlay.visibility = View.GONE
         invoiceExpiredOverlay.visibility = View.GONE
         qrOverlay.visibility = View.VISIBLE
         hiddenSection.visibility = View.VISIBLE
@@ -232,10 +272,7 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
             }
 
             override fun onFinish() {
-                invoiceExpiredOverlay.visibility = View.VISIBLE
-                qrOverlay.visibility = View.GONE
-                hiddenSection.visibility = View.GONE
-                uriSettingsContent.visibility = View.GONE
+                showInvoiceExpiredOverlay()
             }
         }
     }

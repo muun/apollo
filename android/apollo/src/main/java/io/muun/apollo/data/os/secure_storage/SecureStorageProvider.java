@@ -3,10 +3,10 @@ package io.muun.apollo.data.os.secure_storage;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.common.utils.Encodings;
-import io.muun.common.utils.Preconditions;
 
 import androidx.annotation.VisibleForTesting;
 import rx.Observable;
+import timber.log.Timber;
 
 import java.util.List;
 import java.util.Set;
@@ -97,6 +97,14 @@ public class SecureStorageProvider {
             keyStore.deleteEntry(key);
 
             preferences.recordAuditTrail("DELETE", key);
+
+            if (keyStore.hasKey(key)) {
+                // There's reports that sometimes keystore does not delete the key entry.
+                // Let's check out and see what we find out.
+                Timber.e(new SecureStorageError(debugSnapshot()));
+                // deleteEntry is supposed to be idempotent, so...
+                keyStore.deleteEntry(key);
+            }
         } finally {
             lock.unlock();
         }
@@ -111,15 +119,16 @@ public class SecureStorageProvider {
             final boolean hasKeyInPreferences = preferences.hasKey(key);
             final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
-            Preconditions.checkState(
-                    hasKeyInPreferences == hasKeyInKeystore,
-                    String.format(
-                            "IllegalState: key =%s, hasKeyInPreferences =%s, hasKeyInKeystore =%s",
-                            key,
-                            hasKeyInPreferences,
-                            hasKeyInKeystore
-                    )
-            );
+            // Note: we previously had a precondition here but we see a frequent issue where
+            // a key gets erased from prefs but not from keystore.
+            // Let's try to avoid crashing in this scenarios and check if Crashlytics or
+            // our error report infra offers more metadata/insights on this issue
+            if (hasKeyInPreferences != hasKeyInKeystore) {
+                final SecureStorageError error = new SecureStorageError(debugSnapshot());
+                Timber.e(error);
+                throw error;
+            }
+
 
             return hasKeyInPreferences;
         } finally {

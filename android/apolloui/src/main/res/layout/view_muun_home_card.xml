@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -12,6 +11,7 @@
         android:paddingTop="16dp"
         android:background="@drawable/muun_task_card_active_bg">
 
+    <!-- This view is tinted programmatically (for the cards that required it).  -->
     <ImageView
             android:id="@+id/icon"
             android:layout_width="20dp"
@@ -21,7 +21,7 @@
             android:layout_centerVertical="true"
             android:contentDescription="@null"
             tools:src="@drawable/ic_settings"
-            app:tint="@color/blue" />
+            />
 
     <TextView
             android:id="@+id/body"

@@ -156,6 +156,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         AMOUNT_BELOW_DUST,
         EXCHANGE_RATE_WINDOW_TOO_OLD,
         INVALID_SWAP,
+        SWAP_FAILED,
         OTHER
     }
 

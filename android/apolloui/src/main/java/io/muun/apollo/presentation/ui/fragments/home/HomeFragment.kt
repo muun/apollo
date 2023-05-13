@@ -55,11 +55,14 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     @BindView(R.id.home_send_button)
     lateinit var sendButton: MuunButton
 
+    @BindView(R.id.home_taproot_card)
+    lateinit var taprootCard: MuunHomeCard
+
     @BindView(R.id.home_security_center_card)
     lateinit var securityCenterCard: MuunHomeCard
 
-    @BindView(R.id.home_taproot_card)
-    lateinit var taprootCard: MuunHomeCard
+    @BindView(R.id.home_high_fees_card)
+    lateinit var highFeesCard: MuunHomeCard
 
     @BindView(R.id.home_block_clock)
     lateinit var blockClock: BlockClock
@@ -122,8 +125,20 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     }
 
     private fun initializeCards() {
+        taprootCard.let {
+            it.icon = getDrawable(R.drawable.ic_star)
+            it.setIconTint(R.color.blue)
+            it.body = StyledStringRes(requireContext(), R.string.taproot_card_body)
+                .toCharSequence()
+
+            it.setOnClickListener {
+                presenter.navigateToTaprootSetup()
+            }
+        }
+
         securityCenterCard.let {
             it.icon = getDrawable(R.drawable.ic_lock)
+            it.setIconTint(R.color.blue)
             it.body = StyledStringRes(requireContext(), R.string.home_security_center_card_body)
                 .toCharSequence()
 
@@ -132,14 +147,10 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             }
         }
 
-        taprootCard.let {
-            it.icon = getDrawable(R.drawable.ic_star)
-            it.body = StyledStringRes(requireContext(), R.string.taproot_card_body)
+        highFeesCard.let {
+            it.icon = getDrawable(R.drawable.ic_baseline_warning_24px)
+            it.body = StyledStringRes(requireContext(), R.string.home_high_fees_card_body)
                 .toCharSequence()
-
-            taprootCard.setOnClickListener {
-                presenter.navigateToTaprootSetup()
-            }
         }
     }
 
@@ -251,12 +262,18 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             displayedMuunHomeCard.visibility = View.VISIBLE
             if (displayedMuunHomeCard == taprootCard) {
                 securityCenterCard.visibility = View.GONE
+                highFeesCard.visibility = View.GONE
             } else {
                 taprootCard.visibility = View.GONE
+                highFeesCard.visibility = View.GONE
             }
         } else {
-            securityCenterCard.visibility = View.GONE
             taprootCard.visibility = View.GONE
+            securityCenterCard.visibility = View.GONE
+
+            if (homeState.highFees) {
+                highFeesCard.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -289,7 +306,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         }
     }
 
-    fun onBalanceClick() {
+    private fun onBalanceClick() {
         if (balanceView.isFullyInitialized()) {
             val hidden = balanceView.toggleVisibility()
             presenter.setBalanceHidden(hidden)

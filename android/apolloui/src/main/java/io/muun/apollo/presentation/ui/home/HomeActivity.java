@@ -166,6 +166,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     /**
      * Show Taproot celebration dialog! A once-in-a-lifetime special event.
      */
+    @Override
     public void showTaprootCelebration() {
         if (applicationLockExtension.isShowingLockOverlay()) {
             new Handler(Looper.getMainLooper()).postDelayed(this::showTaprootCelebration, 100);

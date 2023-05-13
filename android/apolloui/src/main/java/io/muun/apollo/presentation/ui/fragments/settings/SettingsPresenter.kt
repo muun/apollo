@@ -16,7 +16,7 @@ import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_LOG_OUT
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_WALLET_DELETED
@@ -38,7 +38,7 @@ class SettingsPresenter @Inject constructor(
     private val updateProfilePictureAction: UpdateProfilePictureAction,
     private val userActions: UserActions,
     private val exchangeRateSelector: ExchangeRateSelector,
-    private val featuresStatusSel: FeatureStatusSelector,
+    private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val nightModeManager: NightModeManager,
     private val notificationService: NotificationService
 
@@ -65,7 +65,7 @@ class SettingsPresenter @Inject constructor(
                 userSel.watch(),
                 bitcoinUnitSel.watch(),
                 exchangeRateSelector.watchLatestWindow(),
-                featuresStatusSel.watch(UAF_TAPROOT),
+                userActivatedFeatureStatusSel.watch(UAF_TAPROOT),
                 ::SettingsState
             )
             .doOnNext { state ->

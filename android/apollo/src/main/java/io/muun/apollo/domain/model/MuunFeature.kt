@@ -7,7 +7,9 @@ import libwallet.Libwallet
 enum class MuunFeature {
     TAPROOT,
     TAPROOT_PREACTIVATION,
-    APOLLO_BIOMETRICS;
+    APOLLO_BIOMETRICS,
+    HIGH_FEES_HOME_BANNER,
+    HIGH_FEES_RECEIVE_FLOW;
 
     companion object {
 
@@ -16,6 +18,8 @@ enum class MuunFeature {
                 MuunFeatureJson.TAPROOT -> TAPROOT
                 MuunFeatureJson.TAPROOT_PREACTIVATION -> TAPROOT_PREACTIVATION
                 MuunFeatureJson.APOLLO_BIOMETRICS -> APOLLO_BIOMETRICS
+                MuunFeatureJson.HIGH_FEES_HOME_BANNER -> HIGH_FEES_HOME_BANNER
+                MuunFeatureJson.HIGH_FEES_RECEIVE_FLOW -> HIGH_FEES_RECEIVE_FLOW
                 else -> throw MissingCaseError(json)
             }
 
@@ -24,6 +28,9 @@ enum class MuunFeature {
                 Libwallet.BackendFeatureTaproot -> TAPROOT
                 Libwallet.BackendFeatureTaprootPreactivation -> TAPROOT_PREACTIVATION
                 Libwallet.BackendFeatureApolloBiometrics -> APOLLO_BIOMETRICS
+                Libwallet.BackendFeatureHighFeesHomeBanner -> HIGH_FEES_HOME_BANNER
+                Libwallet.BackendFeatureHighFeesReceiveFlow -> HIGH_FEES_RECEIVE_FLOW
+
                 else -> throw MissingCaseError(name, "MuunFeature conversion from libwallet")
             }
     }
@@ -33,7 +40,8 @@ enum class MuunFeature {
             TAPROOT -> MuunFeatureJson.TAPROOT
             TAPROOT_PREACTIVATION -> MuunFeatureJson.TAPROOT_PREACTIVATION
             APOLLO_BIOMETRICS -> MuunFeatureJson.APOLLO_BIOMETRICS
-            else -> MuunFeatureJson.UNSUPPORTED_FEATURE
+            HIGH_FEES_HOME_BANNER -> MuunFeatureJson.HIGH_FEES_HOME_BANNER
+            HIGH_FEES_RECEIVE_FLOW -> MuunFeatureJson.HIGH_FEES_RECEIVE_FLOW
         }
 
     fun toLibwalletModel(): String =
@@ -41,6 +49,7 @@ enum class MuunFeature {
             TAPROOT -> Libwallet.BackendFeatureTaproot
             TAPROOT_PREACTIVATION -> Libwallet.BackendFeatureTaprootPreactivation
             APOLLO_BIOMETRICS -> Libwallet.BackendFeatureApolloBiometrics
-            else -> throw MissingCaseError(name, "MuunFeature conversion to libwallet")
+            HIGH_FEES_HOME_BANNER -> Libwallet.BackendFeatureHighFeesHomeBanner
+            HIGH_FEES_RECEIVE_FLOW -> Libwallet.BackendFeatureHighFeesReceiveFlow
         }
 }

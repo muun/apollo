@@ -372,6 +372,12 @@
                 android:name=".presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity"
                 />
 
+        <!-- HighFeesExplanationActivity -->
+
+        <activity
+                android:name=".presentation.ui.high_fees.HighFeesExplanationActivity"
+                />
+
 
         <!-- GcmMessageListenerService -->
 

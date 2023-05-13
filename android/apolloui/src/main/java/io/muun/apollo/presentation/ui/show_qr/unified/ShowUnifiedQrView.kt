@@ -1,12 +1,14 @@
 package io.muun.apollo.presentation.ui.show_qr.unified
 
 import io.muun.apollo.domain.libwallet.DecodedBitcoinUri
-import io.muun.apollo.presentation.ui.show_qr.QrView
 import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.presentation.ui.show_qr.QrView
 import javax.money.MonetaryAmount
 
 interface ShowUnifiedQrView : QrView {
+
+    fun showHighFeesWarning()
 
     fun setLoading(loading: Boolean)
 

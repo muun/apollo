@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/scrollView"
@@ -48,6 +47,47 @@
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
                         android:text="@string/show_qr_invoice_create_other" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!-- Note: Fragment's code assumes this high fees warning takes precedence before expired
+               invoice overlay. So this NEEDS to be below the expired invoice overlay. -->
+        <RelativeLayout
+                android:id="@+id/high_fees_warning_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@color/background"
+                android:visibility="gone">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_centerInParent="true">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/show_qr_high_fees_warning"
+                        android:textColor="@color/text_secondary_color"
+                        android:layout_marginStart="60dp"
+                        android:layout_marginEnd="60dp"
+                        android:layout_marginBottom="16dp"
+                        android:lineSpacingExtra="8dp"
+                        android:textSize="16sp"
+                        android:gravity="center" />
+
+                <io.muun.apollo.presentation.ui.view.MuunButton
+                        android:id="@+id/high_fees_continue_button"
+                        style="@style/muun_button_primary"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="@string/show_qr_high_fees_continue" />
 
             </LinearLayout>
 
@@ -170,7 +210,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/qr_overlay"
                 app:layout_constraintVertical_bias="0"
                 app:retractedLabel="@string/invoice_settings"
-                app:expandedLabel="@string/invoice_settings_hide"/>
+                app:expandedLabel="@string/invoice_settings_hide" />
 
         <LinearLayout
                 android:id="@+id/invoice_settings_content"

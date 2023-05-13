@@ -19,6 +19,7 @@ import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
 import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException
 import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
+import io.muun.apollo.domain.errors.newop.SwapFailedException
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException
 import io.muun.apollo.domain.libwallet.Invoice.parseInvoice
 import io.muun.apollo.domain.libwallet.toLibwallet
@@ -254,6 +255,11 @@ class NewOperationPresenter @Inject constructor(
 
             is NoPaymentRouteException ->
                 handleNewOpError(NewOperationErrorType.INVOICE_NO_ROUTE)
+
+            // SwapFailed is currently thrown due to abnormal mempool situation where outgoing swaps
+            // can't be performed correctly. We choose to handle it like a no route payment.
+            is SwapFailedException ->
+                handleNewOpError(NewOperationErrorType.SWAP_FAILED)
 
             is InvoiceExpiresTooSoonException ->
                 handleNewOpError(NewOperationErrorType.INVOICE_WILL_EXPIRE_SOON)

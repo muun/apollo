@@ -6,6 +6,8 @@ import javax.money.MonetaryAmount
 
 interface LnInvoiceView : QrView {
 
+    fun setShowHighFeesWarning(showHighFeesWarning: Boolean)
+
     fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean)
 
     fun setLoading(loading: Boolean)
@@ -15,4 +17,5 @@ interface LnInvoiceView : QrView {
     fun showFullContent(invoice: String)
 
     fun resetAmount()
+
 }

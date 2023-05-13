@@ -169,6 +169,11 @@
     <string name="error_op_cyclical_swap_title">This invoice can\’t be paid</string>
     <string name="error_op_cyclical_swap_desc">You can’t pay an invoice to yourself.</string>
 
+    <string name="error_op_swap_failed_title">Payment failed</string>
+    <string name="error_op_swap_failed_desc">
+        The receiving wallet can\'t process lightning payments right now, so the payment has failed.
+    </string>
+
     <string name="error_op_generic">An error occurred</string>
     <string name="error_op_generic_desc">
         Something went wrong, but we couldn\'t identify the cause. We created an error report that
@@ -1079,6 +1084,11 @@
     </string>
     <string name="show_qr_invoice_create_other">Create invoice</string>
 
+    <string name="show_qr_high_fees_warning">
+        Receiving lightning payments is temporarily disabled while we upgrade our payment infrastructure.
+    </string>
+    <string name="show_qr_high_fees_continue">UNDERSTOOD</string>
+
     <string name="address_share_title">Send to...</string>
 
     <string name="secure_storage_error">
@@ -1638,6 +1648,23 @@
     <string name="show_unified_qr_full_content_invoice">
         <annotation fontColor="muunBlack"><annotation fontStyle="bold">Your lightning invoice
         </annotation></annotation>\n<annotation arg="0">some_lightning_invoice</annotation>
+    </string>
+
+    <string name="home_high_fees_card_body">
+        The bitcoin network is at top capacity, making fees high.
+    </string>
+
+    <string name="high_fees_explanation_title">High mempool size impacts</string>
+    <string name="high_fees_explanation_body">
+        Some features of the wallet rely on Bitcoin transactions and are affected by the current
+        status of the Bitcoin network.
+
+        This includes on-the-fly channel creation, swap-out (payment to bitcoin addresses) and
+        swap-in (deposit funds to the wallet using a bitcoin address). When the network is congested
+        and mining fees are very high, those features will be more expensive, slow, and may be
+        temporarily disabled.
+
+        Payments over Lightning are not affected.
     </string>
 
 </resources>

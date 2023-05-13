@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.show_qr.ln
 import android.app.Activity
 import android.content.Intent
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import butterknife.BindView
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -51,12 +52,26 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     @BindView(R.id.create_other_invoice)
     lateinit var createOtherInvoice: View
 
+    @BindView(R.id.high_fees_warning_overlay)
+    lateinit var highFeesOverlay: View
+
+    @BindView(R.id.high_fees_continue_button)
+    lateinit var highFeesContinueButton: View
+
     // State:
 
     // Part of our (ugly) hack to allow SATs as an input currency option
     @State
     @JvmField
     var satSelectedAsCurrency = false
+
+    @State
+    @JvmField
+    var highFees = false
+
+    @State
+    @JvmField
+    var isFirstTime = true // Flag to decide when to stop showing high fees warning
 
     private var countdownTimer: MuunCountdownTimer? = null
 
@@ -71,6 +86,15 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         super.initializeUi(view)
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
         createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
+        highFeesContinueButton.setOnClickListener { onHighFeesContinueButtonClick() }
+
+    }
+
+    override fun setShowHighFeesWarning(showHighFeesWarning: Boolean) {
+        if (showHighFeesWarning) {
+            highFees = true
+            showHighFeesOverlay() // Needed for the Lightning First scenario
+        }
     }
 
     override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
@@ -123,11 +147,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.L  // Bech 32 already has its own error correction.
 
-    fun onCreateInvoiceClick() {
-        presenter.generateNewEmptyInvoice()
-        resetViewState()
-    }
-
     override fun toggleAdvancedSettings() {
         hiddenSection.toggleSection()
 
@@ -146,9 +165,11 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     override fun onEditAmount(amount: MonetaryAmount?) {
         requestDelegatedExternalResult(
             REQUEST_AMOUNT,
-            SelectAmountActivity.getSelectInvoiceAmountIntent(requireContext(),
+            SelectAmountActivity.getSelectInvoiceAmountIntent(
+                requireContext(),
                 amount,
-                satSelectedAsCurrency)
+                satSelectedAsCurrency
+            )
         )
     }
 
@@ -173,6 +194,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     }
 
     private fun resetViewState() {
+        highFeesOverlay.visibility = View.GONE
         invoiceExpiredOverlay.visibility = View.GONE
         qrOverlay.visibility = View.VISIBLE
         hiddenSection.visibility = View.VISIBLE
@@ -197,17 +219,53 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
             }
 
             override fun onFinish() {
-                invoiceExpiredOverlay.visibility = View.VISIBLE
-                qrOverlay.visibility = View.GONE
-                hiddenSection.visibility = View.GONE
-                invoiceSettingsContent.visibility = View.GONE
+                showInvoiceExpiredOverlay()
             }
         }
     }
 
-    fun refresh() {
+    private fun showHighFeesOverlay() {
+        highFeesOverlay.visibility = View.VISIBLE
+        invoiceExpiredOverlay.visibility = View.GONE
+        qrOverlay.visibility = View.GONE
+        hiddenSection.visibility = View.GONE
+        hiddenSection.setExpanded(false)
+        invoiceSettingsContent.visibility = View.GONE
+    }
+
+    private fun onHighFeesContinueButtonClick() {
+        isFirstTime = false
+        if (invoiceExpiredOverlay.isVisible) {
+            highFeesOverlay.visibility = View.GONE
+
+        } else {
+            resetViewState()
+        }
+    }
+
+    private fun showInvoiceExpiredOverlay() {
+        // highFeesOverlay may be showing at this point. This assumes that highFeesOverlay takes
+        // precedence when both highFeesOverlay and invoiceExpiredOverlay are visible.
+        invoiceExpiredOverlay.visibility = View.VISIBLE
+        qrOverlay.visibility = View.GONE
+        hiddenSection.visibility = View.GONE
+        hiddenSection.setExpanded(false)
+        invoiceSettingsContent.visibility = View.GONE
+    }
+
+    private fun onCreateInvoiceClick() {
+        presenter.generateNewEmptyInvoice()
         resetViewState()
-        presenter.generateNewInvoice()
+    }
+
+    fun refresh() {
+        if (isFirstTime && highFees) {
+            showHighFeesOverlay()
+
+        } else {
+            resetViewState()
+            presenter.generateNewInvoice()
+        }
     }
 
     // Part of our (ugly) hack to allow SATs as an input currency option

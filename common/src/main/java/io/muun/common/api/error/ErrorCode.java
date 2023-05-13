@@ -304,6 +304,9 @@ public enum ErrorCode {
     NO_CLIENT_FOUND(
             2082, StatusCode.CLIENT_FAILURE, "No client found for owner"
     ),
+    SWAP_FAILED(
+            2084, StatusCode.CLIENT_FAILURE, "Swap failed"
+    ),
 
     // email errors
     EMAIL_LINK_INVALID(

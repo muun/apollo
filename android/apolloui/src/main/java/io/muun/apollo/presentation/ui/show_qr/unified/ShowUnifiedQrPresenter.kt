@@ -10,7 +10,9 @@ import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.AddressGroup
 import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.model.MuunFeature
+import io.muun.apollo.domain.selector.FeatureSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.ADDRESS_ORIGIN
@@ -27,7 +29,8 @@ class ShowUnifiedQrPresenter @Inject constructor(
     private val generateBip21Uri: GenerateBip21UriAction,
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
     private val userPreferencesSel: UserPreferencesSelector,
-    private val featureStatusSel: FeatureStatusSelector,
+    private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
+    private val featureSelector: FeatureSelector,
     private val networkParameters: NetworkParameters,
 ) : QrPresenter<ShowUnifiedQrView>() {
 
@@ -54,6 +57,10 @@ class ShowUnifiedQrPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
+        if (featureSelector.get(MuunFeature.HIGH_FEES_RECEIVE_FLOW)) {
+            view.showHighFeesWarning()
+        }
+
         generateBip21Uri
             .state
             .compose(handleStates(this::handleLoading, this::handleError))
@@ -63,8 +70,7 @@ class ShowUnifiedQrPresenter @Inject constructor(
         // We want to re-generate the uri (has an invoice) each time we come back to this fragment.
         generateNewUri()
 
-
-        featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot())
+        userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot())
             .doOnNext { view.setTaprootState(it) }
             .let(this::subscribeTo)
     }
