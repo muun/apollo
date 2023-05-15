@@ -16,6 +16,7 @@ enum class NewOperationErrorType {
     EXCHANGE_RATE_WINDOW_TOO_OLD,
     INVALID_SWAP,  // esoteric error. Swapper server response failed validation
     CYCLICAL_SWAP,
+    SWAP_FAILED,
     GENERIC;
 
     fun toAnalyticsEvent(): S_NEW_OP_ERROR_TYPE =
@@ -30,6 +31,7 @@ enum class NewOperationErrorType {
             INVOICE_MISSING_AMOUNT -> S_NEW_OP_ERROR_TYPE.INVOICE_MISSING_AMOUNT
             EXCHANGE_RATE_WINDOW_TOO_OLD -> S_NEW_OP_ERROR_TYPE.EXCHANGE_RATE_WINDOW_TOO_OLD
             INVALID_SWAP -> S_NEW_OP_ERROR_TYPE.INVALID_SWAP
+            SWAP_FAILED -> S_NEW_OP_ERROR_TYPE.SWAP_FAILED
             else -> S_NEW_OP_ERROR_TYPE.OTHER
         }
 }

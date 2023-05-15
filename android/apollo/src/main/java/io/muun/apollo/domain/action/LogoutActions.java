@@ -4,6 +4,7 @@ import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.BaseRepository;
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
@@ -154,6 +155,7 @@ public class LogoutActions {
     }
 
     private void destroyWallet() {
+        Crashlytics.logBreadcrumb("destroyWallet");
         taskScheduler.unscheduleAllTasks();
 
         asyncActionStore.resetAllExceptLogout();

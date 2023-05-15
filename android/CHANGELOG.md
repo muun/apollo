@@ -6,6 +6,21 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.12] - 2023-05-12
+
+### ADDED
+
+- Handling of new SWAP_FAILED error.
+- Support for warning of congested mempool and high fees in receive screen.
+- Support for warning of congested mempool and high fees in home screen.
+
+### CHANGED
+
+- Avoid crashing and added extra metadata on weird keystore issue regarding keys deletion, probably
+related to "Clear app data" situations.
+- Added extra metadata and breadcrumbs for strange involving logouts where user is apparently taken
+to bitcoin settings screen.
+
 ## [50.11] - 2023-04-27
 
 ### ADDED

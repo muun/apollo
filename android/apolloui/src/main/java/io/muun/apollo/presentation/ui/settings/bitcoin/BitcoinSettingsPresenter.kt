@@ -4,7 +4,7 @@ import android.os.Bundle
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
@@ -16,7 +16,7 @@ import javax.inject.Inject
 class BitcoinSettingsPresenter @Inject constructor(
     private val userPreferencesSel: UserPreferencesSelector,
     private val blockchainHeightSel: BlockchainHeightSelector,
-    private val featureStatusSel: FeatureStatusSelector,
+    private val featureStatusSel: UserActivatedFeatureStatusSelector,
     private val updateUserPreferences: UpdateUserPreferencesAction
 ): SingleFragmentPresenter<BitcoinSettingsView, ParentPresenter>() {
 

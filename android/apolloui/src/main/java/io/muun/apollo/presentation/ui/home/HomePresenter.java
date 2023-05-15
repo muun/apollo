@@ -7,7 +7,7 @@ import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus;
-import io.muun.apollo.domain.selector.FeatureStatusSelector;
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.analytics.PdfFontIssueTracker;
@@ -36,7 +36,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     private final ContactActions contactActions;
     private final NotificationActions notificationActions;
     private final UserSelector userSel;
-    private final FeatureStatusSelector featureStatusSel;
+    private final UserActivatedFeatureStatusSelector userActivatedFeatureStatusSel;
     private final SignupDraftManager signupDraftManager;
 
     private final TaskScheduler taskScheduler;
@@ -58,7 +58,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
                          ContactActions contactActions,
                          NotificationActions notificationActions,
                          UserSelector userSel,
-                         FeatureStatusSelector featureStatusSel,
+                         UserActivatedFeatureStatusSelector userActivatedFeatureStatusSel,
                          SignupDraftManager signupDraftManager,
                          TaskScheduler taskScheduler,
                          FetchRealTimeDataAction fetchRealTimeData,
@@ -67,7 +67,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
         this.loggingContextManager = loggingContextManager;
         this.contactActions = contactActions;
         this.userSel = userSel;
-        this.featureStatusSel = featureStatusSel;
+        this.userActivatedFeatureStatusSel = userActivatedFeatureStatusSel;
         this.signupDraftManager = signupDraftManager;
         this.fetchRealTimeData = fetchRealTimeData;
         this.notificationActions = notificationActions;
@@ -124,7 +124,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     private void setUpTaprootCelebrationDialog() {
         final Observable<?> taprootDialogObs = Observable.combineLatest(
                 userSel.watchPendingTaprootCelebration(),
-                featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
 
                 (isCelebPending, status) -> {
                     if (!isCelebPending && status == UserActivatedFeatureStatus.PREACTIVATED) {
@@ -153,6 +153,11 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     @Override
     public void navigateToSecurityCenter() {
         view.navigateToSecurityCenter();
+    }
+
+    @Override
+    public void navigateToHighFeesExplanationScreen() {
+        navigator.navigateToHighFeesExplanation(getContext());
     }
 
     @Override

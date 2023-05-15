@@ -11,6 +11,7 @@ import io.muun.apollo.domain.errors.newop.InvoiceExpiredException;
 import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException;
 import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException;
+import io.muun.apollo.domain.errors.newop.SwapFailedException;
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
@@ -521,11 +522,19 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * @param txHex        The bitcoinj's transaction.
      * @param operationHid The houston operation id.
      */
-    public Observable<TransactionPushed> pushTransaction(@Nullable String txHex,
-                                                         long operationHid) {
+    public Observable<TransactionPushed> pushTransaction(
+            @Nullable String txHex,
+            long operationHid
+    ) {
         if (txHex != null) {
             return getService()
                     .pushTransaction(new RawTransaction(txHex), operationHid)
+                    // This can happen if we determine the payment can't actually be made. If so, we
+                    // fail fast to avoid broadcasting a transaction saving the user on miner fees.
+                    .compose(ObservableFn.replaceHttpException(
+                            ErrorCode.SWAP_FAILED,
+                            SwapFailedException::new
+                    ))
                     .map(modelMapper::mapTransactionPushed);
         } else {
             return getService()

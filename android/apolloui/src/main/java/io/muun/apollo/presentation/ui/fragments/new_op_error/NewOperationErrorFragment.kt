@@ -76,7 +76,7 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         description.text = getDescription(errorType, errorState)
         description.setOnClickListener {
 
-            if (errorType in arrayOf(INVALID_SWAP, INVOICE_NO_ROUTE)) {
+            if (errorType in arrayOf(INVALID_SWAP, INVOICE_NO_ROUTE, SWAP_FAILED)) {
                 presenter!!.contactSupport()
                 finishActivity()
 
@@ -96,10 +96,10 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         val balance = state.balance.adapt()
 
         insufficientFundsAmount.text = MoneyHelper.formatLongMonetaryAmount(
-                minBalance, btcUnit, requireContext().locale()
+            minBalance, btcUnit, requireContext().locale()
         )
         insufficientFundsBalance.text = MoneyHelper.formatLongMonetaryAmount(
-                balance, btcUnit, requireContext().locale()
+            balance, btcUnit, requireContext().locale()
         )
         insufficientFundsExtras.visibility = View.VISIBLE
     }
@@ -119,6 +119,7 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
             EXCHANGE_RATE_WINDOW_TOO_OLD -> R.string.error_op_exchange_rate_window_too_old_title
             INVALID_SWAP -> R.string.error_op_generic
             CYCLICAL_SWAP -> R.string.error_op_cyclical_swap_title
+            SWAP_FAILED -> R.string.error_op_swap_failed_title
             GENERIC -> R.string.error_op_generic
         }
 
@@ -137,6 +138,7 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
             EXCHANGE_RATE_WINDOW_TOO_OLD -> R.string.error_op_exchange_rate_window_too_old_desc
             INVALID_SWAP -> R.string.error_op_generic_desc
             CYCLICAL_SWAP -> R.string.error_op_cyclical_swap_desc
+            SWAP_FAILED -> R.string.error_op_swap_failed_desc
             GENERIC -> R.string.error_op_generic_desc
         }
 

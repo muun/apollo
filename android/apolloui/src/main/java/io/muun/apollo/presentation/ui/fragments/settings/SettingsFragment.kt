@@ -23,7 +23,7 @@ import io.muun.apollo.domain.model.UserActivatedFeatureStatus.SCHEDULED_ACTIVATI
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.settings.SettingsPresenter.SettingsState
@@ -380,7 +380,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     }
 
     private fun rotateDebugTaprootStatusForQa() {
-        val nextStatus = when (FeatureStatusSelector.DEBUG_TAPROOT_STATUS) {
+        val nextStatus = when (UserActivatedFeatureStatusSelector.DEBUG_TAPROOT_STATUS) {
             null -> OFF
             OFF -> CAN_PREACTIVATE
             CAN_PREACTIVATE -> CAN_ACTIVATE
@@ -406,7 +406,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             "Taproot debug disabled"
         }
 
-        FeatureStatusSelector.DEBUG_TAPROOT_STATUS = nextStatus
+        UserActivatedFeatureStatusSelector.DEBUG_TAPROOT_STATUS = nextStatus
         BlockchainHeightSelector.DEBUG_BLOCKS_TO_TAPROOT = nextBlocksToTaproot
 
         showTextToast(nextToast)

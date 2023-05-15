@@ -8,6 +8,8 @@ const (
 	BackendFeatureTaproot = "TAPROOT"
 	BackendFeatureTaprootPreactivation = "TAPROOT_PREACTIVATION"
 	BackendFeatureApolloBiometrics = "APOLLO_BIOMETRICS"
+	BackendFeatureHighFeesHomeBanner = "HIGH_FEES_HOME_BANNER"
+	BackendFeatureHighFeesReceiveFlow = "HIGH_FEES_RECEIVE_FLOW"
 
 	UserActivatedFeatureStatusOff                 = "off"
 	UserActivatedFeatureStatusCanPreactivate      = "can_preactivate"

@@ -357,6 +357,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Override
     public void finishActivity() {
+        Crashlytics.logBreadcrumb("Finishing Activity: " + getClass().getSimpleName());
         supportFinishAfterTransition();
     }
 

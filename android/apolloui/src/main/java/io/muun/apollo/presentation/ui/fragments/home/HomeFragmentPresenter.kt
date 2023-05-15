@@ -4,15 +4,17 @@ import android.os.Bundle
 import icepick.State
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.model.BitcoinUnit
+import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.PaymentContext
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.LatestOperationSelector
 import io.muun.apollo.domain.selector.OperationSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent
@@ -33,7 +35,8 @@ class HomeFragmentPresenter @Inject constructor(
     private val operationSelector: OperationSelector,
     private val latestOperationSelector: LatestOperationSelector,
     private val utxoSetStateSelector: UtxoSetStateSelector,
-    private val featureStatusSel: FeatureStatusSelector,
+    private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
+    private val featureSelector: FeatureSelector,
     private val blockchainHeightSel: BlockchainHeightSelector
 ) : SingleFragmentPresenter<HomeFragmentView, HomeFragmentParentPresenter>() {
 
@@ -48,7 +51,8 @@ class HomeFragmentPresenter @Inject constructor(
         val balanceHidden: Boolean,
         val user: User,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
-        val blocksToTaproot: Int
+        val blocksToTaproot: Int,
+        val highFees: Boolean
     )
 
     override fun setUp(arguments: Bundle) {
@@ -61,8 +65,9 @@ class HomeFragmentPresenter @Inject constructor(
                 utxoSetStateSelector.watch(),
                 userSel.watchBalanceHidden(),
                 userSel.watch(),
-                featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
                 blockchainHeightSel.watchBlocksToTaproot(),
+                featureSelector.fetch(MuunFeature.HIGH_FEES_HOME_BANNER),
                 ::HomeState
             )
             .compose(getAsyncExecutor())
@@ -126,6 +131,10 @@ class HomeFragmentPresenter @Inject constructor(
 
     fun navigateToSecurityCenter() {
         parentPresenter.navigateToSecurityCenter()
+    }
+
+    fun navigateToHighFeesExplanationScreen() {
+        parentPresenter.navigateToHighFeesExplanationScreen()
     }
 
     fun setBalanceHidden(hidden: Boolean) {

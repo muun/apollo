@@ -6,6 +6,7 @@ import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
+import io.muun.apollo.presentation.ui.high_fees.HighFeesExplanationActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity;
 import io.muun.apollo.presentation.ui.lnurl.intro.LnUrlIntroActivity;
@@ -112,4 +113,6 @@ public interface ActivityComponent {
     void inject(LnUrlWithdrawConfirmActivity lnUrlWithdrawConfirmActivity);
 
     void inject(LnUrlWithdrawActivity lnUrlWithdrawActivity);
+
+    void inject(HighFeesExplanationActivity highFeesExplanationActivity);
 }

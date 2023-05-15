@@ -2,7 +2,6 @@ package io.muun.apollo.domain.selector
 
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.preferences.BlockchainHeightRepository
-import io.muun.apollo.data.preferences.FeaturesRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.libwallet.isEqualTo
@@ -17,10 +16,10 @@ import libwallet.UserActivatedFeature
 import rx.Observable
 import javax.inject.Inject
 
-class FeatureStatusSelector @Inject constructor(
+class UserActivatedFeatureStatusSelector @Inject constructor(
     private val userRepository: UserRepository,
     private val blockchainHeightRepository: BlockchainHeightRepository,
-    private val featuresRepository: FeaturesRepository
+    private val featureSelector: FeatureSelector
 ) {
 
     companion object {
@@ -31,7 +30,7 @@ class FeatureStatusSelector @Inject constructor(
         return Observable.combineLatest(
             userRepository.fetch(),
             blockchainHeightRepository.fetch(),
-            featuresRepository.fetch(),
+            featureSelector.fetch(),
             Observable.just(feature),
             this::combineState
         )

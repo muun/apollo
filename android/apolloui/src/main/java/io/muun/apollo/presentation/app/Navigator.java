@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.app;
 
 import io.muun.apollo.R;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.model.FeedbackCategory;
 import io.muun.apollo.domain.model.Operation;
@@ -17,6 +18,7 @@ import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
 import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment.Flow;
+import io.muun.apollo.presentation.ui.high_fees.HighFeesExplanationActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity;
 import io.muun.apollo.presentation.ui.lnurl.intro.LnUrlIntroActivity;
@@ -473,6 +475,7 @@ public class Navigator {
      * Restart the application.
      */
     public void navigateToLauncher(@NotNull Context context) {
+        Crashlytics.logBreadcrumb("Navigating to LauncherActivity");
         final Intent intent = new Intent(context, LauncherActivity.class);
         clearBackStack(intent);
 
@@ -631,5 +634,17 @@ public class Navigator {
         context.startActivity(
                 SingleFragmentActivityImpl.Companion.getStartActivityIntent(context, fragment)
         );
+    }
+
+    /**
+     * Takes the user to the High Fees explanation activity.
+     */
+    public void navigateToHighFeesExplanation(@NotNull final Context context) {
+        final Intent intent = HighFeesExplanationActivity.Companion.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
     }
 }

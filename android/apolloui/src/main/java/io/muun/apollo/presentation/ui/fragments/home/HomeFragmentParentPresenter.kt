@@ -6,5 +6,7 @@ interface HomeFragmentParentPresenter : ParentPresenter {
 
     fun navigateToSecurityCenter()
 
+    fun navigateToHighFeesExplanationScreen()
+
     fun navigateToOperations()
 }

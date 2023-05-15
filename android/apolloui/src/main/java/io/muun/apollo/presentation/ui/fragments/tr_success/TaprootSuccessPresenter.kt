@@ -5,7 +5,7 @@ import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.ACTIVE
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.PREACTIVATED
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.FeatureStatusSelector
+import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.FEEDBACK_TYPE
 import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_FEEDBACK
 import io.muun.apollo.presentation.ui.base.Presenter
@@ -13,13 +13,12 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.fragments.single_action.SingleActionPresenter
 import libwallet.Libwallet
 import rx.Observable
-import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @PerFragment
 class TaprootSuccessPresenter @Inject constructor(
     private val blockchainHeightSel: BlockchainHeightSelector,
-    private val featureStatusSel: FeatureStatusSelector
+    private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector
 ): SingleActionPresenter<TaprootSuccessView, Presenter<*>>() {
 
     override fun setUp(arguments: Bundle?) {
@@ -28,7 +27,7 @@ class TaprootSuccessPresenter @Inject constructor(
         Observable
             .combineLatest(
                 blockchainHeightSel.watchBlocksToTaproot(),
-                featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
                 this::combineState
             )
             .first() // a ton of indirect state dependencies, they just complicate things. Bye.
