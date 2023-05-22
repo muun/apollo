@@ -6,6 +6,14 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.13] - 2023-05-22
+
+### FIXED
+
+- An issue that prevented some users from spending funds received via LN, which was generated when
+a fulfillment transaction was dropped from the mempool and the user logged out or ended her session
+and recovered the wallet later.
+
 ## [50.12] - 2023-05-12
 
 ### ADDED

@@ -26,7 +26,7 @@ public class IncomingSwapJson {
 
     public long paymentAmountInSats;
 
-    @Nullable // Only present once the swap is FULFILLED
+    @Nullable // Only present if the swap was ever FULFILLED (note: fulfillment tx can be dropped)
     public String preimageHex;
 
     /**

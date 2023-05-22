@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
@@ -207,6 +208,8 @@ type coinIncomingSwap struct {
 	ExpirationHeight    int64
 	VerifyOutputAmount  bool // used only for fulfilling swaps through IncomingSwap
 	Collect             btcutil.Amount
+	Preimage            []byte
+	HtlcOutputKeyPath   string
 }
 
 func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
@@ -226,7 +229,30 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 
 	secrets, err := db.FindByPaymentHash(c.PaymentHash256)
 	if err != nil {
-		return fmt.Errorf("could not find invoice data for payment hash: %w", err)
+
+		// Note: there's an edge case where fulfillment txs can be dropped and clients may forgot the invoice secrets
+		// (e.g if they logout) thus being unable to spend incoming swap inputs. Here we try to collaborate with Houston
+		// (in the cases where preimage data was previously revealed) to allow clients to spend these inputs that
+		// otherwise would be un-spendable.
+		if len(c.Preimage) > 0 {
+
+			// There's actually several derivation paths involved in incoming swaps, all of which are needed by the apps
+			// to sign an HTLC input. However, apps register only one of these fully-derived paths. Lucky for us, apps
+			// internally derive all these paths out of a single base path. We can simply drop the last level from the
+			// path we have to obtain the common root. See [ GenerateInvoiceSecrets ] in invoices.go for impl details.
+
+			// Backend provides the htlcOutputKeypath, but what we store in the Invoice secrets db table is the
+			// invoice's base key derivation path.
+			index := strings.LastIndex(c.HtlcOutputKeyPath, "/")
+			invoiceBaseKeyPath := c.HtlcOutputKeyPath[:index]
+
+			secrets = &walletdb.Invoice{
+				Preimage: c.Preimage,
+				KeyPath:  invoiceBaseKeyPath,
+			}
+		} else {
+			return fmt.Errorf("could not find invoice data for payment hash: %w", err)
+		}
 	}
 
 	parentPath, err := hdpath.Parse(secrets.KeyPath)
@@ -315,7 +341,8 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 	}
 
 	// Now check the information we have against the sphinx created by the payer
-	if len(c.Sphinx) > 0 {
+	// Note: we avoid this validation if we're collaboratively signing with Houston (since we don't know payment secret)
+	if len(c.Sphinx) > 0 && len(secrets.PaymentSecret) > 0 {
 		err = sphinx.Validate(
 			c.Sphinx,
 			c.PaymentHash256,
