@@ -32,9 +32,11 @@ open class SimpleHttpClient {
         return "none" // override to set own auth
     }
 
-    protected fun post(url: String,
-                       requestJsonBody: String,
-                       mediaType: String = "text/plain"): Observable<Response> {
+    protected fun post(
+        url: String,
+        requestJsonBody: String,
+        mediaType: String = "text/plain",
+    ): Observable<Response> {
 
         val subject: BehaviorSubject<Response> = BehaviorSubject.create()
 
@@ -66,8 +68,10 @@ open class SimpleHttpClient {
         return subject
     }
 
-    private fun doInBackground(httpRequest: Request,
-                               subject: BehaviorSubject<Response>) {
+    private fun doInBackground(
+        httpRequest: Request,
+        subject: BehaviorSubject<Response>,
+    ) {
         AsyncTask.execute {
 
             Timber.d("HTTP Request: %s", httpRequest.toString())

@@ -22,4 +22,10 @@ class InputIncomingSwap(val swap: MuunInputIncomingSwap) : libwallet.InputIncomi
 
     override fun collectInSats(): Long =
         swap.collectInSats
+
+    override fun htlcOutputKeyPath(): String =
+        swap.htlcOutputKeyPath
+
+    override fun preimage(): ByteArray =
+        swap.preimageHex?.let(Encodings::hexToBytes) ?: ByteArray(0)
 }

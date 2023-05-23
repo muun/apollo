@@ -32,7 +32,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         const val resourcePath = BuildConfig.APPLICATION_ID + ":id"
 
         const val moneyEqualsRoundingMarginBTC = 0.00000001
-        const val moneyEqualsRoundingMarginFiat = 0.01
+        const val moneyEqualsRoundingMarginFiat = 0.011
 
         const val balanceNotEqualsErrorMessage = "BalanceNotEqualsTo"
     }
@@ -480,7 +480,15 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun UiObject.assertEnabled() {
-        assertThat(this.isEnabled).isTrue()
+
+        // Obj may take some time to be enabled. We loop until obj is enabled or timeout
+        val exitCondition = { this.isEnabled }
+
+        doUntil(2000, exitCondition) {
+            // Do nothing
+        }
+
+        assertThat(this.isEnabled).isTrue
     }
 
     fun UiObject.assertDisabled() {

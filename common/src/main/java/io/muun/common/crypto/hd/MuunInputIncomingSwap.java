@@ -27,6 +27,11 @@ public class MuunInputIncomingSwap {
 
     private final long collectInSats;
 
+    @Nullable // Only present if the swap was ever FULFILLED (note: fulfillment tx can be dropped)
+    private final String preimageHex;
+
+    private final String htlcOutputKeyPath;
+
     /**
      * Convert from JSON to model.
      */
@@ -37,18 +42,25 @@ public class MuunInputIncomingSwap {
                 Encodings.hexToBytes(json.swapServerPublicKeyHex),
                 Encodings.hexToBytes(json.paymentHash256Hex),
                 json.expirationHeight,
-                json.collectInSats);
+                json.collectInSats,
+                json.preimageHex,
+                json.htlcOutputKeyPath
+        );
     }
 
     /**
      * Constructor.
      */
-    public MuunInputIncomingSwap(@Nullable byte[] sphinx,
-                                 byte[] htlcTx,
-                                 byte[] swapServerPublicKey,
-                                 byte[] paymentHash256,
-                                 final long expirationHeight,
-                                 final long collectInSats) {
+    public MuunInputIncomingSwap(
+            @Nullable byte[] sphinx,
+            byte[] htlcTx,
+            byte[] swapServerPublicKey,
+            byte[] paymentHash256,
+            final long expirationHeight,
+            final long collectInSats,
+            @Nullable final String preimageHex,
+            final String htlcOutputKeyPath
+    ) {
         // Due to a few mapping errors, apps expect sphinx to always be non-null. However,
         // Muun to Muun payments don't have a sphinx and swapper now (properly) returns it as null.
         // We map it here for retrocompat with the apps.
@@ -58,6 +70,8 @@ public class MuunInputIncomingSwap {
         this.paymentHash256 = paymentHash256;
         this.expirationHeight = expirationHeight;
         this.collectInSats = collectInSats;
+        this.preimageHex = preimageHex;
+        this.htlcOutputKeyPath = htlcOutputKeyPath;
     }
 
     public byte[] getSphinx() {
@@ -84,6 +98,14 @@ public class MuunInputIncomingSwap {
         return collectInSats;
     }
 
+    public String getHtlcOutputKeyPath() {
+        return htlcOutputKeyPath;
+    }
+
+    public String getPreimageHex() {
+        return preimageHex;
+    }
+
     /**
      * Convert to JSON.
      */
@@ -94,7 +116,9 @@ public class MuunInputIncomingSwap {
                 swapServerPublicKey,
                 paymentHash256,
                 expirationHeight,
-                collectInSats
+                collectInSats,
+                preimageHex,
+                htlcOutputKeyPath
         );
     }
 }

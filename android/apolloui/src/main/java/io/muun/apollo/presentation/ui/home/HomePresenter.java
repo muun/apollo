@@ -166,7 +166,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     }
 
     /**
-     * Navigate to send feedbback screen.
+     * Navigate to send feedback screen.
      */
     public void navigateToSendFeedbackScreen() {
         navigator.navigateToSendGenericFeedback(getContext());

@@ -89,4 +89,12 @@ class LappClient : SimpleHttpClient() {
         val request = post("$url/generate?blocks=$numberOfBlocks", "")
         executeNow(request)
     }
+
+    /**
+     * Drop the last tx from the mempool.
+     */
+    fun dropLastTxFromMempool() {
+        val request = post("$url/dropLastTx", "")
+        executeNow(request)
+    }
 }

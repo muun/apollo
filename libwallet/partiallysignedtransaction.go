@@ -67,6 +67,8 @@ type InputIncomingSwap interface {
 	SwapServerPublicKey() string
 	ExpirationHeight() int64
 	CollectInSats() int64
+	Preimage() []byte
+	HtlcOutputKeyPath() string
 }
 
 type Input interface {
@@ -116,7 +118,7 @@ func NewPartiallySignedTransaction(
 	}
 
 	return &PartiallySignedTransaction{
-		tx: tx,
+		tx:     tx,
 		inputs: inputs.Inputs(),
 		nonces: nonces,
 	}, nil
@@ -482,6 +484,8 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 			SwapServerPublicKey: swapServerPublicKey,
 			ExpirationHeight:    swap.ExpirationHeight(),
 			Collect:             btcutil.Amount(swap.CollectInSats()),
+			Preimage:            swap.Preimage(),
+			HtlcOutputKeyPath:   swap.HtlcOutputKeyPath(),
 		}, nil
 	default:
 		return nil, fmt.Errorf("can't create coin from input version %v", version)
