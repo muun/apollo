@@ -383,6 +383,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     @NotNull
     private FeeWindow mapFeeWindow(@NotNull FeeWindowJson window) {
 
+        // Sanitize targetedFees, just in case
+        window.targetedFees.values().removeAll(Collections.singleton(null));
+
         return new FeeWindow(
                 window.id,
                 mapZonedDateTime(window.fetchDate),

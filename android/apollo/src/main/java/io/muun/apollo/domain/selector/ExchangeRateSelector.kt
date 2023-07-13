@@ -44,7 +44,7 @@ class ExchangeRateSelector @Inject constructor(
             val error = InvalidExchangeRateWindow(rateWindowId, latestWindowId, fixedWindowId)
 
             // TODO add prd check too?
-            if (!Globals.isReleaseBuild()) {
+            if (!Globals.INSTANCE.isReleaseBuild) {
                 throw error
             }
 

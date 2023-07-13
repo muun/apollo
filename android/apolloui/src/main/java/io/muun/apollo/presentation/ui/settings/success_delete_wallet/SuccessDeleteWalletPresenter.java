@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.settings.success_delete_wallet;
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.common.Optional;
@@ -35,11 +35,17 @@ public class SuccessDeleteWalletPresenter extends BasePresenter<SuccessDeleteWal
         supportId = arguments.getString(SuccessDeleteWalletView.SUPPORT_ID);
     }
 
+    /**
+     * Navigate to Feedback screen.
+     */
     public Unit navigateToFeedback(String linkId) {
         navigator.navigateToSendGenericFeedback(getContext(), Optional.ofNullable(supportId));
         return null;
     }
 
+    /**
+     * Restart the application.
+     */
     public void navigateToLauncher() {
         navigator.navigateToLauncher(getContext());
     }

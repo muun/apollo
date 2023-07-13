@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.error
 
 import android.os.Bundle
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import javax.inject.Inject

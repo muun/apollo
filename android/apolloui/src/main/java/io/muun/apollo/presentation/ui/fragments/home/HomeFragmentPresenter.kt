@@ -3,9 +3,12 @@ package io.muun.apollo.presentation.ui.fragments.home
 import android.os.Bundle
 import icepick.State
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.PaymentContext
+import io.muun.apollo.domain.model.SecurityCenter
+import io.muun.apollo.domain.model.SecurityLevel
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
@@ -17,9 +20,9 @@ import io.muun.apollo.domain.selector.PaymentContextSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
+import io.muun.apollo.presentation.ui.fragments.operations.OperationsCache
 import io.muun.apollo.presentation.ui.fragments.tr_clock_detail.TaprootClockDetailFragment
 import libwallet.Libwallet
 import rx.Observable
@@ -30,14 +33,15 @@ import javax.inject.Inject
 class HomeFragmentPresenter @Inject constructor(
     private val paymentContextSel: PaymentContextSelector,
     private val bitcoinUnitSel: BitcoinUnitSelector,
-    private val userPreferencesSelector: UserPreferencesSelector,
+    private val userPreferencesSel: UserPreferencesSelector,
     private val updateUserPreferencesAction: UpdateUserPreferencesAction,
     private val operationSelector: OperationSelector,
     private val latestOperationSelector: LatestOperationSelector,
     private val utxoSetStateSelector: UtxoSetStateSelector,
     private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val featureSelector: FeatureSelector,
-    private val blockchainHeightSel: BlockchainHeightSelector
+    private val blockchainHeightSel: BlockchainHeightSelector,
+    private val operationsCache: OperationsCache,
 ) : SingleFragmentPresenter<HomeFragmentView, HomeFragmentParentPresenter>() {
 
     @State
@@ -52,11 +56,18 @@ class HomeFragmentPresenter @Inject constructor(
         val user: User,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
         val blocksToTaproot: Int,
-        val highFees: Boolean
+        val highFees: Boolean,
     )
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
+
+        operationsCache.watch()
+            .doOnNext {
+                val securityCenter = SecurityCenter(it.user, userPreferencesSel.emailSetupSkipped())
+                reportHome(securityCenter, it.operations.isNotEmpty())
+            }
+            .let(this::subscribeTo)
 
         Observable
             .combineLatest(
@@ -105,7 +116,7 @@ class HomeFragmentPresenter @Inject constructor(
             }
             .let(this::subscribeTo)
 
-        subscribeTo(userPreferencesSelector.watch()) { prefs ->
+        subscribeTo(userPreferencesSel.watch()) { prefs ->
             if (!prefs.seenNewHome) {
                 view.showTooltip()
 
@@ -148,5 +159,38 @@ class HomeFragmentPresenter @Inject constructor(
 
     fun navigateToClockDetail() {
         navigator.navigateToFragment(context, TaprootClockDetailFragment::class.java)
+    }
+
+    private fun reportHome(securityCenter: SecurityCenter, hashOperations: Boolean) {
+
+        val securityLevel: SecurityLevel = securityCenter.getLevel()
+        val isAnonUser = (securityLevel === SecurityLevel.ANON
+            || securityLevel === SecurityLevel.SKIPPED_EMAIL_ANON)
+
+        analytics.report(AnalyticsEvent.S_HOME(getHomeType(isAnonUser, hashOperations)))
+    }
+
+    private fun getHomeType(
+        isAnonUser: Boolean,
+        hasOperations: Boolean,
+    ): AnalyticsEvent.S_HOME_TYPE {
+
+        return if (isAnonUser) {
+
+            if (hasOperations) {
+                AnalyticsEvent.S_HOME_TYPE.ANON_USER_WITH_OPERATIONS
+
+            } else {
+                AnalyticsEvent.S_HOME_TYPE.ANON_USER_WITHOUT_OPERATIONS
+            }
+
+        } else {
+            if (hasOperations) {
+                AnalyticsEvent.S_HOME_TYPE.USER_SET_UP_WITH_OPERATIONS
+
+            } else {
+                AnalyticsEvent.S_HOME_TYPE.USER_SET_UP_WITHOUT_OPERATIONS
+            }
+        }
     }
 }

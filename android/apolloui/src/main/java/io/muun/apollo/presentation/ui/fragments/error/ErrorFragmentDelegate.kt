@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.error
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 
 interface ErrorFragmentDelegate {
 

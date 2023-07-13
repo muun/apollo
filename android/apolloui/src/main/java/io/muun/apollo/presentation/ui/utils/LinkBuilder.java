@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.utils;
 
+import io.muun.apollo.domain.analytics.Analytics;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.model.SubmarineSwapReceiver;
-import io.muun.apollo.presentation.analytics.Analytics;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.app.di.PerApplication;
 import io.muun.apollo.presentation.ui.view.RichText;
 import io.muun.common.bitcoinj.NetworkParametersHelper;

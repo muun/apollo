@@ -3,11 +3,11 @@ package io.muun.apollo.presentation.ui.select_amount
 import android.app.Activity
 import android.os.Bundle
 import io.muun.apollo.data.getRateWindow
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_AMOUNT_PICKER
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_AMOUNT_PICKER
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.helper.isBtc

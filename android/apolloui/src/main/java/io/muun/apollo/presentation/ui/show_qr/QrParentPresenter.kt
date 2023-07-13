@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.show_qr
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 
 interface QrParentPresenter : ParentPresenter {

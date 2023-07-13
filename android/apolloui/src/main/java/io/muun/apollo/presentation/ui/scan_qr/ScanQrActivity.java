@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.scan_qr;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.model.OperationUri;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;

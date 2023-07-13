@@ -12,14 +12,14 @@ import javax.inject.Inject
 class ScreenshotBlockExtension @Inject constructor() : ActivityExtension() {
 
     fun startBlockingScreenshots(caller: String) {
-        if (BuildConfig.PRODUCTION && Globals.isReleaseBuild()) {
+        if (BuildConfig.PRODUCTION && Globals.INSTANCE.isReleaseBuild) {
             logBreadcrumb("blockscreenshots: $caller ${activity.javaClass.simpleName} START")
             activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE) // prevent screenshots
         }
     }
 
     fun stopBlockingScreenshots(caller: String) {
-        if (BuildConfig.PRODUCTION && Globals.isReleaseBuild()) {
+        if (BuildConfig.PRODUCTION && Globals.INSTANCE.isReleaseBuild) {
             logBreadcrumb("blockscreenshots: $caller ${activity.javaClass.simpleName} STOP")
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }

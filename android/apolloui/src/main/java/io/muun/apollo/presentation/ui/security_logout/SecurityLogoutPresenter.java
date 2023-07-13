@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.security_logout;
 
 import io.muun.apollo.domain.action.LogoutActions;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.BaseView;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
@@ -30,6 +30,9 @@ public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
         logoutActions.destroyRecoverableWallet();
     }
 
+    /**
+     * Navigate to Landing screen.
+     */
     public void goToSignIn() {
         navigator.navigateToSignup(getContext());
         view.finishActivity();

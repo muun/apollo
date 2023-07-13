@@ -305,20 +305,25 @@ abstract class UiOperation(
     /**
      * Get the status as formatted RichText.
      */
-    fun getFormattedStatus(context: Context): CharSequence =
+    fun getFormattedStatus(context: Context): CharSequence {
         if (isCompleted) {
-            getFormattedCompletedStatus(context)
+            return getFormattedCompletedStatus(context)
+
         } else if (isPending) {
             if (isIncoming && isRbf) {
-                getFormattedRbfStatus(context)
+                return getFormattedRbfStatus(context)
+
             } else {
-                getFormattedPendingStatus(context)
+                return getFormattedPendingStatus(context)
             }
+
         } else if (isFailed) {
-            getFormattedFailedStatus(context)
+            return getFormattedFailedStatus(context)
+
         } else {
             throw MissingCaseError(operation.status)
         }
+    }
 
     private fun getFormattedRbfStatus(context: Context): RichText =
         boldRichText(context, R.string.operation_rbf, R.color.rbf_color)

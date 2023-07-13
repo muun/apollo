@@ -98,13 +98,13 @@ open class BaseClient<ServiceT> protected constructor(
                 .addInterceptor(idempotencyKeyInterceptor)
                 .addInterceptor(backgroundExecutionMetricsInterceptor)
 
-            if (!Globals.isReleaseBuild()) {
+            if (!Globals.INSTANCE.isReleaseBuild) {
                 val loggingInterceptor = HttpLoggingInterceptor()
                     .setLevel(HttpLoggingInterceptor.Level.BODY)
                 builder.addInterceptor(loggingInterceptor)
             }
 
-            if (!Globals.isReleaseBuild() && config.getBoolean("net.interceptors.stetho")) {
+            if (!Globals.INSTANCE.isReleaseBuild && config.getBoolean("net.interceptors.stetho")) {
                 builder.addNetworkInterceptor(StethoInterceptor())
             }
             return builder.build()

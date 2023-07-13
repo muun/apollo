@@ -3,6 +3,8 @@ package io.muun.apollo.data.net;
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
 import io.muun.apollo.data.os.CpuInfoProvider;
+import io.muun.apollo.data.os.GooglePlayHelper;
+import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
 import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
@@ -96,6 +98,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
     private final ApiObjectsMapper apiMapper;
     private final Context context;
     private final HardwareCapabilitiesProvider hardwareCapabilitiesProvider;
+    private final GooglePlayServicesHelper googlePlayServicesHelper;
+    private final GooglePlayHelper googlePlayHelper;
 
     /**
      * Constructor.
@@ -105,7 +109,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
             ModelObjectsMapper modelMapper,
             ApiObjectsMapper apiMapper,
             Context context,
-            HardwareCapabilitiesProvider hardwareCapabilitiesProvider
+            HardwareCapabilitiesProvider hardwareCapabilitiesProvider,
+            GooglePlayServicesHelper googlePlayServicesHelper,
+            GooglePlayHelper googlePlayHelper
     ) {
 
         super(HoustonService.class);
@@ -114,6 +120,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
         this.apiMapper = apiMapper;
         this.context = context;
         this.hardwareCapabilitiesProvider = hardwareCapabilitiesProvider;
+        this.googlePlayServicesHelper = googlePlayServicesHelper;
+        this.googlePlayHelper = googlePlayHelper;
     }
 
     /**
@@ -139,7 +147,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
-                CpuInfoProvider.INSTANCE.getCpuInfo()
+                CpuInfoProvider.INSTANCE.getCpuInfo(),
+                googlePlayServicesHelper.getPlayServicesInfo(),
+                googlePlayHelper.getPlayInfo()
         );
 
         return getService().createFirstSession(params)
@@ -167,7 +177,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
-                CpuInfoProvider.INSTANCE.getCpuInfo()
+                CpuInfoProvider.INSTANCE.getCpuInfo(),
+                googlePlayServicesHelper.getPlayServicesInfo(),
+                googlePlayHelper.getPlayInfo()
         );
 
         return getService().createLoginSession(params)
@@ -195,7 +207,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
-                CpuInfoProvider.INSTANCE.getCpuInfo()
+                CpuInfoProvider.INSTANCE.getCpuInfo(),
+                googlePlayServicesHelper.getPlayServicesInfo(),
+                googlePlayHelper.getPlayInfo()
         );
 
         return getService().createRecoveryCodeLoginSession(session)

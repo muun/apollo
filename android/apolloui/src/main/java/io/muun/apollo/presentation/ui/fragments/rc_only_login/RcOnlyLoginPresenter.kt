@@ -1,11 +1,11 @@
 package io.muun.apollo.presentation.ui.fragments.rc_only_login
 
 import android.os.Bundle
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError
 import io.muun.apollo.domain.errors.rc.InvalidRecoveryCodeV2Error
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError
 import io.muun.apollo.domain.model.RecoveryCode
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import javax.inject.Inject

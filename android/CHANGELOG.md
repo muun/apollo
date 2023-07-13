@@ -6,6 +6,33 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.14] - 2023-07-12
+
+### ADDED
+
+- Google Play Services version info to error reports.
+- More background notification processing reliability improvements
+
+### CHANGED
+
+- Upgrade Firebase dependencies using BOM (Bill Of Materials). firebase-bom:32.1.1
+- Upgrade Firebase Messaging as part of firebase-bom:32.1.1
+- Upgrade Firebase Crashlytics as part of firebase-bom:32.1.1
+- Upgrade Firebase Analytics as part of firebase-bom:32.1.1
+- Upgrade Firebase Crashlytics Gradle Plugin to 2.9.6
+- Upgrade Google Services Gradle Plugin to 4.3.15
+- Upgrade Google Services Auth to 20.6.0
+- Enhanced analytics events reporting specially around payment flow.
+- Enhanced analytics reporting to enrich and enhance error reports.
+
+### FIXED
+
+- Properly fix timezones ('America/Juarez', 'Europe/Kyiv') issues addressed in 50.11.
+- An error caused by a UI issue that allowed user to navigate to EditFee screen AFTER submitting a
+payment.
+- Removed strange yellow highlight when using OS autocomplete (e.g Google Password Manager) on a
+text input.
+
 ## [50.13] - 2023-05-22
 
 ### FIXED

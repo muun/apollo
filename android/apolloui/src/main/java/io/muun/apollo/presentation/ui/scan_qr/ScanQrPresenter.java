@@ -1,12 +1,12 @@
 package io.muun.apollo.presentation.ui.scan_qr;
 
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.NewOperationOrigin;
 import io.muun.apollo.domain.libwallet.LnUrl;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.selector.ClipboardUriSelector;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
-import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin;
 
 import android.os.Bundle;
 import icepick.State;
@@ -63,6 +63,9 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
         }
     }
 
+    /**
+     * Handle QR Code scan result.
+     */
     public void handleResult(String text) {
 
         if (lnUrlFlow == LnUrlFlow.STARTED_FROM_RECEIVE) {
@@ -108,14 +111,23 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
         view.finishActivity();
     }
 
+    /**
+     * Track analytics event for Camera permission asked.
+     */
     public void reportCameraPermissionAsked() {
         analytics.report(new AnalyticsEvent.E_SCAN_QR_ASK_CAMERA_PERMISSION());
     }
 
+    /**
+     * Track analytics event for Camera permission granted.
+     */
     public void reportCameraPermissionGranted() {
         analytics.report(new AnalyticsEvent.E_SCAN_QR_CAMERA_PERMISSION_GRANTED());
     }
 
+    /**
+     * Get analytics event for this presenter's screen.
+     */
     @Override
     protected AnalyticsEvent getEntryEvent() {
         if (lnUrlFlow != null) {
@@ -126,6 +138,9 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
         }
     }
 
+    /**
+     * Select which screen to navigate to, based on the content of an OperationUri.
+     */
     public Unit selectFromUriPaster(@NotNull OperationUri uri) {
         if (uri.getLnUrl().isPresent()) {
             navigator.navigateToLnUrlWithdraw(getContext(), uri.getLnUrl().get());

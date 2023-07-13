@@ -25,7 +25,7 @@
 
         <argument
                 android:name="origin"
-                app:argType="io.muun.apollo.presentation.analytics.AnalyticsEvent$SECURITY_CENTER_ORIGIN" />
+                app:argType="io.muun.apollo.domain.analytics.AnalyticsEvent$SECURITY_CENTER_ORIGIN" />
     </fragment>
 
     <fragment

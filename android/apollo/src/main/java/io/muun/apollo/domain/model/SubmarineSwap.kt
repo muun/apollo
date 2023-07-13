@@ -117,7 +117,7 @@ class SubmarineSwap(
 
         libwalletSwap.fundingOutputPolicies = fundingOutputPolicies?.toLibwallet()
 
-        bestRouteFees?.forEach { bestRouteFee ->
+        bestRouteFees?.iterator()?.forEach { bestRouteFee ->
             libwalletSwap.addBestRouteFees(bestRouteFee.toLibwallet())
         }
 

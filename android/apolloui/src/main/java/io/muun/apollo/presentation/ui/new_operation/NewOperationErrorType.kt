@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.new_operation
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_NEW_OP_ERROR_TYPE
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_ERROR_TYPE
 
 enum class NewOperationErrorType {
     INVALID_ADDRESS,

@@ -28,6 +28,7 @@ import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.action.di.ActionComponent;
+import io.muun.apollo.domain.analytics.Analytics;
 
 import android.content.Context;
 import dagger.Component;
@@ -107,4 +108,6 @@ public interface DataComponent extends ActionComponent {
     RepositoryRegistry repositoryRegistry();
 
     NotificationService notificationService();
+
+    Analytics analytics();
 }

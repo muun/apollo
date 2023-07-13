@@ -5,6 +5,7 @@ import android.os.Bundle
 import icepick.State
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.address.GenerateBip21UriAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent.ADDRESS_ORIGIN
 import io.muun.apollo.domain.libwallet.DecodedBitcoinUri
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.AddressGroup
@@ -15,7 +16,6 @@ import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.ADDRESS_ORIGIN
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter

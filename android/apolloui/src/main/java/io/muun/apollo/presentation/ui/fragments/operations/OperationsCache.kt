@@ -70,9 +70,8 @@ class OperationsCache @Inject constructor(
         cacheSubject = BehaviorSubject.create()
     }
 
-    fun watch() =
+    fun watch(): Observable<OperationsPresenter.ReactiveState<ItemViewModel>> =
         cacheSubject.asObservable()
-
 
     private fun mapOperations(operations: List<Operation>, bitcoinUnit: BitcoinUnit) =
         Observable.from(operations)

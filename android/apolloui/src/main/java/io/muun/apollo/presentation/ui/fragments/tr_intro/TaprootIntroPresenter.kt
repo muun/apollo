@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.tr_intro
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroPresenter
 import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroView

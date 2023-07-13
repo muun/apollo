@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.lnurl.withdraw.confirm
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.di.PerActivity
