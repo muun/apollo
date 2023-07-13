@@ -41,9 +41,9 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
-import static io.muun.apollo.presentation.analytics.AnalyticsEvent.ERROR_TYPE;
-import static io.muun.apollo.presentation.analytics.AnalyticsEvent.E_ERROR;
-import static io.muun.apollo.presentation.analytics.AnalyticsEvent.E_SIGN_IN_ABORTED;
+import static io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE;
+import static io.muun.apollo.domain.analytics.AnalyticsEvent.E_ERROR;
+import static io.muun.apollo.domain.analytics.AnalyticsEvent.E_SIGN_IN_ABORTED;
 
 @PerActivity
 public class SignupPresenter extends BasePresenter<SignupView> implements

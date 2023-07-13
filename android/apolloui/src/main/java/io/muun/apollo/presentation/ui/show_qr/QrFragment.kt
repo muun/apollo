@@ -15,7 +15,7 @@ import com.google.zxing.WriterException
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.Encoder
 import io.muun.apollo.R
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.ADDRESS_ORIGIN
+import io.muun.apollo.domain.analytics.AnalyticsEvent.ADDRESS_ORIGIN
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.view.EditAmountItem

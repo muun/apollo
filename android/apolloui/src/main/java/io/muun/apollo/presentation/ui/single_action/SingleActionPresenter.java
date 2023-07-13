@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.single_action;
 
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.BaseView;
 import io.muun.common.exception.MissingCaseError;

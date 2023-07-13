@@ -1,10 +1,10 @@
 package io.muun.apollo.presentation.ui.fragments.sync;
 
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.model.LoginWithRc;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.SignupStep;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.apollo.presentation.ui.signup.SignupPresenter;

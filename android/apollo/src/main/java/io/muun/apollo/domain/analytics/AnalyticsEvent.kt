@@ -1,9 +1,8 @@
-package io.muun.apollo.presentation.analytics
+package io.muun.apollo.domain.analytics
 
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin
 import io.muun.common.model.OperationDirection
 import java.util.*
 
@@ -23,9 +22,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     // Screen navigation events:
     class S_GET_STARTED : AnalyticsEvent()
     class S_SIGN_IN_EMAIL : AnalyticsEvent()
-    class S_SIGN_UP_EMAIL : AnalyticsEvent() // Legacy naming convention, not exactly appropiate.
+    class S_SIGN_UP_EMAIL : AnalyticsEvent() // Legacy naming convention, not exactly appropriate
     class S_SIGN_IN_PASSWORD : AnalyticsEvent()
-    class S_SIGN_UP_PASSWORD : AnalyticsEvent() // Legacy naming convention, not exactly appropiate.
+    class S_SIGN_UP_PASSWORD : AnalyticsEvent() // Legacy naming convention, not exactly appropriate
     class S_INPUT_RECOVERY_CODE : AnalyticsEvent()
     class S_VERIFY_EMAIL : AnalyticsEvent()
     class S_AUTHORIZE_EMAIL : AnalyticsEvent()
@@ -42,20 +41,23 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         USER_SET_UP_WITH_OPERATIONS
     }
 
-    class S_HOME(type: S_HOME_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class S_HOME(type: S_HOME_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
+
+    class S_TRANSACTIONS : AnalyticsEvent()
 
     enum class RECEIVE_ORIGIN {
         RECEIVE_BUTTON,
         TX_EMPTY_STATE
-
     }
 
-    class S_RECEIVE(type: S_RECEIVE_TYPE, origin: RECEIVE_ORIGIN) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault()),
-        "origin" to origin.name.lowercase(Locale.getDefault())
-    ))
+    class S_RECEIVE(type: S_RECEIVE_TYPE, origin: RECEIVE_ORIGIN) : AnalyticsEvent(
+        listOf(
+            "type" to type.name.lowercase(Locale.getDefault()),
+            "origin" to origin.name.lowercase(Locale.getDefault())
+        )
+    )
 
     class S_AMOUNT_PICKER : AnalyticsEvent()
 
@@ -82,15 +84,17 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         DELETE_WALLET
     }
 
-    class S_FEEDBACK(type: FEEDBACK_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class S_FEEDBACK(type: FEEDBACK_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
     class S_OPERATION_DETAIL(operationId: Int, direction: OperationDirection) :
-        AnalyticsEvent(listOf(
-            "operation_id" to operationId,
-            "direction" to direction.name.lowercase(Locale.getDefault())
-        ))
+        AnalyticsEvent(
+            listOf(
+                "operation_id" to operationId,
+                "direction" to direction.name.lowercase(Locale.getDefault())
+            )
+        )
 
     class S_LOG_OUT : AnalyticsEvent()
     class S_SESSION_EXPIRED : AnalyticsEvent()
@@ -164,12 +168,15 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         val origin: S_NEW_OP_ORIGIN,
         val type: S_NEW_OP_ERROR_TYPE,
         vararg extras: Any,
-    ) : AnalyticsEvent(listOf(
+    ) : AnalyticsEvent(
+        listOf(
 
-        "origin" to origin.name.lowercase(Locale.getDefault()),
-        "type" to type.name.lowercase(Locale.getDefault()),
-        *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }.toTypedArray()
-    ))
+            "origin" to origin.name.lowercase(Locale.getDefault()),
+            "type" to type.name.lowercase(Locale.getDefault()),
+            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
+                .toTypedArray()
+        )
+    )
 
     enum class S_MORE_INFO_TYPE {
         PASSWORD,
@@ -182,9 +189,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         READ_CONTACTS
     }
 
-    class S_MORE_INFO(val type: S_MORE_INFO_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class S_MORE_INFO(val type: S_MORE_INFO_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
 
     enum class S_SUPPORT_TYPE {
@@ -193,9 +200,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         ANON_SUPPORT
     }
 
-    class S_SUPPORT(val type: S_SUPPORT_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class S_SUPPORT(val type: S_SUPPORT_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
     enum class SECURITY_CENTER_ORIGIN {
         SHIELD_BUTTON,
@@ -219,11 +226,13 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         nextStep: S_SECURITY_CENTER_NEXT_STEP,
         origin: SECURITY_CENTER_ORIGIN,
         emailStatus: S_SECURITY_CENTER_EMAIL_STATUS,
-    ) : AnalyticsEvent(listOf(
-        "next_step" to nextStep.name.lowercase(Locale.getDefault()),
-        "origin" to origin.name.lowercase(Locale.getDefault()),
-        "email_status" to emailStatus.name.lowercase(Locale.getDefault())
-    ))
+    ) : AnalyticsEvent(
+        listOf(
+            "next_step" to nextStep.name.lowercase(Locale.getDefault()),
+            "origin" to origin.name.lowercase(Locale.getDefault()),
+            "email_status" to emailStatus.name.lowercase(Locale.getDefault())
+        )
+    )
 
     class S_EMAIL_PRIMING : AnalyticsEvent()
     class S_EMAIL_ALREADY_USED : AnalyticsEvent()
@@ -252,8 +261,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         }
     }
 
-    class E_NEW_OP_COMPLETED(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
-
     enum class E_FEE_OPTION_TYPE {
         FAST,
         MEDIUM,
@@ -261,7 +268,27 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         CUSTOM
     }
 
+    enum class E_NEW_OP_ACTION_TYPE {
+        START_FOR_BITCOIN_URI,
+        START_FOR_INVOICE,
+        START_FOR_UNIFIED_QR,
+        USE_ALL_FUNDS,
+        CONFIRM_AMOUNT,
+        CONFIRM_DESCRIPTION,
+        CONFIRM_FEE,
+        CONFIRM_OPERATION,
+        CONFIRM_SWAP_OPERATION,
+        BACK,
+        CANCEL_ABORT,
+    }
+
+    class E_NEW_OP_ACTION(val type: E_NEW_OP_ACTION_TYPE, vararg params: Pair<String, Any>) :
+        AnalyticsEvent(
+            listOf("type" to type.name.lowercase(), *params)
+        )
+
     class E_NEW_OP_SUBMITTED(vararg extras: Pair<String, Any>) : AnalyticsEvent(listOf(*extras))
+    class E_NEW_OP_COMPLETED(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
 
     class E_SCAN_QR_ASK_CAMERA_PERMISSION : AnalyticsEvent()
     class E_SCAN_QR_CAMERA_PERMISSION_GRANTED : AnalyticsEvent()
@@ -271,9 +298,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_WALLET_DELETED : AnalyticsEvent()
     class E_SIGN_IN_ABORTED : AnalyticsEvent()
 
-    class E_SIGN_IN_SUCCESSFUL(val type: LoginType) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class E_SIGN_IN_SUCCESSFUL(val type: LoginType) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
     enum class LoginType {
         PASSWORD,
@@ -298,18 +325,20 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     class E_EMERGENCY_KIT_SAVE_TO_DISK : AnalyticsEvent()
 
-    class E_OPEN_WEB(val name: String, val url: String) : AnalyticsEvent(listOf(
-        "name" to name,
-        "url" to url
-    ))
+    class E_OPEN_WEB(val name: String, val url: String) : AnalyticsEvent(
+        listOf(
+            "name" to name,
+            "url" to url
+        )
+    )
 
-    class E_DID_SELECT_BITCOIN_UNIT(val type: BitcoinUnit) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class E_DID_SELECT_BITCOIN_UNIT(val type: BitcoinUnit) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
-    class E_DID_SELECT_NIGHT_MODE(val type: NightMode) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class E_DID_SELECT_NIGHT_MODE(val type: NightMode) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
     class E_EMAIL_SETUP_SUCCESSFUL : AnalyticsEvent()
     class E_EMAIL_SETUP_ABORTED : AnalyticsEvent()
@@ -322,7 +351,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         DID_NOT_MATCH // Only during pin setup
     }
 
-    class E_PIN(type: PIN_TYPE) : AnalyticsEvent(listOf("type" to type.name.lowercase(Locale.getDefault())))
+    class E_PIN(type: PIN_TYPE) :
+        AnalyticsEvent(listOf("type" to type.name.lowercase(Locale.getDefault())))
 
     class E_APP_WILL_GO_TO_BACKGROUND : AnalyticsEvent()
     class E_APP_WILL_ENTER_FOREGROUND : AnalyticsEvent()
@@ -335,9 +365,9 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         UNIFIED_QR_INVOICE_ONLY
     }
 
-    class E_ADDRESS_COPIED(origin: ADDRESS_ORIGIN) : AnalyticsEvent(listOf(
-        "origin" to origin.name.lowercase(Locale.getDefault())
-    ))
+    class E_ADDRESS_COPIED(origin: ADDRESS_ORIGIN) : AnalyticsEvent(
+        listOf("origin" to origin.name.lowercase(Locale.getDefault()))
+    )
 
     class E_ADDRESS_SHARE_TOUCHED : AnalyticsEvent()
     class E_MENU_TAP : AnalyticsEvent()
@@ -355,17 +385,17 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         DID_NOT_MATCH
     }
 
-    class E_RECOVERY_CODE(error: RC_ERROR) : AnalyticsEvent(listOf(
-        "error" to error.name.lowercase(Locale.getDefault())
-    ))
+    class E_RECOVERY_CODE(error: RC_ERROR) : AnalyticsEvent(
+        listOf("error" to error.name.lowercase(Locale.getDefault()))
+    )
 
     enum class EMAIL_TYPE {
         ALREADY_USED
     }
 
-    class E_EMAIL(type: EMAIL_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class E_EMAIL(type: EMAIL_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
     @Suppress("unused")
     enum class E_EK_SAVE_OPTION {
@@ -414,10 +444,13 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     }
 
-    class E_ERROR(val type: ERROR_TYPE, vararg extras: Any) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault()),
-        *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }.toTypedArray()
-    ))
+    class E_ERROR(val type: ERROR_TYPE, vararg extras: Any) : AnalyticsEvent(
+        listOf(
+            "type" to type.name.lowercase(Locale.getDefault()),
+            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
+                .toTypedArray()
+        )
+    )
 
     class E_ERROR_REPORT_DIALOG : AnalyticsEvent()
 
@@ -430,13 +463,13 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         SUCCESS
     }
 
-    class E_LNURL_WITHDRAW_STATE(val type: LNURL_WITHDRAW_STATE_TYPE) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault())
-    ))
+    class E_LNURL_WITHDRAW_STATE(val type: LNURL_WITHDRAW_STATE_TYPE) : AnalyticsEvent(
+        listOf("type" to type.name.lowercase(Locale.getDefault()))
+    )
 
-    class E_EASTER_EGG(easterEgg: String) : AnalyticsEvent(listOf(
-        "type" to easterEgg
-    ))
+    class E_EASTER_EGG(easterEgg: String) : AnalyticsEvent(
+        listOf("type" to easterEgg)
+    )
 
     class E_PDF_FONT_ISSUE(
         type: PDF_FONT_ISSUE_TYPE,
@@ -444,17 +477,22 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         webViewVersion: String,
         chromeVersion: String,
         androidVersion: String,
-    ) : AnalyticsEvent(listOf(
-        "type" to type.name.lowercase(Locale.getDefault()),
-        "model" to model,
-        "webViewVersion" to webViewVersion,
-        "chromeVersion" to chromeVersion,
-        "androidVersion" to androidVersion
-    ))
-
+    ) : AnalyticsEvent(
+        listOf(
+            "type" to type.name.lowercase(Locale.getDefault()),
+            "model" to model,
+            "webViewVersion" to webViewVersion,
+            "chromeVersion" to chromeVersion,
+            "androidVersion" to androidVersion
+        )
+    )
 
     enum class PDF_FONT_ISSUE_TYPE {
         HOME_VIEW,
         PDF_EXPORTED
     }
+
+    class E_BREADCRUMB(value: String) : AnalyticsEvent(
+        listOf("crumb" to value)
+    )
 }

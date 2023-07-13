@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.lnurl.withdraw
 
 import android.content.Context
 import io.muun.apollo.R
+import io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.domain.model.lnurl.LnUrlError
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel.ErrorViewKind
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.StringResWithArgs

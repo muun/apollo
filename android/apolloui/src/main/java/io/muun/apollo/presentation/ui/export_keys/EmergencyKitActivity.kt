@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.fragment.app.Fragment
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.ek_intro.EmergencyKitIntroFragment

@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.ek_verify_help
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment

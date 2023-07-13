@@ -2,13 +2,13 @@ package io.muun.apollo.presentation.ui.recovery_code.verify;
 
 
 import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.RC_ERROR;
 import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError;
 import io.muun.apollo.domain.errors.rc.RecoveryCodeVerificationError;
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2;
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.RecoveryCode;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.RC_ERROR;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodePresenter;
 import io.muun.apollo.presentation.ui.recovery_code.accept.AcceptRecoveryCodeFragment;
@@ -71,6 +71,9 @@ public class VerifyRecoveryCodePresenter
         view.setConfirmEnabled(true);
     }
 
+    /**
+     * Proceed to Accept Recovery Code screen after successful confirmation.
+     */
     public void onRecoveryCodeConfirmed() {
         view.replaceFragment(new AcceptRecoveryCodeFragment(), false);
     }

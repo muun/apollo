@@ -1,6 +1,4 @@
-package io.muun.apollo.presentation.ui.new_operation
-
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+package io.muun.apollo.domain.analytics
 
 enum class NewOperationOrigin {
     SEND_CLIPBOARD_PASTE,
@@ -9,6 +7,6 @@ enum class NewOperationOrigin {
     SCAN_QR,
     EXTERNAL_LINK;
 
-    fun toAnalyticsEvent(): AnalyticsEvent.S_NEW_OP_ORIGIN  =
+    fun toAnalyticsEvent(): AnalyticsEvent.S_NEW_OP_ORIGIN =
         AnalyticsEvent.S_NEW_OP_ORIGIN.fromModel(this)
 }

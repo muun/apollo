@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.feedback.anon;
 
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SUPPORT_TYPE;
 import io.muun.apollo.domain.selector.UserSelector;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SUPPORT_TYPE;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.common.Optional;

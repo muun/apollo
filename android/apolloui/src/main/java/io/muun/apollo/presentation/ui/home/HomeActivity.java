@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN;
 import io.muun.apollo.domain.model.Operation;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.home.HomeFragmentArgs;

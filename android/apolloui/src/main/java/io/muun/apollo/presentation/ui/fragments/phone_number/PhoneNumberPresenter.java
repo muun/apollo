@@ -1,9 +1,9 @@
 package io.muun.apollo.presentation.ui.fragments.phone_number;
 
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.domain.errors.p2p.CountryNotSupportedError;
 import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_MORE_INFO_TYPE;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.common.model.PhoneNumber;

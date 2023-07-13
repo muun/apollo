@@ -4,12 +4,12 @@ import android.os.Bundle
 import icepick.State
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="BaseAppTheme">
+
+        <!-- Attr is api 26+ but this is no problem since Android Autofill framework is 26+ too.
+        NOTE: This attr NEEDS to live here, in values-v26. Otherwise, it gets ignored even for 26+
+         -->
+        <item name="android:autofilledHighlight">
+            @android:color/transparent
+        </item>
+    </style>
+</resources>

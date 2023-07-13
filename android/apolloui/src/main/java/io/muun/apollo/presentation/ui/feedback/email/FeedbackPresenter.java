@@ -1,9 +1,9 @@
 package io.muun.apollo.presentation.ui.feedback.email;
 
 import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SUPPORT_TYPE;
 import io.muun.apollo.domain.model.FeedbackCategory;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SUPPORT_TYPE;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.common.exception.MissingCaseError;
@@ -73,6 +73,9 @@ public class FeedbackPresenter extends BasePresenter<FeedbackView> {
         subscribeTo(observable);
     }
 
+    /**
+     * Submit Feedback to Houston, in order to reach the CX team.
+     */
     public void submit(String feedback) {
         userActions.submitFeedbackAction.run(category, feedback);
     }

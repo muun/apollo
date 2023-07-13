@@ -6,6 +6,23 @@ import io.muun.apollo.domain.action.base.CombineLatestAsyncAction
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.BACK
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CANCEL_ABORT
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_AMOUNT
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_DESCRIPTION
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_FEE
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_OPERATION
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_SWAP_OPERATION
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_BITCOIN_URI
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_INVOICE
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_UNIFIED_QR
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.USE_ALL_FUNDS
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_COMPLETED
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_SUBMITTED
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_TYPE.Companion.fromModel
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_ORIGIN.Companion.fromModel
+import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.errors.BugDetected
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.errors.newop.AmountTooSmallError
@@ -35,11 +52,6 @@ import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_NEW_OP_COMPLETED
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_NEW_OP_SUBMITTED
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_NEW_OP_TYPE.Companion.fromModel
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_NEW_OP_ORIGIN.Companion.fromModel
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeParentPresenter
@@ -129,6 +141,15 @@ class NewOperationPresenter @Inject constructor(
             return
         }
 
+        // Since LN payments are handled in startForInvoice() (according to OperationUri#isLn()), if
+        // the operationUri has a ln invoice here it means we are dealing with a "Unified QR" uri.
+        if (operationUri.lnInvoice.isPresent) {
+            analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_UNIFIED_QR))
+
+        } else {
+            analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_BITCOIN_URI))
+        }
+
         stateMachine.withState { state: StartState ->
             state.resolve(uri, networkParams.toLibwallet())
         }
@@ -147,6 +168,7 @@ class NewOperationPresenter @Inject constructor(
             return
         }
 
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_INVOICE))
         stateMachine.withState { state: StartState ->
             state.resolveInvoice(parseInvoice(networkParams, invoice), networkParams.toLibwallet())
         }
@@ -217,6 +239,7 @@ class NewOperationPresenter @Inject constructor(
 
     override fun confirmFee(selectedFeeRateInVBytes: Double) {
         view.goToConfirmedFee()
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_FEE))
         if (selectedFeeRateInVBytes >= Rules.toSatsPerVbyte(Rules.OP_MINIMUM_FEE_RATE)) {
             stateMachine.withState { state: EditFeeState ->
                 state.setFeeRate(selectedFeeRateInVBytes)
@@ -327,24 +350,33 @@ class NewOperationPresenter @Inject constructor(
     }
 
     fun confirmAmount(value: MonetaryAmount, takeFreeFromAmount: Boolean) {
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_AMOUNT))
         stateMachine.withState { state: EnterAmountState ->
             state.enterAmount(value.toLibwallet(), takeFreeFromAmount)
         }
     }
 
     fun confirmUseAllFunds() {
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(USE_ALL_FUNDS))
         stateMachine.withState { state: EnterAmountState ->
             state.enterAmount(state.totalBalance.inInputCurrency, true)
         }
     }
 
     fun confirmDescription(description: String) {
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_DESCRIPTION))
         stateMachine.withState { state: EnterDescriptionState ->
             state.enterDescription(description)
         }
     }
 
     fun editFee() {
+
+        // If payment submission is in progress, avoid further state machine changes until it ends
+        if (confirmationInProgress) {
+            return
+        }
+
         // Using this getter + check instead of withState to avoid quick double clicks to crash app
         val state = stateMachine.value()!!
         if (state is ConfirmState) {
@@ -358,6 +390,7 @@ class NewOperationPresenter @Inject constructor(
     fun confirmOperation() {
         confirmationInProgress = true
 
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_OPERATION))
         stateMachine.withState { state: ConfirmState ->
 
             val paymentContext = state.resolved.paymentContext
@@ -374,6 +407,7 @@ class NewOperationPresenter @Inject constructor(
     fun confirmSwapOperation() {
         confirmationInProgress = true
 
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_SWAP_OPERATION))
         stateMachine.withState { state: ConfirmLightningState ->
 
             val payCtx = state.resolved.paymentContext
@@ -398,6 +432,7 @@ class NewOperationPresenter @Inject constructor(
             return
         }
 
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(BACK))
         stateMachine.withState { state: State ->
             when (state) {
                 is EnterAmountState -> state.back()
@@ -412,6 +447,7 @@ class NewOperationPresenter @Inject constructor(
     }
 
     fun cancelAbort() {
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CANCEL_ABORT))
         stateMachine.withState { state: AbortState ->
             state.cancel()
         }
@@ -499,23 +535,32 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleResolveState(state: ResolveState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_LOADING(
-            *uncheckedConvert(opStartedMetadata(state.paymentIntent.getPaymentType()))
-        ))
+        analytics.report(
+            AnalyticsEvent.S_NEW_OP_LOADING(
+                *uncheckedConvert(opStartedMetadata(state.paymentIntent.getPaymentType())),
+                "update" to state.update,
+            )
+        )
         view.goToResolvingState()
     }
 
     private fun handleEnterAmountState(state: EnterAmountState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_AMOUNT(
-            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
-        ))
+        analytics.report(
+            AnalyticsEvent.S_NEW_OP_AMOUNT(
+                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
+                "update" to state.update
+            )
+        )
         view.goToEnterAmountState(state, receiver)
     }
 
     private fun handleEnterDescriptionState(state: EnterDescriptionState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_DESCRIPTION(
-            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
-        ))
+        analytics.report(
+            AnalyticsEvent.S_NEW_OP_DESCRIPTION(
+                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
+                "update" to state.update
+            )
+        )
         view.goToEnterDescriptionState(state, receiver)
     }
 
@@ -528,9 +573,12 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmState(state: ConfirmState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION(
-            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
-        ))
+        analytics.report(
+            AnalyticsEvent.S_NEW_OP_CONFIRMATION(
+                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
+                "update" to state.update
+            )
+        )
         view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
 
             override val resolved: Resolved
@@ -551,9 +599,12 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {
-        analytics.report(AnalyticsEvent.S_NEW_OP_CONFIRMATION(
-            *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType()))
-        ))
+        analytics.report(
+            AnalyticsEvent.S_NEW_OP_CONFIRMATION(
+                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
+                "update" to state.update
+            )
+        )
         view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
 
             override val resolved: Resolved
@@ -678,7 +729,7 @@ class NewOperationPresenter @Inject constructor(
         amountInfo: AmountInfo,
     ): Array<Pair<String, Any>> {
 
-        val objects = java.util.ArrayList<Pair<String, Any>>()
+        val objects = ArrayList<Pair<String, Any>>()
         objects.add(Pair<String, Any>("operation_id", operationId.toInt()))
 
         // Also add previously known metadata
@@ -698,7 +749,7 @@ class NewOperationPresenter @Inject constructor(
         feeRate: Double,
     ): ArrayList<Pair<String, Any>> {
 
-        val objects = java.util.ArrayList<Pair<String, Any>>()
+        val objects = ArrayList<Pair<String, Any>>()
         val selectedFeeRate = Preconditions.checkNotNull(feeRate)
         val type: AnalyticsEvent.E_FEE_OPTION_TYPE = getFeeOptionTypeParam(selectedFeeRate, payCtx)
         val feeRateInSatsPerVbyte = Rules.toSatsPerVbyte(selectedFeeRate)

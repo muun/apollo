@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.recovery_code.priming
 
 import android.os.Bundle
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.StartRecoveryCodeSetupAction
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_RECOVERY_CODE_PRIMING
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_RECOVERY_CODE_PRIMING
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodePresenter

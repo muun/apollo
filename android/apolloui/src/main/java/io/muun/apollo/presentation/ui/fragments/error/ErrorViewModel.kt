@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.error
 
 import android.content.Context
 import androidx.annotation.StringRes
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.StringResWithArgs
 import io.muun.common.utils.Preconditions

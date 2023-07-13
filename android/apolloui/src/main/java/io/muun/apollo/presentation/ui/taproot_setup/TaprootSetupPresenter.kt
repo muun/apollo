@@ -3,9 +3,8 @@ package io.muun.apollo.presentation.ui.taproot_setup
 import android.os.Bundle
 import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.apis.DriveUploader
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_TAPROOT_SLIDES_ABORTED
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_TAPROOT_SLIDES_ABORTED
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveParentPresenter

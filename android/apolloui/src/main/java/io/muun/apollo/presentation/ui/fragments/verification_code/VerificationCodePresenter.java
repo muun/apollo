@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.fragments.verification_code;
 
 import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.p2p.InvalidVerificationCodeError;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.common.model.VerificationType;

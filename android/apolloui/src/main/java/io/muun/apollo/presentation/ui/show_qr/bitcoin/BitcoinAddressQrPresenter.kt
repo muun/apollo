@@ -5,13 +5,13 @@ import android.os.Bundle
 import icepick.State
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.address.CreateAddressAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.MuunAddressGroup
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
 import io.muun.common.bitcoinj.BitcoinUri

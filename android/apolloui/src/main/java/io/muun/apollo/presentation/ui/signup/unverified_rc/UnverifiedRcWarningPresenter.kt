@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.signup.unverified_rc
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter

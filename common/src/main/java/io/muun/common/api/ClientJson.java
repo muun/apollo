@@ -150,11 +150,30 @@ public class ClientJson {
     @Nullable // Before that ;)
     public List<List<Pair<String, String>>> cpuPerProcessorInfo;
 
+    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
+    @Nullable // Before that ;)
+    public Long googlePlayServicesVersionCode;
+
+    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
+    @Nullable // Before that ;)
+    public String googlePlayServicesVersionName;
+
+    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
+    @Nullable // Before that ;)
+    public Integer googlePlayServicesClientVersionCode;
+
+    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
+    @Nullable // Before that ;)
+    public Long googlePlayVersionCode;
+
+    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
+    @Nullable // Before that ;)
+    public String googlePlayVersionName;
+
     /**
      * Json constructor.
      */
     @SuppressWarnings("unused") // Jackson requires it
-
     public ClientJson() {
     }
 
@@ -187,7 +206,12 @@ public class ClientJson {
                       @Nullable final String glEsVersion,
                       @Nullable final Map<String, String> cpuInfoLegacy,
                       @Nullable final List<Pair<String, String>> cpuCommonInfo,
-                      @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo
+                      @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo,
+                      @Nullable final Long googlePlayServicesVersionCode,
+                      @Nullable final String googlePlayServicesVersionName,
+                      @Nullable final Integer googlePlayServicesClientVersionCode,
+                      @Nullable final Long googlePlayVersionCode,
+                      @Nullable final String googlePlayVersionName
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -217,5 +241,10 @@ public class ClientJson {
         this.cpuInfoLegacy = cpuInfoLegacy;
         this.cpuCommonInfo = cpuCommonInfo;
         this.cpuPerProcessorInfo = cpuPerProcessorInfo;
+        this.googlePlayServicesVersionCode = googlePlayServicesVersionCode;
+        this.googlePlayServicesVersionName = googlePlayServicesVersionName;
+        this.googlePlayServicesClientVersionCode = googlePlayServicesClientVersionCode;
+        this.googlePlayVersionCode = googlePlayVersionCode;
+        this.googlePlayVersionName = googlePlayVersionName;
     }
 }

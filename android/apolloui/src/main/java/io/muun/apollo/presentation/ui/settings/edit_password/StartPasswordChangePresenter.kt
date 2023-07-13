@@ -1,10 +1,9 @@
 package io.muun.apollo.presentation.ui.settings.edit_password
 
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.ChangePasswordStep
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentView
 import io.muun.apollo.presentation.ui.base.di.PerFragment
-
 import javax.inject.Inject
 
 

@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.user.User
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.BaseFragment
 import io.muun.apollo.presentation.ui.base.Presenter

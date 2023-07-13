@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.select_night_mode
 
 import android.os.Bundle
 import io.muun.apollo.domain.NightModeManager
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.NightMode
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import javax.inject.Inject

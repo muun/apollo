@@ -5,12 +5,12 @@ import icepick.State
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.FinishRecoveryCodeSetupAction
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.SetRecoveryCodeSetupInProcessAction
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.StartRecoveryCodeSetupAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_RECOVERY_CODE_SET_UP
 import io.muun.apollo.domain.errors.rc.FinishRecoveryCodeSetupError
 import io.muun.apollo.domain.errors.rc.StartRecoveryCodeSetupError
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2.Companion.createRandom
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByNetworkError
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_RECOVERY_CODE_SET_UP
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.bundler.RecoveryCodeBundler

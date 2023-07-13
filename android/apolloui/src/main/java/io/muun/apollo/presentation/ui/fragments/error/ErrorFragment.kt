@@ -4,8 +4,8 @@ import android.view.View
 import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.utils.applyArgs
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel.*
 import io.muun.apollo.presentation.ui.view.MuunButton

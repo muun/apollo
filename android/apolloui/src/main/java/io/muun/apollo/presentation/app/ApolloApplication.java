@@ -8,6 +8,7 @@ import io.muun.apollo.data.external.DataComponentProvider;
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.external.UserFacingErrorMessages;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
+import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
@@ -16,10 +17,10 @@ import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
+import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.BitcoinUnitSelector;
-import io.muun.apollo.presentation.analytics.Analytics;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent;
 import io.muun.apollo.presentation.ui.utils.UserFacingErrorMessagesImpl;
@@ -90,6 +91,8 @@ public abstract class ApolloApplication extends Application
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Crashlytics.init(this);
 
         ensureCurrencyServicesLoaded();
 
@@ -173,9 +176,10 @@ public abstract class ApolloApplication extends Application
     @Override
     public Configuration getWorkManagerConfiguration() {
         Timber.d("[MuunWorkerFactory] Application#getWorkManagerConfiguration()");
+        final int loggingLevel = Globals.INSTANCE.isReleaseBuild() ? Log.ASSERT : Log.VERBOSE;
         return new Configuration.Builder()
                 .setWorkerFactory(new MuunWorkerFactory(this))
-                .setMinimumLoggingLevel(Globals.isReleaseBuild() ? Log.ASSERT : Log.VERBOSE)
+                .setMinimumLoggingLevel(loggingLevel)
                 .build();
     }
 

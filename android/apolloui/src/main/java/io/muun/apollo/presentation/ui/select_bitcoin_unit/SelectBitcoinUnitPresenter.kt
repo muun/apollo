@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.select_bitcoin_unit
 
 import android.os.Bundle
 import io.muun.apollo.data.preferences.UserRepository
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.BitcoinUnit
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import javax.inject.Inject
