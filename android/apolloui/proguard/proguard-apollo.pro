@@ -37,10 +37,10 @@
 
 -keepattributes InnerClasses
 
--keepnames class io.muun.apollo.presentation.analytics.**
--keep class io.muun.apollo.presentation.analytics.** { *; }
--keepclassmembers class io.muun.apollo.presentation.analytics.** { *; }
--keepclassmembernames class io.muun.apollo.presentation.analytics.** { *; }
+-keepnames class io.muun.apollo.domain.analytics.**
+-keep class io.muun.apollo.domain.analytics.** { *; }
+-keepclassmembers class io.muun.apollo.domain.analytics.** { *; }
+-keepclassmembernames class io.muun.apollo.domain.analytics.** { *; }
 
 -keep public enum io.muun.apollo.data.os.secure_storage.SecureStorageMode$** {
     **[] $VALUES;
