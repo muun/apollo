@@ -35,7 +35,7 @@ class MuunButtonLayout @JvmOverloads constructor(c: Context, a: AttributeSet? = 
         }
 
         if (child is MuunButton || child is MuunButtonLayoutAnchor) {
-            buttonBox.children.forEach { UiUtils.setMarginBottom(it, buttonSpacing) }
+            buttonBox.children.iterator().forEach { UiUtils.setMarginBottom(it, buttonSpacing) }
             buttonBox.addView(child, params)
 
         } else {

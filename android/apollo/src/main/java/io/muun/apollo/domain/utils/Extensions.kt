@@ -136,10 +136,10 @@ fun Context.locale(): Locale =
     ConfigurationCompat.getLocales(resources.configuration)[0]!!
 
 fun List<String>.toLibwalletModel(): StringList =
-    Libwallet.newStringList().also { this.forEach(it::add) }
+    Libwallet.newStringList().also { this.iterator().forEach(it::add) }
 
 fun Set<Int>.toLibwalletIntList(): IntList =
-    Libwallet.newIntList().also { this.forEach { v -> it.add(v.toLong()) } }
+    Libwallet.newIntList().also { this.iterator().forEach { v -> it.add(v.toLong()) } }
 
 fun List<Int>.toLibwalletModel(): IntList =
-    Libwallet.newIntList().also { this.forEach { v -> it.add(v.toLong()) } }
+    Libwallet.newIntList().also { this.iterator().forEach { v -> it.add(v.toLong()) } }

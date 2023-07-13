@@ -1,12 +1,12 @@
 package io.muun.apollo.presentation.ui.fragments.enter_password;
 
 import io.muun.apollo.domain.action.base.ActionState;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent.PASSWORD_ERROR;
 import io.muun.apollo.domain.errors.EmptyFieldError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.passwd.IncorrectPasswordError;
 import io.muun.apollo.domain.model.auth.LoginOk;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.PASSWORD_ERROR;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 

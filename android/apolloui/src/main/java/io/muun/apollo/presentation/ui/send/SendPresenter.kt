@@ -1,16 +1,15 @@
 package io.muun.apollo.presentation.ui.send
 
 import android.os.Bundle
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.selector.ClipboardUriSelector
 import io.muun.apollo.domain.selector.P2PStateSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
-import io.muun.apollo.presentation.ui.new_operation.NewOperationOrigin
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
 
 @PerActivity
 class SendPresenter @Inject constructor(
@@ -58,6 +57,9 @@ class SendPresenter @Inject constructor(
             false
         }
 
+    /**
+     * Select which screen to navigate to, based on the content of an OperationUri.
+     */
     fun selectUriFromPaster(uri: OperationUri) {
 
         if (uri.lnUrl.isPresent) {

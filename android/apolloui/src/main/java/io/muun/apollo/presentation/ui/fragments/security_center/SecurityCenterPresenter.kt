@@ -1,12 +1,12 @@
 package io.muun.apollo.presentation.ui.fragments.security_center
 
 import android.os.Bundle
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER_EMAIL_STATUS
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER_NEXT_STEP
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.SecurityLevel
 import io.muun.apollo.domain.selector.UserPreferencesSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER_EMAIL_STATUS
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SECURITY_CENTER_NEXT_STEP
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment

@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.show_qr;
 
 import io.muun.apollo.R;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.selector.UserPreferencesSelector;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension;
 import io.muun.apollo.presentation.ui.base.BaseFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;

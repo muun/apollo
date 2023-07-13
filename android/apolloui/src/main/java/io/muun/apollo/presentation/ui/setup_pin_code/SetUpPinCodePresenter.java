@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.setup_pin_code;
 
 import io.muun.apollo.data.os.authentication.PinManager;
 import io.muun.apollo.domain.ApplicationLockManager;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.common.exception.MissingCaseError;

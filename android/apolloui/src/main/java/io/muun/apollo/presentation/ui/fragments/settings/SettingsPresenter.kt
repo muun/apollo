@@ -7,6 +7,10 @@ import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_LOG_OUT
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_WALLET_DELETED
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SETTINGS
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.model.BitcoinUnit
@@ -17,10 +21,6 @@ import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_LOG_OUT
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_WALLET_DELETED
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.S_SETTINGS
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment

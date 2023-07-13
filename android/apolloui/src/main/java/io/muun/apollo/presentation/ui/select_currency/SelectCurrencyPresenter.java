@@ -2,9 +2,9 @@ package io.muun.apollo.presentation.ui.select_currency;
 
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.CurrencyActions;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.selector.ExchangeRateSelector;
 import io.muun.apollo.domain.selector.UserSelector;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.common.Optional;

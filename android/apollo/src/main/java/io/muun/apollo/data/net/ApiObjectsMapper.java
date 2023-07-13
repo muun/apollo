@@ -2,6 +2,8 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.os.CpuInfo;
+import io.muun.apollo.data.os.GooglePlayHelper;
+import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BitcoinAmount;
@@ -205,7 +207,9 @@ public class ApiObjectsMapper {
             @NonNull final InstallSourceInfo installSourceInfo,
             final int bootCount,
             @NonNull final String glEsVersion,
-            @NonNull final CpuInfo cpuInfo
+            @NonNull final CpuInfo cpuInfo,
+            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
+            @NonNull GooglePlayHelper.PlayInfo playInfo
     ) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
@@ -233,7 +237,12 @@ public class ApiObjectsMapper {
                 glEsVersion,
                 cpuInfo.getLegacyData(),
                 mapListOfPairs(cpuInfo.getCommonInfo()),
-                mapCpuPerProcessorInfo(cpuInfo.getPerProcessorInfo())
+                mapCpuPerProcessorInfo(cpuInfo.getPerProcessorInfo()),
+                playServicesInfo.getVersionCode(),
+                playServicesInfo.getVersionName(),
+                playServicesInfo.getClientVersionCode(),
+                playInfo.getVersionCode(),
+                playInfo.getVersionName()
         );
     }
 
@@ -283,7 +292,9 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo
+            @NonNull CpuInfo cpuInfo,
+            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
+            @NonNull GooglePlayHelper.PlayInfo playInfo
 
     ) {
 
@@ -297,7 +308,9 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo
+                        cpuInfo,
+                        playServicesInfo,
+                        playInfo
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -320,7 +333,9 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo
+            @NonNull CpuInfo cpuInfo,
+            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
+            @NonNull GooglePlayHelper.PlayInfo playInfo
     ) {
 
         return new CreateLoginSessionJson(
@@ -333,7 +348,9 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo
+                        cpuInfo,
+                        playServicesInfo,
+                        playInfo
                 ),
                 gcmToken,
                 email
@@ -354,7 +371,9 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo
+            @NonNull CpuInfo cpuInfo,
+            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
+            @NonNull GooglePlayHelper.PlayInfo playInfo
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -367,7 +386,9 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo
+                        cpuInfo,
+                        playServicesInfo,
+                        playInfo
                 ),
                 gcmToken,
                 new ChallengeKeyJson(

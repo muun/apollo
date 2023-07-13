@@ -3,8 +3,8 @@ package io.muun.apollo.presentation.ui.activity.extension
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import io.muun.apollo.presentation.analytics.Analytics
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.view.FloatingOverflowMenu

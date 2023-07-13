@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.new_operation
 
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -17,6 +16,7 @@ import butterknife.BindView
 import butterknife.BindViews
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.libwallet.destinationPubKey
 import io.muun.apollo.domain.libwallet.remainingMillis
@@ -59,7 +59,6 @@ import io.muun.common.utils.BitcoinUtils
 import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
-import rx.functions.Action0
 import javax.money.MonetaryAmount
 
 @PerActivity
@@ -462,6 +461,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         actionButton.setText(R.string.new_operation_confirm)
         actionButton.setOnClickListener {
+
             if (state.receiver.swap == null) {
                 presenter.confirmOperation()
             } else {

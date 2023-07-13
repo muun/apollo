@@ -3,9 +3,9 @@ package io.muun.apollo.presentation.ui.settings.lightning
 import android.os.Bundle
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.user.UserPreferences
 import io.muun.apollo.domain.selector.UserPreferencesSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.common.model.ReceiveFormatPreference

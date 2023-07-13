@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.landing;
 
 import io.muun.apollo.domain.action.fcm.ForceFetchFcmAction;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.SingleFragmentView;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
@@ -29,10 +29,16 @@ public class LandingPresenter extends SingleFragmentPresenter<SingleFragmentView
         forceFetchFcm.run();
     }
 
+    /**
+     * Start wallet creation flow.
+     */
     public void startSignup() {
         getParentPresenter().startSignup();
     }
 
+    /**
+     * Start wallet recovery flow.
+     */
     public void startLogin() {
         getParentPresenter().startLogin();
     }

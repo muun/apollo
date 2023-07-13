@@ -1,9 +1,9 @@
 package io.muun.apollo.presentation.ui.fragments.password_setup_intro
 
 import android.os.Bundle
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.selector.UserPreferencesSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import javax.inject.Inject

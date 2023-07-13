@@ -2,6 +2,7 @@ package io.muun.common.model;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -158,6 +159,11 @@ public class BtcAmount {
         }
 
         return milliSats == ((BtcAmount) other).milliSats;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(milliSats);
     }
 
     @Override

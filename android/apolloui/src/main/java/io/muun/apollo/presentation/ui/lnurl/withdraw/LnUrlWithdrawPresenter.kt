@@ -5,11 +5,11 @@ import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.domain.action.lnurl.LnUrlWithdrawAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.LnUrlWithdraw
 import io.muun.apollo.domain.model.lnurl.LnUrlError
 import io.muun.apollo.domain.model.lnurl.LnUrlState
 import io.muun.apollo.domain.selector.WaitForIncomingLnPaymentSelector
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.bundler.LnUrlWithdrawBundler

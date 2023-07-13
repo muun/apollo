@@ -1,11 +1,11 @@
 package io.muun.apollo.presentation.ui.fragments.enter_recovery_code;
 
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.IncorrectRecoveryCodeError;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.rc.InvalidCharacterRecoveryCodeError;
 import io.muun.apollo.domain.libwallet.errors.InvalidRecoveryCodeFormatError;
 import io.muun.apollo.domain.model.RecoveryCode;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeView;
@@ -15,7 +15,7 @@ import rx.Observable;
 
 import javax.inject.Inject;
 
-import static io.muun.apollo.presentation.analytics.AnalyticsEvent.S_INPUT_RECOVERY_CODE;
+import static io.muun.apollo.domain.analytics.AnalyticsEvent.S_INPUT_RECOVERY_CODE;
 
 @PerFragment
 public class EnterRecoveryCodePresenter

@@ -20,6 +20,11 @@ class EmailReport private constructor(val body: String) {
         var fcmTokenHash: String? = null,
         var presenterName: String? = null,
         var googlePlayServicesAvailable: Boolean? = null,
+        var googlePlayServicesVersionCode: Long? = null,
+        var googlePlayServicesVersionName: String? = null,
+        var googlePlayServicesClientVersionCode: Int? = null,
+        var googlePlayVersionCode: Long? = null,
+        var googlePlayVersionName: String? = null,
         var defaultRegion: String? = null,
         var rootHint: Boolean? = null,
         var locale: Locale? = null,
@@ -46,6 +51,31 @@ class EmailReport private constructor(val body: String) {
         }
 
         @CheckReturnValue
+        fun googlePlayServicesVersionCode(versionCode: Long) = apply {
+            this.googlePlayServicesVersionCode = versionCode
+        }
+
+        @CheckReturnValue
+        fun googlePlayServicesVersionName(versionName: String) = apply {
+            this.googlePlayServicesVersionName = versionName
+        }
+
+        @CheckReturnValue
+        fun googlePlayServicesClientVersionCode(clientVersionCode: Int) = apply {
+            this.googlePlayServicesClientVersionCode = clientVersionCode
+        }
+
+        @CheckReturnValue
+        fun googlePlayVersionCode(versionCode: Long) = apply {
+            this.googlePlayVersionCode = versionCode
+        }
+
+        @CheckReturnValue
+        fun googlePlayVersionName(versionName: String) = apply {
+            this.googlePlayVersionName = versionName
+        }
+
+        @CheckReturnValue
         fun rootHint(rootHint: Boolean) = apply { this.rootHint = rootHint }
 
         @CheckReturnValue
@@ -58,6 +88,11 @@ class EmailReport private constructor(val body: String) {
             checkNotNull(fcmTokenHash)
             checkNotNull(presenterName)
             checkNotNull(googlePlayServicesAvailable)
+            checkNotNull(googlePlayServicesVersionCode)
+            checkNotNull(googlePlayServicesVersionName)
+            checkNotNull(googlePlayServicesClientVersionCode)
+            checkNotNull(googlePlayVersionCode)
+            checkNotNull(googlePlayVersionName)
             checkNotNull(rootHint)
             checkNotNull(defaultRegion)
             checkNotNull(locale)
@@ -73,7 +108,12 @@ class EmailReport private constructor(val body: String) {
                    |SupportId: ${if (supportId != null) supportId else "Not logged in"}
                    |ScreenPresenter: $presenterName
                    |FcmTokenHash: $fcmTokenHash
-                   |GooglePlayServices: $googlePlayServicesAvailable
+                   |GooglePlayServices (GPS): $googlePlayServicesAvailable
+                   |GPS System Version: $googlePlayServicesVersionCode
+                   |GPS System Version Name: $googlePlayServicesVersionName
+                   |GPS Client Version: $googlePlayServicesClientVersionCode
+                   |GooglePlay Version: $googlePlayVersionCode
+                   |GooglePlay Version Name: $googlePlayVersionName
                    |Device: ${Globals.INSTANCE.deviceName}
                    |DeviceModel: ${Globals.INSTANCE.deviceModel}
                    |DeviceManufacturer: ${Globals.INSTANCE.deviceManufacturer}

@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.show_qr
 
 import icepick.State
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.view.EditAmountItem
 import javax.money.MonetaryAmount

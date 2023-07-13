@@ -33,25 +33,30 @@ private const val BOOT_COUNT_UNSUPPORTED = -1
 private const val BOOT_COUNT_ERROR = -2
 
 /**
- * UUID for the W3C
+ * UUID for the W3C.
+ * Identifier: 1077efec-c0b2-4d02-ace3-3c1e52e2fb4b.
  */
 private val COMMON_PSSH_UUID = UUID(0x1077EFECC0B24D02L, -0x531cc3e1ad1d04b5L)
 
 /**
  * UUID for the ClearKey DRM scheme.
  * ClearKey is supported on Android devices running Android 5.0 (API Level 21) and up.
+ * Identifier: e2719d58-a985-b3c9-781a-b030af78d30e.
  */
 private val CLEARKEY_UUID = UUID(-0x1d8e62a7567a4c37L, 0x781AB030AF78D30EL)
 
 /**
  * UUID for the Widevine DRM scheme.
  * Widevine is supported on Android devices running Android 4.3 (API Level 18) and up.
+ * Identifier: edef8ba9-79d6-4ace-a3c8-27dcd51d21ed.
  */
 private val WIDEVINE_UUID = UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L)
 
 /**
  * UUID for the PlayReadv DRM scheme.
  * PlayReady is supported on all AndroidTV devices. Note that most other Android devices do not
+ * support it.
+ * Identifier: 9a04f079-9840-4286-ab92-e65be0885f95.
  */
 private val PLAYREADY_UUID = UUID(-0x65fb0f8667bfbd7aL, -0x546d19a41f77a06bL)
 
@@ -224,7 +229,10 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
             return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
 
         } catch (e: Exception) {
-            Timber.e(DrmProviderError(drmProviderUuid, e))
+            // These two drm provider often return errors though they are listed as "supported"
+            if (drmProviderUuid != COMMON_PSSH_UUID || drmProviderUuid != CLEARKEY_UUID) {
+                Timber.e(DrmProviderError(drmProviderUuid, e))
+            }
             return null
         }
     }

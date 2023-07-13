@@ -3,8 +3,8 @@ package io.muun.apollo.presentation.app
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import io.muun.apollo.presentation.analytics.Analytics
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 
 /**
  * Apparently this won't correctly handle/track app crashes or ANRs.

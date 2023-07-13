@@ -6,7 +6,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Handler
@@ -46,7 +45,7 @@ fun View.addOnNextLayoutListener(f: () -> Unit) {
 fun View.setUserInteractionEnabled(enabled: Boolean) {
     isEnabled = enabled
     if (this is ViewGroup && this.childCount > 0) {
-        this.children.forEach {
+        this.children.iterator().forEach {
             it.setUserInteractionEnabled(enabled)
         }
     }

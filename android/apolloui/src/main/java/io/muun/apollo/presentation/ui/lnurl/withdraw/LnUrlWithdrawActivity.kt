@@ -6,10 +6,10 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.LnUrlWithdraw
 import io.muun.apollo.domain.model.lnurl.LnUrlError
 import io.muun.apollo.domain.model.lnurl.LnUrlState
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
 import io.muun.apollo.presentation.ui.utils.StyledStringRes

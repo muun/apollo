@@ -2,10 +2,10 @@ package io.muun.apollo.presentation.ui.settings.edit_username;
 
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.base.ActionState;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.EmptyFieldError;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.UserSelector;
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 

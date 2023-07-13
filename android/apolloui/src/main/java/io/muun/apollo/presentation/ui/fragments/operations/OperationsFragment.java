@@ -1,8 +1,6 @@
 package io.muun.apollo.presentation.ui.fragments.operations;
 
 import io.muun.apollo.R;
-import io.muun.apollo.domain.model.SecurityCenter;
-import io.muun.apollo.domain.model.SecurityLevel;
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter;
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.ItemViewModel;
@@ -23,6 +21,9 @@ import java.util.List;
 public class OperationsFragment extends SingleFragment<OperationsPresenter>
         implements OperationsView {
 
+    /**
+     * Create new fragment instance.
+     */
     public static OperationsFragment newInstance() {
         return new OperationsFragment();
     }
@@ -70,11 +71,8 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
     }
 
     @Override
-    public void setViewState(List<ItemViewModel> ops, SecurityCenter sc) {
+    public void setViewState(List<ItemViewModel> ops) {
         final boolean hasOperations = !ops.isEmpty();
-        final SecurityLevel securityLevel = sc.getLevel();
-        final boolean isAnonUser = securityLevel == SecurityLevel.ANON
-                || securityLevel == SecurityLevel.SKIPPED_EMAIL_ANON;
 
         if (hasOperations) {
             setVisible(recyclerView, true);
@@ -84,8 +82,6 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
             setVisible(recyclerView, false);
             setVisible(emptyScreen, true);
         }
-
-        presenter.reportHome(isAnonUser, hasOperations);
 
         updateListItems(ops);
     }

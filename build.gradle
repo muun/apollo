@@ -1,49 +1,52 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+
     repositories {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
-    dependencies {
+
+    dependencies { // Add third party gradle plugins
         classpath 'com.android.tools.build:gradle:7.0.4'
         // We're using a patched version of SQLDelight, for reproducible builds. Thanks JitPack!
         classpath 'com.github.muun.sqldelight:gradle-plugin:1.5.3-reproducible-build'
+    }
+
+    ext {
+        global_kotlin_version = '1.6.10'
     }
 }
 
 
 plugins {
     id "com.github.spotbugs-base" version "4.7.1" apply false
-    id 'org.jetbrains.kotlin.jvm' version '1.6.10' apply false
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.10' apply false // kotlin's version
-    id "org.jetbrains.kotlin.kapt" version "1.6.10" apply false
+    
+    id 'org.jetbrains.kotlin.jvm' version "$global_kotlin_version" apply false
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$global_kotlin_version" apply false
+    id 'org.jetbrains.kotlin.kapt' version "$global_kotlin_version" apply false
+}
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
 }
 
 // Without this we cant define spot bugs as an external script that can be applied
 project.extensions.extraProperties.set('SpotBugsTask', com.github.spotbugs.snom.SpotBugsTask)
 
 subprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://clojars.org/repo/" }
-        maven { url "https://jitpack.io" }
-    }
 
     ext {
+        // GLOBAL LIBRARY VERSIONS
         global_version_dagger = '2.40.5'
         global_version_lombok = '1.18.22'
-        global_version_mockito = '2.24.0'
-        global_version_sentry = '1.7.5'
+        global_version_mockito = '3.8.0'
 
         global_version_moneta = '1.1'
         global_version_jackson_money = '1.0.0'
 
-        global_kotlin_version = '1.6.10'
-
-        global_threetenabp_version = '1.1.1'
+        global_threetenabp_version = '1.4.6'
     }
 
     buildscript {
@@ -57,11 +60,19 @@ subprojects {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$global_kotlin_version"
         }
     }
+
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://clojars.org/repo/" }
+        maven { url "https://jitpack.io" }
+    }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
 
 tasks.named('wrapper') {
     distributionType = Wrapper.DistributionType.ALL

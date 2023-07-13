@@ -152,4 +152,10 @@ public class Supports {
         int APOLLO = 1007;
         int FALCON = 1012;
     }
+
+    // TODO: turn it on as operation updates are supported on Falcon
+    public interface OperationUpdatesNotificationsForFalcon {
+        int APOLLO = 1;
+        int FALCON = NOT_SUPPORTED;
+    }
 }

@@ -1,7 +1,11 @@
 package io.muun.apollo.data.logging
 
+import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.muun.apollo.data.analytics.AnalyticsProvider
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction
+import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError
 import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException
@@ -22,6 +26,8 @@ object Crashlytics {
         null
     }
 
+    private var application: Application? = null
+
     /**
      * Set up Crashlytics metadata.
      */
@@ -40,7 +46,14 @@ object Crashlytics {
     @JvmStatic
     fun logBreadcrumb(breadcrumb: String) {
         Timber.d("Breadcrumb: $breadcrumb")
-        crashlytics?.log(breadcrumb);
+        crashlytics?.log(breadcrumb)
+        application?.applicationContext?.let {
+            Analytics(AnalyticsProvider(it)).report(
+                AnalyticsEvent.E_BREADCRUMB(
+                    breadcrumb
+                )
+            )
+        }
     }
 
     /**
@@ -122,5 +135,10 @@ object Crashlytics {
 
             else -> false
         }
+    }
+
+    @JvmStatic
+    fun init(application: Application) {
+        this.application = application
     }
 }

@@ -5,9 +5,9 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.domain.action.session.UseMuunLinkAction
 import io.muun.apollo.domain.action.user.EmailLinkAction
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.ExpiredActionLinkError
 import io.muun.apollo.domain.errors.InvalidActionLinkError
-import io.muun.apollo.presentation.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.utils.UiNotificationPoller

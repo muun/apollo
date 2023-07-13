@@ -1,10 +1,9 @@
-package io.muun.apollo.presentation.analytics
+package io.muun.apollo.domain.analytics
 
 import android.content.Context
 import android.os.Build
-import io.muun.apollo.presentation.analytics.AnalyticsEvent.E_PDF_FONT_ISSUE
-import io.muun.apollo.presentation.app.GlobalsImpl
-import io.muun.apollo.presentation.ui.utils.hasAppInstalled
+import io.muun.apollo.data.external.Globals
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_PDF_FONT_ISSUE
 import timber.log.Timber
 
 /**
@@ -47,12 +46,12 @@ class PdfFontIssueTracker constructor(
             // do nothing
         }
 
-        if (PDF_FONT_ISSUE_DEVICES.contains(GlobalsImpl.INSTANCE.deviceName)
+        if (PDF_FONT_ISSUE_DEVICES.contains(Globals.INSTANCE.deviceName)
             && PDF_FONT_ISSUE_WEB_VIEW_VERSIONS.contains(webViewVersion)
         ) {
             val analyticsEvent = E_PDF_FONT_ISSUE(
                 event,
-                GlobalsImpl.INSTANCE.deviceName,
+                Globals.INSTANCE.deviceName,
                 webViewVersion,
                 chromeVersion,
                 Build.VERSION.SDK_INT.toString()

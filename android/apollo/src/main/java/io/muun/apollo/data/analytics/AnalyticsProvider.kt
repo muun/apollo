@@ -1,18 +1,18 @@
-package io.muun.apollo.presentation.analytics
+package io.muun.apollo.data.analytics
 
 import android.content.Context
 import android.content.res.Resources
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.user.User
-import io.muun.apollo.presentation.app.di.PerApplication
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
-@PerApplication
-class Analytics @Inject constructor(val context: Context) {
+@Singleton
+class AnalyticsProvider @Inject constructor(val context: Context) {
 
     private val fba = FirebaseAnalytics.getInstance(context)
 
@@ -32,8 +32,39 @@ class Analytics @Inject constructor(val context: Context) {
         fba.setUserProperty("email", null)
     }
 
+    /**
+     * Report an AnalyticsEvent.
+     */
+    fun report(event: AnalyticsEvent) {
+        try {
+            actuallyReport(event)
+        } catch (t: Throwable) {
+
+            val bundle = Bundle().apply { putString("event", event.eventId) }
+            fba.logEvent("e_tracking_error", bundle)
+        }
+    }
+
     fun attachAnalyticsMetadata(report: CrashReport) {
         report.metadata["breadcrumbs"] = getBreadcrumbMetadata()
+    }
+
+    // PRIVATE STUFF
+
+    private fun actuallyReport(event: AnalyticsEvent) {
+        val bundle = Bundle().apply {
+            event.metadata.forEach { putString(it.key, it.value.toString()) }
+        }
+
+        val displayMetrics = Resources.getSystem().displayMetrics
+
+        bundle.putInt("height", displayMetrics.heightPixels)
+        bundle.putInt("width", displayMetrics.widthPixels)
+        bundle.putFloat("density", displayMetrics.scaledDensity)
+
+        fba.logEvent(event.eventId, bundle)
+        inMemoryMapBreadcrumbCollector[event.eventId] = bundle
+        Timber.i(event.toString())
     }
 
     private fun getBreadcrumbMetadata(): String {
@@ -66,34 +97,4 @@ class Analytics @Inject constructor(val context: Context) {
 
         return builder.toString()
     }
-
-    /**
-     * Report an AnalyticsEvent.
-     */
-    fun report(event: AnalyticsEvent) {
-        try {
-            actuallyReport(event)
-        } catch (t: Throwable) {
-
-            val bundle = Bundle().apply { putString("event", event.eventId) }
-            fba.logEvent("e_tracking_error", bundle)
-        }
-    }
-
-    private fun actuallyReport(event: AnalyticsEvent) {
-        val bundle = Bundle().apply {
-            event.metadata.forEach { putString(it.key, it.value.toString()) }
-        }
-
-        val displayMetrics = Resources.getSystem().displayMetrics
-
-        bundle.putInt("height", displayMetrics.heightPixels)
-        bundle.putInt("width", displayMetrics.widthPixels)
-        bundle.putFloat("density", displayMetrics.scaledDensity)
-
-        fba.logEvent(event.eventId, bundle)
-        inMemoryMapBreadcrumbCollector[event.eventId] = bundle
-        Timber.i(event.toString())
-    }
-
 }

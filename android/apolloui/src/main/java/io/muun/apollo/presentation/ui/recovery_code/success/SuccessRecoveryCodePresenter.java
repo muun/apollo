@@ -1,6 +1,6 @@
 package io.muun.apollo.presentation.ui.recovery_code.success;
 
-import io.muun.apollo.presentation.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.apollo.presentation.ui.fragments.single_action.SingleActionPresenter;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodePresenter;

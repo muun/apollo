@@ -147,7 +147,7 @@ class MuunDialog private constructor(
         val builder = AlertDialog.Builder(context, style)
             .setOnDismissListener { alertDialog ->
 
-                dismissActions.forEach {
+                dismissActions.iterator().forEach {
                     it.onDismiss(alertDialog)
                 }
             }
