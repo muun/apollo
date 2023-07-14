@@ -51,7 +51,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     lateinit var settingsHeaderSection: View
 
     @BindView(R.id.wallet_details_section)
-    lateinit var wallet_details_section: View
+    lateinit var walletDetailsSection: View
 
     @BindView(R.id.settings_edit_username)
     lateinit var usernameItem: MuunIconButton
@@ -201,10 +201,10 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun setUpWalletDetailsSection(user: User) {
         if (user.hasP2PEnabled) {
-            wallet_details_section.visibility = View.VISIBLE
+            walletDetailsSection.visibility = View.VISIBLE
             phoneNumberItem.setDescription(user.phoneNumber.get().toE164String())
         } else {
-            wallet_details_section.visibility = View.GONE
+            walletDetailsSection.visibility = View.GONE
         }
     }
 

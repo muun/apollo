@@ -6,6 +6,17 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [50.16] - 2023-07-13
+
+### FIXED
+
+- A problem involving Proguard rules which resulted in apps getting bricked.
+- Handling of GooglePlay services version
+
+## [50.15] - 2023-07-13
+
+Rollback release. Rollback to 50.13 version.
+
 ## [50.14] - 2023-07-12
 
 ### ADDED
