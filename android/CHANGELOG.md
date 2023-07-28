@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51] - 2023-07-28
+
+### ADDED
+
+- Support for requesting Push Notification Runtime Permission. Option to skip to receive on-chain
+but required to receive LN Payments (to avoid payment failures).
+
+### CHANGED
+- Upgraded compiledSdkVersion and targetSdkVersion to 33
+
 ## [50.16] - 2023-07-13
 
 ### FIXED

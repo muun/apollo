@@ -58,7 +58,7 @@ class ShowUnifiedQrPresenter @Inject constructor(
         super.setUp(arguments)
 
         if (featureSelector.get(MuunFeature.HIGH_FEES_RECEIVE_FLOW)) {
-            view.showHighFeesWarning()
+            view.setShowHighFeesWarning()
         }
 
         generateBip21Uri
@@ -68,14 +68,14 @@ class ShowUnifiedQrPresenter @Inject constructor(
             .let(this::subscribeTo)
 
         // We want to re-generate the uri (has an invoice) each time we come back to this fragment.
-        generateNewUri()
+        view.refresh()
 
         userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot())
             .doOnNext { view.setTaprootState(it) }
             .let(this::subscribeTo)
     }
 
-    private fun generateNewUri() {
+    internal fun generateNewUri() {
         generateBip21Uri.reset()
         generateBip21Uri.run(amount)
     }

@@ -23,7 +23,6 @@ import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.di.ViewComponent
 import io.muun.apollo.presentation.ui.utils.locale
 import timber.log.Timber
-import java.util.ArrayList
 import java.util.LinkedList
 import java.util.Locale
 
@@ -37,15 +36,15 @@ abstract class MuunView : FrameLayout,
     }
 
     constructor(context: Context) : super(context) {
-        setUp(context, null)
+        this.setUp(context, null)
     }
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        setUp(context, attrs)
+        this.setUp(context, attrs)
     }
 
     constructor(c: Context, a: AttributeSet?, d: Int) : super(c, a, d) {
-        setUp(c, a)
+        this.setUp(c, a)
     }
 
     @get:LayoutRes

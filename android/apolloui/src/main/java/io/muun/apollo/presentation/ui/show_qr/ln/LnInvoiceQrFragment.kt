@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.show_qr.ln
 import android.app.Activity
 import android.content.Intent
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import butterknife.BindView
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -14,7 +13,9 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
+import io.muun.apollo.presentation.ui.show_qr.NotificationsPrimingView
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
+import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
 import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
@@ -30,6 +31,9 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
 
     @BindView(R.id.scrollView)
     lateinit var scrollView: NestedScrollView
+
+    @BindView(R.id.invoice_notifications_priming)
+    lateinit var notificationsPrimingView: NotificationsPrimingView
 
     @BindView(R.id.qr_overlay)
     lateinit var qrOverlay: View
@@ -71,7 +75,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
 
     @State
     @JvmField
-    var isFirstTime = true // Flag to decide when to stop showing high fees warning
+    var hasDismissedHighFeesWarning = false // Flag to decide when to stop showing high fees warning
 
     private var countdownTimer: MuunCountdownTimer? = null
 
@@ -88,13 +92,16 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
         highFeesContinueButton.setOnClickListener { onHighFeesContinueButtonClick() }
 
+        if (OS.supportsNotificationRuntimePermission()) {
+            notificationsPrimingView.setUpForLightning()
+            notificationsPrimingView.setEnableClickListener {
+                presenter.handleNotificationPermissionPrompt()
+            }
+        }
     }
 
-    override fun setShowHighFeesWarning(showHighFeesWarning: Boolean) {
-        if (showHighFeesWarning) {
-            highFees = true
-            showHighFeesOverlay() // Needed for the Lightning First scenario
-        }
+    override fun setShowHighFeesWarning() {
+        highFees = true
     }
 
     override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
@@ -194,11 +201,25 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     }
 
     private fun resetViewState() {
+        notificationsPrimingView.visibility = View.GONE
         highFeesOverlay.visibility = View.GONE
         invoiceExpiredOverlay.visibility = View.GONE
         qrOverlay.visibility = View.VISIBLE
         hiddenSection.visibility = View.VISIBLE
+
+        if (showNotificationPriming()) {
+            notificationsPrimingView.visibility = View.VISIBLE
+
+            highFeesOverlay.visibility = View.GONE
+            invoiceExpiredOverlay.visibility = View.GONE
+            qrOverlay.visibility = View.GONE
+            hiddenSection.visibility = View.GONE
+            invoiceSettingsContent.visibility = View.GONE
+        }
     }
+
+    private fun showNotificationPriming() =
+        OS.supportsNotificationRuntimePermission() && !parentActivity.hasNotificationsPermission()
 
     private fun stopTimer() {
         if (countdownTimer != null) {
@@ -234,18 +255,11 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     }
 
     private fun onHighFeesContinueButtonClick() {
-        isFirstTime = false
-        if (invoiceExpiredOverlay.isVisible) {
-            highFeesOverlay.visibility = View.GONE
-
-        } else {
-            resetViewState()
-        }
+        hasDismissedHighFeesWarning = true
+        refresh()
     }
 
     private fun showInvoiceExpiredOverlay() {
-        // highFeesOverlay may be showing at this point. This assumes that highFeesOverlay takes
-        // precedence when both highFeesOverlay and invoiceExpiredOverlay are visible.
         invoiceExpiredOverlay.visibility = View.VISIBLE
         qrOverlay.visibility = View.GONE
         hiddenSection.visibility = View.GONE
@@ -258,8 +272,8 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         resetViewState()
     }
 
-    fun refresh() {
-        if (isFirstTime && highFees) {
+    override fun refresh() {
+        if (highFees && !hasDismissedHighFeesWarning) {
             showHighFeesOverlay()
 
         } else {

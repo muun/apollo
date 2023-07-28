@@ -8,8 +8,8 @@ import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 
 class RecoveryCodeSetupScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun tryClose() {
         toolbar.pressClose()

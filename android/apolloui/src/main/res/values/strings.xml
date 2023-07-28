@@ -10,6 +10,7 @@
     <string name="dismiss">Dismiss</string>
     <string name="stay">Stay</string>
     <string name="leave">Leave</string>
+    <string name="go_to_settings">Go to settings</string>
     <string name="retry">Retry</string>
     <string name="send_report">Send report</string>
     <string name="abort">Abort</string>
@@ -1070,6 +1071,29 @@
 
 
     <!-- show_qr aka RECEIVE -->
+
+    <string name="priming_notifications_image">Enable notifications image</string>
+    <string name="priming_notifications_enable">ENABLE NOTIFICATIONS</string>
+    <string name="priming_notifications_skip">SKIP</string>
+    <string name="priming_notifications_title">Never miss a payment</string>
+    <string name="priming_notifications_desc">
+        Please enable notifications to know when you receive bitcoin.
+    </string>
+    <string name="priming_notifications_skipped_title">Please enable notifications</string>
+    <string name="priming_notifications_skipped_desc">
+        Lightning payments require you to get notifications.
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_title">
+        Notifications permission required
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_desc">
+        Muun requires the Notifications permission for you to correcly receive payments, but it has
+        been permanently denied.
+        \n\nPlease go to the app settings menu, select
+        <annotation fontStyle="bold">Permissions</annotation>,
+        and enable <annotation fontStyle="bold">Notifications</annotation>.
+    </string>
+
     <string name="show_qr_copied">Copied to clipboard</string>
     <string name="tab_bitcoin_address">Bitcoin</string>
     <string name="tab_ln_invoice">Lightning</string>

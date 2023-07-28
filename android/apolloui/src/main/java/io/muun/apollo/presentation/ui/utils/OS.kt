@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.utils
 
 import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
-import io.muun.apollo.data.os.OS
 
 /**
  * Utility object to group OS related queries or operations like checking supported features
@@ -20,6 +19,13 @@ import io.muun.apollo.data.os.OS
  * - P-9-28 -> Android Pie, Android 9, Api level 28
  */
 object OS {
+
+    /**
+     * Whether this OS supports Notification runtime permission, which was added in Tiramisu-13-33.
+     */
+    @JvmStatic
+    fun supportsNotificationRuntimePermission(): Boolean =
+        isAndroidTiramisuOrNewer()
 
     /**
      * Whether this OS supports querying for App Standby Buckets, support for which was added in
@@ -192,5 +198,12 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
     private fun isAndroidSOrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    /**
+     * Whether this OS version is Tiramisu-13-33 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
+    private fun isAndroidTiramisuOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
 }

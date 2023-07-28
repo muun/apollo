@@ -2,11 +2,13 @@ package io.muun.apollo.presentation.ui.new_operation
 
 import android.os.Bundle
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.action.base.CombineLatestAsyncAction
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.ABORT
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.BACK
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CANCEL_ABORT
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_AMOUNT
@@ -61,7 +63,6 @@ import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeePa
 import io.muun.common.Rules
 import io.muun.common.utils.Preconditions
 import newop.AbortState
-import newop.AmountInfo
 import newop.BalanceErrorState
 import newop.ConfirmLightningState
 import newop.ConfirmState
@@ -70,14 +71,12 @@ import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.ErrorState
 import newop.Newop
-import newop.PaymentIntent
 import newop.ResolveState
 import newop.Resolved
 import newop.StartState
 import newop.State
 import newop.ValidateLightningState
 import newop.ValidateState
-import newop.Validated
 import rx.Observable
 import timber.log.Timber
 import java.util.*
@@ -217,15 +216,11 @@ class NewOperationPresenter @Inject constructor(
 
         if (submarineSwap == null) {
             val state = stateMachine.value()!! as ConfirmState
-            val resolved = state.resolved
-            val amountInfo = state.amountInfo
-            reportFinished(op.id!!, resolved.paymentContext, resolved.paymentIntent, amountInfo)
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmState(state))
 
         } else {
             val state = stateMachine.value()!! as ConfirmLightningState
-            val resolved = state.resolved
-            val amountInfo = state.amountInfo
-            reportFinished(op.id!!, resolved.paymentContext, resolved.paymentIntent, amountInfo)
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmLightningState(state))
         }
 
         navigator.navigateToHome(context, op)
@@ -392,12 +387,7 @@ class NewOperationPresenter @Inject constructor(
 
         analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_OPERATION))
         stateMachine.withState { state: ConfirmState ->
-
-            val paymentContext = state.resolved.paymentContext
-            val paymentIntent = state.resolved.paymentIntent
-            val fee = state.validated.fee
-            val note = state.note
-            submitOperation(paymentContext, paymentIntent, state.amountInfo, fee, note)
+            submitOperation(ConfirmStateViewModel.fromConfirmState(state))
         }
     }
 
@@ -409,15 +399,10 @@ class NewOperationPresenter @Inject constructor(
 
         analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_SWAP_OPERATION))
         stateMachine.withState { state: ConfirmLightningState ->
-
-            val payCtx = state.resolved.paymentContext
-            val paymentIntent = state.resolved.paymentIntent
-            // We use swapInfo.onchainFee instead of validated.fee, as the latter includes the
-            // off chain fee so it can be show to the user.
-            val fee = state.validated.swapInfo.onchainFee
-            val note = state.note
-            val swap = submarineSwap!!.withAmountLessInfo(state.validated.swapInfo)
-            submitOperation(payCtx, paymentIntent, state.amountInfo, fee, note, swap)
+            submitOperation(
+                ConfirmStateViewModel.fromConfirmLightningState(state),
+                submarineSwap!!.withAmountLessInfo(state.validated.swapInfo)
+            )
         }
     }
 
@@ -451,6 +436,11 @@ class NewOperationPresenter @Inject constructor(
         stateMachine.withState { state: AbortState ->
             state.cancel()
         }
+    }
+
+    fun finishAndGoHome() {
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(ABORT))
+        view.finishAndGoHome()
     }
 
     fun handleNewOpError(errorType: NewOperationErrorType) {
@@ -573,55 +563,22 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmState(state: ConfirmState) {
+        handleConfirmState(ConfirmStateViewModel.fromConfirmState(state))
+    }
+
+    private fun handleConfirmState(confirmStateViewModel: ConfirmStateViewModel) {
         analytics.report(
             AnalyticsEvent.S_NEW_OP_CONFIRMATION(
-                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
-                "update" to state.update
+                *uncheckedConvert(opSubmittedMetadata(confirmStateViewModel)),
+                "update" to confirmStateViewModel.update,
             )
         )
-        view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
 
-            override val resolved: Resolved
-                get() = state.resolved
-
-            override val amountInfo: AmountInfo
-                get() = state.amountInfo
-
-            override val validated: Validated
-                get() = state.validated
-
-            override val note: String
-                get() = state.note
-
-            override val receiver: NewOperationView.Receiver
-                get() = this@NewOperationPresenter.receiver
-        })
+        view.goToConfirmState(confirmStateViewModel, receiver)
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {
-        analytics.report(
-            AnalyticsEvent.S_NEW_OP_CONFIRMATION(
-                *uncheckedConvert(opStartedMetadata(state.resolved.paymentIntent.getPaymentType())),
-                "update" to state.update
-            )
-        )
-        view.goToConfirmState(object : NewOperationView.ConfirmStateViewModel {
-
-            override val resolved: Resolved
-                get() = state.resolved
-
-            override val amountInfo: AmountInfo
-                get() = state.amountInfo
-
-            override val validated: Validated
-                get() = state.validated
-
-            override val note: String
-                get() = state.note
-
-            override val receiver: NewOperationView.Receiver
-                get() = this@NewOperationPresenter.receiver
-        })
+        handleConfirmState(ConfirmStateViewModel.fromConfirmLightningState(state))
     }
 
     private fun handleEditFeeState() {
@@ -670,37 +627,25 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun submitOperation(
-        paymentContext: newop.PaymentContext,
-        paymentIntent: PaymentIntent,
-        amountInfo: AmountInfo,
-        fee: newop.BitcoinAmount,
-        note: String,
+        confirmStateViewModel: ConfirmStateViewModel,
         swap: SubmarineSwap? = null,
     ) {
         val preparedPayment = PreparedPayment(
-            BitcoinAmount.fromLibwallet(amountInfo.amount),
-            BitcoinAmount.fromLibwallet(fee),
-            note,
-            paymentContext.exchangeRateWindow.windowId,
-            paymentContext.outpoints(),
-            paymentIntent.getPaymentType(),
+            BitcoinAmount.fromLibwallet(confirmStateViewModel.amountInfo.amount),
+            BitcoinAmount.fromLibwallet(confirmStateViewModel.onchainFee),
+            confirmStateViewModel.note,
+            confirmStateViewModel.paymentContext.exchangeRateWindow.windowId,
+            confirmStateViewModel.paymentContext.outpoints(),
+            confirmStateViewModel.paymentIntent.getPaymentType(),
             contact,
-            paymentIntent.uri.address,
+            confirmStateViewModel.paymentIntent.uri.address,
             swap
         )
 
         try {
 
             analytics.report(
-                E_NEW_OP_SUBMITTED(
-                    *uncheckedConvert(
-                        opSubmittedMetadata(
-                            paymentIntent.getPaymentType(),
-                            paymentContext,
-                            amountInfo.feeRateInSatsPerVByte
-                        )
-                    )
-                )
+                E_NEW_OP_SUBMITTED(*uncheckedConvert(opSubmittedMetadata(confirmStateViewModel)))
             )
 
             submitPaymentAction.run(preparedPayment)
@@ -709,52 +654,63 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
-    private fun reportFinished(
-        operationId: Long,
-        paymentContext: newop.PaymentContext,
-        paymentIntent: PaymentIntent,
-        amountInfo: AmountInfo,
-    ) {
+    private fun reportFinished(operationId: Long, confirmStateViewModel: ConfirmStateViewModel) {
         analytics.report(
-            E_NEW_OP_COMPLETED(
-                *opFinishedMetadata(operationId, paymentContext, paymentIntent, amountInfo)
-            )
+            E_NEW_OP_COMPLETED(*opFinishedMetadata(operationId, confirmStateViewModel))
         )
     }
 
     private fun opFinishedMetadata(
         operationId: Long,
-        paymentContext: newop.PaymentContext,
-        paymentIntent: PaymentIntent,
-        amountInfo: AmountInfo,
+        confirmStateViewModel: ConfirmStateViewModel,
     ): Array<Pair<String, Any>> {
 
         val objects = ArrayList<Pair<String, Any>>()
         objects.add(Pair<String, Any>("operation_id", operationId.toInt()))
 
         // Also add previously known metadata
-        objects.addAll(
-            opSubmittedMetadata(
-                paymentIntent.getPaymentType(),
-                paymentContext,
-                amountInfo.feeRateInSatsPerVByte
-            )
-        )
+        objects.addAll(opSubmittedMetadata(confirmStateViewModel))
+
         return uncheckedConvert(objects)
     }
 
-    private fun opSubmittedMetadata(
-        paymentType: Type,
-        payCtx: newop.PaymentContext,
-        feeRate: Double,
-    ): ArrayList<Pair<String, Any>> {
+    private fun opSubmittedMetadata(stateVm: ConfirmStateViewModel): ArrayList<Pair<String, Any>> {
+        val paymentType = stateVm.paymentIntent.getPaymentType()
+        val payCtx = stateVm.paymentContext
+        val selectedFeeRate = Preconditions.checkNotNull(stateVm.feeRateInSatsPerWeight)
 
         val objects = ArrayList<Pair<String, Any>>()
-        val selectedFeeRate = Preconditions.checkNotNull(feeRate)
         val type: AnalyticsEvent.E_FEE_OPTION_TYPE = getFeeOptionTypeParam(selectedFeeRate, payCtx)
         val feeRateInSatsPerVbyte = Rules.toSatsPerVbyte(selectedFeeRate)
+        val amount = BitcoinAmount.fromLibwallet(stateVm.amountInfo.amount)
+        val fee = BitcoinAmount.fromLibwallet(stateVm.validated.fee)
+        val total = BitcoinAmount.fromLibwallet(stateVm.validated.total)
+        val onchainFee = BitcoinAmount.fromLibwallet(stateVm.onchainFee)
+        val feeNeedsChange = stateVm.validated.feeNeedsChange
+        val isOneConf = stateVm.validated.swapInfo?.isOneConf
+        val routingFeeInSat = stateVm.validated.swapInfo?.swapFees?.routingFeeInSat
+        val confirmationsNeeded = stateVm.validated.swapInfo?.swapFees?.confirmationsNeeded
+        val debtType = stateVm.validated.swapInfo?.swapFees?.debtType
+        val debtAmountInSat = stateVm.validated.swapInfo?.swapFees?.debtAmountInSat
+        val outputAmountInSat = stateVm.validated.swapInfo?.swapFees?.outputAmountInSat
+        val outputPaddingInSat = stateVm.validated.swapInfo?.swapFees?.outputPaddingInSat
+
         objects.add(Pair<String, Any>("fee_type", type.name.lowercase(Locale.getDefault())))
         objects.add(Pair<String, Any>("sats_per_virtual_byte", feeRateInSatsPerVbyte))
+        objects.add(Pair<String, Any>("amount", SerializationUtils.serializeBitcoinAmount(amount)))
+        objects.add(Pair<String, Any>("fee", SerializationUtils.serializeBitcoinAmount(fee)))
+        objects.add(Pair<String, Any>("total", SerializationUtils.serializeBitcoinAmount(total)))
+        objects.add(
+            Pair<String, Any>("onchainFee", SerializationUtils.serializeBitcoinAmount(onchainFee))
+        )
+        objects.add(Pair<String, Any>("feeNeedsChange", feeNeedsChange))
+        objects.add(Pair<String, Any>("isOneConf", isOneConf.toString()))
+        objects.add(Pair<String, Any>("routingFeeInSat", routingFeeInSat.toString()))
+        objects.add(Pair<String, Any>("confirmationsNeeded", confirmationsNeeded.toString()))
+        objects.add(Pair<String, Any>("debtType", debtType.toString()))
+        objects.add(Pair<String, Any>("debtAmountInSat", debtAmountInSat.toString()))
+        objects.add(Pair<String, Any>("outputAmountInSat", outputAmountInSat.toString()))
+        objects.add(Pair<String, Any>("outputPaddingInSat", outputPaddingInSat.toString()))
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))

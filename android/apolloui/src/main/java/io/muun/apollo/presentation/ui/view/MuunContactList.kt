@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.Contact
-import io.muun.apollo.domain.model.ContactsPermissionState
+import io.muun.apollo.domain.model.PermissionState
 import io.muun.apollo.domain.model.P2PState
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory
@@ -83,10 +83,10 @@ class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         val visibleView = when {
             newP2PState == null ||
                 !newP2PState.user.hasP2PEnabled ||
-                newP2PState.permissionState == ContactsPermissionState.DENIED ->
+                newP2PState.permissionState == PermissionState.DENIED ->
                 goToP2PSetupView
 
-            newP2PState.permissionState == ContactsPermissionState.PERMANENTLY_DENIED ->
+            newP2PState.permissionState == PermissionState.PERMANENTLY_DENIED ->
                 goToSettingsView
 
             newP2PState.syncState.isLoading ->

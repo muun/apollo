@@ -8,7 +8,7 @@ import javax.money.MonetaryAmount
 
 interface ShowUnifiedQrView : QrView {
 
-    fun showHighFeesWarning()
+    fun setShowHighFeesWarning()
 
     fun setLoading(loading: Boolean)
 
@@ -23,5 +23,7 @@ interface ShowUnifiedQrView : QrView {
     fun showFullContent(bitcoinUri: String, address: String, invoice: String)
 
     fun setTaprootState(status: UserActivatedFeatureStatus)
+
+    fun refresh()
 
 }

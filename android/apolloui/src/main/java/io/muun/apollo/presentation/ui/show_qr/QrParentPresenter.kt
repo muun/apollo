@@ -5,6 +5,10 @@ import io.muun.apollo.presentation.ui.base.ParentPresenter
 
 interface QrParentPresenter : ParentPresenter {
 
+    fun handleNotificationPermissionPrompt()
+
+    fun reportNotificationPermissionAsked()
+
     fun shareQrContent(content: String)
 
     fun copyQrContent(content: String, origin: AnalyticsEvent.ADDRESS_ORIGIN)

@@ -3,7 +3,8 @@ package io.muun.apollo.presentation.ui.base;
 import io.muun.apollo.R;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
-import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.action.permission.UpdateContactsPermissionStateAction;
+import io.muun.apollo.domain.action.permission.UpdateNotificationPermissionStateAction;
 import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.utils.ExtensionsKt;
@@ -23,12 +24,15 @@ import io.muun.apollo.presentation.ui.activity.extension.ShakeToDebugExtension;
 import io.muun.apollo.presentation.ui.activity.extension.SnackBarExtension;
 import io.muun.apollo.presentation.ui.base.di.ActivityComponent;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.FloatingOverflowMenu;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.Menu;
@@ -38,6 +42,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import butterknife.ButterKnife;
@@ -85,7 +90,10 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     ScreenshotBlockExtension screenshotBlockExtension;
 
     @Inject
-    UserActions userActions;
+    UpdateContactsPermissionStateAction updateContactsPermissionState;
+
+    @Inject
+    UpdateNotificationPermissionStateAction updateNotificationPermissionState;
 
     @Inject
     protected LinkBuilder linkBuilder;
@@ -201,9 +209,16 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
                 screenshotBlockExtension.startBlockingScreenshots(this.getClass().getSimpleName());
             }
 
-            userActions.updateContactsPermissionState(
+            // Keep PermissionState of important permissions up to date. This is important to handle
+            // PERMANENTLY_DENIED (aka Never Ask Again). See each action's javadoc for more details.
+            updateContactsPermissionState.run(
                     allPermissionsGranted(android.Manifest.permission.READ_CONTACTS)
             );
+
+            if (OS.supportsNotificationRuntimePermission()) {
+                updateNotificationPermissionState.run(hasNotificationsPermission());
+            }
+
             presenter.setUp(getArgumentsBundle());
             presenter.afterSetUp();
         } catch (SecureStorageError e) {
@@ -362,10 +377,27 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     }
 
     /**
+     * Determine whether you have been granted the PUSH NOTIFICATION permission.
+     * NOTE: we single this permission out since it was only recently introduced (api level 33) and
+     * thus requires to only be referenced in new api leves (see @RequiresApi annotation).
+     */
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    public final boolean hasNotificationsPermission() {
+        return allPermissionsGranted(Manifest.permission.POST_NOTIFICATIONS);
+    }
+
+    /**
      * Determine whether you have been granted some permissions.
      */
     public final boolean allPermissionsGranted(String... permissions) {
         return permissionManagerExtension.allPermissionsGranted(permissions);
+    }
+
+    /**
+     * Request some permissions to be granted to this application.
+     */
+    public final void requestPermissions(String... permissions) {
+        permissionManagerExtension.requestPermissions(this, permissions);
     }
 
     /**

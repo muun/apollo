@@ -7,8 +7,8 @@ import io.muun.apollo.domain.action.base.AsyncAction1;
 import io.muun.apollo.domain.action.base.AsyncAction2;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
-import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.FeedbackCategory;
+import io.muun.apollo.domain.model.PermissionState;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserProfile;
@@ -70,26 +70,26 @@ public class UserActions {
         this.updateProfilePictureAction = updateProfilePictureAction;
 
         this.createPhoneAction = asyncActionStore
-            .get("user/createPhone", this::createPhone);
+                .get("user/createPhone", this::createPhone);
 
         this.resendVerificationCodeAction = asyncActionStore
-            .get("user/resendCode", houstonClient::resendVerificationCode);
+                .get("user/resendCode", houstonClient::resendVerificationCode);
 
         this.confirmPhoneAction = asyncActionStore
-            .get("user/confirm-phone", this::confirmPhone);
+                .get("user/confirm-phone", this::confirmPhone);
 
         this.createProfileAction = asyncActionStore
-            .get("user/createProfile", this::createProfile);
+                .get("user/createProfile", this::createProfile);
 
 
         this.updateUsernameAction = asyncActionStore
-            .get("user/editUsername", this::updateUsername);
+                .get("user/editUsername", this::updateUsername);
 
         this.updatePrimaryCurrencyAction = asyncActionStore
-            .get("user/editPrimaryCurrency", this::updatePrimaryCurrency);
+                .get("user/editPrimaryCurrency", this::updatePrimaryCurrency);
 
         this.submitFeedbackAction = asyncActionStore
-            .get("user/submitFeedbackAction", this::submitFeedback);
+                .get("user/submitFeedbackAction", this::submitFeedback);
 
         this.notifyLogoutAction = asyncActionStore.get(NOTIFY_LOGOUT_ACTION, this::notifyLogout);
     }
@@ -175,40 +175,7 @@ public class UserActions {
      * Save user's choice to never be asked again for Contacts permission.
      */
     public void reportContactsPermissionNeverAskAgain() {
-        userRepository.storeContactsPermissionState(ContactsPermissionState.PERMANENTLY_DENIED);
-    }
-
-    /**
-     * Update value of user preference tracking Contacts permission state.
-     * This receives as param the result of asking if permission is granted, that's why it is a
-     * boolean: true for GRANTED, false for DENIED.
-     *
-     * <p>Helpful: table of values
-     *
-     * <p>if current_state is GRANTED           && new_value is GRANTED =>  GRANTED
-     * if current_state is GRANTED              && new_value is DENIED  =>  DENIED
-     * if current_state is DENIED               && new_value is GRANTED =>  GRANTED
-     * if current_state is DENIED               && new_value is DENIED  =>  DENIED
-     * if current_state is PERMANENTLY_DENIED   && new_value is GRANTED =>  GRANTED
-     * if current_state is PERMANENTLY_DENIED   && new_value is DENIED  =>  PERMANENTLY_DENIED
-     */
-    public void updateContactsPermissionState(boolean granted) {
-
-        final ContactsPermissionState prevState = userRepository.getContactsPermissionState();
-
-        if (granted) {
-            // if we detect a permission grant (via android settings) => trigger sync phone contacts
-            if (isLoggedIn() && prevState != ContactsPermissionState.GRANTED) {
-                contactActions.initialSyncPhoneContactsAction.run();
-            }
-
-            userRepository.storeContactsPermissionState(ContactsPermissionState.GRANTED);
-            return;
-        }
-
-        if (prevState != ContactsPermissionState.PERMANENTLY_DENIED) {
-            userRepository.storeContactsPermissionState(ContactsPermissionState.DENIED);
-        }
+        userRepository.storeContactsPermissionState(PermissionState.PERMANENTLY_DENIED);
     }
 
     private Observable<Void> notifyLogout(String jwtToken) {

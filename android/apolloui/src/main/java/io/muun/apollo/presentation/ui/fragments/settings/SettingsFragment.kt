@@ -10,6 +10,7 @@ import android.widget.TextView
 import butterknife.BindView
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
@@ -117,8 +118,11 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
 
-        // TEMP: code for Taproot QA:
-//        versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
+        if (Globals.INSTANCE.isDebugBuild) {
+            // TEMP: code for Taproot QA:
+//            versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
+            versionCode.setOnClickListener { presenter.openDebugPanel() }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

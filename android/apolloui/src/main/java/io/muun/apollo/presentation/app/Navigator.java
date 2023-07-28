@@ -1,6 +1,8 @@
 package io.muun.apollo.presentation.app;
 
+import io.muun.apollo.BuildConfig;
 import io.muun.apollo.R;
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
@@ -174,6 +176,11 @@ public class Navigator {
      * @param context an {Activity} context.
      */
     public void navigateToDebugPanel(@NotNull Context context) {
+
+        if (!Globals.INSTANCE.isDebugBuild() || BuildConfig.PRODUCTION) {
+            return; // Line of Last Defense, avoid showing DebugPanel when not intended
+        }
+
         final Intent intent = DebugPanelActivity.getStartActivityIntent(context);
 
         // No animation between activities for now

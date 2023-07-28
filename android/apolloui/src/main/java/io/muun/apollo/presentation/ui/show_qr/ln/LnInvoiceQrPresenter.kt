@@ -32,7 +32,9 @@ class LnInvoiceQrPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        view.setShowHighFeesWarning(featureSelector.get(MuunFeature.HIGH_FEES_RECEIVE_FLOW))
+        if (featureSelector.get(MuunFeature.HIGH_FEES_RECEIVE_FLOW)) {
+            view.setShowHighFeesWarning()
+        }
         view.setShowingAdvancedSettings(showingAdvancedSettings)
 
         generateInvoice
@@ -42,7 +44,7 @@ class LnInvoiceQrPresenter @Inject constructor(
             .let(this::subscribeTo)
 
         // We want to re-generate the invoice each time we come back to this fragment.
-        generateNewInvoice()
+        view.refresh()
     }
 
     internal fun generateNewEmptyInvoice() {
