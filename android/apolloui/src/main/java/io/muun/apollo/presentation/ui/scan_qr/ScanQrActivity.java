@@ -232,7 +232,7 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
      * to this application.
      */
     public void onGrantPermissionClick() {
-        requestPermissions(this, Manifest.permission.CAMERA);
+        requestPermissions(Manifest.permission.CAMERA);
         presenter.reportCameraPermissionAsked();
     }
 

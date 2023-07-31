@@ -97,4 +97,21 @@ class LappClient : SimpleHttpClient() {
         val request = post("$url/dropLastTx", "")
         executeNow(request)
     }
+
+    /**
+     * Drop a specific tx from the mempool.
+     */
+    fun dropTx(txId: String) {
+        val request = post("$url/drop?tx=$txId", "")
+        executeNow(request)
+    }
+
+    /**
+     * Undrop a specific tx from the mempool. Can only succeed if tx was dropped using
+     * {@link #dropTx()}.
+     */
+    fun undropTx(txId: String) {
+        val request = post("$url/undrop?tx=$txId", "")
+        executeNow(request)
+    }
 }

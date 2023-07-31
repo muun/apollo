@@ -77,6 +77,55 @@
                 android:layout_height="wrap_content"
                 android:text="Update FCM token" />
 
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_fund_wallet_onchain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fund Wallet Onchain" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_fund_wallet_offchain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fund Wallet Offchain" />
+
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_generate_blocks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Generate Block" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_drop_last_tx"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Drop Last Tx" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_drop_tx"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Drop Tx" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_undrop_tx"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Undrop Tx" />
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

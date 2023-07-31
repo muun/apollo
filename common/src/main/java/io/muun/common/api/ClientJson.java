@@ -178,7 +178,7 @@ public class ClientJson {
     }
 
     /**
-     * Code constructor.
+     * Apollo constructor.
      */
     public ClientJson(final ClientTypeJson type,
                       final String buildType,

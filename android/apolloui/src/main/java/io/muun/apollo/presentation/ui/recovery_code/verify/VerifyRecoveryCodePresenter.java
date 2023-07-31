@@ -63,6 +63,7 @@ public class VerifyRecoveryCodePresenter
         }
 
         if (! (recoveryCode.equals(expectedRecoveryCode) || Globals.INSTANCE.isDebugBuild())) {
+            // For Debug builds any code passes the verification check (easy testing)
             analytics.report(new AnalyticsEvent.E_RECOVERY_CODE(RC_ERROR.DID_NOT_MATCH));
             view.setVerificationError(new RecoveryCodeVerificationError());
             return;

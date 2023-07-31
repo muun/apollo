@@ -26,6 +26,7 @@ import io.muun.apollo.domain.action.integrity.IntegrityAction;
 import io.muun.apollo.domain.action.operation.ResolveLnInvoiceAction;
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
+import io.muun.apollo.domain.action.permission.UpdateContactsPermissionStateAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
 import io.muun.apollo.domain.action.session.CreateLoginSessionAction;
 import io.muun.apollo.domain.action.session.LogInAction;
@@ -120,4 +121,6 @@ public interface ActionComponent {
     AddEmergencyKitMetadataAction addEmergencyKitMetadata();
 
     StartRecoveryCodeSetupAction startRecoveryCodeSetupAction();
+
+    UpdateContactsPermissionStateAction updateContactsPermissionStateAction();
 }

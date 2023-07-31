@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -47,7 +48,15 @@
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
         <!-- Keep this below ViewPager so that it overlaps the content, instead of pushing down -->
-        <View style="@style/drop_shadow_bottom"/>
+        <View style="@style/drop_shadow_bottom" />
+
+        <io.muun.apollo.presentation.ui.show_qr.NotificationsPrimingView
+                android:id="@+id/show_qr_notifications_priming"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
     </FrameLayout>
 

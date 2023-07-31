@@ -280,6 +280,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         CONFIRM_SWAP_OPERATION,
         BACK,
         CANCEL_ABORT,
+        ABORT
     }
 
     class E_NEW_OP_ACTION(val type: E_NEW_OP_ACTION_TYPE, vararg params: Pair<String, Any>) :
@@ -495,4 +496,11 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_BREADCRUMB(value: String) : AnalyticsEvent(
         listOf("crumb" to value)
     )
+
+    class E_PUSH_NOTIFICATIONS_PERMISSION_ASKED : AnalyticsEvent()
+    class E_PUSH_NOTIFICATIONS_PERMISSION_SKIPPED : AnalyticsEvent()
+    class E_PUSH_NOTIFICATIONS_PERMISSION_GRANTED : AnalyticsEvent()
+    class E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED : AnalyticsEvent()
+    class E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED_PERMANENTLY : AnalyticsEvent()
+
 }

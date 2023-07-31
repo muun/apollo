@@ -5,8 +5,8 @@ import io.muun.apollo.data.preferences.rx.Preference;
 import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.model.BitcoinUnit;
-import io.muun.apollo.domain.model.ContactsPermissionState;
 import io.muun.apollo.domain.model.EmergencyKitExport;
+import io.muun.apollo.domain.model.PermissionState;
 import io.muun.apollo.domain.model.user.EmergencyKit;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
@@ -64,7 +64,7 @@ public class UserRepository extends BaseRepository {
 
     private final Preference<String> passwordChangeAuthorizedUuidPreference;
 
-    private final Preference<ContactsPermissionState> conctactsPermissionStatePreference;
+    private final Preference<PermissionState> conctactsPermissionStatePreference;
 
     private final Preference<Boolean> initialSyncCompletedPreference;
 
@@ -103,8 +103,8 @@ public class UserRepository extends BaseRepository {
 
         conctactsPermissionStatePreference = rxSharedPreferences.getEnum(
                 CONTACTS_PERMISSION_STATE_KEY,
-                ContactsPermissionState.DENIED,
-                ContactsPermissionState.class
+                PermissionState.DENIED,
+                PermissionState.class
         );
 
         initialSyncCompletedPreference = rxSharedPreferences.getBoolean(
@@ -308,18 +308,18 @@ public class UserRepository extends BaseRepository {
     /**
      * Save contacts permission state.
      */
-    public void storeContactsPermissionState(ContactsPermissionState state) {
+    public void storeContactsPermissionState(PermissionState state) {
         conctactsPermissionStatePreference.set(state);
     }
 
-    public ContactsPermissionState getContactsPermissionState() {
+    public PermissionState getContactsPermissionState() {
         return conctactsPermissionStatePreference.get();
     }
 
     /**
      * Get an Observable to observe changes to the contacts permission preference.
      */
-    public Observable<ContactsPermissionState> watchContactsPermissionState() {
+    public Observable<PermissionState> watchContactsPermissionState() {
         return conctactsPermissionStatePreference.asObservable();
     }
 

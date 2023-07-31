@@ -40,15 +40,14 @@ class SettingsPresenter @Inject constructor(
     private val exchangeRateSelector: ExchangeRateSelector,
     private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val nightModeManager: NightModeManager,
-    private val notificationService: NotificationService
-
+    private val notificationService: NotificationService,
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
     class SettingsState(
         val user: User,
         val bitcoinUnit: BitcoinUnit,
         val exchangeRateWindow: ExchangeRateWindow,
-        val taprootFeatureStatus: UserActivatedFeatureStatus
+        val taprootFeatureStatus: UserActivatedFeatureStatus,
     )
 
     override fun setUp(arguments: Bundle) {
@@ -220,5 +219,9 @@ class SettingsPresenter @Inject constructor(
 
     fun showActivatedNotification() {
         notificationService.showEventCommunication(Event.TAPROOT_ACTIVATED)
+    }
+
+    fun openDebugPanel() {
+        navigator.navigateToDebugPanel(context)
     }
 }

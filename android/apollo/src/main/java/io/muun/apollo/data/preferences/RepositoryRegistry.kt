@@ -1,5 +1,7 @@
 package io.muun.apollo.data.preferences
 
+import io.muun.apollo.data.preferences.permission.NotificationPermissionStateRepository
+
 /**
  * Welcome to RepositoryRegistry! This is class is meant to be a centralized, singleton registry
  * for all preferences repositories. Why do we need it? The idea is to invert the way of doing this
@@ -41,12 +43,17 @@ class RepositoryRegistry {
         FeaturesRepository::class.java,
         AppVersionRepository::class.java,
         PlayIntegrityNonceRepository::class.java,
+        NotificationPermissionStateRepository::class.java,
+        NotificationPermissionDeniedRepository::class.java,
+        NotificationPermissionSkippedRepository::class.java
     )
 
     // Notable exceptions:
     // - FirebaseInstallationIdRepository
     // - NightModeRepository
     // - SchemaVersionRepository
+    // - NotificationPermissionDeniedRepository
+    // - NotificationPermissionSkippedRepository
     // They get special treatment and are not wiped on logout to avoid problems.
     // Update: technically SchemaVersionRepository could be wiped with no issues, but we feel
     // its more clear and clean to keep it and avoid wiping it (there's no privacy or security
@@ -54,7 +61,9 @@ class RepositoryRegistry {
     private val logoutSurvivorRepositories: Set<Class<out BaseRepository>> = setOf(
         FirebaseInstallationIdRepository::class.java,
         NightModeRepository::class.java,
-        SchemaVersionRepository::class.java
+        SchemaVersionRepository::class.java,
+        NotificationPermissionDeniedRepository::class.java,
+        NotificationPermissionSkippedRepository::class.java
     )
 
     private val loadedRepositories: MutableSet<BaseRepository> = mutableSetOf()

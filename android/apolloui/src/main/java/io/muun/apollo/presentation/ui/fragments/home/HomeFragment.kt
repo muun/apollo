@@ -161,13 +161,11 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         private val minTravelDistance = ViewConfiguration.get(context).scaledTouchSlop
 
         override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent?,
+            e1: MotionEvent,
+            e2: MotionEvent,
             velocityX: Float,
-            velocityY: Float,
+            velocityY: Float
         ): Boolean {
-            checkNotNull(e1)
-            checkNotNull(e2)
 
             // Future reader: for MotionEvent we want rawX/Y, other coordinates suck (BIG TIME)
             // See: https://stackoverflow.com/q/1410885/901465
@@ -179,7 +177,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             return super.onFling(e1, e2, velocityX, velocityY)
         }
 
-        override fun onDown(e: MotionEvent?): Boolean {
+        override fun onDown(e: MotionEvent): Boolean {
             // onDown determines whether the detector intercepts the event or it keeps looking
             // for someone to handle it. If true, all events are handled by the detector.
             return down

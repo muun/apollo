@@ -38,7 +38,6 @@ import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeFr
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.home.HomeActivity
 import io.muun.apollo.presentation.ui.listener.SimpleTextWatcher
-import io.muun.apollo.presentation.ui.new_operation.NewOperationView.ConfirmStateViewModel
 import io.muun.apollo.presentation.ui.new_operation.NewOperationView.Receiver
 import io.muun.apollo.presentation.ui.utils.NewOperationInvoiceFormatter
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
@@ -419,9 +418,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         statusMessageViews.changeVisibility(View.GONE)
     }
 
-    override fun goToConfirmState(state: ConfirmStateViewModel) {
+    override fun goToConfirmState(state: ConfirmStateViewModel, receiver: Receiver) {
 
-        updateReceiver(state.resolved.paymentIntent, state.receiver)
+        updateReceiver(state.paymentIntent, receiver)
 
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
@@ -450,7 +449,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         UiUtils.fadeIn(feeLabel)
         UiUtils.fadeIn(feeAmount)
 
-        if (state.receiver.swap != null) {
+        if (receiver.swap != null) {
             // Fee is not editable for submarine swaps:
             feeLabel.setCompoundDrawables(null, null, null, null)
             feeLabel.isClickable = false
@@ -462,7 +461,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         actionButton.setText(R.string.new_operation_confirm)
         actionButton.setOnClickListener {
 
-            if (state.receiver.swap == null) {
+            if (receiver.swap == null) {
                 presenter.confirmOperation()
             } else {
                 presenter.confirmSwapOperation()
@@ -510,11 +509,18 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         MuunDialog.Builder()
             .title(R.string.new_operation_abort_alert_title)
             .message(R.string.new_operation_abort_alert_body)
-            .positiveButton(R.string.abort) { finishAndGoHome() }
+            .positiveButton(R.string.abort) { presenter.finishAndGoHome() }
             .negativeButton(R.string.cancel, null)
             .onDismiss { presenter.cancelAbort() }
             .build()
             .let(this::showDialog)
+    }
+
+    override fun finishAndGoHome() {
+        if (isTaskRoot) {
+            startActivity(HomeActivity.getStartActivityIntent(this))
+        }
+        finishActivity()
     }
 
     override fun onBackPressed() {
@@ -736,13 +742,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         header.setNavigation(Navigation.BACK)
         overlayContainer.visibility = View.GONE
-    }
-
-    private fun finishAndGoHome() {
-        if (isTaskRoot) {
-            startActivity(HomeActivity.getStartActivityIntent(this))
-        }
-        finishActivity()
     }
 
     private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {

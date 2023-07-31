@@ -21,11 +21,9 @@ public class SetupChallengeResponse {
     @Since(apolloVersion = Supports.Fingerprint.APOLLO, falconVersion = Supports.Fingerprint.FALCON)
     public String muunKeyFingerprint;
 
+    /**
+     * Json constructor.
+     */
     public SetupChallengeResponse() {
-    }
-
-    public SetupChallengeResponse(@Nullable String muunKey, @Nullable String muunKeyFingerprint) {
-        this.muunKey = muunKey;
-        this.muunKeyFingerprint = muunKeyFingerprint;
     }
 }
