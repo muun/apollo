@@ -7,7 +7,7 @@ import androidx.test.uiautomator.UiObject
 class MuunButton(
     override val device: UiDevice,
     override val context: Context,
-    private val button: UiObject
+    private val button: UiObject,
 ) : WithMuunInstrumentationHelpers {
 
     fun doesntExist() {

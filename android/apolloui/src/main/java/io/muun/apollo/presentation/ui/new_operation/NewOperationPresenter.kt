@@ -551,7 +551,7 @@ class NewOperationPresenter @Inject constructor(
                 "update" to state.update
             )
         )
-        view.goToEnterDescriptionState(state, receiver)
+        view.goToEnterDescriptionState(state, receiver, bitcoinUnitSel.get())
     }
 
     private fun handleValidateState(state: ValidateState) {
@@ -574,7 +574,7 @@ class NewOperationPresenter @Inject constructor(
             )
         )
 
-        view.goToConfirmState(confirmStateViewModel, receiver)
+        view.goToConfirmState(confirmStateViewModel, receiver, bitcoinUnitSel.get())
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {

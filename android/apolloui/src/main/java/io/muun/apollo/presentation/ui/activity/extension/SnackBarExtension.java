@@ -24,7 +24,7 @@ public class SnackBarExtension extends ActivityExtension {
     }
 
     /**
-     * Show a dismissable SnackBar of indefinite duration.
+     * Show a dismissible SnackBar of indefinite duration.
      */
     public void showSnackBarIndefinite(int messageResId) {
         showSnackBarIndefinite(messageResId, true, null);
@@ -33,7 +33,7 @@ public class SnackBarExtension extends ActivityExtension {
     /**
      * Show a SnackBar of indefinite duration with a specific height.
      */
-    public void showSnackBarIndefinite(int messageResId, boolean dismissable, Float height) {
+    public void showSnackBarIndefinite(int messageResId, boolean dismissible, Float height) {
 
         // TODO if a snackbar is showing (snackbar != null) should what should we do?
         // We are choosing to replace the previous one and log an error (it shouldn't happen)
@@ -51,7 +51,7 @@ public class SnackBarExtension extends ActivityExtension {
                 Snackbar.LENGTH_INDEFINITE
         );
 
-        if (dismissable) {
+        if (dismissible) {
             snackbar.setAction(R.string.dismiss, v -> snackbar.dismiss());
         }
 

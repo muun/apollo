@@ -18,6 +18,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
+import io.muun.apollo.presentation.ui.utils.OS
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.not
@@ -48,7 +49,7 @@ interface WithMuunEspressoHelpers {
      * inside the TextView.
      */
     fun clickClickableSpanByOrder(target: Int): ViewAction {  // Of the peaky blinders!!!
-        return internalClickClickableSpan { index, spanText ->
+        return internalClickClickableSpan { index, _ ->
             index == target
         }
     }
@@ -76,7 +77,8 @@ interface WithMuunEspressoHelpers {
                 }
 
                 // Get the links inside the TextView and check if we find textToClick
-                val spans = spannableString.getSpans(0, spannableString.length, ClickableSpan::class.java)
+                val spans =
+                    spannableString.getSpans(0, spannableString.length, ClickableSpan::class.java)
                 if (spans.isNotEmpty()) {
                     for ((index, span) in spans.withIndex()) {
                         val start = spannableString.getSpanStart(span)
@@ -111,9 +113,13 @@ interface WithMuunEspressoHelpers {
     }
 
     fun checkToastDisplayed(resId: Int) {
-        checkToastDisplayed(getCurrentActivity(), resId)
+        if (OS.supportsEspressoToastDetection()) {
+            checkToastDisplayed(getCurrentActivity(), resId)
+        }
+        // Else do nothing :'( (We can't reliably detect toasts)
     }
 
+    // Note: Doesn't work in starting Android 12 :shrug:
     private fun checkToastDisplayed(activity: Activity?, @StringRes resId: Int) {
         onView(withText(resId)).inRoot(withDecorView(not(activity!!.window.decorView)))
             .check(matches(isDisplayed()))

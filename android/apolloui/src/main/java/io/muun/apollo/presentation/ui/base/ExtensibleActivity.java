@@ -17,7 +17,7 @@ import java.util.List;
 
 public abstract class ExtensibleActivity extends AppCompatActivity {
 
-    private List<ActivityExtension> extensions = new ArrayList<>();
+    private final List<ActivityExtension> extensions = new ArrayList<>();
 
     protected abstract void setUpExtensions();
 

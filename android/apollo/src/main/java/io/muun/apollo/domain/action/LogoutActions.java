@@ -4,7 +4,6 @@ import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.data.preferences.BaseRepository;
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
@@ -155,7 +154,7 @@ public class LogoutActions {
     }
 
     private void destroyWallet() {
-        Crashlytics.logBreadcrumb("destroyWallet");
+        Timber.i("destroyWallet");
         taskScheduler.unscheduleAllTasks();
 
         asyncActionStore.resetAllExceptLogout();
@@ -187,7 +186,7 @@ public class LogoutActions {
      * clearing some repositories on logout (e.g FcmTokenRepository).
      */
     private void clearRepositoriesForLogout() {
-        for (BaseRepository repository : repositoryRegistry.repositoriesToClear()) {
+        for (BaseRepository repository : repositoryRegistry.repositoriesToClearOnLogout()) {
             clearRepository(repository);
         }
 

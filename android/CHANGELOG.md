@@ -6,6 +6,38 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.1] - 2023-10-17
+
+### ADDED
+
+- Special UI warning message when performing a cyclical payment using the last copied address from
+the receive screen.
+- Added and enhanced debugging data, specially for notification processing.
+
+### FIXED
+
+- A bug that messed up currency rotation (e.g currencies rotate when clicked upon) in New Operation
+screen.
+- A bug where duplicated UI events firing in a short range from messing with secure storage's
+  Keystore.
+- Stop polling for notifications upon an ExpiredSession error. Avoid wasting resources and
+generating backend alerts.
+- A visual glitch in lnurl withdraw unresponsive error handling.
+- A bug in lnurl withdraw flow when manually inputting the lnurl in the Send screen.
+- A bug where the "Welcome to Muun" dialog would be displayed more than once if the Home activity
+was recreated.
+- Several memory leaks regarding QRs bitmaps and Repository registry.
+
+### CHANGED
+
+- Special UI component to "paste from clipboard" to adapt to Android's clipboard access notification
+on Android 12+. We no longer automatically read from clipboard in Android12+, only upon user
+request.
+- Satoshis copy in Select Bitcoin Unit screen. Now explicitly naming the option Satoshi (SAT),
+  instead of Bitcoin (SAT).
+- Silence noisy DRM errors.
+- Huge revamp to UI test suite. Enhancing reliability o coverage.
+
 ## [51] - 2023-07-28
 
 ### ADDED

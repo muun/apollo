@@ -498,6 +498,10 @@
     <string name="send_uri_error_body">
         Ésta no es una dirección de BTC o factura de lightning.
     </string>
+    <string name="send_cyclic_payment_warning">Enviarás los fondos a tu monedero Muun</string>
+
+    <string name="paste_from_clipboard_button">Pegar del portapeles</string>
+    <string name="no_lnurl_in_clipboard_error">El portapapeles no contiene una LNURL</string>
 
     <!-- QR scanner -->
     <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
@@ -1168,7 +1172,7 @@
 
     <string name="select_bitcoin_unit_title">Unidad de bitcoin</string>
     <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
-    <string name="select_bitcoin_unit_sat">Bitcoin (SAT)</string>
+    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
 
     <!-- Security center -->
     <string name="security_center_title">Centro de Seguridad</string>

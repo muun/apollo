@@ -230,7 +230,7 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
 
         } catch (e: Exception) {
             // These two drm provider often return errors though they are listed as "supported"
-            if (drmProviderUuid != COMMON_PSSH_UUID || drmProviderUuid != CLEARKEY_UUID) {
+            if (drmProviderUuid != COMMON_PSSH_UUID && drmProviderUuid != CLEARKEY_UUID) {
                 Timber.e(DrmProviderError(drmProviderUuid, e))
             }
             return null

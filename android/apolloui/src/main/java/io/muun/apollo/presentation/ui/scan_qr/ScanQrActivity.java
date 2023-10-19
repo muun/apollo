@@ -6,6 +6,7 @@ import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
+import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
@@ -70,6 +71,11 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     @BindView(R.id.uri_paster)
     MuunUriPaster uriPaster;
 
+    @BindView(R.id.paste_from_clipboard)
+    View pasteFromClipboard;
+
+    private boolean clipboardContainsPlaintext = false;
+
     @Override
     protected void inject() {
         getComponent().inject(this);
@@ -106,15 +112,29 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         emptyScreen.setOnActionClickListener(view -> onGrantPermissionClick());
 
         if (allPermissionsGranted(Manifest.permission.CAMERA)) {
-            background.setVisibility(View.VISIBLE);
-            subtitle.setVisibility(View.VISIBLE);
+            showScannerView();
 
         } else {
-            background.setVisibility(View.GONE);
-            subtitle.setVisibility(View.GONE);
+            showCameraPermissionPriming();
         }
 
         setupCamera();
+
+        pasteFromClipboard.setOnClickListener(v -> presenter.pasteFromClipboard());
+    }
+
+    private void showScannerView() {
+        background.setVisibility(View.VISIBLE);
+        subtitle.setVisibility(View.VISIBLE);
+        if (OS.supportsClipboardAccessNotification() && clipboardContainsPlaintext) {
+            pasteFromClipboard.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showCameraPermissionPriming() {
+        background.setVisibility(View.GONE);
+        subtitle.setVisibility(View.GONE);
+        pasteFromClipboard.setVisibility(View.GONE);
     }
 
     private void setupCamera() {
@@ -238,18 +258,27 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
 
     @Override
     public void onPermissionsDenied(String[] deniedPermissions) {
-        background.setVisibility(View.GONE);
-        subtitle.setVisibility(View.GONE);
+        showCameraPermissionPriming();
     }
 
     @Override
     public void onPermissionsGranted(String[] grantedPermissions) {
-        background.setVisibility(View.VISIBLE);
-        subtitle.setVisibility(View.VISIBLE);
+        showScannerView();
         presenter.reportCameraPermissionGranted();
 
         if (uriPaster.getUri() != null) {
             uriPaster.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void setClipboardStatus(boolean containsPlainText) {
+        this.clipboardContainsPlaintext = containsPlainText;
+
+        if (allPermissionsGranted(Manifest.permission.CAMERA)) {
+            if (OS.supportsClipboardAccessNotification() && clipboardContainsPlaintext) {
+                pasteFromClipboard.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -259,5 +288,10 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         if (!allPermissionsGranted(Manifest.permission.CAMERA)) {
             uriPaster.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void showNoLnUrlInClipoardError() {
+        showSnackBar(R.string.no_lnurl_in_clipboard_error);
     }
 }

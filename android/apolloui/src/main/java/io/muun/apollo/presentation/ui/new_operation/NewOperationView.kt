@@ -21,9 +21,13 @@ interface NewOperationView : BaseView {
 
     fun setAmountInputError()
 
-    fun goToEnterDescriptionState(state: EnterDescriptionState, receiver: Receiver)
+    fun goToEnterDescriptionState(
+        state: EnterDescriptionState,
+        receiver: Receiver,
+        btcUnit: BitcoinUnit,
+    )
 
-    fun goToConfirmState(state: ConfirmStateViewModel, receiver: Receiver)
+    fun goToConfirmState(state: ConfirmStateViewModel, receiver: Receiver, btcUnit: BitcoinUnit)
 
     fun goToEditFeeState()
 

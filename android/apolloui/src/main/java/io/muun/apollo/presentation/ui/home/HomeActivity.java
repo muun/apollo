@@ -52,9 +52,8 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         return new Intent(context, HomeActivity.class);
     }
 
-    public static String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
+    static String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
     public static String NEW_OP_ID = "NEW_OP_ID";
-
 
     @BindView(R.id.home_header)
     MuunHeader header;
@@ -120,18 +119,6 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         bottomNav.setOnItemReselectedListener(item -> {
             // do nothing here, it will prevent recreating same fragment
         });
-
-        if (getIntent().hasExtra(SHOW_WELCOME_TO_MUUN)) {
-            getIntent().removeExtra(SHOW_WELCOME_TO_MUUN);
-
-            final MuunDialog muunDialog = new MuunDialog.Builder()
-                    .layout(R.layout.dialog_welcome_to_muun)
-                    .style(R.style.MuunWelcomeDialog)
-                    .addOnClickAction(R.id.welcome_to_muun_cta, v -> dismissDialog())
-                    .build();
-
-            showDialog(muunDialog);
-        }
     }
 
     @Override
@@ -161,6 +148,17 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
                 .build();
 
         navigateToItem(R.id.security_center_fragment, args.toBundle());
+    }
+
+    @Override
+    public void showWelcomeToMuunDialog() {
+        final MuunDialog muunDialog = new MuunDialog.Builder()
+                .layout(R.layout.dialog_welcome_to_muun)
+                .style(R.style.MuunWelcomeDialog)
+                .addOnClickAction(R.id.welcome_to_muun_cta, v -> dismissDialog())
+                .build();
+
+        showDialog(muunDialog);
     }
 
     /**

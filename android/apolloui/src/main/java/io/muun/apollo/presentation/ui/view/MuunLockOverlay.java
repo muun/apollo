@@ -2,52 +2,40 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
-import io.muun.apollo.data.logging.Crashlytics;
-import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
-import android.hardware.fingerprint.FingerprintManager;
-import android.os.Build;
-import android.os.CancellationSignal;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
 import butterknife.BindView;
-import icepick.State;
 import rx.functions.Action0;
+import timber.log.Timber;
 
 import javax.annotation.Nullable;
 
 
 public class MuunLockOverlay extends MuunView {
 
+    private static final int CONCURRENT_ACCESS_WINDOW_MS = 500;
+
     public interface LockOverlayListener {
         /**
-         * This method will be called once a pin is successfully entered.
+         * This method will be called once a pin is fully/completely entered.
          */
         void onPinEntered(String pin);
-
-        /**
-         * This method will be called once a fingerprint is successfully entered.
-         */
-        void onFingerprintEntered();
     }
 
     @BindView(R.id.unlock_pin_input)
     MuunPinInput pinInput;
 
-    @State
-    boolean isFingerprintAllowed;
-
-    private boolean isFingerprintEnabled; // could be allowed but not available or paused
-    private CancellationSignal cancelFingerprint;
-
     private LockOverlayListener listener;
+
+    private String lastPin;
 
     public MuunLockOverlay(Context context) {
         super(context);
@@ -77,6 +65,7 @@ public class MuunLockOverlay extends MuunView {
      * Attach this Overlay to the root view of its Context, covering the parent Activity.
      */
     public void attachToRoot() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#attachToRoot");
         final ViewGroup contentView = getActivityContentView();
         contentView.getChildAt(0).setVisibility(View.INVISIBLE);
 
@@ -103,17 +92,6 @@ public class MuunLockOverlay extends MuunView {
     }
 
     /**
-     * Allow the Overlay to read fingerprints, if able.
-     */
-    public void setFingerprintAllowed(boolean isAllowed) {
-        this.isFingerprintAllowed = isAllowed;
-
-        if (isFingerprintAllowed && !isFingerprintEnabled && getVisibility() == View.VISIBLE) {
-            tryEnableFingerprint();
-        }
-    }
-
-    /**
      * Set the remaining and total attempts.
      */
     public void setRemainingAttempts(int remainingAttempts, int maxAttempts) {
@@ -128,31 +106,21 @@ public class MuunLockOverlay extends MuunView {
      */
     public void reportError(Action0 onComplete) {
         pinInput.flashError(onComplete);
+        new Handler().postDelayed(this::resetLastPin, CONCURRENT_ACCESS_WINDOW_MS);
     }
 
     /**
      * Report to the Overlay that an unlock attempt succeeded.
      */
     public void reportSuccess() {
-        Crashlytics.logBreadcrumb("MuunLockOverlay: reportSuccess");
+        Timber.i("MuunLockOverlay: reportSuccess");
 
         pinInput.setSuccess();
+        new Handler().postDelayed(this::resetLastPin, CONCURRENT_ACCESS_WINDOW_MS);
     }
 
     public void setListener(LockOverlayListener lockOverlayListener) {
         this.listener = lockOverlayListener;
-    }
-
-    @Override
-    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
-        super.onVisibilityChanged(changedView, visibility);
-
-        if (visibility != View.VISIBLE) {
-            disableFingerprint();
-
-        } else if (isFingerprintAllowed && !isFingerprintEnabled) {
-            tryEnableFingerprint();
-        }
     }
 
     private ViewGroup getActivityContentView() {
@@ -163,70 +131,22 @@ public class MuunLockOverlay extends MuunView {
 
     private void onPinEntered(String pin) {
         if (this.listener != null) {
+
+            // We've seen in some devices "duplicated" events being fired almost instantaneously,
+            // and we've observed that this causes trouble for keeping incorrectAttempts record in
+            // secure storage. We'll try to avoid these duplicated events firing in a short
+            // range from messing with secure storage's Keystore.
+            if (pin.equals(lastPin)) {
+                return; // If this is a "double fire"/"concurrent access" we'll dismiss it
+            }
+
+            lastPin = pin;
+
             this.listener.onPinEntered(pin);
         }
     }
 
-    private void tryEnableFingerprint() {
-        if (OS.supportsFingerprintAPI()) {
-            enableFingerprintOnApi23();
-        }
-    }
-
-    private void disableFingerprint() {
-        if (cancelFingerprint != null) {
-            cancelFingerprint.cancel();
-            cancelFingerprint = null;
-        }
-
-        isFingerprintEnabled = false;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void enableFingerprintOnApi23() {
-        final FingerprintManager fingerprintManager =
-                (FingerprintManager) getContext().getSystemService(Context.FINGERPRINT_SERVICE);
-
-        final boolean canEnableFingerprint = (fingerprintManager != null)
-                && fingerprintManager.isHardwareDetected()
-                && fingerprintManager.hasEnrolledFingerprints();
-
-        if (! canEnableFingerprint) {
-            return;
-        }
-
-        final FingerprintCallback listener = new FingerprintCallback();
-        cancelFingerprint = new CancellationSignal();
-
-        fingerprintManager.authenticate(
-                null,              // No CryptoObject, we won't sign or encrypt with fingerprints
-                cancelFingerprint, // A CancellationSignal to stop listening
-                0,                 // No flags (fun fact: none actually existed when I wrote this)
-                listener,          // Our custom bag of friendly callbacks
-                null               // No special Handler, use the default
-        );
-
-        isFingerprintEnabled = true;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private class FingerprintCallback extends FingerprintManager.AuthenticationCallback {
-
-        @Override
-        public void onAuthenticationError(int errorCode, CharSequence errString) {
-            // TODO examine error code, decide what to do
-        }
-
-        @Override
-        public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
-            if (listener != null) {
-                listener.onFingerprintEntered();
-            }
-        }
-
-        @Override
-        public void onAuthenticationFailed() {
-            // TODO visual feedback of failed fingerprint auth
-        }
+    private void resetLastPin() {
+        lastPin = null;
     }
 }

@@ -179,7 +179,9 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
         isEnabled = true;
 
         super.setUp(context, attrs);
-        getComponent().inject(this);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         editText.setImeOptions(FIXED_IME_OPTIONS);
 

@@ -1,6 +1,5 @@
-package io.muun.apollo.presentation.ui.debug
+package io.muun.apollo.data.debug
 
-import io.muun.apollo.BuildConfig
 import io.muun.apollo.data.external.Globals
 import io.muun.common.utils.LnInvoice
 import okhttp3.Response
@@ -18,20 +17,27 @@ class LappClient : SimpleHttpClient() {
         EXPIRED_LNURL("expiredLnurl"),
         NO_ROUTE("noRoute"),
         WRONG_TAG("wrongTag"),
-        UNRESPONSIVE("unresponsive")
+        UNRESPONSIVE("unresponsive"),
+        UNRESPONSIVE_LNURL_SERVICE("unresponsiveLnurlService") // service that generates LNURL
     }
 
-    private val url = BuildConfig.LAPP_URL
+    private val url = Globals.INSTANCE.lappUrl
 
-    private fun executeNow(request: Observable<Response>): String {
+    private fun executeNow(request: Observable<Response>): Response {
         val response = request.toBlocking().first()!!
-        return response.body()!!.string()
+
+        // Simple error handling will do for now
+        if (response.code() in 400..599) {
+            throw LappClientError(response.message() + ": " + response.bodyAsString())
+        }
+
+        return response
     }
 
     fun getLnInvoice(amountInSats: Int): LnInvoice {
 
         val request = get("$url/invoice?satoshis=$amountInSats")
-        val htmlString = executeNow(request)
+        val htmlString = executeNow(request).bodyAsString()
 
         val invoiceString = htmlString
             .substringBefore("</span>")
@@ -65,21 +71,27 @@ class LappClient : SimpleHttpClient() {
     }
 
     /**
-     * Return a new withdraw LNURL. Receives a variant param to generate different LNRULs to force
+     * Return a new withdraw LNURL. Receives a variant param to generate different LNURLs to force
      * different use cases.
      */
     fun generateWithdrawLnUrl(variant: LnUrlVariant = LnUrlVariant.NORMAL): String {
 
-        if (variant == LnUrlVariant.UNRESPONSIVE) {
+        if (variant == LnUrlVariant.UNRESPONSIVE_LNURL_SERVICE) {
             // Hard-coded lnurl to force "unresponsive service" response
+            // Encoded uri is: https://this.domain.does.not.exist.example.com?secret=12345
             return "LNURL1DP68GURN8GHJ7ARGD9EJUER0D4SKJM3WV3HK2UEWDEHHGTN90P5HXAPWV4UXZMTSD3JJUC" +
                 "M0D5LHXETRWFJHG0F3XGENGDGQ8EH52"
+
         }
 
-        val request = get("$url/lnurl/withdrawStart?variant=${variant.value}&block=true")
+        // For SLOW ui tests we need the async behavior of the lapp's lnurl withdraw flow. Otherwise
+        // Receiving state is never reached (e.g cause the withdraw fullfill request ends after the
+        // ln payment is completed).
+        val blocking = variant != LnUrlVariant.SLOW
+        val request = get("$url/lnurl/withdrawStart?variant=${variant.value}&block=$blocking")
         val response = executeNow(request)
 
-        return response.trim()
+        return response.bodyAsString()
     }
 
     /**
@@ -114,4 +126,7 @@ class LappClient : SimpleHttpClient() {
         val request = post("$url/undrop?tx=$txId", "")
         executeNow(request)
     }
+
+    private fun Response.bodyAsString(): String =
+        body()!!.string().trim()
 }

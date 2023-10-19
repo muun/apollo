@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.signup;
 
 import io.muun.apollo.R;
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.base.ActionState;
@@ -36,6 +35,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import rx.Observable;
 import rx.functions.Actions;
+import timber.log.Timber;
 
 import java.util.Objects;
 import javax.inject.Inject;
@@ -171,7 +171,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     public void resumeSignupIfStarted() {
         final SignupStep step = signupDraft.getStep();
 
-        Crashlytics.logBreadcrumb("SignupPresenter: resumeSignupIfStarted. Step: " + step.name());
+        Timber.i("SignupPresenter: resumeSignupIfStarted. Step: " + step.name());
         if (step != SignupStep.START) {
             navigateToStepFrom(step, signupDraft.getPreviousStep());
         }
@@ -410,7 +410,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
             signupDraftManager.save(signupDraft);
         }
 
-        Crashlytics.logBreadcrumb(
+        Timber.i(
                 "SignupPresenter: navigateToStepFrom:(" + step + "," + previousStep + ")"
         );
 

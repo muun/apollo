@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.session.rc_only
 
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.data.preferences.PlayIntegrityNonceRepository
@@ -14,6 +13,7 @@ import io.muun.common.api.KeySet
 import io.muun.common.model.challenge.Challenge
 import libwallet.Libwallet
 import rx.Observable
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,8 +55,8 @@ class LogInWithRcAction @Inject constructor(
     private fun createRcLoginSession(recoveryCode: String): Observable<Challenge> {
         val pubKeyHex = Libwallet.recoveryCodeToKey(recoveryCode, null).pubKeyHex()
         val bigQueryPseudoId = firebaseInstallationIdRepo.getBigQueryPseudoId()
-        Crashlytics.logBreadcrumb("Rc Login: $pubKeyHex")
-        Crashlytics.logBreadcrumb("Rc Login: $bigQueryPseudoId")
+        Timber.i("Rc Login: $pubKeyHex")
+        Timber.i("Rc Login: $bigQueryPseudoId")
         return getFcmToken.action()
             .flatMap { fcmToken ->
                 houstonClient.createRcLoginSession(

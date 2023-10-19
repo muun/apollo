@@ -7,8 +7,8 @@ import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 
 class SecurityCenterScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun goToEmailAndPassword() {
         id(R.id.task_email).click()

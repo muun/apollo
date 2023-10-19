@@ -16,7 +16,6 @@ import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
-import timber.log.Timber
 
 object Crashlytics {
 
@@ -26,7 +25,12 @@ object Crashlytics {
         null
     }
 
-    private var application: Application? = null
+    private var analytics: Analytics? = null
+
+    @JvmStatic
+    fun init(application: Application) {
+        this.analytics = Analytics(AnalyticsProvider(application))
+    }
 
     /**
      * Set up Crashlytics metadata.
@@ -44,16 +48,14 @@ object Crashlytics {
      * https://firebase.google.com/docs/crashlytics/customize-crash-reports?platform=android#add-logs
      */
     @JvmStatic
+    @Deprecated("Not really but you shouldn't use this directly. Use Timber.i(). See MuunTree.")
     fun logBreadcrumb(breadcrumb: String) {
-        Timber.d("Breadcrumb: $breadcrumb")
         crashlytics?.log(breadcrumb)
-        application?.applicationContext?.let {
-            Analytics(AnalyticsProvider(it)).report(
-                AnalyticsEvent.E_BREADCRUMB(
-                    breadcrumb
-                )
+        analytics?.report(
+            AnalyticsEvent.E_BREADCRUMB(
+                breadcrumb
             )
-        }
+        )
     }
 
     /**
@@ -73,6 +75,12 @@ object Crashlytics {
         for (entry in report.metadata.entries) {
             crashlytics?.setCustomKey(entry.key, entry.value.toString())
         }
+
+        analytics?.report(
+            AnalyticsEvent.E_CRASHLYTICS_ERROR(
+                report.error.javaClass.simpleName + ":" + report.error.localizedMessage
+            )
+        )
 
         crashlytics?.recordException(report.error)
     }
@@ -135,10 +143,5 @@ object Crashlytics {
 
             else -> false
         }
-    }
-
-    @JvmStatic
-    fun init(application: Application) {
-        this.application = application
     }
 }

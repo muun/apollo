@@ -1,112 +1,119 @@
-package io.muun.apollo.data.external;
+package io.muun.apollo.data.external
 
-import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.NetworkParameters
 
+abstract class Globals {
 
-public abstract class Globals {
+    companion object {
 
-    /**
-     * This will be initialized in the UI application code, since it depends on Android build
-     * configurations.
-     */
-    public static Globals INSTANCE;
+        /**
+         * This will be initialized in the UI application code, since it depends on Android build
+         * configurations.
+         */
+        lateinit var INSTANCE: Globals
+    }
 
     /**
      * Get the Application Id (previously package name) of the app. Identifies the app on the
      * device, its unique in the Google Play store.
      */
-    public abstract String getApplicationId();
+    abstract val applicationId: String
 
     /**
      * Get whether the current build a debuggable build.
      */
-    public abstract boolean isDebugBuild();
+    abstract val isDebugBuild: Boolean
 
     /**
      * Get the build type of the current build.
      */
-    public abstract String getBuildType();
+    abstract val buildType: String
 
     /**
      * Get the legacy build type of the current build. It is now deprecated in favour of
-     * {@link Globals#getBuildType()}.
+     * [Globals.buildType].
      */
-    public abstract String getOldBuildType();
+    abstract val oldBuildType: String
 
     /**
      * Get the version code of the current build (e.g 1004).
      */
-    public abstract int getVersionCode();
+    abstract val versionCode: Int
 
     /**
      * Get the version name of the current build (e.g 50.4).
      */
-    public abstract String getVersionName();
+    abstract val versionName: String
 
     /**
      * Get the version name of the current build (e.g 50.4).
      */
-    public abstract String getDeviceName();
+    abstract val deviceName: String
 
     /**
      * Get the model name of the device where app is running.
      */
-    public abstract String getDeviceModel();
+    abstract val deviceModel: String
 
     /**
      * Get the manufacturer name of the device where app is running.
      */
-    public abstract String getDeviceManufacturer();
+    abstract val deviceManufacturer: String
 
     /**
      * Get the fingerprint of the device where app is running.
      */
-    public abstract String getFingerprint();
+    abstract val fingerprint: String
 
     /**
      * Get the hardware name of the device where app is running.
      */
-    public abstract String getHardware();
+    abstract val hardware: String
 
     /**
      * Get the bootloader name of the device where app is running.
      */
-    public abstract String getBootloader();
+    abstract val bootloader: String
 
     /**
      * Get the bitcoin network specs/parameters of the network this build is using.
      */
-    public abstract NetworkParameters getNetwork();
+    abstract val network: NetworkParameters
 
     /**
      * Get the hostname of this app's deeplink.
      */
-    public abstract String getMuunLinkHost();
+    abstract val muunLinkHost: String
 
     /**
      * Get the path of this app's "Verify" deeplink.
      */
-    public abstract String getVerifyLinkPath();
+    abstract val verifyLinkPath: String
 
     /**
      * Get the path of this app's "Authorize" deeplink.
      */
-    public abstract String getAuthorizeLinkPath();
+    abstract val authorizeLinkPath: String
 
     /**
      * Get the path of this app's "Confirm" deeplink.
      */
-    public abstract String getConfirmLinkPath();
+    abstract val confirmLinkPath: String
 
     /**
      * Get the path of this app's "Authorize RC Login" deeplink.
      */
-    public abstract String getRcLoginAuthorizePath();
+    abstract val rcLoginAuthorizePath: String
+
+    /**
+     * Get Lapp's URL.
+     */
+    abstract val lappUrl: String
 
     /**
      * Get whether the current build is a release build.
      */
-    public boolean isReleaseBuild() {
-        return getBuildType().equals("release");
-    }
+    val isReleaseBuild: Boolean
+        get() = buildType == "release"
+
 }

@@ -7,7 +7,7 @@ import io.muun.apollo.R
 
 class MuunDialog(
     override val device: UiDevice,
-    override val context: Context
+    override val context: Context,
 ) : WithMuunInstrumentationHelpers {
 
     fun checkDisplayed(@StringRes stringResId: Int) {

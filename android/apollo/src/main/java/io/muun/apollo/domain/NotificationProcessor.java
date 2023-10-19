@@ -227,7 +227,8 @@ public class NotificationProcessor {
                 message.hash,
                 message.status,
                 nextTransactionSize,
-                submarineSwap);
+                submarineSwap
+        );
 
         return updateOperation
                 .action(operationUpdated)
@@ -295,7 +296,7 @@ public class NotificationProcessor {
         // an RTD refresh), the home screen could change before their eyes. To mitigate this, we
         // preemptively call `fetchRealTimeData` here.
         fetchRealTimeData.runForced();
-        
+
         notificationService.showEventCommunication(message.event);
 
         return Completable.complete();

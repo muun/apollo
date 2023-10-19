@@ -33,7 +33,8 @@ object SystemContacts {
     private fun createRawContact(accountName: String): String {
         val accountType = "muunTest" // whatever
 
-        adb("content", "insert",
+        adb(
+            "content", "insert",
             "--uri", "content://com.android.contacts/raw_contacts",
             "--bind", "account_type:s:$accountType",
             "--bind", "account_name:s:$accountName"
@@ -43,7 +44,8 @@ object SystemContacts {
         Thread.sleep(25)
 
         // Get new raw contact's id to return it
-        val output = adb("content", "query",
+        val output = adb(
+            "content", "query",
             "--uri", "content://com.android.contacts/raw_contacts",
             "--projection", "_id",
             "--where", "account_name=\"$accountName\""
@@ -60,7 +62,8 @@ object SystemContacts {
      * Set name data to a raw contact.
      */
     private fun setNameData(id: String, name: String) {
-        adb("content", "insert",
+        adb(
+            "content", "insert",
             "--uri", "content://com.android.contacts/data",
             "--bind", "raw_contact_id:i:$id",
             "--bind", "mimetype:s:vnd.android.cursor.item/name",
@@ -75,7 +78,8 @@ object SystemContacts {
         val phoneType = "muunTest" // whatever
         val phoneName = Gen.alpha(10)
 
-        adb("content", "insert",
+        adb(
+            "content", "insert",
             "--uri", "content://com.android.contacts/data",
             "--bind", "raw_contact_id:i:$id",
             "--bind", "mimetype:s:vnd.android.cursor.item/phone_v2",

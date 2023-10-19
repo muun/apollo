@@ -88,6 +88,10 @@ public class MuunAmountInput extends MuunView {
     @State
     float maxWidthPx;
 
+
+    /**
+     * Part of our (ugly) hack to allow SATs as an input currency option.
+     */
     @State
     BitcoinUnit bitcoinUnit;
 
@@ -126,12 +130,17 @@ public class MuunAmountInput extends MuunView {
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-        getComponent().inject(this);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         this.textMaxWidthPercent = 1f;
         viewProps.transfer(attrs, this);
 
-        setUpNumberInput();
+        // Avoid complex text decoration and listeners initialization for layout preview
+        if (!isInEditMode()) {
+            setUpNumberInput();
+        }
     }
 
     private void setUpNumberInput() {
@@ -189,8 +198,22 @@ public class MuunAmountInput extends MuunView {
     /**
      * Set secondary amount's value and make it visible.
      */
-    public void setSecondaryAmount(CharSequence amount) {
-        this.secondaryAmount.setText(amount);
+    public void setSecondaryAmount(MonetaryAmount amount) {
+        setSecondaryAmount("%s", amount);
+    }
+
+    /**
+     * Set secondary amount's value and make it visible.
+     */
+    public void setSecondaryAmount(String format, MonetaryAmount amount) {
+        final String formattedAmount = MoneyHelper.formatLongMonetaryAmount(
+                amount,
+                true,
+                bitcoinUnit,
+                ExtensionsKt.locale(getContext())
+        );
+
+        this.secondaryAmount.setText(String.format(format, formattedAmount));
         this.secondaryAmount.setVisibility(View.VISIBLE);
     }
 
@@ -260,6 +283,12 @@ public class MuunAmountInput extends MuunView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        // Avoid tricky calls: getParent().getMeasuredWidth(), autoSizeDecoration.setMaxWidthPx()
+        if (isInEditMode()) {
+            return;
+        }
+
         this.maxWidthPx = ((View) this.getParent()).getMeasuredWidth() * textMaxWidthPercent;
         if (autoSizeDecoration != null) {
             autoSizeDecoration.setMaxWidthPx(maxWidthPx);
@@ -273,7 +302,7 @@ public class MuunAmountInput extends MuunView {
 
         MonetaryAmount newValue = Money.of(parseNumber(numberString), value.getCurrency());
 
-        if (MoneyExtensionsKt.isBtc(newValue) && getBitcoinUnit() == BitcoinUnit.SATS) {
+        if (MoneyExtensionsKt.isBtc(newValue) && bitcoinUnit == BitcoinUnit.SATS) {
             newValue = newValue.divide(BitcoinUtils.SATOSHIS_PER_BITCOIN);
         }
 
@@ -328,8 +357,10 @@ public class MuunAmountInput extends MuunView {
     private void adjustFractionalDigits() {
         if (isSatSelectedAsCurrency()) {
             moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_SAT);
+
         } else if (value.getCurrency().getCurrencyCode().equals("BTC")) {
             moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_BTC);
+
         } else {
             moneyDecoration.setMaxFractionalDigits(MoneyHelper.MAX_FRACTIONAL_DIGITS_FIAT);
         }
@@ -340,7 +371,7 @@ public class MuunAmountInput extends MuunView {
     }
 
     private void updateCurrencyCodeText() {
-        updateCurrencyCodeText(getBitcoinUnit());
+        updateCurrencyCodeText(bitcoinUnit);
     }
 
     private void updateCurrencyCodeText(BitcoinUnit bitcoinUnit) {
@@ -359,7 +390,7 @@ public class MuunAmountInput extends MuunView {
         if (value.isPositive()) {
             final String text = MoneyHelper.formatInputMonetaryAmount(
                     value,
-                    getBitcoinUnit(),
+                    bitcoinUnit,
                     ExtensionsKt.locale(getContext())
             );
 
@@ -386,13 +417,6 @@ public class MuunAmountInput extends MuunView {
         } catch (NumberFormatException exception) {
             return BigDecimal.ZERO;
         }
-    }
-
-    /**
-     * Part of our (ugly) hack to allow SATs as an input currency option.
-     */
-    public BitcoinUnit getBitcoinUnit() {
-        return bitcoinUnit;
     }
 
     /**

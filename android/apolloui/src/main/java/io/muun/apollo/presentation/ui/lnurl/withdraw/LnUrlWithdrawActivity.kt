@@ -141,9 +141,10 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
             // Sometimes this error is triggered super quickly on retries, making the UI kinda
             // glitchy, jumping from one state to another. So, we add a small delay to avoid
             // glitches on retries
-            postDelayed(3000) {
+            postDelayed(1000) {
                 showError(error.asViewModel(this))
             }
+            return
         }
 
         showError(error.asViewModel(this))

@@ -5,20 +5,21 @@ import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
-import org.assertj.core.api.Assertions.assertThat
 
 class SignInScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun waitForLanding(): Boolean {
         return normalizedLabel(R.string.signup_start).waitForExists(2500)
     }
 
-    fun fillSignInForm(email: String = Gen.email(),
-                       password: String?,
-                       recoveryCodeParts: List<String>?) {
+    fun fillSignInForm(
+        email: String = Gen.email(),
+        password: String?,
+        recoveryCodeParts: List<String>?,
+    ) {
 
         startLogin()
 
@@ -42,7 +43,7 @@ class SignInScreen(
         }
     }
 
-    fun rcSignIn(recoveryCodeParts: List<String> , email: String? = null) {
+    fun rcSignIn(recoveryCodeParts: List<String>, email: String? = null) {
 
         startLogin()
 
@@ -78,13 +79,17 @@ class SignInScreen(
     }
 
     fun checkEmailVerificationScreenDisplayed(email: String) {
-        assertThat(id(R.id.signup_waiting_for_email_verification_title).await(20000)).isTrue()
+        id(R.id.signup_waiting_for_email_verification_title).await(20000)
         checkScreenShows(email)
     }
 
     private fun checkRcLoginEmailAuthScreenDisplayed(email: String) {
-        assertThat(id(R.id.rc_login_email_auth_title).await(20000)).isTrue()
-        checkScreenShows(email)
+        id(R.id.rc_login_email_auth_title).await(20000)
+
+        val firstTwoLetters = email.substring(0, 2)
+        val tld = email.substring(email.indexOf('.') + 1)
+        val obfuscatedEmailRegex = "$firstTwoLetters.*@.*\\.$tld"
+        checkScreenFor(".*$obfuscatedEmailRegex.*") // regex must perfectly match whole string
 
         waitUntilGone(R.id.rc_login_email_auth_title)
     }
@@ -111,7 +116,12 @@ class SignInScreen(
     }
 
     fun checkEmailConfirmEnabled(enabled: Boolean) {
-        assertThat(button(R.id.enter_email_action).isEnabled).isEqualTo(enabled)
+        if (enabled) {
+            button(R.id.enter_email_action).assertEnabled()
+
+        } else {
+            button(R.id.enter_email_action).assertDisabled()
+        }
     }
 
     fun checkEmailError() {
@@ -119,11 +129,16 @@ class SignInScreen(
     }
 
     fun checkPasswordConfirmEnabled(enabled: Boolean) {
-        assertThat(button(R.id.signup_continue).isEnabled).isEqualTo(enabled)
+        if (enabled) {
+            button(R.id.signup_continue).assertEnabled()
+
+        } else {
+            button(R.id.signup_continue).assertDisabled()
+        }
     }
 
     fun checkPasswordError() {
-       checkInputError(R.id.signup_unlock_edit_password, R.string.error_incorrect_password)
+        checkInputError(R.id.signup_unlock_edit_password, R.string.error_incorrect_password)
     }
 
     fun abortDialogCancel() {

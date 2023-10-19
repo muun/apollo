@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences
 
 import io.muun.apollo.data.preferences.permission.NotificationPermissionStateRepository
+import timber.log.Timber
 
 /**
  * Welcome to RepositoryRegistry! This is class is meant to be a centralized, singleton registry
@@ -14,10 +15,12 @@ import io.muun.apollo.data.preferences.permission.NotificationPermissionStateRep
  * (ie we want to keep that data) instead of the usual (rm -rf).
  *
  * Since we are still forced to manually keep a list of ALL repositories, we came up with the idea
- * of having a static list of all the repositories clases, and having BaseRepository (the class
+ * of having a static list of all the repositories classes, and having BaseRepository (the class
  * which every repository should extend from), load the repository here upon its creation.
  * That way if we forget to add a new repository to this list, build will quickly fail upon running.
  * This is the simplest and "closest to a linter/static check" solution we could came up with.
+ *
+ * Note: this class is used a @Singleton. Check out its provider method in { @link DataModule }.
  */
 class RepositoryRegistry {
 
@@ -66,7 +69,17 @@ class RepositoryRegistry {
         NotificationPermissionSkippedRepository::class.java
     )
 
-    private val loadedRepositories: MutableSet<BaseRepository> = mutableSetOf()
+    // Note: the use of a map is critical here for 2 reasons, both of them related to memory
+    // footprint. First, we want to keep exactly ONE reference to each repository, since that's all
+    // we need to perform the clearing of the repository at logout (dependency injection framework
+    // may instantiate more than one instance of the same repository if its not annotated with
+    // @Singleton). Secondly, we take advantage of the behavior of the put() method, to "renew" our
+    // reference of the repository and allow "older" references/instances to be properly garbage
+    // collected. This help prevents leaks of other objects which can't be GCed because they held
+    // a reference to that "old" repository instance (e.g objects where that repository was injected
+    // as a dependency).
+    private val loadedRepos: MutableMap<Class<out BaseRepository>, BaseRepository> =
+        mutableMapOf()
 
     fun load(repo: BaseRepository) {
         synchronized(lock) {
@@ -74,7 +87,10 @@ class RepositoryRegistry {
                 throw IllegalStateException("${repo.javaClass} is not registered in ${this.javaClass}!")
             }
 
-            loadedRepositories.add(repo)
+            loadedRepos[repo.javaClass] = repo
+            Timber.d(
+                "RepositoryRegistry#load(${repo.javaClass.simpleName}). Size: ${loadedRepos.size}"
+            )
         }
     }
 
@@ -82,11 +98,11 @@ class RepositoryRegistry {
      * The list of repositories to clear include all loaded repositories except for
      * logoutSurvivorRepositories.
      */
-    fun repositoriesToClear(): List<BaseRepository> =
+    fun repositoriesToClearOnLogout(): Collection<BaseRepository> =
         synchronized(lock) {
-            loadedRepositories.filter {
-                !logoutSurvivorRepositories.contains(it.javaClass)
-            }
+            loadedRepos.filterKeys {
+                !logoutSurvivorRepositories.contains(it)
+            }.values
         }
 
     private fun isRegistered(repository: BaseRepository) =

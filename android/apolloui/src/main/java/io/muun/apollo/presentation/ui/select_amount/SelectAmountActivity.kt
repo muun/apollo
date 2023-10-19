@@ -5,14 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import butterknife.BindView
 import butterknife.OnClick
-import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
-import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.base.BaseActivity
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.helper.serialize
 import io.muun.apollo.presentation.ui.view.MuunAmountInput
@@ -138,14 +135,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
     }
 
     override fun setSecondaryAmount(amount: MonetaryAmount) {
-        amountInput.setSecondaryAmount(
-            MoneyHelper.formatLongMonetaryAmount(
-                amount,
-                true,
-                amountInput.bitcoinUnit,
-                locale()
-            )
-        )
+        amountInput.setSecondaryAmount(amount)
     }
 
     override fun hideSecondaryAmount() {

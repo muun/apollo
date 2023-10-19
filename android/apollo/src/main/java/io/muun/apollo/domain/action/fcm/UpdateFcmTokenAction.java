@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.fcm;
 
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
@@ -50,7 +49,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
         // If anyone of these is true, we can't perform an http request to Houston (NOT_AUTHORIZED)
         if (!hasValidSession || !hasJwt) {
 
-            Crashlytics.logBreadcrumb("UpdateFcmToken: NOT_AUTHORIZED");
+            Timber.i("UpdateFcmToken: NOT_AUTHORIZED");
 
             // As IDE might tell you, !hasJwt will always be true at this point. We're leaving it:
             // - for readability
@@ -62,7 +61,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
             // Integrity check. May sound silly but its our canary for when things go wrong with
             // a logout (our logout logic has become a bit cumbersome) or a local storage wipe.
             if (hasValidSessionButNoJwt || hasJwtButInvalidSession) {
-                Crashlytics.logBreadcrumb(
+                Timber.i(
                         String.format(
                                 "LocalStorageIntegrityError (%s,%s)",
                                 hasValidSessionButNoJwt,
@@ -82,7 +81,7 @@ public class UpdateFcmTokenAction extends BaseAsyncAction1<String, Void> {
             return Observable.just(null);
         }
 
-        Crashlytics.logBreadcrumb("Updating FCM token");
+        Timber.i("Updating FCM token");
 
         return houstonClient.updateFcmToken(newFcmToken)
                 .flatMap(ignore -> notificationActions.pullNotifications());

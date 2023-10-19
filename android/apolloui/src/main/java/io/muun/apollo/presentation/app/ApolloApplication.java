@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.app;
 
 import io.muun.apollo.data.async.tasks.MuunWorkerFactory;
+import io.muun.apollo.data.debug.HeapDumper;
 import io.muun.apollo.data.di.DaggerDataComponent;
 import io.muun.apollo.data.di.DataComponent;
 import io.muun.apollo.data.di.DataModule;
@@ -92,6 +93,9 @@ public abstract class ApolloApplication extends Application
     public void onCreate() {
         super.onCreate();
 
+        initializeStaticSingletons();
+
+        HeapDumper.init(this);
         Crashlytics.init(this);
 
         ensureCurrencyServicesLoaded();
@@ -103,7 +107,6 @@ public abstract class ApolloApplication extends Application
             FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(false);
         }
 
-        initializeStaticSingletons();
         initializeDagger();
 
         detectAppUpdate.run();
@@ -176,7 +179,7 @@ public abstract class ApolloApplication extends Application
     @Override
     public Configuration getWorkManagerConfiguration() {
         Timber.d("[MuunWorkerFactory] Application#getWorkManagerConfiguration()");
-        final int loggingLevel = Globals.INSTANCE.isReleaseBuild() ? Log.ASSERT : Log.VERBOSE;
+        final int loggingLevel = Globals.INSTANCE.isReleaseBuild() ? Log.ERROR : Log.VERBOSE;
         return new Configuration.Builder()
                 .setWorkerFactory(new MuunWorkerFactory(this))
                 .setMinimumLoggingLevel(loggingLevel)

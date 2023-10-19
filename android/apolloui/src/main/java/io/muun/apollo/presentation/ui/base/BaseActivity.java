@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.base;
 
 import io.muun.apollo.R;
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.domain.action.permission.UpdateContactsPermissionStateAction;
 import io.muun.apollo.domain.action.permission.UpdateNotificationPermissionStateAction;
@@ -136,6 +135,8 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         try {
             super.onCreate(savedInstanceState);
 
+            Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreate");
+
             Icepick.restoreInstanceState(this, savedInstanceState);
 
             setUpLayout();
@@ -158,6 +159,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Override
     @CallSuper
     protected void onDestroy() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onDestroy");
         tearDownUi();
         super.onDestroy();
     }
@@ -194,6 +196,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Override
     @CallSuper
     protected void onSaveInstanceState(Bundle outState) {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onSaveInstanceState");
         super.onSaveInstanceState(outState);
         Icepick.saveInstanceState(this, outState);
         presenter.saveState(outState);
@@ -203,6 +206,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @CallSuper
     protected void onResume() {
         try {
+            Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onResume");
             super.onResume();
             LoggingContext.setLocale(ExtensionsKt.locale(this).toString());
             if (blockScreenshots()) {
@@ -237,6 +241,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Override
     @CallSuper
     protected void onPause() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onPause");
         super.onPause();
         presenter.tearDown();
         if (blockScreenshots()) {
@@ -246,6 +251,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Override
     public void onStop() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onStop");
         super.onStop();
         // Avoid leaving soft keyboard shown. When coming back to lock screen it may be left hanging
         // around. Every screen should handle showing it again on their onResume method.
@@ -329,6 +335,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Override
     public void onBackPressed() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onBackPressed");
         if (!shouldIgnoreBackAndExit()) {
             super.onBackPressed();
         }
@@ -353,7 +360,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
                 // Tackling weird `Can't change activity type once set:` crash. See:
                 // https://stackoverflow.com/questions/55005798/illegalstateexception-cant-change-activity-type-once-set
-                Crashlytics.logBreadcrumb("shouldIgnoreBackAndExit() failed: " + e.getMessage());
+                Timber.i("shouldIgnoreBackAndExit() failed: " + e.getMessage());
                 Timber.e(e);
 
                 // On this weird case we just ignore back (user can try pin again or choose to kill
@@ -367,12 +374,13 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @Deprecated // Use BaseActivity#finishActivity() instead
     @Override
     public void finish() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#finish");
         super.finish();
     }
 
     @Override
     public void finishActivity() {
-        Crashlytics.logBreadcrumb("Finishing Activity: " + getClass().getSimpleName());
+        Timber.i("Finishing Activity: " + getClass().getSimpleName());
         supportFinishAfterTransition();
     }
 

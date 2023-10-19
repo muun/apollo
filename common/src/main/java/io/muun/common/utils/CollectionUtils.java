@@ -5,7 +5,10 @@ import io.muun.common.Optional;
 import rx.functions.Func1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -89,5 +92,27 @@ public class CollectionUtils {
         }
 
         return result;
+    }
+
+    /**
+     * Create a map by zipping together two lists of elements.
+     */
+    public static <K, V> Map<K, V> zipToMap(List<K> keys, List<V> values) {
+        Preconditions.checkArgument(keys.size() == values.size());
+
+        final Map<K, V> map = new HashMap<K, V>();
+        final Iterator<K> keyIterator = keys.iterator();
+        final Iterator<V> valueIterator = values.iterator();
+
+        while (keyIterator.hasNext() && valueIterator.hasNext()) {
+            final K key = keyIterator.next();
+            final V value = map.put(key, valueIterator.next());
+            if (value != null) {
+                throw new IllegalArgumentException(
+                        "Keys are not unique! Key " + key + " found more then once");
+            }
+        }
+
+        return map;
     }
 }

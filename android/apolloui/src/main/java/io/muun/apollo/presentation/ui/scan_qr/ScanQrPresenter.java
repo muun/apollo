@@ -7,6 +7,7 @@ import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.selector.ClipboardUriSelector;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
+import io.muun.apollo.presentation.ui.utils.OS;
 
 import android.os.Bundle;
 import icepick.State;
@@ -49,12 +50,23 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
     }
 
     private void setUpClipboard() {
-        final Observable<OperationUri> observable = clipboardUriSel
-                .watch()
-                .compose(getAsyncExecutor())
-                .doOnNext(this::setClipboardUri);
+        if (!OS.supportsClipboardAccessNotification()) {
+            final Observable<OperationUri> observable = clipboardUriSel
+                    .watch()
+                    .compose(getAsyncExecutor())
+                    .doOnNext(this::setClipboardUri);
 
-        subscribeTo(observable);
+            subscribeTo(observable);
+
+        } else {
+            final Observable<Boolean> observable = clipboardManager
+                    .watchForPlainText()
+                    .compose(getAsyncExecutor())
+                    .doOnNext(view::setClipboardStatus);
+
+            subscribeTo(observable);
+
+        }
     }
 
     private void setClipboardUri(OperationUri operationUri) {
@@ -144,11 +156,32 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
     public Unit selectFromUriPaster(@NotNull OperationUri uri) {
         if (uri.getLnUrl().isPresent()) {
             navigator.navigateToLnUrlWithdraw(getContext(), uri.getLnUrl().get());
+
         } else {
             Timber.e(new RuntimeException("Non-LNURL Uri in LNURL UriPaster. Should not happen!"));
         }
 
         view.finishActivity();
         return null;
+    }
+
+    /**
+     * Access clipboard and try to navigating to LNURL Withdraw screen, provided clipboard contains
+     * a LNURL.
+     */
+    public void pasteFromClipboard() {
+        try {
+            final OperationUri operationUri = OperationUri.fromString(clipboardUriSel.getText());
+
+            if (operationUri.getLnUrl().isPresent()) {
+                navigator.navigateToLnUrlWithdraw(getContext(), operationUri.getLnUrl().get());
+
+            } else {
+                view.showNoLnUrlInClipoardError();
+            }
+
+        } catch (IllegalArgumentException e) {
+            view.showNoLnUrlInClipoardError();
+        }
     }
 }

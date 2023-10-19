@@ -1,6 +1,7 @@
 package io.muun.apollo.data.os
 
 import android.content.ClipData
+import android.content.ClipDescription.MIMETYPE_TEXT_PLAIN
 import android.content.ClipboardManager
 import android.content.Context
 import rx.Observable
@@ -53,8 +54,10 @@ class ClipboardProvider @Inject constructor(context: Context) {
 
     /**
      * Grab some text from the clipboard.
+     * NOTE: starting from Android 12 (api 31) this triggers a Clipboard Access visual notification
+     * on screen.
      */
-    private fun paste(): String? {
+    fun paste(): String? {
         if (!clipboard.hasPrimaryClip()) {
             return null
         }
@@ -64,5 +67,21 @@ class ClipboardProvider @Inject constructor(context: Context) {
         }
         val item = primaryClip.getItemAt(0)
         return item?.text?.toString()
+    }
+
+    /**
+     * Create an Observable that reports changes on the system clipboard (fires on subscribe).
+     */
+    fun watchForPlainText(): Observable<Boolean> {
+        return Observable
+            .interval(250, TimeUnit.MILLISECONDS) // emits sequential numbers 0+ on each tick
+            .startWith(-1L) // emits -1 immediately (since interval waits for the first delay)
+            .map { hasPlainText() }
+            .distinctUntilChanged()
+    }
+
+    private fun hasPlainText(): Boolean {
+        return clipboard.hasPrimaryClip()
+            && clipboard.primaryClipDescription!!.hasMimeType(MIMETYPE_TEXT_PLAIN)
     }
 }

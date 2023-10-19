@@ -317,8 +317,6 @@ public final class Preconditions {
         return number;
     }
 
-
-
     /**
      * Ensures that {@code number} is positive.
      *
@@ -329,6 +327,22 @@ public final class Preconditions {
      * @throws IllegalArgumentException if {@code number} is not positive
      */
     public static int checkPositive(int number, @Nullable Object errorMessage) {
+        if (number <= 0) {
+            throw new IllegalArgumentException(String.valueOf(errorMessage));
+        }
+        return number;
+    }
+
+    /**
+     * Ensures that {@code number} is positive.
+     *
+     * @param number a number
+     * @param errorMessage the exception message to use if the check fails; will be converted to a
+     *                     string using {@link String#valueOf(Object)}
+     * @return the value of {@code number}
+     * @throws IllegalArgumentException if {@code number} is not positive
+     */
+    public static long checkPositive(long number, @Nullable Object errorMessage) {
         if (number <= 0) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
         }

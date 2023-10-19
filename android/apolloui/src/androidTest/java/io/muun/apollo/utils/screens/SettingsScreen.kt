@@ -3,13 +3,12 @@ package io.muun.apollo.utils.screens
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
-import io.muun.apollo.utils.MuunTexts
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 
 class SettingsScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun goToChangePassword() {
         id(R.id.settings_password).click()
@@ -26,7 +25,7 @@ class SettingsScreen(
     fun setBitcoinUnitToSat() {
         id(R.id.settings_bitcoin_unit).click()
 
-        id(R.id.bitcoin_unit_sat)
+        id(R.id.bitcoin_unit_sat).click()
     }
 
     fun toggleTurboChannels() {

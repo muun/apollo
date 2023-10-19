@@ -1,6 +1,7 @@
 package io.muun.apollo.data.logging
 
 import android.util.Log
+import io.muun.apollo.data.logging.Crashlytics.logBreadcrumb
 import io.muun.apollo.domain.model.report.CrashReportBuilder
 import timber.log.Timber
 
@@ -10,13 +11,27 @@ class MuunTree : Timber.DebugTree() {
      * Log a message, taking steps to enrich and report errors.
      */
     override fun log(priority: Int, tag: String?, message: String?, error: Throwable?) {
-        // For non-error logs, we don't have any special treatment:
-        if (priority < Log.ERROR) {
+        // For low priority logs, we don't have any special treatment:
+        if (priority < Log.INFO) {
             super.log(priority, tag, message, error)
             return
         }
 
-        sendCrashReport(tag, message, error)
+        when (priority) {
+            Log.INFO -> {
+                Log.i("Breadcrumb", message!!)
+                @Suppress("DEPRECATION") // I know. These are the only allowed usages.
+                logBreadcrumb(message)
+            }
+            Log.WARN -> {
+                Log.w(tag, message!!)
+                @Suppress("DEPRECATION") // I know. These are the only allowed usages.
+                logBreadcrumb("Warning: $message")
+            }
+            else -> { // Log.ERROR && Log.ASSERT
+                sendCrashReport(tag, message, error)
+            }
+        }
     }
 
     private fun sendCrashReport(tag: String?, message: String?, error: Throwable?) {

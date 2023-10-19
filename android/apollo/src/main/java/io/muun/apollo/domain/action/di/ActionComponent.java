@@ -35,6 +35,7 @@ import io.muun.apollo.domain.action.session.UseMuunLinkAction;
 import io.muun.apollo.domain.action.session.rc_only.LogInWithRcAction;
 import io.muun.apollo.domain.action.user.EmailLinkAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
+import io.muun.apollo.domain.debug.DebugExecutable;
 
 import dagger.Component;
 
@@ -123,4 +124,6 @@ public interface ActionComponent {
     StartRecoveryCodeSetupAction startRecoveryCodeSetupAction();
 
     UpdateContactsPermissionStateAction updateContactsPermissionStateAction();
+
+    DebugExecutable debugExecutable();
 }

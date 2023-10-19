@@ -31,6 +31,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import static io.muun.apollo.domain.action.NotificationActions_ExtensionsKt.asString;
+import static io.muun.apollo.domain.action.NotificationActions_ExtensionsKt.mapIds;
+
 @Singleton // important
 public class NotificationActions {
 
@@ -54,7 +57,7 @@ public class NotificationActions {
 
     public final AsyncAction0<Void> pullNotificationsAction;
 
-    private AppStandbyBucketProvider appStandbyBucketProvider;
+    private final AppStandbyBucketProvider appStandbyBucketProvider;
 
     /**
      * Constructor.
@@ -90,17 +93,16 @@ public class NotificationActions {
     }
 
     /**
-     * Pull the latest notifications from Hosuton.
+     * Pull the latest notifications from Houston.
      */
     public Observable<Void> pullNotifications() {
 
         return Observable.defer(() -> {
 
-            Timber.d("[Notifications] Pulling...");
+            final long lastProcessedId = notificationRepository.getLastProcessedId();
+            Timber.i("[Notifications] Pulling... LastProcessedId: " + lastProcessedId);
 
-            final long lastProccessedId = notificationRepository.getLastProcessedId();
-
-            return houstonClient.fetchNotificationReportAfter(lastProccessedId)
+            return houstonClient.fetchNotificationReportAfter(lastProcessedId)
                     .map(report -> {
                         onNotificationReport(report);
                         return null;
@@ -147,6 +149,8 @@ public class NotificationActions {
         return Completable.defer(() -> {
             final long lastIdBefore = notificationRepository.getLastProcessedId();
 
+            Timber.i("[Notifications] Processing List: " + asString(mapIds(notifications)));
+
             return Observable.from(notifications)
                     .compose(forEach(this::processNotification))
                     .lastOrDefault(null)
@@ -178,11 +182,13 @@ public class NotificationActions {
 
         return Completable.defer(() -> {
             final String messageType = notification.messageType;
-            Timber.d("[Notifications] Processing " + messageType);
+            final String bucket = appStandbyBucketProvider.current().toString();
+            final Long id = notification.id;
+            Timber.i("[Notifications] Processing (" + id + ") " + messageType + " - " + bucket);
 
             final long lastProcessedId = notificationRepository.getLastProcessedId();
 
-            if (notification.id <= lastProcessedId) {
+            if (id <= lastProcessedId) {
                 return Completable.complete(); // already processed!
             }
 
@@ -195,6 +201,7 @@ public class NotificationActions {
                     .onErrorComplete(cause -> {
                         notificationRepository.increaseProcessingFailures();
 
+                        logBreadcrumb(id, messageType, processingFailures, cause);
                         Timber.e(NotificationProcessingError.fromCause(notification, cause));
 
                         if (processingFailures > 3) {
@@ -202,6 +209,7 @@ public class NotificationActions {
                             return true;
                         }
 
+                        //noinspection RedundantIfStatement
                         if (messageType.equals(FulfillIncomingSwapMessage.SPEC.messageType)) {
                             // We don't allow skipping fulfills
                             return false;
@@ -209,9 +217,9 @@ public class NotificationActions {
 
                         return true; // skip notification, log the error
                     })
-                    .doOnCompleted(() -> {
-                        notificationRepository.setLastProcessedId(notification.id);
-                    });
+                    .doOnCompleted(() ->
+                            notificationRepository.setLastProcessedId(id)
+                    );
         });
     }
 
@@ -258,5 +266,10 @@ public class NotificationActions {
                 );
     }
 
-
+    private void logBreadcrumb(Long id, String msgType, long failures, Throwable cause) {
+        final String e = cause.getClass().getSimpleName() + ":" + cause.getLocalizedMessage();
+        Timber.i(
+                "[Notifications] Error: (" + id + ") " + msgType + " - " + failures + " - " + e
+        );
+    }
 }

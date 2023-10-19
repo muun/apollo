@@ -6,7 +6,6 @@ import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.google.android.play.core.integrity.IntegrityTokenResponse
 import com.google.android.play.core.integrity.model.IntegrityErrorCode
 import com.google.firebase.FirebaseApp
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.domain.errors.PlayIntegrityError
 import io.muun.apollo.domain.model.PlayIntegrityToken
 import rx.Observable
@@ -83,7 +82,7 @@ class GooglePlayIntegrity @Inject constructor(private val context: Context) {
     ) {
 
         val integrityToken = response.token()
-        Crashlytics.logBreadcrumb("IntegrityTokenFetched: $integrityToken")
+        Timber.i("IntegrityTokenFetched: $integrityToken")
 
         observer.onNext(PlayIntegrityToken(integrityToken))
         observer.onCompleted()
@@ -93,8 +92,8 @@ class GooglePlayIntegrity @Inject constructor(private val context: Context) {
 
         val playIntegrityError = buildPlayIntegrityError(e)
 
-        Crashlytics.logBreadcrumb("IntegrityTokenError: ${playIntegrityError.getName()}")
-        Crashlytics.logBreadcrumb("IntegrityTokenError: ${playIntegrityError.getText()}")
+        Timber.i("IntegrityTokenError: ${playIntegrityError.getName()}")
+        Timber.i("IntegrityTokenError: ${playIntegrityError.getText()}")
 
         Timber.e(playIntegrityError)
 
@@ -103,7 +102,7 @@ class GooglePlayIntegrity @Inject constructor(private val context: Context) {
     }
 
     private fun handleIntegrityTokenCanceled(observer: BehaviorSubject<PlayIntegrityToken>) {
-        Crashlytics.logBreadcrumb("IntegrityTokenCancelled")
+        Timber.i("IntegrityTokenCancelled")
         Timber.e(PlayIntegrityError())
 
         observer.onNext(PlayIntegrityToken(null, "CANCELLED"))

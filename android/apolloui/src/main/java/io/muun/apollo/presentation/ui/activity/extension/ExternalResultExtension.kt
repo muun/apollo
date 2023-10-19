@@ -3,10 +3,8 @@ package io.muun.apollo.presentation.ui.activity.extension
 import android.content.Intent
 import androidx.fragment.app.DialogFragment
 import icepick.State
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import timber.log.Timber
-import java.util.HashMap
 import javax.inject.Inject
 
 @PerActivity
@@ -62,7 +60,7 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
         val request = pendingRequests[globalRequestCode]
         var view = findCaller(request, Caller::class.java)
 
-        Crashlytics.logBreadcrumb(
+        Timber.i(
             """onActivityResult:
                 globalRequestCode: $globalRequestCode
                 resultCode: $resultCode
@@ -86,9 +84,7 @@ class ExternalResultExtension @Inject constructor() : BaseRequestExtension() {
                 // We're hunting down a sneaky bug here. Let's log every useful piece data
                 // We believe there’s some random, not deterministic issue that makes fragments ids
                 // change or something and our findCaller mechanism falls short
-                Crashlytics.logBreadcrumb(
-                    "View/Fragment Caller not found for onActivityResult."
-                )
+                Timber.i("View/Fragment Caller not found for onActivityResult.")
                 val fragments = activity.supportFragmentManager.fragments
                 val fragmentIds = fragments.map { it.id }
                 val fragmentNames = fragments.map { it.javaClass.simpleName }

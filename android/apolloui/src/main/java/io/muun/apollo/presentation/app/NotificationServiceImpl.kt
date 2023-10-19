@@ -222,9 +222,11 @@ class NotificationServiceImpl @Inject constructor(
             HomeActivity.getStartActivityIntent(context)
         )
 
-        notification.actions.add(MuunNotification.Action(
-            0, context.string(R.string.notification_incoming_ln_payment_pending_cta)
-        ))
+        notification.actions.add(
+            MuunNotification.Action(
+                0, context.string(R.string.notification_incoming_ln_payment_pending_cta)
+            )
+        )
 
         showWithDrawable(notification, R.drawable.lightning)
     }

@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.View
 import icepick.Bundler
 import icepick.State
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.common.utils.Preconditions
+import timber.log.Timber
 
 abstract class BaseRequestExtension : ActivityExtension() {
 
@@ -27,7 +27,7 @@ abstract class BaseRequestExtension : ActivityExtension() {
         val globalRequestCode = uniqueRequestCode
         registerRequestFromCaller(request, globalRequestCode)
 
-        Crashlytics.logBreadcrumb(
+        Timber.i(
             """startActivityForResult:
                 globalRequestCode: $globalRequestCode
                 request.viewRequestCode: ${request.viewRequestCode}
@@ -65,9 +65,10 @@ abstract class BaseRequestExtension : ActivityExtension() {
 
     class CallerRequest {
         // Making fields public for Jackson to de/serialize
+        @JvmField // Required to avoid proguard obfuscation
         var viewId = 0
 
-        @JvmField
+        @JvmField // Required to avoid proguard obfuscation
         var viewRequestCode = 0
     }
 

@@ -58,11 +58,14 @@ public class CreateOperationAction {
         this.verifyFulfillable = verifyFulfillable;
     }
 
+    /**
+     * Create/Store a new Operation in the local database, and update the transaction size vector.
+     */
     public Observable<Operation> action(Operation operation,
                                         NextTransactionSize nextTransactionSize) {
         return saveOperation(operation)
                 .map(savedOperation -> {
-                    Timber.d("Updating next transaction size estimation");
+                    Timber.i("Updating next transaction size estimation");
                     transactionSizeRepository.setTransactionSize(nextTransactionSize);
 
                     if (savedOperation.direction == OperationDirection.INCOMING) {
@@ -75,7 +78,11 @@ public class CreateOperationAction {
                     final Observable<Operation> continuation = Observable.just(savedOperation);
 
                     if (savedOperation.incomingSwap != null) {
+                        Timber.i("Incoming Swap Fulfillable: verifying");
                         return verifyFulfillable.action(savedOperation.incomingSwap)
+                                .doOnCompleted(() -> {
+                                    Timber.i("Incoming Swap Fulfillable: success");
+                                })
                                 .andThen(continuation);
                     } else {
                         return continuation;

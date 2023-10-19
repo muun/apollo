@@ -3,56 +3,54 @@ package io.muun.apollo.presentation
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.debug.LappClient
+import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.utils.MuunTexts
 import io.muun.common.utils.BitcoinUtils
 import org.junit.Test
 import org.junit.runner.RunWith
+import javax.money.MonetaryAmount
 
 @RunWith(AndroidJUnit4::class)
 open class LnUrlWithdrawTests : BaseInstrumentationTest() {
+
+    // For now the withdraw amount is fixed
+    private val lnurlWithdrawAmount: MonetaryAmount = BitcoinUtils.satoshisToBitcoins(3000)
 
     @Test
     fun test_01_a_user_can_withdraw_using_lnurl_via_receive() {
         autoFlows.signUp()
 
-        // For now the withdraw amount is fixed
-        val amountToWithdraw = BitcoinUtils.satoshisToBitcoins(3000)
         val balanceBefore = homeScreen.balanceInBtc
 
         autoFlows.lnUrlWithdrawViaReceive()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore.add(amountToWithdraw))
+        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 
     @Test
     fun test_02_a_user_can_withdraw_using_lnurl_via_send() {
         autoFlows.signUp()
 
-        // For now the withdraw amount is fixed
-        val amountToWithdraw = BitcoinUtils.satoshisToBitcoins(3000)
         val balanceBefore = homeScreen.balanceInBtc
 
         autoFlows.lnUrlWithdrawViaSend()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore.add(amountToWithdraw))
+        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 
     @Test
     fun test_03_a_user_can_withdraw_using_lnurl_when_taking_too_long() {
         autoFlows.signUp()
 
-        // For now the withdraw amount is fixed
-        val amountToWithdraw = BitcoinUtils.satoshisToBitcoins(3000)
         val balanceBefore = homeScreen.balanceInBtc
 
         autoFlows.lnUrlWithdrawViaSend(LappClient.LnUrlVariant.SLOW)
 
         // We should be at home by now
         homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change immediately
-        homeScreen.waitUntilBalanceEquals(balanceBefore.add(amountToWithdraw))
+        homeScreen.waitUntilBalanceEquals(balanceBefore.add(lnurlWithdrawAmount))
     }
 
     @Test
@@ -169,5 +167,19 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
 
         // We should be at home by now
         homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change
+    }
+
+    @Test
+    fun test_10_a_user_can_withdraw_using_lnurl_via_send_via_manual_input() {
+        autoFlows.signUp()
+
+        val balanceBefore = homeScreen.balanceInBtc
+
+        autoFlows.lnUrlWithdrawViaSend { lnurl ->
+            autoFlows.startOperationManualInputTo(lnurl)
+        }
+
+        // We should be at home by now
+        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 }

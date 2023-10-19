@@ -5,6 +5,7 @@ import io.muun.apollo.domain.errors.BugDetected;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension.Caller;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
+import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension.PermissionRequester;
 import io.muun.apollo.presentation.ui.base.di.FragmentComponent;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
@@ -141,6 +142,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     @Override
     @CallSuper
     public void onResume() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onResume");
         super.onResume();
         presenter.setUp(getArgumentsBundle());
         presenter.afterSetUp();
@@ -149,6 +151,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     @Override
     @CallSuper
     public void onPause() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onStop");
         super.onPause();
         presenter.tearDown();
     }
@@ -170,6 +173,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     @Override
     @CallSuper
     public void onDestroyView() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onDestroyView");
         butterKnifeUnbinder.unbind();
         tearDownUi();
         super.onDestroyView();
@@ -177,6 +181,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
 
     @Override
     public void onStart() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onStart");
         super.onStart();
 
         if (blockScreenshots()) {
@@ -199,6 +204,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
 
     @Override
     public void onStop() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onStop");
         super.onStop();
         if (blockScreenshots()) {
             final String caller = this.getClass().getSimpleName();

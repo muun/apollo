@@ -9,13 +9,14 @@ import io.muun.apollo.domain.selector.ClipboardUriSelector
 import io.muun.apollo.domain.selector.P2PStateSelector
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
+import io.muun.apollo.presentation.ui.utils.OS
 import javax.inject.Inject
 
 @PerActivity
 class SendPresenter @Inject constructor(
     private val p2PStateSel: P2PStateSelector,
-    private val clipboardUriSel: ClipboardUriSelector
-): BasePresenter<SendView>() {
+    private val clipboardUriSel: ClipboardUriSelector,
+) : BasePresenter<SendView>() {
 
     companion object {
         const val MIN_ADDRESS_LENGTH_FOR_VALIDATION = 23
@@ -38,41 +39,44 @@ class SendPresenter @Inject constructor(
     }
 
     private fun setUpClipboard() {
-        val observable = clipboardUriSel
-            .watch()
-            .compose(getAsyncExecutor())
-            .doOnNext(view::setClipboardUri)
+        if (!OS.supportsClipboardAccessNotification()) {
+            clipboardUriSel
+                .watch()
+                .compose(getAsyncExecutor())
+                .doOnNext(view::setClipboardUri)
+                .let(this::subscribeTo)
 
-        subscribeTo(observable)
+        } else {
+            clipboardManager
+                .watchForPlainText()
+                .compose(getAsyncExecutor())
+                .doOnNext(view::setClipboardStatus)
+                .let(this::subscribeTo)
+        }
     }
 
-    fun isValidPartialUri(maybeUri: String) =
-        maybeUri.length < MIN_ADDRESS_LENGTH_FOR_VALIDATION || isValidUri(maybeUri)
-
-    fun isValidUri(maybeUri: String) =
-        try {
-            OperationUri.fromString(maybeUri)
-            true
-        } catch (e: Throwable) {
-            false
-        }
+    fun pasteFromClipboard() {
+        view.pasteFromClipboard(clipboardUriSel.getText())
+    }
 
     /**
      * Select which screen to navigate to, based on the content of an OperationUri.
      */
     fun selectUriFromPaster(uri: OperationUri) {
+        confirmOperationUri(uri, NewOperationOrigin.SEND_CLIPBOARD_PASTE)
+    }
 
+    fun selectUriFromInput(uri: OperationUri) {
+        confirmOperationUri(uri, NewOperationOrigin.SEND_MANUAL_INPUT)
+    }
+
+    private fun confirmOperationUri(uri: OperationUri, origin: NewOperationOrigin) {
         if (uri.lnUrl.isPresent) {
             navigator.navigateToLnUrlWithdrawConfirm(context, uri.lnUrl.get())
 
         } else {
-            navigator.navigateToNewOperation(context, NewOperationOrigin.SEND_CLIPBOARD_PASTE, uri)
+            navigator.navigateToNewOperation(context, origin, uri)
         }
-        view.finishActivity()
-    }
-
-    fun selectUriFromInput(uri: OperationUri) {
-        navigator.navigateToNewOperation(context, NewOperationOrigin.SEND_MANUAL_INPUT, uri)
         view.finishActivity()
     }
 
@@ -98,6 +102,28 @@ class SendPresenter @Inject constructor(
     fun goToSystemSettings() {
         navigator.navigateToSystemSettings(context)
     }
+
+    fun onUriInputChange(inputContent: String) {
+        view.updateUriState(
+            UriState(
+                inputContent.isBlank(),
+                isValidUri(inputContent),
+                isValidPartialUri(inputContent),
+                clipboardUriSel.isLastCopiedFromReceive(inputContent)
+            )
+        )
+    }
+
+    private fun isValidPartialUri(maybeUri: String) =
+        maybeUri.length < MIN_ADDRESS_LENGTH_FOR_VALIDATION || isValidUri(maybeUri)
+
+    private fun isValidUri(maybeUri: String) =
+        try {
+            OperationUri.fromString(maybeUri)
+            true
+        } catch (e: Throwable) {
+            false
+        }
 
     override fun getEntryEvent() =
         AnalyticsEvent.S_SEND()

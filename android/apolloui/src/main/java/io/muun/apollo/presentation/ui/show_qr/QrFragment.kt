@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Point
+import android.graphics.drawable.BitmapDrawable
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -20,6 +21,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.view.EditAmountItem
 import io.muun.apollo.presentation.ui.view.MuunButton
+import timber.log.Timber
 
 
 abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<PresenterT>(), QrView {
@@ -109,5 +111,11 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
         val size = Point()
         (ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(size)
         return size.x
+    }
+
+    override fun onDestroyView() {
+        Timber.d("Recycling QR image Bitmap")
+        (qrImage.drawable as BitmapDrawable).bitmap.recycle()
+        super.onDestroyView()
     }
 }
