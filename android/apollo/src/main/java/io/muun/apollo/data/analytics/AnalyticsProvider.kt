@@ -3,11 +3,11 @@ package io.muun.apollo.data.analytics
 import android.content.Context
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.user.User
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,7 +64,7 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
 
         fba.logEvent(event.eventId, bundle)
         inMemoryMapBreadcrumbCollector[event.eventId] = bundle
-        Timber.i(event.toString())
+        Log.i("AnalyticsProvider", event.toString())
     }
 
     private fun getBreadcrumbMetadata(): String {

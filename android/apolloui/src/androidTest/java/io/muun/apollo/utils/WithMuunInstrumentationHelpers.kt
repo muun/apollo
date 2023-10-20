@@ -5,9 +5,9 @@ import androidx.annotation.StringRes
 import androidx.test.uiautomator.*
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
+import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
-import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.utils.screens.*
 import org.assertj.core.api.Assertions.assertThat
@@ -174,13 +174,13 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         homeScreen.goToSend()
 
         // Wait for a couple secs
-        id(R.id.home_balance_view).waitForExists(3000)
+        busyWait(3000)
 
         // Go back home and pull notifications
         device.pressBack()
 
         // Wait make sure we reached home
-        assertThat(id(R.id.home_balance_view).waitForExists(3000)).isTrue()
+        id(R.id.home_balance_view).assertExists()
     }
 
     /** Obtain a view matching a normalized string.
@@ -201,6 +201,13 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     /** Obtain a view matching a string, that must be contained somewhere. */
     fun labelWith(text: String): UiObject = device.findObject(UiSelector().textContains(text))
 
+    /**
+     * Obtain a view matching a regex, that must MATCH the WHOLE content of a node/UiObject. E.g
+     * UiAutomator uses Matcher#matches() instead of Matcher#find() so the regex must be a perfect
+     * match with the input string.
+     */
+    fun labelMatches(regex: String): UiObject = device.findObject(UiSelector().textMatches(regex))
+
     /** Obtain a view matching a string, that must be contained somewhere. */
     fun labelWith(@StringRes stringResId: Int): UiObject =
         device.findObject(UiSelector().textContains(context.getString(stringResId)))
@@ -210,7 +217,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         device.findObject(UiSelector().description(context.getString(stringResId)))
 
     /** Obtain a view (if it exists) matching by id. */
-    fun maybeViewId(@IdRes id: Int): UiObject2 = device.findObject(By.res(resourceName(id)))
+    fun maybeViewId(@IdRes id: Int): UiObject2? = device.findObject(By.res(resourceName(id)))
 
     /**
      *  Obtain a view (waiting for it to exist) matching by id resource.
@@ -237,8 +244,8 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun detailItemContent(@IdRes id: Int): UiObject =
         detailItem(id).getChild(idSelector(R.id.operation_detail_item_text_content))
 
-    fun maybeDetailItemTitle(@IdRes id: Int): UiObject2 =
-        maybeViewId(id).findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
+    fun maybeDetailItemTitle(@IdRes id: Int): UiObject2? =
+        maybeViewId(id)?.findObject(By.res(resourceName(R.id.operation_detail_item_text_title)))
 
     /** Obtain a MuunDetailItem's title, matching by id resource name. */
     fun detailItemTitle(@IdRes id: Int): UiObject =
@@ -257,12 +264,17 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun settingsItemContent(@IdRes id: Int): UiObject =
         detailItem(id).getChild(idSelector(R.id.setting_item_description))
 
+    /** Obtain a MuunUriInput, matching by id resource name. */
+    fun uriInput(@IdRes id: Int): UiObject =
+        id(id).getChild(idSelector(R.id.text_input))
+
     /** Obtain a MuunTextInput, matching by id resource name. */
     fun input(@IdRes id: Int): UiObject =
         id(id).getChild(idSelector(R.id.muun_text_input_edit_text))
 
-    fun inputError(@IdRes id: Int): UiObject2 =
-        maybeViewId(id).wait(Until.findObject(ByShortName("textinput_error")), 30000)
+    fun inputError(@IdRes id: Int): UiObject {
+        return id(id).getChild(idSelector(R.id.textinput_error)).await(30000)
+    }
 
     /** Obtain a Muun's empty screen action button, matching by id resource name. */
     fun emptyScreenButton(@IdRes id: Int): UiObject =
@@ -296,8 +308,13 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         }
     }
 
-    fun waitUntilGone(@IdRes id: Int) =
-        device.wait(Until.gone(By.res(resourceName(id))), 4000) ?: false
+    fun busyWait(millis: Long) {
+        device.wait(Until.hasObject(By.text("busy-wait-until-timeout")), millis)
+    }
+
+    fun waitUntilGone(@IdRes id: Int) {
+        assertThat(device.wait(Until.gone(By.res(resourceName(id))), 4000)).isTrue
+    }
 
     /**
      * Press the BACK key until a view with a given ID exists on screen, no more than `limit`
@@ -323,7 +340,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         Thread.sleep(seconds * 1000)
 
     fun assertMoneyEqualsWithRoundingHack(actual: MonetaryAmount, expected: MonetaryAmount) {
-        assertThat(actual.currency == expected.currency)
+        assertThat(actual.currency == expected.currency).isTrue
 
         val margin = if (actual.currency.currencyCode == "BTC") {
             moneyEqualsRoundingMarginBTC
@@ -346,7 +363,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun pressMuunButtonAndWaitForNewWindow(@IdRes id: Int) {
         val buttonObject = button(id)
 
-        assertThat(buttonObject.isEnabled).isTrue()
+        assertThat(buttonObject.isEnabled).isTrue
 
         buttonObject.clickAndWaitForNewWindow()
     }
@@ -355,12 +372,16 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         assertThat(inputError(id).text).isEqualTo(context.getString((expectedErrorId)))
     }
 
+    fun checkScreenFor(regex: String) {
+        labelMatches(regex).assertExists()
+    }
+
     fun checkScreenShows(text: String) {
-        assert(labelWith(text).waitForExists(2000))
+        labelWith(text).assertExists()
     }
 
     fun checkScreenShows(@StringRes stringResId: Int) {
-        assert(labelWith(stringResId).waitForExists(2000))
+        labelWith(stringResId).assertExists()
     }
 
     private fun idSelector(@IdRes id: Int): UiSelector = UiSelector().resourceId(resourceName(id))
@@ -389,6 +410,15 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
             // if there's no scrollable item, don't scroll but let's continue if we can
             false
         }
+    }
+
+    // TODO we should wrap all usages of UiObject#click() and UiDevice#pressBack() with this
+    fun debug(action: () -> Boolean) {
+        val result = action()
+        val stackTraceElement = Thread.currentThread().stackTrace[4]
+        val caller = stackTraceElement.methodName
+        val callersLineNumber = stackTraceElement.lineNumber
+        println("Debug: $caller#L$callersLineNumber: $result")
     }
 
     /* Extension functions */
@@ -451,17 +481,19 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     fun String.dropUnit() =
         split(" ")[0]
 
-    fun UiObject.child(@IdRes childResId: Int) =
+    fun UiObject.child(@IdRes childResId: Int): UiObject =
         getChild(idSelector(childResId))
 
     fun UiObject.await() =
         await(2000)
 
-    fun UiObject.await(millis: Long) =
-        waitForExists(millis)
+    fun UiObject.await(millis: Long): UiObject {
+        assertThat(this.waitForExists(millis)).isTrue
+        return this
+    }
 
     fun UiObject.assertExists() {
-        assertThat(this.waitForExists(3000)).isTrue()
+        assertThat(this.waitForExists(3000)).isTrue
     }
 
     fun UiObject.assertDoesntExist() {
@@ -472,7 +504,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
             // Do nothing
         }
 
-        assertThat(this.exists()).isFalse()
+        assertThat(this.exists()).isFalse
     }
 
     fun UiObject.assertTextEquals(expectedText: String) {
@@ -492,7 +524,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     }
 
     fun UiObject.assertDisabled() {
-        assertThat(this.isEnabled).isFalse()
+        assertThat(this.isEnabled).isFalse
     }
 
     fun UiObject.assertEnabledAndClick(): Boolean {
@@ -502,10 +534,9 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     // I WISH I could made these extension functions but we can't (as of this writing) static
     // static extension methods of JAVA classes (we can if the extended class is in Kotlin)
-    fun Byid(@IdRes id: Int): BySelector =
-        ByShortName(resourceShortName(id))
+    fun byId(@IdRes id: Int): BySelector =
+        byShortName(resourceShortName(id))
 
-    fun ByShortName(resourceShortName: String) =
+    fun byShortName(resourceShortName: String): BySelector =
         By.res(BuildConfig.APPLICATION_ID, resourceShortName)
-
 }

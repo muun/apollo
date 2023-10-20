@@ -3,11 +3,14 @@ package io.muun.apollo.presentation
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.bumptech.glide.Glide
 import io.muun.apollo.data.preferences.AuthRepository
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.SignupDraftManager
@@ -18,11 +21,18 @@ import io.muun.apollo.presentation.app.ApolloApplication
 import io.muun.apollo.presentation.app.Navigator
 import io.muun.apollo.presentation.ui.launcher.LauncherActivity
 import io.muun.apollo.utils.AutoFlows
+import io.muun.apollo.utils.SystemCommand
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
+import org.junit.rules.TestName
 
 open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
+
+    @JvmField
+    @Rule
+    var name: TestName = TestName()
 
     @JvmField
     @Rule
@@ -54,6 +64,9 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
 
+        Log.i("test", "=========================================================")
+        Log.i("test", name.methodName + "#setUp")
+
         testContext = InstrumentationRegistry.getInstrumentation().context
         context = InstrumentationRegistry.getInstrumentation().targetContext
 
@@ -77,6 +90,13 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         autoFlows = AutoFlows(device, context)
 
         clearData()
+
+        SystemCommand.disableSoftKeyboard()
+    }
+
+    @After
+    fun cleanUp() {
+        SystemCommand.enableSoftKeyboard()
     }
 
     protected fun sniffActivationCode(): String? {
@@ -89,7 +109,16 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         // with test framework.
         if (shouldClearData()) {
 
+            Log.i("test", this.javaClass.simpleName + "#clearData")
+
             logoutActions.uncheckedDestroyWalletForUiTests()
+
+            val mainHandler = Handler(context.mainLooper)
+            mainHandler.post {
+                // Avoid Glide Bitmaps leaking memory. This may produce a tiny performance hit due
+                // to having to reload them for every time but is negligible.
+                Glide.get(context).clearMemory()
+            }
 
             // This is necessary if a previous test hung or errored on signup/sign-in initial sync
             // TODO: we may need to do this for other async actions if we want to avoid problems

@@ -15,7 +15,7 @@ object adb {
 
         Log.d("ADB", "Cmd: $cmdLine")
         val fd = InstrumentationRegistry.getInstrumentation().uiAutomation
-                .executeShellCommand(cmdLine)
+            .executeShellCommand(cmdLine)
 
         val baos = ByteArrayOutputStream()
         writeDataToByteStream(fd!!, baos)
@@ -39,7 +39,8 @@ object adb {
      */
     @Throws(IOException::class)
     private fun writeDataToByteStream(
-            pfDescriptor: ParcelFileDescriptor, outputStream: ByteArrayOutputStream) {
+        pfDescriptor: ParcelFileDescriptor, outputStream: ByteArrayOutputStream,
+    ) {
         val inputStream = ParcelFileDescriptor.AutoCloseInputStream(pfDescriptor)
         try {
             val buffer = ByteArray(BUFFER_SIZE)

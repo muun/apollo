@@ -14,17 +14,24 @@ class ReceiveScreen(
     override val context: Context,
 ) : WithMuunInstrumentationHelpers {
 
+    companion object {
+        var lastCopiedFromClipboard: String = ""
+            private set
+    }
+
     val address: String
         get() {
             id(R.id.show_qr_copy).click()
-            return Clipboard.read()
+            lastCopiedFromClipboard = Clipboard.read()
+            return lastCopiedFromClipboard
         }
 
     val invoice: String
         get() {
             normalizedLabel(ShowQrPage.LN.titleRes).click()
             id(R.id.show_qr_copy).click()
-            return Clipboard.read()
+            lastCopiedFromClipboard = Clipboard.read()
+            return lastCopiedFromClipboard
         }
 
     fun goToScanLnUrl() {

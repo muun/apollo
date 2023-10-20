@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.app;
 import io.muun.apollo.BuildConfig;
 import io.muun.apollo.R;
 import io.muun.apollo.data.external.Globals;
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.analytics.NewOperationOrigin;
@@ -482,7 +481,7 @@ public class Navigator {
      * Restart the application.
      */
     public void navigateToLauncher(@NotNull Context context) {
-        Crashlytics.logBreadcrumb("Navigating to LauncherActivity");
+        Timber.i("Navigating to LauncherActivity");
         final Intent intent = new Intent(context, LauncherActivity.class);
         clearBackStack(intent);
 

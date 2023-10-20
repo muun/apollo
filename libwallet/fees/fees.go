@@ -4,16 +4,20 @@ import "github.com/btcsuite/btcutil"
 
 const dustThreshold = 546
 
+// BestRouteFees represents a possible route for a lightning payment. In particular, it encodes the fee
+// policy of such route (e.g how the route charges fees) and how a big a payment it can handle/route (e.g what is
+// the maximum amount that is routable/payable via this route).
 type BestRouteFees struct {
-	MaxCapacity              btcutil.Amount
-	FeeProportionalMillionth uint64
-	FeeBase                  btcutil.Amount
+	MaxCapacity              btcutil.Amount // maximum amount that is routable/payable via this route
+	FeeProportionalMillionth uint64         // fee proportion of the routed amount, divided by a million
+	FeeBase                  btcutil.Amount // fixed fee component. For a specific route: TotalFee=(FeeProportionalMillionth*amount)/1000000 + FeeBase
 }
 
+// FundingOutputPolicies represents the conditions that decide how the funding output is created.
 type FundingOutputPolicies struct {
-	MaximumDebt       btcutil.Amount
-	PotentialCollect  btcutil.Amount
-	MaxAmountFor0Conf btcutil.Amount
+	MaximumDebt       btcutil.Amount // maximum amount of debt that we're ok with lending this user, according swap provider risk tolerance
+	PotentialCollect  btcutil.Amount // amount of debt we can effectively collect for a specific swap.
+	MaxAmountFor0Conf btcutil.Amount // maximum amount allowed for a 0-conf swap. Greater amounts will require 1-conf (higher fees, worse UX). Depends on swap provider risk tolerance.
 }
 
 type DebtType string

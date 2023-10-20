@@ -94,12 +94,13 @@ const (
 	AnalysisStatusUnpayable                AnalysisStatus = "Unpayable"
 )
 
+// PaymentAnalysis encodes whether a payment can be made or not and some important extra metadata about the payment.
 type PaymentAnalysis struct {
-	Status      AnalysisStatus
-	AmountInSat int64
-	FeeInSat    int64
-	SwapFees    *fees.SwapFees
-	TotalInSat  int64
+	Status      AnalysisStatus // encodes the result of a payment's analysis
+	AmountInSat int64          // payment amount (e.g the amount the recipient will receive)
+	FeeInSat    int64          // encodes the onchain fee (other fees may apply, e.g routing/lightning fee)
+	SwapFees    *fees.SwapFees // metadata related to the swap (if one exists for payment)
+	TotalInSat  int64          // AmountInSat + fees (may include other than FeeInSat). May provide extra information in case of error status (e.g payment can't be made).
 }
 
 func NewPaymentAnalyzer(feeWindow *FeeWindow, nts *NextTransactionSize) *PaymentAnalyzer {
@@ -322,6 +323,26 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 	}, nil
 }
 
+// analyzeTFFAAmountlessInvoiceSwap takes care of the insurmountable task of deciding whether a take
+// take fee from amount payment for an amountless invoice swap can be made, and (if it can) what are
+// the fees and the destination/payment amount.
+// This is particularly tricky since we have kind of a circular dependency: we don't know the payment amount which
+// determines the fees (on-chain and lightning), and we need both to determine the number of confirmations required for
+// the swap, which affects the on-chain fee, which affects the amount (since this is TFFA).
+// For this implementation built from the assumptions that 0-conf on-chain fees are lower than 1-conf fees
+//(since we don't have to wait for a block to make the payment).
+// Here we go:
+// 1. We calculate the on-chain fee for a 0-conf swap spending all funds
+//   - If that fee is greater than our balance -> payment can't be made (VERY low balance scenario)
+//
+// 2. We calculate the amount, routing fee and on-chain fee for a 0-conf TFFA swap
+// 3. We determine the number of confirmations required for the calculated amount and routing fee.
+//   - If 0-conf -> we're good to continue
+//   - If 1-conf -> we perform step 2 for a 1-conf TFF swap (re calculate amount, routing fee and on-chain fee)
+//
+// 4. If amount <= 0 -> payment can't be made
+// If amount > 0 -> AWESOME! That's the payment amount.
+// 5. We determine the params of the funding output (SwapFees) and perform final checks to decide if payment can be made
 func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
 	zeroConfFeeRate, err := a.feeWindow.SwapFeeRate(0)
 
@@ -341,10 +362,13 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 
 	params, err := a.computeParamsForTFFASwap(payment, 0)
 	if err != nil {
+		// This LITERALLY can never happen, as only source of error for computeParamsForTFFASwap are:
+		//  - negative conf target (we're using 0)
+		//  - no route for amount (should be guaranteed by BestRouteFees struct)
 		return &PaymentAnalysis{
 			Status:     AnalysisStatusUnpayable,
 			FeeInSat:   zeroConfFeeInSat,
-			TotalInSat: a.totalBalance() + int64(zeroConfFeeInSat),
+			TotalInSat: a.totalBalance() + zeroConfFeeInSat,
 		}, nil
 	}
 
@@ -354,11 +378,11 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		if err != nil {
 			// This LITERALLY can never happen, as only source of error for computeParamsForTFFASwap are:
 			//  - negative conf target (we're using 1)
-			//  - no route for amount (would be catched by previous call since amount with 1-conf fee would be smaller)
+			//  - no route for amount (should be guaranteed by BestRouteFees struct)
 			return &PaymentAnalysis{
 				Status:     AnalysisStatusUnpayable,
 				FeeInSat:   zeroConfFeeInSat,
-				TotalInSat: a.totalBalance() + int64(zeroConfFeeInSat),
+				TotalInSat: a.totalBalance() + zeroConfFeeInSat,
 			}, nil
 		}
 	}
@@ -374,7 +398,7 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		return &PaymentAnalysis{
 			Status:     AnalysisStatusUnpayable,
 			FeeInSat:   zeroConfFeeInSat,
-			TotalInSat: a.totalBalance() + int64(zeroConfFeeInSat),
+			TotalInSat: a.totalBalance() + zeroConfFeeInSat,
 		}, nil
 	}
 
@@ -431,10 +455,11 @@ type swapParams struct {
 	RoutingFee btcutil.Amount
 }
 
-// computeParamsForTFFASwap takes care of the VERY COMPLEX tasks of calculating
-// the amount, routing fee and on-chain fee for a TFFA swap. Calculating the
-// on-chain fee is pretty straightforward but for the other two we use what
-// we call "the equation". Let's dive into how it works:
+// computeParamsForTFFASwap takes care of the VERY COMPLEX task of calculating
+// the amount, routing fee and on-chain fee for a TFFA swap, given a specified
+// number of confirmations required for the swap. Calculating the on-chain fee
+// is pretty straightforward but for the other two we use what we call
+// "the equation". Let's dive into how it works:
 //
 // Let:
 // - x be the payment amount
@@ -447,14 +472,13 @@ type swapParams struct {
 //
 // For amountLessInvoices, we need to figure out x and l such that x + l = y - h
 //
-// Note:
-// - we don't care about debt (except to calculate user balance) since it
-//   doesn't affect that payment/offchain amount and thus the routingFee. It may
-//   affect the onchain fee though, which is already calculated considering it.
-// - we don't care about output padding, since it can either be:
-//      - issued debt, in which case point above still holds
-//      - taken by fee, which would mean we are in a TFFA for a sub-dust amount,
-//       which is unpayable since we don't have balance to add as padding/fee.
+// Note that we don't care about debt (except to calculate user balance) since it
+// doesn't affect that payment/offchain amount and thus the routingFee. It may
+// affect the onchain fee though, which is already calculated considering it.
+// We also don't care about output padding, since it can either be:
+//   - issued debt, in which case point above still holds
+//   - taken by fee, which would mean we are in a TFFA for a sub-dust amount,
+//     which is unpayable since we don't have balance to add as padding/fee.
 //
 // Suppose we have only one route.
 // Then, x + l(x) = y - h
@@ -481,7 +505,6 @@ type swapParams struct {
 // x = (y - h - b) / (FeeProportionalMillionth/1_000_000 + 1)
 // x = (y - h - b) / (FeeProportionalMillionth + 1_000_000) / 1_000_000
 // x = ((y - h - b) * 1_000_000) / (FeeProportionalMillionth + 1_000_000)
-//
 func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, confs uint) (*swapParams, error) {
 	feeRate, err := a.feeWindow.SwapFeeRate(confs)
 
@@ -523,6 +546,8 @@ func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 			}, nil
 		}
 	}
+
+	// This shouldn't happen. BestRouteFees should guarantee that there's a route for each amount.
 	return nil, errors.New("none of the best route fees have enough capacity")
 }
 

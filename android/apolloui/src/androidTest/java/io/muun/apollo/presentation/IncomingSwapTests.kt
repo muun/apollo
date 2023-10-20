@@ -2,7 +2,7 @@ package io.muun.apollo.presentation
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.debug.LappClient
+import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.utils.RandomUser
 import io.muun.common.utils.BitcoinUtils
 import org.junit.Test

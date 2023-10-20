@@ -47,5 +47,4 @@ class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null
             onScanQrClickListener()
         }
     }
-
 }

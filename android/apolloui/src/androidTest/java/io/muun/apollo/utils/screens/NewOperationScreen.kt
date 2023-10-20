@@ -13,27 +13,31 @@ import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.withinPercentage
 import javax.money.MonetaryAmount
 
 class NewOperationScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
-    val confirmedAmount get() =
-        id(R.id.selected_amount).text.toMoney()
+    val destination: String
+        get() = id(R.id.target_address).text
 
-    val confirmedFee get() =
-        id(R.id.fee_amount).text.toMoney()
+    val confirmedAmount: MonetaryAmount
+        get() = id(R.id.selected_amount).text.toMoney()
 
-    val confirmedDescription get() =
-        id(R.id.notes_content).text
+    val confirmedFee: MonetaryAmount
+        get() = id(R.id.fee_amount).text.toMoney()
 
-    val confirmedTotal get() =
-        id(R.id.total_amount).text.toMoney()
+    val confirmedDescription: String
+        get() = id(R.id.notes_content).text
+
+    val confirmedTotal: MonetaryAmount
+        get() = id(R.id.total_amount).text.toMoney()
 
     fun waitUntilVisible() {
-        button(R.id.muun_next_step_button).waitForExists(15000)
+        button(R.id.muun_next_step_button).await(15000)
     }
 
     fun assertSubmitIsDisabled() =
@@ -41,10 +45,9 @@ class NewOperationScreen(
 
     fun fillForm(amount: MonetaryAmount?, description: String?) {
 
-        checkInputAmountCurrenciesMatch()
-
         // Enter the requested data, moving forward:
         if (amount != null) {
+            checkInputAmountCurrenciesMatch()
             editAmount(amount)
             goNext()
         }
@@ -74,12 +77,10 @@ class NewOperationScreen(
     fun fillForm(
         invoice: LnInvoice,
         description: String? = null,
-        debtType: DebtType = DebtType.NONE
+        debtType: DebtType = DebtType.NONE,
     ) {
 
         waitForResolveOperationUri()
-
-        checkInputAmountCurrenciesMatch()
 
         if (description != null) {
             editDescription(description)
@@ -134,12 +135,12 @@ class NewOperationScreen(
     fun checkConfirmedData(
         amount: MonetaryAmount? = null,
         description: String? = null,
-        fee: OnScreenFeeOption? = null
+        fee: OnScreenFeeOption? = null,
     ) {
 
         checkStep(NewOperationStep.CONFIRM)
 
-        assertThat(confirmedDescription).isNotEmpty()
+        assertThat(confirmedDescription).isNotEmpty
         assertMoneyEqualsWithRoundingHack(confirmedAmount.add(confirmedFee), confirmedTotal)
 
         if (amount != null) {
@@ -165,11 +166,11 @@ class NewOperationScreen(
                         // TODO: abstract this a little if it becomes necessary elsewhere
                         String.format(
                             "\nExpecting:\n  <%s>\nto be close to:\n  <%s>\n" +
-                                    "by less than <%s> but difference was <%s>.\n" +
-                                    "(a difference of exactly <%s> being considered valid)\n" +
-                                    "OR to be close to:\n  <%s>\n" +
-                                    "by less than <%s> but difference was <%s>.%n" +
-                                    "(a difference of exactly <%s> being considered valid)\n",
+                                "by less than <%s> but difference was <%s>.\n" +
+                                "(a difference of exactly <%s> being considered valid)\n" +
+                                "OR to be close to:\n  <%s>\n" +
+                                "by less than <%s> but difference was <%s>.%n" +
+                                "(a difference of exactly <%s> being considered valid)\n",
                             confirmedFee.toString(),
                             fee.primaryAmount.toString(),
                             moneyEqualsRoundingMarginBTC.toString(),
@@ -190,7 +191,7 @@ class NewOperationScreen(
     private fun checkConfirmedData(
         invoice: LnInvoice,
         desc: String,
-        debtType: DebtType = DebtType.NONE
+        debtType: DebtType = DebtType.NONE,
     ) {
 
         checkStep(NewOperationStep.CONFIRM)
@@ -200,7 +201,7 @@ class NewOperationScreen(
             rotateAmountCurrencies()
         }
 
-        assertThat(confirmedDescription).isNotEmpty()
+        assertThat(confirmedDescription).isNotEmpty
 
         val total = confirmedAmount.add(confirmedFee)
 
@@ -213,12 +214,16 @@ class NewOperationScreen(
 
         val confirmedFeeInSat = BitcoinUtils.bitcoinsToSatoshis(confirmedFee)
 
-        // Let's check swap fee has a "reasonable amount" (e.g is in certain aprox range)
+        // Let's check swap fee has a "reasonable amount" (e.g is in certain approx range)
         if (debtType == DebtType.LEND) {
-            assertThat(confirmedFeeInSat < 2) // No on-chain swap => no on-chain fees, only ln fee
+            // No on-chain swap => no on-chain fees, only ln fee
+            // Ln fees are currently approx 0.05% of amount for LEND swaps
+            assertThat(confirmedFeeInSat)
+                .isCloseTo((invoice.amount.amountInSatoshis * 0.0005).toLong(), withinPercentage(5))
 
         } else { // Normal & Collect swaps
-            assertThat(confirmedFeeInSat > 220) // On-chain (226 * 1 sat/vbyte) + sweep + ln fee
+            // On-chain (~219/226 * 1 sat/vbyte) + sweep + ln fee
+            assertThat(confirmedFeeInSat > 200).isTrue
         }
     }
 
@@ -234,14 +239,16 @@ class NewOperationScreen(
     private fun checkStep(step: NewOperationStep) =
         assertThat(detectStep()).isEqualTo(step)
 
+    // @formatter:off
     private fun detectStep() =
         when {
-            id(R.id.new_operation_resolving).exists() -> NewOperationStep.RESOLVING
-            id(R.id.muun_amount).exists()             -> NewOperationStep.ENTER_AMOUNT
-            id(R.id.muun_note_input).exists()         -> NewOperationStep.ENTER_DESCRIPTION
-            id(R.id.total_amount).exists()            -> NewOperationStep.CONFIRM
+            id(R.id.new_operation_resolving).exists() ->    NewOperationStep.RESOLVING
+            id(R.id.muun_amount).exists() ->                NewOperationStep.ENTER_AMOUNT
+            id(R.id.muun_note_input).exists() ->            NewOperationStep.ENTER_DESCRIPTION
+            id(R.id.total_amount).exists() ->               NewOperationStep.CONFIRM
 
             else ->
                 throw RuntimeException("Cannot detect new operation step")
         }
+    // @formatter:on
 }

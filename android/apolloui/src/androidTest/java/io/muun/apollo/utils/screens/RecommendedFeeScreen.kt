@@ -9,13 +9,13 @@ import javax.money.MonetaryAmount
 
 class RecommendedFeeScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     class OnScreenFeeOption(
         val feeRate: Double,
         val primaryAmount: MonetaryAmount,
-        val secondaryAmount: MonetaryAmount
+        val secondaryAmount: MonetaryAmount,
     )
 
     fun selectFeeOptionFast() =

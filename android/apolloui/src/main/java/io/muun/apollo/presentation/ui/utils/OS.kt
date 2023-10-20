@@ -21,6 +21,21 @@ import androidx.annotation.ChecksSdkIntAtLeast
 object OS {
 
     /**
+     * Whether this OS supports Clipboard Access notification, which was added in S-12-31.
+     */
+    @JvmStatic
+    fun supportsClipboardAccessNotification(): Boolean =
+        isAndroidSOrNewer()
+
+    /**
+     * Whether this OS supports espresso Toast detection, which stopped working in S-12-31.
+     * See: https://github.com/android/android-test/issues/803.
+     */
+    @JvmStatic
+    fun supportsEspressoToastDetection(): Boolean =
+        !isAndroidSOrNewer()
+
+    /**
      * Whether this OS supports Notification runtime permission, which was added in Tiramisu-13-33.
      */
     @JvmStatic
@@ -67,14 +82,6 @@ object OS {
      */
     fun supportsNotificationChannel(): Boolean =
         isAndroidOOrNewer()
-
-    /**
-     * Whether this OS supports the Fingerprint API, which was added in M-6-23. It was later
-     * deprecated.
-     */
-    @JvmStatic
-    fun supportsFingerprintAPI(): Boolean =
-        isAndroidMOrNewer()
 
     /**
      * We'll define that an Android OS version supports Dark Mode if it does so in a publicly

@@ -4,12 +4,11 @@ import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
-import org.assertj.core.api.Assertions.assertThat
 
 class EmailPasswordSetupScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun skipSetup() {
         pressMuunButton(R.id.create_email_skip)
@@ -28,7 +27,7 @@ class EmailPasswordSetupScreen(
     }
 
     fun checkEmailVerificationScreenDisplayed(email: String) {
-        assertThat(id(R.id.verify_email_title).await(10000)).isTrue()
+        id(R.id.verify_email_title).await(10000)
         checkScreenShows(email)
     }
 

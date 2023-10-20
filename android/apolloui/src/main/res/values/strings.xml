@@ -477,6 +477,10 @@
     <string name="send_confirm">Continue</string>
     <string name="send_uri_error_title">Invalid address or invoice</string>
     <string name="send_uri_error_body"> This is not a bitcoin address or lightning invoice.</string>
+    <string name="send_cyclic_payment_warning">You\'ll send funds to your Muun wallet</string>
+
+    <string name="paste_from_clipboard_button">Paste from clipboard</string>
+    <string name="no_lnurl_in_clipboard_error">Clipboard doesn\'t contain an LNURL</string>
 
     <!-- QR scanner -->
     <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
@@ -1128,7 +1132,7 @@
 
     <string name="select_bitcoin_unit_title">Bitcoin unit</string>
     <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
-    <string name="select_bitcoin_unit_sat">Bitcoin (SAT)</string>
+    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
 
     <!-- Security center -->
     <string name="security_center_title">Security Center</string>

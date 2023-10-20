@@ -100,7 +100,9 @@ public class FeeManualInput extends MuunView {
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-        getComponent().inject(this);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         feeRateInput.addTextChangedListener(new TextWatcher() {
             @Override

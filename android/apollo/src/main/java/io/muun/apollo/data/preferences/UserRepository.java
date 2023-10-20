@@ -58,6 +58,10 @@ public class UserRepository extends BaseRepository {
 
     private static final String TAPROOT_CELEBRATION_PENDING = "taproot_celebration_pending";
 
+    private static final String SEEN_WELCOME_TO_MUUN_DIALOG_KEY = "seen_welcome_to_muun_dialog_key";
+
+    // Preferences:
+
     private final Preference<String> lastCopiedAddress;
 
     private final Preference<String> pendingProfilePictureUriPreference;
@@ -80,6 +84,8 @@ public class UserRepository extends BaseRepository {
 
     // Horrible I know, but only temporary until taproot activation date. Afterwards this goes away.
     private final Preference<Boolean> taprootCelebrationPending;
+
+    private final Preference<Boolean> seenWelcomeToMuunDialogPreference;
 
     /**
      * Creates a user preference repository.
@@ -130,6 +136,11 @@ public class UserRepository extends BaseRepository {
 
         taprootCelebrationPending = rxSharedPreferences.getBoolean(
                 TAPROOT_CELEBRATION_PENDING,
+                false
+        );
+
+        seenWelcomeToMuunDialogPreference = rxSharedPreferences.getBoolean(
+                SEEN_WELCOME_TO_MUUN_DIALOG_KEY,
                 false
         );
     }
@@ -269,15 +280,15 @@ public class UserRepository extends BaseRepository {
      * Note: no longer necessary a bitcoin address, can be a Ln invoice.
      */
     @Nullable
-    public String getLastCopiedAddress() {
+    public String getLastCopiedContentFromReceive() {
         return lastCopiedAddress.get();
     }
 
     /**
      * Note: no longer necessary a bitcoin address, can be a Ln invoice.
      */
-    public void setLastCopiedAddress(String address) {
-        lastCopiedAddress.set(address);
+    public void setLastCopiedContentFromReceive(String content) {
+        lastCopiedAddress.set(content);
     }
 
     /**
@@ -401,6 +412,20 @@ public class UserRepository extends BaseRepository {
      */
     public Observable<Boolean> watchPendingTaprootCelebration() {
         return taprootCelebrationPending.asObservable();
+    }
+
+    /**
+     * Save a flag signalling that the "Welcome to Muun" dialog has been shown/seen.
+     */
+    public void setWelcomeToMuunDialogSeen() {
+        seenWelcomeToMuunDialogPreference.set(true);
+    }
+
+    /**
+     * Get whether the user has seen the "Welcome to Muun" dialog or not.
+     */
+    public Boolean getWelcomeToMuunDialogSeen() {
+        return seenWelcomeToMuunDialogPreference.get();
     }
 
     /**

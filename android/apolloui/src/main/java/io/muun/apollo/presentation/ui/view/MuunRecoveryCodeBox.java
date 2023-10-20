@@ -77,6 +77,10 @@ public class MuunRecoveryCodeBox extends MuunView {
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
+        if (isInEditMode()) {
+            return; // For layout preview, we just want the view to be measured and rendered
+        }
+
         Preconditions.checkState(segmentInputs.size() == RecoveryCodeV2.SEGMENT_COUNT);
 
         for (int index = 0; index < segmentInputs.size(); index++) {

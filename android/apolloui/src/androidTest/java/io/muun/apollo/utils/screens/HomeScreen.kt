@@ -8,7 +8,6 @@ import androidx.test.uiautomator.UiObjectNotFoundException
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
@@ -19,13 +18,13 @@ import javax.money.MonetaryAmount
 
 class HomeScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     val balanceInBtc get() = id(R.id.balance_main_currency_amount).text.toBtcMoney()
 
-    fun waitUntilVisible(): Boolean {
-        return id(R.id.home_balance_view).waitForExists(5000)
+    fun waitUntilVisible() {
+        id(R.id.home_balance_view).await(10000)
     }
 
     fun waitForWelcomeDialog(): Boolean {
@@ -34,13 +33,13 @@ class HomeScreen(
     }
 
     fun waitUntilBalanceEquals(expectedBalance: MonetaryAmount) {
-        val result = pullNotificationsUntil(20000 ) {
+        val result = pullNotificationsUntil(20000) {
             balanceEquals(expectedBalance)
         }
 
         assertThat(result)
             .withFailMessage("$balanceNotEqualsErrorMessage:$expectedBalance")
-            .isTrue()
+            .isTrue
     }
 
     fun checkBalanceCloseTo(expectedBalance: MonetaryAmount) {
@@ -91,7 +90,7 @@ class HomeScreen(
         // click on the exact area where the view is (after all its moving, maybe the clickable area
         // is also moving, or its always at the final place where the view ends after animation).
         // Sooooo, we wait for a bit :). This right here kills the flakiness we were having.
-        id(R.id.signup_start).waitForExists(1500)
+        busyWait(1500)
     }
 
     private fun openOperationDetail(description: String, isPending: Boolean) {
@@ -103,7 +102,7 @@ class HomeScreen(
             // This probably means we missed an opUpdate notif. Let's try again, flakiness is ugly.
 
             // Wait 1.5 secs...
-            id(R.id.signup_start).waitForExists(1500)
+            busyWait(1500)
 
             // Try again
             clickOperation(isPending, description)
@@ -140,7 +139,18 @@ class HomeScreen(
 
     private fun balanceEquals(expectedBalance: MonetaryAmount): Boolean {
         Preconditions.checkArgument(expectedBalance.isBtc())
-        return maybeViewId(R.id.balance_main_currency_amount)
+
+        val maybeBalanceView = maybeViewId(R.id.balance_main_currency_amount)
+
+        @Suppress("FoldInitializerAndIfToElvis") // Prefer if for readability (familiarity)
+        if (maybeBalanceView == null) {
+            return false
+        }
+
+        val balance = maybeBalanceView.text
+        println("balanceEquals: actual: $balance, expected: $expectedBalance, short: ${expectedBalance.toShortText()}")
+
+        return maybeBalanceView
             .wait(Until.textContains(expectedBalance.toShortText()), 1000)
     }
 }

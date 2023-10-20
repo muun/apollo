@@ -14,10 +14,24 @@ object SystemCommand {
     }
 
     /**
-     * Grant permission specified by @param permissionName for @param packageName e.g (app) .
+     * Grant permission specified by @param permissionName for @param packageName e.g (app).
      */
     fun grantPermission(packageName: String, permissionName: String) {
         adb("pm grant $packageName $permissionName")
     }
 
+    /**
+     * Disable display of softkeyboard. Useful to avoid tricky softkeyboard appearances making test
+     * flaky or non-deterministic (e.g difference running in different devices or OS versions).
+     */
+    fun disableSoftKeyboard() {
+        adb("settings put secure show_ime_with_hard_keyboard 0")
+    }
+
+    /**
+     * Enable display of softkeyboard. Reverting the effects of {@link #disableSoftKeyboard()}
+     */
+    fun enableSoftKeyboard() {
+        adb("settings put secure show_ime_with_hard_keyboard 0")
+    }
 }

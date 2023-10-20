@@ -1,6 +1,5 @@
 package io.muun.apollo.presentation.ui.activity.extension;
 
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.analytics.Analytics;
@@ -87,10 +86,11 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void showLockOverlay() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#showLockOverlay");
+
         if (lockOverlay == null) {
             lockOverlay = new MuunLockOverlay(getActivity());
 
-            lockOverlay.setFingerprintAllowed(false); // never, for now
             lockOverlay.setListener(new BoundLockOverlayListener());
 
             lockOverlay.attachToRoot();
@@ -103,6 +103,7 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void hideLockOverlay() {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#hideLockOverlay");
         if (lockOverlay != null) {
             lockOverlay.setListener(null);
             lockOverlay.detachFromRoot();
@@ -148,7 +149,7 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void updateLockOverlayAttempts() {
-        Crashlytics.logBreadcrumb("ApplicationLockExtension: updateLockOverlayAttempts");
+        Timber.i("ApplicationLockExtension: updateLockOverlayAttempts");
 
         lockOverlay.setRemainingAttempts(
                 lockManager.getRemainingAttempts(),
@@ -157,7 +158,7 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void onUnlockAttemptFailure() {
-        Crashlytics.logBreadcrumb("ApplicationLockExtension: onUnlockAttemptFailure");
+        Timber.i("ApplicationLockExtension: onUnlockAttemptFailure");
 
         if (lockOverlay != null) { // avoid race conditions
             updateLockOverlayAttempts();
@@ -173,7 +174,7 @@ public class ApplicationLockExtension extends ActivityExtension {
     }
 
     private void onUnlockAttemptSuccess() {
-        Crashlytics.logBreadcrumb("ApplicationLockExtension: onUnlockAttemptSuccess");
+        Timber.i("ApplicationLockExtension: onUnlockAttemptSuccess");
 
         if (lockOverlay != null) { // avoid race conditions
             lockOverlay.reportSuccess();
@@ -186,28 +187,29 @@ public class ApplicationLockExtension extends ActivityExtension {
 
         @Override
         public void onPinEntered(String pin) {
-            Crashlytics.logBreadcrumb("ApplicationLockExtension: onPinEntered. " + this);
+            Timber.i("ApplicationLockExtension: onPinEntered. " + this);
 
             Single.fromCallable(() -> lockManager.tryUnlockWithPin(pin))
                     .compose(executionTransformerFactory.getSingleAsyncExecutor())
                     .subscribe(isUnlocked -> {
                         if (isUnlocked) {
                             onUnlockAttemptSuccess();
+
                         } else {
                             onUnlockAttemptFailure();
                         }
                     }, throwable -> {
+                        lockOverlay.reportError(null);
+
                         // Avoid crashes due to keystore's weird bugs. If it's a secure storage
                         // error, catch it, otherwise re-throw it
                         if (ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable)) {
                             Timber.e(throwable); // Probably redundant, should already be logged
-                            lockOverlay.reportError(null);
 
                         } else if (throwable instanceof WeirdIncorrectAttemptsBugError) {
                             // Attempt to log/track weird error we've seen in prd. Handle error will
                             // show error report dialog and hopefully users will send it to us.
                             Timber.e(throwable);
-                            lockOverlay.reportError(null);
                             ((BaseActivity) getActivity()).getPresenter().handleError(throwable);
 
                         } else {
@@ -215,20 +217,6 @@ public class ApplicationLockExtension extends ActivityExtension {
                             throw new OnErrorNotImplementedException(throwable);
                         }
                     });
-        }
-
-        @Override
-        public void onFingerprintEntered() {
-            lockManager.tryUnlockWithFingerprint();
-            afterSuccessOrFailure();
-        }
-
-        private void afterSuccessOrFailure() {
-            if (lockManager.isLockSet()) {
-                onUnlockAttemptFailure();
-            } else {
-                onUnlockAttemptSuccess();
-            }
         }
     }
 }

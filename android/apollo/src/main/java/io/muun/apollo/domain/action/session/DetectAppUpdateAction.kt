@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.action.session
 
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.preferences.AppVersionRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -11,7 +10,7 @@ class DetectAppUpdateAction @Inject constructor(private val repo: AppVersionRepo
     fun run() {
         val currentVersion = Globals.INSTANCE.versionCode
         if (currentVersion > repo.getVersion()) {
-            Crashlytics.logBreadcrumb("App update: ${repo.getVersion()} -> $currentVersion")
+            Timber.i("App update: ${repo.getVersion()} -> $currentVersion")
             repo.update(currentVersion)
 
         } else if (currentVersion < repo.getVersion()) {

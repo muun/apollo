@@ -7,26 +7,34 @@ import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 
 class EmergencyKitSetupScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
 
     fun doCompleteFlow(sniffActivationCode: () -> String) {
 
         val id = id(R.id.pager)
-        id.swipeLeft(100) // equals 1 page slide
-        id.swipeLeft(100) // equals 1 page slide
+
+        // We can't use the very comfy swipeLeft since for Android 13 it's impl trigger predictive
+        // back gesture, so... we swipe in some coordinates of the screen like the cavemen we are.
+        val rect = id.visibleBounds
+        device.swipe(rect.centerX(), rect.centerY(), rect.left, rect.centerY(), 20) // 1 page slide
+        device.swipe(rect.centerX(), rect.centerY(), rect.left, rect.centerY(), 20) // 1 page slide
+        device.swipe(rect.centerX(), rect.centerY(), rect.left, rect.centerY(), 20) // 1 page slide
+
         pressMuunButton(R.id.accept)
 
         sleep() // Wait a little bit for EK to be generated
 
         // What follows is a little flaky. The only export option we can use in this testing context
         // is send-by-email, which will open an external application. We assume that this device
-        // has exactly 1 email application installed, which is true for emulators and Bitrise.
+        // has exactly gmail application installed, which is true for emulators and Bitrise.
 
         // Use the email option, give the other app a moment to open, then return to Muun:
-        // TODO FIX THIS. Export EK flow changed
-        // id(R.id.save_option_email).click()
+        id(R.id.save_link_manual).click()
+        muunButton(R.id.dialog_confirm).press()
+        label("Gmail").click()
+
         sleep(3)
         backUntilExists(R.id.ek_verify_action)
 

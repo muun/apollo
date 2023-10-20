@@ -35,12 +35,22 @@
                     android:layout_marginBottom="16dp" />
 
             <io.muun.apollo.presentation.ui.view.StatusMessage
-                    android:id="@+id/uri_error_message"
+                    android:id="@+id/uri_status_message"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="16dp"
                     android:layout_marginBottom="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            <io.muun.apollo.presentation.ui.view.MuunButton
+                    style="@style/muun_button_primary"
+                    android:id="@+id/paste_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/muun_screen_margin"
+                    android:text="@string/paste_from_clipboard_button"
                     android:visibility="gone"
                     tools:visibility="visible" />
 

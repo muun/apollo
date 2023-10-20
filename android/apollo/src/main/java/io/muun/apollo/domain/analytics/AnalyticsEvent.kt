@@ -437,12 +437,12 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         LNURL_NO_ROUTE,
         LNURL_COUNTRY_NOT_SUPPORTED,
         LNURL_ALREADY_USED,
-        GENERIC, // Use to report all erros handled by BasePresenter's handleError()
+        GENERIC, // Use to report all errors handled by BasePresenter's handleError()
         RC_SETUP_START_CONNECTION_ERROR,
         RC_SETUP_FINISH_CONNECTION_ERROR,
         RC_STALE_ERROR,
-        RC_CREDENTIALS_DONT_MATCH_ERROR
-
+        RC_CREDENTIALS_DONT_MATCH_ERROR,
+        CRASHLYTICS
     }
 
     class E_ERROR(val type: ERROR_TYPE, vararg extras: Any) : AnalyticsEvent(
@@ -492,6 +492,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         HOME_VIEW,
         PDF_EXPORTED
     }
+
+    class E_CRASHLYTICS_ERROR(value: String) : AnalyticsEvent(
+        listOf("title" to value)
+    )
 
     class E_BREADCRUMB(value: String) : AnalyticsEvent(
         listOf("crumb" to value)

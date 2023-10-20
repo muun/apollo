@@ -23,18 +23,18 @@ open class P2PSetupTests : BaseInstrumentationTest() {
 
         autoFlows.signUp()
         autoFlows.setupP2P(
-                phoneNumber = user.phoneNumber,
-                firstName = user.firstName,
-                lastName = user.lastName
+            phoneNumber = user.phoneNumber,
+            firstName = user.firstName,
+            lastName = user.lastName
         )
 
         homeScreen.goToSettings()
 
         assertThat(id(R.id.settings_username).text)
-                .isEqualTo(user.fullName)
+            .isEqualTo(user.fullName)
 
         assertThat(settingsItemContent(R.id.settings_phone_number).text)
-                .isEqualTo(user.phoneNumber.toE164String())
+            .isEqualTo(user.phoneNumber.toE164String())
 
         device.pressBack()
     }
@@ -49,8 +49,7 @@ open class P2PSetupTests : BaseInstrumentationTest() {
         homeScreen.goToSend()
 
         // Expect the Muun contact to appear:
-        label(contact.fullName)
-                .waitForExists(15000)
+        label(contact.fullName).await(15000)
 
         id(R.id.header)         // Check toolbar is showed, but...
         device.pressBack()      // Still use device back btn, targeting toolbar back btn is sketchy

@@ -1,7 +1,6 @@
 package io.muun.apollo.domain;
 
 
-import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.os.authentication.PinManager;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.errors.SecureStorageError;
@@ -70,12 +69,16 @@ public class ApplicationLockManager {
      */
     public synchronized boolean tryUnlockWithPin(String pin) {
 
-        Crashlytics.logBreadcrumb("ApplicationLockManager#tryUnlockWithPin");
+        Timber.i("ApplicationLockManager#tryUnlockWithPin");
 
         try {
             Preconditions.checkPositive(getRemainingAttempts());
         } catch (IllegalArgumentException e) {
-            throw new WeirdIncorrectAttemptsBugError(getRemainingAttempts(), getMaxAttempts());
+            throw new WeirdIncorrectAttemptsBugError(
+                    getRemainingAttempts(),
+                    getMaxAttempts(),
+                    secureStorageProvider.debugSnapshot()
+            );
         }
 
         final boolean verified = pinManager.verifyPin(pin);
@@ -89,20 +92,9 @@ public class ApplicationLockManager {
             decrementRemainingAttempts();
         }
 
-        Crashlytics.logBreadcrumb("ApplicationLockManager#verified: " + verified);
+        Timber.i("ApplicationLockManager#verified: " + verified);
 
         return verified;
-    }
-
-    /**
-     * Attempt to unset the lock with a fingerprint.
-     */
-    public synchronized void tryUnlockWithFingerprint() {
-        Preconditions.checkPositive(getRemainingAttempts());
-
-        // Fingerprint should already be validated by the OS. We have nothing to check.
-        resetRemainingAttempts();
-        unsetLock();
     }
 
     /**
@@ -168,14 +160,14 @@ public class ApplicationLockManager {
 
     private synchronized void decrementRemainingAttempts() {
 
-        Crashlytics.logBreadcrumb("ApplicationLockManager#decrementRemainingAttempts");
+        Timber.i("ApplicationLockManager#decrementRemainingAttempts");
 
         final int incorrectAttempts = Math.min(
                 fetchIncorrectAttempts() + 1,
                 getMaxAttempts()
         );
 
-        Crashlytics.logBreadcrumb(
+        Timber.i(
                 "ApplicationLockManager#storeIncorrectAttempts: " + incorrectAttempts
         );
         storeIncorrectAttempts(incorrectAttempts);
@@ -194,7 +186,7 @@ public class ApplicationLockManager {
     }
 
     private synchronized int fetchIncorrectAttempts() {
-        Crashlytics.logBreadcrumb("ApplicationLockManager#fetchIncorrectAttempts");
+        Timber.i("ApplicationLockManager#fetchIncorrectAttempts");
 
         try {
             return Encodings.bytesToInt(secureStorageProvider.get(KEY_INCORRECT_ATTEMPTS));
@@ -202,7 +194,7 @@ public class ApplicationLockManager {
         } catch (SecureStorageProvider.SecureStorageNoSuchElementError error) {
             // Yeah, we shouldn't use exceptions for normal control flow, but for now...
             // TODO: this whole class needs some serious refactoring
-            Crashlytics.logBreadcrumb("Resetting incorrect attempts to 0");
+            Timber.i("Resetting incorrect attempts to 0");
             storeIncorrectAttempts(0);
             return 0;
 
@@ -217,7 +209,7 @@ public class ApplicationLockManager {
             // force SecureStorageProvider to resolve this data inconsistency.
             final String ivsInPrefs = (String) error.getMetadata().get("labelsWithIvInPrefs");
 
-            Crashlytics.logBreadcrumb("KeyStoreCorruptedError in fetchIncorrectAttempts");
+            Timber.i("KeyStoreCorruptedError in fetchIncorrectAttempts");
 
             if (ivsInPrefs != null && ivsInPrefs.contains(KEY_INCORRECT_ATTEMPTS)) {
 
@@ -236,7 +228,7 @@ public class ApplicationLockManager {
                 // Keystore, we try continue execution hoping this is the only piece of data
                 // affected by this data corruption.
                 error.addMetadata("hasBackup", challengePublicKeySel.existsAnyType());
-                Crashlytics.logBreadcrumb("bad_padding_exception_workaround");
+                Timber.i("bad_padding_exception_workaround");
                 Timber.e(error, "WORKAROUND for BadPaddingException in fetchIncorrectAttempts");
                 return 0;
 

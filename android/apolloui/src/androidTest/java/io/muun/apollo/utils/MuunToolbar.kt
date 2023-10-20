@@ -6,7 +6,7 @@ import io.muun.apollo.R
 
 class MuunToolbar(
     override val device: UiDevice,
-    override val context: Context
+    override val context: Context,
 ) : WithMuunInstrumentationHelpers {
 
     fun pressClose() {

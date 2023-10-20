@@ -4,11 +4,14 @@ import android.content.Context
 import android.os.SystemClock
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
+import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.data.external.Gen
 import io.muun.apollo.domain.model.user.UserPhoneNumber
-import io.muun.apollo.presentation.ui.debug.LappClient
 import io.muun.apollo.presentation.ui.helper.isBtc
+import io.muun.apollo.presentation.ui.utils.OS
+import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
+import io.muun.apollo.utils.screens.ReceiveScreen
 import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
@@ -166,7 +169,7 @@ class AutoFlows(
     fun checkCannotDeleteWallet() {
         goToSettingsAndClickDeleteWallet()
 
-        normalizedLabel(R.string.settings_delete_wallet_explanation_title).waitForExists(5_000)
+        label(R.string.settings_delete_wallet_explanation_title).await()
         normalizedLabel(R.string.settings_delete_wallet_explanation_action).click()
 
         backToHome()
@@ -197,12 +200,6 @@ class AutoFlows(
     private fun receiveMoneyFromLN(amountInSat: Long, turboChannel: Boolean, amountFixed: Boolean) {
         val prevBalance = homeScreen.balanceInBtc
 
-        homeScreen.goToReceive()
-
-        if (amountFixed) {
-            receiveScreen.addInvoiceAmount(amountInSat)
-        }
-
         // For fixed amount invoices, amount MUST NOT be specified, otherwise an error occurs.
         val amountToReceive = if (amountFixed) {
             null
@@ -210,14 +207,9 @@ class AutoFlows(
             amountInSat
         }
 
-        LappClient().receiveBtcViaLN(receiveScreen.invoice, amountToReceive, turboChannel)
+        val invoice = getOwnInvoice(amountInSat)
 
-        // If we return right now, we'll have to wait for the FCM notification to know we received
-        // the money. If we give Syncer some time to see the transaction, the notification will be
-        // waiting for us when we reach Home (and pullNotifications):
-        SystemClock.sleep(1800)
-
-        device.pressBack()
+        LappClient().receiveBtcViaLN(invoice, amountToReceive, turboChannel)
 
         // Wait for balance to be updated:
         val amount = BitcoinUtils.satoshisToBitcoins(amountInSat)
@@ -228,6 +220,18 @@ class AutoFlows(
         }
     }
 
+    fun getOwnInvoice(amountInSat: Long? = null): String {
+        homeScreen.goToReceive()
+
+        if (amountInSat != null) {
+            receiveScreen.addInvoiceAmount(amountInSat)
+        }
+
+        val invoice = receiveScreen.invoice
+        device.pressBack() // Back to Home
+        return invoice
+    }
+
     fun receiveMoneyFromNetwork(amount: Money) = try {
         tryReceiveMoneyFromNetwork(amount)
     } catch (e: AssertionError) {
@@ -236,8 +240,9 @@ class AutoFlows(
             LappClient().generateBlocks(30) // we don't want to need this again soon
             Thread.sleep(2000)
             tryReceiveMoneyFromNetwork(amount)
+        } else {
+            throw e
         }
-        throw e
     }
 
     private fun tryReceiveMoneyFromNetwork(amount: Money) {
@@ -245,21 +250,20 @@ class AutoFlows(
         val balanceAfter = expectedBalance.add(amount)
 
         // Generate an address:
-        homeScreen.goToReceive()
-        val address = receiveScreen.address
+        val address = getOwnAddress()
 
         // Hit RegTest to receive money from the network:
         LappClient().receiveBtc(amount.number.toDouble(), address)
 
-        // If we return right now, we'll have to wait for the FCM notification to know we received
-        // the money. If we give Syncer some time to see the transaction, the notification will be
-        // waiting for us when we reach Home (and pullNotifications):
-        SystemClock.sleep(1800)
-
-        device.pressBack()
-
         // Wait for balance to be updated:
         homeScreen.waitUntilBalanceEquals(balanceAfter)
+    }
+
+    fun getOwnAddress(): String {
+        homeScreen.goToReceive()
+        val address = receiveScreen.address
+        device.pressBack() // Back to Home
+        return address
     }
 
     fun setupP2P(
@@ -273,10 +277,32 @@ class AutoFlows(
         p2pScreen.fillForm(phoneNumber, verificationCode, firstName, lastName)
     }
 
-    fun startOperationFromClipboardTo(addressOrInvoice: String) {
-        Clipboard.write(addressOrInvoice)
+    fun startOperationManualInputTo(destination: String) {
         homeScreen.goToSend()
-        id(R.id.uri_paster).click()
+        uriInput(R.id.uri_input).text = destination
+
+        if (destination == ReceiveScreen.lastCopiedFromClipboard) {
+            labelWith(R.string.send_cyclic_payment_warning).assertExists()
+
+        } else {
+            labelWith(R.string.send_cyclic_payment_warning).assertDoesntExist()
+        }
+
+        muunButton(R.id.confirm).press()
+    }
+
+    fun startOperationFromClipboardTo(destination: String) {
+        Clipboard.write(destination)
+
+        homeScreen.goToSend()
+
+        if (OS.supportsClipboardAccessNotification()) {
+            muunButton(R.id.paste_button).press()
+            muunButton(R.id.confirm).press()
+
+        } else {
+            uriPaster.waitForExists().click()
+        }
     }
 
     fun sendToAddressFromClipboard(money: Money, receivingAddress: String, description: String) {
@@ -355,13 +381,14 @@ class AutoFlows(
         newOpScreen.fillForm(amountToEnter, descriptionToEnter)
 
         // Keep these to check later:
+        val destination = newOpScreen.destination
         val amount = newOpScreen.confirmedAmount
         val fee = newOpScreen.confirmedFee
         val description = newOpScreen.confirmedDescription
         val total = newOpScreen.confirmedTotal
         newOpScreen.submit()
 
-        homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
+        checkBalanceAfterOnchainOperation(destination, balanceBefore, fee, total)
 
         checkOperationDetails(amount, description, fee) {
             homeScreen.goToOperationDetail(description, isPending = true)
@@ -435,7 +462,7 @@ class AutoFlows(
         opDetailScreen.checkAmount(amount)
         opDetailScreen.checkDescription(description)
 
-        lightningFee?.let {
+        lightningFee.let {
             opDetailScreen.checkLightningFee(it)
         }
 
@@ -446,7 +473,10 @@ class AutoFlows(
      * Perform submarine swap checks in success scenarios. By default, assumes we are in
      * Operation Detail screen.
      */
-    fun checkSubmarineSwapSuccess(is0Conf: Boolean = true, reachOperationDetail: () -> Unit = {}) {
+    private fun checkSubmarineSwapSuccess(
+        is0Conf: Boolean = true,
+        reachOperationDetail: () -> Unit = {},
+    ) {
 
         reachOperationDetail()
 
@@ -474,7 +504,7 @@ class AutoFlows(
 
     private fun checkSwapConfirmed() {
         opDetailScreen.waitForStatusChange(R.string.operation_completed)
-        // TODO check receving node?
+        // TODO check receiving node?
     }
 
     fun tryAllFeesAndExit() {
@@ -613,14 +643,23 @@ class AutoFlows(
             pressMuunButton(R.id.lnurl_intro_action)
         }
 
-        uriPaster.waitForExists().click()
+        if (OS.supportsClipboardAccessNotification()) {
+            id(R.id.paste_from_clipboard).click()
 
-        // Let's wait a sec until withdraw suceeds
+        } else {
+            uriPaster.waitForExists().click()
+        }
+
+        // Let's wait a sec until withdraw succeeds
         SystemClock.sleep(10000)
     }
 
-    fun lnUrlWithdrawViaSend(variant: LappClient.LnUrlVariant = LappClient.LnUrlVariant.NORMAL) {
-        startLnUrlWithdrawViaSend(variant)
+    fun lnUrlWithdrawViaSend(
+        variant: LappClient.LnUrlVariant = LappClient.LnUrlVariant.NORMAL,
+        submitLnurl: (String) -> Unit = ::startOperationFromClipboardTo,
+    ) {
+
+        startLnUrlWithdrawViaSend(variant, submitLnurl)
 
         if (variant == LappClient.LnUrlVariant.SLOW) {
 
@@ -631,20 +670,19 @@ class AutoFlows(
                 .textEquals(MuunTexts.normalize(R.string.error_op_action))
                 .press()
         } else {
-            // Let's wait a sec until withdraw suceeds
+            // Let's wait a sec until withdraw succeeds
             SystemClock.sleep(10000)
         }
     }
 
-    fun startLnUrlWithdrawViaSend(variant: LappClient.LnUrlVariant) {
+    fun startLnUrlWithdrawViaSend(
+        variant: LappClient.LnUrlVariant,
+        submitLnurl: (String) -> Unit = ::startOperationFromClipboardTo,
+    ) {
         val lnurl = LappClient().generateWithdrawLnUrl(variant)
-        Clipboard.write(lnurl)
-
         println("Using lnurl: $lnurl")
 
-        homeScreen.goToSend()
-
-        uriPaster.waitForExists().click()
+        submitLnurl(lnurl)
 
         pressMuunButton(R.id.lnurl_withdraw_confirm_action)
     }
@@ -672,6 +710,24 @@ class AutoFlows(
     }
 
     // PRIVATE, helper stuff
+
+    private fun checkBalanceAfterOnchainOperation(
+        destination: String,
+        balanceBefore: Money,
+        fee: MonetaryAmount,
+        total: MonetaryAmount,
+    ) {
+
+        val lastCopiedFromClipboard = ReceiveScreen.lastCopiedFromClipboard
+        val expectedBalance = if (destination == UiUtils.ellipsize(lastCopiedFromClipboard)) {
+            // Its a cyclic payment! We just subtract the fee
+            balanceBefore.subtract(fee)
+        } else {
+            balanceBefore.subtract(total)
+        }
+
+        homeScreen.checkBalanceCloseTo(expectedBalance)
+    }
 
     private fun goToSettingsAndClickDeleteWallet() {
         homeScreen.goToSettings()

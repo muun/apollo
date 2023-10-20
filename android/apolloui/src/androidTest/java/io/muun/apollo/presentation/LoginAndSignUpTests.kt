@@ -78,7 +78,7 @@ open class LoginAndSignUpTests : BaseInstrumentationTest() {
         // Create Wallet (U.U)
         signInScreen.startSignup()
 
-        label(R.string.choose_your_pin).waitForExists(3000)
+        label(R.string.choose_your_pin).assertExists()
 
         signInScreen.back()
         checkToastDisplayed(R.string.pin_error_on_setup_cancel)
@@ -125,7 +125,7 @@ open class LoginAndSignUpTests : BaseInstrumentationTest() {
         // It appears we have some flakyness here. Sometimes we arrive at Enter RC screen with
         // input already focused which means the soft keyboard is active and the first back gets
         // "eaten" to dismiss the keyboard.
-        id(R.id.signup_forgot_password_continue).waitForExists(2000)
+        id(R.id.signup_forgot_password_continue).assertExists()
         Espresso.closeSoftKeyboard()
         signInScreen.back()
 

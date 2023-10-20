@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.domain.LoggingContextManager;
+import io.muun.apollo.domain.ShowWelcomeToMuunManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.NotificationActions;
@@ -29,6 +30,8 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.validation.constraints.NotNull;
 
+import static io.muun.apollo.presentation.ui.home.HomeActivity.SHOW_WELCOME_TO_MUUN;
+
 @PerActivity
 public class HomePresenter extends BasePresenter<HomeView> implements HomeFragmentParentPresenter {
 
@@ -37,6 +40,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     private final NotificationActions notificationActions;
     private final UserSelector userSel;
     private final UserActivatedFeatureStatusSelector userActivatedFeatureStatusSel;
+    private final ShowWelcomeToMuunManager showWelcomeToMuun;
     private final SignupDraftManager signupDraftManager;
 
     private final TaskScheduler taskScheduler;
@@ -59,6 +63,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
                          NotificationActions notificationActions,
                          UserSelector userSel,
                          UserActivatedFeatureStatusSelector userActivatedFeatureStatusSel,
+                         ShowWelcomeToMuunManager showWelcomeToMuunManager,
                          SignupDraftManager signupDraftManager,
                          TaskScheduler taskScheduler,
                          FetchRealTimeDataAction fetchRealTimeData,
@@ -68,6 +73,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
         this.contactActions = contactActions;
         this.userSel = userSel;
         this.userActivatedFeatureStatusSel = userActivatedFeatureStatusSel;
+        this.showWelcomeToMuun = showWelcomeToMuunManager;
         this.signupDraftManager = signupDraftManager;
         this.fetchRealTimeData = fetchRealTimeData;
         this.notificationActions = notificationActions;
@@ -92,10 +98,14 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
 
         fetchRealTimeData.runForced();
 
+        if (shouldShowWelcomeToMuun()) {
+            showWelcomeToMuun.setSeen();
+            view.showWelcomeToMuunDialog();
+        }
+
         new PdfFontIssueTracker(getContext(), analytics)
                 .track(AnalyticsEvent.PDF_FONT_ISSUE_TYPE.HOME_VIEW);
     }
-
 
     /**
      * Call to report activity was destroyed.
@@ -177,5 +187,18 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
      */
     public void reportTaprootCelebrationShown() {
         userSel.setPendingTaprootCelebration(false);
+    }
+
+    private boolean shouldShowWelcomeToMuun() {
+        // We use SHOW_WELCOME_TO_MUUN Intent extra to mark the HomeActivity opening when we've just
+        // created a new wallet but we also need the help of a user preference because even though
+        // it's possible to remove extras from an Intent there are on some scenarios like activity
+        // recreation where the activity is passed the original Intent, unchanged. Which results in
+        // the welcome dialog being shown more than once (e.g if activity is recreated). Apparently,
+        // the original Intent is actually immutable and its stored somewhere in Android's
+        // ActivityManager.
+        // For more info check out: https://stackoverflow.com/a/41574485/901465
+        final boolean hasSeenWelcomeToMuun = showWelcomeToMuun.getSeen();
+        return view.getArgumentsBundle().getBoolean(SHOW_WELCOME_TO_MUUN) && !hasSeenWelcomeToMuun;
     }
 }

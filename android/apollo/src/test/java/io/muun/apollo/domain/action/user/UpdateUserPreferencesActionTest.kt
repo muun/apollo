@@ -31,16 +31,18 @@ class UpdateUserPreferencesActionTest : BaseTest() {
 
     @Before
     fun before() {
-        doReturn(Observable.just(
-            UserPreferences(
-                strictMode = false,
-                seenNewHome = false,
-                seenLnurlFirstTime = false,
-                defaultAddressType = "segwit",
-                skippedEmailSetup = false,
-                receivePreference = ReceiveFormatPreference.ONCHAIN
+        doReturn(
+            Observable.just(
+                UserPreferences(
+                    strictMode = false,
+                    seenNewHome = false,
+                    seenLnurlFirstTime = false,
+                    defaultAddressType = "segwit",
+                    skippedEmailSetup = false,
+                    receivePreference = ReceiveFormatPreference.ONCHAIN,
+                )
             )
-        )).whenever(repository).watch()
+        ).whenever(repository).watch()
     }
 
     @Test

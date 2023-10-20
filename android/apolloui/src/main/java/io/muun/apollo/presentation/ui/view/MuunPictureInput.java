@@ -99,7 +99,9 @@ public class MuunPictureInput extends MuunView {
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-        getComponent().inject(this);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         profilePictureView.setOnClickListener(view -> openIntentChooser());
         profilePictureView.setListener((Uri uri) -> toggleLoading(false));

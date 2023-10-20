@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.presentation.ui.view.MuunHeader
+import timber.log.Timber
 
 class SingleFragmentActivityImpl :
     SingleFragmentActivity<SingleFragmentPresenter<SingleFragmentView, ParentPresenter>>() {
@@ -18,7 +18,7 @@ class SingleFragmentActivityImpl :
             fragment: Class<out SingleFragment<*>>,
         ): Intent {
 
-            Crashlytics.logBreadcrumb("SingleFragmentActivityImpl: startActivityIntent $fragment")
+            Timber.i("SingleFragmentActivityImpl: startActivityIntent $fragment")
 
             val intent = Intent(context, SingleFragmentActivityImpl::class.java)
             intent.putExtra(FRAGMENT_CLASS, fragment)
@@ -51,7 +51,7 @@ class SingleFragmentActivityImpl :
 
         val fragmentClass: Class<*> = argumentsBundle.getSerializable(FRAGMENT_CLASS) as Class<*>
 
-        Crashlytics.logBreadcrumb("SingleFragmentActivityImpl: getInitialFragment $fragmentClass")
+        Timber.i("SingleFragmentActivityImpl: getInitialFragment $fragmentClass")
 
         try {
             return fragmentClass.getConstructor().newInstance() as BaseFragment<out Presenter<*>>

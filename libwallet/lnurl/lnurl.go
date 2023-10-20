@@ -292,6 +292,8 @@ var reasons = map[string]int{
 	"withdraw link is empty": ErrAlreadyUsed,
 	// This LNURL has already been used (thndr.io)
 	"has already been used": ErrAlreadyUsed,
+	// Mainly to emulate ErrUnreachable error in CI, UI tests
+	"is unresponsive": ErrUnreachable,
 }
 
 func mapReasonToErrorCode(reason string) int {

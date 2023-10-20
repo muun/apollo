@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import butterknife.BindView
 import butterknife.BindViews
-import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.libwallet.adapt
@@ -27,7 +26,6 @@ import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
-import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -35,7 +33,6 @@ import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeFragment
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorFragment
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeFragment
-import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.home.HomeActivity
 import io.muun.apollo.presentation.ui.listener.SimpleTextWatcher
 import io.muun.apollo.presentation.ui.new_operation.NewOperationView.Receiver
@@ -54,7 +51,6 @@ import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.apollo.presentation.ui.view.StatusMessage
 import io.muun.apollo.presentation.ui.view.TextInputWithBackHandling
 import io.muun.common.exception.MissingCaseError
-import io.muun.common.utils.BitcoinUtils
 import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
@@ -183,12 +179,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     @BindView(R.id.button_layout_anchor)
     lateinit var buttonLayoutAnchor: View
 
-    // State:
-
-    @State
-    @JvmField
-    var displayInAlternateCurrency: Boolean = false
-
     private var countdownTimer: MuunCountdownTimer? = null
 
     override fun inject() {
@@ -311,12 +301,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         updateReceiver(state.resolved.paymentIntent, receiver)
 
         val balance = BitcoinAmount.fromLibwallet(state.totalBalance)
-        val balanceText = MoneyHelper.formatLongMonetaryAmount(
-            balance.inInputCurrency,
-            true,
-            amountInput.bitcoinUnit,
-            applicationContext.locale()
-        )
         val newAmount = state.amount.inInputCurrency.adapt()
 
         amountInput.isEnabled = true
@@ -326,7 +310,10 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             // TODO: change state machine changeCurrency API
             amountInput.value = newAmount
         }
-        amountInput.setSecondaryAmount("${getString(R.string.available_balance)}: $balanceText")
+        amountInput.setSecondaryAmount(
+            "${getString(R.string.available_balance)}: %s",
+            balance.inInputCurrency
+        )
 
         root.layoutTransition = null
         showLoadingSpinner(false)
@@ -367,14 +354,22 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         actionButton.isEnabled = false
     }
 
-    override fun goToEnterDescriptionState(state: EnterDescriptionState, receiver: Receiver) {
+    override fun goToEnterDescriptionState(
+        state: EnterDescriptionState,
+        receiver: Receiver,
+        btcUnit: BitcoinUnit,
+    ) {
 
         updateReceiver(state.resolved.paymentIntent, receiver)
 
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
         val isValid = !state.validated.feeNeedsChange
-        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, getBitcoinUnit(), isValid))
+        val isSatSelectedAsCurrency = amountInput.isSatSelectedAsCurrency
+        setAmount(
+            selectedAmount,
+            DisplayAmount(state.amountInfo.amount, btcUnit, isSatSelectedAsCurrency, isValid)
+        )
 
         descriptionInput.setText(state.note)
 
@@ -418,16 +413,30 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         statusMessageViews.changeVisibility(View.GONE)
     }
 
-    override fun goToConfirmState(state: ConfirmStateViewModel, receiver: Receiver) {
+    override fun goToConfirmState(
+        state: ConfirmStateViewModel,
+        receiver: Receiver,
+        btcUnit: BitcoinUnit,
+    ) {
 
         updateReceiver(state.paymentIntent, receiver)
 
         show1ConfNotice(state.validated.swapInfo?.isOneConf ?: false)
 
         val isValid = !state.validated.feeNeedsChange
-        setAmount(selectedAmount, DisplayAmount(state.amountInfo.amount, getBitcoinUnit(), isValid))
-        setAmount(feeAmount, DisplayAmount(state.validated.fee, getBitcoinUnit(), isValid))
-        setAmount(totalAmount, DisplayAmount(state.validated.total, getBitcoinUnit(), isValid))
+        val isSatSelectedAsCurrency = amountInput.isSatSelectedAsCurrency
+        setAmount(
+            selectedAmount,
+            DisplayAmount(state.amountInfo.amount, btcUnit, isSatSelectedAsCurrency, isValid)
+        )
+        setAmount(
+            feeAmount,
+            DisplayAmount(state.validated.fee, btcUnit, isSatSelectedAsCurrency, isValid)
+        )
+        setAmount(
+            totalAmount,
+            DisplayAmount(state.validated.total, btcUnit, isSatSelectedAsCurrency, isValid)
+        )
 
         descriptionContent.text = state.note
 
@@ -553,7 +562,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
     }
 
     private fun handleToggleCurrencyChange() {
-        displayInAlternateCurrency = !displayInAlternateCurrency
         toggleCurrencyChange(selectedAmount)
         toggleCurrencyChange(feeAmount)
         toggleCurrencyChange(totalAmount)
@@ -563,22 +571,11 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         val displayAmt: DisplayAmount? = view.tag as? DisplayAmount
         if (displayAmt != null) {    // If view isn't being show yet, we do nothing
 
-            val amountToDisplay = if (displayInAlternateCurrency) {
+            val (_, selectedCurrencyCode) = view.text.toString().split(" ")
 
-                val (_, currencyCode) = view.text.toString().split(" ")
+            val amountToDisplay = displayAmt.rotateCurrency(selectedCurrencyCode)
 
-                // Show BTC if current display is in FIAT, and the other way around.
-                if (currencyCode == "BTC" || currencyCode == "SAT") {
-                    displayAmt.amount.inPrimaryCurrency
-                } else {
-                    BitcoinUtils.satoshisToBitcoins(displayAmt.amount.inSatoshis)
-                }
-            } else {
-                // Show the amount as it originally was.
-                displayAmt.amount.inInputCurrency
-            }
-
-            view.text = toRichText(amountToDisplay, displayAmt.bitcoinUnit, displayAmt.isValid)
+            view.text = toRichText(amountToDisplay, displayAmt.getBitcoinUnit(), displayAmt.isValid)
         }
     }
 
@@ -696,7 +693,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
     private fun setAmount(view: TextView, displayAmount: DisplayAmount) {
         val amount = displayAmount.amount.inInputCurrency
-        view.text = toRichText(amount, displayAmount.bitcoinUnit, displayAmount.isValid)
+        view.text = toRichText(amount, displayAmount.getBitcoinUnit(), displayAmount.isValid)
         view.tag = displayAmount
     }
 
@@ -768,8 +765,4 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
             }
         }
     }
-
-    // Part of our (ugly) hack to allow SATs as an input currency option
-    private fun getBitcoinUnit(): BitcoinUnit =
-        amountInput.bitcoinUnit
 }

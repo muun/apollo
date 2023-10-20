@@ -23,8 +23,8 @@ class LnUrlWithdrawPresenter @Inject constructor(
     private val lnUrlWithdrawAction: LnUrlWithdrawAction,
     private val waitForIncomingLnPaymentSel: WaitForIncomingLnPaymentSelector,
     private val notificationService: NotificationService,
-    private val notificationPoller: UiNotificationPoller
-): BasePresenter<LnUrlWithdrawView>() {
+    private val notificationPoller: UiNotificationPoller,
+) : BasePresenter<LnUrlWithdrawView>() {
 
     @State(LnUrlWithdrawErrorBundler::class)
     @JvmField
@@ -45,7 +45,7 @@ class LnUrlWithdrawPresenter @Inject constructor(
 
         val observable: Observable<LnUrlState> = lnUrlWithdrawAction
             .state
-            .compose(handleStates<LnUrlState>(null, this::handleError))
+            .compose(handleStates(null, this::handleError))
             .doOnNext { state ->
                 handleWithdrawState(state)
             }
@@ -146,12 +146,13 @@ class LnUrlWithdrawPresenter @Inject constructor(
     fun handleErrorDescriptionClicked() {
 
         // Assigning to a local variable makes error "inmutable" to kotlin and allows smart casts
-        val error = error
-        when {
-            error == null -> {}
-            error is LnUrlError.ExpiredInvoice -> {
+        when (error) {
+            is LnUrlError.ExpiredInvoice -> {
                 clipboardManager.copy("LNURL Expired Invoice", lnUrlWithdraw.invoice)
                 view.showTextToast(context.getString(R.string.operation_detail_invoice_copied))
+            }
+            else -> {
+                // Do Nothing
             }
         }
     }
@@ -172,7 +173,7 @@ class LnUrlWithdrawPresenter @Inject constructor(
     }
 
     private fun eventType(state: LnUrlState): AnalyticsEvent.LNURL_WITHDRAW_STATE_TYPE =
-        when(state) {
+        when (state) {
             is LnUrlState.Contacting -> AnalyticsEvent.LNURL_WITHDRAW_STATE_TYPE.CONTACTING
             is LnUrlState.InvoiceCreated -> AnalyticsEvent.LNURL_WITHDRAW_STATE_TYPE.INVOICE_CREATED
             is LnUrlState.Receiving -> AnalyticsEvent.LNURL_WITHDRAW_STATE_TYPE.RECEIVING

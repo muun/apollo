@@ -11,7 +11,7 @@ import javax.inject.Inject
  */
 class ClipboardManager @Inject constructor(
     private val clipboardProvider: ClipboardProvider,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
 
     /**
@@ -28,6 +28,8 @@ class ClipboardManager @Inject constructor(
      */
     fun copyQrContent(qrContent: String) {
         copy("Bitcoin address/Ln invoice", qrContent)
-        userRepository.lastCopiedAddress = qrContent
+        userRepository.lastCopiedContentFromReceive = qrContent
     }
+
+    fun watchForPlainText() = clipboardProvider.watchForPlainText()
 }

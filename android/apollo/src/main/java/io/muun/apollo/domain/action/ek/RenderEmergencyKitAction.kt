@@ -1,6 +1,5 @@
 package io.muun.apollo.domain.action.ek
 
-import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.UserRepository
@@ -10,7 +9,7 @@ import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKit
 import rx.Observable
 import timber.log.Timber
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,9 +45,7 @@ class RenderEmergencyKitAction @Inject constructor(
                     reportEmergencyKitExported.action(export)
                         .subscribeOn(transformerFactory.backgroundScheduler)
                         .subscribe({}, { error ->
-                            Crashlytics.logBreadcrumb(
-                                "Error while reportEmergencyKitExported"
-                            )
+                            Timber.i("Error while reportEmergencyKitExported")
                             Timber.e(error)
                         })
                 }

@@ -83,7 +83,15 @@ abstract class MuunView : FrameLayout,
 
     // This is here for easy access of child views that need it. Let's try to avoid injection in
     // this base class so we don't perform unnecessary DI on all our views.
-    protected val component: ViewComponent by lazy { activity.applicationComponent.viewComponent() }
+    // NOTE: we return null in Edit Mode since views in layout preview run in an artificial context
+    // where we can't access Activity nor ApplicationComponent (required to perform Dagger DI).
+    protected val component: ViewComponent? by lazy {
+        if (!isInEditMode) {
+            activity.applicationComponent.viewComponent()
+        } else {
+            null
+        }
+    }
 
     // For convenience in Java subclasses
     protected val locale: Locale = if (isInEditMode) Locale.US else this.locale()

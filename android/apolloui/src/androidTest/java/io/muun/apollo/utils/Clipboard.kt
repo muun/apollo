@@ -9,8 +9,8 @@ object Clipboard {
     fun write(content: String) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             getClipboardManager().setPrimaryClip(
-                    ClipData.newPlainText("main", content)
-            );
+                ClipData.newPlainText("main", content)
+            )
         }
     }
 
@@ -26,8 +26,8 @@ object Clipboard {
 
     private fun getClipboardManager(): ClipboardManager {
         return InstrumentationRegistry
-                .getInstrumentation()
-                .targetContext
-                .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            .getInstrumentation()
+            .targetContext
+            .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
 }

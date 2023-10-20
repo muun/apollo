@@ -1,4 +1,4 @@
-package io.muun.apollo.presentation.ui.debug
+package io.muun.apollo.data.debug
 
 import android.os.AsyncTask
 import okhttp3.MediaType

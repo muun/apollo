@@ -68,7 +68,6 @@ open class UserPreferencesRepository @Inject constructor(
         var skippedEmailSetup: Boolean = false
         var receivePreference: ReceiveFormatPreference = ReceiveFormatPreference.ONCHAIN
 
-
         // JSON constructor
         constructor()
 
@@ -92,5 +91,4 @@ open class UserPreferencesRepository @Inject constructor(
             )
         }
     }
-
 }

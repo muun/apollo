@@ -5,12 +5,11 @@ import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.utils.RandomUser
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
-import org.assertj.core.api.Assertions.assertThat
 
 class ChangePasswordScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun fillForm(user: RandomUser, newPassword: String) {
 
@@ -63,7 +62,7 @@ class ChangePasswordScreen(
     }
 
     private fun checkEmailVerificationScreenDisplayed(email: String) {
-        assertThat(id(R.id.signup_waiting_for_email_verification_title).await()).isTrue()
+        id(R.id.signup_waiting_for_email_verification_title).await()
         checkScreenShows(email)
     }
 

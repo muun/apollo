@@ -13,8 +13,8 @@ import javax.money.MonetaryAmount
 
 class OperationDetailScreen(
     override val device: UiDevice,
-    override val context: Context
-): WithMuunInstrumentationHelpers {
+    override val context: Context,
+) : WithMuunInstrumentationHelpers {
 
     fun waitForStatusChange(@StringRes stringResId: Int) {
         waitForStatusChange(context.getString(stringResId))
@@ -22,8 +22,14 @@ class OperationDetailScreen(
 
     fun waitForStatusChange(statusText: String) {
         scrollToFind(detailItemTitle(R.id.operation_detail_status))
-        maybeDetailItemTitle(R.id.operation_detail_status)
-            .wait(Until.textContains(statusText), 15000)
+        val exitCondition = {
+            maybeDetailItemTitle(R.id.operation_detail_status)
+                ?.wait(Until.textContains(statusText), 15000) ?: false
+        }
+
+        doUntil(15000, exitCondition) {
+            // Nothing, we just want to safely wait until condition
+        }
     }
 
     fun checkStatus(vararg statusTexts: String) {

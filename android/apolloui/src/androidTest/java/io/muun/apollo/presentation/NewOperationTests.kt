@@ -1,10 +1,14 @@
 package io.muun.apollo.presentation
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.muun.apollo.presentation.ui.debug.LappClient
+import io.muun.apollo.R
+import io.muun.apollo.data.debug.LappClient
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.utils.RandomUser
+import io.muun.common.model.DebtType
 import io.muun.common.utils.BitcoinUtils
+import io.muun.common.utils.LnInvoice
 import org.assertj.core.api.Assertions.assertThat
 import org.javamoney.moneta.Money
 import org.junit.Ignore
@@ -94,7 +98,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
         autoFlows.receiveMoneyFromNetwork(Money.of(0.1, "BTC"))
 
         // This amount is "brittle/fickle" as it depends on service configs
-        // Must be greate than MAX_DEBT_PER_USER but lower than AMOUNT_FOR_ZERO_CONFS_IN_USD
+        // Must be greater than MAX_DEBT_PER_USER but lower than AMOUNT_FOR_ZERO_CONFS_IN_USD
         val amountThatWillTriggerA0ConfSwapWithoutDebt = 50000
         autoFlows.newSubmarineSwap(amountThatWillTriggerA0ConfSwapWithoutDebt)
 
@@ -140,7 +144,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerALendSwap = 10_000 // Should be < MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap, DebtType.LEND)
     }
 
     @Test
@@ -153,13 +157,13 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerALendSwap = 10_000 // Should be < MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap, DebtType.LEND)
 
         // Let's collect money from user, via a COLLECT SWAP
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerACollectSwap = 20_000 // To be sure that go over MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerACollectSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerACollectSwap, DebtType.COLLECT)
     }
 
     @Test
@@ -172,7 +176,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerALendSwap = 200 // Should be < MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap, DebtType.LEND)
 
         // Oops. We need to default money from the user debt. Default TX
 
@@ -191,7 +195,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerALendSwap = 200 // Should be < MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap, DebtType.LEND)
 
         // 2. Let's receive via LN using that debt
 
@@ -261,7 +265,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         // This amount is "brittle/fickle" as it depends on service configs
         val amountThatWillTriggerALendSwap = 200 // Should be < MAX_USER_DEBT
-        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap)
+        autoFlows.newSubmarineSwap(amountThatWillTriggerALendSwap, DebtType.LEND)
 
         // 2. Let's receive via LN using that debt
 
@@ -385,5 +389,38 @@ open class NewOperationTests : BaseInstrumentationTest() {
         autoFlows.checkOperationDetails(amount, description, fee) {
             homeScreen.goToOperationDetail(description, isPending = true)
         }
+    }
+
+    @Test
+    fun test_23_user_can_make_cyclic_payment() {
+        autoFlows.signUp()
+
+        autoFlows.receiveMoneyFromNetwork(Money.of(0.0102, "BTC"))
+
+        userCanMakeAOnchainCyclePayment()
+
+        userCanNotMakeAOffChainCyclePayment()
+    }
+
+    private fun userCanMakeAOnchainCyclePayment() {
+        val receivingAddress = autoFlows.getOwnAddress()
+        val moneyToSend = Money.of(0.0001, "BTC")
+        val description = "This is a note " + System.currentTimeMillis()
+
+        autoFlows.newOperation(moneyToSend, description) {
+            autoFlows.startOperationManualInputTo(receivingAddress)
+        }
+        autoFlows.settleOperation(description)
+    }
+
+    private fun userCanNotMakeAOffChainCyclePayment() {
+        val ownInvoice = autoFlows.getOwnInvoice()
+        val lnInvoice = LnInvoice.decode(Globals.INSTANCE.network, ownInvoice)
+
+        autoFlows.startOperationManualInputTo(lnInvoice.original)
+
+        // We don't allow cyclic ln payments yet
+        label(R.string.error_op_cyclical_swap_title).assertExists()
+        label(R.string.error_op_cyclical_swap_desc).assertExists()
     }
 }
