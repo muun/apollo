@@ -1,5 +1,7 @@
 package io.muun.common.model;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -14,7 +16,8 @@ public class BtcAmount {
 
     private static final long MSATS_PER_SAT = 1_000L;
 
-    private static final long MSATS_PER_BTC = 100_000_000_000L;
+    @VisibleForTesting
+    static final long MSATS_PER_BTC = 100_000_000_000L;
 
     private final long milliSats;
 
@@ -33,7 +36,7 @@ public class BtcAmount {
      * Build an amount from BTC.
      */
     public static BtcAmount fromBtc(double btc) {
-        return new BtcAmount((long)(btc * MSATS_PER_BTC));
+        return new BtcAmount(Math.round(btc * MSATS_PER_BTC));
     }
 
     /**
@@ -70,7 +73,7 @@ public class BtcAmount {
     }
 
     /**
-     * Conver to BTC.
+     * Converts to BTC. Amounts greater than 10,000 BTC will lose the milliSat resolution
      */
     public double toBtc() {
         return ((double) milliSats) / MSATS_PER_BTC;
@@ -137,7 +140,7 @@ public class BtcAmount {
     }
 
     /**
-     * Return the smaller of this amount and the other.
+     * Return the smallest of this amount and the other.
      */
     public BtcAmount min(@NotNull BtcAmount other) {
         return BtcAmount.fromMilliSats(Math.min(milliSats, other.milliSats));
