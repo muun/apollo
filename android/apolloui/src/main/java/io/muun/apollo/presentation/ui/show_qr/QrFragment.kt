@@ -100,7 +100,7 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
 
-        // Since we just created a bitmap with default (aka bilinear) filtering, that smoothes the
+        // Since we just created a bitmap with default (aka bilinear) filtering, that smooths the
         // contrast between adjacent pixels, which is normally GREAT for images, but no so much for
         // our current case: QRs. So we create another bitmap, using "nearest-neighbor scaling".
         // See: https://www.geeksforgeeks.org/css-image-rendering-property/
@@ -114,8 +114,10 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
     }
 
     override fun onDestroyView() {
-        Timber.d("Recycling QR image Bitmap")
-        (qrImage.drawable as BitmapDrawable).bitmap.recycle()
+        if (qrImage.drawable != null) {
+            Timber.d("Recycling QR image Bitmap")
+            (qrImage.drawable as BitmapDrawable).bitmap.recycle()
+        }
         super.onDestroyView()
     }
 }

@@ -6,6 +6,14 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+### FIXED
+
+## [51.2] - 2023-10-24
+
+### FIXED
+
+- NPE when trying to recycling a QR bitmap before is was fully loaded.
+
 ## [51.1] - 2023-10-17
 
 ### ADDED
@@ -36,7 +44,7 @@ request.
 - Satoshis copy in Select Bitcoin Unit screen. Now explicitly naming the option Satoshi (SAT),
   instead of Bitcoin (SAT).
 - Silence noisy DRM errors.
-- Huge revamp to UI test suite. Enhancing reliability o coverage.
+- Huge revamp to UI test suite. Enhancing reliability and coverage.
 
 ## [51] - 2023-07-28
 
