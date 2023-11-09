@@ -65,9 +65,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     @BindView(R.id.high_fees_warning_overlay)
     lateinit var highFeesOverlay: View
 
-    @BindView(R.id.high_fees_continue_button)
-    lateinit var highFeesContinueButton: View
-
     // State:
 
     // Part of our (ugly) hack to allow SATs as an input currency option
@@ -78,10 +75,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     @State
     @JvmField
     var highFees = false
-
-    @State
-    @JvmField
-    var hasDismissedHighFeesWarning = false // Flag to decide when to stop showing high fees warning
 
     private var countdownTimer: MuunCountdownTimer? = null
 
@@ -104,7 +97,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         addressTypeItem.setOnAddressTypeChangedListener(this)
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
         createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
-        highFeesContinueButton.setOnClickListener { onHighFeesContinueButtonClick() }
 
         hiddenSection.setExpanded(false)
 
@@ -242,11 +234,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         uriSettingsContent.visibility = View.GONE
     }
 
-    private fun onHighFeesContinueButtonClick() {
-        hasDismissedHighFeesWarning = true
-        refresh()
-    }
-
     private fun showInvoiceExpiredOverlay() {
         invoiceExpiredOverlay.visibility = View.VISIBLE
         qrOverlay.visibility = View.GONE
@@ -304,7 +291,7 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     }
 
     override fun refresh() {
-        if (highFees && !hasDismissedHighFeesWarning) {
+        if (highFees) {
             showHighFeesOverlay()
 
         } else {

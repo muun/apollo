@@ -84,13 +84,6 @@
                             android:textSize="16sp"
                             android:gravity="center" />
 
-                    <io.muun.apollo.presentation.ui.view.MuunButton
-                            android:id="@+id/high_fees_continue_button"
-                            style="@style/muun_button_primary"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="@string/show_qr_high_fees_continue" />
-
                 </LinearLayout>
 
             </RelativeLayout>
