@@ -1152,11 +1152,18 @@
     <string name="show_qr_invoice_create_other">Crear factura</string>
 
     <string name="show_qr_high_fees_warning">
-        Recibir pagos en lightning está temporalmente deshabilitado mientras actualizamos nuestra
-        infraestructura de pagos.
+        Tu monedero está temporalmente inhabilitado para recibir pagos a través de Lightning debido
+        a la alta congestión de la Red de Bitcoin.
+        \n\n
+        Para recibir un pago, por favor cambia a la pestaña de Bitcoin.
     </string>
-    <string name="show_qr_high_fees_continue">ENTENDIDO</string>
-
+    <string name="show_qr_high_fees_warning_unified_qr">
+        Tu monedero está temporalmente inhabilitado para recibir pagos a través de Lightning debido
+        a la alta congestión de la Red de Bitcoin.
+        \n\n
+        Para recibir un pago, por favor visita Ajustes > Lightning Network y configura a Bitcoin
+        como tu protocolo para recibir.
+    </string>
 
     <string name="address_share_title">Enviar a...</string>
     <string name="secure_storage_error">
@@ -1736,7 +1743,7 @@
     </string>
 
     <string name="home_high_fees_card_body">
-        La red de bitcoin está a máxima capacidad, haciendo altas las comisiones.
+        La red de Bitcoin está congestionada. Los pagos están más lentos y costosos.
     </string>
 
     <string name="high_fees_explanation_title">High mempool size impacts</string>

@@ -1113,9 +1113,18 @@
     <string name="show_qr_invoice_create_other">Create invoice</string>
 
     <string name="show_qr_high_fees_warning">
-        Receiving lightning payments is temporarily disabled while we upgrade our payment infrastructure.
+        Your wallet is temporarily unable to receive Lightning payments due to the high congestion
+        of the Bitcoin Network.
+        \n\n
+        To receive a payment, please switch to the Bitcoin tab.
     </string>
-    <string name="show_qr_high_fees_continue">UNDERSTOOD</string>
+    <string name="show_qr_high_fees_warning_unified_qr">
+        Your wallet is temporarily unable to receive Lightning payments due to the high congestion
+        of the Bitcoin Network.
+        \n\n
+        To receive a payment, please visit Settings > Lightning Network and set Bitcoin as your
+        receiving protocol.
+    </string>
 
     <string name="address_share_title">Send to...</string>
 
@@ -1679,7 +1688,7 @@
     </string>
 
     <string name="home_high_fees_card_body">
-        The bitcoin network is at top capacity, making fees high.
+        The Bitcoin Network is congested. Fees are high, and confirmation times are slow.
     </string>
 
     <string name="high_fees_explanation_title">High mempool size impacts</string>

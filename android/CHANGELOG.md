@@ -6,7 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-### FIXED
+## [51.3] - 2023-11-09
+
+### CHANGED
+
+- Handling of High Fees situation. Improved copy for home and receive banners and
+disable LN QRs of payments that will surely fail with a better message.
 
 ## [51.2] - 2023-10-24
 

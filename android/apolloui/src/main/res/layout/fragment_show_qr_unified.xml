@@ -75,7 +75,7 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/show_qr_high_fees_warning"
+                            android:text="@string/show_qr_high_fees_warning_unified_qr"
                             android:textColor="@color/text_secondary_color"
                             android:layout_marginStart="60dp"
                             android:layout_marginEnd="60dp"
@@ -83,13 +83,6 @@
                             android:lineSpacingExtra="8dp"
                             android:textSize="16sp"
                             android:gravity="center" />
-
-                    <io.muun.apollo.presentation.ui.view.MuunButton
-                            android:id="@+id/high_fees_continue_button"
-                            style="@style/muun_button_primary"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="@string/show_qr_high_fees_continue" />
 
                 </LinearLayout>
 
