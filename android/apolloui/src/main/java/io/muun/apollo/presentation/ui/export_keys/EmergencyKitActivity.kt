@@ -60,7 +60,6 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
         header.setElevated(true)
     }
 
-
     override fun goToStep(step: EmergencyKitStep) {
         replaceFragment(createStepFragment(step), false)
     }

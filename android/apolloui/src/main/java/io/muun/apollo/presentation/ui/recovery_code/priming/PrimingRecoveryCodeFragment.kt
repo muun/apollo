@@ -29,12 +29,14 @@ internal class PrimingRecoveryCodeFragment : SingleFragment<PrimingRecoveryCodeP
         R.layout.priming_recovery_code_fragment
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
+        startButton.setOnClickListener { presenter.continueToShowRecoveryCode() }
+    }
+
+    override fun setUpHeader() {
         parentActivity.header.apply {
             setElevated(true)
             setNavigation(MuunHeader.Navigation.BACK)
         }
-        startButton.setOnClickListener { presenter.continueToShowRecoveryCode() }
     }
 
     override fun setTexts(user: User) {

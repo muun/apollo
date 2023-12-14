@@ -14,6 +14,7 @@ import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
+import androidx.viewbinding.ViewBinding
 import butterknife.ButterKnife
 import icepick.Icepick
 import io.muun.apollo.domain.errors.BugDetected
@@ -47,8 +48,29 @@ abstract class MuunView : FrameLayout,
         this.setUp(c, a)
     }
 
+    /**
+     * Returns the id of the resource with the layout of the view.
+     * TODO rm this once all fragments have successfully migrated from butterKnife to view binding.
+     */
     @get:LayoutRes
     protected abstract val layoutResource: Int
+
+    /**
+     * Override this method to opt in to use View Binding. This will turn into an abstract method
+     * to force all subclasses to implement once we finish the transition from ButterKnife to
+     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
+     * transitioned yet.
+     */
+    protected open fun viewBinder(): ((View) -> ViewBinding)? {
+        return null
+    }
+
+    /**
+     * Reserved property for View Binding use.
+     */
+    @Suppress("PropertyName")
+    protected var _binding: ViewBinding? = null
+        private set
 
     protected val root: ViewGroup
         get() = getChildAt(0) as ViewGroup
@@ -104,7 +126,18 @@ abstract class MuunView : FrameLayout,
         // parentView (in this case, `this`). See its javadoc
         val innerView = inflater.inflate(layoutResource, this, false)
         addView(innerView)
-        ButterKnife.bind(this, innerView)
+
+        val viewBinder = viewBinder()
+        // If view has opted-in to viewBinding, lets gooooo
+        if (viewBinder != null) {
+            _binding = viewBinder.invoke(innerView)
+            Timber.d("${javaClass.simpleName} using viewBinding")
+
+        } else {
+            // TODO drop butterknife from all views, add generic type instead of using viewBinder
+            ButterKnife.bind(this, innerView)
+            Timber.d("${javaClass.simpleName} using Butterknife")
+        }
 
         // WAIT: when did we change the code to add this `innerView` nonsense, instead of using
         // ourselves as the root layout like in the good old times?
@@ -193,7 +226,7 @@ abstract class MuunView : FrameLayout,
     private fun <T : View> addViewsByTagRecursively(
         tag: String,
         root: ViewGroup,
-        results: MutableList<T>
+        results: MutableList<T>,
     ) {
         val childCount = root.childCount
         for (i in 0 until childCount) {

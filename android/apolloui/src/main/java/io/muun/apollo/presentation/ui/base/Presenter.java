@@ -1,16 +1,19 @@
 package io.muun.apollo.presentation.ui.base;
 
 import android.os.Bundle;
+import android.view.View;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import javax.validation.constraints.NotNull;
 
 public interface Presenter<ViewT extends BaseView> extends ParentPresenter {
 
-
     /**
-     * Override this method to add any initialization logic that needs to happen at view creation,
-     * e.g at Activity/Fragment#onCreate.
+     * Override this method to add any initialization logic that needs to happen only once at view
+     * creation, instead of each time the view is brought to the foreground aka resumed.
+     * NOTE: this is called AFTER view creation (Activity/Fragment#onCreate), in fact for fragments
+     * this is technically called in {@link Fragment#onViewCreated(View, Bundle)}..
      */
     void onViewCreated(@Nullable Bundle savedInstanceState);
 
@@ -22,8 +25,10 @@ public interface Presenter<ViewT extends BaseView> extends ParentPresenter {
     /**
      * Override this method to add any logic that the presenter needs to run right AFTER
      * initialization success.
+     * NOTE: this is useful for our base classes (or any other parent class) that need to defer some
+     * logic until subclass finishes initialization/setup.
      */
-    void afterSetUp();
+    void onSetUpFinished();
 
     /**
      * Override this method to add any clean up logic that the presenter needs when going to

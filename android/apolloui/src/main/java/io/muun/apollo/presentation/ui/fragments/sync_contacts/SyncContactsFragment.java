@@ -10,6 +10,7 @@ import io.muun.apollo.presentation.ui.view.RichText;
 import android.Manifest;
 import android.text.TextUtils;
 import android.view.View;
+import androidx.annotation.NonNull;
 import butterknife.BindView;
 
 public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
@@ -33,8 +34,6 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         final String howItWorkText = getString(R.string.sync_contacts_how_it_works);
 
         final CharSequence content = TextUtils.concat(
@@ -50,12 +49,12 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
     }
 
     @Override
-    public void onPermissionsGranted(String[] grantedPermissions) {
+    public void onPermissionsGranted(@NonNull String[] grantedPermissions) {
         presenter.reportContactsPermissionGranted();
     }
 
     @Override
-    public void onPermissionsDenied(String[] deniedPermissions) {
+    public void onPermissionsDenied(@NonNull String[] deniedPermissions) {
 
         final boolean canRequestPermissionRationale = canShowRequestPermissionRationale(
                 Manifest.permission.READ_CONTACTS

@@ -17,7 +17,7 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
     private val fba = FirebaseAnalytics.getInstance(context)
 
     // Just for enriching error logs. A best effort to add metadata
-    private val inMemoryMapBreadcrumbCollector = mutableMapOf<String, Bundle>()
+    private val inMemoryMapBreadcrumbCollector = sortedMapOf<Long, Bundle>()
 
     /**
      * Set the user's properties, to be used by Analytics.
@@ -47,23 +47,19 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
 
     fun attachAnalyticsMetadata(report: CrashReport) {
         report.metadata["breadcrumbs"] = getBreadcrumbMetadata()
+        report.metadata["displayMetrics"] = getDisplayMetricsMetadata()
     }
 
     // PRIVATE STUFF
 
     private fun actuallyReport(event: AnalyticsEvent) {
         val bundle = Bundle().apply {
+            putString("eventName", event.eventId)
             event.metadata.forEach { putString(it.key, it.value.toString()) }
         }
 
-        val displayMetrics = Resources.getSystem().displayMetrics
-
-        bundle.putInt("height", displayMetrics.heightPixels)
-        bundle.putInt("width", displayMetrics.widthPixels)
-        bundle.putFloat("density", displayMetrics.scaledDensity)
-
         fba.logEvent(event.eventId, bundle)
-        inMemoryMapBreadcrumbCollector[event.eventId] = bundle
+        inMemoryMapBreadcrumbCollector[System.currentTimeMillis()] = bundle
         Log.i("AnalyticsProvider", event.toString())
     }
 
@@ -71,21 +67,38 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
         val builder = StringBuilder()
         builder.append(" {\n")
 
-        val breadcrumbs: Map<String, Bundle> = inMemoryMapBreadcrumbCollector
+        val breadcrumbs: Map<Long, Bundle> = inMemoryMapBreadcrumbCollector
 
-        for (eventId in breadcrumbs.keys) {
-            builder.append("\t$eventId={ ${getBreadcrumb(breadcrumbs.getValue(eventId))} }\n")
+        for (key in breadcrumbs.keys) {
+            val bundle = breadcrumbs.getValue(key)
+            val eventId = bundle["eventName"]
+            builder.append("\t$eventId={ ${serializeBundle(bundle)} }\n")
         }
 
         builder.append("}\n")
         return builder.toString()
     }
 
-    private fun getBreadcrumb(bundle: Bundle): String {
+    private fun getDisplayMetricsMetadata(): String {
+        val displayMetrics = Resources.getSystem().displayMetrics
+
+        val bundle = Bundle()
+        bundle.putInt("height", displayMetrics.heightPixels)
+        bundle.putInt("width", displayMetrics.widthPixels)
+        bundle.putFloat("density", displayMetrics.scaledDensity)
+
+        return " {\n\t${serializeBundle(bundle)}\n}"
+    }
+
+    private fun serializeBundle(bundle: Bundle): String {
         val builder = StringBuilder()
         var first = true
 
         for (param in bundle.keySet()) {
+
+            if (param == "eventName") {
+                continue // this is actually the breadcrumb key, let's avoid redundant info
+            }
 
             if (!first) {
                 builder.append(", ")

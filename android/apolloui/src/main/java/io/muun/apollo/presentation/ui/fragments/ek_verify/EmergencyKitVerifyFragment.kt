@@ -11,8 +11,8 @@ import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 
 
-class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
-                                  EmergencyKitVerifyView {
+class EmergencyKitVerifyFragment : SingleFragment<EmergencyKitVerifyPresenter>(),
+    EmergencyKitVerifyView {
 
     @BindView(R.id.code_input)
     lateinit var verificationCodeInput: MuunTextInput
@@ -21,8 +21,7 @@ class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
     lateinit var verifyButton: MuunButton
 
     @BindView(R.id.need_help)
-    lateinit var needHelpView: HtmlTextView;
-
+    lateinit var needHelpView: HtmlTextView
 
     override fun inject() =
         component.inject(this)
@@ -30,9 +29,7 @@ class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
     override fun getLayoutResource() =
         R.layout.fragment_ek_verify
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
+    override fun initializeUi(view: View) {
         verificationCodeInput.setOnChangeListener(this) {
             verifyButton.isEnabled = verificationCodeInput.text.isNotEmpty()
         }
@@ -44,6 +41,18 @@ class EmergencyKitVerifyFragment: SingleFragment<EmergencyKitVerifyPresenter>(),
         StyledStringRes(requireContext(), R.string.ek_verify_need_help, this::onNeedHelpClick)
             .toCharSequence()
             .let(needHelpView::setText)
+    }
+
+    override fun setUpHeader() {
+        // Presenter tells parentPresenter to refresh Toolbar. This is an exceptional case, as we're
+        // in the middle of a flow, and we want to refresh the same header setup as the activity
+        // (some other fragments of the flow may have change the header), and we also need to
+        // handle back navigation.
+        // Yeah. This is confusing. Sorry for that. I didn't want to lose this comment, since it
+        // kinda signals a code smell. This is a use case that our current implementation does not
+        // handle very well. In the past we've had some trouble with this, and this comment arose
+        // to warn and help maintainers from making mistakes.
+        // TODO improve our SetUpHeader impl to handle this use case better
     }
 
     override fun onBackPressed(): Boolean {

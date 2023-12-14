@@ -46,17 +46,17 @@ open class TelephonyInfoProvider @Inject constructor(private val context: Contex
         } else {
 
             if (OS.supportsGetSimStateWithSlotIndex()) {
-                return (1..simSlots)
-                    .toList()
-                    .map { mapSimState(telephonyManager.getSimState(it)) }
+                return (0 until simSlots)
+                        .toList()
+                        .map { mapSimState(telephonyManager.getSimState(it)) }
             } else {
                 // we have more than 1 sim but telephonyManager API doesn't let use query them
 
                 val simSates = mutableListOf(mapSimState(telephonyManager.simState))
 
-                val unknowns = (1 until simSlots)
-                    .toList()
-                    .map { UNKNOWN }
+                val unknowns = (0 until simSlots)
+                        .toList()
+                        .map { UNKNOWN }
 
                 simSates.addAll(unknowns)
 

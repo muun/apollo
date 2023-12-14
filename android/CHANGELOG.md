@@ -6,6 +6,31 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.4] - 2023-12-14
+
+### ADDED
+
+- Support for Android View Binding feature. Now our Activities, Fragments and custom views can
+use it and we can start removing Butterknife.
+- LeakCanary for debug builds, to help detect and prevent memory leaks.
+- REQUIRE_SECURE_ENV flag to our manifest to limit loading in on-device Android containers.
+
+### CHANGED
+
+- Bump kotlin version and make it match with kotlin android gradle plugin version.
+- Removed explicit dependency to kotlin stdlib in build.gradle.
+
+### FIXED
+
+- A problem with the breadcrumbs of our email error reports.
+- Stop polling notifications for non-retryable errors. Avoid wasting resources and generating
+backend alerts.
+- A crash related to our handling of fragment/activity lifecycle callbacks with regard to our
+MuunHeader (Toolbar). Mid refactor to enhance how we handle the lifecycle callbacks to prevent
+this issue in the future.
+- A crash involving proguard rules for androidx.lifecycle classes.
+- A memory leak when making lightning payments.
+
 ## [51.3] - 2023-11-09
 
 ### CHANGED

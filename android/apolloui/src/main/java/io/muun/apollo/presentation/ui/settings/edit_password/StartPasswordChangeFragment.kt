@@ -5,10 +5,11 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.OnClick
 import io.muun.apollo.R
+import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.MuunButton
 
-class StartPasswordChangeFragment : BaseEditPasswordFragment<StartPasswordChangePresenter>() {
+class StartPasswordChangeFragment : SingleFragment<StartPasswordChangePresenter>() {
 
     @BindView(R.id.change_password_start_explanation)
     lateinit var explanation: TextView
@@ -25,8 +26,6 @@ class StartPasswordChangeFragment : BaseEditPasswordFragment<StartPasswordChange
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
         explanation.text = getStyledString(R.string.edit_password_explanation)
     }
 

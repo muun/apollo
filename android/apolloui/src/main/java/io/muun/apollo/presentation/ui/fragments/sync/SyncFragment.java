@@ -32,12 +32,10 @@ public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncV
     @Override
     protected void inject() {
         getComponent().inject(this);
-
     }
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
         hideKeyboard(view);
     }
 

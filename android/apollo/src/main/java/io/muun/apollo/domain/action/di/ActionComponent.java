@@ -4,6 +4,7 @@ import io.muun.apollo.domain.LoggingContextManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
 import io.muun.apollo.domain.action.NotificationActions;
+import io.muun.apollo.domain.action.NotificationPoller;
 import io.muun.apollo.domain.action.OperationActions;
 import io.muun.apollo.domain.action.SigninActions;
 import io.muun.apollo.domain.action.UserActions;
@@ -73,6 +74,9 @@ public interface ActionComponent {
     IntegrityAction integrityAction();
 
     // Own-class actions:
+
+    NotificationPoller notificationPoller();
+
     UpdateProfilePictureAction updateProfilePictureAction();
 
     FetchRealTimeDataAction fetchRealTimeDataAction();

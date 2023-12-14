@@ -31,22 +31,38 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.viewbinding.ViewBinding;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import icepick.Icepick;
+import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
 
+import java.util.Objects;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 public abstract class BaseFragment<PresenterT extends Presenter> extends Fragment
-        implements BaseView, Caller, PermissionRequester {
+        implements BaseView, Caller, PermissionRequester, DefaultLifecycleObserver {
 
     private FragmentComponent component;
 
     private Unbinder butterKnifeUnbinder;
+
+    /**
+     * Reserved property for View Binding use, will be automatically cleaned up by this parent class
+     * in {@link #onDestroyView()}.
+     * TODO: this should be a protected var + private set when we kotlinize this mofo
+     */
+    private ViewBinding _binding;
+
+    protected ViewBinding getBinding() {
+        return _binding;
+    }
 
     @Inject
     protected PresenterT presenter;
@@ -58,9 +74,20 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
 
     /**
      * Returns the id of the resource with the layout of the fragment.
+     * TODO rm this once all fragments have successfully migrated from butterKnife to view binding.
      */
     @LayoutRes
     protected abstract int getLayoutResource();
+
+    /**
+     * Override this method to opt in to use View Binding. This will turn into an abstract method
+     * to force all subclasses to implement once we finish the transition from ButterKnife to
+     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
+     * transitioned yet.
+     */
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return null;
+    }
 
     /**
      * Returns the id of the resource with the menu for this activity.
@@ -71,9 +98,58 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onAttach");
+
+        safeGetParentActivity()
+                .map(BaseActivity::getLifecycle)
+                .ifPresent(lifecycle -> lifecycle.addObserver(this));
+    }
+
+    /**
+     * Notifies that {@code ON_CREATE} event occurred for parent activity. Note this is the
+     * new, recommended way of handling deprecated Fragment#onActivityCreated callback.
+     *
+     * <p>Why are we removing the lifecycle observer in the onCreate method? Shouldn't we detach the
+     * lifecycle in the onDestroy?</p>
+     *
+     * <p><a href="https://developer.android.com/jetpack/androidx/releases/fragment#1.3.0-alpha02">
+     * As per the changelog:</a></p>
+     *
+     * <p>The onActivityCreated() method is now deprecated. Code touching the fragment's view should
+     * be done in onViewCreated() (which is called immediately before onActivityCreated()) and other
+     * initialization code should be in onCreate(). To receive a callback specifically when the
+     * activity's onCreate() is complete, a LifeCycleObserver should be registered on the activity's
+     * Lifecycle in onAttach(), and removed once the onCreate() callback is received.</p>
+     *
+     * @param owner the component, whose state was changed
+     */
+    @Override
+    public void onCreate(@NonNull LifecycleOwner owner) {
+        safeGetParentActivity()
+                .map(BaseActivity::getLifecycle)
+                .ifPresent(lifecycle -> lifecycle.removeObserver(this));
+
+        Timber.d("Lifecycle: " + owner.getClass().getSimpleName() + "#onCreate");
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onActivityCreated");
+
+        onActivityCreated();
+    }
+
+    /**
+     * See {@link Fragment#onCreate(Bundle)}.
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     *                           a previous saved state, this is the state.
+     */
+    @Override
     @CallSuper
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreate");
 
         // report that fragment wants do populate the options menu
         setHasOptionsMenu(getMenuResource() != 0);
@@ -96,7 +172,9 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreateOptionsMenu");
+
         final int menuRes = getMenuResource();
 
         if (menuRes != 0) {
@@ -106,15 +184,68 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Nullable
+    /**
+     * See {@link Fragment#onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     *
+     * @param inflater           The LayoutInflater object that can be used to inflate
+     *                           any views in the fragment,
+     * @param container          If non-null, this is the parent view that the fragment's UI should
+     *                           be attached to.  The fragment should not add the view itself, but
+     *                           this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     * @return Return the View for the fragment's UI.
+     */
     @Override
     @CallSuper
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(getLayoutResource(), container, false);
-        butterKnifeUnbinder = ButterKnife.bind(this, view);
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreateView");
+
+        if (savedInstanceState != null) {
+            Timber.i("Lifecycle: " + getClass().getSimpleName() + " is being recreated");
+        }
+
+        final View view = inflateLayout(inflater, container);
         initializeUi(view);
         return view;
+    }
+
+    private View inflateLayout(@NonNull LayoutInflater inflater, ViewGroup container) {
+        final Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater =
+                bindingInflater();
+
+        // If fragment has opted-in to viewBinding, lets gooooo
+        if (bindingInflater != null) {
+            Timber.d(getClass().getSimpleName() + " using viewBinding");
+            _binding = bindingInflater.invoke(inflater, container, false);
+            return _binding.getRoot();
+
+        } else {
+            // Else we fallback to legacy butterknife view binding
+            Timber.d(getClass().getSimpleName() + " using Butterknife");
+            final View view = inflater.inflate(getLayoutResource(), container, false);
+            butterKnifeUnbinder = ButterKnife.bind(this, view);
+            return view;
+        }
+    }
+
+    /**
+     * See {@link Fragment#onViewCreated(View, Bundle)}.
+     *
+     * @param view               The View returned by
+     *                           {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onViewCreated");
+        initializeUi(view);
+        presenter.onViewCreated(savedInstanceState);
     }
 
     /**
@@ -123,6 +254,14 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * @param view the View for the fragment's UI as returned by {@link #onCreateView})
      */
     protected void initializeUi(View view) {
+    }
+
+    /**
+     * Our own custom impl of deprecated Fragment#onActivityCreated. This will always be called
+     * AFTER the Activity's onCreate method has successfully finished.
+     */
+    protected void onActivityCreated() {
+
     }
 
     /**
@@ -145,13 +284,13 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onResume");
         super.onResume();
         presenter.setUp(getArgumentsBundle());
-        presenter.afterSetUp();
+        presenter.onSetUpFinished();
     }
 
     @Override
     @CallSuper
     public void onPause() {
-        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onStop");
+        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onPause");
         super.onPause();
         presenter.tearDown();
     }
@@ -165,16 +304,13 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        presenter.onViewCreated(savedInstanceState);
-    }
-
-    @Override
     @CallSuper
     public void onDestroyView() {
         Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onDestroyView");
-        butterKnifeUnbinder.unbind();
+        if (butterKnifeUnbinder != null) {
+            butterKnifeUnbinder.unbind();
+        }
+        _binding = null;
         tearDownUi();
         super.onDestroyView();
     }
@@ -188,15 +324,16 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
             // NOTE:
             // We block screenshots between onStart/onDetach (rather than onAttach/onDetach). Why?
 
-            // Normally, onAttach will be called after onCreate has completed (during onStart,
-            // in fact). However, if the Activity was killed by the system and is being recreated,
-            // the call will come during onCreate.
+            // Normally, onAttach will be called after Activity's onCreate has completed (during
+            // onStart, in fact). However, if the Activity was killed by the system and is being
+            // recreated, the call will come during Activity's onCreate.
 
             // Since we set up our extensions in onCreate (notably after calling super.onCreate),
             // ExtensibleActivity won't have the chance to initialize before Fragments receive the
             // onAttach call, and screenshotBlockExtension will be null.
 
             // This is not theoretical, we've seen this in the wild.
+            // See: https://stackoverflow.com/q/30297978/901465
             final String caller = this.getClass().getSimpleName();
             getParentActivity().screenshotBlockExtension.startBlockingScreenshots(caller);
         }
@@ -324,14 +461,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
 
     @NotNull
     private ApplicationComponent getApplicationComponent() {
-        return ((BaseActivity) getActivity()).getApplicationComponent();
-    }
-
-    /**
-     * Determine whether you have been granted some permissions.
-     */
-    protected final boolean allPermissionsGranted(String... permissions) {
-        return getParentActivity().allPermissionsGranted(permissions);
+        return ((BaseActivity) Objects.requireNonNull(getActivity())).getApplicationComponent();
     }
 
     /**
@@ -353,14 +483,14 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     /**
      * Override this method to be notified when ALL requested permissions have been granted.
      */
-    public void onPermissionsGranted(String[] grantedPermissions) {
+    public void onPermissionsGranted(@NonNull String[] grantedPermissions) {
         // Do nothing
     }
 
     /**
      * Override this method to be notified when SOME of the requested permissions have been denied.
      */
-    public void onPermissionsDenied(String[] deniedPermissions) {
+    public void onPermissionsDenied(@NonNull String[] deniedPermissions) {
         // Do nothing
     }
 
@@ -395,16 +525,27 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         view.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
-    protected boolean isVisible(View view) {
-        return view.getVisibility() == View.VISIBLE;
-    }
-
+    /**
+     * Uses requireActivity() which forces the activity to be non-null (e.g the fragment must be
+     * attached to an activity). This is a rather new android addition (similar to
+     * {@link Fragment#requireContext()}), which has some nice properties for callers when they
+     * know that activity will be available or they want to signal that it should.
+     *
+     * <p>See {@link #safeGetParentActivity()}.</p>
+     */
     protected BaseActivity getParentActivity() {
-        return (BaseActivity) getActivity();
+        return (BaseActivity) requireActivity();
     }
 
+    /**
+     * Uses getActivity() which does not force anything and can return null if the activity is
+     * not available. This is useful for callers that are not sure whether the activity is available
+     * (e.g sometimes it might be available and sometimes not). Yeah, that happens in android 🤷 .
+     *
+     * <p>See {@link #getParentActivity()}.</p>
+     */
     protected Optional<BaseActivity> safeGetParentActivity() {
-        return Optional.ofNullable(getParentActivity());
+        return Optional.ofNullable((BaseActivity) getActivity());
     }
 
     protected boolean blockScreenshots() {

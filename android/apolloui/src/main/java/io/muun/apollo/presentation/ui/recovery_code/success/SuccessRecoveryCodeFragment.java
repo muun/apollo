@@ -16,8 +16,7 @@ public class SuccessRecoveryCodeFragment
     }
 
     @Override
-    protected void initializeUi(View view) {
-        super.initializeUi(view);
+    protected void setUpHeader() {
         getParentActivity().getHeader().setVisibility(View.GONE);
     }
 

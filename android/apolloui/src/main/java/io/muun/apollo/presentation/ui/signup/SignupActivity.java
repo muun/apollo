@@ -3,11 +3,12 @@ package io.muun.apollo.presentation.ui.signup;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.model.SignupStep;
 import io.muun.apollo.presentation.ui.activity.extension.ApplicationLockExtension;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.enter_password.EnterPasswordFragment;
 import io.muun.apollo.presentation.ui.fragments.enter_recovery_code.EnterRecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.fragments.landing.LandingFragment;
+import io.muun.apollo.presentation.ui.fragments.landing.LandingPresenter;
 import io.muun.apollo.presentation.ui.fragments.login_authorize.LoginAuthorizeFragment;
 import io.muun.apollo.presentation.ui.fragments.login_email.LoginEmailFragment;
 import io.muun.apollo.presentation.ui.fragments.rc_only_login.RcOnlyLoginFragment;
@@ -52,7 +53,6 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
 
     @Override
     protected void initializeUi() {
-
         header.attachToActivity(this);
         header.setBackgroundColor(Color.TRANSPARENT);
         header.setNavigation(Navigation.NONE); // let each fragment decide
@@ -70,7 +70,7 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
     }
 
     @Override
-    protected BaseFragment getInitialFragment() {
+    protected SingleFragment<LandingPresenter> getInitialFragment() {
         return LandingFragment.newInstanceWithAnimation();
     }
 

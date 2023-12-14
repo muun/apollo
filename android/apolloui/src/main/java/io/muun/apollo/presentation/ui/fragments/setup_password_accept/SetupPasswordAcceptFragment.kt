@@ -12,8 +12,8 @@ import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class SetupPasswordAcceptFragment :
-    SingleFragment<SetupPasswordAcceptPresenter>(), SetupPasswordAcceptView {
+class SetupPasswordAcceptFragment : SingleFragment<SetupPasswordAcceptPresenter>(),
+    SetupPasswordAcceptView {
 
     @BindView(R.id.setup_password_accept_subtitle)
     lateinit var subtitle: TextView
@@ -35,13 +35,9 @@ class SetupPasswordAcceptFragment :
         R.layout.fragment_setup_password_accept
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
-
         subtitle.text = StyledStringRes(
-                requireContext(),
-                R.string.setup_password_accept_why, this::onWhyThisClick
+            requireContext(),
+            R.string.setup_password_accept_why, this::onWhyThisClick
         ).toCharSequence()
 
         condition1.setOnCheckedChangeListener { _, _ -> updateAcceptButtonState() }
@@ -50,6 +46,10 @@ class SetupPasswordAcceptFragment :
         acceptButton.setOnClickListener {
             presenter.acceptTerms()
         }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
     }
 
     override fun onResume() {

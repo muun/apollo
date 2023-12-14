@@ -1,5 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'org.jetbrains.kotlin.android'
 }
 
 repositories {
@@ -10,7 +11,6 @@ repositories {
 
 apply plugin: 'com.android.library'
 apply plugin: 'com.squareup.sqldelight'
-apply plugin: 'kotlin-android'
 
 apply from: "${project.rootDir}/linters/checkstyle/check-android.gradle"
 apply from: "${project.rootDir}/linters/pmd/check-android.gradle"
@@ -147,7 +147,6 @@ dependencies {
     implementation 'com.google.http-client:google-http-client-gson:1.26.0'
 
     // Kotlin:
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"
     // Kotlin serialization runtime library. Note that while the plugin has version the same as
     // the compiler one, runtime library has different coordinates, repository and versioning.
     api "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"

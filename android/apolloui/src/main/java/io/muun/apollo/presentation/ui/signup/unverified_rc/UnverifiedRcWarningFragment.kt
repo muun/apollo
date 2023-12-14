@@ -18,14 +18,13 @@ class UnverifiedRcWarningFragment : SingleFragment<UnverifiedRcWarningPresenter>
     override fun getLayoutResource(): Int =
         R.layout.fragment_rc_unverified_warning
 
-
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.visibility = View.GONE
-
         continueButton.setOnClickListener {
             presenter.proceedToHome()
         }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.visibility = View.GONE
     }
 }

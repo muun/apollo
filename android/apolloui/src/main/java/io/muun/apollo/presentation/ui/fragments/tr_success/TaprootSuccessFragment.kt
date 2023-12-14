@@ -33,12 +33,13 @@ class TaprootSuccessFragment : SingleFragment<TaprootSuccessPresenter>(), Taproo
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-        parentActivity.header.visibility = View.GONE
-
         confirmButton.setOnClickListener {
             finishActivity()
         }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.visibility = View.GONE
     }
 
     override fun getLayoutResource() =

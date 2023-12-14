@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout style="@style/muun_item"
+<LinearLayout
+        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools">
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/muun_item">
 
     <io.muun.apollo.presentation.ui.view.ProfilePictureView
             style="@style/muun_item_icon"

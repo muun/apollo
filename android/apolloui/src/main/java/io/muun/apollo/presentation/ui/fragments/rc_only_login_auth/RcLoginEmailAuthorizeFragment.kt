@@ -38,17 +38,17 @@ class RcLoginEmailAuthorizeFragment : SingleFragment<RcLoginEmailAuthorizePresen
     override fun getLayoutResource(): Int =
         R.layout.fragment_rc_login_email_auth
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
+    override fun initializeUi(view: View) {
+        titleView.setText(R.string.signup_email_authorize)
+        openEmailAppButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
+        openEmailAppButton.setOnClickListener { presenter.openEmailClient() }
+    }
 
+    override fun setUpHeader() {
         val header = parentActivity.header
         header.setNavigation(MuunHeader.Navigation.BACK)
         header.setElevated(true)
         header.showTitle(R.string.login_title)
-
-        titleView.setText(R.string.signup_email_authorize)
-        openEmailAppButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
-        openEmailAppButton.setOnClickListener { presenter.openEmailClient() }
     }
 
     override fun onBackPressed(): Boolean {

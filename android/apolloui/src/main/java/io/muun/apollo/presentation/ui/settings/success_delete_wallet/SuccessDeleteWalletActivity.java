@@ -1,22 +1,20 @@
 package io.muun.apollo.presentation.ui.settings.success_delete_wallet;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SuccessDeleteWalletActivityBinding;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
 import io.muun.common.Optional;
 
 import android.content.Context;
 import android.content.Intent;
-import butterknife.BindView;
-import butterknife.OnClick;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.validation.constraints.NotNull;
 
 public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalletPresenter> {
-
-    @BindView(R.id.success_delete_wallet_description)
-    HtmlTextView description;
 
     /**
      * Create an Intent to launch this Activity.
@@ -28,14 +26,24 @@ public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalle
                 .putExtra(SuccessDeleteWalletView.SUPPORT_ID, supportId.orElse(null));
     }
 
+    private SuccessDeleteWalletActivityBinding binding() {
+        return (SuccessDeleteWalletActivityBinding) getBinding();
+    }
+
     @Override
     protected void inject() {
         getComponent().inject(this);
     }
 
+    // TODO rm this once all activities have successfully migrated from butterKnife to view binding.
     @Override
     protected int getLayoutResource() {
         return R.layout.success_delete_wallet_activity;
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SuccessDeleteWalletActivityBinding::inflate;
     }
 
     @Override
@@ -43,6 +51,7 @@ public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalle
         super.initializeUi();
 
         setUpDescription();
+        binding().successDeleteWalletAction.setOnClickListener(v -> presenter.navigateToLauncher());
     }
 
     private void setUpDescription() {
@@ -52,12 +61,6 @@ public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalle
                 presenter::navigateToFeedback
         );
 
-        description.setText(styledExplanation.toCharSequence());
+        binding().successDeleteWalletDescription.setText(styledExplanation.toCharSequence());
     }
-
-    @OnClick(R.id.success_delete_wallet_action)
-    public void onFinishClick() {
-        presenter.navigateToLauncher();
-    }
-
 }

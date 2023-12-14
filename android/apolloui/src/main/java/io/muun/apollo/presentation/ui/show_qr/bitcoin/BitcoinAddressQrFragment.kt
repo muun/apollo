@@ -54,7 +54,7 @@ class BitcoinAddressQrFragment : QrFragment<BitcoinAddressQrPresenter>(),
     override fun getLayoutResource() =
         R.layout.fragment_show_qr
 
-    override fun initializeUi(view: View?) {
+    override fun initializeUi(view: View) {
         super.initializeUi(view)
         addressTypeItem.setOnAddressTypeChangedListener(this)
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }

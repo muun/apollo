@@ -315,7 +315,7 @@ public final class Encodings {
      *
      * @param sensitiveData array with sensitive data.
      */
-    private static void clearArray(@NotNull byte[] sensitiveData) {
+    public static void clearArray(@NotNull byte[] sensitiveData) {
 
         Arrays.fill(sensitiveData, (byte) 0);
     }
@@ -325,7 +325,7 @@ public final class Encodings {
      *
      * @param sensitiveData array with sensitive data.
      */
-    private static void clearArray(@NotNull char[] sensitiveData) {
+    public static void clearArray(@NotNull char[] sensitiveData) {
 
         Arrays.fill(sensitiveData, (char) 0);
     }

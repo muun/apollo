@@ -25,8 +25,10 @@ import io.muun.apollo.presentation.ui.view.HiddenSection
 import io.muun.apollo.presentation.ui.view.LoadingView
 import javax.money.MonetaryAmount
 
-class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQrView,
-    AddressTypeItem.AddressTypeChangedListener {
+class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
+    ShowUnifiedQrView,
+    AddressTypeItem.AddressTypeChangedListener,
+    MuunCountdownTimer.CountDownTimerListener {
 
     companion object {
         private const val REQUEST_AMOUNT = 3
@@ -86,13 +88,8 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         return R.layout.fragment_show_qr_unified
     }
 
-    override fun initializeUi(view: View?) {
+    override fun initializeUi(view: View) {
         super.initializeUi(view)
-
-        parentActivity.header.apply {
-            visibility = View.VISIBLE
-            showTitle(R.string.show_unified_qr_title)
-        }
 
         addressTypeItem.setOnAddressTypeChangedListener(this)
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
@@ -105,6 +102,13 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
             notificationsPrimingView.setEnableClickListener {
                 presenter.handleNotificationPermissionPrompt()
             }
+        }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.apply {
+            visibility = View.VISIBLE
+            showTitle(R.string.show_unified_qr_title)
         }
     }
 
@@ -138,7 +142,8 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         addressTypeItem.show(addressType)
 
         stopTimer()
-        countdownTimer = buildCountDownTimer(bitcoinUri.invoice.remainingMillis())
+        countdownTimer = MuunCountdownTimer(bitcoinUri.invoice.remainingMillis(), this)
+
         countdownTimer!!.start()
 
         if (amount != null) {
@@ -226,6 +231,17 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
     override fun getErrorCorrection(): ErrorCorrectionLevel =
         ErrorCorrectionLevel.L
 
+    override fun onCountDownTick(remainingSeconds: Long) {
+        // Using minimalistic pattern/display/formatting to better fit in small screen space
+        expirationTimeItem.setExpirationTime(
+            ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
+        )
+    }
+
+    override fun onCountDownFinish() {
+        showInvoiceExpiredOverlay()
+    }
+
     private fun showHighFeesOverlay() {
         highFeesOverlay.visibility = View.VISIBLE
         invoiceExpiredOverlay.visibility = View.GONE
@@ -270,23 +286,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(), ShowUnifiedQ
         if (countdownTimer != null) {
             countdownTimer!!.cancel()
             countdownTimer = null
-        }
-    }
-
-    private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {
-
-        return object : MuunCountdownTimer(remainingMillis) {
-
-            override fun onTickSeconds(remainingSeconds: Long) {
-                // Using minimalistic pattern/display/formatting to better fit in small screen space
-                expirationTimeItem.setExpirationTime(
-                    ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
-                )
-            }
-
-            override fun onFinish() {
-                showInvoiceExpiredOverlay()
-            }
         }
     }
 

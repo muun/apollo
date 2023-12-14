@@ -32,9 +32,8 @@ public class EditPasswordSuccessFragment
     }
 
     @Override
-    protected void initializeUi(View view) {
+    protected void setUpHeader() {
         getParentActivity().getHeader().setVisibility(View.GONE);
-        super.initializeUi(view);
     }
 
     @Override

@@ -13,7 +13,7 @@ import io.muun.apollo.presentation.ui.view.LoadingView
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailView {
+class VerifyEmailFragment : SingleFragment<VerifyEmailPresenter>(), VerifyEmailView {
 
     @BindView(R.id.open_email_client)
     lateinit var openEmailClientButton: MuunButton
@@ -25,10 +25,10 @@ class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailVi
     lateinit var descriptionView: HtmlTextView
 
     @BindView(R.id.verify_email_icon)
-    lateinit  var emailIcon: ImageView
+    lateinit var emailIcon: ImageView
 
     @BindView(R.id.verify_email_loading)
-    lateinit  var loadingView: LoadingView
+    lateinit var loadingView: LoadingView
 
     override fun inject() {
         component.inject(this)
@@ -37,11 +37,7 @@ class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailVi
     override fun getLayoutResource() =
         R.layout.fragment_verify_email
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
-        parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
-
+    override fun initializeUi(view: View) {
         openEmailClientButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
         openEmailClientButton.setOnClickListener { presenter.openEmailClient() }
 
@@ -55,6 +51,10 @@ class VerifyEmailFragment: SingleFragment<VerifyEmailPresenter>(), VerifyEmailVi
     override fun onBackPressed(): Boolean {
         presenter!!.goBack()
         return true
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
     }
 
     override fun setLoading(loading: Boolean) {

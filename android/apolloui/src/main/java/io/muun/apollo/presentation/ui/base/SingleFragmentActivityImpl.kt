@@ -42,19 +42,15 @@ class SingleFragmentActivityImpl :
     override fun getHeader(): MuunHeader =
         headerView
 
-    override fun initializeUi() {
-        super.initializeUi()
-        headerView.attachToActivity(this)
-    }
-
-    override fun getInitialFragment(): BaseFragment<out Presenter<*>> {
+    override fun getInitialFragment(): SingleFragment<out SingleFragmentPresenter<*, *>> {
 
         val fragmentClass: Class<*> = argumentsBundle.getSerializable(FRAGMENT_CLASS) as Class<*>
 
         Timber.i("SingleFragmentActivityImpl: getInitialFragment $fragmentClass")
 
         try {
-            return fragmentClass.getConstructor().newInstance() as BaseFragment<out Presenter<*>>
+            return fragmentClass.getConstructor()
+                .newInstance() as SingleFragment<out SingleFragmentPresenter<*, *>>
         } catch (e: NoSuchMethodException) {
             // TODO: Log something nice so developers know how to fix this
             throw e

@@ -8,7 +8,7 @@ import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class EmergencyKitVerifyHelpFragment: SingleFragment<EmergencyKitVerifyHelpPresenter>() {
+class EmergencyKitVerifyHelpFragment : SingleFragment<EmergencyKitVerifyHelpPresenter>() {
 
     @BindView(R.id.subtitle)
     lateinit var subtitleView: HtmlTextView
@@ -19,19 +19,19 @@ class EmergencyKitVerifyHelpFragment: SingleFragment<EmergencyKitVerifyHelpPrese
     override fun getLayoutResource() =
         R.layout.fragment_ek_verify_help
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
+    override fun initializeUi(view: View) {
+        StyledStringRes(requireContext(), R.string.ek_verify_help_body)
+            .toCharSequence()
+            .let(subtitleView::setText)
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.let {
             it.setNavigation(MuunHeader.Navigation.EXIT)
             it.hideTitle()
             it.setIndicatorText(null)
             it.setElevated(false)
         }
-
-        StyledStringRes(requireContext(), R.string.ek_verify_help_body)
-            .toCharSequence()
-            .let(subtitleView::setText)
     }
 
     override fun onBackPressed(): Boolean {

@@ -8,11 +8,11 @@ import io.muun.apollo.presentation.ui.utils.StyledStringRes;
 import io.muun.apollo.presentation.ui.view.LoadingView;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
-import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindView;
 
 public class LoginAuthorizeFragment
@@ -46,17 +46,18 @@ public class LoginAuthorizeFragment
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
-        final MuunHeader header = getParentActivity().getHeader();
-        header.setNavigation(Navigation.BACK);
-        header.setElevated(true);
-        header.showTitle(R.string.login_title);
-
         titleView.setText(R.string.signup_email_authorize);
 
         openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(requireContext()));
         openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
+    }
+
+    @Override
+    protected void setUpHeader() {
+        final MuunHeader header = getParentActivity().getHeader();
+        header.setNavigation(MuunHeader.Navigation.BACK);
+        header.setElevated(true);
+        header.showTitle(R.string.login_title);
     }
 
     @Override
@@ -66,10 +67,10 @@ public class LoginAuthorizeFragment
     }
 
     @Override
-    public void setEmail(String email) {
+    public void setEmail(@NonNull String email) {
 
         final StyledStringRes styledDesc = new StyledStringRes(
-                getContext(),
+                requireContext(),
                 R.string.signup_email_verify_explanation
         );
 

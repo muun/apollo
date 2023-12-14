@@ -10,7 +10,6 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.UserActions
-import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.utils.Preconditions
 import timber.log.Timber
 import javax.inject.Inject
@@ -47,7 +46,7 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters,
-    ): ListenableWorker {
+    ): ListenableWorker? {
 
         Timber.d("[MuunWorkerFactory] Create worker for $workerClassName")
         val workerClass = Class.forName(workerClassName)
@@ -79,7 +78,10 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
             }
 
             else -> {
-                throw MuunError("Unknown worker class scheduled for work! $workerClassName")
+                // This tells WorkManager that your factory can't create this Worker, and it will
+                // fall back to its default method of Worker creation.
+                // See: https://github.com/square/leakcanary/issues/2283
+                return null
             }
         }
     }

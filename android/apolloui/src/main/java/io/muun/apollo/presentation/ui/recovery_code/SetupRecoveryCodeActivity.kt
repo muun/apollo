@@ -7,8 +7,6 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
-import io.muun.apollo.presentation.ui.base.BaseFragment
-import io.muun.apollo.presentation.ui.base.Presenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
 import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
@@ -47,7 +45,7 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
     override fun getHeader(): MuunHeader =
         muunHeader
 
-    override fun getInitialFragment(): BaseFragment<out Presenter<*>> =
+    override fun getInitialFragment() =
         PrimingRecoveryCodeFragment()
 
     override fun initializeUi() {

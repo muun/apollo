@@ -62,11 +62,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
-        parentActivity.header.showTitle(R.string.edit_fee_title)
-
         val content = TextUtils.concat(
             messageText,
             ". ",
@@ -76,6 +71,11 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
         message.text = content
         feeInput.requestFocusInput()
         confirmButton.isEnabled = feeInput.feeRateInVBytes != null
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
+        parentActivity.header.showTitle(R.string.edit_fee_title)
     }
 
     override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {

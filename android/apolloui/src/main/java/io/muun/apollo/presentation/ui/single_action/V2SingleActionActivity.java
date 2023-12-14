@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.single_action;
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorFragment;
@@ -60,8 +60,8 @@ public class V2SingleActionActivity extends SingleFragmentActivity<V2SingleActio
     }
 
     @Override
-    protected BaseFragment getInitialFragment() {
-        final BaseFragment fragment = createActionFragment();
+    protected SingleFragment getInitialFragment() {
+        final SingleFragment fragment = createActionFragment();
         final Bundle arguments = getArgumentsBundle().getBundle(ACTION_ARGS);
 
         Preconditions.checkState(arguments != null);
@@ -70,7 +70,7 @@ public class V2SingleActionActivity extends SingleFragmentActivity<V2SingleActio
         return fragment;
     }
 
-    private BaseFragment createActionFragment() {
+    private SingleFragment createActionFragment() {
         final String actionTypeName = getArgumentsBundle().getString(ACTION_TYPE);
 
         Preconditions.checkState(actionTypeName != null);

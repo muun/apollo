@@ -9,12 +9,14 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.helper.isBtc
+import io.muun.apollo.utils.SystemCommand
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
 import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import javax.money.MonetaryAmount
+import kotlin.random.Random
 
 class HomeScreen(
     override val device: UiDevice,
@@ -112,7 +114,16 @@ class HomeScreen(
     private fun clickOperation(isPending: Boolean, description: String) {
         val pendingText = context.getString(R.string.operation_pending) + ": "
 
-        label("${if (isPending) pendingText else ""}$description").click()
+        try {
+            label("${if (isPending) pendingText else ""}$description").click()
+
+        } catch (e: UiObjectNotFoundException) {
+            val id = Random.nextInt()
+            println("clickOperation: isPending: $isPending, desc: $description")
+            println("clickOperation: dumpview id: $id")
+            SystemCommand.dumpView(id)
+            throw e
+        }
     }
 
     fun goToOperationDetailContaining(description: String) {

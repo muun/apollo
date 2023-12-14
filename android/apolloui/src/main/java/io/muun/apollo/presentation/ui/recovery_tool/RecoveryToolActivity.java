@@ -1,10 +1,11 @@
 package io.muun.apollo.presentation.ui.recovery_tool;
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
 import io.muun.apollo.presentation.ui.base.BaseView;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.recovery_tool.RecoveryToolFragment;
+import io.muun.apollo.presentation.ui.fragments.recovery_tool.RecoveryToolPresenter;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 
@@ -49,7 +50,7 @@ public class RecoveryToolActivity extends SingleFragmentActivity<RecoveryToolAct
     }
 
     @Override
-    protected BaseFragment getInitialFragment() {
+    protected SingleFragment<RecoveryToolPresenter> getInitialFragment() {
         return new RecoveryToolFragment();
     }
 

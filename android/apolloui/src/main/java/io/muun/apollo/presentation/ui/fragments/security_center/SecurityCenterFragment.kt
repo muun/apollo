@@ -53,13 +53,11 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
 
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
         setUpHeader()
         setUpCards()
     }
 
-    private fun setUpHeader() {
+    override fun setUpHeader() {
         parentActivity.header.apply {
             visibility = View.VISIBLE
             setNavigation(Navigation.NONE)

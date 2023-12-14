@@ -1,10 +1,14 @@
 package io.muun.apollo.presentation.ui.utils
 
 import androidx.annotation.OpenForTesting
+import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.data.net.base.ServerFailureException
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
-import io.muun.apollo.domain.action.NotificationActions
-import io.muun.apollo.domain.errors.ExpiredSessionError
+import io.muun.apollo.domain.action.NotificationPoller
+import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
+import io.muun.apollo.domain.utils.isInstanceOrIsCausedByNetworkError
+import io.muun.apollo.domain.utils.isInstanceOrIsCausedByTimeoutError
 import rx.Observable
 import rx.Subscription
 import timber.log.Timber
@@ -14,7 +18,7 @@ import javax.inject.Inject
 // TODO open to make tests work with mockito. We should probably move to mockK
 @OpenForTesting
 open class UiNotificationPoller @Inject constructor(
-    private val notificationActions: NotificationActions,
+    private val notificationPoller: NotificationPoller,
     private val transformerFactory: ExecutionTransformerFactory,
 ) {
 
@@ -24,6 +28,13 @@ open class UiNotificationPoller @Inject constructor(
     }
 
     private var subscription: Subscription? = null
+
+    private var pollingIntervalInMillis = POLL_INTERVAL_IN_SECS * 1000L
+
+    @VisibleForTesting
+    fun setPollingIntervalInMillisForTesting(pollingIntervalInMillis: Int) {
+        this.pollingIntervalInMillis = pollingIntervalInMillis.toLong()
+    }
 
     /**
      * Start polling notifications every `POLL_INTERVAL_IN_SECS` seconds, in background. Note that
@@ -46,20 +57,26 @@ open class UiNotificationPoller @Inject constructor(
     }
 
     private fun subscribeToNotificationPolling(): Subscription {
+        Timber.d("subscribeToNotificationPolling")
+        val backgroundScheduler = transformerFactory.backgroundScheduler
         return Observable
-            .interval(POLL_INTERVAL_IN_SECS.toLong(), TimeUnit.SECONDS)
+            .interval(pollingIntervalInMillis, TimeUnit.MILLISECONDS, backgroundScheduler)
             .startWith(0L)
             .onBackpressureLatest()
-            .concatMap { notificationActions.pullNotifications() }
+            .concatMap { notificationPoller.pullNotifications() }
             .compose(transformerFactory.getAsyncExecutor())
             .subscribe({}, { error -> handleError(error) })
     }
 
     private fun handleError(error: Throwable) {
         Timber.e(error)
-        // If ExpiredSessionError we stop polling to avoid Houston hits that we know that will return
+        // We only re-start polling if it makes sense for the thrown error. E.g if
+        // ExpiredSessionError we stop polling to avoid Houston hits that we know that will return
         // error (and probably fire monitoring alerts), otherwise we resubscribe to continue polling
-        if (error !is ExpiredSessionError) {
+        if (error.isInstanceOrIsCausedByNetworkError()
+            || error.isInstanceOrIsCausedByTimeoutError()
+            || error.isInstanceOrIsCausedByError<ServerFailureException>()
+        ) {
             subscription = subscribeToNotificationPolling()
         }
     }

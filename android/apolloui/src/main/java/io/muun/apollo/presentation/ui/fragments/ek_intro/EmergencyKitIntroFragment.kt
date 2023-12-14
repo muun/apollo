@@ -5,7 +5,7 @@ import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroFragment
 import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroParentPresenter
 import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroView
 
-class EmergencyKitIntroFragment: FlowIntroFragment<
+class EmergencyKitIntroFragment : FlowIntroFragment<
     FlowIntroView,
     EmergencyKitIntroPresenter,
     FlowIntroParentPresenter>() {

@@ -12,9 +12,32 @@ public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
         extends BaseFragment<PresenterT> implements SingleFragmentView, OnBackPressedListener {
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         presenter.setParentPresenter(getParentActivity().getPresenter());
+    }
+
+    @Override
+    protected void onActivityCreated() {
+        getParentActivity().attachHeader();
+        setUpHeader();
+    }
+
+    /**
+     * Implement this method to perform initial visual setup of our MuunHeader (toolbar) component.
+     *
+     * <p>This is guaranteed to run AFTER:
+     * - Activity#onCreate
+     * - Fragment#onAttach (so fragment is attached to activity, getActivity returns non null)
+     *
+     * <p>Also, header is guaranteed to be already attached to activity (meaning its Toolbar is
+     * ready to act as the ActionBar for the Activity window).
+     */
+    protected void setUpHeader() {
+        // Leaving this default impl empty. Which signals that the fragment leaves the
+        // responsibility of setting up the header to the parent activity. NOTE: we decided against
+        // making this choice explicit in each fragment since there are so many cases and this
+        // behaviour (delegating to the activity) is something we do in other places.
     }
 
     @Override
@@ -27,11 +50,6 @@ public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
     public void onPause() {
         super.onPause();
         getParentActivity().setOnBackPressedListener(null);
-    }
-
-    @Override
-    protected void initializePresenter(@Nullable Bundle savedInstanceState) {
-        super.initializePresenter(savedInstanceState);
     }
 
     @Override
@@ -59,7 +77,11 @@ public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
         return false;
     }
 
+    /**
+     * Note: this is not a redundant overload. We're changing the return value (admittedly by using
+     * an unsafe cast).
+     */
     protected SingleFragmentActivity getParentActivity() {
-        return (SingleFragmentActivity) getActivity();
+        return (SingleFragmentActivity) super.getParentActivity();
     }
 }

@@ -79,9 +79,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     override fun getLayoutResource() =
         R.layout.fragment_ek_save
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
+    override fun initializeUi(view: View) {
         saveToDriveOption.labelKind = MuunSaveOptionLabel.Kind.RECOMMENDED
 
         saveToDriveOption.setOnClickListener { onSaveToDriveClick() }

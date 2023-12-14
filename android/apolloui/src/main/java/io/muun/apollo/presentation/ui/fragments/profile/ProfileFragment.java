@@ -45,8 +45,6 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         profilePicture.setOnErrorListener(presenter::handleError);
         profilePicture.setOnChangeListener(this::onPictureChange);
 

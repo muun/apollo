@@ -9,8 +9,8 @@ import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunInfoBox
 
-class SetupPasswordIntroFragment
-    : SingleFragment<SetupPasswordIntroPresenter>(), SetupPasswordIntroView {
+class SetupPasswordIntroFragment : SingleFragment<SetupPasswordIntroPresenter>(),
+    SetupPasswordIntroView {
 
     @BindView(R.id.setup_password_intro_info_box)
     lateinit var infoBox: MuunInfoBox
@@ -28,18 +28,17 @@ class SetupPasswordIntroFragment
         R.layout.fragment_setup_password_intro
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
+        skipButton.setOnClickListener { presenter.skipEmailSetup() }
+        actionButton.setOnClickListener { presenter.startSetup() }
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.let {
             it.setNavigation(MuunHeader.Navigation.BACK)
             it.hideTitle()
             it.setIndicatorText(null)
             it.setElevated(false)
         }
-
-        skipButton.setOnClickListener { presenter.skipEmailSetup() }
-
-        actionButton.setOnClickListener { presenter.startSetup() }
     }
 
     override fun setSecurityLevel(securityLevel: SecurityLevel) {

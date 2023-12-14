@@ -32,21 +32,21 @@ internal class ShowRecoveryCodeFragment : SingleFragment<ShowRecoveryCodePresent
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
+        continueButton.setOnClickListener {
+            presenter.continueToVerification()
+        }
+    }
+
+    override fun setUpHeader() {
         val indicatorText = getString(
             R.string.set_up_rc_step_count,
             1,
             SetupRecoveryCodeActivity.SET_UP_RC_STEP_COUNT
         )
-
         parentActivity.header.apply {
             setIndicatorText(indicatorText)
             setElevated(true)
             setNavigation(MuunHeader.Navigation.EXIT)
-        }
-
-        continueButton.setOnClickListener {
-            presenter.continueToVerification()
         }
     }
 

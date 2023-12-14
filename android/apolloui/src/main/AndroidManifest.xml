@@ -57,6 +57,9 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme"
     >
+
+        <property android:name="REQUIRE_SECURE_ENV" android:value="1" />
+
         <!--
         This tells Firebase analytics to not use the AD_ID.
         https://firebase.google.com/docs/analytics/configure-data-collection?platform=android

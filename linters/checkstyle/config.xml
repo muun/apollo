@@ -208,6 +208,7 @@
             <property name="allowedAnnotations" value="Override, Test, GET, POST, DELETE, PUT, PATCH"/>
             <property name="tokens" value="METHOD_DEF,ANNOTATION_FIELD_DEF"/>
             <property name="ignoreMethodNamesRegex" value="^inject$" />
+            <property name="minLineCount" value="3"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>

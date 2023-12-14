@@ -13,11 +13,11 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.15.0'
     id 'org.owasp.dependencycheck' version '5.3.2.1'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'org.jetbrains.kotlin.android'
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
 
@@ -83,12 +83,16 @@ static def configExternalLinks(productFlavor, String host) {
 android {
     compileSdkVersion 33
 
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 1103
-        versionName "51.3"
+        versionCode 1104
+        versionName "51.4"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -341,6 +345,9 @@ dependencies {
     minifiedImplementation 'com.github.markzhai:blockcanary-no-op:1.5.0'
     releaseImplementation 'com.github.markzhai:blockcanary-no-op:1.5.0'
 
+    // debugImplementation because LeakCanary should only run in debug builds.
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
+
     kapt "com.google.dagger:dagger-compiler:$global_version_dagger"
 
     // support library
@@ -379,9 +386,6 @@ dependencies {
     // lifecycle helpers
     implementation 'frankiesardo:icepick:3.2.0'
     kapt 'frankiesardo:icepick-processor:3.2.0'
-
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version"
 
     // testing
     testImplementation 'org.mockito:mockito-core:2.8.47'

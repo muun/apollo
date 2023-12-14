@@ -2,8 +2,8 @@ package io.muun.apollo.presentation.ui.settings;
 
 import io.muun.apollo.R;
 import io.muun.apollo.presentation.app.Email;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailView;
-import io.muun.apollo.presentation.ui.settings.edit_password.BaseEditPasswordFragment;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
 import io.muun.apollo.presentation.ui.view.LoadingView;
 import io.muun.apollo.presentation.ui.view.MuunButton;
@@ -15,7 +15,7 @@ import butterknife.BindView;
 import org.jetbrains.annotations.NotNull;
 
 
-public class EmailWaitFragment extends BaseEditPasswordFragment<EmailWaitPresenter>
+public class EmailWaitFragment extends SingleFragment<EmailWaitPresenter>
         implements VerifyEmailView {
 
     @BindView(R.id.signup_waiting_for_email_open_email_client)
@@ -40,8 +40,6 @@ public class EmailWaitFragment extends BaseEditPasswordFragment<EmailWaitPresent
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(requireContext()));
         openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
     }

@@ -11,11 +11,12 @@ import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.hasAppInstalled
 import io.muun.apollo.presentation.ui.utils.setStyledText
 import io.muun.apollo.presentation.ui.view.BlockClock
-import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
+import io.muun.apollo.presentation.ui.view.MuunHeader
 import timber.log.Timber
 
 
-class TaprootClockDetailFragment: SingleFragment<TaprootClockDetailPresenter>(), TaprootClockDetailView {
+class TaprootClockDetailFragment : SingleFragment<TaprootClockDetailPresenter>(),
+    TaprootClockDetailView {
 
     @BindView(R.id.block_clock)
     lateinit var blockClock: BlockClock
@@ -29,11 +30,6 @@ class TaprootClockDetailFragment: SingleFragment<TaprootClockDetailPresenter>(),
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-        parentActivity.header.setNavigation(Navigation.BACK)
-        parentActivity.header.hideTitle()
-        parentActivity.header.setElevated(false)
-
         blockClock.setOnClickListener {
 
             // EASTER EGG TIME!!!
@@ -46,10 +42,17 @@ class TaprootClockDetailFragment: SingleFragment<TaprootClockDetailPresenter>(),
         }
     }
 
+    override fun setUpHeader() {
+        parentActivity.header.setNavigation(MuunHeader.Navigation.BACK)
+        parentActivity.header.hideTitle()
+        parentActivity.header.setElevated(false)
+    }
+
     private fun finalCountdownEasterEgg() {
         val context = requireContext()
         val spotifyIntent = Intent(Intent.ACTION_VIEW)
-        spotifyIntent.data = Uri.parse("spotify:track/3MrRksHupTVEQ7YbA0FsZK?si=123efa0a9d6d4e7c#0:13")
+        spotifyIntent.data =
+            Uri.parse("spotify:track/3MrRksHupTVEQ7YbA0FsZK?si=123efa0a9d6d4e7c#0:13")
         spotifyIntent.putExtra(
             Intent.EXTRA_REFERRER,
             Uri.parse("android-app://" + context.applicationContext.packageName)

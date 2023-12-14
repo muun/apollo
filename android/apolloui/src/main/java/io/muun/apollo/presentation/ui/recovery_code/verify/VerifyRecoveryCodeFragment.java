@@ -35,14 +35,12 @@ public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCod
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
-        setUpHeader();
         recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited);
         acceptButton.setOnClickListener(this::onConfirmClick);
     }
 
-    private void setUpHeader() {
+    @Override
+    public void setUpHeader() {
         final String indicatorText = getString(
                 R.string.set_up_rc_step_count,
                 2,

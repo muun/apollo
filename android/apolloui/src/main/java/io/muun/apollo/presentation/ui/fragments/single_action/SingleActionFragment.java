@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.annotation.CallSuper;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -43,10 +44,9 @@ public abstract class SingleActionFragment<PresenterT extends SingleFragmentPres
         setRetainInstance(true); // We need this as we store an Action0 as fragment state
     }
 
+    @CallSuper
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         final int imageRes = getImageRes();
         final String message = getTitle();
         final CharSequence descriptionText = getDescription();
@@ -60,7 +60,7 @@ public abstract class SingleActionFragment<PresenterT extends SingleFragmentPres
                     getImageHeight()
             );
 
-            params.bottomMargin = UiUtils.dpToPx(getContext(), 24);
+            params.bottomMargin = UiUtils.dpToPx(requireContext(), 24);
 
             image.setLayoutParams(params);
             image.setVisibility(View.VISIBLE);
@@ -83,11 +83,11 @@ public abstract class SingleActionFragment<PresenterT extends SingleFragmentPres
     }
 
     protected int getImageWidth() {
-        return UiUtils.dpToPx(getContext(), 96);
+        return UiUtils.dpToPx(requireContext(), 96);
     }
 
     protected int getImageHeight() {
-        return UiUtils.dpToPx(getContext(), 96);
+        return UiUtils.dpToPx(requireContext(), 96);
     }
 
     protected abstract String getTitle();

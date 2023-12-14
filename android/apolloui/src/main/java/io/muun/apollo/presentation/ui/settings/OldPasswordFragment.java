@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.settings;
 
 import io.muun.apollo.R;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.presentation.ui.settings.edit_password.BaseEditPasswordFragment;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
@@ -10,7 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 import butterknife.BindView;
 
-public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPresenter>
+public class OldPasswordFragment extends SingleFragment<OldPasswordPresenter>
         implements OldPasswordView {
 
     @BindView(R.id.enter_old_password_input)
@@ -34,8 +34,6 @@ public class OldPasswordFragment extends BaseEditPasswordFragment<OldPasswordPre
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         password.setPasswordRevealEnabled(true);
         password.setOnKeyboardNextListener(() -> {
             final String passwordText = password.getText().toString();

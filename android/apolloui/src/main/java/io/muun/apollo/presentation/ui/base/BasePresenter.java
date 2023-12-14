@@ -162,7 +162,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     @Override
     @CallSuper
-    public void afterSetUp() {
+    public void onSetUpFinished() {
         // Report we entered this screen, if needed:
         Optional.ofNullable(getEntryEvent()).ifPresent(analytics::report);
     }
