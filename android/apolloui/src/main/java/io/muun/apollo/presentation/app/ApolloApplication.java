@@ -19,6 +19,7 @@ import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
 import io.muun.apollo.domain.analytics.Analytics;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.BitcoinUnitSelector;
@@ -38,6 +39,8 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.emoji2.text.EmojiCompat;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 import androidx.work.Configuration;
@@ -56,7 +59,7 @@ import javax.validation.constraints.NotNull;
  * Application code shared among all flavors.
  */
 public abstract class ApolloApplication extends Application
-        implements DataComponentProvider, Configuration.Provider {
+        implements DataComponentProvider, Configuration.Provider, DefaultLifecycleObserver {
 
     private ApplicationComponent applicationComponent;
 
@@ -124,7 +127,9 @@ public abstract class ApolloApplication extends Application
         loadBigQueryPseudoId();
 
         // Register lifecycle observer for app background/foreground/terminate tracking
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(new AppLifecycleListener(analytics));
+        // Apparently this won't correctly handle/track app crashes or ANRs.
+        // See: https://stackoverflow.com/a/44461605/901465 (and its comments)
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
         registerReceiver(lockWhenDisplayIsOff, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 
@@ -317,12 +322,29 @@ public abstract class ApolloApplication extends Application
 
     @Override
     public void onLowMemory() {
+        Timber.i("Application#onLowMemory");
         super.onLowMemory();
     }
 
     @Override
     public void onTerminate() {
+        Timber.i("Application#onTerminate");
         super.onTerminate();
+    }
+
+    @Override
+    public void onStart(@NonNull LifecycleOwner owner) { // app moved to foreground
+        analytics.report(new AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND());
+    }
+
+    @Override
+    public void onStop(@NonNull LifecycleOwner owner) { // app moved to background
+        analytics.report(new AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND());
+    }
+
+    @Override
+    public void onDestroy(@NonNull LifecycleOwner owner) { // app will terminate
+        analytics.report(new AnalyticsEvent.E_APP_WILL_TERMINATE());
     }
 
     private final BroadcastReceiver lockWhenDisplayIsOff = new BroadcastReceiver() {

@@ -22,4 +22,6 @@
     <suppress checks="LineLength" files=".*[\\/]strings[^.\\/]*\.xml" />
     <suppress checks="LineLength" files=".*[\\/]suppression[^.\\/]*\.xml" />
     <suppress checks="LineLength" files=".*[\\/]res[\\/].*\.xml" />
+    <!-- Checkstyle config file -->
+    <suppress checks="LineLength" files=".*[\\/]config[^.\\/]*\.xml" />
 </suppressions>

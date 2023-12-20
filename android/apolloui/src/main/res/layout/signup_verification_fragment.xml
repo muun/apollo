@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <io.muun.apollo.presentation.ui.view.MuunButtonLayout
+        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"

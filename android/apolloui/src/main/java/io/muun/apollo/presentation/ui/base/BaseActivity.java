@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -44,8 +45,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
+import androidx.viewbinding.ViewBinding;
 import butterknife.ButterKnife;
 import icepick.Icepick;
+import kotlin.jvm.functions.Function1;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -56,6 +59,17 @@ import javax.validation.constraints.NotNull;
 
 public abstract class BaseActivity<PresenterT extends Presenter> extends ExtensibleActivity
         implements BaseView, PermissionRequester, ExternalResultExtension.DelegableCaller {
+
+    /**
+     * Reserved property for View Binding use, will be automatically cleaned up by this parent class
+     * in {@link #onDestroy()} ()}.
+     * TODO: this should be a protected var + private set when we kotlinize this mofo
+     */
+    private ViewBinding _binding;
+
+    protected ViewBinding getBinding() {
+        return _binding;
+    }
 
     @Inject
     @NotNull // not true, but compatible with Kotlin lateinit var
@@ -103,9 +117,20 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     /**
      * Returns the id of the resource with the layout of the activity.
+     * TODO rm this once all activities have successfully migrated from butterKnife to view binding.
      */
     @LayoutRes
     protected abstract int getLayoutResource();
+
+    /**
+     * Override this method to opt in to use View Binding. This will turn into an abstract method
+     * to force all subclasses to implement once we finish the transition from ButterKnife to
+     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
+     * transitioned yet.
+     */
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return null;
+    }
 
     /**
      * Returns the id of the resource with the menu for this activity.
@@ -137,12 +162,17 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
             Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreate");
 
+            if (savedInstanceState != null) {
+                Timber.i("Lifecycle: " + getClass().getSimpleName() + " is being recreated");
+            }
+
             Icepick.restoreInstanceState(this, savedInstanceState);
 
             setUpLayout();
             initializePresenter(savedInstanceState);
             initializeUi();
 
+            presenter.onViewCreated(savedInstanceState);
         } catch (SecureStorageError e) {
             // Avoid crashing on weird Android Keystore errors. Redundantly report error with
             // extra metadata and offer some explanation to the user with the option to send
@@ -161,6 +191,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     protected void onDestroy() {
         Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onDestroy");
         tearDownUi();
+        _binding = null;
         super.onDestroy();
     }
 
@@ -179,12 +210,16 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     protected void initializePresenter(@Nullable Bundle savedInstanceState) {
         if (isPresenterPersistent()) {
+            // NOTE: suppressing unchecked cast due to limited generic type inference in our base
+            // classes (circular generic reference between BaseActivity->BasePresenter->BaseView).
+            // This limitation has spilled over several classes (e.g PersistentPresenterExtension).
+            // TODO: solve circular generic reference in base classes, get rid of unchecked cast
+            //noinspection unchecked
             presenter = (PresenterT) getExtension(PersistentPresenterExtension.class)
                     .get(savedInstanceState, presenter);
         }
 
         setPresenterView();
-        presenter.onViewCreated(savedInstanceState);
         presenter.restoreState(savedInstanceState);
     }
 
@@ -224,7 +259,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
             }
 
             presenter.setUp(getArgumentsBundle());
-            presenter.afterSetUp();
+            presenter.onSetUpFinished();
         } catch (SecureStorageError e) {
             // Avoid crashing on weird Android Keystore errors. Redundantly report error with
             // extra metadata and offer some explanation to the user with the option to send
@@ -260,8 +295,21 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     private void setUpLayout() {
         setAnimation();
-        setContentView(getLayoutResource());
-        ButterKnife.bind(this);
+
+        final Function1<LayoutInflater, ViewBinding> bindingInflater = bindingInflater();
+
+        // If activity has opted-in to viewBinding, lets gooooo
+        if (bindingInflater != null) {
+            Timber.d(getClass().getSimpleName() + " using viewBinding");
+            _binding = bindingInflater.invoke(LayoutInflater.from(this));
+            setContentView(_binding.getRoot());
+
+        } else {
+            // Else we fallback to legacy butterknife view binding
+            Timber.d(getClass().getSimpleName() + " using Butterknife");
+            setContentView(getLayoutResource());
+            ButterKnife.bind(this);
+        }
     }
 
     /**

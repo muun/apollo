@@ -9,7 +9,7 @@ import io.muun.common.bitcoinj.ValidationHelpers
 import javax.inject.Inject
 
 @PerFragment
-open class CreateEmailPresenter @Inject constructor():
+open class CreateEmailPresenter @Inject constructor() :
     SingleFragmentPresenter<CreateEmailView, CreateEmailParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {

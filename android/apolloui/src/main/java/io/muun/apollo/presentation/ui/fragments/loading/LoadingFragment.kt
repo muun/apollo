@@ -9,7 +9,7 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.base.SingleFragment
 
-class LoadingFragment: SingleFragment<LoadingFragmentPresenter>() {
+class LoadingFragment : SingleFragment<LoadingFragmentPresenter>() {
 
     companion object {
         const val HUMAN_INSTANT_IN_MILLISECONDS = 200L
@@ -32,8 +32,6 @@ class LoadingFragment: SingleFragment<LoadingFragmentPresenter>() {
         component.inject(this)
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
         titleView.text = getString(argumentsBundle.getInt(MESSAGE_ARG))
 
         // Whenever this fragment is used, we want to avoid spinner flickers when the loading is

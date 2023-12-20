@@ -36,19 +36,6 @@ internal class AcceptRecoveryCodeFragment : SingleFragment<AcceptRecoveryCodePre
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        val indicatorText = getString(
-            R.string.set_up_rc_step_count,
-            3,
-            SetupRecoveryCodeActivity.SET_UP_RC_STEP_COUNT
-        )
-        parentActivity.header.apply {
-            setIndicatorText(indicatorText)
-            setElevated(true)
-            setNavigation(MuunHeader.Navigation.EXIT)
-        }
-
         acceptButton.setOnClickListener { presenter!!.finishSetup() }
 
         condition1.setOnCheckedChangeListener { _, _ ->
@@ -62,6 +49,19 @@ internal class AcceptRecoveryCodeFragment : SingleFragment<AcceptRecoveryCodePre
     override fun setTexts(user: User) {
         if (!user.hasPassword) {
             condition1.setText(R.string.recovery_code_verify_accept_condition_1_skipped_email)
+        }
+    }
+
+    override fun setUpHeader() {
+        val indicatorText = getString(
+            R.string.set_up_rc_step_count,
+            3,
+            SetupRecoveryCodeActivity.SET_UP_RC_STEP_COUNT
+        )
+        parentActivity.header.apply {
+            setIndicatorText(indicatorText)
+            setElevated(true)
+            setNavigation(MuunHeader.Navigation.EXIT)
         }
     }
 

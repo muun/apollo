@@ -65,11 +65,6 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
-        parentActivity.header.showTitle(R.string.edit_fee_title)
-
         message.text = TextUtils.concat(
             messageText,
             ". ",
@@ -87,6 +82,11 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
         confirmButton.setOnClickListener {
             presenter!!.confirmFee(selectedFeeRateInVBytes!!) // NonNull (feeRate has been selected)
         }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
+        parentActivity.header.showTitle(R.string.edit_fee_title)
     }
 
     override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {

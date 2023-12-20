@@ -13,6 +13,7 @@ jar {
     exclude 'lib/x86_64/freebsd/libscrypt.so'
     exclude 'lib/x86_64/linux/libscrypt.so'
 
+    // Convention: prefix support libs for easy Docker layering
     archiveFileName = "_lib_${project.name}.jar"
 }
 

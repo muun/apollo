@@ -28,10 +28,6 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
         R.layout.fragment_create_password
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
-
         passwordInput.setPasswordRevealEnabled(true)
         passwordInput.setOnChangeListener(this) {
             // Ugly check needed for some convoluted scenario where we receive input and fragment
@@ -57,6 +53,11 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
                 passwordConfirmInput.text.toString()
             )
         }
+    }
+
+    override fun setUpHeader() {
+        // Parent Activity has already taken care of the rest
+        parentActivity.header.setNavigation(MuunHeader.Navigation.EXIT)
     }
 
     override fun onBackPressed(): Boolean {

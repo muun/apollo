@@ -35,7 +35,7 @@ import static io.muun.apollo.domain.action.NotificationActions_ExtensionsKt.asSt
 import static io.muun.apollo.domain.action.NotificationActions_ExtensionsKt.mapIds;
 
 @Singleton // important
-public class NotificationActions {
+public class NotificationActions implements NotificationPoller {
 
     // If too many NotificationReports accumulate, we'll save them into a buffer with the following
     // capacity. Dropping reports is not ideal, since Apollo will need to query Houston for missing

@@ -48,15 +48,6 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
-        final MuunHeader header = getParentActivity().getHeader();
-        header.attachToActivity(getParentActivity());
-        header.clear();
-        header.setNavigation(MuunHeader.Navigation.EXIT);
-        header.showTitle(R.string.home_operations_list_title);
-        header.setElevated(true);
-
         adapter = new ItemAdapter(new ViewHolderFactory());
         adapter.setOnItemClickListener(this::onItemClicked);
 
@@ -68,6 +59,15 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
             presenter.goToReceive();
             return Unit.INSTANCE; // Java you suuuuuuck!
         });
+    }
+
+    @Override
+    protected void setUpHeader() {
+        final MuunHeader header = getParentActivity().getHeader();
+        header.clear();
+        header.setNavigation(MuunHeader.Navigation.EXIT);
+        header.showTitle(R.string.home_operations_list_title);
+        header.setElevated(true);
     }
 
     @Override

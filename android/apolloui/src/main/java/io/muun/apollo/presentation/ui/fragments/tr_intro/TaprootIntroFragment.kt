@@ -6,10 +6,10 @@ import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroFragment
 import io.muun.apollo.presentation.ui.fragments.flow_intro.FlowIntroView
 import rx.functions.Action0
 
-class TaprootIntroFragment: FlowIntroFragment<
-        FlowIntroView,
-        TaprootIntroPresenter,
-        TaprootIntroParentPresenter>() {
+class TaprootIntroFragment : FlowIntroFragment<
+    FlowIntroView,
+    TaprootIntroPresenter,
+    TaprootIntroParentPresenter>() {
 
     override fun inject() =
         component.inject(this)

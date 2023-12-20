@@ -10,9 +10,8 @@ import javax.inject.Inject
 
 @PerFragment
 class EmergencyKitVerifyPresenter @Inject constructor(
-    private val verifyEmergencyKit: VerifyEmergencyKitAction
-
-): SingleFragmentPresenter<EmergencyKitVerifyView, EmergencyKitVerifyParentPresenter>() {
+    private val verifyEmergencyKit: VerifyEmergencyKitAction,
+) : SingleFragmentPresenter<EmergencyKitVerifyView, EmergencyKitVerifyParentPresenter>() {
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)

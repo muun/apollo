@@ -6,8 +6,8 @@ import android.content.Intent
 import butterknife.BindView
 import io.muun.apollo.R
 import io.muun.apollo.domain.model.user.User
-import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
+import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.create_password.CreatePasswordFragment
 import io.muun.apollo.presentation.ui.fragments.enter_email.CreateEmailFragment
 import io.muun.apollo.presentation.ui.fragments.password_setup_intro.SetupPasswordIntroFragment
@@ -17,8 +17,8 @@ import io.muun.apollo.presentation.ui.fragments.verify_email.VerifyEmailFragment
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 
-class SetupPasswordActivity: SingleFragmentActivity<SetupPasswordActivityPresenter>(),
-                             SetupPasswordActivityView {
+class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresenter>(),
+    SetupPasswordActivityView {
 
     companion object {
         fun getStartActivityIntent(context: Context) =

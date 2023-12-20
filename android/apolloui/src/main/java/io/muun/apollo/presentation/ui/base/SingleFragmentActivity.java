@@ -33,7 +33,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
 
     private OnBackPressedListener backPressedListener;
 
-    protected BaseFragment getInitialFragment() {
+    protected SingleFragment getInitialFragment() {
         return null;
     }
 
@@ -79,6 +79,15 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
     private boolean hasFragments() {
         final List<Fragment> fragments = getSupportFragmentManager().getFragments();
         return !fragments.isEmpty();
+    }
+
+    /**
+     * This is guaranteed to run AFTER:
+     * - Activity#onCreate
+     * - Fragment#onAttach (so fragment is attached to activity, getActivity returns non null).
+     */
+    final void attachHeader() {
+        getHeader().attachToActivity(this);
     }
 
     @Override
@@ -208,7 +217,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         // track of them. Otherwise, in the case of fragment transactions A -> B -> C (all with
         // canGoBackCurrent = true), pressing back in fragment C would remove C but also B.
         final String transactionTag;
-        if (! backStackTags.isEmpty()) {
+        if (!backStackTags.isEmpty()) {
             transactionTag = backStackTags.get(backStackTags.size() - 1);
         } else {
             transactionTag = Boolean.toString(true);

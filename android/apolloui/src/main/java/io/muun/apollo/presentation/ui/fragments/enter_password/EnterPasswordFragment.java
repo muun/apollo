@@ -41,17 +41,14 @@ public class EnterPasswordFragment extends SingleFragment<EnterPasswordPresenter
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
-        setUpHeader();
-
         password.setPasswordRevealEnabled(true);
         password.setOnKeyboardNextListener(continueButton::callOnClick);
         password.setOnChangeListener(this, (ignored) -> validateInput());
         validateInput();
     }
 
-    private void setUpHeader() {
+    @Override
+    public void setUpHeader() {
         final MuunHeader header = getParentActivity().getHeader();
         header.setNavigation(Navigation.BACK);
         header.showTitle(R.string.login_title);

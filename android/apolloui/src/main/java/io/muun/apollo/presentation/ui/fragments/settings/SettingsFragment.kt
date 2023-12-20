@@ -98,11 +98,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         R.layout.fragment_settings
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        // For PublicProfile, if need be we'll show it later (yes, this default is backwards)
-        parentActivity.header.visibility = View.GONE
-
         // Tell parent activity we want a say in how, when and if menu items are/should be displayed
         setHasOptionsMenu(true)
 
@@ -123,6 +118,11 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 //            versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
             versionCode.setOnClickListener { presenter.openDebugPanel() }
         }
+    }
+
+    override fun setUpHeader() {
+        // For PublicProfile, if need be we'll show it later (yes, this default is backwards)
+        parentActivity.header.visibility = View.GONE
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

@@ -18,6 +18,8 @@ import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.execution.JobExecutor;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
+import io.muun.apollo.domain.action.NotificationActions;
+import io.muun.apollo.domain.action.NotificationPoller;
 
 import android.content.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +56,8 @@ public class DataModule {
             Context applicationContext,
             Func3<Context, ExecutionTransformerFactory, RepositoryRegistry, NotificationService> notificationServiceFactory,
             Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory,
-            HoustonConfig houstonConfig) {
+            HoustonConfig houstonConfig
+    ) {
 
         this.applicationContext = applicationContext;
         this.notificationServiceFactory = notificationServiceFactory;
@@ -79,16 +82,18 @@ public class DataModule {
      */
     @Provides
     @Singleton
-    DaoManager provideDaoManager(Context context,
-                                 ContactDao contactDao,
-                                 OperationDao operationDao,
-                                 PhoneContactDao phoneContactDao,
-                                 PublicProfileDao publicProfileDao,
-                                 SubmarineSwapDao submarineSwapDao,
-                                 IncomingSwapDao incomingSwapDao,
-                                 IncomingSwapHtlcDao incomingSwapHtlcDao,
-                                 Configuration config,
-                                 Executor executor) {
+    DaoManager provideDaoManager(
+            Context context,
+            ContactDao contactDao,
+            OperationDao operationDao,
+            PhoneContactDao phoneContactDao,
+            PublicProfileDao publicProfileDao,
+            SubmarineSwapDao submarineSwapDao,
+            IncomingSwapDao incomingSwapDao,
+            IncomingSwapHtlcDao incomingSwapHtlcDao,
+            Configuration config,
+            Executor executor
+    ) {
 
         return new DaoManager(
                 context,
@@ -110,7 +115,8 @@ public class DataModule {
     NotificationService provideNotificationService(
             Context context,
             ExecutionTransformerFactory executionTransformerFactory,
-            RepositoryRegistry repoRegistry) {
+            RepositoryRegistry repoRegistry
+    ) {
         return notificationServiceFactory.call(context, executionTransformerFactory, repoRegistry);
     }
 
@@ -167,7 +173,7 @@ public class DataModule {
 
     @Provides
     @Singleton
-    AppStandbyBucketProvider provideAppStandbyBucketProvider(final Context  context) {
+    AppStandbyBucketProvider provideAppStandbyBucketProvider(final Context context) {
         return appStandbyBucketProviderFactory.call(context);
     }
 
@@ -175,5 +181,12 @@ public class DataModule {
     @Singleton
     RepositoryRegistry provideRepositoryRegistry() {
         return new RepositoryRegistry();
+    }
+
+    // TODO: this should be extracted to a DomainModule or similar
+    @Provides
+    @Singleton
+    NotificationPoller provideNotificationPoller(final NotificationActions notificationActions) {
+        return notificationActions;
     }
 }

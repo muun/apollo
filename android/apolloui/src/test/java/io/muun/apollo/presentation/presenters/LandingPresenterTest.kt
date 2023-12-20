@@ -12,13 +12,13 @@ import io.muun.apollo.presentation.ui.fragments.landing.LandingPresenter
 import io.muun.apollo.presentation.ui.signup.SignupPresenter
 import org.junit.Test
 
-class LandingPresenterTest: BasePresentationTest() {
+class LandingPresenterTest : BasePresentationTest() {
 
     @Test
     fun `should call on parent to start signup`() {
-        val (presenter, parent, draft) = sharedInit()
+        val (presenter, parent, _) = sharedInit()
 
-        presenter.startSignup()
+        presenter.startCreateWallet()
 
         verify(parent, times(1)).startSignup()
         verifyNoMoreInteractions(parent)
@@ -26,18 +26,18 @@ class LandingPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should call on parent to start login`() {
-        val (presenter, parent, draft) = sharedInit()
+        val (presenter, parent, _) = sharedInit()
 
-        presenter.startLogin()
+        presenter.startRecoverWallet()
 
         verify(parent, times(1)).startLogin()
         verifyNoMoreInteractions(parent)
     }
 
     private data class SharedInit(
-            val presenter: LandingPresenter,
-            val parent: SignupPresenter,
-            val draft: SignupDraft
+        val presenter: LandingPresenter,
+        val parent: SignupPresenter,
+        val draft: SignupDraft,
     )
 
     private fun sharedInit(): SharedInit {
@@ -49,7 +49,7 @@ class LandingPresenterTest: BasePresentationTest() {
 
         val forceFetchFcmAction = mock<ForceFetchFcmAction>()
 
-        val presenter = object: LandingPresenter(forceFetchFcmAction) {
+        val presenter = object : LandingPresenter(forceFetchFcmAction) {
             override fun setUpDeprecatedClientVersionCheck() {}
             override fun setUpSessionExpiredCheck() {}
             override fun setUpNetworkInfo() {}

@@ -7,15 +7,17 @@ import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunButtonBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
@@ -69,14 +71,17 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
         private const val MONOSPACE = 3
     }
 
-    @BindView(R.id.muun_button_button)
-    lateinit var button: Button
+    private val binding: MuunButtonBinding
+        get() = _binding as MuunButtonBinding
 
-    @BindView(R.id.muun_button_progress_bar)
-    lateinit var progressBar: ProgressBar
+    private val button: Button
+        get() = binding.muunButtonButton
 
-    @BindView(R.id.muun_button_cover)
-    lateinit var coverView: TextView
+    private val progressBar: ProgressBar
+        get() = binding.muunButtonProgressBar
+
+    private val coverView: TextView
+        get() = binding.muunButtonCover
 
     // This is meant for private (e.g only this class) use, but IcePick requires it to be public.
     // If you are an external caller move along to setLoading/isLoading methods.
@@ -108,8 +113,13 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
     private var typeface: Typeface? = null
     private var fontFamily: String? = null
 
+    // TODO rm this once all views have successfully migrated from butterKnife to view binding.
     override val layoutResource: Int
         get() = R.layout.muun_button
+
+    override fun viewBinder(): ((View) -> ViewBinding) {
+        return MuunButtonBinding::bind
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         // Setting defaults in here because setUp is called INSIDE the view constructor

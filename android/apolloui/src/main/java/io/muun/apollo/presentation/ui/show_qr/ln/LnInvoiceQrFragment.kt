@@ -23,7 +23,9 @@ import io.muun.apollo.presentation.ui.view.LoadingView
 import javax.money.MonetaryAmount
 
 
-class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
+class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
+    LnInvoiceView,
+    MuunCountdownTimer.CountDownTimerListener {
 
     companion object {
         private const val REQUEST_AMOUNT = 2
@@ -79,8 +81,9 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
     override fun getLayoutResource() =
         R.layout.fragment_show_qr_ln
 
-    override fun initializeUi(view: View?) {
+    override fun initializeUi(view: View) {
         super.initializeUi(view)
+
         hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
         createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
 
@@ -120,7 +123,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         super.setQrContent(invoice.original, invoice.original.toUpperCase())
 
         stopTimer()
-        countdownTimer = buildCountDownTimer(invoice.remainingMillis())
+        countdownTimer = MuunCountdownTimer(invoice.remainingMillis(), this)
         countdownTimer!!.start()
 
         if (amount != null) {
@@ -192,6 +195,17 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         presenter.setAmount(null)
     }
 
+    override fun onCountDownTick(remainingSeconds: Long) {
+        // Using minimalistic pattern/display/formatting to better fit in small screen space
+        expirationTimeItem.setExpirationTime(
+            ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
+        )
+    }
+
+    override fun onCountDownFinish() {
+        showInvoiceExpiredOverlay()
+    }
+
     private fun resetViewState() {
         notificationsPrimingView.visibility = View.GONE
         highFeesOverlay.visibility = View.GONE
@@ -217,23 +231,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(), LnInvoiceView {
         if (countdownTimer != null) {
             countdownTimer!!.cancel()
             countdownTimer = null
-        }
-    }
-
-    private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {
-
-        return object : MuunCountdownTimer(remainingMillis) {
-
-            override fun onTickSeconds(remainingSeconds: Long) {
-                // Using minimalistic pattern/display/formatting to better fit in small screen space
-                expirationTimeItem.setExpirationTime(
-                    ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
-                )
-            }
-
-            override fun onFinish() {
-                showInvoiceExpiredOverlay()
-            }
         }
     }
 

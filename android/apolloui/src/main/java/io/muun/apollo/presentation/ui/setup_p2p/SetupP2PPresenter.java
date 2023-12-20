@@ -9,8 +9,8 @@ import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.apollo.domain.selector.UserSelector;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentView;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.fragments.phone_number.PhoneNumberFragment;
@@ -182,7 +182,7 @@ public class SetupP2PPresenter extends BasePresenter<SingleFragmentView> impleme
     /**
      * Get initial P2PSetupStep, depending on the current state of the user.
      */
-    public BaseFragment getInitialStep() {
+    public SingleFragment getInitialStep() {
         currentStep = getInitialP2PSetupStep(); // TODO this shouldn't be a side-effect
         return createStepFragment(currentStep);
     }
@@ -229,7 +229,7 @@ public class SetupP2PPresenter extends BasePresenter<SingleFragmentView> impleme
                 && hasPermission(Manifest.permission.READ_CONTACTS);
     }
 
-    private BaseFragment createStepFragment(P2PSetupStep step) {
+    private SingleFragment createStepFragment(P2PSetupStep step) {
         switch (step) {
 
             case PHONE:

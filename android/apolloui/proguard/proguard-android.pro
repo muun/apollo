@@ -59,3 +59,10 @@
 # This was requiered after inluding hte NAvigation Component and BottomNavigationView
 # See https://stackoverflow.com/a/50378828/901465:
 -keep class * extends androidx.fragment.app.Fragment{}
+
+# We've seen this crash in the wild (android 5):
+# Fatal Exception: java.lang.IncompatibleClassChangeError
+# Couldn't find androidx.lifecycle.w.value
+# Couldn't reproduce but adding rule just in case
+# See https://github.com/mozilla-mobile/android-components/issues/6642
+-keep class androidx.lifecycle.** {*;}

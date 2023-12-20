@@ -7,7 +7,7 @@ import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.view.MuunButton
 
-class SetupPasswordSuccessFragment: SingleFragment<SetupPasswordSuccessPresenter>(), BaseView {
+class SetupPasswordSuccessFragment : SingleFragment<SetupPasswordSuccessPresenter>(), BaseView {
 
     @BindView(R.id.setup_password_success_action)
     lateinit var actionButton: MuunButton
@@ -19,13 +19,13 @@ class SetupPasswordSuccessFragment: SingleFragment<SetupPasswordSuccessPresenter
         R.layout.fragment_setup_password_success
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
-        parentActivity.header.visibility = View.GONE
-
         actionButton.setOnClickListener {
             presenter.finishSetup()
         }
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.visibility = View.GONE
     }
 
     override fun onBackPressed(): Boolean {

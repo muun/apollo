@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.settings.lightning
 
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import butterknife.BindView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import icepick.State
@@ -59,8 +58,6 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
     }
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
-
         StyledStringRes(requireContext(), R.string.turbo_channels_learn_more, this::openInBrowser)
             .toCharSequence()
             .let(learnMore::setText)
@@ -84,7 +81,9 @@ class LightningSettingsFragment : SingleFragment<LightningSettingsPresenter>(),
             R.string.settings_receive_preference_description,
             this::openInBrowser
         ).toCharSequence()
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.apply {
             showTitle(R.string.settings_lightning)
             setNavigation(MuunHeader.Navigation.BACK)

@@ -9,7 +9,8 @@ import io.muun.common.utils.Hashes
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
-import java.util.*
+import timber.log.Timber
+import java.util.Locale
 import javax.annotation.CheckReturnValue
 
 class EmailReport private constructor(val body: String) {
@@ -122,6 +123,7 @@ class EmailReport private constructor(val body: String) {
                    |Default Region: $defaultRegion
                    |${report!!.print()}""".trimMargin()
 
+            Timber.d("EmailReport: \n$body")
             return EmailReport(body)
         }
     }

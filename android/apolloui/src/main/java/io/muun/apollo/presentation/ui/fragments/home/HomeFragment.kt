@@ -76,15 +76,21 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     override fun getLayoutResource() =
         R.layout.fragment_home
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
+    override fun initializeUi(view: View) {
+        setUpGestureDetectors()
+        initializeCards()
+        setUpClickListeners()
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.apply {
             visibility = View.VISIBLE
             showTitle(R.string.app_name)
             setElevated(false)
         }
+    }
 
+    private fun setUpGestureDetectors() {
         // The detector detect the fling gesture for the chevron
         // The first detects the fling in the horizontal area around the chevron.
         // The second detects the fling in the chevron itself.
@@ -110,17 +116,6 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             } else {
                 chevronDetector.onTouchEvent(event)
             }
-        }
-
-        initializeCards()
-
-        balanceView.setOnClickListener { onBalanceClick() }
-        receiveButton.setOnClickListener { presenter.navigateToReceiveScreen() }
-        sendButton.setOnClickListener { presenter.navigateToSendScreen() }
-        chevron.setOnClickListener { presenter.navigateToOperations() }
-
-        blockClock.setOnClickListener {
-            presenter.navigateToClockDetail()
         }
     }
 
@@ -154,6 +149,16 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         }
     }
 
+    private fun setUpClickListeners() {
+        balanceView.setOnClickListener { onBalanceClick() }
+        receiveButton.setOnClickListener { presenter.navigateToReceiveScreen() }
+        sendButton.setOnClickListener { presenter.navigateToSendScreen() }
+        chevron.setOnClickListener { presenter.navigateToOperations() }
+        blockClock.setOnClickListener {
+            presenter.navigateToClockDetail()
+        }
+    }
+
     class GestureListener(private val chevron: View, context: Context, private val down: Boolean) :
         GestureDetector.SimpleOnGestureListener() {
 
@@ -164,7 +169,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             e1: MotionEvent,
             e2: MotionEvent,
             velocityX: Float,
-            velocityY: Float
+            velocityY: Float,
         ): Boolean {
 
             // Future reader: for MotionEvent we want rawX/Y, other coordinates suck (BIG TIME)

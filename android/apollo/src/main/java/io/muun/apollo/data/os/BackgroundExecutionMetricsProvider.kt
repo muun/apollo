@@ -10,6 +10,9 @@ import io.muun.apollo.data.net.NetworkInfoProvider
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
+private const val UNSUPPORTED = -1
+private const val UNKNOWN = -2
+
 class BackgroundExecutionMetricsProvider @Inject constructor(
     private val context: Context,
     private val hardwareCapabilitiesProvider: HardwareCapabilitiesProvider,
@@ -81,15 +84,15 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
 
     /**
      * (Android only and Android 12+ only) Returns the current battery life remaining estimate,
-     * expressed in nanoseconds. Will be null if the device is powered, charging, or an error
-     * was encountered. For pre Android 12 devices it will be -1.
+     * expressed in nanoseconds. Will be UNKNOWN (-2) if the device is powered, charging, or an error
+     * was encountered. For pre Android 12 devices it will be UNSUPPORTED (-1).
      */
-    private fun getBatteryDischargePrediction(): Long? =
-        if (OS.supportsBatteryDischargePrediction()) {
-            powerManager.batteryDischargePrediction?.toNanos()
-        } else {
-            -1
-        }
+    private fun getBatteryDischargePrediction(): Long =
+            if (OS.supportsBatteryDischargePrediction()) {
+                powerManager.batteryDischargePrediction?.toNanos() ?: UNKNOWN.toLong()
+            } else {
+                UNSUPPORTED.toLong()
+            }
 
     private fun getBatteryIntent(): Intent? =
         IntentFilter(Intent.ACTION_BATTERY_CHANGED)
@@ -127,19 +130,12 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
 
     /**
      * Translate Android's BatteryManager battery status int constants into one of our domain
-     * values. Note that Android docs don't really explain what these values mean. Also, there may
-     * be some confusion regarding BATTERY_STATUS_NOT_CHARGING and BATTERY_STATUS_CHARGING.
-     * According to some reports:
-     * - https://stackoverflow.com/questions/7404185/battery-is-low-charging-current-not-enough-is-there-intent-before-this-messag.
-     * - https://stackoverflow.com/questions/10022960/android-difference-between-battery-status-discharging-and-battery-status-not-c
-     * one or both of these values could be returned when the device is actually plugged in but
-     * not receiving enough power to actually charge. For our intent and purpose this case will
-     * be treated as UNPLUGGED.
+     * values. Note that Android docs don't really explain what these values mean.
      */
     private fun getBatteryStatusText(batteryStatus: Int): String {
         return when (batteryStatus) {
             BatteryManager.BATTERY_STATUS_FULL -> "FULL"
-            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "UNPLUGGED"
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "NOT_CHARGING"
             BatteryManager.BATTERY_STATUS_DISCHARGING -> "UNPLUGGED"
             BatteryManager.BATTERY_STATUS_CHARGING -> "CHARGING"
             BatteryManager.BATTERY_STATUS_UNKNOWN -> "UNKNOWN"

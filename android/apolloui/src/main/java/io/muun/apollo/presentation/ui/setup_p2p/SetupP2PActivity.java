@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.ui.setup_p2p;
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
 import io.muun.apollo.presentation.ui.base.BaseView;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
@@ -46,7 +46,7 @@ public class SetupP2PActivity extends SingleFragmentActivity<SetupP2PPresenter>
     }
 
     @Override
-    protected BaseFragment getInitialFragment() {
+    protected SingleFragment getInitialFragment() {
         return presenter.getInitialStep();
     }
 }

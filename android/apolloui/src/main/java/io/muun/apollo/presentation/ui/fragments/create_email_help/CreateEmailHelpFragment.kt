@@ -8,7 +8,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class CreateEmailHelpFragment: SingleFragment<CreateEmailHelpPresenter>() {
+class CreateEmailHelpFragment : SingleFragment<CreateEmailHelpPresenter>() {
 
     @BindView(R.id.text)
     lateinit var textView: TextView
@@ -19,16 +19,7 @@ class CreateEmailHelpFragment: SingleFragment<CreateEmailHelpPresenter>() {
     override fun getLayoutResource() =
         R.layout.fragment_create_email_help
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
-        parentActivity.header.let {
-            it.setNavigation(MuunHeader.Navigation.BACK)
-            it.hideTitle()
-            it.setIndicatorText(null)
-            it.setElevated(false)
-        }
-
+    override fun initializeUi(view: View) {
         val styledRes = StyledStringRes(
             requireContext(),
             R.string.create_email_help_content,
@@ -36,6 +27,15 @@ class CreateEmailHelpFragment: SingleFragment<CreateEmailHelpPresenter>() {
         )
 
         textView.text = styledRes.toCharSequence()
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.let {
+            it.setNavigation(MuunHeader.Navigation.BACK)
+            it.hideTitle()
+            it.setIndicatorText(null)
+            it.setElevated(false)
+        }
     }
 
     private fun onLinkClick(id: String) {

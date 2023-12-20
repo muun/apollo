@@ -27,7 +27,7 @@ import icepick.State;
 import static io.muun.common.utils.Dates.MINUTE_IN_SECONDS;
 
 public class VerificationCodeFragment extends SingleFragment<VerificationCodePresenter>
-        implements VerificationCodeView {
+        implements VerificationCodeView, MuunCountdownTimer.CountDownTimerListener {
 
     private static final int DRAWER_REQUEST = 1;
     private static final int SEND_SMS_ACTION = 2;
@@ -79,8 +79,6 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         verificationCode.setOnChangeListener(this, newText -> {
             final boolean enable = !TextUtils.isEmpty(newText) && newText.length() >= 6;
             continueButton.setEnabled(enable);
@@ -206,7 +204,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
         resendButton.setVisibility(View.GONE);
         countdownText.setVisibility(View.VISIBLE);
 
-        countdownTimer = new ResendCountdownTimer(remainingMs);
+        countdownTimer = new MuunCountdownTimer(remainingMs, this);
         countdownTimer.start();
     }
 
@@ -222,25 +220,18 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
         }
     }
 
-    private class ResendCountdownTimer extends MuunCountdownTimer {
+    @Override
+    public void onCountDownTick(long remainingSeconds) {
+        final long minutes = remainingSeconds / MINUTE_IN_SECONDS;
+        final long seconds = remainingSeconds % MINUTE_IN_SECONDS;
 
-        ResendCountdownTimer(long durationInMillis) {
-            super(durationInMillis);
-        }
+        final String text = String.format(countdownTextFormat, minutes, seconds);
+        countdownText.setText(text);
+    }
 
-        @Override
-        public void onTickSeconds(long remainingSeconds) {
-            final long minutes = remainingSeconds / MINUTE_IN_SECONDS;
-            final long seconds = remainingSeconds % MINUTE_IN_SECONDS;
-
-            final String text = String.format(countdownTextFormat, minutes, seconds);
-            countdownText.setText(text);
-        }
-
-        @Override
-        public void onFinish() {
-            countdownText.setVisibility(View.GONE);
-            resendButton.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public void onCountDownFinish() {
+        countdownText.setVisibility(View.GONE);
+        resendButton.setVisibility(View.VISIBLE);
     }
 }

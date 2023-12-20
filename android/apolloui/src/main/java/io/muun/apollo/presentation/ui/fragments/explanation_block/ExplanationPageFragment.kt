@@ -15,7 +15,7 @@ import io.muun.apollo.presentation.ui.utils.StyledStringRes
 /**
  * A Fragment with explanatory information, containing an image, a title and a body.
  */
-open class ExplanationPageFragment: BaseFragment<ExplanationPagePresenter>() {
+open class ExplanationPageFragment : BaseFragment<ExplanationPagePresenter>() {
 
     companion object {
         const val IMAGE_ARG = "message"
@@ -46,9 +46,7 @@ open class ExplanationPageFragment: BaseFragment<ExplanationPagePresenter>() {
     override fun getLayoutResource() =
         R.layout.fragment_explanation_page
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
+    override fun initializeUi(view: View) {
         imageView.setImageResource(argumentsBundle.getInt(IMAGE_ARG))
         titleView.setText(argumentsBundle.getInt(TITLE_ARG))
         bodyView.text = getStyledBody()

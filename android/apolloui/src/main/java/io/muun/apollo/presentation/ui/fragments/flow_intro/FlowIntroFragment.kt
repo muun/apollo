@@ -12,10 +12,10 @@ import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.view.MuunButton
 
-abstract class FlowIntroFragment<V, P, PP>: SingleFragment<P>(), FlowIntroView
-    where V: FlowIntroView,
-          P: FlowIntroPresenter<V, PP>,
-          PP: FlowIntroParentPresenter {
+abstract class FlowIntroFragment<V, P, PP> : SingleFragment<P>(), FlowIntroView
+    where V : FlowIntroView,
+          P : FlowIntroPresenter<V, PP>,
+          PP : FlowIntroParentPresenter {
 
     @BindView(R.id.pager)
     lateinit var viewPager: ViewPager
@@ -41,9 +41,7 @@ abstract class FlowIntroFragment<V, P, PP>: SingleFragment<P>(), FlowIntroView
     override fun getLayoutResource() =
         R.layout.fragment_introduction
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
+    override fun initializeUi(view: View) {
         // Keep currentPosition from restored State, or init from arguments (0 if not passed):
         if (currentPosition == -1) {
             currentPosition = argumentsBundle.getInt(FlowIntroView.ARG_STEP)
@@ -91,7 +89,7 @@ abstract class FlowIntroFragment<V, P, PP>: SingleFragment<P>(), FlowIntroView
     }
 
     // Listener to show action buttons on final slide:
-    private val pageChangeListener = object: ViewPager.OnPageChangeListener {
+    private val pageChangeListener = object : ViewPager.OnPageChangeListener {
         override fun onPageScrollStateChanged(state: Int) {}
         override fun onPageScrolled(position: Int, posOffset: Float, posOffsetPx: Int) {}
 

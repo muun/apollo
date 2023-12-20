@@ -4,7 +4,7 @@ import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import rx.Observable
 
-interface CreateEmailParentPresenter: ParentPresenter {
+interface CreateEmailParentPresenter : ParentPresenter {
 
     fun refreshToolbarTitle()
 

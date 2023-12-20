@@ -7,7 +7,7 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
+import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 import io.muun.common.bitcoinj.ValidationHelpers
 
@@ -26,17 +26,16 @@ class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView
         R.layout.login_email
 
     override fun initializeUi(view: View) {
-        super.initializeUi(view)
+        emailInput.setOnChangeListener(this) { validateEmailInput() }
+        validateEmailInput()
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.apply {
-            setNavigation(Navigation.BACK)
+            setNavigation(MuunHeader.Navigation.BACK)
             showTitle(R.string.login_title)
             setElevated(true)
         }
-
-        emailInput.setOnChangeListener(this) { validateEmailInput() }
-        validateEmailInput()
-
     }
 
     override fun onBackPressed(): Boolean {

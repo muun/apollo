@@ -26,7 +26,7 @@ public class TitleAndDescriptionDrawer extends DrawerDialogFragment {
     
     @NonNull
     protected MuunActionDrawer createActionDrawer() {
-        final MuunDescriptionDrawer muunActionDrawer = new MuunDescriptionDrawer(getContext());
+        final MuunDescriptionDrawer muunActionDrawer = new MuunDescriptionDrawer(requireContext());
         muunActionDrawer.setDescription(description);
         return muunActionDrawer;
     }

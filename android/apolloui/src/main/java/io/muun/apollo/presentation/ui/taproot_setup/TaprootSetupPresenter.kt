@@ -18,9 +18,8 @@ import javax.inject.Inject
 
 @PerActivity
 class TaprootSetupPresenter @Inject constructor(
-    private val driveUploader: DriveUploader
-):
-    BasePresenter<TaprootSetupView>(),
+    private val driveUploader: DriveUploader,
+) : BasePresenter<TaprootSetupView>(),
     TaprootIntroParentPresenter,
     EmergencyKitSaveParentPresenter,
     EmergencyKitVerifyParentPresenter,

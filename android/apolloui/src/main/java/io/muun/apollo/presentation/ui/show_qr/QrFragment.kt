@@ -9,6 +9,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.CallSuper
 import butterknife.BindDimen
 import butterknife.BindView
 import com.google.zxing.EncodeHintType
@@ -45,7 +46,8 @@ abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<Presente
     @JvmField
     internal var qrCodeSize: Int = 0
 
-    override fun initializeUi(view: View?) {
+    @CallSuper
+    override fun initializeUi(view: View) {
         qrContent.setOnClickListener { presenter.showFullContent() }
         qrImage.setOnClickListener { presenter.copyQrContent(ADDRESS_ORIGIN.QR) }
         copyButton.setOnClickListener { presenter.copyQrContent(ADDRESS_ORIGIN.COPY_BUTTON) }

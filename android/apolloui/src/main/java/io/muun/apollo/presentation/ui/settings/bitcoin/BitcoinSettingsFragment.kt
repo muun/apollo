@@ -43,13 +43,13 @@ class BitcoinSettingsFragment : SingleFragment<BitcoinSettingsPresenter>(), Bitc
         return R.layout.bitcoin_settings_fragment
     }
 
-    override fun initializeUi(view: View?) {
-        super.initializeUi(view)
-
+    override fun initializeUi(view: View) {
         taprootByDefaultSwitch.setOnCheckedChangeListener { _, isChecked ->
             this.onTaprootByDefaultChange(isChecked)
         }
+    }
 
+    override fun setUpHeader() {
         parentActivity.header.apply {
             showTitle(R.string.settings_bitcoin)
             setNavigation(MuunHeader.Navigation.BACK)
@@ -84,7 +84,7 @@ class BitcoinSettingsFragment : SingleFragment<BitcoinSettingsPresenter>(), Bitc
                 .title(R.string.tr_setting_confirm_title)
                 .message(R.string.tr_setting_confirm_desc)
                 .positiveButton(R.string.tr_setting_confirm) {
-                    presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+                    presenter.reportTaprootByDefaultChange(true)
                 }
                 .negativeButton(R.string.cancel) {
                     taprootByDefaultSwitch.isChecked = false
@@ -95,7 +95,7 @@ class BitcoinSettingsFragment : SingleFragment<BitcoinSettingsPresenter>(), Bitc
             showDialog(dialog)
 
         } else {
-            presenter.reportTaprootByDefaultChange(newTaprootByDefault)
+            presenter.reportTaprootByDefaultChange(false)
         }
     }
 

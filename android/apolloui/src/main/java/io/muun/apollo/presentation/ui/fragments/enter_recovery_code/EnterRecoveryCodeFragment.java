@@ -6,7 +6,6 @@ import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeView;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
-import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox;
 
 import android.view.View;
@@ -33,13 +32,6 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
-        final MuunHeader header = getParentActivity().getHeader();
-        header.setNavigation(Navigation.BACK);
-        header.showTitle(R.string.login_title);
-        header.setElevated(true);
-
         recoveryCodeBox.setEditable(true);
         recoveryCodeBox.setOnEditedListener(presenter::onRecoveryCodeEdited);
         recoveryCodeBox.requestFocusOnFirstEditableSegment();
@@ -53,6 +45,14 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
         continueButton.setOnClickListener(v ->
                 presenter.submitRecoveryCode(recoveryCodeBox.getSegmentInputsContent())
         );
+    }
+
+    @Override
+    protected void setUpHeader() {
+        final MuunHeader header = getParentActivity().getHeader();
+        header.setNavigation(MuunHeader.Navigation.BACK);
+        header.showTitle(R.string.login_title);
+        header.setElevated(true);
     }
 
     @Override

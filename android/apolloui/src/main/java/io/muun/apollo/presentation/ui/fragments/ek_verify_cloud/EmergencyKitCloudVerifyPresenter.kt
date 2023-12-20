@@ -6,7 +6,7 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import javax.inject.Inject
 
 @PerFragment
-class EmergencyKitCloudVerifyPresenter @Inject constructor():
+class EmergencyKitCloudVerifyPresenter @Inject constructor() :
     SingleFragmentPresenter<EmergencyKitCloudVerifyView, EmergencyKitCloudVerifyParentPresenter>() {
 
     fun goBack() {

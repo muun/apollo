@@ -84,8 +84,6 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-
         final NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment);
         final BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);

@@ -67,7 +67,8 @@ object Gen {
     /**
      * Get an alphabetic lowercase string of random length within a range.
      */
-    fun alphaLower(min: Int, max: Int) = concatGen(min, max) { CHARSET_ALPHA_LOWER.random() }
+    private fun alphaLower(min: Int, max: Int) =
+        concatGen(min, max) { CHARSET_ALPHA_LOWER.random() }
 
     /**
      * Get a numeric string of random length within a range.
@@ -87,28 +88,28 @@ object Gen {
     /**
      * Get a hex string of exact length.
      */
-    fun hex(length: Int) = concatGen(length) { CHARSET_HEX.random() }
+    private fun hex(length: Int) = concatGen(length) { CHARSET_HEX.random() }
 
     /**
      * Get a Houston ID.
      */
-    fun houstonId() = Random.nextLong(10000)
+    private fun houstonId() = Random.nextLong(10000)
 
     /**
      * Get a list of CurrencyUnits.
      */
-    fun currencyUnits(): List<CurrencyUnit> = listOf("USD", "ARS", "EUR", "BTC")
+    private fun currencyUnits(): List<CurrencyUnit> = listOf("USD", "ARS", "EUR", "BTC")
         .map { Monetary.getCurrency(it) }
 
     /**
      * Get a CurrencyUnit.
      */
-    fun currencyUnit() = currencyUnits().random()
+    private fun currencyUnit() = currencyUnits().random()
 
     /**
      * Get a country code.
      */
-    fun countryCode() = listOf("AR", "US", "GB").random()
+    private fun countryCode() = listOf("AR", "US", "GB").random()
 
     /**
      * Get an email.
@@ -234,14 +235,16 @@ object Gen {
         ExchangeRateWindow(
             1,
             ZonedDateTime.now(),
-            if (exchangeRates.isNotEmpty()) mapOf(*exchangeRates) else mapOf("USD" to 10.0,
-                "BTC" to 30.0)
+            if (exchangeRates.isNotEmpty()) mapOf(*exchangeRates) else mapOf(
+                "USD" to 10.0,
+                "BTC" to 30.0
+            )
         )
 
     /**
      * Get a SizeForAmount.
      */
-    fun sizeForAmount(pair: Pair<Long, Int>) =
+    private fun sizeForAmount(pair: Pair<Long, Int>) =
         SizeForAmount(
             pair.first,
             pair.second,
@@ -253,7 +256,7 @@ object Gen {
     /**
      * Get a size progression for the next transaction size.
      */
-    fun sizeProgression(vararg entries: SizeForAmount) =
+    private fun sizeProgression(vararg entries: SizeForAmount) =
         if (entries.isEmpty()) {
             listOf(sizeForAmount(10000L to 240))
         } else {
@@ -269,7 +272,7 @@ object Gen {
     /**
      * Get a Transaction Hash.
      */
-    fun transactionHash() =
+    private fun transactionHash() =
         hex(64)
 
     /**
@@ -286,7 +289,7 @@ object Gen {
     /**
      * Get a MuunAddress.
      */
-    fun muunAddress() =
+    private fun muunAddress() =
         MuunAddress(1, "m/1/2/3", address())
 
     /**
@@ -357,11 +360,13 @@ object Gen {
             futureDate(),
             null,
             null,
-            listOf(SubmarineSwapBestRouteFees(
-                Long.MAX_VALUE,
-                proportionalFee,
-                baseFee
-            )),
+            listOf(
+                SubmarineSwapBestRouteFees(
+                    Long.MAX_VALUE,
+                    proportionalFee,
+                    baseFee
+                )
+            ),
             SubmarineSwapFundingOutputPolicies(
                 maxDebt,
                 potentialCollect,
@@ -369,10 +374,10 @@ object Gen {
             )
         )
 
-    fun submarineSwapReceiver() =
+    private fun submarineSwapReceiver() =
         SubmarineSwapReceiver("Some ln node", lnAddress(), lnPublicKey())
 
-    fun submarineSwapFundingOutput(
+    private fun submarineSwapFundingOutput(
         outputAmountInSatoshis: Long,
         confirmationsNeeded: Int = 0,
         userLockTime: Int = 30,
@@ -393,7 +398,7 @@ object Gen {
             Libwallet.AddressVersionSwapsV2.toInt()
         )
 
-    fun submarineSwapFees(lightningInSats: Long, sweepInSats: Long) =
+    private fun submarineSwapFees(lightningInSats: Long, sweepInSats: Long) =
         SubmarineSwapFees(lightningInSats, sweepInSats)
 
     fun lnInvoice() =
@@ -403,20 +408,20 @@ object Gen {
             al792ttqpvserp8
         """.trimIndent().replace("\n", "")
 
-    fun lnAddress() =
+    private fun lnAddress() =
         "${lnPublicKey()}:123.456.789.123:8080"
 
-    fun lnPublicKey() =
+    private fun lnPublicKey() =
         "0351114ba294a8802c6c49301a45a99c5ed5d2da71f2a19a53c5b192532fdd744d"
 
     /** TODO this should be in hex **/
-    fun lnPaymentHash() =
+    private fun lnPaymentHash() =
         alpha(32)
 
     fun forwardingPolicy() =
         ForwardingPolicy(ByteArray(0), 1, 1000, 9)
 
-    fun incomingSwapHtlc() =
+    private fun incomingSwapHtlc() =
         IncomingSwapHtlc(
             houstonId(),
             RandomGenerator.getRandomUuid(),
@@ -447,7 +452,7 @@ object Gen {
             null
         )
 
-    fun bitcoinAmount(satoshis: Long) =
+    private fun bitcoinAmount(satoshis: Long) =
         BitcoinAmount(
             satoshis,
             Money.of(satoshis, "BTC").scaleByPowerOfTen(-BitcoinUtils.BITCOIN_PRECISION),
@@ -497,31 +502,32 @@ object Gen {
     /**
      * Get a string of fixed length with characters obtained from a generator.
      */
-    fun concatGen(length: Int, gen: () -> Char) = (1..length)
+    private fun concatGen(length: Int, gen: () -> Char) = (1..length)
         .map { gen() }
         .fold("", String::plus)
 
     /**
      * Get a string of a random length with characters obtained from a generator.
      */
-    fun concatGen(min: Int, max: Int, gen: () -> Char) = (min..1 + Random.nextInt(min, max))
+    private fun concatGen(min: Int, max: Int, gen: () -> Char) = (min..1 + Random.nextInt(min, max))
         .map { gen() }
         .fold("", String::plus)
 
     /**
      * Get a random digit.
      */
-    fun digit() = Random.nextInt(0, 9)
+    private fun digit() = Random.nextInt(0, 9)
 
     /**
      * Get an Optional of a generated value, or an empty optional.
      */
-    fun <T> maybe(gen: () -> T) = if (bool()) Optional.empty() else Optional.of(gen())
+    private fun <T> maybe(gen: () -> T): Optional<T> =
+        if (bool()) Optional.empty() else Optional.of(gen())
 
     /**
      * Get a boolean.
      */
-    fun bool() = Random.nextBoolean()
+    private fun bool() = Random.nextBoolean()
 
     /**
      * Get a double.
@@ -530,9 +536,17 @@ object Gen {
 
     fun long(max: Long) = Random.nextLong(max)
 
-    fun futureDate() =
+    private fun futureDate(): ZonedDateTime =
         ZonedDateTime.now().plusDays(long(1000))
 
-    fun pastDate() =
+    private fun pastDate(): ZonedDateTime =
         ZonedDateTime.now().minusDays(long(1000))
+
+    /**
+     * Temp fix for kotlin bug with RNG.
+     * See: https://stackoverflow.com/q/73475522/901465.
+     */
+    fun <T> Collection<T>.random(): T {
+        return random(Random(System.currentTimeMillis()))
+    }
 }

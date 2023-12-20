@@ -54,8 +54,6 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
 
     @Override
     protected void initializeUi(View view) {
-        super.initializeUi(view);
-
         countryPicker.setOnChangeListener(this::onCountryPickerChange);
 
         countryPrefix.setHintEnabled(false);

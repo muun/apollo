@@ -8,8 +8,8 @@ import javax.inject.Inject
 
 
 @PerFragment
-class StartPasswordChangePresenter @Inject constructor()
-    : BaseEditPasswordPresenter<SingleFragmentView>() {
+class StartPasswordChangePresenter @Inject constructor() :
+    BaseEditPasswordPresenter<SingleFragmentView>() {
 
     fun start() {
         navigateToStep(ChangePasswordStep.EXISTING_PASSWORD)

@@ -86,8 +86,6 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
      */
     @Override
     public void onViewCreated(Bundle savedInstanceState) {
-        super.onViewCreated(savedInstanceState);
-
         assertGooglePlayServicesPresent();
 
         taskScheduler.scheduleAllTasks();

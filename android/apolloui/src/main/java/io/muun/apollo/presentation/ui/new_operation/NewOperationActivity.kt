@@ -57,7 +57,9 @@ import newop.PaymentIntent
 import javax.money.MonetaryAmount
 
 @PerActivity
-class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), NewOperationView {
+class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
+    NewOperationView,
+    MuunCountdownTimer.CountDownTimerListener {
 
     companion object {
 
@@ -550,6 +552,25 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         scrollableLayout.setUserInteractionEnabled(false)
     }
 
+    override fun onCountDownTick(remainingSeconds: Long) {
+        val context = this@NewOperationActivity
+        val timeText = NewOperationInvoiceFormatter(context).formatSeconds(remainingSeconds)
+
+        val prefixText = getString(R.string.new_operation_invoice_exp_prefix)
+        val text = TextUtils.concat(prefixText, " ", timeText)
+        val richText = RichText(text)
+
+        if (remainingSeconds < INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS) {
+            richText.setForegroundColor(ContextCompat.getColor(context, R.color.red))
+        }
+
+        invoiceExpirationCountdown.text = text
+    }
+
+    override fun onCountDownFinish() {
+        presenter.handleNewOpError(NewOperationErrorType.INVOICE_EXPIRED)
+    }
+
     // PRIVATE STUFF
 
     private fun getOrigin(intent: Intent): NewOperationOrigin {
@@ -634,7 +655,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
         receiver.visibility = View.GONE
 
         // 2. Start invoice expiration countdown
-        countdownTimer = buildCountDownTimer(invoice.remainingMillis())
+        countdownTimer = MuunCountdownTimer(invoice.remainingMillis(), this)
         countdownTimer?.start()
         buttonLayoutAnchor.visibility = View.VISIBLE
         invoiceExpirationCountdown.visibility = View.VISIBLE
@@ -739,30 +760,5 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(), Ne
 
         header.setNavigation(Navigation.BACK)
         overlayContainer.visibility = View.GONE
-    }
-
-    private fun buildCountDownTimer(remainingMillis: Long): MuunCountdownTimer {
-        return object : MuunCountdownTimer(remainingMillis) {
-
-
-            override fun onTickSeconds(remainingSeconds: Long) {
-                val context = this@NewOperationActivity
-                val timeText = NewOperationInvoiceFormatter(context).formatSeconds(remainingSeconds)
-
-                val prefixText = getString(R.string.new_operation_invoice_exp_prefix)
-                val text = TextUtils.concat(prefixText, " ", timeText)
-                val richText = RichText(text)
-
-                if (remainingSeconds < INVOICE_EXPIRATION_WARNING_TIME_IN_SECONDS) {
-                    richText.setForegroundColor(ContextCompat.getColor(context, R.color.red))
-                }
-
-                invoiceExpirationCountdown.text = text
-            }
-
-            override fun onFinish() {
-                presenter.handleNewOpError(NewOperationErrorType.INVOICE_EXPIRED)
-            }
-        }
     }
 }

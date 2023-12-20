@@ -30,14 +30,7 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
     override fun getLayoutResource(): Int =
         R.layout.fragment_rc_only_login
 
-    override fun initializeUi(view: View?) {
-
-        parentActivity.header.apply {
-            setNavigation(MuunHeader.Navigation.BACK)
-            showTitle(R.string.login_title)
-            setElevated(true)
-        }
-
+    override fun initializeUi(view: View) {
         recoveryCodeBox.setEditable(true)
         recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited)
         recoveryCodeBox.requestFocusOnFirstEditableSegment()
@@ -50,6 +43,14 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
 
         whatsThis.text = getWhatThisText()
         submitButton.setOnClickListener(this::onContinueClick)
+    }
+
+    override fun setUpHeader() {
+        parentActivity.header.apply {
+            setNavigation(MuunHeader.Navigation.BACK)
+            showTitle(R.string.login_title)
+            setElevated(true)
+        }
     }
 
     override fun onResume() {

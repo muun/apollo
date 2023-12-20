@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.base.BaseFragment
+import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveFragment
 import io.muun.apollo.presentation.ui.fragments.ek_verify.EmergencyKitVerifyFragment
@@ -16,7 +16,7 @@ import io.muun.apollo.presentation.ui.fragments.tr_success.TaprootSuccessFragmen
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 
-class TaprootSetupActivity: SingleFragmentActivity<TaprootSetupPresenter>(), TaprootSetupView {
+class TaprootSetupActivity : SingleFragmentActivity<TaprootSetupPresenter>(), TaprootSetupView {
 
     companion object {
         fun getStartActivityIntent(context: Context): Intent {
@@ -68,7 +68,7 @@ class TaprootSetupActivity: SingleFragmentActivity<TaprootSetupPresenter>(), Tap
         replaceFragment(fragment, false)
     }
 
-    private fun createStepFragment(step: TaprootSetupStep): BaseFragment<*> {
+    private fun createStepFragment(step: TaprootSetupStep): SingleFragment<*> {
         return when (step) {
             TaprootSetupStep.INTRO -> TaprootIntroFragment()
             TaprootSetupStep.SAVE -> EmergencyKitSaveFragment.createForUpdate()

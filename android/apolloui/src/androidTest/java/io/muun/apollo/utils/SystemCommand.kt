@@ -34,4 +34,8 @@ object SystemCommand {
     fun enableSoftKeyboard() {
         adb("settings put secure show_ime_with_hard_keyboard 0")
     }
+
+    fun dumpView(id: Int) {
+        adb("uiautomator", "dump", "/sdcard/ui_test_{$id}_window_dump.xml")
+    }
 }

@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.settings.edit_password;
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.base.BaseFragment;
+import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
@@ -50,7 +50,7 @@ public class EditPasswordActivity extends SingleFragmentActivity<EditPasswordPre
     }
 
     @Override
-    protected BaseFragment getInitialFragment() {
+    protected SingleFragment getInitialFragment() {
         return new StartPasswordChangeFragment();
     }
 

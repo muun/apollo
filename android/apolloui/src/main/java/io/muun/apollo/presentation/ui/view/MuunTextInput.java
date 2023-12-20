@@ -220,6 +220,15 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
         this.notifyChanges = true;
     }
 
+    /**
+     * Remove LifecycleObserver when the [LifecycleOwner] is destroyed, to be extra sure we have
+     * no leaks.
+     */
+    @Override
+    public void onDestroy(@NonNull LifecycleOwner owner) {
+        owner.getLifecycle().removeObserver(this);
+    }
+
     private void preloadErrorView() {
         // We need to force the TextInputLayout to generate an invisible error view in order to
         // avoid jumps on the MuunTextInput layout after showing an error.
