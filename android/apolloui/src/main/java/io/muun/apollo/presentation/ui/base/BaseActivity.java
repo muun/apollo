@@ -142,7 +142,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Override
     protected void setUpExtensions() {
-        inject();
         addExtension(applicationLockExtension);
         addExtension(externalResultExtension);
         addExtension(shakeToDebugExtension);
@@ -158,6 +157,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     @CallSuper
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         try {
+            inject(); // Inject asap, presenters are required early in activity/fragment lifecycle
             super.onCreate(savedInstanceState);
 
             Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreate");

@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.5] - 2023-12-21
+
+### FIXED
+
+- A crash regarding activity and fragment recreation, introduced in 51.4.
+- Stopped adding email information to crashlytics reports.
+
 ## [51.4] - 2023-12-14
 
 ### ADDED
