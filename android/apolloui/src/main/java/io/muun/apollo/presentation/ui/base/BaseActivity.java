@@ -646,6 +646,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @NotNull // not true, but compatible with Kotlin lateinit var
     public PresenterT getPresenter() {
+        Timber.d("Lifecycle: " + this + "#getPresenter:" + presenter);
         return presenter; // make available to fragment presenters
     }
 

@@ -3,24 +3,52 @@ package io.muun.apollo.presentation.ui.base;
 import io.muun.apollo.presentation.ui.listener.OnBackPressedListener;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import timber.log.Timber;
 
 import javax.validation.constraints.NotNull;
 
 public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
         extends BaseFragment<PresenterT> implements SingleFragmentView, OnBackPressedListener {
 
+    // TODO we're currently abusing how this lifecycle method works and when its called, in
+    // particular for activity recreation. Since its deprecated by Android, we should consider
+    // removing this and when doing so we should pay special attention to setParentPresenter and
+    // activity and fragment's presenter injection (via dagger).
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Timber.d("Lifecycle: " + this + "#onActivityCreated");
+        super.onActivityCreated(savedInstanceState);
         presenter.setParentPresenter(getParentActivity().getPresenter());
+        onActivityCreated();
     }
 
-    @Override
+    /**
+     * Custom designed method for stuff we need to have AFTER activity's onCreate but BEFORE
+     * fragment's onCreateView (e.g particularly getParentActivity().attachHeader()).
+     */
     protected void onActivityCreated() {
         getParentActivity().attachHeader();
         setUpHeader();
+    }
+
+    @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
+        if (savedInstanceState != null) {
+            // Fragment is being re-created, activity is being recreated too and Android does not
+            // call fragment's onActivityCreated(Bundle) on its own (at least not "on time").
+            onActivityCreated();
+        }
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     /**

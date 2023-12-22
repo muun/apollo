@@ -42,7 +42,7 @@ class CreateLoginSessionAction @Inject constructor(
                 )
             }
             .doOnNext {
-                Crashlytics.configure(email, "NotLoggedYet")
+                Crashlytics.configure("NotLoggedYet")
                 playIntegrityNonceRepo.store(it.playIntegrityNonce)
             }
     }

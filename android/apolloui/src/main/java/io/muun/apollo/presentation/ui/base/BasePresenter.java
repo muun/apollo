@@ -188,6 +188,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     @Override
     public void setView(@NotNull ViewT view) {
+        Timber.d("Lifecycle: " + this + "#setView");
         this.view = view;
     }
 

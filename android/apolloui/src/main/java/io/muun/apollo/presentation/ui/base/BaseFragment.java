@@ -31,8 +31,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.viewbinding.ViewBinding;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -47,7 +45,7 @@ import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 public abstract class BaseFragment<PresenterT extends Presenter> extends Fragment
-        implements BaseView, Caller, PermissionRequester, DefaultLifecycleObserver {
+        implements BaseView, Caller, PermissionRequester {
 
     private FragmentComponent component;
 
@@ -95,47 +93,6 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     @MenuRes
     protected int getMenuResource() {
         return 0;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onAttach");
-
-        safeGetParentActivity()
-                .map(BaseActivity::getLifecycle)
-                .ifPresent(lifecycle -> lifecycle.addObserver(this));
-    }
-
-    /**
-     * Notifies that {@code ON_CREATE} event occurred for parent activity. Note this is the
-     * new, recommended way of handling deprecated Fragment#onActivityCreated callback.
-     *
-     * <p>Why are we removing the lifecycle observer in the onCreate method? Shouldn't we detach the
-     * lifecycle in the onDestroy?</p>
-     *
-     * <p><a href="https://developer.android.com/jetpack/androidx/releases/fragment#1.3.0-alpha02">
-     * As per the changelog:</a></p>
-     *
-     * <p>The onActivityCreated() method is now deprecated. Code touching the fragment's view should
-     * be done in onViewCreated() (which is called immediately before onActivityCreated()) and other
-     * initialization code should be in onCreate(). To receive a callback specifically when the
-     * activity's onCreate() is complete, a LifeCycleObserver should be registered on the activity's
-     * Lifecycle in onAttach(), and removed once the onCreate() callback is received.</p>
-     *
-     * @param owner the component, whose state was changed
-     */
-    @Override
-    public void onCreate(@NonNull LifecycleOwner owner) {
-        safeGetParentActivity()
-                .map(BaseActivity::getLifecycle)
-                .ifPresent(lifecycle -> lifecycle.removeObserver(this));
-
-        Timber.d("Lifecycle: " + owner.getClass().getSimpleName() + "#onCreate");
-        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onActivityCreated");
-
-        onActivityCreated();
     }
 
     /**
@@ -254,14 +211,6 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      * @param view the View for the fragment's UI as returned by {@link #onCreateView})
      */
     protected void initializeUi(View view) {
-    }
-
-    /**
-     * Our own custom impl of deprecated Fragment#onActivityCreated. This will always be called
-     * AFTER the Activity's onCreate method has successfully finished.
-     */
-    protected void onActivityCreated() {
-
     }
 
     /**
