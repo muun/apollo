@@ -60,7 +60,7 @@ class CreateFirstSessionAction @Inject constructor(
                 keysRepo.storeBaseMuunPublicKey(it.cosigningPublicKey)
                 keysRepo.storeSwapServerPublicKey(it.swapServerPublicKey)
 
-                Crashlytics.configure(null, it.user.hid.toString())
+                Crashlytics.configure(it.user.hid.toString())
 
                 playIntegrityNonceRepo.store(it.playIntegrityNonce)
             }

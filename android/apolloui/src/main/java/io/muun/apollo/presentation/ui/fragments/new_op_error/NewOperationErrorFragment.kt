@@ -66,7 +66,8 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
     override fun getLayoutResource(): Int =
         R.layout.new_operation_error_fragment
 
-    override fun onActivityCreated() {
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         UiUtils.lastResortHideKeyboard(parentActivity)
     }
 

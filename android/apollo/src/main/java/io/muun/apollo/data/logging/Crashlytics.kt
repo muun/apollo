@@ -36,11 +36,8 @@ object Crashlytics {
      * Set up Crashlytics metadata.
      */
     @JvmStatic
-    fun configure(email: String?, userId: String) {
+    fun configure(userId: String) {
         crashlytics?.setUserId(userId)
-        crashlytics?.setCustomKey("email", email ?: "unknown")
-
-        // TODO: use setUserEmail, and grab Houston session UUID to attach it
     }
 
     /**

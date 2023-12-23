@@ -26,8 +26,7 @@ class LoggingContextManager @Inject constructor(
             return  // If no LOGGED-IN user do nothing (we handle sign-in flow on its own)
         }
 
-        val user = maybeUser.get()
-        Crashlytics.configure(user.email.orElse(null), user.hid.toString())
+        Crashlytics.configure(maybeUser.get().hid.toString())
 
         LoggingContext.locale = context.locale().toString()
     }

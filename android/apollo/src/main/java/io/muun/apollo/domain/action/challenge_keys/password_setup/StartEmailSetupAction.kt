@@ -36,7 +36,7 @@ class StartEmailSetupAction @Inject constructor(
                     user.email = Optional.of(email)
                     user.isEmailVerified = false
 
-                    Crashlytics.configure(email, user.hid.toString())
+                    Crashlytics.configure(user.hid.toString())
 
                     userRepository.store(user)
                 }
