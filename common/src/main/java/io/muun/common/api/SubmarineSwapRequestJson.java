@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.util.List;
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,6 +18,12 @@ public class SubmarineSwapRequestJson {
     @NotNull
     public Integer swapExpirationInBlocks;
 
+    @Nullable // For retrocompat endpoint
+    public String origin;
+
+    @Nullable // For retrocompat endpoint
+    public List<BackgroundEventJson> bkgTimes;
+
     /**
      * Json constructor.
      */
@@ -25,8 +33,15 @@ public class SubmarineSwapRequestJson {
     /**
      * Manual constructor.
      */
-    public SubmarineSwapRequestJson(String invoice, int swapExpirationInBlocks) {
+    public SubmarineSwapRequestJson(
+            String invoice,
+            int swapExpirationInBlocks,
+            @Nullable String origin,
+            @Nullable List<BackgroundEventJson> bkgTimes
+    ) {
         this.invoice = invoice;
         this.swapExpirationInBlocks = swapExpirationInBlocks;
+        this.origin = origin;
+        this.bkgTimes = bkgTimes;
     }
 }

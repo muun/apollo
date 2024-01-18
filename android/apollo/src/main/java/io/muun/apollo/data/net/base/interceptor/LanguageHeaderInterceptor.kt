@@ -11,9 +11,9 @@ class LanguageHeaderInterceptor @Inject constructor(
     private val applicationContext: Context,
 ) : BaseInterceptor() {
 
-    override fun processRequest(request: Request): Request {
+    override fun processRequest(originalRequest: Request): Request {
         val language = applicationContext.locale().language
-        return request.newBuilder()
+        return originalRequest.newBuilder()
             .addHeader(
                 HeaderUtils.CLIENT_LANGUAGE,
                 language.ifEmpty { HeaderUtils.DEFAULT_LANGUAGE_VALUE }

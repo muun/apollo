@@ -19,9 +19,6 @@ public class PreparedPayment {
 
     public final List<String> outpoints;
 
-    // TODO this should be removed
-    public PaymentRequest payReq;
-
     public final PaymentRequest.Type type;
 
     public final Contact contact;
@@ -29,29 +26,6 @@ public class PreparedPayment {
     public final String address;
 
     public final SubmarineSwap swap;
-
-    /**
-     * Manual constructor.
-     */
-    public PreparedPayment(
-            final BitcoinAmount amount,
-            final BitcoinAmount fee,
-            final String description,
-            final Long rateWindowHid,
-            final List<String> outpoints,
-            final PaymentRequest payReq) {
-
-        this.amount = amount;
-        this.fee = fee;
-        this.description = description;
-        this.rateWindowHid = rateWindowHid;
-        this.outpoints = outpoints;
-        this.payReq = payReq;
-        this.type = payReq.getType();
-        this.contact = payReq.getContact();
-        this.address = payReq.getAddress();
-        this.swap = payReq.getSwap();
-    }
 
     /**
      * Manual constructor.

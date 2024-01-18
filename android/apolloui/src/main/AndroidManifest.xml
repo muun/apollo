@@ -421,12 +421,21 @@
         Since WorkManager 2.6, App Startup is used internally within WorkManager. To provide a
         custom initializer you need to remove the androidx.startup node.
         See: https://developer.android.com/topic/libraries/app-startup
+
+        UPDATE: We're using ProcessLifecycleOwner. WorkManager and ProcessLifecycleOwner both use
+         androidx.startup. So we need to disable the default initializer for WorkManager without
+          disabling androidx.startup altogether. See: https://stackoverflow.com/a/74902862/901465
         -->
-        <!-- If you want to disable android.startup completely. -->
         <provider
                 android:name="androidx.startup.InitializationProvider"
                 android:authorities="${applicationId}.androidx-startup"
-                tools:node="remove">
+                android:exported="false"
+                tools:node="merge">
+            <!-- If you are using androidx.startup to initialize other components -->
+            <meta-data
+                    android:name="androidx.work.WorkManagerInitializer"
+                    android:value="androidx.startup"
+                    tools:node="remove" />
         </provider>
 
         <!-- Receivers -->

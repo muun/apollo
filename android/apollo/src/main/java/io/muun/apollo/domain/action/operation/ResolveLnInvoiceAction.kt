@@ -2,9 +2,11 @@ package io.muun.apollo.domain.action.operation
 
 import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.net.HoustonClient
+import io.muun.apollo.data.preferences.BackgroundTimesRepository
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.KeysRepository
-import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.action.base.BaseAsyncAction2
+import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.errors.newop.InvalidSwapException
 import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
 import io.muun.apollo.domain.libwallet.DecodedInvoice
@@ -45,41 +47,55 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.money.MonetaryAmount
 
-
 @Singleton
 class ResolveLnInvoiceAction @Inject internal constructor(
     private val network: NetworkParameters,
     private val houstonClient: HoustonClient,
     private val keysRepository: KeysRepository,
     private val feeWindowRepository: FeeWindowRepository,
-) : BaseAsyncAction1<String, PaymentRequest>() {
+    private val backgroundTimesRepository: BackgroundTimesRepository
+) : BaseAsyncAction2<String, NewOperationOrigin, PaymentRequest>() {
 
     companion object {
         private const val BLOCKS_IN_A_DAY = 24 * 6 // this is 144
         private const val DAYS_IN_A_WEEK = 7
     }
 
-    override fun action(rawInvoice: String): Observable<PaymentRequest> =
+    override fun action(
+        rawInvoice: String,
+        origin: NewOperationOrigin,
+    ): Observable<PaymentRequest> =
         Observable.defer {
-            resolveLnUri(rawInvoice)
+            resolveLnUri(rawInvoice, origin)
         }
 
-    private fun resolveLnUri(rawInvoice: String): Observable<PaymentRequest> {
+    private fun resolveLnUri(
+        rawInvoice: String,
+        origin: NewOperationOrigin,
+    ): Observable<PaymentRequest> {
         val invoice = decodeInvoice(network, rawInvoice)
 
         if (invoice.expirationTime.isBefore(DateUtils.now())) {
             throw InvoiceExpiredException(invoice.original)
         }
 
-        return prepareSwap(buildSubmarineSwapRequest(invoice))
+        return prepareSwap(buildSubmarineSwapRequest(invoice, origin))
             .map { swap: SubmarineSwap -> buildPaymentRequest(invoice, swap) }
     }
 
-    private fun buildSubmarineSwapRequest(invoice: DecodedInvoice): SubmarineSwapRequest {
+    private fun buildSubmarineSwapRequest(
+        invoice: DecodedInvoice,
+        origin: NewOperationOrigin,
+    ): SubmarineSwapRequest {
         // We used to care a lot about this number for v1 swaps since it was the refund time
         // With swaps v2 we have collaborative refunds so we don't quite care and go for the max
         val swapExpirationInBlocks = BLOCKS_IN_A_DAY * DAYS_IN_A_WEEK
-        return SubmarineSwapRequest(invoice.original, swapExpirationInBlocks)
+        return SubmarineSwapRequest(
+            invoice.original,
+            swapExpirationInBlocks,
+            origin,
+            backgroundTimesRepository.getBackgroundTimes()
+        )
     }
 
     private fun buildPaymentRequest(invoice: DecodedInvoice, swap: SubmarineSwap): PaymentRequest {
@@ -161,7 +177,7 @@ class ResolveLnInvoiceAction @Inject internal constructor(
      * Validate Submarine Swap Server response. The end goal is to verify that the redeem script
      * returned by the server is the script that is actually encoded in the reported swap address.
      */
-    fun validateSwap(
+    private fun validateSwap(
         originalInvoice: String,
         originalExpirationInBlocks: Int,
         userPublicKeyPair: PublicKeyPair,
@@ -216,15 +232,15 @@ class ResolveLnInvoiceAction @Inject internal constructor(
         // Check that the witness script was computed according to the given parameters
         val witnessScript = createWitnessScript(
             Encodings.hexToBytes(paymentHashInHex),
-            userPublicKey.getPublicKeyBytes(),
-            muunPublicKey.getPublicKeyBytes(),
+            userPublicKey.publicKeyBytes,
+            muunPublicKey.publicKeyBytes,
             Encodings.hexToBytes(fundingOutput.serverPublicKeyInHex),
             fundingOutput.expirationInBlocks!!.toLong()
         )
 
         // Check that the script hashes to the output address we'll be using
         val outputAddress: Address = createAddress(network, witnessScript)
-        if (!outputAddress.toString().equals(fundingOutput.outputAddress)) {
+        if (outputAddress.toString() != fundingOutput.outputAddress) {
             return false
         }
 
@@ -243,7 +259,7 @@ class ResolveLnInvoiceAction @Inject internal constructor(
     /**
      * Create the witness script for spending the submarine swap output.
      */
-    fun createWitnessScript(
+    private fun createWitnessScript(
         swapPaymentHash256: ByteArray?,
         userPublicKey: ByteArray?,
         muunPublicKey: ByteArray?,
@@ -312,13 +328,13 @@ class ResolveLnInvoiceAction @Inject internal constructor(
             .op(OP_CHECKSIG)
             .op(OP_ENDIF)
             .build()
-            .getProgram()
+            .program
     }
 
     /**
      * Create an address.
      */
-    fun createAddress(network: NetworkParameters?, witnessScript: ByteArray?): Address {
+    private fun createAddress(network: NetworkParameters?, witnessScript: ByteArray?): Address {
         val witnessScriptHash: ByteArray = Sha256Hash.hash(witnessScript)
         return SegwitAddress.fromHash(network, witnessScriptHash)
     }

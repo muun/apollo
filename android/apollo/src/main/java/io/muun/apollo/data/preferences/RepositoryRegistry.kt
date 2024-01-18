@@ -48,7 +48,8 @@ class RepositoryRegistry {
         PlayIntegrityNonceRepository::class.java,
         NotificationPermissionStateRepository::class.java,
         NotificationPermissionDeniedRepository::class.java,
-        NotificationPermissionSkippedRepository::class.java
+        NotificationPermissionSkippedRepository::class.java,
+        BackgroundTimesRepository::class.java
     )
 
     // Notable exceptions:
