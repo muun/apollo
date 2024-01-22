@@ -473,7 +473,7 @@ class NewOperationPresenter @Inject constructor(
         // This is still needed because we need to:
         // - resolveLnInvoice for submarine swaps TODO mv this to libwallet
         // - resolveMuunUri for P2P/Contacts legacy feature TODO refactor this?
-        resolveOperationUriAction.run(OperationUri.fromString(uri))
+        resolveOperationUriAction.run(OperationUri.fromString(uri), origin)
 
         view.setInitialBitcoinUnit(bitcoinUnitSel.get())
 

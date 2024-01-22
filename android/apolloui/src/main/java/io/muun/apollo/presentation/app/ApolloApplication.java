@@ -16,6 +16,7 @@ import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
+import io.muun.apollo.domain.BackgroundTimesService;
 import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
 import io.muun.apollo.domain.analytics.Analytics;
@@ -85,6 +86,9 @@ public abstract class ApolloApplication extends Application
 
     @Inject
     FirebaseInstallationIdRepository firebaseInstallationIdRepository;
+
+    @Inject
+    BackgroundTimesService backgroundTimesService;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -335,11 +339,13 @@ public abstract class ApolloApplication extends Application
     @Override
     public void onStart(@NonNull LifecycleOwner owner) { // app moved to foreground
         analytics.report(new AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND());
+        backgroundTimesService.enterForeground();
     }
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) { // app moved to background
         analytics.report(new AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND());
+        backgroundTimesService.enterBackground();
     }
 
     @Override

@@ -6,6 +6,7 @@ import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
+import io.muun.apollo.domain.model.BackgroundEvent;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
@@ -17,6 +18,7 @@ import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.SystemUserInfo;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.api.AndroidSystemUserInfoJson;
+import io.muun.common.api.BackgroundEventJson;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyJson;
 import io.muun.common.api.ChallengeSetupJson;
@@ -508,7 +510,26 @@ public class ApiObjectsMapper {
      * Create a Submarine Swap Request.
      */
     public SubmarineSwapRequestJson mapSubmarineSwapRequest(SubmarineSwapRequest request) {
-        return new SubmarineSwapRequestJson(request.invoice, request.swapExpirationInBlocks);
+        return new SubmarineSwapRequestJson(
+                request.invoice,
+                request.swapExpirationInBlocks,
+                request.origin.name().toLowerCase(Locale.getDefault()), // match analytics event
+                mapBackgroundTimes(request.bkgTimes)
+        );
+    }
+
+    private List<BackgroundEventJson> mapBackgroundTimes(List<BackgroundEvent> bkgTimes) {
+
+        final List<BackgroundEventJson> result = new ArrayList<>();
+
+        for (BackgroundEvent bkgTime : bkgTimes) {
+            result.add(new BackgroundEventJson(
+                    bkgTime.getBeginTimeInMillis(),
+                    bkgTime.getDurationInMillis()
+            ));
+        }
+
+        return result;
     }
 
     /**

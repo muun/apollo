@@ -130,12 +130,17 @@ public class OperationActionsTest extends BaseTest {
         doReturn(contactAddress)
                 .when(contactActions).getAddressForContact(contact);
 
-        final PreparedPayment preparedPayment = new PreparedPayment(null,
+        final PreparedPayment preparedPayment = new PreparedPayment(
                 null,
                 null,
                 null,
                 null,
-                payReq);
+                null,
+                PaymentRequest.Type.TO_CONTACT,
+                contact,
+                null,
+                null
+        );
         final Operation operation =
                 submitPaymentAction.buildOperation(preparedPayment);
 
@@ -177,12 +182,17 @@ public class OperationActionsTest extends BaseTest {
 
         final long someFee = 123456;
 
-        final PreparedPayment preparedPayment = new PreparedPayment(null,
+        final PreparedPayment preparedPayment = new PreparedPayment(
                 null,
                 null,
                 null,
                 null,
-                payReq);
+                null,
+                PaymentRequest.Type.TO_ADDRESS,
+                null,
+                payReq.getAddress(),
+                null
+        );
         final Operation operation = submitPaymentAction.buildOperation(preparedPayment);
 
         // check direction

@@ -49,3 +49,4 @@
 
 # Don't mangle classes user for serialization
 -keep class io.muun.apollo.data.preferences.ForwardingPoliciesRepository$StoredForwardingPolicy { *; }
+-keep class io.muun.apollo.data.preferences.BackgroundTimesRepository$StoredBackgroundEvent { *; }

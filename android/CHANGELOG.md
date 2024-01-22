@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.6] - 2024-01-17
+
+### FIXED
+
+- A problem regarding background/foreground event tracking
+
+### CHANGED
+
+- Enhanced reliability of certain specific swaps' execution
+
 ## [51.5] - 2023-12-22
 
 ### FIXED
