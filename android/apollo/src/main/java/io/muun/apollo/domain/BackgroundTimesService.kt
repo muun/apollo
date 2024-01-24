@@ -1,5 +1,6 @@
 package io.muun.apollo.domain
 
+import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.preferences.BackgroundTimesRepository
 import javax.inject.Inject
 
@@ -7,7 +8,10 @@ class BackgroundTimesService @Inject constructor(
     private val backgroundTimesRepository: BackgroundTimesRepository,
 ) {
 
-    private val MAX_BKG_TIMES_ARRAY_SIZE: Int = 100
+    companion object {
+        @VisibleForTesting
+        val MAX_BKG_TIMES_ARRAY_SIZE: Int = 100
+    }
 
     fun enterBackground() {
         backgroundTimesRepository.recordEnterBackground()

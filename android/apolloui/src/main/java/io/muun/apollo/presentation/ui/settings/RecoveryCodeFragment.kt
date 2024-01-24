@@ -61,7 +61,7 @@ class RecoveryCodeFragment : SingleFragment<RecoveryCodePresenter>(), RecoveryCo
         presenter.submitRecoveryCode(recoveryCodeBox.segmentInputsContent)
     }
 
-    override fun setRecoveryCodeError(error: UserFacingError) {
+    override fun setRecoveryCodeError(error: UserFacingError?) {
         recoveryCodeBox.setError(error)
     }
 
