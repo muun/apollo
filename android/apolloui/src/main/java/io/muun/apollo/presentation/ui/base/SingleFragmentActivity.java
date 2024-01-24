@@ -87,7 +87,10 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
      * - Fragment#onAttach (so fragment is attached to activity, getActivity returns non null).
      */
     final void attachHeader() {
-        getHeader().attachToActivity(this);
+        final MuunHeader header = getHeader();
+        if (header != null) { // MuunHeader's optional for SingleFragment (see SingleActionFragment)
+            header.attachToActivity(this);
+        }
     }
 
     @Override

@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.6] - 2024-01-24
+
+### FIXED
+
+- A crash when trying to change password using Recovery Code
+- A probable source of crashes regarding handling of MuunHeader
+
 ## [51.6] - 2024-01-17
 
 ### FIXED
