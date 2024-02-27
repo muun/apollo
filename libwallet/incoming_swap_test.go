@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec"
@@ -543,7 +545,7 @@ func TestVerifyFulfillable(t *testing.T) {
 	})
 }
 
-func TestFulfillWithHardwiredData(t *testing.T) {
+func TestFulfillFailureWithoutPaymentSecret(t *testing.T) {
 
 	setup()
 
@@ -589,6 +591,136 @@ func TestFulfillWithHardwiredData(t *testing.T) {
 	PersistInvoiceSecrets(&InvoiceSecretsList{secrets: []*InvoiceSecrets{invoice}})
 
 	result, err := swap.Fulfill(data, userKey, muunKey, network)
+	if err == nil || result != nil {
+		t.Fatal("expected failure due to missing payment secret")
+	}
+}
+
+// TestFulfillWithIncorrectPaymentSecret tests that payment secret sphinx validation works and its enforced. The way we
+// do this is by having every other piece of data be correct and consistent and only the payment secret being invalid.
+// When trying to fulfill(), the function should fail with an error signalling a payment secret mismatch. Technically,
+// we should be modifying the sphinx packet to contain an incorrect payment secret instead of checking against an
+// invalid payment secret provided by the app/invoice. But our current approach is WAY easier and saved us a lot of
+// time :).
+func TestFulfillWithIncorrectPaymentSecret(t *testing.T) {
+
+	setup()
+
+	d := func(s string) []byte {
+		b, _ := hex.DecodeString(s)
+		return b
+	}
+
+	parseInt64 := func(s string) int64 {
+		res, _ := strconv.ParseInt(s, 10, 64)
+		return res
+	}
+
+	// Note: for this test, we want to avoid depending on the code that we use to generate sphinx packets in other tests
+	// (e.g createSphinxPacket). So, the following values are taken from a data dump of an incoming payment attempt in
+	// a local (e.g regtest) env in device emulator.
+
+	network := Regtest()
+	swap := &IncomingSwap{
+		SphinxPacket: d("000315be7c15b19fb4a5c4f8654fa2527f766b0a4db6c9ebc32fc47aed1a07127fc3506162074aeee6d9c60c763b9f867ebe083c383b8467617dcc4fa961be959909200a56d8628591eb253bffeb5eab444b4e483c627a618228b8a2cf4f336bc4035e42453133d17e447227534af81d814d5fc0b444fe23bfea587fb28abbad185998f7fc58e753ff7f8017b3cd525a65c15956ea47792208717564da215253287ca36bf1f2b632a8f32c89ce6aa2347a4f668ce3d0c87240a830483976638c289e6973be4910a24c2a3c16f0694bedc2f7bbaa1cdc132d749bab063c2854be6ac05e105d7db09ebf080b7dd2684c6223a84cc82853cee6f55bb4e910eb0e70a178c4974df7d19c819856ab13899ce69f23f1cf764608482a7ae6ec241cfae0244219c9d65543992f30e2550c16834a8f5eb0c432fc05132dd972b0d092570bcd2c421695f9b0b31465c84ea8b7bc87a5ba8b8d9ae69766e049231021e5dd3335ad60379f08ba51a1b4b2643e16bf7492e4a14f40f0505dbfcb7185a1ff2ab31be46a3554495db3d9a050f14d8faa3ff8a822cb09ca6e48077c65a1f3da1e1ab6efd5d871bbfd02ab4f274046e0c0666831b62ca42d754c06aad1e7bd807a9cb2a6a8963dfa8027f68411f1e52f89f2f32a24a1db0ae46f695c7a0d0217d68e03e902ed0382f99e30b514c890dd370b193bd6da19623473dd9772a5a1119dbe2d525831b112bb7aefa3ed3e71f5f9bf10d163d5d5d93fac9b8513a9844a1230bfcd1e3021d562e30bcd5e2c46ab479a0b401d66ec72a6280fccd150e9a8d786a3e6896bb17d31f9cfe1148a9787901d1d6fa84b061342505039a965c3f8fa88a0faaec728f32f21c83c5acf5b7276d511455909588612af064914b67bef705846e271a8f898b13815a127aa63aa5b66f5610a227b6601be526417e92b88732fa52997951125b225e6a2e1e1cafc6ac18a93f3fa810e6cfd594ff57b0061304d777ebd8a40ca8eac19877e3df7419a8355122d403dedbef8b110c61b3b2821fc1788609cd0f20bc8be162303cd936640179665b89747e39c847cff19f32a002abb63557292ccef8a4847bb5c02394f947a2d0bd4df00b82203a482954e5814c2ac2ce7839f1eeb5428bfd992bfff4af2dde537505891c3c1d345a6e750de22d3b6e50023bf5172f415d5618f67097c20bb016fdeb87cdea66ea88adeb8b5d8b014d86364b35c915740d96bfe8432fcc9f21ecc33d29402d84e405106c65e572d68ac313a34a4ff117b4eac946736287c528bd490ad60f5fff9dc18ef8c3de80e18207ccbdc7a5abc6f73b79ec098ea8f41323032dc6ed62584a2c4dd2e4c4b6e76b88dc26d33279da47aa91e1eebb44dcdb5ead73c5bf6f17584142dca009ff29bcc46e291c59fd24d3b3b8a0e2157df61ffea5265c589de2c62f33a66ee1408e2b7ae2c17168a4183eb3bf392f70437c2c65c37d0d22e861c4caab58c89705c1ee2a9ad45e338347f524071875dc48c3a23f67b6e670b228caf945d5b8d7a389b3766ac01e40b79791fd667f342604cab6374bf4bd9d795a4f181d7f48192e947da557fc5280f224da63e8fff64e862984183c4465d5beaad464fcd24122c38a24a83b31ab31a618efb2a56af109ba7c5c1b1911620165ac01088b1559fa02d49017c635cd8e3a26e0d9699c7ff4048389521add8fdb72a439959364db2e612964ab9483a812c25dd35d2360d0a8855205ee72ecc4542d42a1b25b5d12fdc94c77ba1a7479d23854838c79f1a7b83774907f8be0912744a256c1934c9734de55f65446d7a197753b2f4d37374a3637e27a134872f7e70cfc8b0a1c205e00c2c93c6867f2f70f335a6bffac8b80461ada6f6e0e0bba69be6fb8dbf5141318b43e7dbdd3e58776621eb3a07df4d5a47584bc503ca68e1"),
+		PaymentHash:  d("c7165cd3692877f5a85c51d834730dddffa1493117273926a20310e18b44523d"),
+		Htlc: &IncomingSwapHtlc{
+			HtlcTx:              d("0200000000010151ca4ece06e7ec3e0458dfd8bba0c58ad53c8e296fdcbb08de15f8b17a2419e10000000000ffffffff0834ca010000000000220020a0b8c170b680c76e4655d80e4e206206b4fb365674fd752590862445499dae2040420f00000000001600148b194ab0e7019f8eddfba7f14b00045a82bd8bf040420f0000000000160014d64044cd7e17e204a2ebc5737fa9862e1ab6b71e40420f000000000016001434353a4568fe6edaa2c83647fe0c591ef61421f840420f0000000000160014bce7c77a9b648e69f0292331ece4436150ce593340420f000000000016001439fbdcce9849d9a913a40911c318322e4bfda65340420f0000000000160014193a6bd1cd36d510a245c9959c507bfdcde45c04e015a829010000001600143e5eb692c5d6703672fac7b86bae54ead1b074c50247304402207a7ac24c0e43123b7f6d4d27fcb21fdc3c7ed2cb1c601e03136e4f988ad0468d0220440e596e241728073df049ed0dda504f55b435ba4535c2e5f0844c636f3da65501210313d8559514b06cca0da351b0d05222acfc92ff3f90cc7ddef32a648a80790a0b00000000"),
+			ExpirationHeight:    504,
+			SwapServerPublicKey: d("028b7c740b590012eaffef072675baaa95aee39508fd049ed1cd698ee26ce33f02"),
+		},
+	}
+
+	data := &IncomingSwapFulfillmentData{
+		FulfillmentTx:      d("01000000013754eeb4d1e71094e2470024163f073ce0e6c4f1b16ded51d1792255f4c8e3ed0000000000ffffffff01a086010000000000225120005914f986cb6749440e0e77367bac6c6e53d814449a2fd7443474aab61606f300000000"),
+		MuunSignature:      d("304402206a1cfc3d01a8ca050967e5dddff87984ebafe390a61dc5225044c2ce22b02fae022071887ef3f13bd1b4cca33ffb1a217de5fb92b3bb74df398f8508fec0b37dfa9f01"),
+		OutputVersion:      5,
+		OutputPath:         "m/schema:1\\'/recovery:1\\'/change:0/5",
+		MerkleTree:         d(""),
+		HtlcBlock:          d(""),
+		ConfirmationTarget: 0,
+	}
+
+	userKey, _ := NewHDPrivateKeyFromString("tprv8fAB8ynEKVR4LdJUc6ryH3u2tqJF8wZJH2rzRprZ6YhqdFHi5HnP1fYRuoHfos9RQZ1bkxsyP8oHENfiezvAp4dFj83rYbBGkQHSwbhqiDW", "m/schema:1'/recovery:1'", network)
+	muunKey, _ := NewHDPublicKeyFromString("tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8", "m/schema:1'/recovery:1'", network)
+
+	invoice := &InvoiceSecrets{
+		preimage:      d("e28dd8e23e3f427190104373c71f46db31efa665612f670610afe378a1713100"),
+		paymentSecret: d("e28dd8e23e3f427190104373c71f46db31efa665612f670610afe378a1713100"), // INVALID
+		keyPath:       "m/schema:1'/recovery:1'/invoices:4/2036904351/908182055",
+		PaymentHash:   d("c7165cd3692877f5a85c51d834730dddffa1493117273926a20310e18b44523d"),
+		IdentityKey:   nil,
+		UserHtlcKey:   nil,
+		MuunHtlcKey:   nil,
+		ShortChanId:   parseInt64("15120913803481186240"),
+	}
+
+	PersistInvoiceSecrets(&InvoiceSecretsList{secrets: []*InvoiceSecrets{invoice}})
+
+	_, err := swap.Fulfill(data, userKey, muunKey, network)
+
+	// We used an invalid secret, sphinx validation HAS to fail
+	if err == nil || !strings.Contains(err.Error(), "sphinx payment secret does not match") {
+		t.Fatal("expected failure due to invalid payment secret")
+	}
+}
+
+func TestFulfillWithHardwiredData(t *testing.T) {
+
+	setup()
+
+	d := func(s string) []byte {
+		b, _ := hex.DecodeString(s)
+		return b
+	}
+
+	parseInt64 := func(s string) int64 {
+		res, _ := strconv.ParseInt(s, 10, 64)
+		return res
+	}
+
+	// Note: for this test, we want to avoid depending on the code that we use to generate sphinx packets in other tests
+	// (e.g createSphinxPacket). So, the following values are taken from a data dump of an incoming payment attempt in
+	// a local (e.g regtest) env in device emulator.
+
+	network := Regtest()
+	swap := &IncomingSwap{
+		SphinxPacket: d("000315be7c15b19fb4a5c4f8654fa2527f766b0a4db6c9ebc32fc47aed1a07127fc3506162074aeee6d9c60c763b9f867ebe083c383b8467617dcc4fa961be959909200a56d8628591eb253bffeb5eab444b4e483c627a618228b8a2cf4f336bc4035e42453133d17e447227534af81d814d5fc0b444fe23bfea587fb28abbad185998f7fc58e753ff7f8017b3cd525a65c15956ea47792208717564da215253287ca36bf1f2b632a8f32c89ce6aa2347a4f668ce3d0c87240a830483976638c289e6973be4910a24c2a3c16f0694bedc2f7bbaa1cdc132d749bab063c2854be6ac05e105d7db09ebf080b7dd2684c6223a84cc82853cee6f55bb4e910eb0e70a178c4974df7d19c819856ab13899ce69f23f1cf764608482a7ae6ec241cfae0244219c9d65543992f30e2550c16834a8f5eb0c432fc05132dd972b0d092570bcd2c421695f9b0b31465c84ea8b7bc87a5ba8b8d9ae69766e049231021e5dd3335ad60379f08ba51a1b4b2643e16bf7492e4a14f40f0505dbfcb7185a1ff2ab31be46a3554495db3d9a050f14d8faa3ff8a822cb09ca6e48077c65a1f3da1e1ab6efd5d871bbfd02ab4f274046e0c0666831b62ca42d754c06aad1e7bd807a9cb2a6a8963dfa8027f68411f1e52f89f2f32a24a1db0ae46f695c7a0d0217d68e03e902ed0382f99e30b514c890dd370b193bd6da19623473dd9772a5a1119dbe2d525831b112bb7aefa3ed3e71f5f9bf10d163d5d5d93fac9b8513a9844a1230bfcd1e3021d562e30bcd5e2c46ab479a0b401d66ec72a6280fccd150e9a8d786a3e6896bb17d31f9cfe1148a9787901d1d6fa84b061342505039a965c3f8fa88a0faaec728f32f21c83c5acf5b7276d511455909588612af064914b67bef705846e271a8f898b13815a127aa63aa5b66f5610a227b6601be526417e92b88732fa52997951125b225e6a2e1e1cafc6ac18a93f3fa810e6cfd594ff57b0061304d777ebd8a40ca8eac19877e3df7419a8355122d403dedbef8b110c61b3b2821fc1788609cd0f20bc8be162303cd936640179665b89747e39c847cff19f32a002abb63557292ccef8a4847bb5c02394f947a2d0bd4df00b82203a482954e5814c2ac2ce7839f1eeb5428bfd992bfff4af2dde537505891c3c1d345a6e750de22d3b6e50023bf5172f415d5618f67097c20bb016fdeb87cdea66ea88adeb8b5d8b014d86364b35c915740d96bfe8432fcc9f21ecc33d29402d84e405106c65e572d68ac313a34a4ff117b4eac946736287c528bd490ad60f5fff9dc18ef8c3de80e18207ccbdc7a5abc6f73b79ec098ea8f41323032dc6ed62584a2c4dd2e4c4b6e76b88dc26d33279da47aa91e1eebb44dcdb5ead73c5bf6f17584142dca009ff29bcc46e291c59fd24d3b3b8a0e2157df61ffea5265c589de2c62f33a66ee1408e2b7ae2c17168a4183eb3bf392f70437c2c65c37d0d22e861c4caab58c89705c1ee2a9ad45e338347f524071875dc48c3a23f67b6e670b228caf945d5b8d7a389b3766ac01e40b79791fd667f342604cab6374bf4bd9d795a4f181d7f48192e947da557fc5280f224da63e8fff64e862984183c4465d5beaad464fcd24122c38a24a83b31ab31a618efb2a56af109ba7c5c1b1911620165ac01088b1559fa02d49017c635cd8e3a26e0d9699c7ff4048389521add8fdb72a439959364db2e612964ab9483a812c25dd35d2360d0a8855205ee72ecc4542d42a1b25b5d12fdc94c77ba1a7479d23854838c79f1a7b83774907f8be0912744a256c1934c9734de55f65446d7a197753b2f4d37374a3637e27a134872f7e70cfc8b0a1c205e00c2c93c6867f2f70f335a6bffac8b80461ada6f6e0e0bba69be6fb8dbf5141318b43e7dbdd3e58776621eb3a07df4d5a47584bc503ca68e1"),
+		PaymentHash:  d("c7165cd3692877f5a85c51d834730dddffa1493117273926a20310e18b44523d"),
+		Htlc: &IncomingSwapHtlc{
+			HtlcTx:              d("0200000000010151ca4ece06e7ec3e0458dfd8bba0c58ad53c8e296fdcbb08de15f8b17a2419e10000000000ffffffff0834ca010000000000220020a0b8c170b680c76e4655d80e4e206206b4fb365674fd752590862445499dae2040420f00000000001600148b194ab0e7019f8eddfba7f14b00045a82bd8bf040420f0000000000160014d64044cd7e17e204a2ebc5737fa9862e1ab6b71e40420f000000000016001434353a4568fe6edaa2c83647fe0c591ef61421f840420f0000000000160014bce7c77a9b648e69f0292331ece4436150ce593340420f000000000016001439fbdcce9849d9a913a40911c318322e4bfda65340420f0000000000160014193a6bd1cd36d510a245c9959c507bfdcde45c04e015a829010000001600143e5eb692c5d6703672fac7b86bae54ead1b074c50247304402207a7ac24c0e43123b7f6d4d27fcb21fdc3c7ed2cb1c601e03136e4f988ad0468d0220440e596e241728073df049ed0dda504f55b435ba4535c2e5f0844c636f3da65501210313d8559514b06cca0da351b0d05222acfc92ff3f90cc7ddef32a648a80790a0b00000000"),
+			ExpirationHeight:    504,
+			SwapServerPublicKey: d("028b7c740b590012eaffef072675baaa95aee39508fd049ed1cd698ee26ce33f02"),
+		},
+	}
+	htlcTxIndex := 0 // Required for verifying input script at end of test
+	data := &IncomingSwapFulfillmentData{
+		FulfillmentTx:      d("01000000013754eeb4d1e71094e2470024163f073ce0e6c4f1b16ded51d1792255f4c8e3ed0000000000ffffffff01a086010000000000225120005914f986cb6749440e0e77367bac6c6e53d814449a2fd7443474aab61606f300000000"),
+		MuunSignature:      d("304402206a1cfc3d01a8ca050967e5dddff87984ebafe390a61dc5225044c2ce22b02fae022071887ef3f13bd1b4cca33ffb1a217de5fb92b3bb74df398f8508fec0b37dfa9f01"),
+		OutputVersion:      5,
+		OutputPath:         "m/schema:1\\'/recovery:1\\'/change:0/5",
+		MerkleTree:         d(""),
+		HtlcBlock:          d(""),
+		ConfirmationTarget: 0,
+	}
+
+	userKey, _ := NewHDPrivateKeyFromString("tprv8fAB8ynEKVR4LdJUc6ryH3u2tqJF8wZJH2rzRprZ6YhqdFHi5HnP1fYRuoHfos9RQZ1bkxsyP8oHENfiezvAp4dFj83rYbBGkQHSwbhqiDW", "m/schema:1'/recovery:1'", network)
+	muunKey, _ := NewHDPublicKeyFromString("tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8", "m/schema:1'/recovery:1'", network)
+
+	invoice := &InvoiceSecrets{
+		preimage:      d("e28dd8e23e3f427190104373c71f46db31efa665612f670610afe378a1713100"),
+		paymentSecret: d("fbcb6bda97ab5f75da45e6efda921903acf25dd5138edac1dfde9fcecefcf617"),
+		keyPath:       "m/schema:1'/recovery:1'/invoices:4/2036904351/908182055",
+		PaymentHash:   d("c7165cd3692877f5a85c51d834730dddffa1493117273926a20310e18b44523d"),
+		IdentityKey:   nil,
+		UserHtlcKey:   nil,
+		MuunHtlcKey:   nil,
+		ShortChanId:   parseInt64("15120913803481186240"),
+	}
+
+	PersistInvoiceSecrets(&InvoiceSecretsList{secrets: []*InvoiceSecrets{invoice}})
+
+	result, err := swap.Fulfill(data, userKey, muunKey, network)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -599,9 +731,9 @@ func TestFulfillWithHardwiredData(t *testing.T) {
 	signedTx := wire.NewMsgTx(2)
 	signedTx.Deserialize(bytes.NewReader(result.FulfillmentTx))
 
-	verifyInput(t, signedTx, hex.EncodeToString(swap.Htlc.HtlcTx), 1, 0)
-
+	verifyInput(t, signedTx, hex.EncodeToString(swap.Htlc.HtlcTx), htlcTxIndex, 0)
 }
+
 func TestFulfillFullDebt(t *testing.T) {
 	setup()
 

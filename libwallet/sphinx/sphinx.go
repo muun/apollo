@@ -49,18 +49,22 @@ func Validate(
 		)
 	}
 
-	// Validate payment secret if it exists
-	if payload.MPP != nil {
-		paymentAddr := payload.MPP.PaymentAddr()
-		total := payload.MultiPath().TotalMsat()
-
-		if !bytes.Equal(paymentAddr[:], paymentSecret) {
-			return errors.New("sphinx payment secret does not match")
-		}
-
-		if amountToForward < total {
-			return fmt.Errorf("payment is multipart. forwarded amt = %v, total amt = %v", amountToForward, total)
-		}
+	// We require TLV onion
+	if payload.MPP == nil {
+		return fmt.Errorf("TLV onion is missing")
 	}
+
+	// We require payment secret
+	paymentAddr := payload.MPP.PaymentAddr()
+	if !bytes.Equal(paymentAddr[:], paymentSecret) {
+		return errors.New("sphinx payment secret does not match")
+	}
+
+	// We don't accept multipart
+	total := payload.MultiPath().TotalMsat()
+	if amountToForward < total {
+		return fmt.Errorf("payment is multipart. forwarded amt = %v, total amt = %v", amountToForward, total)
+	}
+
 	return nil
 }
