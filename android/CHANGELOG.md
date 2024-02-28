@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.8] - 2024-02-23
+
+### CHANGED
+- Made the payment address (aka payment secret) flag required in our invoices (and also
+the TLV onion as payment secret depends on it). Having the flag as optional was causing some strict
+services to block zero amount invoices from Muun. If the secret is optional, the last hop (us) can
+forward a fake sphinx without a payment secret and for 1 sat, the app will accept it since the
+secret is optional and the last hop keeps the rest of the payment. Payment secret has been widely
+adopted for quite a bit now. Major impls all require it.
+
 ## [51.6] - 2024-01-24
 
 ### FIXED

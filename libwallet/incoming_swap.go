@@ -124,6 +124,8 @@ func (s *IncomingSwap) Fulfill(
 		return nil, fmt.Errorf("Fulfill: missing swap htlc data")
 	}
 
+	// TODO: add debug logs (e.g debug logging capabilities in libwallet)
+
 	err := s.VerifyFulfillable(userKey, net)
 	if err != nil {
 		return nil, err
@@ -155,7 +157,7 @@ func (s *IncomingSwap) Fulfill(
 		Sphinx:              s.SphinxPacket,
 		HtlcTx:              s.Htlc.HtlcTx,
 		PaymentHash256:      s.PaymentHash,
-		SwapServerPublicKey: []byte(s.Htlc.SwapServerPublicKey),
+		SwapServerPublicKey: s.Htlc.SwapServerPublicKey,
 		ExpirationHeight:    s.Htlc.ExpirationHeight,
 		VerifyOutputAmount:  true,
 		Collect:             btcutil.Amount(s.CollectSat),

@@ -263,9 +263,24 @@ func (i *InvoiceBuilder) Build() (string, error) {
 		}))
 	}
 
+	// We require Payment Secret in our invoices. We also require TLV Onion since payment secret depends on it.
+	//
+	// Having the flag as optional was causing some strict services to block
+	// zero amount invoices from Muun. If the secret is optional, the last hop
+	// (us) can forward a fake sphinx without a payment secret and for 1 sat,
+	// the app will accept it since the secret is optional and the last hop
+	// keeps the rest of the payment.
+	//
+	// Payment secret has been widely adopted for quite a bit now. Major impls
+	// all require it. LND started doing so in January 2021 [1] and Phoenix in
+	// May 2021 [2].
+	//
+	// [1] https://github.com/lightningnetwork/lnd/releases/tag/v0.12.0-beta
+	// [2] ACINQ/phoenix@03e709c
+
 	features := lnwire.EmptyFeatureVector()
-	features.RawFeatureVector.Set(lnwire.TLVOnionPayloadOptional)
-	features.RawFeatureVector.Set(lnwire.PaymentAddrOptional)
+	features.RawFeatureVector.Set(lnwire.TLVOnionPayloadRequired)
+	features.RawFeatureVector.Set(lnwire.PaymentAddrRequired)
 
 	iopts = append(iopts, zpay32.Features(features))
 	iopts = append(iopts, zpay32.CLTVExpiry(72)) // ~1/2 day
