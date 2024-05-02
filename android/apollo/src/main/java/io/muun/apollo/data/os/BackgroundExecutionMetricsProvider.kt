@@ -6,8 +6,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.PowerManager
+import android.os.SystemClock
+import io.muun.apollo.data.net.ConnectivityInfoProvider
 import io.muun.apollo.data.net.NetworkInfoProvider
 import kotlinx.serialization.Serializable
+import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 private const val UNSUPPORTED = -1
@@ -18,6 +22,11 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
     private val hardwareCapabilitiesProvider: HardwareCapabilitiesProvider,
     private val telephonyInfoProvider: TelephonyInfoProvider,
     private val networkInfoProvider: NetworkInfoProvider,
+    private val appInfoProvider: AppInfoProvider,
+    private val connectivityInfoProvider: ConnectivityInfoProvider,
+    private val activityManagerInfoProvider: ActivityManagerInfoProvider,
+    private val resourcesInfoProvider: ResourcesInfoProvider,
+    private val systemCapabilitiesProvider: SystemCapabilitiesProvider,
 ) {
 
     private val powerManager: PowerManager by lazy {
@@ -41,6 +50,22 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             telephonyInfoProvider.dataState,
             telephonyInfoProvider.getSimStates().toTypedArray(),
             networkInfoProvider.currentTransport,
+            SystemClock.uptimeMillis(),
+            SystemClock.elapsedRealtime(),
+            hardwareCapabilitiesProvider.bootCount,
+            Locale.getDefault().toString(),
+            TimeZone.getDefault().rawOffset / 1000L,
+            telephonyInfoProvider.region.orElse(""),
+            telephonyInfoProvider.simRegion,
+            appInfoProvider.appDatadir,
+            connectivityInfoProvider.vpnState,
+            activityManagerInfoProvider.appImportance,
+            resourcesInfoProvider.displayMetrics,
+            systemCapabilitiesProvider.usbConnected,
+            systemCapabilitiesProvider.usbPersistConfig,
+            systemCapabilitiesProvider.bridgeEnabled,
+            systemCapabilitiesProvider.bridgeDaemonStatus,
+            systemCapabilitiesProvider.developerEnabled
         )
 
     @Suppress("ArrayInDataClass")
@@ -61,6 +86,22 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val dataState: String,
         private val simStates: Array<String>,
         private val networkTransport: String,
+        private val androidUptimeMillis: Long,
+        private val androidElapsedRealtimeMillis: Long,
+        private val androidBootCount: Int,
+        private val language: String,
+        private val timeZoneOffsetInSeconds: Long,
+        private val telephonyNetworkRegion: String,
+        private val simRegion: String,
+        private val appDataDir: String,
+        private val vpnState: Int,
+        private val appImportance: Int,
+        private val displayMetrics: ResourcesInfoProvider.DisplayMetricsInfo,
+        private val usbConnected: Int,
+        private val usbPersistConfig: String,
+        private val bridgeEnabled: Int,
+        private val bridgeDaemonStatus: String,
+        private val developerEnabled: Int,
     )
 
     /**
@@ -88,11 +129,11 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
      * was encountered. For pre Android 12 devices it will be UNSUPPORTED (-1).
      */
     private fun getBatteryDischargePrediction(): Long =
-            if (OS.supportsBatteryDischargePrediction()) {
-                powerManager.batteryDischargePrediction?.toNanos() ?: UNKNOWN.toLong()
-            } else {
-                UNSUPPORTED.toLong()
-            }
+        if (OS.supportsBatteryDischargePrediction()) {
+            powerManager.batteryDischargePrediction?.toNanos() ?: UNKNOWN.toLong()
+        } else {
+            UNSUPPORTED.toLong()
+        }
 
     private fun getBatteryIntent(): Intent? =
         IntentFilter(Intent.ACTION_BATTERY_CHANGED)

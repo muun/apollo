@@ -138,6 +138,21 @@ object OS {
     fun supportsBootCountSetting(): Boolean =
         isAndroidNOrNewer()
 
+    /**
+     * Whether this OS supports ConnectivityManager#getActiveNetwork(), which was introduced
+     * in M-6-23.
+     */
+    fun supportsActiveNetwork(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports ConnectivityManager#getNetworkCapabilities, which was introduced
+     * in L-5.0-21.
+     */
+    fun supportsNetworkCapabilities(): Boolean =
+        isAndroidLOrNewer()
+
+
     // PRIVATE STUFF:
 
     /**
@@ -168,6 +183,13 @@ object OS {
         Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
 
     /**
+     * Whether this OS version is L-5.0-21 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+    private fun isAndroidLOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+
+    /**
      * Whether this OS version is LMR1-5.1-22 or newer.
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP_MR1)
@@ -194,5 +216,4 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
     private fun isAndroidNOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-
 }
