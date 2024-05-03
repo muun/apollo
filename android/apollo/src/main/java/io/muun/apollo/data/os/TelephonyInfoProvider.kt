@@ -35,6 +35,11 @@ open class TelephonyInfoProvider @Inject constructor(private val context: Contex
             return mapDataState(telephonyManager.dataState)
         }
 
+    val simRegion: String
+        get() {
+            return telephonyManager.simCountryIso
+        }
+
     // TODO this should probably have unit tests. Specially for the simSlots > 1 but
     //  supportsGetSimStateWithSlotIndex = false
     fun getSimStates(): List<String> {
@@ -47,16 +52,16 @@ open class TelephonyInfoProvider @Inject constructor(private val context: Contex
 
             if (OS.supportsGetSimStateWithSlotIndex()) {
                 return (0 until simSlots)
-                        .toList()
-                        .map { mapSimState(telephonyManager.getSimState(it)) }
+                    .toList()
+                    .map { mapSimState(telephonyManager.getSimState(it)) }
             } else {
                 // we have more than 1 sim but telephonyManager API doesn't let use query them
 
                 val simSates = mutableListOf(mapSimState(telephonyManager.simState))
 
                 val unknowns = (0 until simSlots)
-                        .toList()
-                        .map { UNKNOWN }
+                    .toList()
+                    .map { UNKNOWN }
 
                 simSates.addAll(unknowns)
 

@@ -6,6 +6,10 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.9] - 2024-04-30
+
+- Background notification processing reliability improvements
+
 ## [51.8] - 2024-02-23
 
 ### CHANGED
@@ -16,7 +20,7 @@ forward a fake sphinx without a payment secret and for 1 sat, the app will accep
 secret is optional and the last hop keeps the rest of the payment. Payment secret has been widely
 adopted for quite a bit now. Major impls all require it.
 
-## [51.6] - 2024-01-24
+## [51.7] - 2024-01-24
 
 ### FIXED
 
