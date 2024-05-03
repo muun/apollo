@@ -20,8 +20,8 @@ jobs:
         # https://github.com/actions/checkout/releases/tag/v4.1.1
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # Matches tag v1.0.5
-        # https://github.com/gradle/wrapper-validation-action/releases/tag/v1.0.5
+        uses: gradle/actions/wrapper-validation@db19848a5fa7950289d3668fb053140cf3028d43 # Matches tag v3
+        # https://github.com/gradle/actions/releases/tag/v3
 
       - name: Create output dir
         run: |
