@@ -10,4 +10,5 @@ mkdir -p "$build_dir/pkg"
 # Use a shared dependency cache by setting GOMODCACHE
 
 GOMODCACHE="$build_dir/pkg" \
-    go run golang.org/x/mobile/cmd/gomobile init
+    go install golang.org/x/mobile/cmd/gomobile && \
+    go install golang.org/x/mobile/cmd/gobind
