@@ -13,7 +13,7 @@ type Path string
 
 const HardenedSymbol = "'"
 
-var re = regexp.MustCompile("^(m?|\\/|(([a-z]+:)?\\d+'?))(\\/([a-z]+:)?\\d+'?)*$")
+var re = regexp.MustCompile(`^(m?|\/|(([a-z]+:)?\d+'?))(\/([a-z]+:)?\d+'?)*$`)
 
 func Parse(s string) (Path, error) {
 	if !re.MatchString(s) {

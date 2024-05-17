@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        tools:viewBindingIgnore="true"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
+        tools:viewBindingIgnore="true"
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:layout_width="match_parent"
@@ -20,7 +19,8 @@
                 android:layout_margin="15dp"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:text="Muun debug panel" />
+                android:text="Muun debug panel"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -28,7 +28,8 @@
                 android:id="@+id/debug_button_fetch_operations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and fetch operations" />
+                android:text="Clear and fetch operations"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -36,7 +37,8 @@
                 android:id="@+id/debug_button_fetch_contacts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and fetch contacts" />
+                android:text="Clear and fetch contacts"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -44,7 +46,8 @@
                 android:id="@+id/debug_button_upload_phone_contacts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Clear and scan phone contacts" />
+                android:text="Clear and scan phone contacts"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -52,7 +55,8 @@
                 android:id="@+id/debug_button_sync_real_time_data"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sync real-time data" />
+                android:text="Sync real-time data"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -60,7 +64,8 @@
                 android:id="@+id/debug_button_sync_external_addresses_indexes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sync external addresses indexes" />
+                android:text="Sync external addresses indexes"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -68,7 +73,8 @@
                 android:id="@+id/debug_button_integrity_check"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Run integrity check" />
+                android:text="Run integrity check"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -76,7 +82,8 @@
                 android:id="@+id/debug_button_force_fcm_token_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update FCM token" />
+                android:text="Update FCM token"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -84,7 +91,8 @@
                 android:id="@+id/debug_button_fund_wallet_onchain"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Fund Wallet Onchain" />
+                android:text="Fund Wallet Onchain"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -92,7 +100,8 @@
                 android:id="@+id/debug_button_fund_wallet_offchain"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Fund Wallet Offchain" />
+                android:text="Fund Wallet Offchain"
+                tools:ignore="HardcodedText" />
 
 
         <io.muun.apollo.presentation.ui.view.MuunButton
@@ -101,7 +110,8 @@
                 android:id="@+id/debug_button_generate_blocks"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Generate Block" />
+                android:text="Generate Block"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -109,7 +119,8 @@
                 android:id="@+id/debug_button_drop_last_tx"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Drop Last Tx" />
+                android:text="Drop Last Tx"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -117,7 +128,8 @@
                 android:id="@+id/debug_button_drop_tx"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Drop Tx" />
+                android:text="Drop Tx"
+                tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
@@ -125,7 +137,28 @@
                 android:id="@+id/debug_button_undrop_tx"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Undrop Tx" />
+                android:text="Undrop Tx"
+                tools:ignore="HardcodedText" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/debug_switch_allow_multi_session"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/muun_screen_margin"
+                android:layout_marginEnd="@dimen/muun_screen_margin"
+                android:textSize="@dimen/muun_text_size_body"
+                android:text="Allow Multiple Sessions"
+                tools:ignore="HardcodedText" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_expire_all_other_sessions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Expire all other sessions"
+                tools:ignore="HardcodedText" />
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -137,7 +170,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Houston address: "
-                    android:textStyle="normal|bold" />
+                    android:textStyle="normal|bold"
+                    tools:ignore="HardcodedText" />
 
             <TextView
                     android:id="@+id/debug_text_server_address"

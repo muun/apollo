@@ -93,4 +93,21 @@ public class TransactionSizeRepository extends BaseRepository {
 
         setTransactionSize(nts.initOutpoints());
     }
+
+    /**
+     * Migration to init utxo status for pre-existing NTSs.
+     */
+    public void initNtsUtxoStatus() {
+        final boolean hasNts = sharedPreferences.contains(KEY_TRANSACTION_SIZE);
+
+        if (!hasNts) {
+            return;
+        }
+
+        final NextTransactionSize nts = getNextTransactionSize();
+
+        Preconditions.checkNotNull(nts);
+
+        setTransactionSize(nts.initUtxoStatus());
+    }
 }

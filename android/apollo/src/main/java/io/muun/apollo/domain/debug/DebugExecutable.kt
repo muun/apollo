@@ -2,9 +2,11 @@ package io.muun.apollo.domain.debug
 
 import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.data.debug.LappClientError
+import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.action.address.CreateAddressAction
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
+import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.errors.debug.DebugExecutableError
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.common.crypto.hd.MuunAddress
@@ -18,9 +20,11 @@ import javax.inject.Singleton
  */
 @Singleton
 class DebugExecutable @Inject constructor(
+    private val updateUserPreferences: UpdateUserPreferencesAction,
     private val createAddress: CreateAddressAction,
     private val generateInvoice: GenerateInvoiceAction,
     private val userPreferencesSel: UserPreferencesSelector,
+    private val houstonClient: HoustonClient,
     private val transformerFactory: ExecutionTransformerFactory,
 ) {
 
@@ -71,6 +75,23 @@ class DebugExecutable @Inject constructor(
     }.compose(transformerFactory.getAsyncExecutor())
         .compose(errorMapper())
 
+    /**
+     * Enable/Disable "Multiple sessions" feature for this user.
+     */
+    fun toggleMultiSession() {
+        updateUserPreferences.run { prefs ->
+            prefs.copy(allowMultiSession = !prefs.allowMultiSession)
+        }
+    }
+
+    /**
+     * [Only works for "Multiple sessions" users] Expire all user sessions except the current one.
+     */
+    fun expireAllSessions(): Observable<Void> = Observable.defer {
+        houstonClient.expireAllOtherSessions().toObservable<Void>()
+    }.compose(transformerFactory.getAsyncExecutor())
+        .compose(errorMapper())
+
     private fun <T> errorMapper() = { observable: Observable<T> ->
         observable.onErrorResumeNext { error: Throwable ->
             if (error is LappClientError) {
@@ -80,5 +101,4 @@ class DebugExecutable @Inject constructor(
             }
         }
     }
-
 }

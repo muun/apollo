@@ -206,9 +206,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     }
 
     protected void assertGooglePlayServicesPresent() {
-        final int available = googlePlayServicesHelper.isAvailable();
-        if (available != GooglePlayServicesHelper.AVAILABLE) {
-            view.showPlayServicesDialog(googlePlayServicesHelper.showDownloadDialog(available));
+        if (!googlePlayServicesHelper.isAvailable()) {
+            view.showPlayServicesDialog(googlePlayServicesHelper.showDownloadDialog());
         }
     }
 

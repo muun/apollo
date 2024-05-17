@@ -6,6 +6,7 @@ import io.muun.apollo.data.os.CpuInfoProvider;
 import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
+import io.muun.apollo.data.os.OS_ExtensionsKt;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
 import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException;
@@ -95,10 +96,15 @@ import javax.validation.constraints.NotNull;
 public class HoustonClient extends BaseClient<HoustonService> {
 
     private final ModelObjectsMapper modelMapper;
+
     private final ApiObjectsMapper apiMapper;
+
     private final Context context;
+
     private final HardwareCapabilitiesProvider hardwareCapabilitiesProvider;
+
     private final GooglePlayServicesHelper googlePlayServicesHelper;
+
     private final GooglePlayHelper googlePlayHelper;
 
     /**
@@ -144,7 +150,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds(),
-                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                OS_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
@@ -174,7 +180,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds(),
-                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                OS_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
@@ -204,7 +210,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getAndroidId(),
                 hardwareCapabilitiesProvider.getSystemUsersInfo(),
                 hardwareCapabilitiesProvider.getDrmClientIds(),
-                HoustonClient_ExtensionsKt.getInstallSourceInfo(context),
+                OS_ExtensionsKt.getInstallSourceInfo(context),
                 hardwareCapabilitiesProvider.getBootCount(),
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
@@ -348,6 +354,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
     }
 
     /**
+     * [Only works for "Multiple sessions" users] Expire all user sessions except the current one.
+     */
+    public Completable expireAllOtherSessions() {
+        return getService().expireAllOtherSessions();
+    }
+
+    /**
      * Updates the GCM token for the current user.
      */
     public Observable<Void> updateFcmToken(@NotNull String fcmToken) {
@@ -359,7 +372,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * not return all the existing notifications, it's up to the caller to make subsequent calls.
      */
     public Observable<NotificationReport> fetchNotificationReportAfter(
-            @Nullable Long notificationId) {
+            @Nullable Long notificationId
+    ) {
 
         return getService().fetchNotificationReportAfter(notificationId)
                 .map(modelMapper::mapNotificationReport);
@@ -372,7 +386,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
             final long notificationId,
             final String deviceModel,
             final String osVersion,
-            final String appStatus) {
+            final String appStatus
+    ) {
 
         return getService().confirmNotificationsDeliveryUntil(
                 notificationId, deviceModel, osVersion, appStatus
@@ -741,8 +756,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Push the fulfillment TX for an incoming swap.
      */
-    public Completable pushFulfillmentTransaction(final String incomingSwap,
-                                                  final RawTransaction rawTransaction) {
+    public Completable pushFulfillmentTransaction(
+            final String incomingSwap,
+            final RawTransaction rawTransaction
+    ) {
 
         return getService().pushFulfillmentTransaction(incomingSwap, rawTransaction);
     }

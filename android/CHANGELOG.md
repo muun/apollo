@@ -6,6 +6,26 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.10] - 2024-05-17
+
+### ADDED
+
+- Background notification processing reliability improvements
+
+### CHANGED
+
+- Made outpoints and utxoStatus available to Libwallet's PaymentAnalyzer. Which involved a client
+data migration to init utxos' status.
+- Enhanced crashes and error reports with extra metadata.
+- Include swap_uuid in newop events for better lightning payments metrics.
+- Notify logout upon security logout (e.g 3 incorrect pin attempts).
+
+### FIXED
+
+- Fixed ANRs happening when trying to send a email error report.
+- Adjusted overly verbose logging in release.
+- Fixed problems and crashes in devices where VES currency is not supported.
+
 ## [51.9] - 2024-04-30
 
 - Background notification processing reliability improvements

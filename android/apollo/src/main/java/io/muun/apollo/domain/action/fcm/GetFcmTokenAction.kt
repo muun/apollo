@@ -41,7 +41,7 @@ class GetFcmTokenAction @Inject constructor(
         }
 
     private fun getError() =
-        if (googlePlayServicesHelper.isAvailable != GooglePlayServicesHelper.AVAILABLE)
+        if (!googlePlayServicesHelper.isAvailable)
             GooglePlayServicesNotAvailableError()
         else
             FcmTokenNotAvailableError()

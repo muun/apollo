@@ -152,6 +152,11 @@ object OS {
     fun supportsNetworkCapabilities(): Boolean =
         isAndroidLOrNewer()
 
+    /**
+     * Whether this OS supports Build.SUPPORTED_ABIS, which was introduced in L-5-21.
+     */
+    fun supportsSupportedAbis(): Boolean =
+        isAndroidLOrNewer()
 
     // PRIVATE STUFF:
 
@@ -186,7 +191,7 @@ object OS {
      * Whether this OS version is L-5.0-21 or newer.
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-    private fun isAndroidLOrNewer() =
+    private fun isAndroidLOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
 
     /**
@@ -216,4 +221,5 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
     private fun isAndroidNOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
 }

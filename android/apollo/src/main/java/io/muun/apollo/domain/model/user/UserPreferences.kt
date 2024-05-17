@@ -9,6 +9,7 @@ data class UserPreferences(
     val defaultAddressType: String,
     val skippedEmailSetup: Boolean,
     val receivePreference: ReceiveFormatPreference,
+    val allowMultiSession: Boolean,
 ) {
     fun toJson(): io.muun.common.model.UserPreferences {
         return io.muun.common.model.UserPreferences(
@@ -18,7 +19,8 @@ data class UserPreferences(
             defaultAddressType,
             false,
             skippedEmailSetup,
-            receivePreference
+            receivePreference,
+            allowMultiSession
         )
     }
 
@@ -32,7 +34,8 @@ data class UserPreferences(
                 prefs.seenLnurlFirstTime,
                 prefs.defaultAddressType,
                 prefs.skippedEmailSetup,
-                prefs.receiveFormatPreference
+                prefs.receiveFormatPreference,
+                prefs.allowMultiSession
             )
         }
     }

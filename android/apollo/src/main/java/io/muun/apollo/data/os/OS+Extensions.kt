@@ -1,7 +1,6 @@
-package io.muun.apollo.data.net
+package io.muun.apollo.data.os
 
 import android.content.Context
-import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.model.InstallSourceInfo
 
 fun Context.getInstallSourceInfo(): InstallSourceInfo =

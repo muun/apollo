@@ -13,7 +13,7 @@ import javax.inject.Inject
 class GooglePlayServicesHelper @Inject constructor(private val ctx: Context) {
 
     companion object {
-        const val AVAILABLE = ConnectionResult.SUCCESS
+        private const val AVAILABLE = ConnectionResult.SUCCESS
         private const val PLAY_SERVICES_RESOLUTION_REQUEST = 9000
     }
 
@@ -31,9 +31,17 @@ class GooglePlayServicesHelper @Inject constructor(private val ctx: Context) {
     /**
      * Check if Google Play Services is installed on the device.
      *
+     * @return true if Google Play Services is available, false otherwise
+     */
+    val isAvailable: Boolean
+        get() = isAvailableResultCode == AVAILABLE
+
+    /**
+     * Check if Google Play Services is installed on the device.
+     *
      * @return the result code, which will be AVAILABLE if successful.
      */
-    val isAvailable: Int
+    private val isAvailableResultCode: Int
         get() = apiAvailability.isGooglePlayServicesAvailable(ctx)
 
     /**
@@ -67,9 +75,10 @@ class GooglePlayServicesHelper @Inject constructor(private val ctx: Context) {
     /**
      * Display a dialog that allows the user to install Google Play Services.
      */
-    fun showDownloadDialog(resultCode: Int): Action1<Activity> {
+    fun showDownloadDialog(): Action1<Activity> {
+        val resultCode = isAvailableResultCode
         return Action1 { activity: Activity ->
-            if (apiAvailability.isUserResolvableError(resultCode)) {
+            if (apiAvailability.isUserResolvableError(isAvailableResultCode)) {
                 apiAvailability
                     .getErrorDialog(activity, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                     ?.show()

@@ -1,4 +1,5 @@
 io.muun.common.utils.BitcoinCurrencyProvider
 io.muun.common.utils.IrtCurrencyProvider
+io.muun.common.utils.VesCurrencyProvider
 org.javamoney.moneta.internal.JDKCurrencyProvider
 org.javamoney.moneta.internal.ConfigurableCurrencyUnitProvider
