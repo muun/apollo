@@ -60,7 +60,7 @@ open class IncomingSwap(
         val libwalletNetwork = network.toLibwallet()
         val libwalletFullfillmentData = data.toLibwalletModel()
 
-        debugLog(htlc!!, libwalletFullfillmentData, libwalletUserKey, libwalletMuunKey)
+        debugLog(htlc!!, libwalletFullfillmentData, libwalletMuunKey)
 
         try {
             val result = toLibwalletModel().fulfill(
@@ -87,7 +87,6 @@ open class IncomingSwap(
     private fun debugLog(
         htlc: IncomingSwapHtlc,
         fullfillmentData: libwallet.IncomingSwapFulfillmentData,
-        userKey: libwallet.HDPrivateKey,
         muunKey: libwallet.HDPublicKey,
     ) {
         Timber.d("---IncomingSwap---")
@@ -107,11 +106,6 @@ open class IncomingSwap(
         Timber.d("MerkleTree: ${Encodings.bytesToHex(merkleTree)}")
         Timber.d("HtlcBlock: ${Encodings.bytesToHex(htlcBlock)}")
         Timber.d("ConfTarget: ${fullfillmentData.confirmationTarget}")
-
-        Timber.d("---UserKey---")
-        Timber.d("Base58: ${userKey.string()}")
-        Timber.d("Path: ${userKey.path}")
-        Timber.d("Network: ${userKey.network.name()}")
 
         Timber.d("---muunKey---")
         Timber.d("Base58: ${muunKey.string()}")
