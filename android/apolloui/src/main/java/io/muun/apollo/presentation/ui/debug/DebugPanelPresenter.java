@@ -21,11 +21,15 @@ import javax.inject.Inject;
 public class DebugPanelPresenter extends BasePresenter<BaseView> {
 
     private final OperationActions operationActions;
+
     private final ContactActions contactActions;
+
     private final IntegrityAction integrityAction;
 
     private final FetchRealTimeDataAction fetchRealTimeData;
+
     private final SyncExternalAddressIndexesAction syncExternalAddressIndexes;
+
     private final DebugExecutable debugExecutable;
 
     /**
@@ -187,6 +191,21 @@ public class DebugPanelPresenter extends BasePresenter<BaseView> {
      */
     public void undropTx(String txId) {
         debugExecutable.undropTx(txId)
+                .subscribe(Actions.empty(), this::handleError);
+    }
+
+    /**
+     * Enable/Disable "Multiple sessions" feature for this user.
+     */
+    public void toggleMultiSessions() {
+        debugExecutable.toggleMultiSession();
+    }
+
+    /**
+     * [Only works for "Multiple sessions" users] Expire all user sessions except the current one.
+     */
+    public void expireAllSessions() {
+        debugExecutable.expireAllSessions()
                 .subscribe(Actions.empty(), this::handleError);
     }
 

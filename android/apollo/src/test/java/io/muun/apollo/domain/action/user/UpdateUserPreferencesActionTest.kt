@@ -40,6 +40,7 @@ class UpdateUserPreferencesActionTest : BaseTest() {
                     defaultAddressType = "segwit",
                     skippedEmailSetup = false,
                     receivePreference = ReceiveFormatPreference.ONCHAIN,
+                    allowMultiSession = false
                 )
             )
         ).whenever(repository).watch()

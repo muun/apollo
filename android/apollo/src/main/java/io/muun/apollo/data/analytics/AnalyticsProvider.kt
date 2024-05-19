@@ -3,21 +3,35 @@ package io.muun.apollo.data.analytics
 import android.content.Context
 import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.model.user.User
+import rx.Single
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AnalyticsProvider @Inject constructor(val context: Context) {
+class AnalyticsProvider @Inject constructor(context: Context) {
 
     private val fba = FirebaseAnalytics.getInstance(context)
 
     // Just for enriching error logs. A best effort to add metadata
     private val inMemoryMapBreadcrumbCollector = sortedMapOf<Long, Bundle>()
+
+    fun loadBigQueryPseudoId(): Single<String?> =
+        Single.fromEmitter<String> { emitter ->
+            fba.appInstanceId
+                .addOnSuccessListener { id: String? ->
+                    // id can be null on platforms without google play services.
+                    Timber.d("Loaded BigQueryPseudoId: $id")
+                    emitter.onSuccess(id)
+                }
+                .addOnFailureListener { error ->
+                    emitter.onError(error)
+                }
+        }
 
     /**
      * Set the user's properties, to be used by Analytics.
@@ -38,6 +52,12 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
     fun report(event: AnalyticsEvent) {
         try {
             actuallyReport(event)
+
+            // Avoid recursion (Timber.i reports a breadcrumb). TODO proper design and fix this
+            if (event !is AnalyticsEvent.E_BREADCRUMB) {
+                Timber.i("AnalyticsProvider", event.toString())
+            }
+
         } catch (t: Throwable) {
 
             val bundle = Bundle().apply { putString("event", event.eventId) }
@@ -60,7 +80,6 @@ class AnalyticsProvider @Inject constructor(val context: Context) {
 
         fba.logEvent(event.eventId, bundle)
         inMemoryMapBreadcrumbCollector[System.currentTimeMillis()] = bundle
-        Log.i("AnalyticsProvider", event.toString())
     }
 
     private fun getBreadcrumbMetadata(): String {

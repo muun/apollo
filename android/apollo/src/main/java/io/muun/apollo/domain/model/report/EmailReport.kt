@@ -11,6 +11,7 @@ import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.Locale
+
 import javax.annotation.CheckReturnValue
 
 class EmailReport private constructor(val body: String) {
@@ -18,6 +19,7 @@ class EmailReport private constructor(val body: String) {
     data class Builder(
         var report: CrashReport? = null,
         var supportId: String? = null,
+        var bigQueryPseudoId: String? = null,
         var fcmTokenHash: String? = null,
         var presenterName: String? = null,
         var googlePlayServicesAvailable: Boolean? = null,
@@ -36,6 +38,9 @@ class EmailReport private constructor(val body: String) {
 
         @CheckReturnValue
         fun supportId(supportId: String?) = apply { this.supportId = supportId }
+
+        @CheckReturnValue
+        fun bigQueryPseudoId(pseudoId: String?) = apply { this.bigQueryPseudoId = pseudoId }
 
         @CheckReturnValue
         fun fcmTokenHash(fcmTokenHash: String) = apply { this.fcmTokenHash = fcmTokenHash }
@@ -107,6 +112,7 @@ class EmailReport private constructor(val body: String) {
                    |Date: ${now.format(Dates.ISO_DATE_TIME_WITH_MILLIS)}
                    |Locale: ${locale.toString()}
                    |SupportId: ${if (supportId != null) supportId else "Not logged in"}
+                   |Bid: $bigQueryPseudoId
                    |ScreenPresenter: $presenterName
                    |FcmTokenHash: $fcmTokenHash
                    |GooglePlayServices (GPS): $googlePlayServicesAvailable

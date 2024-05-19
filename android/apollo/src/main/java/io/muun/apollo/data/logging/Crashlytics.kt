@@ -1,10 +1,14 @@
 package io.muun.apollo.data.logging
 
 import android.app.Application
+import android.os.Build
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.data.analytics.AnalyticsProvider
+import io.muun.apollo.data.os.GooglePlayServicesHelper
+import io.muun.apollo.data.os.OS
+import io.muun.apollo.data.os.TelephonyInfoProvider
+import io.muun.apollo.data.os.getInstallSourceInfo
 import io.muun.apollo.domain.action.debug.ForceCrashReportAction
-import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError
@@ -14,8 +18,10 @@ import io.muun.apollo.domain.errors.newop.InvoiceExpiresTooSoonException
 import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException
+import io.muun.apollo.domain.model.InstallSourceInfo
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
+import timber.log.Timber
 
 object Crashlytics {
 
@@ -25,11 +31,39 @@ object Crashlytics {
         null
     }
 
-    private var analytics: Analytics? = null
+    private var analyticsProvider: AnalyticsProvider? = null
+
+    private var bigQueryPseudoId: String? = null
+
+    private var googlePlayServicesAvailable: Boolean? = null
+
+    private var installSource: InstallSourceInfo? = null
+
+    private var region: String? = null
+
+    private var defaultUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
 
     @JvmStatic
     fun init(application: Application) {
-        this.analytics = Analytics(AnalyticsProvider(application))
+        this.analyticsProvider = AnalyticsProvider(application)
+        this.analyticsProvider?.loadBigQueryPseudoId()
+            ?.subscribe({ bigQueryPseudoId = it }, { Timber.e(it) })
+
+        this.googlePlayServicesAvailable = GooglePlayServicesHelper(application).isAvailable
+        this.installSource = application.getInstallSourceInfo()
+        this.region = TelephonyInfoProvider(application).region.orElse("null")
+
+        this.defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler(customUncaughtExceptionHandler)
+    }
+
+    // enhance crashlytics crashes with custom keys
+    private val customUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { thread, ex ->
+
+        setStaticCustomKeys()
+
+        //call the default exception handler
+        this.defaultUncaughtExceptionHandler?.uncaughtException(thread, ex)
     }
 
     /**
@@ -48,7 +82,7 @@ object Crashlytics {
     @Deprecated("Not really but you shouldn't use this directly. Use Timber.i(). See MuunTree.")
     fun logBreadcrumb(breadcrumb: String) {
         crashlytics?.log(breadcrumb)
-        analytics?.report(
+        analyticsProvider?.report(
             AnalyticsEvent.E_BREADCRUMB(
                 breadcrumb
             )
@@ -65,15 +99,17 @@ object Crashlytics {
             return
         }
 
+        // Note: these custom keys are associated with the non-fatal error being tracked but also
+        // with the subsequent crash if the error generates one (e.g if error isn't caught/handled).
         crashlytics?.setCustomKey("tag", report.tag)
         crashlytics?.setCustomKey("message", report.message)
-        crashlytics?.setCustomKey("locale", LoggingContext.locale)
+        setStaticCustomKeys()
 
         for (entry in report.metadata.entries) {
             crashlytics?.setCustomKey(entry.key, entry.value.toString())
         }
 
-        analytics?.report(
+        analyticsProvider?.report(
             AnalyticsEvent.E_CRASHLYTICS_ERROR(
                 report.error.javaClass.simpleName + ":" + report.error.localizedMessage
             )
@@ -81,6 +117,27 @@ object Crashlytics {
 
         crashlytics?.recordException(report.error)
     }
+
+    private fun setStaticCustomKeys() {
+        crashlytics?.setCustomKey("locale", LoggingContext.locale)
+        crashlytics?.setCustomKey("region", region ?: "null")
+        crashlytics?.setCustomKey("bigQueryPseudoId", bigQueryPseudoId ?: "null")
+        crashlytics?.setCustomKey("abi", getSupportedAbi())
+        crashlytics?.setCustomKey("isPlayServicesAvailable", googlePlayServicesAvailable.toString())
+        crashlytics?.setCustomKey(
+            "installSource-installingPackage", installSource?.installingPackageName ?: "null"
+        )
+        crashlytics?.setCustomKey(
+            "installSource-initiatingPackage", installSource?.initiatingPackageName ?: "null"
+        )
+    }
+
+    private fun getSupportedAbi() =
+        if (OS.supportsSupportedAbis()) {
+            Build.SUPPORTED_ABIS[0]
+        } else {
+            "api19"
+        }
 
     /**
      * Send a "fallback" reporting error to Crashlytics. This means that there was an error while

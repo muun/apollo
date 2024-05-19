@@ -12,7 +12,6 @@ import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
-import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
@@ -85,9 +84,6 @@ public abstract class ApolloApplication extends Application
     DetectAppUpdateAction detectAppUpdate;
 
     @Inject
-    FirebaseInstallationIdRepository firebaseInstallationIdRepository;
-
-    @Inject
     BackgroundTimesService backgroundTimesService;
 
     @Override
@@ -147,14 +143,7 @@ public abstract class ApolloApplication extends Application
     }
 
     private void loadBigQueryPseudoId() {
-        FirebaseAnalytics.getInstance(this)
-                .getAppInstanceId()
-                .addOnSuccessListener(id -> {
-                    // id can be null on platforms without google play services.
-                    if (id != null) {
-                        firebaseInstallationIdRepository.storeBigQueryPseudoId(id);
-                    }
-                });
+        analytics.loadBigQueryPseudoId();
     }
 
     private void setNightMode() {

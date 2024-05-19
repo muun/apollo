@@ -54,6 +54,10 @@ public class UserPreferences {
     @Since(apolloVersion = 1000)
     public ReceiveFormatPreference receiveFormatPreference = ReceiveFormatPreference.ONCHAIN;
 
+    // TODO: set correct release versions
+    @Since(apolloVersion = 1001, falconVersion = 1008)
+    public Boolean allowMultiSession = false;
+
     /**
      * JSON constructor.
      */
@@ -70,7 +74,8 @@ public class UserPreferences {
             final String defaultAddressType,
             final boolean lightningDefaultForReceiving,
             final boolean skippedEmailSetup,
-            final ReceiveFormatPreference receiveFormatPreference
+            final ReceiveFormatPreference receiveFormatPreference,
+            final boolean allowMultiSession
     ) {
         this.receiveStrictMode = receiveStrictMode;
         this.seenNewHome = seenNewHome;
@@ -79,6 +84,7 @@ public class UserPreferences {
         this.lightningDefaultForReceiving = lightningDefaultForReceiving;
         this.skippedEmailSetup = skippedEmailSetup;
         this.receiveFormatPreference = receiveFormatPreference;
+        this.allowMultiSession = allowMultiSession;
     }
 
     /**
@@ -121,6 +127,10 @@ public class UserPreferences {
 
         if (other.receiveFormatPreference != null) {
             this.receiveFormatPreference = other.receiveFormatPreference;
+        }
+
+        if (other.allowMultiSession != null) {
+            this.allowMultiSession = other.allowMultiSession;
         }
     }
 

@@ -122,6 +122,21 @@ public class NextTransactionSize {
     }
 
     /**
+     * Migration to init utxo status for pre-existing NTSs.
+     */
+    public NextTransactionSize initUtxoStatus() {
+
+        final List<SizeForAmount> newSizeProgression = new ArrayList<>();
+        for (SizeForAmount sizeForAmount : sizeProgression) {
+            newSizeProgression.add(sizeForAmount.initUtxoStatusForApollo());
+        }
+
+        this.sizeProgression = newSizeProgression;
+
+        return this;
+    }
+
+    /**
      * Extract complete list of outpoints, sorted as used in sizeProgression (aka as we use it for
      * our fee computations).
      */
@@ -173,6 +188,7 @@ public class NextTransactionSize {
         libwalletSizeForAmount.setAmountInSat(sizeForAmount.amountInSatoshis);
         libwalletSizeForAmount.setSizeInVByte(getSizeInVirtualBytes(sizeForAmount));
         libwalletSizeForAmount.setOutpoint(sizeForAmount.outpoint);
+        libwalletSizeForAmount.setUtxoStatus(sizeForAmount.status.toString());
 
         return libwalletSizeForAmount;
     }

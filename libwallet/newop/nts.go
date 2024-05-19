@@ -6,10 +6,16 @@ import (
 	"github.com/muun/libwallet/operation"
 )
 
+const (
+	UtxosStatusConfirmed   = operation.UtxosStatusConfirmed
+	UtxosStatusUnconfirmed = operation.UtxosStatusUnconfirmed
+)
+
 type SizeForAmount struct {
 	SizeInVByte int64
 	AmountInSat int64
 	Outpoint    string
+	UtxoStatus  string
 }
 
 // NextTransactionSize is a struct used for calculating fees in terms of the
@@ -39,9 +45,15 @@ func (w *NextTransactionSize) GetOutpoints() string {
 func (w *NextTransactionSize) toInternalType() *operation.NextTransactionSize {
 	var sizeProgression []operation.SizeForAmount
 	for _, sizeForAmount := range w.SizeProgression {
+		status, found := operation.MapUtxoStatus(sizeForAmount.UtxoStatus)
+		if !found {
+			panic("unknown utxo status") // TODO(newop): replace panic and bubble up errors?
+		}
 		sizeProgression = append(sizeProgression, operation.SizeForAmount{
 			SizeInVByte: sizeForAmount.SizeInVByte,
 			AmountInSat: sizeForAmount.AmountInSat,
+			Outpoint:    sizeForAmount.Outpoint,
+			UtxoStatus:  status,
 		})
 	}
 	return &operation.NextTransactionSize{

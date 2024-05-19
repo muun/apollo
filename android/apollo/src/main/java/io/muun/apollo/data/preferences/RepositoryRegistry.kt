@@ -27,29 +27,29 @@ class RepositoryRegistry {
     private val lock = this
 
     private val registry: Set<Class<out BaseRepository>> = setOf(
-        ApiMigrationsVersionRepository::class.java,
-        AuthRepository::class.java,
-        BlockchainHeightRepository::class.java,
-        ClientVersionRepository::class.java,
-        ExchangeRateWindowRepository::class.java,
-        FeeWindowRepository::class.java,
-        FirebaseInstallationIdRepository::class.java,
-        ForwardingPoliciesRepository::class.java,
-        MinFeeRateRepository::class.java,
-        KeysRepository::class.java,
-        NightModeRepository::class.java,
-        NotificationRepository::class.java,
-        SchemaVersionRepository::class.java,
-        TransactionSizeRepository::class.java,
-        UserPreferencesRepository::class.java,
-        UserRepository::class.java,
-        FeaturesRepository::class.java,
-        AppVersionRepository::class.java,
-        PlayIntegrityNonceRepository::class.java,
-        NotificationPermissionStateRepository::class.java,
-        NotificationPermissionDeniedRepository::class.java,
-        NotificationPermissionSkippedRepository::class.java,
-        BackgroundTimesRepository::class.java
+            ApiMigrationsVersionRepository::class.java,
+            AuthRepository::class.java,
+            BlockchainHeightRepository::class.java,
+            ClientVersionRepository::class.java,
+            ExchangeRateWindowRepository::class.java,
+            FeeWindowRepository::class.java,
+            FirebaseInstallationIdRepository::class.java,
+            ForwardingPoliciesRepository::class.java,
+            MinFeeRateRepository::class.java,
+            KeysRepository::class.java,
+            NightModeRepository::class.java,
+            NotificationRepository::class.java,
+            SchemaVersionRepository::class.java,
+            TransactionSizeRepository::class.java,
+            UserPreferencesRepository::class.java,
+            UserRepository::class.java,
+            FeaturesRepository::class.java,
+            AppVersionRepository::class.java,
+            PlayIntegrityNonceRepository::class.java,
+            NotificationPermissionStateRepository::class.java,
+            NotificationPermissionDeniedRepository::class.java,
+            NotificationPermissionSkippedRepository::class.java,
+            BackgroundTimesRepository::class.java
     )
 
     // Notable exceptions:
@@ -63,11 +63,11 @@ class RepositoryRegistry {
     // its more clear and clean to keep it and avoid wiping it (there's no privacy or security
     // issues).
     private val logoutSurvivorRepositories: Set<Class<out BaseRepository>> = setOf(
-        FirebaseInstallationIdRepository::class.java,
-        NightModeRepository::class.java,
-        SchemaVersionRepository::class.java,
-        NotificationPermissionDeniedRepository::class.java,
-        NotificationPermissionSkippedRepository::class.java
+            FirebaseInstallationIdRepository::class.java,
+            NightModeRepository::class.java,
+            SchemaVersionRepository::class.java,
+            NotificationPermissionDeniedRepository::class.java,
+            NotificationPermissionSkippedRepository::class.java
     )
 
     // Note: the use of a map is critical here for 2 reasons, both of them related to memory
@@ -80,7 +80,7 @@ class RepositoryRegistry {
     // a reference to that "old" repository instance (e.g objects where that repository was injected
     // as a dependency).
     private val loadedRepos: MutableMap<Class<out BaseRepository>, BaseRepository> =
-        mutableMapOf()
+            mutableMapOf()
 
     fun load(repo: BaseRepository) {
         synchronized(lock) {
@@ -90,7 +90,7 @@ class RepositoryRegistry {
 
             loadedRepos[repo.javaClass] = repo
             Timber.d(
-                "RepositoryRegistry#load(${repo.javaClass.simpleName}). Size: ${loadedRepos.size}"
+                    "RepositoryRegistry#load(${repo.javaClass.simpleName}). Size: ${loadedRepos.size}"
             )
         }
     }
@@ -100,12 +100,12 @@ class RepositoryRegistry {
      * logoutSurvivorRepositories.
      */
     fun repositoriesToClearOnLogout(): Collection<BaseRepository> =
-        synchronized(lock) {
-            loadedRepos.filterKeys {
-                !logoutSurvivorRepositories.contains(it)
-            }.values
-        }
+            synchronized(lock) {
+                loadedRepos.filterKeys {
+                    !logoutSurvivorRepositories.contains(it)
+                }.values
+            }
 
     private fun isRegistered(repository: BaseRepository) =
-        registry.contains(repository.javaClass)
+            registry.contains(repository.javaClass)
 }

@@ -65,7 +65,10 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             systemCapabilitiesProvider.usbPersistConfig,
             systemCapabilitiesProvider.bridgeEnabled,
             systemCapabilitiesProvider.bridgeDaemonStatus,
-            systemCapabilitiesProvider.developerEnabled
+            systemCapabilitiesProvider.developerEnabled,
+            connectivityInfoProvider.proxyHttp,
+            connectivityInfoProvider.proxyHttps,
+            connectivityInfoProvider.proxySocks
         )
 
     @Suppress("ArrayInDataClass")
@@ -102,6 +105,9 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val bridgeEnabled: Int,
         private val bridgeDaemonStatus: String,
         private val developerEnabled: Int,
+        private val proxyHttp: String,
+        private val proxyHttps: String,
+        private val proxySocks: String,
     )
 
     /**

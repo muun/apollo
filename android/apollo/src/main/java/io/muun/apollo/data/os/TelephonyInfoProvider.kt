@@ -8,7 +8,7 @@ import javax.inject.Inject
 private const val UNKNOWN = "UNKNOWN"
 
 // TODO open to make tests work with mockito. We should probably move to mockK
-open class TelephonyInfoProvider @Inject constructor(private val context: Context) {
+open class TelephonyInfoProvider @Inject constructor(context: Context) {
 
     private val telephonyManager: TelephonyManager =
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager

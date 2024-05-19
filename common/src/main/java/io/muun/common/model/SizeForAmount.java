@@ -54,6 +54,21 @@ public class SizeForAmount {
         return this;
     }
 
+    /**
+     * Migration to init utxo status for pre-existing sizeForAmounts. Will be properly initialized
+     * after first NTS refresh (e.g first newOperation, incoming operation, or any operationUpdate).
+     * NOTE: we're choosing to init status as CONFIRMED as this field has existed for a while now
+     * in the codebase, and only users with a REALLY old version (circa mid-2020) should have null
+     * here.
+     */
+    public SizeForAmount initUtxoStatusForApollo() {
+        if (status == null) {
+            status = UtxoStatus.CONFIRMED;
+        }
+        return this;
+    }
+
+
     @Override
     public String toString() {
         return "[SizeForAmount " + sizeInBytes + " for " + amountInSatoshis + "]";

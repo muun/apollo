@@ -52,8 +52,7 @@ func CombinePubKeysWithTweak(userKey, muunKey *btcec.PublicKey, customTweak []by
 	}
 
 	var serialized [33]byte
-	var serializedSize C.size_t
-	serializedSize = 33
+	var serializedSize C.size_t = 33
 	if C.secp256k1_ec_pubkey_serialize(
 		ctx,
 		toUchar(serialized[:]),

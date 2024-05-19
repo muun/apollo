@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import butterknife.BindView;
 import butterknife.OnClick;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import rx.functions.Action1;
 
 import javax.inject.Inject;
@@ -45,6 +46,12 @@ public class DebugPanelActivity extends BaseActivity<DebugPanelPresenter> implem
     @BindView(R.id.debug_button_undrop_tx)
     MuunButton undropTx;
 
+    @BindView(R.id.debug_switch_allow_multi_session)
+    SwitchMaterial allowMultiSession;
+
+    @BindView(R.id.debug_button_expire_all_other_sessions)
+    MuunButton expireAllOtherSessions;
+
     /**
      * Creates an intent to launch this activity.
      */
@@ -73,6 +80,11 @@ public class DebugPanelActivity extends BaseActivity<DebugPanelPresenter> implem
 
         dropTx.setOnClickListener(v -> handleTxIdInput(presenter::dropTx));
         undropTx.setOnClickListener(v -> handleTxIdInput(presenter::undropTx));
+
+        allowMultiSession.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> presenter.toggleMultiSessions()
+        );
+        expireAllOtherSessions.setOnClickListener(v -> presenter.expireAllSessions());
     }
 
     private void handleTxIdInput(Action1<String> handler) {

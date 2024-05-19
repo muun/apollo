@@ -40,4 +40,11 @@ class FirebaseInstallationIdRepository @Inject constructor(
     fun watchFcmToken(): Observable<String?> {
         return fcmTokenPreference.asObservable()
     }
+
+    /**
+     * Used solely for error reporting. We should always prioritize using watchFcmToken().
+     */
+    fun getFcmToken(): String? {
+        return fcmTokenPreference.get()
+    }
 }

@@ -22,6 +22,7 @@ func createTestPaymentContext() *PaymentContext {
 	context.NextTransactionSize.AddSizeForAmount(&SizeForAmount{
 		AmountInSat: 100_000_000,
 		SizeInVByte: 240,
+		UtxoStatus:  "CONFIRMED",
 	})
 
 	context.ExchangeRateWindow.AddRate("BTC", 1)

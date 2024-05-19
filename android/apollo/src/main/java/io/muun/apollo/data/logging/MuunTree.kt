@@ -1,7 +1,6 @@
 package io.muun.apollo.data.logging
 
 import android.util.Log
-import io.muun.apollo.data.logging.Crashlytics.logBreadcrumb
 import io.muun.apollo.domain.model.report.CrashReportBuilder
 import timber.log.Timber
 
@@ -13,20 +12,20 @@ class MuunTree : Timber.DebugTree() {
     override fun log(priority: Int, tag: String?, message: String?, error: Throwable?) {
         // For low priority logs, we don't have any special treatment:
         if (priority < Log.INFO) {
-            super.log(priority, tag, message, error)
+            sendToLogcat(priority, tag, message, error)
             return
         }
 
         when (priority) {
             Log.INFO -> {
-                Log.i("Breadcrumb", message!!)
+                sendToLogcat(Log.INFO, "Breadcrumb", message!!, null)
                 @Suppress("DEPRECATION") // I know. These are the only allowed usages.
-                logBreadcrumb(message)
+                Crashlytics.logBreadcrumb(message)
             }
             Log.WARN -> {
-                Log.w(tag, message!!)
+                sendToLogcat(Log.WARN, tag, message!!, null)
                 @Suppress("DEPRECATION") // I know. These are the only allowed usages.
-                logBreadcrumb("Warning: $message")
+                Crashlytics.logBreadcrumb("Warning: $message")
             }
             else -> { // Log.ERROR && Log.ASSERT
                 sendCrashReport(tag, message, error)
@@ -50,9 +49,7 @@ class MuunTree : Timber.DebugTree() {
             Crashlytics.reportError(report)
         }
 
-        if (LoggingContext.sendToLogcat) {
-            Log.e(report.tag, "${report.message} ${report.metadata}", report.error)
-        }
+        sendToLogcat(Log.ERROR, report.tag, "${report.message} ${report.metadata}", report.error)
     }
 
     private fun sendFallbackCrashReport(
@@ -62,13 +59,17 @@ class MuunTree : Timber.DebugTree() {
         crashReportingError: Throwable,
     ) {
 
-        if (LoggingContext.sendToLogcat) {
-            Log.e("CrashReport:$tag", "During error processing", crashReportingError)
-            Log.e("CrashReport:$tag", message, error)
-        }
+        sendToLogcat(Log.ERROR, "CrashReport:$tag", "During error processing", crashReportingError)
+        sendToLogcat(Log.ERROR, "CrashReport:$tag", message, error)
 
         if (LoggingContext.sendToCrashlytics) {
             Crashlytics.reportReportingError(tag, message, error, crashReportingError)
+        }
+    }
+
+    private fun sendToLogcat(priority: Int, tag: String?, message: String?, error: Throwable?) {
+        if (LoggingContext.sendToLogcat) {
+            super.log(priority, tag, message, error)
         }
     }
 }

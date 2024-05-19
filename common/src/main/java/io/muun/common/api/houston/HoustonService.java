@@ -108,6 +108,9 @@ public interface HoustonService {
     @POST("sessions/logout")
     Observable<Void> notifyLogout(@Header("Authorization") String authHeader);
 
+    @POST("sessions/expire-all-others")
+    Completable expireAllOtherSessions();
+
     @PUT("sessions/current/gcm-token")
     Observable<Void> updateFcmToken(@Body String gcmToken);
 

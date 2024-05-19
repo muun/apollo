@@ -3,7 +3,7 @@
 repo_root=$(git rev-parse --show-toplevel)
 build_dir="$repo_root/libwallet/.build"
 
-cd "$repo_root/libwallet"
+cd "$repo_root/libwallet" || exit
 
 mkdir -p "$build_dir/pkg"
 

@@ -3,6 +3,7 @@ package operation
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/fees"
@@ -64,9 +65,30 @@ type PaymentAnalyzer struct {
 	feeCalculator       *feeCalculator
 }
 
+type UtxoStatus string
+
+const (
+	UtxosStatusConfirmed   UtxoStatus = "CONFIRMED"
+	UtxosStatusUnconfirmed UtxoStatus = "UNCONFIRMED"
+)
+
+var (
+	utxoStatusMap = map[string]UtxoStatus{
+		"confirmed":   UtxosStatusConfirmed,
+		"unconfirmed": UtxosStatusUnconfirmed,
+	}
+)
+
+func MapUtxoStatus(str string) (UtxoStatus, bool) {
+	val, ok := utxoStatusMap[strings.ToLower(str)]
+	return val, ok
+}
+
 type SizeForAmount struct {
 	AmountInSat int64
 	SizeInVByte int64
+	Outpoint    string
+	UtxoStatus  UtxoStatus
 }
 
 type NextTransactionSize struct {
@@ -330,7 +352,7 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 // determines the fees (on-chain and lightning), and we need both to determine the number of confirmations required for
 // the swap, which affects the on-chain fee, which affects the amount (since this is TFFA).
 // For this implementation built from the assumptions that 0-conf on-chain fees are lower than 1-conf fees
-//(since we don't have to wait for a block to make the payment).
+// (since we don't have to wait for a block to make the payment).
 // Here we go:
 // 1. We calculate the on-chain fee for a 0-conf swap spending all funds
 //   - If that fee is greater than our balance -> payment can't be made (VERY low balance scenario)

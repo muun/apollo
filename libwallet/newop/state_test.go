@@ -50,6 +50,7 @@ func createContext() *PaymentContext {
 	context.NextTransactionSize.AddSizeForAmount(&SizeForAmount{
 		AmountInSat: 100_000_000,
 		SizeInVByte: 240,
+		UtxoStatus:  "CONFIRMED",
 	})
 
 	context.ExchangeRateWindow.AddRate("BTC", 1)
@@ -1329,6 +1330,7 @@ func TestOnChainTFFAWithDebtFeeNeedsChangeBecauseOutputAmountLowerThanDust(t *te
 	nts.AddSizeForAmount(&SizeForAmount{
 		AmountInSat: 5338,
 		SizeInVByte: 172,
+		UtxoStatus:  "CONFIRMED",
 	})
 	nts.ExpectedDebtInSat = 4353
 	context.NextTransactionSize = nts

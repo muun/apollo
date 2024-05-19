@@ -67,6 +67,7 @@ open class UserPreferencesRepository @Inject constructor(
         var defaultAddressType: String = "segwit"
         var skippedEmailSetup: Boolean = false
         var receivePreference: ReceiveFormatPreference = ReceiveFormatPreference.ONCHAIN
+        var allowMultiSession: Boolean = false
 
         // JSON constructor
         constructor()
@@ -78,6 +79,7 @@ open class UserPreferencesRepository @Inject constructor(
             defaultAddressType = prefs.defaultAddressType
             skippedEmailSetup = prefs.skippedEmailSetup
             receivePreference = prefs.receivePreference
+            allowMultiSession = prefs.allowMultiSession
         }
 
         fun toModel(): UserPreferences {
@@ -87,7 +89,8 @@ open class UserPreferencesRepository @Inject constructor(
                 seenLnurlFirstTime,
                 defaultAddressType,
                 skippedEmailSetup,
-                receivePreference
+                receivePreference,
+                allowMultiSession
             )
         }
     }

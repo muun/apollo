@@ -57,4 +57,19 @@ class ConnectivityInfoProvider @Inject constructor(context: Context) {
 
         return if (isVpnNetworkAvailable) 2 else 3
     }
+
+    val proxyHttp: String
+        get() {
+            return System.getProperty("http.proxyHost") ?: ""
+        }
+
+    val proxyHttps: String
+        get() {
+            return System.getProperty("https.proxyHost") ?: ""
+        }
+
+    val proxySocks: String
+        get() {
+            return System.getProperty("socks.proxyHost") ?: ""
+        }
 }

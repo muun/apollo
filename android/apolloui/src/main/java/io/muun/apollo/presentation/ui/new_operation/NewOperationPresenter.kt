@@ -8,18 +8,7 @@ import io.muun.apollo.domain.action.operation.ResolveOperationUriAction
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.ABORT
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.BACK
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CANCEL_ABORT
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_AMOUNT
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_DESCRIPTION
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_FEE
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_OPERATION
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.CONFIRM_SWAP_OPERATION
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_BITCOIN_URI
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_INVOICE
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.START_FOR_UNIFIED_QR
-import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE.USE_ALL_FUNDS
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_COMPLETED
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_SUBMITTED
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_TYPE.Companion.fromModel
@@ -143,10 +132,10 @@ class NewOperationPresenter @Inject constructor(
         // Since LN payments are handled in startForInvoice() (according to OperationUri#isLn()), if
         // the operationUri has a ln invoice here it means we are dealing with a "Unified QR" uri.
         if (operationUri.lnInvoice.isPresent) {
-            analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_UNIFIED_QR))
+            reportNewOpAction(E_NEW_OP_ACTION_TYPE.START_FOR_UNIFIED_QR)
 
         } else {
-            analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_BITCOIN_URI))
+            reportNewOpAction(E_NEW_OP_ACTION_TYPE.START_FOR_BITCOIN_URI)
         }
 
         stateMachine.withState { state: StartState ->
@@ -167,7 +156,7 @@ class NewOperationPresenter @Inject constructor(
             return
         }
 
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(START_FOR_INVOICE))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.START_FOR_INVOICE)
         stateMachine.withState { state: StartState ->
             state.resolveInvoice(parseInvoice(networkParams, invoice), networkParams.toLibwallet())
         }
@@ -234,7 +223,7 @@ class NewOperationPresenter @Inject constructor(
 
     override fun confirmFee(selectedFeeRateInVBytes: Double) {
         view.goToConfirmedFee()
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_FEE))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_FEE)
         if (selectedFeeRateInVBytes >= Rules.toSatsPerVbyte(Rules.OP_MINIMUM_FEE_RATE)) {
             stateMachine.withState { state: EditFeeState ->
                 state.setFeeRate(selectedFeeRateInVBytes)
@@ -345,21 +334,21 @@ class NewOperationPresenter @Inject constructor(
     }
 
     fun confirmAmount(value: MonetaryAmount, takeFreeFromAmount: Boolean) {
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_AMOUNT))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_AMOUNT)
         stateMachine.withState { state: EnterAmountState ->
             state.enterAmount(value.toLibwallet(), takeFreeFromAmount)
         }
     }
 
     fun confirmUseAllFunds() {
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(USE_ALL_FUNDS))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.USE_ALL_FUNDS)
         stateMachine.withState { state: EnterAmountState ->
             state.enterAmount(state.totalBalance.inInputCurrency, true)
         }
     }
 
     fun confirmDescription(description: String) {
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_DESCRIPTION))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_DESCRIPTION)
         stateMachine.withState { state: EnterDescriptionState ->
             state.enterDescription(description)
         }
@@ -385,7 +374,7 @@ class NewOperationPresenter @Inject constructor(
     fun confirmOperation() {
         confirmationInProgress = true
 
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_OPERATION))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_OPERATION)
         stateMachine.withState { state: ConfirmState ->
             submitOperation(ConfirmStateViewModel.fromConfirmState(state))
         }
@@ -397,7 +386,7 @@ class NewOperationPresenter @Inject constructor(
     fun confirmSwapOperation() {
         confirmationInProgress = true
 
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CONFIRM_SWAP_OPERATION))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_SWAP_OPERATION)
         stateMachine.withState { state: ConfirmLightningState ->
             submitOperation(
                 ConfirmStateViewModel.fromConfirmLightningState(state),
@@ -417,7 +406,7 @@ class NewOperationPresenter @Inject constructor(
             return
         }
 
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(BACK))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.BACK)
         stateMachine.withState { state: State ->
             when (state) {
                 is EnterAmountState -> state.back()
@@ -432,20 +421,39 @@ class NewOperationPresenter @Inject constructor(
     }
 
     fun cancelAbort() {
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(CANCEL_ABORT))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.CANCEL_ABORT)
         stateMachine.withState { state: AbortState ->
             state.cancel()
         }
     }
 
     fun finishAndGoHome() {
-        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(ABORT))
+        reportNewOpAction(E_NEW_OP_ACTION_TYPE.ABORT)
         view.finishAndGoHome()
     }
 
+    private fun reportNewOpAction(type: E_NEW_OP_ACTION_TYPE) {
+        var params: Array<Pair<String, Any>> = arrayOf()
+        if (submarineSwap != null) {
+            params += ("swap_uuid" to submarineSwap!!.houstonUuid)
+        }
+        analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(type, *params))
+
+    }
+
     fun handleNewOpError(errorType: NewOperationErrorType) {
+
+        var params: Array<Pair<String, Any>> = arrayOf()
+        if (submarineSwap != null) {
+            params += ("swap_uuid" to submarineSwap!!.houstonUuid)
+        }
+
         analytics.report(
-            AnalyticsEvent.S_NEW_OP_ERROR(origin.toAnalyticsEvent(), errorType.toAnalyticsEvent())
+            AnalyticsEvent.S_NEW_OP_ERROR(
+                origin.toAnalyticsEvent(),
+                errorType.toAnalyticsEvent(),
+                *params
+            )
         )
         view.showErrorScreen(errorType)
     }
@@ -666,7 +674,7 @@ class NewOperationPresenter @Inject constructor(
     ): Array<Pair<String, Any>> {
 
         val objects = ArrayList<Pair<String, Any>>()
-        objects.add(Pair<String, Any>("operation_id", operationId.toInt()))
+        objects.add(("operation_id" to operationId.toInt()))
 
         // Also add previously known metadata
         objects.addAll(opSubmittedMetadata(confirmStateViewModel))
@@ -695,22 +703,20 @@ class NewOperationPresenter @Inject constructor(
         val outputAmountInSat = stateVm.validated.swapInfo?.swapFees?.outputAmountInSat
         val outputPaddingInSat = stateVm.validated.swapInfo?.swapFees?.outputPaddingInSat
 
-        objects.add(Pair<String, Any>("fee_type", type.name.lowercase(Locale.getDefault())))
-        objects.add(Pair<String, Any>("sats_per_virtual_byte", feeRateInSatsPerVbyte))
-        objects.add(Pair<String, Any>("amount", SerializationUtils.serializeBitcoinAmount(amount)))
-        objects.add(Pair<String, Any>("fee", SerializationUtils.serializeBitcoinAmount(fee)))
-        objects.add(Pair<String, Any>("total", SerializationUtils.serializeBitcoinAmount(total)))
-        objects.add(
-            Pair<String, Any>("onchainFee", SerializationUtils.serializeBitcoinAmount(onchainFee))
-        )
-        objects.add(Pair<String, Any>("feeNeedsChange", feeNeedsChange))
-        objects.add(Pair<String, Any>("isOneConf", isOneConf.toString()))
-        objects.add(Pair<String, Any>("routingFeeInSat", routingFeeInSat.toString()))
-        objects.add(Pair<String, Any>("confirmationsNeeded", confirmationsNeeded.toString()))
-        objects.add(Pair<String, Any>("debtType", debtType.toString()))
-        objects.add(Pair<String, Any>("debtAmountInSat", debtAmountInSat.toString()))
-        objects.add(Pair<String, Any>("outputAmountInSat", outputAmountInSat.toString()))
-        objects.add(Pair<String, Any>("outputPaddingInSat", outputPaddingInSat.toString()))
+        objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
+        objects.add(("sats_per_virtual_byte" to feeRateInSatsPerVbyte))
+        objects.add(("amount" to SerializationUtils.serializeBitcoinAmount(amount)))
+        objects.add(("fee" to SerializationUtils.serializeBitcoinAmount(fee)))
+        objects.add(("total" to SerializationUtils.serializeBitcoinAmount(total)))
+        objects.add(("onchainFee" to SerializationUtils.serializeBitcoinAmount(onchainFee)))
+        objects.add(("feeNeedsChange" to feeNeedsChange))
+        objects.add(("isOneConf" to isOneConf.toString()))
+        objects.add(("routingFeeInSat" to routingFeeInSat.toString()))
+        objects.add(("confirmationsNeeded" to confirmationsNeeded.toString()))
+        objects.add(("debtType" to debtType.toString()))
+        objects.add(("debtAmountInSat" to debtAmountInSat.toString()))
+        objects.add(("outputAmountInSat" to outputAmountInSat.toString()))
+        objects.add(("outputPaddingInSat" to outputPaddingInSat.toString()))
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))
@@ -756,11 +762,12 @@ class NewOperationPresenter @Inject constructor(
 
     private fun opStartedMetadata(paymentType: Type): ArrayList<Pair<String, Any>> {
         val objects = ArrayList<Pair<String, Any>>()
-        objects.add(Pair<String, Any>("type", getEventType(paymentType)))
-        objects.add(Pair<String, Any>("origin", getEventOrigin(origin)))
+        objects.add(("type" to getEventType(paymentType)))
+        objects.add(("origin" to getEventOrigin(origin)))
 
         if (submarineSwap != null && submarineSwap!!.fundingOutput.debtType != null) {
-            objects.add(Pair<String, Any>("debt_type", submarineSwap!!.fundingOutput.debtType!!))
+            objects.add(("debt_type" to submarineSwap!!.fundingOutput.debtType!!))
+            objects.add(("swap_uuid" to submarineSwap!!.houstonUuid))
         }
 
         return objects

@@ -103,7 +103,11 @@ public class PreferencesMigrationManager {
             this::migrateToRecentEmergencyKitVerificationCodes,
 
             // Sept 2021, Apollo 700 introduces EmergencyKit version and its own model
-            this::addEmergencyKitVersion
+            this::addEmergencyKitVersion,
+
+            // Feb 2024, Apollo 1108 add local migration that we missed in 2020 (when we
+            // added UtxoStatus to NTS but never used it).
+            this::initNtsUtxoStatus
     };
 
     /**
@@ -325,5 +329,9 @@ public class PreferencesMigrationManager {
 
             keysRepositoryPrefs.edit().remove("ek_recent_verification_codes").apply();
         }
+    }
+
+    private void initNtsUtxoStatus() {
+        transactionSizeRepository.initNtsUtxoStatus();
     }
 }
