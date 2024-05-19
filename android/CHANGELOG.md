@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [51.11] - 2024-05-18
+
+### FIXED
+
+- Removed debug log of sensitive data
+
 ## [51.10] - 2024-05-17
 
 ### ADDED
