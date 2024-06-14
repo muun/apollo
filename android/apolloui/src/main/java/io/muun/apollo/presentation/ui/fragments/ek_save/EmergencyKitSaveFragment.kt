@@ -70,7 +70,9 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     /** User's choice of application the last time the share dialog was displayed. */
     private var chosenShareTarget: String? = null
 
-    /** Whether the loading dialog is currently on screen */
+    /** Whether the loading dialog is currently on screen. Required due to limitations of
+     * AlertDialogExtensions. It can't handle multiple dismissDialogs() calls prompted by
+     * handleStates(). */
     private var showingLoadingDialog = false
 
     override fun inject() =

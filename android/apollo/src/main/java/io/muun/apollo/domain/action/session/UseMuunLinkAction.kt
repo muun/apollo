@@ -43,6 +43,7 @@ open class UseMuunLinkAction @Inject constructor(
             isEmailAuthorize(parser) -> houstonClient.useAuthorizeLink(uuid)
             isEmailConfirm(parser) -> houstonClient.useConfirmLink(uuid)
             isRcLoginAuthorize(parser) -> houstonClient.authorizeLoginWithRecoveryCode(uuid)
+            isAccountDeletionConfirm(parser) -> houstonClient.confirmAccountDeletion(uuid)
 
             else ->
                 throw MissingCaseError(linkUri, "Muun links")
@@ -63,4 +64,7 @@ open class UseMuunLinkAction @Inject constructor(
 
     private fun isRcLoginAuthorize(p: UriParser) =
         p.pathWithSlash == Globals.INSTANCE.rcLoginAuthorizePath
+
+    private fun isAccountDeletionConfirm(p: UriParser) =
+        p.pathWithSlash == Globals.INSTANCE.confirmAccountDeletionPath
 }

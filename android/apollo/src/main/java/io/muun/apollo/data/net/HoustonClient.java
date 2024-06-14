@@ -7,6 +7,8 @@ import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
 import io.muun.apollo.data.os.OS_ExtensionsKt;
+import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException;
+import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
 import io.muun.apollo.domain.errors.newop.InvalidInvoiceException;
 import io.muun.apollo.domain.errors.newop.InvoiceAlreadyUsedException;
@@ -42,6 +44,7 @@ import io.muun.apollo.domain.model.user.UserPreferences;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
 import io.muun.common.api.ChallengeSetupVerifyJson;
+import io.muun.common.api.ChallengeSignatureJson;
 import io.muun.common.api.CreateFirstSessionJson;
 import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
@@ -72,6 +75,7 @@ import io.muun.common.model.VerificationType;
 import io.muun.common.model.challenge.Challenge;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
+import io.muun.common.rx.CompletableFn;
 import io.muun.common.rx.ObservableFn;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Encodings;
@@ -80,6 +84,7 @@ import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.net.Uri;
+import androidx.annotation.NonNull;
 import libwallet.MusigNonces;
 import okhttp3.MediaType;
 import rx.Completable;
@@ -346,7 +351,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     /**
      * Notify houston of a client logout. Not a critical request, in fact its just so Houston
-     * can now IN ADVANCE of a session expiration (otherwise will have to wait until a new create
+     * can know IN ADVANCE of a session expiration (otherwise will have to wait until a new create
      * session to invalidate old ones). So, its a fire and forget call.
      */
     public Observable<Void> notifyLogout(String authHeader) {
@@ -785,5 +790,30 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Completable updateUserPreferences(final UserPreferences prefs) {
         return getService().updateUserPreferences(prefs.toJson());
+    }
+
+    /**
+     * Irreversibly delete current user wallet.
+     */
+    public Completable deleteWallet(@NonNull final ChallengeSignature challengeSignature) {
+        final ChallengeSignatureJson challengeSignatureJson =
+                apiMapper.mapChallengeSignature(challengeSignature);
+
+        return getService().deleteWallet(challengeSignatureJson)
+                .compose(CompletableFn.replaceHttpException(
+                        ErrorCode.WALLET_NOT_EMPTY,
+                        NonEmptyWalletDeleteException::new
+                ))
+                .compose(CompletableFn.replaceHttpException(
+                        ErrorCode.UNSETTLED_OPERATIONS,
+                        UnsettledOperationsWalletDeleteException::new
+                ));
+    }
+
+    /**
+     * Use an external confirmation link (received by email) to confirm account deletion.
+     */
+    public Observable<Void> confirmAccountDeletion(String uuid) {
+        return getService().confirmAccountDeletion(new LinkActionJson(uuid));
     }
 }

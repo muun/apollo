@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
+import androidx.core.view.isVisible
 import butterknife.BindView
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
@@ -78,17 +79,22 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_lightning)
     lateinit var lightningSettingsItem: MuunSettingItem
 
-    @BindView(R.id.settings_logout)
-    lateinit var logoutItem: View
-
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
 
-    @BindView(R.id.log_out_text_view)
-    lateinit var logOutTextView: TextView
+    @BindView(R.id.settings_logout)
+    lateinit var logoutItem: View
+
+    @BindView(R.id.settings_delete_wallet)
+    lateinit var deleteWalletItem: View
 
     @BindView(R.id.settings_version_code)
     lateinit var versionCode: TextView
+
+    /** Whether the loading dialog is currently on screen. Required due to limitations of
+     * AlertDialogExtensions. It can't handle multiple dismissDialogs() calls prompted by
+     * handleStates(). */
+    private var showingLoadingDialog = false
 
     override fun inject() {
         component.inject(this)
@@ -109,7 +115,8 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         passwordItem.setOnClickListener { editPassword() }
         darkModeItem.setOnClickListener { editDarkMode() }
         bitcoinUnitItem.setOnClickListener { editBitcoinUnit() }
-        logoutItem.setOnClickListener { goToLogout() }
+        logoutItem.setOnClickListener { logout() }
+        deleteWalletItem.setOnClickListener { deleteWallet() }
         bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
 
@@ -225,7 +232,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun setUpUnrecoverableUser() {
         recoverySection.visibility = View.GONE
-        logOutTextView.setText(R.string.settings_delete_wallet)
+        logoutItem.visibility = View.GONE
     }
 
     private fun setUpRecoverableUser(user: User) {
@@ -234,7 +241,8 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         } else {
             recoverySection.visibility = View.GONE
         }
-        logOutTextView.setText(R.string.settings_logout)
+        logoutItem.visibility = View.VISIBLE
+        deleteWalletItem.visibility = View.VISIBLE
     }
 
     override fun profilePictureUpdated(userProfile: UserProfile?) {
@@ -246,8 +254,25 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     }
 
     override fun setLoading(loading: Boolean) {
-        muunPictureInput.toggleLoading(loading)
-        muunPictureInput.resetPicture()
+        if (muunPictureInput.isVisible) {
+            muunPictureInput.toggleLoading(loading)
+            muunPictureInput.resetPicture()
+        }
+
+        if (loading) {
+            MuunDialog.Builder()
+                .layout(R.layout.dialog_loading)
+                .message(R.string.loading)
+                .setCancelOnTouchOutside(false)
+                .build()
+                .let(this::showDialog)
+
+            showingLoadingDialog = true
+
+        } else if (showingLoadingDialog) {
+            dismissDialog()
+            showingLoadingDialog = false
+        }
     }
 
     private fun editUsername() {
@@ -286,9 +311,16 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     }
 
     /**
-     * Called when the user taps on the log out or delete wallet button.
+     * Called when the user taps on the log out button.
      */
-    private fun goToLogout() {
+    private fun logout() {
+        presenter.handleLogoutRequest()
+    }
+
+    /**
+     * Called when the user taps on the delete wallet button.
+     */
+    private fun deleteWallet() {
         presenter.handleDeleteWalletRequest()
     }
 
@@ -298,10 +330,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun showBitcoinSettings(state: SettingsState): Boolean =
         when (state.taprootFeatureStatus) {
-            PREACTIVATED,
-            SCHEDULED_ACTIVATION,
-            ACTIVE,
-            -> true
+            PREACTIVATED, SCHEDULED_ACTIVATION, ACTIVE -> true
             else -> false
         }
 
@@ -339,28 +368,39 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         showDialog(muunDialog)
     }
 
-    override fun handleDeleteWallet(displayExplanation: Boolean) {
-        if (displayExplanation) {
-            val muunDialog = MuunDialog.Builder()
-                .layout(R.layout.dialog_custom_layout2)
-                .title(R.string.settings_delete_wallet_explanation_title)
-                .message(R.string.settings_delete_wallet_explanation_description)
-                .positiveButton(R.string.settings_delete_wallet_explanation_action, null)
-                .build()
-            showDialog(muunDialog)
+    override fun handleDeleteWallet(isActionBlocked: Boolean, isRecoverableUser: Boolean) {
+        if (isActionBlocked) {
+            showCantDeleteNonEmptyWalletDialog()
+
         } else {
-            showDeleteWalletDialog()
+            showDeleteWalletDialog(isRecoverableUser)
         }
+    }
+
+    override fun showCantDeleteNonEmptyWalletDialog() {
+        val muunDialog = MuunDialog.Builder()
+            .layout(R.layout.dialog_custom_layout2)
+            .title(R.string.settings_delete_wallet_explanation_title)
+            .message(R.string.settings_delete_wallet_explanation_description)
+            .positiveButton(R.string.settings_delete_wallet_explanation_action, null)
+            .build()
+        showDialog(muunDialog)
     }
 
     /**
      * Show a confirmation dialog, then delete wallet.
      */
-    private fun showDeleteWalletDialog() {
+    private fun showDeleteWalletDialog(isRecoverableUser: Boolean) {
+        val messageResId = if (isRecoverableUser) {
+            R.string.settings_delete_wallet_alert_body_recoverable_user
+        } else {
+            R.string.settings_delete_wallet_alert_body_unrecoverable_user
+        }
+
         val muunDialog = MuunDialog.Builder()
             .layout(R.layout.dialog_custom_layout2)
             .title(R.string.settings_delete_wallet_alert_title)
-            .message(R.string.settings_delete_wallet_alert_body)
+            .message(messageResId)
             .positiveButton(R.string.settings_delete_wallet_alert_yes) { presenter.deleteWallet() }
             .negativeButton(R.string.settings_delete_wallet_alert_no, null)
             .build()

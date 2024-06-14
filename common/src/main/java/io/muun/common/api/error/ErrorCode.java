@@ -225,6 +225,12 @@ public enum ErrorCode {
     INCOMING_SWAP_ALREADY_FULFILLED(
             2074, StatusCode.CLIENT_FAILURE, "The incoming swap is already fulfilled"
     ),
+    WALLET_NOT_EMPTY(
+            2086, StatusCode.CLIENT_FAILURE, "Cannot delete wallet with funds"
+    ),
+    UNSETTLED_OPERATIONS(
+            2087, StatusCode.CLIENT_FAILURE, "Cannot delete wallet with unsettled operations"
+    ),
 
     // error responses
     @Deprecated

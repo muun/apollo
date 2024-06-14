@@ -780,10 +780,15 @@
 
     <string name="settings_delete_wallet">Eliminar monedero</string>
     <string name="settings_delete_wallet_alert_title">
-        ¿Quieres eliminar tu moendero?
+        Por favor, lee atentamente
     </string>
-    <string name="settings_delete_wallet_alert_body">
-        Perderás tu historial de transacciones.
+    <string name="settings_delete_wallet_alert_body_recoverable_user">
+        Estás a punto de eliminar tu monedero de forma permanente. Si continúas, no podrás
+        recuperar tu billetera y también perderás tu historial de pagos.
+    </string>
+    <string name="settings_delete_wallet_alert_body_unrecoverable_user">
+        Estás a punto de eliminar tu monedero de forma permanente. Si continúas, perderás tu
+        historial de pagos.
     </string>
     <string name="settings_delete_wallet_alert_yes">Eliminar</string>
     <string name="settings_delete_wallet_alert_no">Cancelar</string>
@@ -796,11 +801,11 @@
     <string name="delete_wallet_success_action">SALIR</string>
 
     <string name="settings_delete_wallet_explanation_title">
-        No puedes eliminar tu monedero en este momento
+        Por favor, vacía tu monedero
     </string>
     <string name="settings_delete_wallet_explanation_description">
-        Necesitas vaciar tu monedero. Realiza un pago con todos tus fondos 
-        y vuelve a intentarlo cuando la transacción tenga 6 confirmaciones.
+        Tu monedero aún tiene fondos. Para eliminarlo, por favor transfiere todos tus fondos y
+        espera hasta que la transacción tenga 6 confirmaciones.
     </string>
     <string name="settings_delete_wallet_explanation_action">OK</string>
 
