@@ -749,15 +749,10 @@
 
     <string name="settings_delete_wallet">Delete wallet</string>
     <string name="settings_delete_wallet_alert_title">
-        Please read carefully
+        Are you sure?
     </string>
-    <string name="settings_delete_wallet_alert_body_recoverable_user">
-        You are about to permanently delete your wallet. If you proceed, you won\'t be able to
-        recover your wallet, and you\'ll also lose your payment history.
-    </string>
-    <string name="settings_delete_wallet_alert_body_unrecoverable_user">
-        You are about to permanently delete your wallet. If you proceed, you\'ll lose your payment
-        history.
+    <string name="settings_delete_wallet_alert_body">
+        You will lose your transaction history.
     </string>
     <string name="settings_delete_wallet_alert_yes">Delete</string>
     <string name="settings_delete_wallet_alert_no">Cancel</string>
@@ -770,11 +765,11 @@
     <string name="delete_wallet_success_action">FINISH</string>
 
     <string name="settings_delete_wallet_explanation_title">
-        Please empty your wallet
+        You can\'t delete your wallet at this moment
     </string>
     <string name="settings_delete_wallet_explanation_description">
-        Your wallet still has funds. To delete it, please move all your funds out and wait until
-        the transaction has 6 confirmations.
+        You need to empty your wallet. Make a payment using all your funds,
+        and try again when the transaction has 6 confirmations.
     </string>
     <string name="settings_delete_wallet_explanation_action">OK</string>
 

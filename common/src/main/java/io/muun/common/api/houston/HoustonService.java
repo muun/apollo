@@ -218,12 +218,6 @@ public interface HoustonService {
     @PUT("user/preferences")
     Completable updateUserPreferences(@Body UserPreferences userPreferences);
 
-    @POST("user/delete")
-    Completable deleteWallet(@Body ChallengeSignatureJson challengeSignatureJson);
-
-    @POST("user/email/account-deletion/confirm")
-    Observable<Void> confirmAccountDeletion(@Body LinkActionJson linkActionJson);
-
     // ---------------------------------------------------------------------------------------------
     // Contacts:
 

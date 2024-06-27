@@ -42,11 +42,6 @@ public interface SettingsView extends BaseView {
     /**
      * Handle the delete wallet action.
      */
-    void handleDeleteWallet(boolean isActionBlocked, boolean isRecoverableUser);
+    void handleDeleteWallet(boolean shouldDisplayDeleteWalletExplanation);
 
-    /**
-     * Show a simple, standard muun error dialog to communicate that non empty wallet can't be
-     * deleted.
-     */
-    void showCantDeleteNonEmptyWalletDialog();
 }

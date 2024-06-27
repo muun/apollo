@@ -34,7 +34,6 @@ import io.muun.apollo.domain.action.session.LogInAction;
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
 import io.muun.apollo.domain.action.session.UseMuunLinkAction;
 import io.muun.apollo.domain.action.session.rc_only.LogInWithRcAction;
-import io.muun.apollo.domain.action.user.DeleteWalletAction;
 import io.muun.apollo.domain.action.user.EmailLinkAction;
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction;
 import io.muun.apollo.domain.debug.DebugExecutable;
@@ -129,8 +128,6 @@ public interface ActionComponent {
     StartRecoveryCodeSetupAction startRecoveryCodeSetupAction();
 
     UpdateContactsPermissionStateAction updateContactsPermissionStateAction();
-
-    DeleteWalletAction deleteWalletAction();
 
     DebugExecutable debugExecutable();
 }

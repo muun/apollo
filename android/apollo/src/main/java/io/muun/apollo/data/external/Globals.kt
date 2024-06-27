@@ -106,11 +106,6 @@ abstract class Globals {
     abstract val rcLoginAuthorizePath: String
 
     /**
-     * Get the path of this app's "Confirm Account Deletion" deeplink.
-     */
-    abstract val confirmAccountDeletionPath: String
-
-    /**
      * Get Lapp's URL.
      */
     abstract val lappUrl: String

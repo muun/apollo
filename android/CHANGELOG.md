@@ -6,14 +6,6 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-## [52] - 2024-06-14
-
-### ADDED
-
-- Wallet delete
-  All users can now request wallet delete, to comply with Google Play Account Deletion Data Safety
-  policy.
-
 ## [51.11] - 2024-05-18
 
 ### FIXED

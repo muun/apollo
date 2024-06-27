@@ -126,16 +126,6 @@
                         android:path="@string/rc_login_authorize_link_path" />
             </intent-filter>
 
-            <intent-filter android:label="@string/confirm_link_handler_label">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https"
-                        android:host="@string/muun_link_host"
-                        android:path="@string/confirm_account_deletion_path" />
-            </intent-filter>
-
         </activity>
 
         <!-- SignupActivity -->

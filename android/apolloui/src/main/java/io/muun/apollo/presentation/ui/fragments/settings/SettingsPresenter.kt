@@ -6,14 +6,12 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
-import io.muun.apollo.domain.action.user.DeleteWalletAction
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_LOG_OUT
+import io.muun.apollo.domain.analytics.AnalyticsEvent.E_WALLET_DELETED
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SETTINGS
-import io.muun.apollo.domain.analytics.AnalyticsEvent.WalletDeleteState
 import io.muun.apollo.domain.errors.MuunError
-import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException
-import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
@@ -29,7 +27,6 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
 import io.muun.common.api.messages.EventCommunicationMessage.Event
-import io.muun.common.utils.Preconditions
 import rx.Observable
 import timber.log.Timber
 import javax.inject.Inject
@@ -39,7 +36,6 @@ import javax.money.CurrencyUnit
 class SettingsPresenter @Inject constructor(
     private val bitcoinUnitSel: BitcoinUnitSelector,
     private val updateProfilePictureAction: UpdateProfilePictureAction,
-    private val deleteWallet: DeleteWalletAction,
     private val userActions: UserActions,
     private val exchangeRateSelector: ExchangeRateSelector,
     private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
@@ -59,7 +55,6 @@ class SettingsPresenter @Inject constructor(
         setUpUserWatcher()
         setUpUpdateProfilePictureAction()
         setUpUpdatePrimaryCurrencyAction()
-        setUpDeleteWalletAction()
         setUpNightMode()
     }
 
@@ -114,16 +109,6 @@ class SettingsPresenter @Inject constructor(
         subscribeTo(observable)
     }
 
-    private fun setUpDeleteWalletAction() {
-        val observable = deleteWallet
-            .state
-            .compose(handleStates(view::setLoading, this::handleWalletDeleteError))
-            .doOnNext {
-                onWalletDeleted()
-            }
-        subscribeTo(observable)
-    }
-
     private fun setUpNightMode() {
         view.setNightMode(nightModeManager.get())
     }
@@ -160,7 +145,7 @@ class SettingsPresenter @Inject constructor(
      * Call to logout.
      */
     fun logout() {
-        analytics.report(AnalyticsEvent.E_LOG_OUT())
+        analytics.report(E_LOG_OUT())
         analytics.resetUserProperties()
 
         // We need to "capture" auth header to fire (and forget) notifyLogout request
@@ -177,48 +162,34 @@ class SettingsPresenter @Inject constructor(
      * Call to delete wallet.
      */
     fun deleteWallet() {
-        analytics.report(AnalyticsEvent.E_WALLET_DELETE(WalletDeleteState.STARTED))
-        deleteWallet.run()
-    }
-
-    /**
-     * Perform successful delete wallet follow up actions (e.g cleanup, navigation, etc...).
-     */
-    private fun onWalletDeleted() {
-        analytics.report(AnalyticsEvent.E_WALLET_DELETE(WalletDeleteState.SUCCESS))
+        analytics.report(E_WALLET_DELETED())
         analytics.resetUserProperties()
 
+        // We need to "capture" auth header to fire (and forget) notifyLogout request
+        val jwt = getJwt()
         navigator.navigateToDeleteWallet(context)
 
         // We need to finish this activity, or the session status check will immediately raise
-        // the SessionExpired error -- even though this is expected from deleteWallet.
+        // the SessionExpired error -- even though this was a regular logout.
         view.finishActivity()
+        userActions.notifyLogoutAction.run(jwt)
     }
 
     /**
-     * Handle the tap on the log out button.
-     */
-    fun handleLogoutRequest() {
-        // TODO: this should not be using a blocking observable. Not terrible, not ideal.
-        val options = logoutOptionsSel.watch()
-            .toBlocking()
-            .first()
-        val shouldBlockAndExplain = options.isBlocked()
-
-        Preconditions.checkArgument(options.isRecoverable())
-        view.handleLogout(shouldBlockAndExplain)
-    }
-
-    /**
-     * Handle the tap on the delete wallet button.
+     * Handle the tap on the delete wallet or log out buttons.
      */
     fun handleDeleteWalletRequest() {
         // TODO: this should not be using a blocking observable. Not terrible, not ideal.
         val options = logoutOptionsSel.watch()
             .toBlocking()
             .first()
+        val shouldBlockAndExplain = options.isBlocked()
+        if (options.isRecoverable()) {
+            view.handleLogout(shouldBlockAndExplain)
 
-        view.handleDeleteWallet(options.isBlocked(), options.isRecoverable())
+        } else {
+            view.handleDeleteWallet(shouldBlockAndExplain)
+        }
     }
 
     override fun getEntryEvent(): AnalyticsEvent {
@@ -252,14 +223,5 @@ class SettingsPresenter @Inject constructor(
 
     fun openDebugPanel() {
         navigator.navigateToDebugPanel(context)
-    }
-
-    private fun handleWalletDeleteError(error: Throwable?) {
-        analytics.report(AnalyticsEvent.E_WALLET_DELETE(WalletDeleteState.ERROR))
-        when (error) {
-            is NonEmptyWalletDeleteException -> view.showCantDeleteNonEmptyWalletDialog()
-            is UnsettledOperationsWalletDeleteException -> view.showCantDeleteNonEmptyWalletDialog()
-            else -> super.handleError(error)
-        }
     }
 }

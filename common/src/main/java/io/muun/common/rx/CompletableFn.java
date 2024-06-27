@@ -23,8 +23,7 @@ public final class CompletableFn {
      */
     public static <ErrorT extends Throwable> Completable.Transformer replaceTypedError(
             final Class<ErrorT> errorClass,
-            final Func1<ErrorT, Throwable> replacer
-    ) {
+            final Func1<ErrorT, Throwable> replacer) {
 
         return onTypedErrorResumeNext(
                 errorClass,
@@ -36,8 +35,7 @@ public final class CompletableFn {
      * Consume and ignore errors of a given type.
      */
     public static <ErrorT extends Throwable> Completable.Transformer ignoreTypedError(
-            final Class<ErrorT> errorClass
-    ) {
+            final Class<ErrorT> errorClass) {
 
         return onTypedErrorResumeNext(
                 errorClass,
@@ -50,8 +48,7 @@ public final class CompletableFn {
      */
     public static <ErrorT extends Throwable> Completable.Transformer onTypedErrorResumeNext(
             final Class<ErrorT> errorClass,
-            final Func1<ErrorT, Completable> resumeFunction
-    ) {
+            final Func1<ErrorT, Completable> resumeFunction) {
 
         return completable -> completable.onErrorResumeNext(error -> {
 
@@ -78,27 +75,11 @@ public final class CompletableFn {
     }
 
     /**
-     * If the error emitted by the completable is of type HttpException and has a specific code, it
-     * gets replaced by the error returned when calling replacer with the original error.
-     */
-    public static Completable.Transformer replaceHttpException(
-            final ErrorCode code,
-            final Func1<HttpException, Throwable> replacer
-    ) {
-
-        return onHttpExceptionResumeNext(
-                code,
-                error -> Completable.error(replacer.call(error))
-        );
-    }
-
-    /**
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static Completable.Transformer onHttpExceptionResumeNext(
             final ErrorCode code,
-            final Func1<HttpException, Completable> resumeFunction
-    ) {
+            final Func1<HttpException, Completable> resumeFunction) {
 
         return completable -> completable.onErrorResumeNext(error -> {
 

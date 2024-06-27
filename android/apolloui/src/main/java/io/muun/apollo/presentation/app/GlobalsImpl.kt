@@ -62,9 +62,6 @@ class GlobalsImpl : Globals() {
     override val rcLoginAuthorizePath: String
         get() = BuildConfig.RC_LOGIN_AUTHORIZE_LINK_PATH
 
-    override val confirmAccountDeletionPath: String
-        get() = BuildConfig.CONFIRM_ACCOUNT_DELETION_PATH
-
     override val lappUrl: String
         get() = BuildConfig.LAPP_URL
 }
