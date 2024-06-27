@@ -31,8 +31,12 @@ class AlertDialogExtension @Inject constructor() : ActivityExtension() {
         dismissDialog()
 
         // ON dialog dismiss, dispose android's dialog reference to avoid memory leaks
-        dialog.addOnDismissAction {
-            activeDialog = null
+        dialog.addOnDismissAction { dismissedDialog ->
+            // If activeDialog has changed, it means dismissedDialog is already dismissed and a new
+            // dialog is being shown. We don't want to lose that ref (to properly dismiss it later).
+            if (activeDialog == dismissedDialog) {
+                activeDialog = null
+            }
         }
 
         activeDialog = dialog.show(activity)

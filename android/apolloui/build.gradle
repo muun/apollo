@@ -63,6 +63,7 @@ static def configExternalLinks(productFlavor, String host) {
     String authorizePath = "/link/authorize/index.html"
     String changePasswdPath = "/link/confirm/index.html"
     String rcLoginAuthPath = "/link/authorize-rc/index.html"
+    String confirmAccountDeletionPath = "/link/confirm-account-deletion/index.html"
 
     // Required for AndroidManifest:
     productFlavor.resValue "string", "muun_link_host", host
@@ -70,6 +71,7 @@ static def configExternalLinks(productFlavor, String host) {
     productFlavor.resValue "string", "authorize_link_path", authorizePath
     productFlavor.resValue "string", "confirm_link_path", changePasswdPath
     productFlavor.resValue "string", "rc_login_authorize_link_path", rcLoginAuthPath
+    productFlavor.resValue "string", "confirm_account_deletion_path", confirmAccountDeletionPath
 
     // Required for code access in action layer:
     productFlavor.buildConfigField "String", "MUUN_LINK_HOST", quote(host)
@@ -77,6 +79,7 @@ static def configExternalLinks(productFlavor, String host) {
     productFlavor.buildConfigField "String", "AUTHORIZE_LINK_PATH", quote(authorizePath)
     productFlavor.buildConfigField "String", "CONFIRM_LINK_PATH", quote(changePasswdPath)
     productFlavor.buildConfigField "String", "RC_LOGIN_AUTHORIZE_LINK_PATH", quote(rcLoginAuthPath)
+    productFlavor.buildConfigField "String", "CONFIRM_ACCOUNT_DELETION_PATH", quote(confirmAccountDeletionPath)
 }
 
 
@@ -91,8 +94,8 @@ android {
         applicationId "io.muun.apollo"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 1111
-        versionName "51.11"
+        versionCode 1200
+        versionName "52"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/

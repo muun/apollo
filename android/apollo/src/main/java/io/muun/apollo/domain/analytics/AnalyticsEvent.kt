@@ -296,7 +296,16 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_RECOVERY_CODE_SET_UP : AnalyticsEvent()
     class E_LOG_OUT : AnalyticsEvent()
     class E_WALLET_CREATED : AnalyticsEvent()
-    class E_WALLET_DELETED : AnalyticsEvent()
+    class E_WALLET_DELETE(val state: WalletDeleteState) : AnalyticsEvent(
+        listOf("type" to state.name.lowercase(Locale.getDefault()))
+    )
+
+    enum class WalletDeleteState {
+        STARTED,
+        ERROR,
+        SUCCESS,
+    }
+
     class E_SIGN_IN_ABORTED : AnalyticsEvent()
 
     class E_SIGN_IN_SUCCESSFUL(val type: LoginType) : AnalyticsEvent(
@@ -441,8 +450,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         RC_SETUP_START_CONNECTION_ERROR,
         RC_SETUP_FINISH_CONNECTION_ERROR,
         RC_STALE_ERROR,
-        RC_CREDENTIALS_DONT_MATCH_ERROR,
-        CRASHLYTICS
+        RC_CREDENTIALS_DONT_MATCH_ERROR
     }
 
     class E_ERROR(val type: ERROR_TYPE, vararg extras: Any) : AnalyticsEvent(
