@@ -1,0 +1,1712 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Manifest strings -->
+    <string name="verify_link_handler_label" translatable="false">Muun</string>
+    <string name="authorize_link_handler_label" translatable="false">Muun</string>
+    <string name="confirm_link_handler_label" translatable="false">Muun</string>
+
+    <!-- General-purpose strings -->
+    <string name="cancel">Zrušiť</string>
+    <string name="dismiss">Zavrieť</string>
+    <string name="stay">Zostať</string>
+    <string name="leave">Odísť</string>
+    <string name="go_to_settings">Prejsť do nastavení</string>
+    <string name="retry">Skúsiť znovu</string>
+    <string name="send_report">Odoslať správu</string>
+    <string name="abort">Zrušiť</string>
+    <string name="available_balance">Zostatok</string>
+    <string name="selected">Vybrané</string>
+    <string name="why"><annotation link="why">Prečo?</annotation></string>
+    <string name="no_internet">Stratené internetové pripojenie</string>
+    <string name="qr_code_image">Obrázok QR kódu</string> <!-- accesibility -->
+    <string name="backspace">Krok vzad</string> <!-- accesibility -->
+    <string name="long_date_format">%s o %s%s</string>
+    <string name="not_available">Nedostupné</string>
+    <string name="open_app">Otvoriť aplikáciu</string>
+    <string name="loading">Načítava sa...</string>
+    <string name="contacting">Kontaktovanie</string>   <!-- Just used for UI test matching -->
+
+    <string name="overflow_menu_hint">Overflow menu</string>
+
+    <!-- FCM -->
+    <string name="google_play_services_not_available">
+        Zdá sa, že Služby Google Play nie sú k dispozícii na tomto mobilnom zariadení. Muun ich potrebuje
+        na odosielanie push notifikácií pre Lightning platby. Prosím, nainštalujte Služby Google Play a skúste to
+        znova.
+    </string>
+    <string name="fcm_token_not_available">
+        Android notifikačná služba nereaguje. Skúste to znova.
+    </string>
+
+    <!-- New operation -->
+    <string name="new_operation_title">Nová platba</string>
+    <string name="operation_detail_title">Detaily platby</string>
+    <string name="showqr_title">Prijať</string>
+    <string name="scanqr_title">Odoslať</string>
+    <string name="scanqr_drawer_title">Použiť adresu v schránke</string>
+    <string name="scanqr_drawer_no_address">Platobná požiadavka od %s</string>
+    <string name="scanqr_drawer_no_address_no_host">Platobná požiadavka od obchodníka</string>
+    <string name="scanqr_drawer_ln_invoice_title">Použiť faktúru v schránke</string>
+
+    <string name="grant_camera_permission_button">Povoliť kameru</string>
+
+    <string name="camera_permission_request_title">
+        Naskenujte bitcoin alebo lightning QR kód
+    </string>
+
+    <string name="camera_permission_request">
+        Povoliť kameru na skenovanie QR kódov s adresami alebo faktúrami
+    </string>
+
+    <string name="new_operation_to">Komu</string>
+    <string name="new_operation_to_hint">Zadajte bitcoinovú adresu alebo faktúru</string>
+    <string name="new_operation_dialog_full_address">Celá adresa</string>
+    <string name="new_operation_note_hint">Napíšte poznámku</string>
+    <string name="new_operation_total">Celkom</string>
+    <string name="new_operation_fee">Poplatok sieti</string>
+    <string name="new_operation_amount">Čiastka</string>
+    <string name="new_operation_use_all_funds">Použiť všetky prostriedky</string>
+    <string name="new_operation_note">Poznámka</string>
+    <string name="new_operation_confirm">Odoslať</string>
+    <string name="new_operation_resolving">Načítanie detailov platby</string>
+    <string name="new_operation_receiving_node_data">Načítanie detailov uzla</string>
+    <string name="new_operation_invoice_exp_prefix">Táto faktúra vyprší za</string>
+    <string name="new_operation_invoice_exp_weeks">%d týždňov a %d dní</string>
+    <string name="new_operation_invoice_exp_days">%d dní a %d hodín</string>
+    <string name="new_operation_invoice_exp_hours">%d hodín a %d minút</string>
+    <string name="new_operation_invoice_exp_minutes">%02d:%02d</string>
+    <string name="new_operation_invoice_exp_seconds">%02d:%02d</string>
+
+    <string name="confirm_amount">potvrdiť čiastku</string>
+    <string name="confirm_note">potvrdiť poznámku</string>
+    <string name="title_new_operation">Odoslať bitcoin</string>
+
+    <string name="new_operation_abort_alert_title">Zrušiť platbu?</string>
+    <string name="new_operation_abort_alert_body">
+        Chystáte sa zrušiť túto platbu a vrátiť sa na domovskú obrazovku
+    </string>
+
+    <string name="new_operation_swap_title">Platiť cez lightning</string>
+    <string name="new_operation_receiving_node_public_key">
+        <![CDATA[<b>Verejné kľúče:</b> %s]]>
+    </string>
+    <string name="new_operation_receiving_node_network_address">
+        <![CDATA[<b>Sieťová adresa:</b> %s]]>
+    </string>
+    <string name="see_in_node_explorer">Otvoriť v prehliadači uzlov</string>
+
+    <string name="new_op_1_conf_notice_banner">
+        Táto platba môže trvať dlhšie ako väčšina lightning platieb.
+        <annotation link="link">Prečo?</annotation>
+    </string>
+    <string name="new_op_1_conf_notice_title">Prečo bude táto platba trvať dlhšie?</string>
+    <string name="new_op_1_conf_notice_desc">
+        Táto lightning platba vyžaduje potvrdenú on-chain transakciu. Potvrdenie
+        trvá v priemere 10 minút.
+    </string>
+
+    <!-- Failed operation -->
+    <string name="error_op_insufficient_funds">Nemáte dostatok prostriedkov</string>
+    <string name="error_op_insufficient_funds_desc">
+        Nemáte dostatok prostriedkov na pokrytie tejto platby a poplatku sieti.
+    </string>
+
+    <string name="error_op_invoice_unreachable_node_title">Túto faktúru nieje možné zaplatiť</string>
+    <string name="error_op_invoice_unreachable_node_desc">
+        Táto faktúra bola vytvorená súkromným uzlom, ktorý nie je dosiahnuteľný. Na dosiahnutie uzla musí faktúra obsahovať
+        ďalšie údaje (RouteHints). Tento problém môže vyriešiť iba tvorca faktúry.
+    </string>
+
+    <string name="error_op_invoice_no_route_title">Nie je dostupná žiadna trasa</string>
+    <string name="error_op_invoice_no_route_desc">
+        Nie je k dispozícii žiadna trasa s dostatočnou kapacitou na uskutočnenie tejto platby. Kontaktujte prosím náš
+        <annotation link="support">podporný tím</annotation> a dajte nám vedieť, čo sa stalo.
+        Radi vám pomôžeme.
+    </string>
+
+    <string name="error_op_invoice_will_expire_soon_title">
+        Táto platba potrebuje dlhší čas platnosti
+    </string>
+    <string name="error_op_invoice_will_expire_soon_desc">
+        Prosím, požiadajte o novú faktúru s platnosťou aspoň jednej hodiny,
+        alebo skúste naskenovať faktúru s menšou sumou.
+    </string>
+
+    <string name="error_op_invoice_expired_title">Táto faktúra vypršala</string>
+    <string name="error_op_invoice_expired_desc">
+        Táto faktúra vypršala pred uskutočnením platby. Prosím, vytvorte novú alebo požiadajte o ďalšiu.
+    </string>
+
+    <string name="error_op_invoice_used_title">Táto faktúra už bola použitá</string>
+    <string name="error_op_invoice_used_desc">
+        Táto faktúra už bola naskenovaná alebo zaplatená inou peňaženkou. Prosím, vytvorte novú alebo
+        požiadajte o ďalšiu.
+    </string>
+
+    <string name="error_op_invoice_invalid_amount_title">
+        Táto faktúra neobsahuje čiastku
+    </string>
+    <string name="error_op_invoice_invalid_amount_desc">
+        Momentálne môžete platiť iba faktúry, ktoré obsahujú čiastku. Prosím, vytvorte novú alebo
+        požiadajte o ďalšiu.
+    </string>
+
+    <string name="error_op_invoice_invalid_title">Nie je možné zaplatiť túto faktúru</string>
+    <string name="error_op_invoice_invalid_desc">Skúste prosím inú faktúru</string>
+
+    <string name="error_op_exchange_rate_window_too_old_title">Kurzy bitcoinu sa zmenili</string>
+    <string name="error_op_exchange_rate_window_too_old_desc">
+        Vaša platba nebola dokončená, pretože kurzy bitcoinu sa zmenili od začiatku.
+        Začnite novú platbu prosím.
+    </string>
+
+    <string name="error_op_invalid_swap">Vyskytla sa neočakávaná chyba</string>
+    <string name="error_op_invalid_swap_desc">
+        Niečo sa pokazilo, ale nevieme čo. Kontaktujte prosím náš
+        <annotation link="support">podporný tím</annotation> a dajte nám vedieť, čo sa stalo.
+        Radi vám pomôžeme.
+    </string>
+
+    <string name="error_op_cyclical_swap_title">Túto faktúru nemožno zaplatiť</string>
+    <string name="error_op_cyclical_swap_desc">Nemôžete zaplatiť faktúru sami sebe.</string>
+
+    <string name="error_op_swap_failed_title">Platba zlyhala</string>
+    <string name="error_op_swap_failed_desc">
+        Prijímajúca peňaženka momentálne nemôže spracovať lightning platby, takže platba zlyhala.
+    </string>
+
+    <string name="error_op_generic">Došlo k chybe</string>
+    <string name="error_op_generic_desc">
+        Niečo sa pokazilo, ale nedokázali sme zistiť príčinu. Vytvorili sme chybovú správu,
+        ktorá nám ju pomôže nájsť.
+        \n\n
+        Prosím, <annotation link="support">pošlite správu</annotation> nášmu tímu.
+    </string>
+
+    <string name="error_op_amount_too_small_title">Táto platba je príliš malá</string>
+    <string name="error_op_amount_too_small_desc">
+        Čiastka, ktorú sa snažíte poslať, je príliš malá. Musí byť väčšia ako 546 satoshi.
+    </string>
+
+    <string name="error_op_invalid_address_title">Toto nie je BTC adresa</string>
+    <string name="error_op_invalid_address_desc">
+        Toto nie je BTC adresa alebo lightning faktúra. Dôkladne skontrolujte jej zdroj a uistite sa,
+        že adresa má správny formát.
+        \n
+        \nNaskenovaný text:
+        \n<annotation fontStyle="bold"><annotation arg="0">náhradný symbol</annotation></annotation>
+    </string>
+
+    <string name="error_op_invalid_address_title_no_arg">Toto nie je BTC adresa</string>
+    <string name="error_op_invalid_address_desc_no_arg">
+        Toto nie je BTC adresa alebo lightning faktúra. Dôkladne skontrolujte jej zdroj a uistite sa,
+        že adresa má správny formát.
+    </string>
+
+    <string name="error_invalid_lnurl_title">Je to LNURL kód?</string>
+    <string name="error_invalid_lnurl_desc">
+        Zdá sa, že nie je. Prosím, dôkladne skontrolujte jeho zdroj. Majte na pamäti, že LNURL môžete používať iba
+        so službami, ktoré ho podporujú.
+        \n
+        \nNaskenovaný text:
+        \n<annotation fontStyle="bold"><annotation arg="0">náhradný symbol</annotation></annotation>
+    </string>
+
+    <string name="error_invalid_lnurl_tag_title">Je to LNURL výber?</string>
+    <string name="error_invalid_lnurl_tag_desc">
+        Toto je platný LNURL, ale nie pre túto operáciu. Prosím, dôkladne skontrolujte jeho zdroj.
+    </string>
+
+    <string name="error_lnurl_service_unresponsive_title">%s nereaguje</string>
+    <string name="error_lnurl_service_unresponsive_desc">
+        Služba, ktorá vytvorila LNURL kód, nie je dostupná. Prosím, skúste to znova neskôr.
+    </string>
+
+    <string name="error_lnurl_unknown_title">Niečo sa pokazilo</string>
+    <string name="error_lnurl_unknown_desc">
+        Niečo zlyhalo a nevieme, čo to bolo. Prosím, pošlite nám správu, aby sme zistili,
+        čo sa stalo.
+        \n
+        \n<annotation fontStyle="bold">PRIJATÁ SPRÁVA:</annotation>
+        \n<annotation arg="0">náhradný symbol</annotation>
+    </string>
+
+    <string name="error_lnurl_invoice_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_invoice_expired_desc">
+        Vaša lightning faktúra vypršala a <annotation arg="0">náhradný symbol</annotation>
+        neuskutočnil platbu. Prosím, kontaktujte ich pre viac informácií.
+        \n
+        \n<annotation fontStyle="bold">POUŽITÁ FAKTÚRA:</annotation>
+        \n<annotation arg="1">náhradný symbol</annotation>
+    </string>
+
+    <string name="error_lnurl_expired_title">Žiadosť o výber vypršala</string>
+    <string name="error_lnurl_expired_desc">
+        LNURL vypršala pred uskutočnením platby. Prosím, požiadajte o novú.
+    </string>
+
+    <string name="error_lnurl_no_balance_title">Nie sú k dispozícii žiadne prostriedky na výber</string>
+    <string name="error_lnurl_no_balance_desc">
+        Zdá sa, že nemáte žiadne prostriedky na výber
+        <annotation fontStyle="bold"><annotation arg="0">služba</annotation></annotation>. Prosím,
+        skontrolujte, že váš zostatok nie je prázdny.
+    </string>
+
+    <string name="error_lnurl_no_route_title">Nie je k dispozícii žiadna trasa</string>
+    <string name="error_lnurl_no_route_desc">
+        Zdá sa, že <annotation fontStyle="bold"><annotation arg="0">služba</annotation></annotation>
+        nemohla nájsť trasu na odoslanie platby. Odporúčame vám kontaktovať
+        <annotation fontStyle="bold"><annotation arg="1">službu</annotation></annotation>,
+        aby ste ich o tom informovali.
+    </string>
+
+    <string name="error_op_action">Ísť na domovskú stránku</string>
+    <string name="error_op_action_back">Ísť späť</string>
+
+    <!-- Operation detail -->
+    <string name="operation_detail_description">Popis</string>
+    <string name="operation_detail_date">Kedy</string>
+    <string name="operation_detail_amount">Čiastka</string>
+    <string name="operation_detail_confirmations">Potvrdenia</string>
+    <string name="operation_detail_fee">Poplatok sieti</string> <!-- default always overridden -->
+    <string name="operation_detail_address_incoming">Prijaté na adresu</string>
+    <string name="operation_detail_address_outgoing">Odoslané na adresu</string>
+    <string name="operation_detail_txid">ID transakcie</string>
+    <string name="operation_detail_share_txid_title">ID transakcie</string>
+    <string name="operation_detail_invoice">Lightning faktúra</string>
+    <string name="operation_detail_swap_hash">Hash platby</string>
+    <string name="operation_detail_swap_preimage">Preimage platby</string>
+    <string name="operation_detail_receiving_pubkey">Prijímajúci uzol</string>
+    <string name="operation_detail_fee_outgoing">Poplatok zaplatený ťažiarom</string>
+
+    <string name="operation_swap_pending_0conf_desc">
+        Čakanie na prijímateľa, aby prijal platbu.
+    </string>
+    <string name="operation_swap_pending_desc">
+        Táto platba čaká na potvrdenie v on-chain.
+    </string>
+    <string name="operation_swap_failed_desc">Neexistovala žiadna dostupná trasa pre túto platbu.
+        Dostanete refundáciu približne za %d hodín (%d blokov).
+    </string>
+    <string name="operation_swap_expired_desc">
+        Táto platba zlyhala. Dostali ste refundáciu.
+    </string>
+    <string name="operation_swap_pending_confirmations_explanation_title">Potrebné potvrdenie
+    </string>
+    <string name="operation_swap_pending_explanation_desc">Táto lightning platba zahŕňa on-chain
+        transakciu. Aby bola platba dokončená, transakcia musí byť potvrdená.
+    </string>
+    <string name="operation_detail_invoice_copied">Faktúra skopírovaná do schránky</string>
+    <string name="operation_detail_preimage_copied">Preimage platby skopírovaný do schránky</string>
+    <string name="operation_detail_payment_hash_copied">Hash platby skopírovaný do schránky</string>
+    <string name="operation_detail_txid_copied">ID transakcie skopírované do schránky</string>
+    <string name="operation_detail_amount_copied">Čiastka skopírovaná do schránky</string>
+    <string name="operation_detail_fee_copied">Sieťový poplatok skopírovaný do schránky</string>
+    <string name="operation_detail_address_copied">Adresa skopírovaná do schránky</string>
+    <string name="operation_detail_node_copied">Prijímajúci uzol skopírovaný do schránky</string>
+
+    <!-- Operation history -->
+    <string name="home_operations_list_title">Platby</string>
+    <string name="history_external_incoming_operation_description">Z bitcoin siete</string>
+    <string name="history_external_incoming_swap_description">Z lightning siete</string>
+    <string name="home_operations_empty">
+        <annotation link="go_to_receive">Prijmite</annotation> svoju prvú platbu a začnite!
+    </string>
+    <string name="home_operations_empty_title">História vašich platieb sa zobrazí tu</string>
+    <string name="operation_sent_to_yourself">Zaplatené sebe</string>
+    <string name="internal_incoming_operation">%s vám zaplatil</string>
+    <string name="internal_outgoing_operation">Zaplatené %s</string>
+    <string name="external_incoming_operation">Bolo vám zaplatené</string>
+    <string name="external_outgoing_operation">Zaplatili ste</string>
+    <string name="external_outgoing_swap_operation">Zaplatené %s</string>
+    <string name="lnurl_withdraw_op_detail_title">%s vám zaplatil</string>
+
+    <!-- Contacts -->
+    <string name="contact_list_empty">
+        <annotation link="go_to_p2p_setup">Povoľte kontakty</annotation> na odosielanie peňazí
+        svojim priateľom pomocou telefónneho čísla a zoznamu kontaktov.
+    </string>
+    <!-- UI TESTING ONLY: Must match above clickable span  -->
+    <string name="contact_list_empty_clickable_span">Povoľte kontakty</string>
+
+    <string name="contact_list_title">Kontakty</string>
+
+    <!-- Notifications -->
+    <string name="notifications_new_contact">%s práve pristál na Muun!</string>
+    <string name="notifications_amount_received">%s prijaté</string>
+    <string name="notifications_amount_received_from">%s vám poslal %s</string>
+    <string name="notifications_op_failed_title">Vaša platba zlyhala</string>
+    <string name="notifications_op_failed_content">Otvorte svoju peňaženku, aby ste videli podrobnosti</string>
+    <string name="notification_receiving_ln_payment">Vaša platba je na ceste</string>
+    <string name="notification_receiving_ln_payment_desc">
+        Dostanete svoju platbu hneď, ako ju %s dokončí.
+    </string>
+    <string name="notification_ln_payment_failed">@string/notifications_op_failed_title</string>
+    <string name="notification_ln_payment_failed_desc">
+        Vaša lightning faktúra vypršala a %s nedokončil platbu.
+    </string>
+    <string name="notification_incoming_ln_payment_pending">Otvorte Muun na prijatie platby</string>
+    <string name="notification_incoming_ln_payment_pending_desc">
+        Niekto vám poslal Bitcoin cez lightning sieť. Klepnite sem, aby ste ho prijali.
+    </string>
+    <string name="notification_incoming_ln_payment_pending_cta">PRIJMITE PLATBU</string>
+
+
+    <!-- Generic strings -->
+    <string name="slogan">Peňaženka so samosprávou\npre bitcoin a lightning</string>
+    <string name="network_error_message">
+        Nie je možné pripojiť sa k serveru Muun. Toto je zvyčajne niečo dočasné a samoopravné. Počkajte
+        pár sekúnd, skontrolujte svoje internetové pripojenie a skúste to znova. Ak problém pretrváva,
+        prosím, kontaktujte <annotation fontStyle="bold">support@muun.com</annotation> o pomoc.
+    </string>
+
+    <!-- Landing -->
+
+    <string name="signup_start">VYTVORIŤ NOVÚ PEŇAŽENKU</string>
+    <string name="login_start">OBNOVIŤ EXISTUJÚCU PEŇAŽENKU</string>
+
+    <!-- Signup -->
+
+    <string name="signup_continue">Pokračovať</string>
+    <string name="signup_title">Registrácia</string> <!-- nepoužívané -->
+    <string name="login_title">Obnovte svoju peňaženku</string>
+
+    <!-- signup.phone_number -->
+
+    <string name="signup_phone_number_title">Overte svoje telefónne číslo</string>
+    <string name="signup_phone_number_explanation">
+        Zadajte svoje telefónne číslo a krajinu, aby ste dostali overovací kód. Môžu sa uplatňovať poplatky za prenos.
+    </string>
+    <string name="signup_phone_number_why_this">Prečo toto?</string>
+    <string name="signup_phone_number_why_this_title">Prečo sa na to pýtame?</string>
+    <string name="signup_phone_number_why_this_description">
+        Muun uľahčuje platby pomocou vášho telefónneho čísla a zoznamu kontaktov.
+        Ľudia, ktorí už vedia, ako vás kontaktovať cez telefón, vám budú môcť ľahko zaplatiť cez
+        Muun.
+    </string>
+    <string name="signup_phone_number_select_country">Vyberte svoju krajinu</string>
+
+    <string name="select_country">Vyberte svoju krajinu</string>
+
+    <string name="signup_phone_number_code_helper">Krajina</string>
+    <string name="signup_phone_number_phone_helper">Telefónne číslo</string>
+    <string name="signup_enter_number">Pokračovať</string>
+
+    <!-- signup.email -->
+
+    <string name="signup_email_verify">Overte svoj email</string>
+    <string name="signup_email_authorize">Autorizujte obnovenie peňaženky</string>
+    <string name="signup_email_verify_explanation">
+        Dostanete autorizačný email na
+        <annotation fontStyle="bold"><annotation arg="0">náhradný symbol</annotation></annotation>.
+        Kliknite na odkaz v emaile, aby ste pokračovali.
+    </string>
+    <string name="email_verify_open_mail">Otvorte emailovú aplikáciu</string>
+
+    <!-- signup.verification -->
+
+    <string name="signup_verification_title">@string/signup_phone_number_title</string>
+    <string name="signup_verification_explanation">
+        Dostanete overovací kód prostredníctvom SMS
+    </string>
+    <string name="signup_verification_code_hint">6-miestny kód</string>
+    <string name="signup_verification_resend_countdown">Môže to trvať až %d:%02d</string>
+    <string name="signup_verification_resend_message">Nedostali ste ho?</string>
+    <string name="action_change_num">Zlé číslo?</string>
+    <string name="action_resend_sms">Znova odoslať SMS</string>
+    <string name="action_call_me">Zavolajte mi</string>
+    <string name="signup_enter_code">Pokračovať</string>
+
+    <string name="set_up_rc_step_count">%d z %d</string>
+
+    <!-- LoginEmailFragment -->
+    <string name="login_email_title">Zadajte svoj email</string>
+    <string name="login_email_explanation">
+        Vybrali ste ho pri nastavení peňaženky.
+    </string>
+    <string name="login_email_input_hint">Váš email</string>
+    <string name="login_email_action">Pokračovať</string>
+
+    <!-- signup.profile -->
+
+    <string name="signup_profile_title">Vyplňte svoj profil</string>
+    <string name="signup_profile_explanation">
+        Vaše celé meno a obrázok sú viditeľné len pre vaše kontakty
+    </string>
+    <string name="signup_profile_why_this">Kto to môže vidieť?</string>
+    <string name="signup_profile_why_this_title">Kto môže vidieť tieto informácie?</string>
+    <string name="signup_profile_why_this_explanation">Vaše celé meno a obrázok budú viditeľné
+        iba pre ľudí, ktorí už majú vaše telefónne číslo vo svojom zozname kontaktov.
+    </string>
+    <string name="signup_create_profile">Vytvoriť profil</string>
+
+    <string name="signup_profile_first_name_hint">Krstné meno</string>
+    <string name="signup_profile_last_name_hint">Priezvisko</string>
+    <string name="field_first_name">Krstné meno</string>
+    <string name="field_last_name">Priezvisko</string>
+    <string name="field_password">Heslo</string>
+
+    <!-- signup.unlock -->
+
+    <string name="signup_unlock_title">Zadajte svoje heslo</string>
+    <string name="signup_unlock_forgot">Zabudol som svoje heslo</string>
+    <string name="signup_unlock_continue">Pokračovať</string>
+    <string name="signup_unlock_password_hint">Vaše heslo</string>
+    <string name="signup_unlock_password_reminder">
+        <![CDATA[<b>Pripomienka:</b> malo aspoň 8 znakov. Toto bolo jediné obmedzenie.]]>
+    </string>
+    <string name="signup_unlock_password_abort_title">Zrušiť obnovu peňaženky?</string>
+    <string name="signup_unlock_password_abort_msg">
+        Nedokončili ste obnovu svojej peňaženky. Môžete to urobiť neskôr.
+    </string>
+    <!-- signup.sync -->
+    <string name="signup_sync_creating">Vytváram vašu peňaženku</string>
+    <string name="signup_sync_loading">Obnovujem vašu peňaženku</string>
+
+    <!-- home -->
+    <string name="home_footer_action_send">Odoslať</string>
+    <string name="home_footer_action_receive">Prijať</string>
+    <string name="home_send_feedback_action_title">Pomoc a spätná väzba</string>
+
+    <!-- WelcomeToMuun -->
+    <string name="welcome_to_muun">Vytvorili ste novú peňaženku.\nVitajte na Muun!</string>
+    <string name="welcome_to_muun_cta">Poďme na to</string>
+
+    <!-- Send screen -->
+    <string name="send_header_title">Odoslať bitcoin</string>
+    <string name="send_confirm">Pokračovať</string>
+    <string name="send_uri_error_title">Neplatná adresa alebo faktúra</string>
+    <string name="send_uri_error_body"> Toto nie je bitcoin adresa alebo lightning faktúra.</string>
+    <string name="send_cyclic_payment_warning">Odošlete prostriedky do vašej Muun peňaženky</string>
+
+    <string name="paste_from_clipboard_button">Vložiť zo schránky</string>
+    <string name="no_lnurl_in_clipboard_error">Schránka neobsahuje LNURL</string>
+
+    <!-- QR scanner -->
+    <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
+
+    <!-- request_update -->
+
+    <string name="request_update_title">Vyžaduje sa aktualizácia</string>
+    <string name="request_update_subtitle">Ak chcete pokračovať v používaní Muun, prosím aktualizujte aplikáciu
+        na najnovšiu verziu.
+    </string>
+    <string name="request_update_body">Bude to trvať len pár minút</string>
+    <string name="request_update_action">Aktualizovať</string>
+
+    <!-- request_restart -->
+    <string name="request_restart_title">Vyžaduje sa reštart</string>
+    <string name="request_restart_subtitle">Ak chcete pokračovať v používaní Muun, prosím reštartujte aplikáciu
+        a obnovte svoju peňaženku.
+    </string>
+    <string name="request_restart_body">Čakajú na vás nové funkcie a opravy!</string>
+    <string name="request_restart_action">Reštartovať</string>
+
+    <!-- pin -->
+    <string name="pin_error_on_setup_cancel">"Prosím, vyberte si PIN"</string> <!-- nepoužívané -->
+    <string name="navigation_back">späť</string>
+    <string name="your_pin_did_not_match">PIN sa nezhoduje</string>
+    <string name="choose_your_pin">Vytvorte svoj PIN</string>
+    <string name="choose_your_pin_description">Udržujte svoju peňaženku v bezpečí</string>
+    <string name="choose_your_pin_repeat_description">Zadajte ho znova na potvrdenie</string>
+    <string name="confirm_your_pin">Potvrďte svoj PIN</string>
+    <string name="enter_your_pin">Zadajte svoj PIN</string>
+    <string name="pin_attempts_left_many">Zostáva %d pokusov</string>
+    <string name="pin_attempts_left_one">Zostáva 1 pokus</string>
+    <string name="pin_attempts_left_zero">Žiadne pokusy nezostali</string>
+
+    <!-- Setup Email & Password  -->
+
+    <string name="setup_password_step_counter">%s z %s</string>
+
+    <string name="setup_password_intro_title">Zálohujte svoju peňaženku</string>
+    <string name="setup_password_intro_body">
+        Použite svoj email a heslo na pohodlné obnovenie peňaženky, ak zmeníte telefón
+        alebo preinštalujete Muun.
+    </string>
+    <string name="setup_password_intro_title_has_rc">Zálohujte pomocou hesla</string>
+    <string name="setup_password_intro_body_has_rc">
+        Použite svoj email a heslo na pohodlné obnovenie peňaženky, ak zmeníte telefón
+        alebo preinštalujete Muun.
+        \n\n
+        Týmto sa povolí viacfaktorová autentifikácia, čo zvyšuje bezpečnosť pri používaní vášho Recovery
+        Code.
+    </string>
+    <string name="setup_password_intro_action">ZAČAŤ</string>
+
+    <string name="setup_password_abort_title">Zrušiť nastavenie obnovy?</string>
+    <string name="setup_password_abort_body">
+        Vaše heslo nebude fungovať, kým nedokončíte.
+    </string>
+
+    <string name="setup_password_skip_title">
+        Ste si istí, že nechcete obnovu cez email?
+    </string>
+    <string name="setup_password_skip_body">
+        Môžete sa vrátiť neskôr, ak si to rozmyslíte.
+    </string>
+    <string name="setup_password_skip_yes">Som si istý</string>
+    <string name="setup_password_skip_no">Zrušiť</string>
+
+
+    <string name="create_email_title">Zadajte svoj email</string>
+    <string name="create_email_subtitle">
+        Dostanete overovací odkaz.
+        <annotation link="why">Ako Muun použije môj email?</annotation>
+    </string>
+    <string name="create_email_input_hint">Váš email</string>
+    <string name="create_email_skip">Nechcem používať svoj email</string>
+    <string name="create_email_action">POTVRDIŤ EMAIL</string>
+    <string name="create_email_how_dialog_title">Ako Muun použije môj email?</string>
+    <string name="create_email_how_dialog_desc">
+        Muun vám pošle email zakaždým, keď sa niekto pokúsi získať prístup k vašej peňaženke, žiadajúc o
+        vašu autorizáciu. Toto vás chráni pred ľuďmi (alebo počítačmi), ktorí sa pokúšajú uhádnuť vaše
+        heslo.
+    </string>
+
+    <string name="create_password_title">Vytvorte si heslo</string>
+    <string name="create_password_subtitle">
+        Vyberte si niečo zapamätateľné. Ak je to možné, vyhnite sa starým heslám, ktoré už používate.
+    </string>
+    <string name="create_password_input_hint">Vaše heslo</string>
+    <string name="create_password_confirm_input_hint">Potvrďte svoje heslo</string>
+    <string name="create_password_input_helper">Minimálne 8 znakov</string>
+    <string name="create_password_input_confirm_helper">Heslá musia súhlasiť</string> <!-- unuse -->
+    <string name="create_password_action">Pokračovať</string>
+    <string name="create_email_help_link">
+        <annotation link="help">Potrebujem pomoc</annotation>
+    </string>
+    <string name="create_email_help_content">
+        <annotation role="h1">Iná peňaženka už používa tento e-mail</annotation>
+
+        <annotation role="p">
+            Ak potrebujete pomoc, kontaktujte náš
+            <annotation link="support">podporný tím</annotation>
+            a dajte nám vedieť, čo sa stalo. Radi vám pomôžeme.
+        </annotation> <!-- check link -->
+    </string>
+
+    <string name="verify_email_title">Overte svoj e-mail</string>
+    <string name="verify_email_subtitle">
+        Dostanete overovací e-mail na
+        <annotation fontStyle="bold"><annotation arg="0">%s</annotation></annotation>.
+        Kliknite na odkaz v e-maile, aby ste pokračovali.
+    </string>
+    <string name="verify_email_action">OTVORIŤ EMAILOVÚ APLIKÁCIU</string>
+
+    <string name="setup_password_accept_title">Dve veci, ktoré musíte pochopiť</string>
+    <string name="setup_password_accept_why">
+        <annotation link="why">Prečo Muun nemôže resetovať moje heslo?</annotation>
+    </string> <!-- check if this fits -->
+    <string name="setup_password_accept_condition_1">
+        Rozumiem, že na obnovu svojej peňaženky budem potrebovať svoje heslo a prístup k e-mailu.
+    </string>
+    <string name="setup_password_accept_condition_2">
+        Rozumiem, že Muun nemôže resetovať moje heslo, ak ho zabudnem.
+    </string>
+    <string name="setup_password_accept_action">Dokončiť</string>
+
+    <string name="setup_password_why_cant_reset_title">Prečo Muun nemôže resetovať moje heslo?</string>
+    <string name="setup_password_why_cang_reset_desc">
+        Vaše heslo sa používa na šifrovanie zálohy vašej peňaženky, takže nikto bez hesla k nej nemôže
+        pristúpiť — ani Muun. Ak stratíte svoje pôvodné heslo, zálohu nie je možné
+        dešifrovať a obnoviť.
+    </string>
+
+    <string name="setup_password_success_title">Úspech!</string>
+    <string name="setup_password_success_body">
+        Zálohovali ste svoju peňaženku a teraz ju môžete obnoviť pomocou e-mailu a hesla.
+    </string>
+    <string name="setup_password_success_action">VÝBORNÉ</string>
+
+    <!-- Setup Recovery Code -->
+    <string name="recovery_code_title">Nastavte obnovovací kód</string>
+    <string name="priming_recovery_code_start">ŠTART</string>
+    <string name="priming_recovery_code_title">Vytvorte alternatívnu zálohu</string>
+    <string name="priming_recovery_code_desc">
+        Napíšte kód na papier, aby ste mohli obnoviť svoju peňaženku, ak zabudnete svoje heslo.
+    </string>
+    <string name="priming_recovery_code_email_skipped_title">Zálohujte svoju peňaženku</string>
+    <string name="priming_recovery_code_email_skipped_desc">
+        Napíšte kód na papier, aby ste mohli obnoviť svoju peňaženku, ak zmeníte telefón alebo
+        preinštalujete
+        Muun.
+    </string>
+
+    <string name="recovery_code_explanation_title">Napíšte si svoj obnovovací kód</string>
+    <string name="recovery_code_explanation">
+        Použite pero a papier. Z bezpečnostných dôvodov si ho neukladajte do telefónu ani do cloudu.
+    </string>
+    <string name="recovery_code_continue">Pokračovať</string>
+
+    <string name="recovery_code_verify_explanation_title">Potvrďte svoj obnovovací kód</string>
+    <string name="recovery_code_verify_action">Pokračovať</string>
+
+    <string name="recovery_code_verify_accept_explanation_title">
+        Dve veci, ktoré musíte pochopiť
+    </string>
+    <string name="recovery_code_verify_accept_condition_1">
+        Rozumiem, že budem potrebovať svoj obnovovací kód, ak zabudnem svoje heslo.
+    </string>
+    <string name="recovery_code_verify_accept_condition_1_skipped_email">
+        Rozumiem, že budem potrebovať svoj obnovovací kód na obnovu svojej peňaženky.
+    </string>
+    <string name="recovery_code_verify_accept_condition_2">
+        Rozumiem, že Muun neuchováva kópiu môjho obnovovacieho kódu a že ho nemožno zmeniť.
+    </string>
+    <string name="recovery_code_accept">DOKONČIŤ</string>
+
+    <string name="recovery_code_success_message">Úspech!</string>
+    <string name="recovery_code_success_description">
+        Teraz môžete obnoviť svoju peňaženku pomocou svojho e-mailu a obnovovacieho kódu.
+    </string>
+    <string name="recovery_code_success_description_email_skipped">
+        Zálohovali ste svoju peňaženku a teraz ju môžete obnoviť pomocou obnovovacieho kódu.
+    </string>
+    <string name="recovery_code_success_action">VÝBORNÉ</string>
+
+    <string name="recovery_code_missing_title">Chýbajúci obnovovací kód</string> <!-- unused? -->
+    <string name="recovery_code_missing_message">
+        Ak chcete pokračovať, musíte najprv nastaviť svoj obnovovací kód.
+    </string> <!-- unused? -->
+
+    <string name="recovery_code_missing_action">Nastaviť obnovovací kód</string>
+    <string name="recovery_code_error_invalid_character">
+        V tomto kóde je neplatný znak
+    </string>
+
+    <string name="recovery_code_abort_title">Prerušiť nastavenie obnovovacieho kódu?</string>
+    <string name="recovery_code_abort_body">
+        Váš obnovovací kód nebude fungovať, ak nedokončíte.
+    </string>
+
+    <!-- feedback -->
+    <string name="feedback_title">Pomoc a spätná väzba</string>
+    <string name="feedback_explanation">
+        Pošlite nám akékoľvek nápady, komentáre alebo problémy, ktoré máte. Čítame ich všetky!
+    </string>
+    <string name="feedback_input_hint">Spätná väzba</string>
+    <string name="feedback_action">Poslať spätnú väzbu</string>
+    <string name="feedback_success">Spätná väzba odoslaná</string>
+    <string name="anon_feedback_explanation">
+        Ak máte akékoľvek nápady, komentáre alebo problémy, napíšte nám na
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="anon_feedback_explanation_support_id">
+        Prosím, uveďte tento podporný kód (<annotation arg="0">1111-1111</annotation>).
+    </string>
+    <string name="anon_feedback_open_email">Otvoriť emailového klienta</string>
+
+    <!-- other -->
+
+    <string name="operation_rbf">Zrušiteľné</string>
+    <string name="operation_pending">Potvrdzovanie</string>
+    <string name="operation_failed">Neúspešné</string>
+    <string name="operation_completed">Dokončené</string>
+
+    <string name="copy">Kopírovať</string>
+    <string name="share">Zdieľať</string>
+
+    <!-- Phone Number Screen defaults -->
+    <string name="default_country_code">US</string>
+    <string name="default_country_prefix_hint">+1</string>
+
+    <string name="signup_forgot_password_recovery_code_explanation">
+        Zadajte svoj obnovovací kód
+    </string>
+
+    <!--Settings-->
+    <string name="settings_title_profile_hidden">Nastavenia</string>
+    <string name="settings_header_recovery">Obnova</string>
+    <string name="settings_header_wallet_details">Detaily peňaženky</string>
+    <string name="settings_header_general">Všeobecné</string>
+    <string name="settings_item_email">E-mail</string>
+    <string name="settings_item_phone">Telefónne číslo</string>
+    <string name="settings_item_primary_currency">Hlavná mena</string>
+    <string name="settings_item_bitcoin_unit">Jednotka Bitcoinu</string>
+    <string name="settings_password">Zmeniť heslo</string>
+    <string name="settings_item_export_keys">Záloha súkromných kľúčov</string> <!-- unused -->
+    <string name="settings_setup_recovery_code">Nastaviť obnovovací kód</string>
+    <string name="settings_recovery_tool">Nástroj na obnovu</string>
+    <string name="settings_version">Verzia %s</string>
+
+    <string name="settings_logout">Odhlásiť sa</string>
+    <string name="settings_logout_alert_title">Ste si istý?</string>
+    <string name="settings_logout_alert_body">
+        Na znovuzískanie prístupu budete potrebovať svoje heslo alebo Recovery Code.
+    </string>
+    <string name="settings_logout_alert_yes">Odhlásiť sa</string>
+    <string name="settings_logout_alert_no">Zrušiť</string>
+
+    <string name="settings_logout_explanation_title">
+        Nemôžete sa odhlásiť v tomto momente
+    </string>
+    <string name="settings_logout_explanation_description">
+        Platby, ktoré ste dostali, čakajú na potvrdenie.
+        Pred odhlásením počkajte na ich potvrdenie.
+    </string>
+    <string name="settings_logout_explanation_action">OK</string>
+
+    <string name="settings_delete_wallet">Vymazať peňaženku</string>
+    <string name="settings_delete_wallet_alert_title">
+        Prosím, prečítajte si pozorne
+    </string>
+    <string name="settings_delete_wallet_alert_body_recoverable_user">
+        Chystáte sa trvale vymazať svoju peňaženku. Ak budete pokračovať, nebudete môcť
+        obnoviť svoju peňaženku a prídete aj o svoju históriu platieb.
+    </string>
+    <string name="settings_delete_wallet_alert_body_unrecoverable_user">
+        Chystáte sa trvale vymazať svoju peňaženku. Ak budete pokračovať, prídete o svoju
+        históriu platieb.
+    </string>
+    <string name="settings_delete_wallet_alert_yes">Vymazať</string>
+    <string name="settings_delete_wallet_alert_no">Zrušiť</string>
+
+    <string name="delete_wallet_success_message">Vymazali ste svoju peňaženku</string>
+    <string name="delete_wallet_success_description">
+        Mrzí nás, že odchádzate! Radi by sme vedeli prečo. Kontaktujte
+        náš <annotation link="support">podporný tím</annotation> a dajte nám vedieť.
+    </string>
+    <string name="delete_wallet_success_action">DOKONČIŤ</string>
+
+    <string name="settings_delete_wallet_explanation_title">
+        Prosím, vyprázdnite svoju peňaženku
+    </string>
+    <string name="settings_delete_wallet_explanation_description">
+        Vaša peňaženka stále obsahuje prostriedky. Ak ju chcete vymazať, prosím, presuňte všetky svoje prostriedky a počkajte,
+        kým bude transakcia potvrdená 6 potvrdeniami.
+    </string>
+    <string name="settings_delete_wallet_explanation_action">OK</string>
+
+    <string name="settings_edit_first_name">Krstné meno</string>
+    <string name="settings_edit_last_name">Priezvisko</string>
+    <string name="edit_username_save">Uložiť</string>
+    <string name="edit_username_title">Upraviť meno</string>
+
+    <string name="select_primary_currency_title">Hlavná mena</string>
+    <string name="search_currency_title">Vyhľadať menu</string>
+    <string name="search_currency_hint">Vyhľadať</string>
+    <string name="select_currency_most_popular_section_title">Najobľúbenejšie</string>
+    <string name="select_currency_all_section_title">Krajiny</string>
+
+    <string name="edit_password_explanation">
+        Vaše heslo sa používa na zabezpečenie.
+        \nNa jeho zmenu potrebujete prístup k svojmu emailu a svoje súčasné heslo alebo Recovery Code.
+    </string>
+    <string name="edit_password_start">Začať</string>
+
+    <string name="export_keys_intro_action">Vytvorte svoj Núdzový balíček</string>
+    <string name="swipe_to_continue">Prejdením pokračujte</string>
+
+    <string name="export_keys_intro_1_title">Jeden dokument</string>
+    <string name="export_keys_intro_1_body">
+        Váš Núdzový balíček je PDF dokument s informáciami a pokynmi na nezávislé
+        presunutie vašich prostriedkov.
+    </string>
+
+    <string name="export_keys_intro_2_title">Uložené online</string>
+    <string name="export_keys_intro_2_body">
+        Vaše súkromné kľúče sú bezpečne zašifrované vaším Recovery Code, takže ich môžete
+        uložiť do cloudu.
+    </string>
+
+    <string name="export_keys_intro_3_title">Úplné vlastníctvo</string>
+    <string name="export_keys_intro_3_body">
+        Spojením Núdzového balíčka a vášho Recovery Code budete mať úplnú a nepopierateľnú
+        kontrolu nad svojimi prostriedkami.
+    </string>
+
+    <string name="export_keys_intro_why_encrypted_title"> <!--unused -->
+        Prečo sú moje súkromné kľúče zašifrované?
+    </string>
+    <string name="export_keys_intro_why_encrypted_body"> <!--unused -->
+        Vaše súkromné kľúče sú zašifrované pre lepšiu bezpečnosť. Zabráni to ich vystaveniu na
+        kuse papiera a umožňuje vám ich bezpečne uložiť online.
+        \n
+        \nV Muun môžete obnoviť prístup k svojej peňaženke kliknutím na email a zadaním svojho
+        hesla. Súkromné kľúče sú určené len na použitie v prípadoch, keď Muun nie je schopný
+        spolupracovať.
+        \n
+        \nPre tento prípad sme vytvorili nástroj s otvoreným zdrojovým kódom, ktorý vám umožní dešifrovať a zamiesť svoje
+        kľúče.
+    </string>
+
+    <string name="export_keys_preparing">Pripravujú sa súkromné kľúče</string>
+    <string name="export_keys_preparing_error_title">Niečo sa pokazilo</string>
+    <string name="export_keys_preparing_error_desc">
+        Došlo k chybe pri príprave vašich súkromných kľúčov. Skúste to neskôr znova.
+    </string>
+
+    <!--unused -->
+    <string name="recovery_tool_header">Nástroj obnovy</string>
+    <string name="recovery_tool_info_title">
+        Použite nástroj obnovy na získanie svojich peňazí
+    </string>
+    <string name="recovery_tool_info_body">
+        V prípade, že aplikácia Muun nie je dostupná, je toto spôsob, ako získať všetky svoje peniaze bez spolupráce
+        s našimi servermi.
+        \n\nPoužite svoje súkromné kľúče, svoj obnovovací kód a nástroj obnovy na získanie svojich prostriedkov.
+        \n\nNájdete náš nástroj obnovy a inštrukcie k tomuto procesu na
+    </string>
+
+    <!-- Security logout -->
+    <string name="security_logout_action">Obnoviť svoju peňaženku</string>
+    <string name="security_logout_text">Boli ste odhlásený</string>
+    <string name="security_logout_subtext">
+        Ako bezpečnostné opatrenie ste boli odhlásený. Prihláste sa späť, aby ste pokračovali.
+    </string>
+
+    <string name="edit_profile_pic">Upraviť profilový obrázok</string>
+    <string name="action_pick_profile_pic_title">Vybrať obrázok</string>
+    <string name="action_camera">Odfoťte sa</string>
+    <string name="action_gallery">Z galérie</string>
+    <string name="uploading_picture">Nahrávanie obrázku</string>
+
+    <string name="enter_old_password_explanation_title">Zadajte svoje heslo</string>
+    <string name="enter_old_password_explanation">Overte, že ste vlastníkom tejto peňaženky.</string>
+    <string name="enter_old_password_hint">Súčasné heslo</string>
+    <string name="use_recovery_code">Použiť Recovery Code</string>
+    <string name="enter_old_password_continue">Začať</string>
+
+    <string name="enter_recovery_code_title">Zadajte svoj Recovery Code</string>
+    <string name="enter_recovery_code_continue">Pokračovať</string>
+    <string name="use_password">Použiť heslo</string>
+
+    <string name="change_password_title">Zadajte svoje nové heslo</string>
+    <string name="change_password_hint">Nové heslo</string>
+    <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_condition">
+        Chápem, že moje predchádzajúce heslo už nie je platné.
+    </string>
+    <string name="change_password_continue">Potvrdiť nové heslo</string>
+    <string name="change_password_abort_dialog_title">Zrušiť zmenu hesla?</string>
+    <string name="change_password_abort_dialog_message">
+        Vaše nové heslo nebude fungovať, pokiaľ nedokončíte.
+    </string>
+    <string name="change_password_abort_dialog_yes">Zrušiť</string>
+    <string name="change_password_abort_dialog_no">Zrušiť</string>
+    <string name="change_password_success_action">Výborne</string>
+    <string name="change_password_success_message">
+        Použite svoje nové heslo na obnovu svojej peňaženky.
+    </string>
+
+    <!-- Tools mock strings (to preview in layout design screen) -->
+    <string name="tools_mock_long_name">Super hyper mega Náhodné meno, ktoré je tiež
+        extrémne a neuveriteľne dlhé a zahŕňa extra malé priezvisko :)
+    </string>
+
+    <!-- Sync Contacts - P2PSetup-->
+    <string name="sync_contacts_title">Povoliť prístup ku kontaktom</string>
+    <string name="sync_contacts_explanation">
+        Telefónne čísla vašich kontaktov sa nikdy neodosielajú do Muun.
+    </string>
+    <string name="sync_contacts_how_it_works">Ako to funguje?</string>
+    <string name="sync_contacts_image">Synchronizačný obrázok kontaktov</string>
+    <string name="sync_contacts_button_text">Povoliť prístup</string>
+    <string name="sync_contacts_how_it_works_title">Ako to funguje?</string>
+    <string name="sync_contacts_how_it_works_title_description">
+        Iba hashe telefónnych čísiel sú odosielané do Muun, nikdy samotné čísla.
+        Spárovaním týchto hashov sa vaši priatelia používajúci Muun zobrazia ako kontakty.
+    </string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">muun</string>
+
+    <string name="first_on_muun_image">Obrázok Prvý na muun</string>
+    <string name="first_on_muun_description">
+        Zatiaľ nemáte kontakty používajúce Muun. Tu ich nájdete,
+        keď povolia svoje kontakty.
+    </string>
+    <string name="home_contacts_loading">Skenovanie kontaktov</string>
+    <string name="home_contacts_permission_denied_forever_text">
+        Muun vyžaduje oprávnenie k kontaktom na zobrazenie vašich kontaktov, ale bolo mu
+        trvalo odmietnuté.
+        \n\n
+        Prejdite do nastavení aplikácie, vyberte
+        <annotation fontStyle="bold">Oprávnenia</annotation>,
+        a povolte <annotation fontStyle="bold">Kontakty</annotation>.
+    </string>
+    <string name="home_contacts_permission_denied_forever_action">Prejdite na nastavenia</string>
+    <string name="select_currency_title">Zmeniť menu</string>
+
+    <!-- ERRORS -->
+    <string name="error_amount_too_small">Množstvo je príliš malé</string>
+    <string name="error_network_error">Chyba siete, skúste to neskôr.</string> <!-- unused? -->
+    <string name="error_country_not_supported">
+        Prepáčte! Muun nie je v tejto krajine dostupný.
+    </string>
+    <string name="error_deprecated_client_version">
+        Táto verzia je príliš stará. Musíte aktualizovať svoju aplikáciu Muun.
+    </string>
+    <string name="error_email_already_used">Iný peňaženka už používa tento email</string>
+    <string name="error_email_not_registered">Tento email nie je registrovaný</string>
+    <string name="error_field_required">%s je povinné</string>
+    <string name="error_expired_session">
+        Vaša relácia vypršala. Prosím, kontaktujte
+        <annotation link="support">support@muun.com</annotation>.
+    </string> <!-- TODO link handling -->
+    <string name="error_verification_code_expired">
+        Váš overovací kód vypršal. Posielame vám nový.
+    </string>
+    <string name="error_incorrect_password">Nesprávne heslo. Skúste to znova.</string>
+    <string name="error_incorrect_recovery_code">Nesprávny obnovovací kód. Skúste to znova.</string>
+    <string name="error_insufficient_funds">Nedostatok prostriedkov</string>
+    <string name="error_invalid_address">
+        Tento bitcoinová adresa alebo lightning faktúra je neplatná
+    </string>
+    <string name="error_invalid_email_address">Neplatná emailová adresa</string>
+    <string name="error_invalid_operation_uri">
+        Poskytnuté platobné údaje sú neplatné
+    </string> <!-- unused -->
+    <string name="error_invalid_payment_request">Tento platobný odkaz je neplatný</string>
+    <string name="error_invalid_phone_number">Neplatné telefónne číslo</string>
+    <string name="error_invalid_picture">Obrázok sa nedal načítať</string>
+    <string name="error_invalid_verification_code">
+        Nesprávny overovací kód. Skúste to znova.
+    </string>
+    <string name="error_password_too_short">Heslo je príliš krátke</string>
+    <string name="error_passwords_dont_match">Heslá sa nezhodujú</string>
+    <string name="error_phone_number_already_used">
+        Iná peňaženka už používa toto telefónne číslo
+    </string> <!-- unused???? -->
+    <string name="error_recovery_code_verification">Nesprávny kód. Skúste to znova.</string>
+    <string name="error_revoked_verification_code">
+        Toto je starý overovací kód. Skúste posledný, ktorý ste dostali
+    </string>
+    <string name="error_verification_code_limit_reached">
+        Príliš veľa neúspešných pokusov. Dostanete nový kód
+    </string>
+    <string name="error_no_valid_payment_details_provided">
+        Poskytnuté platobné údaje sú neplatné
+    </string>
+    <string name="error_ln_invoice_not_supported"> <!-- unused -->
+        Prepáčte! Táto lightning faktúra zatiaľ nie je podporovaná.
+    </string>
+    <string name="error_generic">Nastala chyba. Skúste to znova</string>
+
+    <string name="error_dialog_let_us_know">Dajte nám vedieť</string>
+
+    <string name="error_send_report_dialog_title">Nastala neočakávaná chyba</string>
+    <string name="error_send_report_dialog_body">
+        Niečo sa pokazilo, ale nevieme čo. Vytvorili sme chybovú správu,
+        ktorú môžeme použiť na vašu pomoc. Prosím, pošlite ju na
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="error_send_report_dialog_body_short">
+        Vytvorili sme chybovú správu, ktorú môžeme použiť na vašu pomoc. Prosím, pošlite ju na
+        <annotation fontStyle="bold">support@muun.com</annotation>.
+    </string>
+    <string name="error_send_report_dialog_yes">Odoslať správu</string>
+    <string name="error_report_email_subject">Hlásenie chyby Muun</string>
+    <string name="error_copy_report_dialog_title">Nie je nainštalovaná žiadna emailová aplikácia</string>
+    <string name="error_copy_report_dialog_body">
+        Môžete skopírovať chybovú správu a poslať nám ju iným spôsobom.
+    </string>
+    <string name="error_copy_report_dialog_yes">Kopírovať do schránky</string>
+    <string name="error_no_email_client_installed">
+        Nie je nainštalovaná žiadna emailová aplikácia.
+    </string>
+    <string name="error_no_web_client_installed">
+        Nie je nainštalovaná žiadna webová prehliadačová aplikácia.
+    </string>
+
+    <!-- Edit Fee -->
+    <string name="edit_fee_title">Upraviť sieťový poplatok</string>
+    <string name="edit_fee_confirm">Potvrdiť poplatok</string>
+    <string name="fee_options_message">Vyberte čas potvrdenia</string>
+    <string name="fee_options_whats_this">Čo je to?</string>
+    <string name="fee_option_item_title">Menej ako</string>
+    <string name="fee_option_item_hs">%d h</string>
+    <string name="fee_option_item_mins">%d min</string>
+    <string name="fee_option_item_hs_mins">%d h %d min</string>
+    <string name="fee_option_item_fee_rate">%s sat/vbajt</string>
+    <string name="enter_fee_manually">Zadajte poplatok ručne</string>
+    <string name="manual_fee_entered">Ručne zadaný poplatok</string>
+    <string name="fee_options_whats_this_explanation_title">
+        Sieťový poplatok a časy potvrdenia
+    </string>
+    <string name="fee_options_whats_this_explanation_desc">
+        Muun vypočíta a navrhne optimálny poplatok potrebný na potvrdenie vašej transakcie do
+        30 minút.
+        \n\nVyšší poplatok dáva vašej transakcii vyššiu prioritu, zatiaľ čo transakcia s nižším poplatkom môže
+        trvať hodiny na potvrdenie.
+        \n\nOptimálne poplatky sa zvyšujú pri vyššej aktivite na sieti. Ak sa poplatky zvýšia, kým vaša transakcia
+        nebola potvrdená, môže trvať dlhšie, kým sa potvrdí.
+    </string>
+    <string name="manual_fee_message">Zadajte poplatok ručne</string>
+    <string name="manual_fee_how_this_works">Čo je to?</string>
+    <string name="manual_fee_how_this_works_explanation_title">
+        Ručný poplatok a časy potvrdenia
+    </string>
+    <string name="manual_fee_how_this_works_explanation_desc">
+        Satoshi na virtuálny bajt (sat/vbajt) je jednotka na meranie priority transakcie.
+        \n\nVyšší poplatok dáva vašej transakcii vyššiu prioritu, zatiaľ čo platba s nižším poplatkom môže trvať
+        niekoľko hodín na potvrdenie.
+        \n\nPoplatky sa zvyšujú pri vyššej aktivite na sieti. Ak sa poplatky zvýšia, kým je vaša platba nepotvrdená,
+        môže trvať dlhšie, kým sa potvrdí.
+    </string>
+    <string name="manual_fee_insufficient_funds_message">Nedostatok finančných prostriedkov</string>
+    <string name="manual_fee_insufficient_funds_desc">Zadajte nižší poplatok.</string>
+    <string name="manual_fee_low_warning_message">Poplatok je príliš nízky</string>
+    <string name="manual_fee_low_warning_desc">
+        Táto transakcia môže trvať dni na potvrdenie.
+    </string>
+    <string name="manual_fee_too_high_message">Poplatok je príliš vysoký</string>
+    <string name="manual_fee_too_high_desc">Zadajte poplatok nižší ako %s sat/vbajt.</string>
+    <string name="sat_byte">sat/vbajt</string>
+    <string name="use_all_funds_warning_message">Upozornenie</string>
+    <string name="use_all_funds_warning_desc">
+        Keďže používate všetky svoje finančné prostriedky, poplatok sa odpočíta z celkovej sumy,
+        ktorú posielate.
+    </string>
+    <string name="fee_options_use_all_funds_warning_desc">
+        Keďže používate všetky svoje finančné prostriedky, zmena poplatku zmení sumu transakcie.
+    </string>
+    <string name="manual_fee_high_traffic_error_message">Poplatok je príliš nízky</string>
+    <string name="manual_fee_high_traffic_error_desc">
+        Sieť Bitcoinu má nezvyčajne vysokú premávku a odmieta transakcie s poplatkovými sadzbami
+        nižšími ako %s sat/vbajt.
+    </string>
+    <string name="manual_fee_too_low_error_message">Poplatok je príliš nízky</string>
+    <string name="manual_fee_too_low_error_desc">Zadajte poplatok vyšší ako %s sat/vbajt.</string>
+    <string name="new_op_insufficient_funds_warn_message">Upozornenie</string>
+    <string name="new_op_insufficient_funds_warn_desc">
+        Nie sú dostatočné finančné prostriedky na úhradu optimálneho sieťového poplatku.
+        <annotation fontColor="muunBlue">Vyberte sieťový poplatok</annotation> pre pokračovanie.
+    </string>
+    <string name="use_maximum_fee">Použiť maximálny poplatok</string>
+    <string name="new_op_error_required_amount">Celková suma (Suma + Minimálny poplatok)</string>
+    <string name="new_op_error_total_balance">Váš zostatok</string>
+
+
+    <!-- show_qr aka RECEIVE -->
+
+    <string name="priming_notifications_image">Obrázok povolenia upozornení</string>
+    <string name="priming_notifications_enable">POVOĽTE UPOZORNENIA</string>
+    <string name="priming_notifications_skip">PRESKOČIŤ</string>
+    <string name="priming_notifications_title">Nikdy nezmeškajte platbu</string>
+    <string name="priming_notifications_desc">
+        Prosím, povoľte upozornenia, aby ste vedeli, kedy dostanete Bitcoin.
+    </string>
+    <string name="priming_notifications_skipped_title">Prosím, povoľte upozornenia</string>
+    <string name="priming_notifications_skipped_desc">
+        Platby prostredníctvom Lightning vyžadujú, aby ste dostávali upozornenia.
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_title">
+        Vyžaduje sa povolenie upozornení
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_desc">
+        Muun vyžaduje povolenie upozornení na správne prijímanie platieb,
+        ale bolo to trvalo zamietnuté.
+        \n\nProsím, choďte do menu nastavení aplikácie, vyberte
+        <annotation fontStyle="bold">Oprávnenia</annotation>,
+        a povolte <annotation fontStyle="bold">Upozornenia</annotation>.
+    </string>
+
+    <string name="show_qr_copied">Skopírované do schránky</string>
+    <string name="tab_bitcoin_address">Bitcoin</string>
+    <string name="tab_ln_invoice">Lightning</string>
+    <string name="legacy_address_info">Stará adresa Bitcoin</string>
+    <string name="your_bitcoin_address">Vaša adresa Bitcoin</string>
+    <string name="your_compat_bitcoin_address">Vaša stará adresa</string>
+    <string name="your_taproot_bitcoin_address">Vaša adresa Bitcoin</string>
+    <string name="your_ln_invoice">Vaša lightning faktúra</string>
+    <string name="show_qr_invoice_loading">Generovanie faktúry</string>
+    <string name="show_qr_invoice_expired">
+        Táto faktúra vypršala pred uskutočnením platby. Vytvorte alebo požiadajte o novú.
+    </string>
+    <string name="show_qr_invoice_create_other">Vytvoriť faktúru</string>
+
+    <string name="show_qr_high_fees_warning">
+        Váš peňaženka momentálne nemôže prijímať platby cez Lightning kvôli vysokému
+        zahlteniu Bitcoinovej siete.
+        \n\n
+        Pre prijatie platby prejdite na kartu Bitcoin.
+    </string>
+    <string name="show_qr_high_fees_warning_unified_qr">
+        Váš peňaženka momentálne nemôže prijímať platby cez Lightning kvôli vysokému
+        zahlteniu Bitcoinovej siete.
+        \n\n
+        Pre prijatie platby navštívte Nastavenia > Sieť Lightning a nastavte Bitcoin ako vašu
+        prijímajúcu protokolu.
+    </string>
+
+    <string name="address_share_title">Poslať na...</string>
+
+    <string name="secure_storage_error">
+        Zabezpečené úložisko vášho telefónu bolo poškodené alebo ohrozené. Z bezpečnostných dôvodov vás
+        Muun odhlásil. Prosím, kontaktujte
+        <annotation fontStyle="bold">support@muun.com</annotation> pre pomoc.
+    </string>
+
+    <string name="secure_storage_error_avoid_crash_non_logout">
+        Zabezpečené úložisko vášho telefónu bolo poškodené alebo ohrozené. Muun nemôže pokračovať v práci
+        v týchto podmienkach. Prosím, kontaktujte <annotation fontStyle="bold">support@muun.com</annotation> pre pomoc.
+    </string>
+
+    <string name="select_bitcoin_unit_title">Jednotka Bitcoinu</string>
+    <string name="select_bitcoin_unit_btc">Bitcoin (BTC)</string>
+    <string name="select_bitcoin_unit_sat">Satoshi (SAT)</string>
+
+    <!-- Security center -->
+    <string name="security_center_title">Centrum bezpečnosti</string>
+    <string name="security_center_title_improve_your_security">Vylepšite svoju bezpečnosť</string>
+    <string name="security_center_title_backup_your_wallet">Zálohujte svoju peňaženku</string>
+    <string name="task_email_skipped">Preskočené</string>
+    <string name="task_email_pending_title">Zálohujte svoju peňaženku</string>
+    <string name="task_email_pending_body">
+        Vytvorte spôsob obnovy, ak si zmeníte telefón alebo znovu nainštalujete Muun.
+    </string>
+
+    <string name="task_email_skipped_body">
+        Použite svoj e-mail a heslo na obnovenie svojej peňaženky.
+    </string>
+
+    <string name="task_email_done_title">Zálohujte svoju peňaženku</string>
+    <string name="task_email_done_body">
+        Môžete použiť
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        a vaše heslo na obnovenie svojej peňaženky.
+    </string>
+
+    <string name="task_rc_title_pending">Vytvorte alternatívnu zálohu</string>
+    <string name="task_rc_title_done">Vytvorili ste alternatívnu zálohu</string>
+    <string name="task_rc_body_pending">
+        Zapište si kód na papier, aby ste mali možnosť obnoviť svoje heslo, ak ho zabudnete.
+    </string>
+    <string name="task_rc_body_inactive">
+        Zapište si kód na papier pre ďalšiu vrstvu zabezpečenia.
+    </string>
+    <string name="task_rc_body_email_skipped">
+        Zapište si kód na papier pre obnovenie svojej peňaženky.
+    </string>
+    <string name="task_rc_body_done_email_skipped">
+        Môžete použiť kód, ktorý ste si zapísali, na obnovenie svojej peňaženky.
+    </string>
+    <string name="task_rc_body_done">
+        Môžete použiť
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        a kód, ktorý ste si zapísali, na obnovenie svojej peňaženky.
+    </string>
+
+    <string name="task_export_keys_pending_title">Vytvorte Núdzový kit</string>
+    <string name="task_export_keys_pending_body">
+        Uložte informácie, ktoré potrebujete na obnovenie svojich peňazí bez použitia Muun.
+    </string>
+
+    <string name="task_export_keys_done_title">Vytvorili ste Núdzový kit</string>
+    <string name="task_export_keys_done_body">
+        Postupujte podľa pokynov v uloženom kite na obnovenie svojich peňazí bez použitia Muun.
+    </string>
+
+    <string name="task_export_keys_done_title_old">Exportovali ste svoje kľúče</string>
+    <string name="task_export_keys_done_body_old">
+        Zapísali ste si svoje súkromné kľúče. Použite ich spolu s vaším kódom obnovy a
+        <annotation link="recovery_tool">Nástrojom obnovy</annotation> na obnovenie svojich peňazí bez
+        použitia Muun.
+    </string>
+
+    <string name="task_export_keys_again">Vytvorte ďalší Núdzový kit</string>
+
+    <string name="sc_task_header_0">Vaša peňaženka nie je zálohovaná</string>
+    <string name="sc_task_header_1">Vaša peňaženka má základnú zálohu</string>
+    <string name="sc_task_header_2">Ste o krok ďalej od úplnej inštalácie</string>
+    <string name="sc_task_header_3">Dokončili ste svoju inštaláciu</string>
+
+    <!-- Emergency Kit -->
+    <string name="ek_title">Núdzový kit</string>
+    <string name="ek_save_title">Uložte svoj Núdzový kit</string>
+    <string name="ek_save_explanation">
+        Odporúčame používať cloudové úložisko na zabezpečenie, že váš kit nikdy nebude stratený.
+        <annotation link="why">Je to bezpečné?</annotation>
+    </string>
+
+    <string name="ek_save_drive_no_internet">
+        Nemôžete použiť Drive: žiadne pripojenie k internetu
+    </string>
+    <string name="ek_verify_title">Overte svoj Núdzový kit</string>
+    <string name="ek_verify_explanation">
+        Zadajte overovací kód umiestnený v pravom hornom rohu dokumentu, aby ste sa uistili,
+        že všetko prebehlo správne.
+    </string>
+    <string name="ek_verify_hint">123456</string>
+    <string name="ek_verify_helper">6-ciferný kód</string>
+    <string name="ek_verify_failed">Neplatný overovací kód</string>
+    <string name="ek_verify_old">
+        Toto je starý kód. Skontrolujte váš najnovší Núdzový kit\n(váš kód začína s %s)
+    </string>
+    <string name="ek_verify_need_help"><annotation link="help">Potrebujete pomoc?</annotation></string>
+    <string name="ek_verify_help_title">Nemôžete nájsť overovací kód?</string>
+    <string name="ek_verify_help_body">Overovací kód je
+        <annotation fontStyle="bold">6-ciferné číslo</annotation>, umiestnené v pravom hornom rohu
+        vášho Núdzového kitu.
+    </string>
+    <string name="ek_verify_action">Overiť kód</string>
+    <string name="ek_verify_help_save">
+        Ak nemôžete nájsť svoj Núdzový kit, <annotation link="">uložte ho znova.</annotation>
+    </string>
+    <string name="ek_cloud_verify_title">Overte svoj Núdzový kit</string>
+    <string name="ek_cloud_verify_desc">
+        Uložili ste svoj kit do Google Drive. Pred odchodom ho nájdite a pozorne sa pozrite dovnútra.
+        Uistite sa, že budete môcť toto urobiť aj v budúcnosti.
+    </string>
+    <string name="ek_cloud_verify_open_drive">Otvoriť v Drive</string>
+    <string name="ek_cloud_verify_done">Hotovo</string>
+    <string name="ek_success_title">Úspech!</string>
+    <string name="ek_success_desc">Máte úplnú a neotrasiteľnú kontrolu nad svojimi bitcoiny.</string>
+    <string name="ek_success_action">Výborné</string>
+    <string name="ek_abort_title">Zrušiť export Núdzového kitu?</string>
+    <string name="ek_abort_body">
+        Neste dokončili export vášho Núdzového kitu. Tento proces môžete neskôr znova spustiť.
+    </string>
+    <string name="ek_uploading_body">
+        Prebieha upload vášho Núdzového kitu
+    </string>
+    <string name="ek_updating_body">
+        Aktualizácia vášho Núdzového kitu
+    </string>
+    <string name="ek_upload_error_title">Váš Núdzový kit sa nepodarilo uložiť</string>
+    <string name="ek_upload_error_body">
+        Nemožno nahrať váš Núdzový kit do cloudu. Prosím, skontrolujte svoje pripojenie a
+        skúste to znova.
+    </string>
+
+    <string name="ek_manual_advice_title">
+        Uloženie kitu manuálne?\nTu je niekoľko tipov.
+    </string>
+    <string name="ek_manual_advice_1">
+        <annotation fontStyle="bold">Urobte ho prístupným</annotation>. Mali by ste mať k svojmu Kitu prístup
+        kedykoľvek, aj keď váš telefón je stratený, ukradnutý alebo nefunguje.
+    </string>
+    <string name="ek_manual_advice_2">
+        <annotation fontStyle="bold">Nedávajte dôraz na utajenie</annotation>. Pamätajte, váš kit je šifrovaný.
+        Bez vášho kódu obnovy je Kit neškodný.
+    </string>
+    <string name="ek_manual_advice_3">
+        <annotation fontStyle="bold">Urobte ho ľahko aktualizovateľným</annotation>. Vždy by ste mali mať
+        najnovší Kit po ruke, starý Kit nebude fungovať.
+    </string>
+    <string name="ek_manual_advice_action">Uložiť manuálne</string>
+
+    <!-- Email DeepLink errors -->
+
+    <string name="email_link_error_title">Otvorte svoj posledný e-mail</string>
+
+    <string name="authorize_email_link_expired">
+        Autorizácia zlyhala, pretože použitý odkaz vypršal. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <string name="authorize_email_link_invalid">
+        Autorizácia zlyhala, pretože použitý odkaz je neplatný. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <string name="verify_email_link_expired">
+        Overenie zlyhalo, pretože použitý odkaz vypršal. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <string name="verify_email_link_invalid">
+        Overenie zlyhalo, pretože použitý odkaz je neplatný. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <string name="confirm_email_link_expired">
+        Autorizácia zlyhala, pretože použitý odkaz vypršal. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <string name="confirm_email_link_invalid">
+        Autorizácia zlyhala, pretože použitý odkaz je neplatný. Kliknite na odkaz v poslednom e-maile,
+        ktorý ste dostali.
+    </string>
+
+    <!-- Email-less Recovery aka RC Only Login -->
+    <string name="recover_with_recovery_code">Obnovenie pomocou kódu obnovy</string>
+
+    <string name="rc_only_login_recovery_code_explanation">Zadajte váš kód obnovy</string>
+    <string name="rc_only_login_continue">Pokračovať</string>
+    <string name="rc_only_login_whats_this">
+        <annotation link="whatsThis">Čo to je?</annotation>
+    </string>
+    <string name="rc_only_login_whats_this_dialog_title">Čo je to kód obnovy?</string>
+    <string name="rc_only_login_whats_this_dialog_body"> <!-- evaluar "looks like this" -->
+        Kód obnovy je sada náhodne generovaných znakov, ktorá slúži na vytvorenie
+        šifrovanej zálohy vašich súkromných kľúčov.
+    </string>
+    <string name="rc_only_login_error">
+        Nesprávny kód obnovy. Skontrolujte ho a skúste to znova.
+    </string>
+    <string name="ek_emergency_kit_save_failure">
+        Uloženie Núdzového kitu na zariadenie zlyhalo. Skúste to prosím znova alebo nás kontaktujte.
+    </string>
+
+    <!--
+    Note for future us: we put an arbitrary \n because of weird text wrapping problems in some
+    devices where 2nd line is not shown. Has to do with LinearLayout + TextView width interaction.
+    Easily reproduced in Editor/Design View, text view doesn't wrap up text right away, only when it
+    is WAAAAY longer than it should (in fact only when its longer/can't fit in the screen width).
+    -->
+    <string name="rc_only_login_legacy_error">
+        Tento kód obnovy nemôže byť použitý bez \n
+        <annotation link="goToLegacyLogin">zadania vášho e-mailu najprv</annotation>.
+    </string>
+
+    <string name="option_label_recommended">Odporúčané</string>
+    <string name="option_label_disabled">Nepovolené</string>
+
+    <string name="save_option_drive_title">Uložiť do Drive</string>
+    <string name="save_option_drive_description">
+        Použite svoj Google účet na uloženie a prístup k vášmu kitu.
+    </string>
+
+    <string name="save_option_feedback_title">Navrhnutie iného cloudu</string>
+    <string name="save_option_feedback_description">
+        Povedzte nám, ktorú cloudovú službu by ste chceli, aby sme ju podporovali.
+    </string>
+    <string name="save_option_feedback_dialog_body">
+        Plánujeme podporovať viac cloudových služieb. Ktorú by ste chceli vidieť pridanú?
+    </string>
+    <string name="save_option_feedback_dialog_action">Poslať spätnú väzbu</string>
+    <string name="save_option_feedback_dialog_success">Ďakujeme za vašu spätnú väzbu!</string>
+
+    <string name="save_link_manual">
+        <annotation link="no_cloud">Nechcem používať cloudové úložisko</annotation>
+    </string>
+
+    <string name="migration_title">Aktualizácia vašej peňaženky</string>
+
+    <string name="migration_error_message">Aktualizácia peňaženky zlyhala. Skúste to prosím znova.</string>
+    <string name="migration_error_retry">Skúsiť znova</string>
+
+    <string name="title_wallet">Peňaženka</string>
+    <string name="title_security">Bezpečnosť</string>
+    <string name="title_settings">Nastavenia</string>
+    <string name="home_balance_tap_to_reveal">Klepnutím zobrazte saldo</string>
+    <string name="home_security_center_card_body">
+        <annotation fontColor="muunBlue">Zálohujte svoju peňaženku.</annotation> Vytvorte zálohu, aby ste nikdy
+        neprichádzali o prístup k svojej peňaženke.
+    </string>
+    <string name="new_home_tx_list_tooltip">
+        Vitajte na svojej novej domovskej obrazovke!\nKlepnutím alebo potiahnutím nahor si môžete prezrieť svoje transakcie.
+    </string>
+    <string name="rbf_notice_banner">
+        Až do potvrdenia môže byť táto transakcia zrušená odosielateľom.
+        <annotation link="how">Ako?</annotation>.
+    </string>
+    <string name="rbf_notice_banner_title">Ako môže byť táto transakcia zrušená?</string>
+    <string name="rbf_notice_banner_desc">
+        Táto transakcia má povolenú RBF (nahradenie prostredníctvom poplatku). RBF umožňuje odosielateľovi zvýšiť
+        pôvodný poplatok pre rýchlejšie potvrdenie, ale môže ju tiež použiť na zrušenie transakcie.
+        Pokiaľ nepoznáte a neveríte odosielateľovi, považujte to za riziko, kým transakcia nebude potvrdená.
+    </string>
+
+    <string name="turbo_channels">Turbo kanály</string>
+    <string name="turbo_channels_learn_more">
+        <annotation link="https://blog.muun.com/turbo-channels/">Zistiť viac</annotation> o
+        kompromisoch pri používaní turbo kanálov.
+    </string>
+    <string name="turbo_channels_disable_title">Vypnúť turbo kanály?</string>
+    <string name="turbo_channels_disable_message">
+        Prijímanie niektorých bleskových platieb bude trvať oveľa dlhšie.
+    </string>
+    <string name="turbo_channels_disable">ZAKÁZAŤ</string>
+
+    <string name="settings_header_advanced">Pokročilé nastavenia</string>
+    <string name="settings_lightning">Sieť Lightning</string>
+    <string name="settings_bitcoin">Sieť Bitcoin</string>
+    <string name="dark_mode">Vzhľad</string>
+    <string name="dark_mode_dark">Tmavý režim</string>
+    <string name="dark_mode_light">Svetlý režim</string>
+    <string name="dark_mode_follow_system">Určené systémom</string>
+
+    <string name="address_settings">Nastavenia adresy</string>
+    <string name="address_settings_hide">Skryť nastavenia</string>
+    <string name="edit_amount_add">Pridať +</string>
+    <string name="edit_address_type">Typ adresy</string>
+    <string name="segwit">Segwit</string>
+    <string name="legacy">Staré</string>
+    <string name="taproot">Taproot</string>
+
+    <string name="invoice_settings">Nastavenia faktúry</string>
+    <string name="invoice_settings_hide">Skryť nastavenia</string>
+    <string name="select_amount_title">Upraviť sumu</string>
+    <string name="confirm_empty_amount">Potvrdiť prázdnu sumu</string>
+    <string name="expiration_time">Čas vypršania</string>
+
+    <!-- LNURL -->
+
+    <string name="lnurl_intro_title">Skenovať a prijímať bleskové platby</string>
+    <string name="lnurl_intro_desc">
+        Použite LNURL na prijímanie platieb bez potreby zdieľania faktúr. Môžete ho použiť iba s
+        inými službami, ktoré ho podporujú.
+    </string>
+    <string name="lnurl_continue">Pokračovať</string>
+    <string name="scan_lnurl">LNURL</string>
+    <string name="scan_lnurl_subtitle">Skenovať QR LNURL na prijímanie bitcoinov</string>
+    <string name="lnurl_withdraw_confirm_title">Chcete prijímať cez bleskový kanál?</string>
+    <string name="lnurl_withdraw_confirm_desc">
+        Toto vyzerá ako kód LNURL. Umožňuje vám prijímať bitcoiny prostredníctvom bleskových platieb
+        namiesto ich odosielania. Chcete ho použiť?
+    </string>
+    <string name="lnurl_withdraw_confirm_back">Vrátiť sa na odoslanie</string>
+    <string name="lnurl_withdraw_confirm_continue">Prijímať bitcoiny</string>
+    <string name="lnurl_withdraw_contacting">
+        Kontaktovanie
+        <annotation fontStyle="bold"><annotation arg="0">náhradné</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_receiving">
+        Prijíma sa od
+        <annotation fontStyle="bold"><annotation arg="0">náhradné</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_taking_long">
+        <annotation fontStyle="bold"><annotation arg="0">náhradné</annotation></annotation>
+        trvá príliš dlho na zaplatenie
+    </string>
+    <string name="lnurl_withdraw_taking_long_desc">
+        Môžete si vybrať, či chcete čakať tu alebo odísť a dostávať oznámenie, keď sa platba dokončí.
+        Ak platba nedokončí, prosím, kontaktujte
+        <annotation fontStyle="bold"><annotation arg="0">náhradné</annotation></annotation>.
+    </string>
+    <string name="lnurl_withdraw_uri_paster_title">Použiť LNURL z clipboardu</string>
+    <string name="error_lnurl_country_not_supported_title">Krajina nie je podporovaná</string>
+    <string name="error_lnurl_country_not_supported_desc">
+        Služba, ktorá vytvorila tento kód, nie je dostupná vo vašej krajine.
+    </string>
+    <string name="error_lnurl_already_used_title">Kód už bol použitý</string>
+    <string name="error_lnurl_already_used_desc">
+        Tento kód bol použitý inou peňaženkou a nemôže byť použitý znova.
+    </string>
+
+    <!-- TAPROOT -->
+
+    <string name="tr_setup_intro_1_title">Obrovský skok pre bitcoin</string>
+    <string name="tr_setup_intro_1_desc">
+        Taproot je jednou z najviac očakávaných aktualizácií v bitcoine.
+        \n\n
+        Začínajúc s lacnejšími a menej tracovateľnými platbami, Taproot nastavuje pódium pre
+        masívnu inováciu v bitcoine.
+    </string>
+    <string name="tr_setup_intro_2_title">Povolené výkonnými skriptami</string>
+    <string name="tr_setup_intro_2_desc">
+        Taproot používa nové skripty na vytvorenie adries, na ktoré budete prijímať finančné prostriedky.
+        \n\n
+        Na obnovenie týchto finančných prostriedkov v prípade núdze je potrebné zahrnúť tieto skripty
+        do vášho Núdzového kitu.
+    </string>
+    <string name="tr_setup_intro_3_title">Úplne bezpečné</string>
+    <string name="tr_setup_intro_3_desc">
+        Udržujte úplnú kontrolu nad svojimi finančnými prostriedkami tým, že budete aktualizovať váš Núdzový kit pred použitím Taproot.
+        \n\n
+        Aktualizovaný Kit nahradí ten, ktorý už máte, ale váš kód obnovy sa nezmení.
+    </string>
+    <string name="tr_setup_intro_action">Aktualizovať váš Kit</string>
+    <string name="tr_setup_intro_abort_title">Opustiť aktiváciu?</string>
+    <string name="tr_setup_intro_abort_desc">
+        Zatiaľ ste Taproot ešte neaktivovali. Tento proces môžete znovu spustiť neskôr.
+    </string>
+
+    <string name="tr_setup_update_kit_title">Aktualizovať váš Núdzový kit</string>
+    <string name="tr_setup_update_kit_desc">
+        Vyberte si svoju preferovanú cloudovú službu, aby ste sa uistili, že váš Kit nikdy nezabudnete.
+    </string>
+
+    <string name="tr_celebration_user_native_title">Taproot je aktívne!</string>
+    <string name="tr_celebration_desc">
+        Teraz môžete posielať a prijímať platby pomocou adries Taproot. Vaše platby budú lacnejšie
+        a menej tracovateľné.
+    </string>
+    <string name="tr_celebration_action">
+        Vynikajúce
+    </string>
+
+    <string name="tr_setting_title">Predvoliť adresy Taproot</string>
+    <string name="tr_setting_desc">
+        Taproot je nový typ adresy, ktorý robí vaše platby lacnejšími a menej tracovateľnými.
+        \n
+        \nMnoho služieb ešte nie je s Taproot kompatibilné a môže označiť vaše adresy ako neplatné.
+        Ak nastavíte Taproot ako predvolené, budete musieť manuálne meniť typ adresy na Segwit
+        alebo Staré pri každom takomto prípade.
+    </string>
+    <string name="tr_setting_timer">Aktivuje sa za ~<annotation arg="0">3</annotation> hodiny</string>
+    <string name="tr_setting_confirm_title">Nastaviť Taproot ako predvolené?</string>
+    <string name="tr_setting_confirm_desc">
+        Niektoré služby môžu označiť vaše adresy ako neplatné.
+    </string>
+    <string name="tr_setting_confirm">POTVRDIŤ</string>
+
+    <string name="address_picker_title">Vyberte typ adresy</string>
+    <string name="address_picker_legacy_title">Staré</string>
+    <string name="address_picker_legacy_desc">
+        Najviac akceptovaný typ adresy. Použite ho len v prípade, že služba označí vaše Segwit
+        adresy za neplatné.
+    </string>
+    <string name="address_picker_segwit_title">Segwit</string>
+    <string name="address_picker_segwit_desc">
+        Pomerne nový typ adresy, už široko akceptovaný. Vytvára ľahšie transakcie
+        a šetrí vám peniaze na budúce poplatky siete.
+    </string>
+    <string name="address_picker_taproot_title">Taproot</string>
+    <string name="address_picker_taproot_desc_before_activation">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Aktivuje sa
+            ~<annotation arg="0">x</annotation> hodín</annotation></annotation>. Najnovší a najvýkonnejší
+        typ adresy. Mnoho služieb s ním ešte nie je kompatibilných a môže ho označiť za neplatný.
+    </string>
+    <string name="address_picker_taproot_desc_after_activation">
+        Najnovší a najvýkonnejší typ adresy. Mnoho služieb s ním ešte nie je kompatibilných a môže
+        ho označiť za neplatný.
+    </string>
+    <string name="taproot_card_body">
+        <annotation fontColor="muunBlue"><annotation fontStyle="bold">Vylepšite svoje platby
+        </annotation></annotation>. Ušetrite pri každej platbe aktivovaním Taproot.
+    </string>
+    <string name="taproot_success_title">
+        Ste pripravení na Taproot!
+    </string>
+    <string name="taproot_success_preactivated_desc">
+        <annotation role="p">
+            V <annotation arg="0">123</annotation> blokoch (~<annotation arg="1">4</annotation>
+            hodiny) bude globálne aktivovaný Taproot v sieti Bitcoin.
+        </annotation>
+
+        <annotation role="p">
+            Keď sa to stane, budete môcť prijímať prostriedky na adresy Taproot.
+        </annotation>
+    </string>
+    <string name="taproot_success_active_desc">
+        Teraz môžete posielať a prijímať platby pomocou adries Taproot.
+        Vaše platby budú lacnejšie a menej tracovateľné.
+    </string>
+    <string name="taproot_success_action">Vynikajúce</string>
+
+    <string name="tr_clock_detail_title">Je to finálny odpočet!</string>
+    <string name="tr_clock_detail_desc">
+        <annotation role="p">
+            Keď sieť Bitcoin vyťaží blok 709,632, Taproot sa aktivuje globálne.
+        </annotation>
+
+        <annotation role="p">
+            Na ochranu pred potenciálnymi reorganizáciami blockchainu budete môcť začať používať
+            adresy Taproot 6 blokov neskôr.
+        </annotation>
+
+        <annotation role="p">
+            Máme ešte <annotation arg="0">210</annotation> blokov!
+        </annotation>
+    </string>
+
+    <string name="notification_tr_preactivate_title">Vylepšite svoje platby</string>
+    <string name="notification_tr_preactivate_desc">
+        Ušetrite pri každej platbe aktivovaním Taproot.
+    </string>
+
+    <string name="notification_tr_activated_title">Taproot je aktívne 🎉</string>
+    <string name="notification_tr_activated_desc">
+        Sieť Bitcoin aktivovala Taproot. Teraz si môžete užívať lacnejšie platby.
+    </string>
+
+    <!-- RC SETUP INTERRUPTED - UNVERIFIED RCs -->
+
+    <string name="rc_setup_start_connection_error_title">Nepodarilo sa vytvoriť zálohu</string>
+    <string name="rc_setup_start_connection_error_desc">
+        Chystáte sa vytvoriť zašifrovanú zálohu vášho súkromného kľúča. Na jej uloženie potrebujete
+        internetové pripojenie.
+        \n\n
+        Skontrolujte svoje pripojenie a skúste to znova.
+    </string>
+
+    <string name="rc_setup_finish_connection_error_title">Nepodarilo sa vytvoriť zálohu</string>
+    <string name="rc_setup_finish_connection_error_desc">
+        Váš Recovery kód sa používa na vytvorenie zašifrovanej zálohy vášho súkromného kľúča. Na
+        uloženie zálohy potrebujete internetové pripojenie.
+        \n\n
+        Skontrolujte svoje pripojenie a skúste to znova.
+    </string>
+
+    <string name="rc_unverified_warning_title">Upozornenie</string>
+    <string name="rc_unverified_warning_desc">
+        Nedokončili ste nastavenie Recovery kódu, ktorý ste práve použili na obnovenie svojej peňaženky.
+        \n\n
+        Navštívte Prosím bezpečnostné centrum pre vytvorenie novej zálohy peňaženky s novým Recovery kódom a uistite
+        sa, že tentokrát dokončíte nastavenie.
+        \n\n
+        Akonáhle vytvoríte nový Recovery kód, aktuálny bude neplatný.
+    </string>
+    <string name="rc_unverified_warning_button">Rozumiem!</string>
+
+    <string name="rc_error_stale_rc_title">Neplatný Recovery kód</string>
+    <string name="rc_error_stale_rc_desc">
+        Nedokončili ste nastavenie tohto Recovery kódu. Mali by ste mať novší.
+        Nájdite ho a skúste to znova.
+    </string>
+
+    <string name="rc_error_credentials_dont_match_title">
+        Vaše prihlasovacie údaje (email a Recovery kód) sa nezhodujú.
+    </string>
+    <string name="rc_error_credentials_dont_match_desc">
+        Uistite sa, že zadáte Recovery kód, ktorý obnoví peňaženku použitím emailu
+        <annotation fontStyle="bold"><annotation arg="0">náhradné</annotation></annotation>.
+    </string>
+
+    <string name="edit_receive_preference">Protokol na prijímanie</string>
+    <string name="settings_receive_preference_description">
+        Pri prijímaní finančných prostriedkov si musíte vybrať, či použiť sieť Bitcoin alebo Lightning.
+        V budúcnosti už to nebude potrebné
+        (<annotation link="https://bitcoinqr.dev/">zistiť viac</annotation>).
+    </string>
+    <string name="receive_preference_picker_title">Vyberte svoj prijímací protokol</string>
+    <string name="receive_preference_bitcoin">Bitcoin</string>
+    <string name="receive_preference_bitcoin_title">Najprv Bitcoin</string>
+    <string name="receive_preference_bitcoin_desc">
+        Predvolené zobrazenie adresy Bitcoin. Najviac akceptovaný a spoľahlivý spôsob obchodovania
+        s Bitcoinom.
+    </string>
+    <string name="receive_preference_lightning">Lightning</string>
+    <string name="receive_preference_lightning_title">Najprv Lightning</string>
+    <string name="receive_preference_lightning_desc">
+        Predvolené zobrazenie bleskovej faktúry. Bleskové platby môžu byť rýchlejšie a lacnejšie, ale niektoré
+        služby ich ešte nepodporujú.
+    </string>
+    <string name="receive_preference_unified">Zjednotený</string>
+    <string name="receive_preference_unified_desc">
+        🧪 <annotation fontColor="muunBlack">Experimentálny.</annotation> Predvolené na jednotný QR kód,
+        ktorý kóduje adresu Bitcoinu aj bleskovú faktúru. Mnoho služieb tento jednotný formát ešte
+        nepodporuje.
+    </string>
+    <string name="show_unified_qr_title">Prijímať bitcoiny</string>
+    <string name="show_unified_qr_advanced_settings">Nastavenia</string>
+
+    <string name="show_unified_qr_full_content_header">
+        🧪 Jednotné QR kódy sú experimentálne
+        (<annotation link="https://bitcoinqr.dev/">zistiť viac</annotation>)
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_address">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Vaša adresa Bitcoinu
+        </annotation></annotation>\n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_invoice">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">Vaša lightning faktúra
+        </annotation></annotation>\n<annotation arg="0">some_lightning_invoice</annotation>
+    </string>
+
+    <string name="home_high_fees_card_body">
+        Bitcoinová sieť je preťažená. Poplatky sú vysoké a časy potvrdenia sú pomalé.
+    </string>
+
+    <string name="high_fees_explanation_title">Vplyvy veľkosti mempoolu na vysoké poplatky</string>
+    <string name="high_fees_explanation_body">
+        Niektoré funkcie peňaženky závisia od transakcií Bitcoinu a sú ovplyvnené aktuálnym
+        stavom siete Bitcoin.
+
+        Sem patrí vytvorenie "on-the-fly" kanálu, výmena (platba na bitcoin adresy) a "swap-in" (vloženie
+        prostriedkov do peňaženky pomocou adresy Bitcoin). Keď je sieť preťažená a ťažobné poplatky
+        sú veľmi vysoké, tieto funkcie budú drahšie, pomalšie a môžu byť
+        dočasne deaktivované.
+
+        Platby cez Lightning nie sú ovplyvnené.
+    </string>
+
+</resources>
