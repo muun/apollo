@@ -30,6 +30,11 @@ For instructions on how to build Muun Wallet please refer to [BUILD.md](https://
 * All the business logic that decides when to sign what happens in the **domain** layer.
 * The **presentation** layer only depends on the **domain** layer, it never references **data** directly.
 
+## Contributions
+
+We are currently not accepting contributions in PR form. We are a small team and our development flow cannot manage external contributions yet. Sadly, this includes contributions for support for other languages.
+Having said that, we love to get feedback and suggestions for improvements. We have included some external contributions in the past, just not in the "accept and merge" a PR traditional way.
+
 ## Responsible Disclosure
 
 Send us an email to report any security related bugs or vulnerabilities at [security@muun.com](mailto:security@muun.com).
