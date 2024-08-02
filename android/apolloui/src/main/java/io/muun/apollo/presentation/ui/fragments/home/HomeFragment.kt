@@ -166,7 +166,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         private val minTravelDistance = ViewConfiguration.get(context).scaledTouchSlop
 
         override fun onFling(
-            e1: MotionEvent,
+            e1: MotionEvent?,
             e2: MotionEvent,
             velocityX: Float,
             velocityY: Float,
@@ -174,7 +174,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
 
             // Future reader: for MotionEvent we want rawX/Y, other coordinates suck (BIG TIME)
             // See: https://stackoverflow.com/q/1410885/901465
-            if (abs(velocityY) > minVelocity && e1.rawY - e2.rawY > minTravelDistance) {
+            if (abs(velocityY) > minVelocity && e1 != null && e1.rawY - e2.rawY > minTravelDistance) {
                 chevron.performClick()
                 return true
             }

@@ -55,7 +55,7 @@ class AnalyticsProvider @Inject constructor(context: Context) {
 
             // Avoid recursion (Timber.i reports a breadcrumb). TODO proper design and fix this
             if (event !is AnalyticsEvent.E_BREADCRUMB) {
-                Timber.i("AnalyticsProvider", event.toString())
+                Timber.i("AnalyticsProvider: $event")
             }
 
         } catch (t: Throwable) {

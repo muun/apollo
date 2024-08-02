@@ -169,7 +169,10 @@ public class User {
         // flawed. It will (strangely) return true when there's no rate for certain currencies.
         if (rateProvider.getCurrencies().contains(targetCurrency)) {
             return targetCurrency;
+
         } else {
+            // TODO this "defaulting" to btc is contrary to our defaulting to usd elsewhere
+            // We should probably unify behavior.
             return Currency.getUnit("BTC").get();
         }
     }

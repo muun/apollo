@@ -11,7 +11,6 @@ import io.muun.apollo.data.net.ConnectivityInfoProvider
 import io.muun.apollo.data.net.NetworkInfoProvider
 import kotlinx.serialization.Serializable
 import java.util.Locale
-import java.util.TimeZone
 import javax.inject.Inject
 
 private const val UNSUPPORTED = -1
@@ -27,6 +26,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
     private val activityManagerInfoProvider: ActivityManagerInfoProvider,
     private val resourcesInfoProvider: ResourcesInfoProvider,
     private val systemCapabilitiesProvider: SystemCapabilitiesProvider,
+    private val dateTimeZoneProvider: DateTimeZoneProvider,
 ) {
 
     private val powerManager: PowerManager by lazy {
@@ -54,7 +54,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             SystemClock.elapsedRealtime(),
             hardwareCapabilitiesProvider.bootCount,
             Locale.getDefault().toString(),
-            TimeZone.getDefault().rawOffset / 1000L,
+            dateTimeZoneProvider.timeZoneOffsetSeconds,
             telephonyInfoProvider.region.orElse(""),
             telephonyInfoProvider.simRegion,
             appInfoProvider.appDatadir,
@@ -68,7 +68,10 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             systemCapabilitiesProvider.developerEnabled,
             connectivityInfoProvider.proxyHttp,
             connectivityInfoProvider.proxyHttps,
-            connectivityInfoProvider.proxySocks
+            connectivityInfoProvider.proxySocks,
+            dateTimeZoneProvider.autoDateTime,
+            dateTimeZoneProvider.autoTimeZone,
+            dateTimeZoneProvider.timeZoneId
         )
 
     @Suppress("ArrayInDataClass")
@@ -108,6 +111,9 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val proxyHttp: String,
         private val proxyHttps: String,
         private val proxySocks: String,
+        private val autoDateTime: Int,
+        private val autoTimeZone: Int,
+        private val timeZoneId: String,
     )
 
     /**

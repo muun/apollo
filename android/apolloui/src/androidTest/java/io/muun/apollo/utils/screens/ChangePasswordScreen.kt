@@ -31,6 +31,7 @@ class ChangePasswordScreen(
         checkEmailVerificationScreenDisplayed(user.email)
 
         editNewPassword(newPassword)
+        reEnterNewPassword(newPassword)
         acceptConditions()
         confirmNewPassword()
 
@@ -67,7 +68,11 @@ class ChangePasswordScreen(
     }
 
     private fun editNewPassword(newPassword: String) {
-        input(R.id.change_password).text = newPassword
+        input(R.id.change_password_input).text = newPassword
+    }
+
+    private fun reEnterNewPassword(newPassword: String) {
+        input(R.id.change_password_confirm_input).text = newPassword
     }
 
     private fun confirmNewPassword() {

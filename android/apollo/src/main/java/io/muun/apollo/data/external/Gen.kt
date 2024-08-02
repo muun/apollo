@@ -292,23 +292,6 @@ object Gen {
     private fun muunAddress() =
         MuunAddress(1, "m/1/2/3", address())
 
-    /**
-     * Get a PaymentRequest
-     */
-    fun payReq(
-        amount: MonetaryAmount = Money.of(0, "USD"),
-        feeRate: Double = 10.0,
-        takeFeeFromAmount: Boolean = false,
-
-        ) = PaymentRequest(
-        type = PaymentRequest.Type.TO_ADDRESS,
-        amount = amount,
-        description = "foo",
-        address = address(),
-        feeInSatoshisPerByte = feeRate,
-        takeFeeFromAmount = takeFeeFromAmount
-    )
-
     fun submarineSwap(
         outputAmountInSatoshis: Long,
         sweepFeeInSatoshis: Long = 0,

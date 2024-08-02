@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException
 import javax.crypto.BadPaddingException
 import javax.money.Monetary
 import javax.money.MonetaryException
+import javax.money.UnknownCurrencyException
 
 fun <T> Observable<T>.toVoid(): Observable<Void> =
     map(RxHelper::toVoid)
@@ -53,6 +54,13 @@ fun <T : Fragment> T.applyArgs(f: Bundle.() -> Unit) =
     apply {
         arguments = (arguments ?: Bundle()).apply(f)
     }
+
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isInstanceOrIsCausedByUnknownCurrencyException() =
+    isInstanceOrIsCausedByError<UnknownCurrencyException>()
 
 /**
  * Needed as inline reified functions can't be called from Java.

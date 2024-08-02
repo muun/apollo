@@ -58,7 +58,7 @@ public class NextTransactionSize {
      * Get the spendable balance (considering debt).
      */
     public long getUserBalance() {
-        return Preconditions.checkNonNegative(getUtxoBalance() - getExpectedDebtInSat());
+        return Preconditions.checkNotNegative(getUtxoBalance() - getExpectedDebtInSat());
     }
 
     /**

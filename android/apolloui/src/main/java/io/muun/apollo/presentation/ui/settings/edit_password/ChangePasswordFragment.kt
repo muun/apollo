@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.settings.edit_password
 
+import android.text.TextUtils
 import android.view.View
 import android.widget.CheckBox
 import butterknife.BindView
@@ -10,11 +11,15 @@ import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunTextInput
+import io.muun.common.Rules
 
 class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), ChangePasswordView {
 
-    @BindView(R.id.change_password)
-    lateinit var password: MuunTextInput
+    @BindView(R.id.change_password_input)
+    lateinit var passwordInput: MuunTextInput
+
+    @BindView(R.id.change_password_confirm_input)
+    lateinit var passwordConfirmInput: MuunTextInput
 
     @BindView(R.id.change_password_condition)
     lateinit var condition: CheckBox
@@ -31,10 +36,28 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
     }
 
     override fun initializeUi(view: View) {
-        password.setPasswordRevealEnabled(true)
         continueButton.isEnabled = false
 
-        condition.setOnCheckedChangeListener { _, _ -> onConditionCheckedChanged() }
+        passwordInput.setPasswordRevealEnabled(true)
+        passwordInput.setOnChangeListener(this) {
+            // Ugly check needed for some convoluted scenario where we receive input and fragment
+            // is being re-created or something
+            if (::passwordInput.isInitialized) {
+                validateInputs()
+            }
+        }
+        passwordConfirmInput.setPasswordRevealEnabled(true)
+        passwordConfirmInput.setOnChangeListener(this) {
+            // Ugly check needed for some convoluted scenario where we receive input and fragment
+            // is being re-created or something
+            if (::passwordConfirmInput.isInitialized) {
+                validateInputs()
+            }
+        }
+
+        condition.setOnCheckedChangeListener { _, _ ->
+            validateInputs()
+        }
         continueButton.setOnClickListener { onContinueButtonClick() }
     }
 
@@ -51,7 +74,7 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
     }
 
     private fun abort() {
-        safeGetParentActivity().ifPresent(BaseActivity<*>::finish)
+        safeGetParentActivity().ifPresent(BaseActivity<*>::finishActivity)
     }
 
     override fun setLoading(loading: Boolean) {
@@ -60,27 +83,44 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
     }
 
     override fun setPasswordError(error: UserFacingError?) {
-        password.clearError()
+        passwordInput.clearError()
+
         if (error != null) {
-            password.setError(error)
-            password.requestFocusInput()
+            passwordInput.setError(error)
+            passwordInput.requestFocusInput()
+        }
+    }
+
+    override fun setConfirmPasswordError(error: UserFacingError?) {
+        passwordConfirmInput.clearError()
+
+        if (error != null) {
+            passwordConfirmInput.setError(error)
+            passwordConfirmInput.requestFocusInput()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        password.requestFocusInput()
+        passwordInput.requestFocusInput()
     }
 
     override fun blockScreenshots(): Boolean {
         return true
     }
 
-    private fun onConditionCheckedChanged() {
-        continueButton.isEnabled = condition.isChecked
+    private fun validateInputs() {
+        val validPassword = isValidPassword(passwordInput.text.toString())
+        val validPasswordConfirm = isValidPassword(passwordConfirmInput.text.toString())
+
+        continueButton.isEnabled = validPassword && validPasswordConfirm && condition.isChecked
     }
 
     private fun onContinueButtonClick() {
-        presenter.submitPassword(password.text.toString())
+        presenter.submitPassword(passwordInput.text.toString(), passwordConfirmInput.text.toString())
     }
+
+    private fun isValidPassword(password: String) =
+        !TextUtils.isEmpty(password) && password.length >= Rules.PASSWORD_MIN_LENGTH
+
 }

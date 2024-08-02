@@ -203,7 +203,7 @@ class SettingsPresenter @Inject constructor(
         val options = logoutOptionsSel.watch()
             .toBlocking()
             .first()
-        val shouldBlockAndExplain = options.isBlocked()
+        val shouldBlockAndExplain = options.isLogoutBlocked()
 
         Preconditions.checkArgument(options.isRecoverable())
         view.handleLogout(shouldBlockAndExplain)
@@ -218,7 +218,7 @@ class SettingsPresenter @Inject constructor(
             .toBlocking()
             .first()
 
-        view.handleDeleteWallet(options.isBlocked(), options.isRecoverable())
+        view.handleDeleteWallet(options.canDeleteWallet(), options.isRecoverable())
     }
 
     override fun getEntryEvent(): AnalyticsEvent {

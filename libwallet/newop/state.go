@@ -918,18 +918,11 @@ type ConfirmState struct {
 
 func (s *ConfirmState) OpenFeeEditor() error {
 
-	maxFeeRate := newPaymentAnalyzer(s.PaymentContext).MaxFeeRateToAddress(&operation.PaymentToAddress{
-		TakeFeeFromAmount:     s.TakeFeeFromAmount,
-		AmountInSat:           s.Amount.InSat,
-		FeeRateInSatsPerVByte: s.FeeRateInSatsPerVByte,
-	})
-
 	next := &EditFeeState{
-		Resolved:                 s.Resolved,
-		AmountInfo:               s.AmountInfo,
-		Validated:                s.Validated,
-		Note:                     s.Note,
-		MaxFeeRateInSatsPerVByte: maxFeeRate,
+		Resolved:   s.Resolved,
+		AmountInfo: s.AmountInfo,
+		Validated:  s.Validated,
+		Note:       s.Note,
 	}
 
 	next.emit()

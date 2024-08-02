@@ -47,14 +47,22 @@ class SignInScreen(
 
         startLogin()
 
-        pressMuunButton(R.id.enter_email_use_rc_only)
+        recoverWithRecoveryCode()
 
         enterRecoveryCode(recoveryCodeParts)
-        pressMuunButton(R.id.rc_only_login_continue)
+        confirmRecoveryCodeOnlyLogin()
 
         if (email != null) {
             checkRcLoginEmailAuthScreenDisplayed(email)
         }
+    }
+
+    fun recoverWithRecoveryCode() {
+        pressMuunButton(R.id.enter_email_use_rc_only)
+    }
+
+    fun confirmRecoveryCodeOnlyLogin() {
+        pressMuunButton(R.id.rc_only_login_continue)
     }
 
     fun startSignup() {
@@ -141,6 +149,19 @@ class SignInScreen(
         checkInputError(R.id.signup_unlock_edit_password, R.string.error_incorrect_password)
     }
 
+    fun abortDialogCancelWithSafeguard() {
+        try {
+            signInScreen.abortDialogCancel()
+        } catch (_: Exception) {
+            // I'm DONE with this annoying issue regarding Google Password Manager.
+            // Not gonna keep suffering flakiness from it. ENOUGH!
+            // TODO: find reliable way to disable Google Password Manager
+            signInScreen.back() // Add extra back to dismiss Google Password Manager popup
+            signInScreen.abortDialogCancel()
+        }
+    }
+
+
     fun abortDialogCancel() {
         normalizedLabel(R.string.cancel).click()
     }
@@ -149,11 +170,11 @@ class SignInScreen(
         normalizedLabel(R.string.abort).click()
     }
 
-    private fun enterRecoveryCode(recoveryCodeParts: List<String>) {
+    fun enterRecoveryCode(recoveryCodeParts: List<String>) {
         recoveryCodeScreen.enterRecoveryCode(recoveryCodeParts)
     }
 
-    private fun confirmRecoveryCode() {
+    fun confirmRecoveryCode() {
         pressMuunButton(R.id.signup_forgot_password_continue)
     }
 }

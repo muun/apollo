@@ -12,6 +12,7 @@ import io.muun.apollo.presentation.ui.base.di.PerActivity;
 
 import android.net.Uri;
 import androidx.annotation.Nullable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 
@@ -49,6 +50,9 @@ public class LauncherPresenter extends BasePresenter<BaseView> {
         final int minClientVersion = clientVersionRepository.getMinClientVersion().orElse(0);
 
         if (Globals.INSTANCE.getVersionCode() >= minClientVersion) {
+
+            final String maybeUri = uri != null ? uri.toString() : "null";
+            Timber.i("HandleLaunch(isTaskRoot: %s, uri: %s)", isTaskRoot, maybeUri);
 
             // If we caught an Intent with an URI (from an external Muun link), handle it:
             if (uri != null) {

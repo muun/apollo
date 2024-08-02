@@ -123,6 +123,9 @@ public class SecureStorageProvider {
             // our error report infra offers more metadata/insights on this issue
             if (hasKeyInPreferences != hasKeyInKeystore) {
                 final SecureStorageError error = new SecureStorageError(debugSnapshot());
+                error.addMetadata("key", key);
+                error.addMetadata("hasKeyInPreferences", hasKeyInPreferences);
+                error.addMetadata("hasKeyInKeystore", hasKeyInKeystore);
                 Timber.e(error);
                 throw error;
             }
@@ -196,6 +199,7 @@ public class SecureStorageProvider {
             preferences.saveBytes(keyStore.encryptData(input, key, preferences.getAesIv(key)), key);
         } catch (Throwable e) {
             Timber.i("SecureStorageError on WRITE for key: " + key);
+            Timber.e(e);
             final SecureStorageError ssError = new SecureStorageError(e, debugSnapshot());
             enhanceError(ssError, key);
             throw ssError;

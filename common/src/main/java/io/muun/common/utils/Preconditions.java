@@ -187,7 +187,7 @@ public final class Preconditions {
 
     /**
      * If a condition is true, ensures that an object reference is not null. If it's false, ensure
-     * that the the reference is null.
+     * that the reference is null.
      *
      * @return the null reference that was validated
      * @throws IllegalArgumentException if {@code reference} is not null
@@ -200,7 +200,6 @@ public final class Preconditions {
             return checkNull(reference);
         }
     }
-
 
     /**
      * Ensures that an object reference passed as a parameter to the calling method is null.
@@ -345,20 +344,6 @@ public final class Preconditions {
     public static long checkPositive(long number, @Nullable Object errorMessage) {
         if (number <= 0) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
-        }
-        return number;
-    }
-
-    /**
-     * Ensures that {@code number} is positive.
-     *
-     * @param number a number
-     * @return the value of {@code number}
-     * @throws IllegalArgumentException if {@code number} is negative
-     */
-    public static long checkNonNegative(long number) {
-        if (number < 0) {
-            throw new IllegalArgumentException("Number " + number + " expected to be non-negative");
         }
         return number;
     }

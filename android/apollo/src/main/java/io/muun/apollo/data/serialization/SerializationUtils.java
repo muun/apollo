@@ -8,6 +8,7 @@ import io.muun.apollo.domain.errors.MissingCurrencyError;
 import io.muun.apollo.domain.errors.data.MuunDeserializationError;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.utils.DateUtils;
+import io.muun.apollo.domain.utils.DeprecatedCurrencyUnit;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.model.PhoneNumber;
 
@@ -63,11 +64,13 @@ public final class SerializationUtils {
                         .addDeserializer(PhoneNumber.class, new PhoneNumberDeserializer())
 
                         .addSerializer(BitcoinAmount.class, new BitcoinAmountSerializer())
-                        .addDeserializer(BitcoinAmount.class, new BitcoinAmountDeserializer());
+                        .addDeserializer(BitcoinAmount.class, new BitcoinAmountDeserializer())
+
+                        .addDeserializer(CurrencyUnit.class, new SafeCurrencyUnitDeserializer());
 
         JSON_MAPPER = new ObjectMapper()
-                .registerModule(simpleModule)
-                .registerModule(new MoneyModule());
+                .registerModule(new MoneyModule())
+                .registerModule(simpleModule); // Last so our custom deserializers take precedence
 
         // Allows unknown Enum values to be ignored and a predefined value specified through
         // @JsonEnumDefaultValue annotation. If enabled, but no predefined default Enum value is
@@ -90,8 +93,10 @@ public final class SerializationUtils {
      * Deserialize an enum.
      */
     @NotNull
-    public static <T extends Enum<T>> T deserializeEnum(@NotNull Class<T> enumClass,
-                                                        @NotNull String enumString) {
+    public static <T extends Enum<T>> T deserializeEnum(
+            @NotNull Class<T> enumClass,
+            @NotNull String enumString
+    ) {
 
         return Enum.valueOf(enumClass, enumString);
     }
@@ -131,8 +136,10 @@ public final class SerializationUtils {
      * Serialize a class to JSON.
      */
     @NotNull
-    public static <T> String serializeJson(@NotNull TypeReference<? extends T> jsonType,
-                                           @NotNull T jsonValue) {
+    public static <T> String serializeJson(
+            @NotNull TypeReference<? extends T> jsonType,
+            @NotNull T jsonValue
+    ) {
 
         try {
             return JSON_MAPPER.writerFor(jsonType).writeValueAsString(jsonValue);
@@ -158,8 +165,10 @@ public final class SerializationUtils {
      * Deserialize a class from JSON.
      */
     @NotNull
-    public static <T> T deserializeJson(@NotNull TypeReference<? extends T> jsonType,
-                                        @NotNull String jsonString) {
+    public static <T> T deserializeJson(
+            @NotNull TypeReference<? extends T> jsonType,
+            @NotNull String jsonString
+    ) {
 
         try {
             return JSON_MAPPER.readValue(jsonString, jsonType);
@@ -214,7 +223,6 @@ public final class SerializationUtils {
      */
     @NotNull
     public static CurrencyUnit deserializeCurrencyUnit(@NotNull String currencyString) {
-
         try {
             return Monetary.getCurrency(currencyString);
 
@@ -253,9 +261,17 @@ public final class SerializationUtils {
         }
 
         final BigDecimal number = deserializeBigDecimal(parts[0]);
-        final CurrencyUnit currency = deserializeCurrencyUnit(parts[1]);
-
+        final CurrencyUnit currency = safeDeserializeCurrencyUnit(parts[1]);
         return Money.of(number, currency);
+    }
+
+    private static CurrencyUnit safeDeserializeCurrencyUnit(@NotNull String currencyString) {
+        if (!Monetary.isCurrencyAvailable(currencyString)) {
+            return new DeprecatedCurrencyUnit(currencyString);
+
+        } else {
+            return deserializeCurrencyUnit(currencyString);
+        }
     }
 
     /**
@@ -282,8 +298,8 @@ public final class SerializationUtils {
         }
 
         final Long inSatoshis = Long.valueOf(parts[0]);
-        final MonetaryAmount inInputCurrency =  deserializeMonetaryAmount(parts[1]);
-        final MonetaryAmount inPrimaryCurrency =  deserializeMonetaryAmount(parts[2]);
+        final MonetaryAmount inInputCurrency = deserializeMonetaryAmount(parts[1]);
+        final MonetaryAmount inPrimaryCurrency = deserializeMonetaryAmount(parts[2]);
 
         return new BitcoinAmount(inSatoshis, inInputCurrency, inPrimaryCurrency);
     }
@@ -335,9 +351,11 @@ public final class SerializationUtils {
     /**
      * Deserialize a list of objects from a JSON array.
      */
-    public static <K, V>  Map<K, V> deserializeMap(Class<K> keyType,
-                                                   Class<V> valueType,
-                                                   String json) {
+    public static <K, V> Map<K, V> deserializeMap(
+            Class<K> keyType,
+            Class<V> valueType,
+            String json
+    ) {
         try {
             return JSON_MAPPER
                     .readerFor(TYPE_FACTORY.constructMapType(Map.class, keyType, valueType))

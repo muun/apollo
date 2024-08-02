@@ -100,11 +100,14 @@ public class LogoutActions {
     }
 
     /**
-     * Wipe all user associated data from the app (unrecoverable only).
+     * Wipe all user associated data from the app.
+     * Note: if user is unrecoverable or recoverable user has performed "delete wallet" this
+     * action is irreversible (and its intended to be). We're naming this "dangerously" because
+     * callers should be careful when calling this.
      */
-    public void dangerouslyDestroyUnrecoverableWallet() {
+    public void dangerouslyDestroyWallet() {
         final LogoutOptions logoutOptions = logoutOptionsSel.get();
-        Preconditions.checkState(!logoutOptions.isBlocked()); // just checking
+        Preconditions.checkState(logoutOptions.canDeleteWallet()); // just checking
 
         destroyWallet();
     }

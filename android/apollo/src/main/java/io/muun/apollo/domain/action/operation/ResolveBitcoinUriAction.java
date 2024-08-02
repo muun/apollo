@@ -1,34 +1,27 @@
 package io.muun.apollo.domain.action.operation;
 
-import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.newop.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.BitcoinUriContent;
-import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
-import io.muun.apollo.domain.utils.StringUtils;
-import io.muun.common.utils.BitcoinUtils;
 
 import rx.Observable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.money.MonetaryAmount;
 
 @Singleton
 public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, PaymentRequest> {
 
-    private final FeeWindowRepository feeWindowRepository;
 
     /**
      * Resolves a Bitcoin URI, using BIP-72 or BIP-21 as appropriate.
      */
     @Inject
-    public ResolveBitcoinUriAction(FeeWindowRepository feeWindowRepository) {
+    public ResolveBitcoinUriAction() {
 
-        this.feeWindowRepository = feeWindowRepository;
     }
 
     @Override
@@ -44,22 +37,9 @@ public class ResolveBitcoinUriAction extends BaseAsyncAction1<OperationUri, Paym
     }
 
     private PaymentRequest resolveBitcoinUri(OperationUri uri) {
-        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
-
         final BitcoinUriContent uriContent = LibwalletBridge.getBitcoinUriContent(uri);
 
-        final MonetaryAmount amount = (uriContent.amountInStatoshis != null)
-                ? BitcoinUtils.satoshisToBitcoins(uriContent.amountInStatoshis)
-                : null;
-
-        final String description = StringUtils.joinText(": ", new String[]{
-                uriContent.merchant,
-                uriContent.memo
-        });
-
-        final double feeRate = feeWindow.getFastestFeeInSatoshisPerByte();
-
-        return PaymentRequest.toAddress(uriContent.address, amount, description, feeRate);
+        return PaymentRequest.toAddress(uriContent.address);
     }
 
 }

@@ -495,7 +495,7 @@ public class Navigator {
     public void navigateToDeleteWallet(@NotNull Context context) {
         final Optional<String> maybeSupportId = userSel.getOptional().flatMap(User::getSupportId);
 
-        logoutActions.dangerouslyDestroyUnrecoverableWallet();
+        logoutActions.dangerouslyDestroyWallet();
 
         final Intent intent = SuccessDeleteWalletActivity
                 .getStartActivityIntent(context, maybeSupportId);

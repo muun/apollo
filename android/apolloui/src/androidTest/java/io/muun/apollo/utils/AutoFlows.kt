@@ -6,6 +6,9 @@ import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.data.external.Gen
+import io.muun.apollo.data.external.Globals
+import io.muun.apollo.domain.libwallet.BitcoinUri
+import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.user.UserPhoneNumber
 import io.muun.apollo.presentation.ui.helper.isBtc
 import io.muun.apollo.presentation.ui.utils.OS
@@ -13,8 +16,10 @@ import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
 import io.muun.apollo.utils.screens.ReceiveScreen
 import io.muun.common.model.DebtType
+import io.muun.common.model.ReceiveFormatPreference
 import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.LnInvoice
+import io.muun.common.utils.Preconditions
 import org.javamoney.moneta.Money
 import javax.money.MonetaryAmount
 
@@ -149,11 +154,18 @@ class AutoFlows(
     }
 
     /**
-     * For Unrecoverable Users (some extra logic may apply, e.g u.u with positive balance may not
+     * Delete Wallet (some extra logic may apply, e.g u.u with positive balance may not
      * delete their wallets).
      */
-    fun deleteWallet() {
+    fun deleteWallet(isRecoverableUser: Boolean = false) {
         goToSettingsAndClickDeleteWallet()
+
+        if (isRecoverableUser) {
+            label(R.string.settings_delete_wallet_alert_body_recoverable_user).await()
+
+        } else {
+            label(R.string.settings_delete_wallet_alert_body_unrecoverable_user).await()
+        }
 
         // Confirm on pop-up message.
         normalizedLabel(R.string.settings_delete_wallet_alert_yes).click()
@@ -163,7 +175,7 @@ class AutoFlows(
     }
 
     /**
-     * For Unrecoverable Users, in some cases, we won't let them delete wallet if they can lose
+     * In some cases, we won't let them delete wallet if they can lose
      * money. This AutoFlow is what happens in those scenarios.
      */
     fun checkCannotDeleteWallet() {
@@ -173,6 +185,54 @@ class AutoFlows(
         normalizedLabel(R.string.settings_delete_wallet_explanation_action).click()
 
         backToHome()
+    }
+
+    /**
+     * Receive funds using Unified QR feature, using the LN invoice embedded.
+     * Receive funds via Lightning Network using an AmountLess Invoice. TurboChannels flag hints
+     * whether we should check for operation status pending or not.
+     *
+     * NOTE: BEWARE if amount is low (< debt limit) and turboChannels is disabled, this method will
+     * fail as our Receive LN feature confirms the payment instantly (full debt mechanism).
+     */
+    fun receiveMoneyFromUnifiedQrViaLightning(
+        amountInSat: Long,
+        unifiedQrDraft: ReceiveScreen.UnifiedQrDraft,
+    ) {
+        val prevBalance = homeScreen.balanceInBtc
+
+        val unifiedQr = unifiedQrDraft as ReceiveScreen.UnifiedQrDraft.OffChain
+        Preconditions.checkArgument(
+            unifiedQr.amountInSat == null || unifiedQr.amountInSat == amountInSat
+        )
+
+        // For fixed amount invoices, amount MUST NOT be specified, otherwise an error occurs.
+        val amountToReceive = unifiedQr.amountInSat
+
+        val invoice = getOwnInvoiceFromUnifiedQr(amountToReceive)
+
+        LappClient().receiveBtcViaLN(invoice, amountInSat, unifiedQr.turboChannel)
+
+        // Wait for balance to be updated:
+        val amount = BitcoinUtils.satoshisToBitcoins(amountInSat)
+        homeScreen.waitUntilBalanceEquals(prevBalance.add(amount))
+
+        checkOperationDetails(amount, statusPending = !unifiedQr.turboChannel) {
+            homeScreen.goToOperationDetail(0)
+        }
+    }
+
+    private fun getOwnInvoiceFromUnifiedQr(amountInSat: Long? = null): String {
+        homeScreen.goToReceive()
+
+        if (amountInSat != null) {
+            receiveScreen.addUnifiedQrAmount(amountInSat)
+        }
+
+        val unifiedQr = receiveScreen.unifiedQr
+
+        device.pressBack() // Back to Home
+        return BitcoinUri.parse(unifiedQr).third
     }
 
     /**
@@ -232,7 +292,55 @@ class AutoFlows(
         return invoice
     }
 
-    fun receiveMoneyFromNetwork(amount: Money) = try {
+    fun receiveMoneyFromNetworkViaBitcoinUri(
+        amount: MonetaryAmount,
+        addressType: AddressType = AddressType.SEGWIT,
+    ) = try {
+        tryReceiveMoneyFromNetworkViaBitcoinUri(amount, addressType)
+    } catch (e: AssertionError) {
+        if (e.message != null && e.message!!.contains(balanceNotEqualsErrorMessage)) {
+
+            LappClient().generateBlocks(30) // we don't want to need this again soon
+            Thread.sleep(2000)
+            tryReceiveMoneyFromNetwork(amount)
+        } else {
+            throw e
+        }
+    }
+
+    private fun tryReceiveMoneyFromNetworkViaBitcoinUri(
+        amount: MonetaryAmount,
+        addressType: AddressType = AddressType.SEGWIT,
+    ) {
+        val expectedBalance = homeScreen.balanceInBtc
+        val balanceAfter = expectedBalance.add(amount)
+
+        // Generate a Bitcoin Uri with amount:
+        val rawClipboard = getOwnBitcoinUri(amount, addressType)
+        val bitcoinUri = io.muun.common.bitcoinj.BitcoinUri(Globals.INSTANCE.network, rawClipboard)
+
+        val amountInBtc = BitcoinUtils.satoshisToBitcoins(bitcoinUri.amount.value)
+        assertMoneyEqualsWithRoundingHack(amountInBtc, amount)
+
+        // Hit RegTest to receive money from the network:
+        LappClient().receiveBtc(amountInBtc.number.toDouble(), bitcoinUri.address!!)
+
+        // Wait for balance to be updated:
+        homeScreen.waitUntilBalanceEquals(balanceAfter)
+    }
+
+    private fun getOwnBitcoinUri(amount: MonetaryAmount, addressType: AddressType): String {
+        homeScreen.goToReceive()
+
+        receiveScreen.addBitcoinUriAmount(amount)
+        receiveScreen.selectAddressType(addressType)
+
+        val bitcoinUri = receiveScreen.bitcoinUri
+        device.pressBack() // Back to Home
+        return bitcoinUri
+    }
+
+    fun receiveMoneyFromNetwork(amount: MonetaryAmount) = try {
         tryReceiveMoneyFromNetwork(amount)
     } catch (e: AssertionError) {
         if (e.message != null && e.message!!.contains(balanceNotEqualsErrorMessage)) {
@@ -245,7 +353,7 @@ class AutoFlows(
         }
     }
 
-    private fun tryReceiveMoneyFromNetwork(amount: Money) {
+    private fun tryReceiveMoneyFromNetwork(amount: MonetaryAmount) {
         val expectedBalance = homeScreen.balanceInBtc
         val balanceAfter = expectedBalance.add(amount)
 
@@ -582,16 +690,16 @@ class AutoFlows(
         backToHome()
     }
 
-    fun checkOnReceiveIfQRIs(lightning: Boolean) {
-        homeScreen.goToReceive()
-        if (lightning) {
-            receiveScreen.id(R.id.address_settings).assertDoesntExist()
-            receiveScreen.id(R.id.invoice_settings).exists()
-        } else {
-            receiveScreen.id(R.id.address_settings).exists()
-            receiveScreen.id(R.id.invoice_settings).assertDoesntExist()
-        }
+    fun turnOnUnifiedQr() {
+        homeScreen.goToSettings()
 
+        settingsScreen.turnOnUnifiedQr()
+        backToHome()
+    }
+
+    fun checkReceivePreferenceIs(receiveFormatPreference: ReceiveFormatPreference) {
+        homeScreen.goToReceive()
+        receiveScreen.checkReceivePreferenceIs(receiveFormatPreference)
         device.pressBack()
     }
 

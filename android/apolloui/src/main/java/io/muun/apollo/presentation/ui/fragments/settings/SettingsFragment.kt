@@ -368,8 +368,8 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         showDialog(muunDialog)
     }
 
-    override fun handleDeleteWallet(isActionBlocked: Boolean, isRecoverableUser: Boolean) {
-        if (isActionBlocked) {
+    override fun handleDeleteWallet(canDeleteWallet: Boolean, isRecoverableUser: Boolean) {
+        if (!canDeleteWallet) {
             showCantDeleteNonEmptyWalletDialog()
 
         } else {

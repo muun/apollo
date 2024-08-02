@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies { // Add third party gradle plugins
-        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         // We're using a patched version of SQLDelight, for reproducible builds. Thanks JitPack!
         classpath 'com.github.muun.sqldelight:gradle-plugin:1.5.3-reproducible-build'
     }

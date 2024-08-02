@@ -908,6 +908,7 @@
     <string name="change_password_title">Ingresa tu nueva contraseña</string>
     <string name="change_password_hint">Nueva contraseña</string>
     <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_confirm_input_hint">@string/create_password_confirm_input_hint</string>
     <string name="change_password_condition">Entiendo que mi contraseña anterior ya no será válida.
     </string>
     <string name="change_password_continue">Confirma tu nueva contraseña</string>
@@ -1114,7 +1115,6 @@
         No tienes fondos suficientes para pagar la comisión óptima.
         <annotation fontColor="muunBlue">Elige una comisión</annotation> para continuar.
     </string>
-    <string name="use_maximum_fee">Usar máxima comisión disponible</string>
     <string name="new_op_error_required_amount">Total (Monto + Comisión Mínima)</string>
     <string name="new_op_error_total_balance">Tu balance</string>
 
