@@ -1,28 +1,30 @@
 package io.muun.apollo.domain.selector
 
 import io.muun.common.model.OperationStatus
+import io.muun.common.utils.Preconditions
 import rx.Observable
 import javax.inject.Inject
 
 class LogoutOptionsSelector @Inject constructor(
     private val userSel: UserSelector,
     private val paymentContextSel: PaymentContextSelector,
-    private val operationSel: OperationSelector
+    private val operationSel: OperationSelector,
 ) {
 
     class LogoutOptions(
         private val isRecoverable: Boolean,
         private val hasBalance: Boolean,
         private val hasUnsettledOps: Boolean,
-        private val hasPendingIncomingSwaps: Boolean
+        private val hasPendingIncomingSwaps: Boolean,
     ) {
 
-        fun isBlocked(): Boolean {
-            return if (isRecoverable) {
-                hasPendingIncomingSwaps
-            } else {
-                hasBalance || hasUnsettledOps
-            }
+        fun isLogoutBlocked(): Boolean {
+            Preconditions.checkArgument(isRecoverable)
+            return hasPendingIncomingSwaps
+        }
+
+        fun canDeleteWallet(): Boolean {
+            return !hasBalance && !hasUnsettledOps
         }
 
         fun isRecoverable(): Boolean {

@@ -21,20 +21,17 @@ apply from: "${project.rootDir}/linters/pmd/check-android.gradle"
 //apply from: "${project.rootDir}/linters/findbugs/check-android.gradle"
 
 android {
-    compileSdkVersion 31
+    compileSdk 34
 
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 31
-        versionCode 1
-        versionName "1.0"
+        minSdk 19
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         minified {
-            debuggable true
             minifyEnabled true
         }
     }
@@ -48,12 +45,12 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
-    lintOptions {
+    lint {
         abortOnError true
         htmlReport true
         textReport true
-        lintConfig file("${project.rootDir}/linters/android-lint/config.xml")
-        baseline file("lint-baseline.xml")
+        lintConfig file("$rootDir/linters/android-lint/config.xml")
+        baseline file('lint-baseline.xml')
     }
 
     testOptions {

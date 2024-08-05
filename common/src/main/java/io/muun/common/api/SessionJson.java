@@ -18,7 +18,7 @@ public class SessionJson {
     public String buildType;
 
     @Nonnegative
-    public int version;
+    public int version; // this is the clientVersion, not a session version.
 
     @NotEmpty
     public String gcmRegistrationToken;

@@ -24,7 +24,6 @@ import butterknife.BindView;
 import icepick.State;
 import timber.log.Timber;
 
-import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -78,8 +77,6 @@ public class FeeManualInput extends MuunView {
 
     private OnChangeListener onChangeListener;
 
-    private boolean isSkippingListeners;
-
     public FeeManualInput(Context context) {
         super(context);
     }
@@ -115,9 +112,7 @@ public class FeeManualInput extends MuunView {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!isSkippingListeners) {
-                    updateFeeRate(parseNumber(s.toString()));
-                }
+                updateFeeRate(parseNumber(s.toString()));
             }
         });
     }
@@ -131,17 +126,6 @@ public class FeeManualInput extends MuunView {
         if (!lockManager.isLockSet()) {
             UiUtils.focusInput(feeRateInput); // Don't show soft keyboard if lock screen's showing
         }
-    }
-
-    /**
-     * Set input's fee rate, in satoshis per virtual byte.
-     */
-    public void setFeeRate(double feeRateInSatsPerVbyte) {
-        isSkippingListeners = true;
-        feeRateInput.setText(UiUtils.formatFeeRate(feeRateInSatsPerVbyte, RoundingMode.FLOOR));
-        isSkippingListeners = false;
-
-        updateFeeRate(feeRateInSatsPerVbyte);
     }
 
     private void updateFeeRate(Double feeRateInSatsPerVbyte) {

@@ -3,7 +3,6 @@ package io.muun.apollo.domain.action.operation
 import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.BackgroundTimesRepository
-import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.analytics.NewOperationOrigin
@@ -12,14 +11,12 @@ import io.muun.apollo.domain.errors.newop.InvoiceExpiredException
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.libwallet.Invoice.decodeInvoice
 import io.muun.apollo.domain.model.PaymentRequest
-import io.muun.apollo.domain.model.PaymentRequest.Companion.toLnInvoice
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapRequest
 import io.muun.apollo.domain.utils.DateUtils
 import io.muun.common.api.SubmarineSwapJson
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.crypto.hd.PublicKeyPair
-import io.muun.common.utils.BitcoinUtils
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import io.muun.common.utils.LnInvoice
@@ -45,14 +42,12 @@ import org.bitcoinj.script.ScriptOpCodes.OP_SWAP
 import rx.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.money.MonetaryAmount
 
 @Singleton
 class ResolveLnInvoiceAction @Inject internal constructor(
     private val network: NetworkParameters,
     private val houstonClient: HoustonClient,
     private val keysRepository: KeysRepository,
-    private val feeWindowRepository: FeeWindowRepository,
     private val backgroundTimesRepository: BackgroundTimesRepository
 ) : BaseAsyncAction2<String, NewOperationOrigin, PaymentRequest>() {
 
@@ -99,9 +94,6 @@ class ResolveLnInvoiceAction @Inject internal constructor(
     }
 
     private fun buildPaymentRequest(invoice: DecodedInvoice, swap: SubmarineSwap): PaymentRequest {
-        val feeWindow = feeWindowRepository.fetchOne()
-        val amount = getInvoiceAmount(invoice)
-
         if (!swap.isLend) {
             validateNonLendSwap(invoice, swap)
         }
@@ -110,14 +102,9 @@ class ResolveLnInvoiceAction @Inject internal constructor(
             throw InvalidSwapException(swap.houstonUuid)
         }
 
-        // For AmountLess Invoices, fee rate is initially unknown
-        val feeRate = if (invoice.amountInSat != null) feeWindow.getFeeRate(swap) else null
-        return toLnInvoice(
+        return PaymentRequest.toLnInvoice(
             invoice,
-            amount,
-            invoice.description,
             swap,
-            feeRate
         )
     }
 
@@ -141,13 +128,6 @@ class ResolveLnInvoiceAction @Inject internal constructor(
         if (actualOutputAmount != expectedOutputAmount) {
             throw InvalidSwapException(swap.houstonUuid)
         }
-    }
-
-    private fun getInvoiceAmount(invoice: DecodedInvoice): MonetaryAmount? {
-        return if (invoice.amountInSat != null) {
-            BitcoinUtils.satoshisToBitcoins(invoice.amountInSat)
-        } else
-            null
     }
 
     /**

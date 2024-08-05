@@ -107,7 +107,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     override fun setDriveUploading(isUploading: Boolean) {
         if (isUploading) {
             val message = if (argumentsBundle.getBoolean(ARG_UPDATE_KIT)) {
-                R.string.ek_uploading_body
+                R.string.ek_updating_body
             } else {
                 R.string.ek_uploading_body
             }

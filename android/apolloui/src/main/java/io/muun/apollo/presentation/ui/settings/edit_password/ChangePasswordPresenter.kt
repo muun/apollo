@@ -8,6 +8,7 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.E_PASSWORD_CHANGED
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_PASSWORD_CHANGE_END
 import io.muun.apollo.domain.errors.EmptyFieldError
 import io.muun.apollo.domain.errors.passwd.PasswordTooShortError
+import io.muun.apollo.domain.errors.passwd.PasswordsDontMatchError
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.common.Rules
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class ChangePasswordPresenter @Inject constructor(
     /**
      * Submit the new password, checking for errors.
      */
-    fun submitPassword(password: String) {
+    fun submitPassword(password: String, confirmPassword: String) {
         view.setPasswordError(null)
 
         if (password == "") {
@@ -55,8 +56,12 @@ class ChangePasswordPresenter @Inject constructor(
         } else if (password.length < Rules.PASSWORD_MIN_LENGTH) {
             view.setPasswordError(PasswordTooShortError())
 
+        } else if (password != confirmPassword) {
+            view.setConfirmPasswordError(PasswordsDontMatchError())
+
         } else {
             view.setPasswordError(null)
+            view.setConfirmPasswordError(null)
             view.setLoading(true)
             finishPasswordChange.run(parentPresenter.currentUuid, password)
         }

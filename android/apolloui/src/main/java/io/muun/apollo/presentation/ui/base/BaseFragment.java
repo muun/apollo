@@ -160,7 +160,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
             ViewGroup container,
             Bundle savedInstanceState
     ) {
-        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreateView");
+        Timber.i("Lifecycle: " + getClass().getSimpleName() + "#onCreateView");
 
         if (savedInstanceState != null) {
             Timber.i("Lifecycle: " + getClass().getSimpleName() + " is being recreated");
@@ -200,7 +200,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onViewCreated");
+        Timber.i("Lifecycle: " + getClass().getSimpleName() + "#onViewCreated");
         initializeUi(view);
         presenter.onViewCreated(savedInstanceState);
     }

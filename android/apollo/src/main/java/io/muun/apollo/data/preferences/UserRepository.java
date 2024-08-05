@@ -12,6 +12,7 @@ import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.model.Currency;
 import io.muun.common.model.PhoneNumber;
 import io.muun.common.utils.Preconditions;
 
@@ -32,6 +33,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.money.CurrencyUnit;
 
 @Singleton
 public class UserRepository extends BaseRepository {
@@ -487,26 +489,37 @@ public class UserRepository extends BaseRepository {
         // and migrate the preference to a non-minified JSON this class is APPEND-ONLY.
 
         public long hid;
+
         public String email;
+
         public String createdAt;
 
         public String phoneNumber;
+
         public boolean isPhoneNumberVerified;
 
         public String firstName;
+
         public String lastName;
+
         public String profilePictureUrl;
 
         public boolean isEmailVerified;
+
         public boolean hasRecoveryCode;
+
         public boolean hasPassword;
+
         public boolean hasP2PEnabled;
+
         public boolean hasExportedKeys;
 
         public String currency;
 
         public String emergencyKitLastExportedAt;
+
         public Integer emergencyKitVersion;
+
         public String emergencyKitExportMethod;
 
         @NonNull // Not backed by Houston, cached locally
@@ -551,25 +564,27 @@ public class UserRepository extends BaseRepository {
         /**
          * Manual constructor.
          */
-        public StoredUserJson(long hid,
-                              String email,
-                              String createdAt,
-                              String phoneNumber,
-                              boolean isPhoneNumberVerified,
-                              String firstName,
-                              String lastName,
-                              String profilePictureUrl,
-                              boolean isEmailVerified,
-                              boolean hasRecoveryCode,
-                              boolean hasPassword,
-                              boolean hasP2PEnabled,
-                              boolean hasExportedKeys,
-                              String currency,
-                              String emergencyKitLastExportedAt,
-                              Integer emergencyKitVersion,
-                              EmergencyKitExport.Method emergencyKitExportMethod,
-                              @NonNull StoredEkVerificationCodes ekVerificationCodes,
-                              @NonNull List<Integer> ekVersions) {
+        public StoredUserJson(
+                long hid,
+                String email,
+                String createdAt,
+                String phoneNumber,
+                boolean isPhoneNumberVerified,
+                String firstName,
+                String lastName,
+                String profilePictureUrl,
+                boolean isEmailVerified,
+                boolean hasRecoveryCode,
+                boolean hasPassword,
+                boolean hasP2PEnabled,
+                boolean hasExportedKeys,
+                String currency,
+                String emergencyKitLastExportedAt,
+                Integer emergencyKitVersion,
+                EmergencyKitExport.Method emergencyKitExportMethod,
+                @NonNull StoredEkVerificationCodes ekVerificationCodes,
+                @NonNull List<Integer> ekVersions
+        ) {
 
             this.hid = hid;
             this.email = email;
@@ -608,7 +623,7 @@ public class UserRepository extends BaseRepository {
                             ? Optional.of(new UserProfile(firstName, lastName, profilePictureUrl))
                             : Optional.empty(),
 
-                    SerializationUtils.deserializeCurrencyUnit(currency != null ? currency : "USD"),
+                    loadCurrencyFromStorage(),
 
                     hasRecoveryCode,
                     hasPassword,
@@ -624,6 +639,18 @@ public class UserRepository extends BaseRepository {
 
                     Optional.ofNullable(createdAt).map(SerializationUtils::deserializeDate)
             );
+        }
+
+        private CurrencyUnit loadCurrencyFromStorage() {
+            try {
+                final String currencyCode = currency != null ? currency : "USD";
+                return SerializationUtils.deserializeCurrencyUnit(currencyCode);
+
+            } catch (Exception e) {
+                // This can happen for example if user primary currency is no longer supported
+                // after an app or OS update.
+                return Currency.getUnit(Currency.DEFAULT.getCode()).get();
+            }
         }
 
         void initEmergencyKitVersion() {
@@ -683,9 +710,11 @@ public class UserRepository extends BaseRepository {
         }
 
         @Override
-        public void set(@NonNull String key,
-                        @NonNull StoredUserJson value,
-                        @NonNull SharedPreferences.Editor editor) {
+        public void set(
+                @NonNull String key,
+                @NonNull StoredUserJson value,
+                @NonNull SharedPreferences.Editor editor
+        ) {
             super.set(key, value, editor);
         }
     }

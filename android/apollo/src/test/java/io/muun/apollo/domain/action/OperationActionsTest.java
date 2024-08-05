@@ -9,7 +9,6 @@ import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.model.Contact;
-import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
@@ -18,9 +17,7 @@ import io.muun.apollo.template.TemplateHelpers;
 import io.muun.common.crypto.hd.MuunAddress;
 import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.crypto.hd.PublicKey;
-import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.model.OperationDirection;
-import io.muun.common.utils.BitcoinUtils;
 
 import androidx.core.util.Pair;
 import br.com.six2six.fixturefactory.Fixture;
@@ -33,7 +30,6 @@ import rx.Completable;
 import rx.Observable;
 
 import java.util.List;
-import javax.money.MonetaryAmount;
 
 import static io.muun.apollo.TestUtils.fetchItemFromObservable;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,8 +102,6 @@ public class OperationActionsTest extends BaseTest {
     @Test
     public void buildPaymentToContact() {
 
-        final ExchangeRateWindow rates = Fixture.from(ExchangeRateWindow.class).gimme("valid");
-
         final Contact contact = Fixture.from(Contact.class).gimme("valid");
         final PublicKey publicKey = contact.publicKey;
         final MuunAddress contactAddress = new MuunAddress(
@@ -118,10 +112,7 @@ public class OperationActionsTest extends BaseTest {
         final long someFee = 123456;
 
         final PaymentRequest payReq = PaymentRequest.toContact(
-                contact,
-                TemplateHelpers.money().generateValue(),
-                "some description",
-                10.0
+                contact
         );
 
         doReturn(contact.publicProfile)
@@ -156,14 +147,6 @@ public class OperationActionsTest extends BaseTest {
                 contactAddress.getDerivationPath()
         );
 
-        // check amount
-        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.toJson());
-        final MonetaryAmount inBtc = payReq.getAmount().with(provider.getCurrencyConversion("BTC"));
-        final long inSatoshis = BitcoinUtils.bitcoinsToSatoshis(inBtc);
-
-        assertThat(operation.amount.inInputCurrency).isEqualTo(payReq.getAmount());
-        assertThat(operation.amount.inSatoshis).isEqualTo(inSatoshis);
-
         // check fee
         assertThat(operation.fee.inSatoshis).isEqualTo(someFee);
     }
@@ -171,13 +154,8 @@ public class OperationActionsTest extends BaseTest {
     @Test
     public void buildPaymentToAddress() {
 
-        final ExchangeRateWindow rates = Fixture.from(ExchangeRateWindow.class).gimme("valid");
-
         final PaymentRequest payReq = PaymentRequest.toAddress(
-                TemplateHelpers.address().generateValue(),
-                TemplateHelpers.money().generateValue(),
-                "some description",
-                10.0
+                TemplateHelpers.address().generateValue()
         );
 
         final long someFee = 123456;
@@ -204,14 +182,6 @@ public class OperationActionsTest extends BaseTest {
         // check receiver address
         assertThat(operation.receiverAddress).isEqualTo(payReq.getAddress());
         assertThat(operation.receiverAddressDerivationPath).isEqualTo(null);
-
-        // check amount
-        final ExchangeRateProvider provider = new ExchangeRateProvider(rates.toJson());
-        final MonetaryAmount inBtc = payReq.getAmount().with(provider.getCurrencyConversion("BTC"));
-        final long inSatoshis = BitcoinUtils.bitcoinsToSatoshis(inBtc);
-
-        assertThat(operation.amount.inInputCurrency).isEqualTo(payReq.getAmount());
-        assertThat(operation.amount.inSatoshis).isEqualTo(inSatoshis);
 
         // check fee
         assertThat(operation.fee.inSatoshis).isEqualTo(someFee);

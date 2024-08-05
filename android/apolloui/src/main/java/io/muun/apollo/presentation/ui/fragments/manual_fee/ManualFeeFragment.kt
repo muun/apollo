@@ -2,13 +2,11 @@ package io.muun.apollo.presentation.ui.fragments.manual_fee
 
 import android.text.TextUtils
 import android.view.View
-import android.widget.TextView
 import butterknife.BindString
 import butterknife.BindView
 import butterknife.OnClick
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.Flags
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -36,9 +34,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
     @BindView(R.id.status_message)
     lateinit var statusMessage: StatusMessage
 
-    @BindView(R.id.use_maximum_fee)
-    lateinit var useMaximumFee: TextView
-
     @BindView(R.id.confirm_fee)
     lateinit var confirmButton: MuunButton
 
@@ -50,8 +45,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
 
     @State
     lateinit var mBitcoinUnit: BitcoinUnit
-
-    private var shouldShowMaxFeeButton = false
 
     override fun inject() {
         component.inject(this)
@@ -89,7 +82,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
             confirmButton.isEnabled = false
             statusMessage.visibility = View.GONE
             feeInput.resetVisibility()
-            useMaximumFee.visibility = if (shouldShowMaxFeeButton) View.VISIBLE else View.GONE
 
             // 1.5 If feeRate is null, we're back at initial state (empty input), nothing else to do
             if (feeRateInSatsPerVByte == null) {
@@ -128,16 +120,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
                     // All good!
                     confirmButton.isEnabled = true
                 }
-            }
-        }
-
-        shouldShowMaxFeeButton = showMaximumFeeButton(state)
-
-        if (shouldShowMaxFeeButton) {
-            useMaximumFee.visibility = View.VISIBLE
-            useMaximumFee.setOnClickListener {
-                feeInput.setFeeRate(state.maxFeeRateInSatsPerVByte)
-                useMaximumFee.visibility = View.GONE
             }
         }
     }
@@ -187,19 +169,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
             R.string.manual_fee_low_warning_desc
         )
         confirmButton.isEnabled = true // just a warning
-    }
-
-    private fun showMaximumFeeButton(state: EditFeeState): Boolean {
-
-        // TODO disabled until properly tested and QA vetted
-        if (!Flags.USE_MAXIMUM_FEE_ENABLED) {
-            return false
-        }
-
-        // Replicating Falcon logic here.
-        // The use max fee button is only displayed in case the user is not taking fee from amount
-        // (aka using all funds) and if the user doesn't have a selected fee
-        return !state.amountInfo.takeFeeFromAmount && state.validated.feeNeedsChange
     }
 
     private fun onHowThisWorksClick() {

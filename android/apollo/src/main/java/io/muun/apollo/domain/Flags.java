@@ -5,6 +5,4 @@ package io.muun.apollo.domain;
  */
 public class Flags {
 
-    public static final boolean USE_MAXIMUM_FEE_ENABLED = false;
-
 }

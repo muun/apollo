@@ -77,6 +77,7 @@ public class SecureStoragePreferences {
      */
     public synchronized byte[] getPersistentSecureRandomBytes(String key, int size) {
         if (sharedPreferences.contains(key)) {
+            Timber.i("getPersistentSecureRandomBytes for " + key + ". Cached.");
             final byte[] iv = getBytes(key);
 
             // We've had a few InvalidKeyExceptions that might come from invalid IVs
@@ -90,6 +91,7 @@ public class SecureStoragePreferences {
             return iv;
 
         } else {
+            Timber.i("getPersistentSecureRandomBytes for " + key + ". Generate new");
             final byte[] bytes = RandomGenerator.getBytes(size);
             saveBytes(bytes, key);
             return bytes;
@@ -102,7 +104,14 @@ public class SecureStoragePreferences {
     public void saveBytes(byte[] bytes, String key) {
         initSecureStorage();
 
-        sharedPreferences.edit().putString(key, SerializationUtils.serializeBytes(bytes)).commit();
+        final boolean writeSuccess = sharedPreferences.edit()
+                .putString(key, SerializationUtils.serializeBytes(bytes))
+                .commit();
+
+        Timber.i("SaveBytes for " + key + " success:" + writeSuccess );
+        if (!writeSuccess) {
+            Timber.e("Error while committing write to secure storage preferences");
+        }
     }
 
     /**

@@ -6,6 +6,27 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.1] - 2024-08-02
+
+### ADDED
+
+- Background notification processing reliability improvements
+- Wallet delete checks client-side (e.g prevent it wallet not fully empty)
+
+### FIXED
+
+- Handling of missing or deprecated currencies
+- Tiny text copy when updating emergency kit
+
+### CHANGED
+
+- Upgraded compiledSdkVersion and targetSdkVersion to 34
+- Upgraded go version to 1.21.11
+- Enhanced password input for change password flow (consistency with rest of the app)
+- Enhanced error metadata for strange secure storage errors
+- Removed never used "max fee" button and calculations
+- Revamped to UI test suite. Enhancing reliability and coverage.
+
 ## [52] - 2024-06-14
 
 ### ADDED

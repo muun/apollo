@@ -19,7 +19,7 @@ class SettingsScreen(
     }
 
     fun deleteWallet() {
-        id(R.id.log_out_text_view).click()
+        id(R.id.delete_wallet_text_view).click()
     }
 
     fun setBitcoinUnitToSat() {
@@ -43,7 +43,7 @@ class SettingsScreen(
 
         id(R.id.receive_preference_value).click()
 
-        label(R.string.tab_ln_invoice).click()
+        label(R.string.receive_preference_lightning_title).click()
 
         device.pressBack()
     }
@@ -53,7 +53,17 @@ class SettingsScreen(
 
         id(R.id.receive_preference_value).click()
 
-        label(R.string.tab_bitcoin_address).click()
+        label(R.string.receive_preference_bitcoin_title).click()
+
+        device.pressBack()
+    }
+
+    fun turnOnUnifiedQr() {
+        id(R.id.settings_lightning).click()
+
+        id(R.id.receive_preference_value).click()
+
+        label(R.string.receive_preference_unified).click()
 
         device.pressBack()
     }

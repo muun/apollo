@@ -7,4 +7,6 @@ public interface ChangePasswordView extends SingleFragmentView {
 
     void setPasswordError(UserFacingError error);
 
+    void setConfirmPasswordError(UserFacingError error);
+
 }

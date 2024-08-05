@@ -1,45 +1,38 @@
 package io.muun.apollo.domain.action.operation;
 
 import io.muun.apollo.data.db.contact.ContactDao;
-import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
-import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.ExchangeRateSelector;
 
-import org.javamoney.moneta.Money;
 import rx.Observable;
 
-import java.math.BigDecimal;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.money.MonetaryAmount;
 
 @Singleton
 public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, PaymentRequest> {
 
     private final UserRepository userRepository;
     private final ContactDao contactDao;
-    private final FeeWindowRepository feeWindowRepository;
     private final ExchangeRateSelector rateSelector;
 
     /**
      * Resolves a Muun URI, fetching User and/or Contact as needed.
      */
     @Inject
-    public ResolveMuunUriAction(UserRepository userRepository,
-                                ContactDao contactDao,
-                                FeeWindowRepository feeWindowRepository,
-                                ExchangeRateSelector rateSelector) {
-
+    public ResolveMuunUriAction(
+            UserRepository userRepository,
+            ContactDao contactDao,
+            ExchangeRateSelector rateSelector
+    ) {
         this.userRepository = userRepository;
         this.contactDao = contactDao;
-        this.feeWindowRepository = feeWindowRepository;
         this.rateSelector = rateSelector;
     }
 
@@ -50,7 +43,6 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
 
     private PaymentRequest resolveMuunUri(OperationUri uri) {
         final User user = userRepository.fetchOne();
-        final FeeWindow feeWindow = feeWindowRepository.fetchOne();
         // TODO: this could cause unexpected behaviour since it may not be same rate window as
         // the one used in paymentContext. We've seen rates for some currencies suddenly being
         // dropped which may cause trouble if the primary currency is one of them.
@@ -66,13 +58,6 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
         final String descriptionParam = uri.getParam(OperationUri.MUUN_DESCRIPTION)
                 .orElse("");
 
-        final MonetaryAmount amount = Money.of(
-                new BigDecimal(amountParam),
-                currencyParam.toUpperCase()
-        );
-
-        final double feeRate = feeWindow.getFastestFeeInSatoshisPerByte();
-
         switch (uri.getHost()) {
             case OperationUri.MUUN_HOST_CONTACT:
                 final Contact contact = contactDao
@@ -80,11 +65,11 @@ public class ResolveMuunUriAction extends BaseAsyncAction1<OperationUri, Payment
                         .toBlocking()
                         .first();
 
-                return PaymentRequest.toContact(contact, amount, descriptionParam, feeRate);
+                return PaymentRequest.toContact(contact);
 
             case OperationUri.MUUN_HOST_EXTERNAL:
                 final String externalAddress = uri.getExternalAddress();
-                return PaymentRequest.toAddress(externalAddress, amount, descriptionParam, feeRate);
+                return PaymentRequest.toAddress(externalAddress);
 
             default:
                 throw new IllegalArgumentException("Invalid host: " + uri.getHost());

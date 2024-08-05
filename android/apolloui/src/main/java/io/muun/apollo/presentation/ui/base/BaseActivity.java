@@ -160,7 +160,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         try {
             super.onCreate(savedInstanceState);
 
-            Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onCreate");
+            Timber.i("Lifecycle: " + getClass().getSimpleName() + "#onCreate");
 
             if (savedInstanceState != null) {
                 Timber.i("Lifecycle: " + getClass().getSimpleName() + " is being recreated");

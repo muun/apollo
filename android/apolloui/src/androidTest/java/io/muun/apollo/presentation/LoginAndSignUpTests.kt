@@ -110,7 +110,7 @@ open class LoginAndSignUpTests : BaseInstrumentationTest() {
         signInScreen.awaitEmailVerification(user.email)
 
         signInScreen.back()
-        signInScreen.abortDialogCancel()
+        signInScreen.abortDialogCancelWithSafeguard()
         signInScreen.back()
         signInScreen.abortDialogAbort()
 
@@ -130,7 +130,7 @@ open class LoginAndSignUpTests : BaseInstrumentationTest() {
         signInScreen.back()
 
         signInScreen.back()
-        signInScreen.abortDialogCancel()
+        signInScreen.abortDialogCancelWithSafeguard()
         signInScreen.back()
         signInScreen.abortDialogAbort()
     }
@@ -143,31 +143,64 @@ open class LoginAndSignUpTests : BaseInstrumentationTest() {
         autoFlows.signUp()
         autoFlows.receiveMoneyFromNetwork(Money.of(0.02, "BTC"))
 
-        // Case 1) U.u user with balance > 0 but unconfirmed receiving tx
+        testDeleteWalletCases(isRecoverableUser = false)
+    }
+
+    @Test
+    fun test_06_a_recoverable_user_can_delete_wallet() {
+        val user = RandomUser()
+
+        autoFlows.createRecoverableUser(user.pin, user.email, user.password)
+        val recoveryCodeParts = autoFlows.setUpRecoveryCode()
+
+        autoFlows.receiveMoneyFromNetwork(Money.of(0.02, "BTC"))
+
+        testDeleteWalletCases(isRecoverableUser = true)
+
+        // Let's check user credentials don't work anymore
+        signInScreen.startLogin()
+
+        // Reject invalid email:
+        signInScreen.checkEmailConfirmEnabled(false)
+        signInScreen.enterEmail(user.email)
+        signInScreen.checkEmailConfirmEnabled(true)
+        signInScreen.confirmEmail()
+        signInScreen.checkEmailError()
+
+        signInScreen.recoverWithRecoveryCode()
+        signInScreen.enterRecoveryCode(recoveryCodeParts)
+        signInScreen.confirmRecoveryCodeOnlyLogin()
+
+        label(R.string.error_incorrect_recovery_code)
+    }
+
+    private fun testDeleteWalletCases(isRecoverableUser: Boolean) {
+
+        // Case 1) user with balance > 0 but unconfirmed receiving tx
         autoFlows.checkCannotDeleteWallet()
 
-        // Case 2) U.u user with balance > 0 with confirmed receiving tx but not settled
+        // Case 2) user with balance > 0 with confirmed receiving tx but not settled
         generateBlocksAndWaitForUpdate(1)
         autoFlows.checkCannotDeleteWallet()
 
-        // Case 3) U.u user with balance > 0 with settled receiving tx
+        // Case 3) user with balance > 0 with settled receiving tx
         generateBlocksAndWaitForUpdate(5) // Transaction Settled
         autoFlows.checkCannotDeleteWallet()
 
-        // Case 4) U.u user with balance = 0 but unconfirmed spending tx
+        // Case 4) user with balance = 0 but unconfirmed spending tx
 
         autoFlows.spendAllFunds("some description")
         autoFlows.checkCannotDeleteWallet()
 
-        // Case 5) U.u user with balance = 0 with confirmed spending tx but not settled
+        // Case 5) user with balance = 0 with confirmed spending tx but not settled
 
         generateBlocksAndWaitForUpdate(1)
         autoFlows.checkCannotDeleteWallet()
 
-        // Case 6) U.u user with balance = 0 with settled spending tx
+        // Case 6) user with balance = 0 with settled spending tx
 
         generateBlocksAndWaitForUpdate(5) // Transaction Settled
-        autoFlows.deleteWallet()
+        autoFlows.deleteWallet(isRecoverableUser = isRecoverableUser)
 
         // TODO make more convoluted scenarios? Failed txs, failed swaps, etc...?
     }

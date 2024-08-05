@@ -229,7 +229,9 @@ public enum ErrorCode {
             2086, StatusCode.CLIENT_FAILURE, "Cannot delete wallet with funds"
     ),
     UNSETTLED_OPERATIONS(
-            2087, StatusCode.CLIENT_FAILURE, "Cannot delete wallet with unsettled operations"
+            2087,
+            StatusCode.CLIENT_FAILURE,
+            "Cannot delete wallet with unsettled operations"
     ),
 
     // error responses

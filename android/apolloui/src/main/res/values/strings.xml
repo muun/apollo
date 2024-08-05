@@ -875,6 +875,7 @@
     <string name="change_password_title">Enter your new password</string>
     <string name="change_password_hint">New password</string>
     <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_confirm_input_hint">@string/create_password_confirm_input_hint</string>
     <string name="change_password_condition">
         I understand that my previous password is no longer valid.
     </string>
@@ -1074,7 +1075,6 @@
         Not enough funds to pay for the optimal network fee.
         <annotation fontColor="muunBlue"> Select a network fee </annotation> to continue.
     </string>
-    <string name="use_maximum_fee">Use maximum fee</string>
     <string name="new_op_error_required_amount">Total (Amount + Minimum Fee)</string>
     <string name="new_op_error_total_balance">Your balance</string>
 
