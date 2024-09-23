@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.2] - 2024-09-23
+
+### FIXED
+
+- Visual bug that prevent display of some of the oldest payments in payment history
+
 ## [52.1] - 2024-08-02
 
 ### ADDED

@@ -76,6 +76,9 @@ public enum OperationStatus {
     /**
      * Operation with its transaction present in a block (0 < confirmations < SETTLEMENT_NUMBER),
      * but not with enough transactions to be settled.
+     * TODO: the semantics for this status are no longer accurate (for instance, fulfilled
+     *  incoming swaps are CONFIRMED whenever the preimage is revealed, regardless of the
+     *  confirmation status of any transaction).
      */
     CONFIRMED,
 
