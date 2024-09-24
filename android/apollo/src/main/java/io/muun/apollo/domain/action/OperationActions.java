@@ -5,11 +5,13 @@ import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.domain.action.operation.CreateOperationAction;
 import io.muun.apollo.domain.action.operation.OperationMetadataMapper;
 import io.muun.apollo.domain.model.Operation;
+import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
 import timber.log.Timber;
 
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -27,10 +29,12 @@ public class OperationActions {
      * Constructor.
      */
     @Inject
-    public OperationActions(CreateOperationAction createOperation,
-                            OperationDao operationDao,
-                            HoustonClient houstonClient,
-                            OperationMetadataMapper operationMapper) {
+    public OperationActions(
+            CreateOperationAction createOperation,
+            OperationDao operationDao,
+            HoustonClient houstonClient,
+            OperationMetadataMapper operationMapper
+    ) {
 
         Timber.d("[OperationActions] Execute Dependency Injection");
 
@@ -48,11 +52,30 @@ public class OperationActions {
 
         return operationDao.deleteAll().andThen(
                 houstonClient.fetchOperations()
-                        .flatMap(Observable::from)
-                        // using concatMap to avoid parallelization, overflows JobExecutor's queue
-                        // TODO use batching
-                        .map(operationMapper::mapFromMetadata)
-                        .concatMap(createOperation::saveOperation)
+                        .doOnNext(list -> Timber.i("Received op history: size " + list.size()))
+                        .buffer(20)
+                        .flatMap(chunks -> {
+
+                            // Hack warning: we can't use flatMap (parallelization breaks
+                            // JobExecutor threadpool capacity) nor concatMap (suddenly stops
+                            // processing events from Observable.from() silently) directly.
+                            // So we introduce some "parallel processing by batches".
+                            // TODO we should really migrate to using batching Sqlite inserts
+                            //  instead of inserting one-by-one
+
+                            for (List<OperationWithMetadata> chunk : chunks) {
+                                if (!chunk.isEmpty()) {
+                                    Observable.from(chunk)
+                                            .doOnNext(op -> Timber.i("processing op:" + op.getId()))
+                                            .map(operationMapper::mapFromMetadata)
+                                            .flatMap(createOperation::saveOperation, 5)
+                                            .toBlocking()
+                                            .last();
+                                }
+                            }
+
+                            return Observable.just(null);
+                        })
                         .lastOrDefault(null)
                         .map(RxHelper::toVoid)
         );
