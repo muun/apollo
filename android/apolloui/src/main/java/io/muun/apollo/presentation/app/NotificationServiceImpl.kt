@@ -1,14 +1,17 @@
 package io.muun.apollo.presentation.app
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.annotation.DrawableRes
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Data
@@ -393,6 +396,19 @@ class NotificationServiceImpl @Inject constructor(
 
             for (action in notification.actions) {
                 builder.addAction(action.icon ?: 0, action.title, action.intent ?: pendingIntent)
+            }
+        }
+
+        if (OS.supportsNotificationRuntimePermission()) {
+            val notiPermission = ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+
+            if (notiPermission != PackageManager.PERMISSION_GRANTED) {
+                // We don't have notification runtime permission so don't show notification.
+                // Trying to so would throw SecurityException.
+                return
             }
         }
 

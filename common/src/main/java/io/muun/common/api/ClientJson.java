@@ -66,7 +66,8 @@ public class ClientJson {
     @Since(apolloVersion = 1003)
     @Deprecated(
             atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO,
-            atFalconVersion = Supports.RefreshTotalInternalStorageAndRam.FALCON)
+            atFalconVersion = Supports.RefreshTotalInternalStorageAndRam.FALCON
+    )
     @Nullable // Before that ;) (and after deprecation)
     public Long totalRamStorage;
 
@@ -170,6 +171,42 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String googlePlayVersionName;
 
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public AndroidBuildInfoJson androidBuildInfo;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public AndroidAppInfoJson androidAppInfo;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public AndroidDeviceFeaturesJson androidDeviceFeatures;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public String androidSignatureHash;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public Boolean androidQuickEmuProps;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public Integer androidEmArchitecture;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public Boolean androidSecurityEnhancedBuild;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public Boolean androidBridgeRootService;
+
+    // @TODO: Add @Since with release version
+    @Nullable // Before that ;)
+    public Long androidAppSize;
+
     /**
      * Json constructor.
      */
@@ -180,38 +217,47 @@ public class ClientJson {
     /**
      * Apollo constructor.
      */
-    public ClientJson(final ClientTypeJson type,
-                      final String buildType,
-                      final int version,
-                      @Nullable final String versionName,
-                      @Nullable final String deviceModel,
-                      @Nullable final Long timezoneOffsetInSeconds,
-                      @Nullable final String language,
-                      @Nullable final String bigQueryPseudoId,
-                      @Nullable final Boolean isRootHint,
-                      @Nullable String androidId,
-                      final long androidCreationTimestampInMilliseconds,
-                      @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo,
-                      @SuppressWarnings("NullableProblems")
-                      final Map<String, String> drmProviderClientIds,
-                      final long androidElapsedRealtimeAtSessionCreationInMillis,
-                      final long androidUptimeAtSessionCreationInMillis,
-                      @Nullable final String installSource,
-                      @Nullable final String installInitiatingPackageName,
-                      @Nullable final String installInitiatingPackageSigningInfo,
-                      @Nullable final String osBuildFingerprint,
-                      @Nullable final String hardwareName,
-                      @Nullable final String systemBootloaderVersion,
-                      final int bootCount,
-                      @Nullable final String glEsVersion,
-                      @Nullable final Map<String, String> cpuInfoLegacy,
-                      @Nullable final List<Pair<String, String>> cpuCommonInfo,
-                      @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo,
-                      @Nullable final Long googlePlayServicesVersionCode,
-                      @Nullable final String googlePlayServicesVersionName,
-                      @Nullable final Integer googlePlayServicesClientVersionCode,
-                      @Nullable final Long googlePlayVersionCode,
-                      @Nullable final String googlePlayVersionName
+    public ClientJson(
+            final ClientTypeJson type,
+            final String buildType,
+            final int version,
+            @Nullable final String versionName,
+            @Nullable final String deviceModel,
+            @Nullable final Long timezoneOffsetInSeconds,
+            @Nullable final String language,
+            @Nullable final String bigQueryPseudoId,
+            @Nullable final Boolean isRootHint,
+            @Nullable String androidId,
+            final long androidCreationTimestampInMilliseconds,
+            @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo,
+            @SuppressWarnings("NullableProblems") final Map<String, String> drmProviderClientIds,
+            final long androidElapsedRealtimeAtSessionCreationInMillis,
+            final long androidUptimeAtSessionCreationInMillis,
+            @Nullable final String installSource,
+            @Nullable final String installInitiatingPackageName,
+            @Nullable final String installInitiatingPackageSigningInfo,
+            @Nullable final String osBuildFingerprint,
+            @Nullable final String hardwareName,
+            @Nullable final String systemBootloaderVersion,
+            final int bootCount,
+            @Nullable final String glEsVersion,
+            @Nullable final Map<String, String> cpuInfoLegacy,
+            @Nullable final List<Pair<String, String>> cpuCommonInfo,
+            @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo,
+            @Nullable final Long googlePlayServicesVersionCode,
+            @Nullable final String googlePlayServicesVersionName,
+            @Nullable final Integer googlePlayServicesClientVersionCode,
+            @Nullable final Long googlePlayVersionCode,
+            @Nullable final String googlePlayVersionName,
+            @Nullable final AndroidBuildInfoJson androidBuildInfo,
+            @Nullable final AndroidAppInfoJson androidAppInfo,
+            @Nullable final AndroidDeviceFeaturesJson androidDeviceFeatures,
+            @Nullable final String androidSignatureHash,
+            @Nullable final Boolean androidQuickEmuProps,
+            @Nullable final Integer androidEmachineArchitecture,
+            @Nullable final Boolean androidSecurityEnhancedBuild,
+            @Nullable final Boolean androidBridgeRootService,
+            @Nullable final Long androidAppSize
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -246,5 +292,14 @@ public class ClientJson {
         this.googlePlayServicesClientVersionCode = googlePlayServicesClientVersionCode;
         this.googlePlayVersionCode = googlePlayVersionCode;
         this.googlePlayVersionName = googlePlayVersionName;
+        this.androidBuildInfo = androidBuildInfo;
+        this.androidAppInfo = androidAppInfo;
+        this.androidDeviceFeatures = androidDeviceFeatures;
+        this.androidSignatureHash = androidSignatureHash;
+        this.androidQuickEmuProps = androidQuickEmuProps;
+        this.androidEmArchitecture = androidEmachineArchitecture;
+        this.androidSecurityEnhancedBuild = androidSecurityEnhancedBuild;
+        this.androidBridgeRootService = androidBridgeRootService;
+        this.androidAppSize = androidAppSize;
     }
 }

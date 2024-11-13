@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 )
 
 func TestComputeSwapFees(t *testing.T) {

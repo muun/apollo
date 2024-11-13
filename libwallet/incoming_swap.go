@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
+	lndinput "github.com/lightningnetwork/lnd/input"
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
 	"github.com/muun/libwallet/hdpath"
@@ -214,6 +215,7 @@ type coinIncomingSwap struct {
 	HtlcOutputKeyPath   string
 }
 
+// NOTE: this method only works on segwit v0 txs
 func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
 	// Deserialize the HTLC transaction
 	htlcTx := wire.MsgTx{}
@@ -311,7 +313,7 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 		return fmt.Errorf("expected fulfillment tx input to point to correct htlc output")
 	}
 
-	sigHashes := txscript.NewTxSigHashes(tx)
+	sigHashes := lndinput.NewTxSigHashesV0Only(tx)
 
 	muunSigKey, err := muunPublicKey.key.ECPubKey()
 	if err != nil {
@@ -360,7 +362,7 @@ func (c *coinIncomingSwap) SignInput(index int, tx *wire.MsgTx, userKey *HDPriva
 	}
 
 	// Sign the fulfillment tx
-	sig, err := signNativeSegwitInput(
+	sig, err := signNativeSegwitInputV0(
 		index,
 		tx,
 		userPrivateKey,
@@ -438,7 +440,7 @@ func (c *coinIncomingSwap) signature(index int, tx *wire.MsgTx, userKey *HDPubli
 
 	prevOutAmount := htlcTx.TxOut[htlcOutputIndex].Value
 
-	sig, err := signNativeSegwitInput(
+	sig, err := signNativeSegwitInputV0(
 		index,
 		tx,
 		signingKey,

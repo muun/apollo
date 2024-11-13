@@ -6,12 +6,12 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
+import io.muun.apollo.domain.action.session.LogoutAction
 import io.muun.apollo.domain.action.user.DeleteWalletAction
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SETTINGS
 import io.muun.apollo.domain.analytics.AnalyticsEvent.WalletDeleteState
-import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException
 import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException
 import io.muun.apollo.domain.libwallet.UAF_TAPROOT
@@ -28,6 +28,7 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
+import io.muun.common.Optional
 import io.muun.common.api.messages.EventCommunicationMessage.Event
 import io.muun.common.utils.Preconditions
 import rx.Observable
@@ -39,6 +40,7 @@ import javax.money.CurrencyUnit
 class SettingsPresenter @Inject constructor(
     private val bitcoinUnitSel: BitcoinUnitSelector,
     private val updateProfilePictureAction: UpdateProfilePictureAction,
+    private val logoutAction: LogoutAction,
     private val deleteWallet: DeleteWalletAction,
     private val userActions: UserActions,
     private val exchangeRateSelector: ExchangeRateSelector,
@@ -118,8 +120,8 @@ class SettingsPresenter @Inject constructor(
         val observable = deleteWallet
             .state
             .compose(handleStates(view::setLoading, this::handleWalletDeleteError))
-            .doOnNext {
-                onWalletDeleted()
+            .doOnNext { maybeSupportId: Optional<String> ->
+                onWalletDeleted(maybeSupportId)
             }
         subscribeTo(observable)
     }
@@ -159,18 +161,16 @@ class SettingsPresenter @Inject constructor(
     /**
      * Call to logout.
      */
-    fun logout() {
+    fun logoutUser() {
         analytics.report(AnalyticsEvent.E_LOG_OUT())
         analytics.resetUserProperties()
 
-        // We need to "capture" auth header to fire (and forget) notifyLogout request
-        val jwt = getJwt()
-        navigator.navigateToLogout(context)
+        logoutAction.run()
+        navigator.navigateToLauncher(context)
 
         // We need to finish this activity, or the session status check will immediately raise
         // the SessionExpired error -- even though this was a regular logout.
         view.finishActivity()
-        userActions.notifyLogoutAction.run(jwt)
     }
 
     /**
@@ -184,11 +184,11 @@ class SettingsPresenter @Inject constructor(
     /**
      * Perform successful delete wallet follow up actions (e.g cleanup, navigation, etc...).
      */
-    private fun onWalletDeleted() {
+    private fun onWalletDeleted(maybeSupportId: Optional<String>) {
         analytics.report(AnalyticsEvent.E_WALLET_DELETE(WalletDeleteState.SUCCESS))
         analytics.resetUserProperties()
 
-        navigator.navigateToDeleteWallet(context)
+        navigator.navigateToDeleteWallet(context, maybeSupportId)
 
         // We need to finish this activity, or the session status check will immediately raise
         // the SessionExpired error -- even though this is expected from deleteWallet.
@@ -199,10 +199,14 @@ class SettingsPresenter @Inject constructor(
      * Handle the tap on the log out button.
      */
     fun handleLogoutRequest() {
+
+        if (!userSel.getOptional().isPresent) {
+            Timber.e("This shouldn't happen. Already logged out user")
+            return
+        }
+
         // TODO: this should not be using a blocking observable. Not terrible, not ideal.
-        val options = logoutOptionsSel.watch()
-            .toBlocking()
-            .first()
+        val options = logoutOptionsSel.get()
         val shouldBlockAndExplain = options.isLogoutBlocked()
 
         Preconditions.checkArgument(options.isRecoverable())
@@ -213,25 +217,20 @@ class SettingsPresenter @Inject constructor(
      * Handle the tap on the delete wallet button.
      */
     fun handleDeleteWalletRequest() {
+
+        if (!userSel.getOptional().isPresent) {
+            Timber.e("This shouldn't happen. Already logged out user")
+            return
+        }
+
         // TODO: this should not be using a blocking observable. Not terrible, not ideal.
-        val options = logoutOptionsSel.watch()
-            .toBlocking()
-            .first()
+        val options = logoutOptionsSel.get()
 
         view.handleDeleteWallet(options.canDeleteWallet(), options.isRecoverable())
     }
 
     override fun getEntryEvent(): AnalyticsEvent {
         return S_SETTINGS()
-    }
-
-    private fun getJwt(): String {
-        val serverJwt = authRepository.serverJwt
-        if (!serverJwt.isPresent) {
-            // Shouldn't happen but isn't the worst if it does. We wanna know 'cause probably a bug
-            Timber.e(MuunError("Auth token expected to be present"))
-        }
-        return serverJwt.get()
     }
 
     fun navigateToLightningSettings() {

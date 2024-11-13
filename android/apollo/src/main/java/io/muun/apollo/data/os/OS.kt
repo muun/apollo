@@ -47,9 +47,15 @@ object OS {
 
     /**
      * Whether this OS supports telephonyManager#getSimState(int), which was introduced in
-     * 0-8-26, and deprecated in R-11-30 in favour of telephonyManager#getActiveModemCount().
+     * O-8-26, and deprecated in R-11-30 in favour of telephonyManager#getActiveModemCount().
      */
     fun supportsGetSimStateWithSlotIndex(): Boolean =
+        isAndroidOOrNewer()
+
+    /**
+     * Whether this OS supports telephonyManager#isDataEnabled(), which was introduced in O-8-26
+     */
+    fun supportsIsDataEnabled(): Boolean =
         isAndroidOOrNewer()
 
     /**
@@ -133,6 +139,51 @@ object OS {
         isAndroidROrNewer()
 
     /**
+     * Whether this OS supports Build.VERSION.SECURITY_PATCH, which was introduced in M-6-23.
+     */
+    fun supportsBuildVersionSecurityPatch(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports Build.VERSION.BASE_OS, which was introduced in M-6-23.
+     */
+    fun supportsBuildVersionBaseOs(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports Build.SUPPORTED_ABIS, which was introduced in L-5.0-21.
+     */
+    fun supportsBuildSupportedAbis(): Boolean =
+        isAndroidLOrNewer()
+
+    /**
+     * Whether this OS supports Feature Picture and Picture, which was introduced in N-7-24.
+     */
+    fun supportsPIP(): Boolean =
+        isAndroidNOrNewer()
+
+    /**
+     * Whether this OS device has biometric hardware to detect a fingerprint, which was introduced
+     * in M-6-23.
+     */
+    fun supportsDactylogram(): Boolean =
+        isAndroidMOrNewer()
+
+    /**
+     * Whether this OS supports Feature PC, which was introduced in O-8.1-27.
+     */
+    fun supportsFeaturePC(): Boolean =
+        isAndroidOMr1OrNewer()
+
+    /**
+     * Whether this OS supports PackageManager.GET_SIGNING_CERTIFICATES, which was introduced
+     * in P-9-28.
+     */
+    fun supportsGetSigningCerts(): Boolean =
+        isAndroidPOrNewer()
+
+
+    /**
      * Whether this OS supports Settings.Global.BOOT_COUNT, which was introduced in N-7-24.
      */
     fun supportsBootCountSetting(): Boolean =
@@ -146,6 +197,13 @@ object OS {
         isAndroidMOrNewer()
 
     /**
+     * Whether this OS supports RouteInfo#hasGateway(), which was introduced
+     * in Q-10-29.
+     */
+    fun supportsRouteHasGateway(): Boolean =
+        isAndroidQOrNewer()
+
+    /**
      * Whether this OS supports ConnectivityManager#getNetworkCapabilities, which was introduced
      * in L-5.0-21.
      */
@@ -157,6 +215,19 @@ object OS {
      */
     fun supportsSupportedAbis(): Boolean =
         isAndroidLOrNewer()
+
+    /**
+     * Whether this OS supports Calendar#calendarType, which was introduced in O-8-26.
+     */
+    fun supportsCalendarType(): Boolean =
+        isAndroidOOrNewer()
+
+    /**
+     * Whether this OS supports {@link android.security.KeyStoreException} public methods, which
+     * were introduced in T-13-33.
+     */
+    fun supportsKeystoreExceptionPublicMethods(): Boolean =
+        isAndroidTiramisuOrNewer()
 
     // PRIVATE STUFF:
 
@@ -186,6 +257,13 @@ object OS {
      */
     private fun isAndroidQExactly() =
         Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
+
+    /**
+     * Whether this OS version is Q-10-29 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
+    private fun isAndroidQOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
     /**
      * Whether this OS version is L-5.0-21 or newer.
@@ -222,4 +300,17 @@ object OS {
     private fun isAndroidNOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 
+    /**
+     * Whether this OS version is O-8.1-27 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O_MR1)
+    private fun isAndroidOMr1OrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+
+    /**
+     * Whether this OS version is T-13-33 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
+    private fun isAndroidTiramisuOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 }

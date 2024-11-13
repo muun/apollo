@@ -50,16 +50,14 @@ open class ForwardingPoliciesRepository @Inject constructor(
         }
     }
 
-    private val preference: Preference<List<StoredForwardingPolicy>> =
-        rxSharedPreferences.getObject(
+    private val preference: Preference<List<StoredForwardingPolicy>>
+        get() = rxSharedPreferences.getObject(
             KEY,
             emptyList(),
             JsonListPreferenceAdapter(StoredForwardingPolicy::class.java)
         )
 
-    override fun getFileName(): String {
-        return "forwarding_policies"
-    }
+    override val fileName get() = "forwarding_policies"
 
     fun fetchOne(): List<ForwardingPolicy> {
 

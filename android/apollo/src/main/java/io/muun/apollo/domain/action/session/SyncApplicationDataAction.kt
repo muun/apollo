@@ -76,18 +76,17 @@ class SyncApplicationDataAction @Inject constructor(
         val step1 = syncPublicKeySet.action()
 
         // These can run in any order:
-        val step2 = Observable.zip(
+        val step2 = Observable.mergeDelayError(
             fetchUserInfo(),
             fetchNextTransactionSize.action(),
             fetchRealTimeData.action(),
-            syncContacts(hasContactsPermission),
+            runOnlyIf(!isFirstSession) { syncContacts(hasContactsPermission) },
             Observable.fromCallable(apiMigrationsManager::reset),
-            RxHelper::toVoid
         )
 
         // These must run after the ones before:
         val step3 = Observable.zip(
-            operationActions.fetchReplaceOperations(),
+            runOnlyIf(!isFirstSession) { operationActions.fetchReplaceOperations() },
             registerInvoices.action(),
             googlePlayIntegrityCheck.run(),
             RxHelper::toVoid
@@ -127,6 +126,14 @@ class SyncApplicationDataAction @Inject constructor(
         } else {
             // Just fetch previous contacts, we can't PATCH with local changes:
             contactActions.fetchReplaceContacts()
+        }
+    }
+
+    private fun <T> runOnlyIf(condition: Boolean, block: () -> Observable<T>): Observable<T> {
+        return if (condition) {
+            block()
+        } else {
+            Observable.just(null)
         }
     }
 }

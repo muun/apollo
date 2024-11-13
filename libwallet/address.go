@@ -3,7 +3,7 @@ package libwallet
 import (
 	"fmt"
 	"github.com/shopspring/decimal"
-	"io/ioutil"
+	"io"
 	"math"
 	"net/http"
 	"net/url"
@@ -203,7 +203,7 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Errorf(ErrNetwork, "Failed to read body response: %w", err)
 	}

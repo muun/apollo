@@ -3,8 +3,10 @@ package io.muun.apollo.presentation.ui.setup_password
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivitySetupPasswordBinding
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -25,8 +27,11 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
             Intent(context, SetupPasswordActivity::class.java)
     }
 
-    @BindView(R.id.header)
-    lateinit var headerView: MuunHeader
+    private val binding: ActivitySetupPasswordBinding
+        get() = getBinding() as ActivitySetupPasswordBinding
+
+    private val headerView: MuunHeader
+        get() = binding.header
 
     override fun inject() {
         component.inject(this)
@@ -37,6 +42,10 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
 
     override fun getLayoutResource() =
         R.layout.activity_setup_password
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySetupPasswordBinding::inflate
+    }
 
     override fun isPresenterPersistent() =
         true

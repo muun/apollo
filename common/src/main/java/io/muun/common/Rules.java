@@ -16,7 +16,7 @@ public class Rules {
     /**
      * The confirmation target (in blocks) for fee options displayed in clients.
      *
-     * @Deprecated
+     * {@code @Deprecated}
      *     New clients now use dynamic fee targets based on Houston and Fee Estimator logic.
      *     We are keeping these for historic reasons and because Houston will default to them if
      *     Fee Estimator is unresponsive. Also, during client side migration dynamic fee targets are
@@ -45,7 +45,7 @@ public class Rules {
     public static final double OP_MAXIMUM_FEE_RATE = 999d / VBYTE_TO_WEIGHT_UNIT_RATIO;
 
     /** Added fee rate when the min fee is above 1 sat/vbyte. */
-    public static final double OP_MIN_FEE_DELTA = 2d / VBYTE_TO_WEIGHT_UNIT_RATIO;
+    public static final double OP_MIN_FEE_DELTA = 0.1d / VBYTE_TO_WEIGHT_UNIT_RATIO;
 
     /**
      * Convert sats/WU to sats/vbyte.

@@ -34,6 +34,7 @@ public class OperationCreatedJson {
     /**
      * Json constructor.
      */
+    @SuppressWarnings("unused")
     public OperationCreatedJson() {
     }
 
@@ -41,7 +42,7 @@ public class OperationCreatedJson {
      * Houston constructor.
      */
     public OperationCreatedJson(OperationJson operation,
-                                PartiallySignedTransactionJson partiallySignedTransaction,
+                                @Nullable PartiallySignedTransactionJson partiallySignedTransaction,
                                 NextTransactionSizeJson nextTransactionSize,
                                 @Nullable MuunAddressJson changeAddress) {
 

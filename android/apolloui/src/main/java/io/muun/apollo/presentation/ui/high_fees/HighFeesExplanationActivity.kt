@@ -3,8 +3,10 @@ package io.muun.apollo.presentation.ui.high_fees
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityHighFeesBinding
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.BaseView
@@ -17,8 +19,11 @@ class HighFeesExplanationActivity : BaseActivity<BasePresenter<BaseView>>(), Bas
             Intent(context, HighFeesExplanationActivity::class.java)
     }
 
-    @BindView(R.id.muun_header)
-    lateinit var header: MuunHeader
+    private val binding: ActivityHighFeesBinding
+        get() = getBinding() as ActivityHighFeesBinding
+
+    private val header: MuunHeader
+        get() = binding.muunHeader
 
     override fun inject() {
         component.inject(this)
@@ -26,6 +31,10 @@ class HighFeesExplanationActivity : BaseActivity<BasePresenter<BaseView>>(), Bas
 
     override fun getLayoutResource(): Int {
         return R.layout.activity_high_fees
+    }
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityHighFeesBinding::inflate
     }
 
     override fun initializeUi() {

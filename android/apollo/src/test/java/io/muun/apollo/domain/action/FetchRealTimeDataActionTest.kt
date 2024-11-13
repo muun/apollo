@@ -1,5 +1,9 @@
 package io.muun.apollo.domain.action
 
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import io.muun.apollo.BaseTest
 import io.muun.apollo.TestUtils
 import io.muun.apollo.data.external.Gen
@@ -15,33 +19,24 @@ import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeData
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito
 import rx.Observable
 
 
-class FetchRealTimeDataActionTest: BaseTest() {
+class FetchRealTimeDataActionTest : BaseTest() {
 
-    @Mock
-    private lateinit var exchangeRateWindowRepository: ExchangeRateWindowRepository
+    private val exchangeRateWindowRepository = mockk<ExchangeRateWindowRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var feeWindowRepository: FeeWindowRepository
+    private val feeWindowRepository = mockk<FeeWindowRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var blockchainHeightRepository: BlockchainHeightRepository
+    private val blockchainHeightRepository = mockk<BlockchainHeightRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var forwardingPoliciesRepository: ForwardingPoliciesRepository
+    private val forwardingPoliciesRepository = mockk<ForwardingPoliciesRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var minFeeRateRepository: MinFeeRateRepository
+    private val minFeeRateRepository = mockk<MinFeeRateRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var featuresRepository: FeaturesRepository
+    private val featuresRepository = mockk<FeaturesRepository>(relaxed = true)
 
-    @Mock
-    private lateinit var houstonClient: HoustonClient
+    private val houstonClient = mockk<HoustonClient>()
 
     private lateinit var fetchRealTimeDataAction: FetchRealTimeDataAction
 
@@ -77,16 +72,23 @@ class FetchRealTimeDataActionTest: BaseTest() {
             listOfFeatures
         )
 
-        Mockito.doReturn(Observable.just(realTimeData))
-            .`when`(houstonClient).fetchRealTimeData()
+        every { houstonClient.fetchRealTimeData() }.returns(Observable.just(realTimeData))
 
         TestUtils.fetchItemFromObservable(fetchRealTimeDataAction.action())
 
-        Mockito.verify(feeWindowRepository).store(feeWindow)
-        Mockito.verify(exchangeRateWindowRepository).storeLatest(exchangeRateWindow)
-        Mockito.verify(blockchainHeightRepository).store(blockchainHeight)
-        Mockito.verify(forwardingPoliciesRepository).store(forwardingPolicies)
-        Mockito.verify(minFeeRateRepository).store(minFeeRateInWeightUnits)
-        Mockito.verify(featuresRepository).store(listOfFeatures)
+        verify { feeWindowRepository.store(feeWindow) }
+        verify { exchangeRateWindowRepository.storeLatest(exchangeRateWindow) }
+        verify { blockchainHeightRepository.store(blockchainHeight) }
+        verify { forwardingPoliciesRepository.store(forwardingPolicies) }
+        verify { minFeeRateRepository.store(minFeeRateInWeightUnits) }
+        verify { featuresRepository.store(listOfFeatures) }
+
+        confirmVerified(blockchainHeightRepository)
+        confirmVerified(forwardingPoliciesRepository)
+        confirmVerified(minFeeRateRepository)
+        confirmVerified(featuresRepository)
+
+        // TODO we should test shouldSync() logic (e.g multiple syncs in short term don't fetch
+        //  new data, but they do after threshold)
     }
 }

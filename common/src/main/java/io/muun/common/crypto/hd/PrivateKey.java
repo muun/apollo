@@ -10,6 +10,7 @@ import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
+import io.muun.common.utils.Preconditions;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -34,6 +35,7 @@ import javax.validation.constraints.NotNull;
 public class PrivateKey extends BaseKey {
 
     private static final int PRIVATE_KEY_LENGTH_IN_BYTES = 32;
+
     private static final int FINGERPRINT_LENGTH_IN_BYTES = 4;
 
     // TODO this should live in bitcoin lib (signTransactionHash could receive this as param).
@@ -76,8 +78,10 @@ public class PrivateKey extends BaseKey {
     /**
      * Deserialize a base58-encoded extended private key.
      */
-    public static PrivateKey deserializeFromBase58(@NotNull String absoluteDerivationPath,
-                                                   @NotNull String base58Serialization) {
+    public static PrivateKey deserializeFromBase58(
+            @NotNull String absoluteDerivationPath,
+            @NotNull String base58Serialization
+    ) {
 
         final NetworkParameters networkParameters = NetworkParametersHelper
                 .getNetworkParametersForBase58Key(base58Serialization);
@@ -90,36 +94,61 @@ public class PrivateKey extends BaseKey {
         return new PrivateKey(
                 absoluteDerivationPath,
                 deterministicKey,
-                networkParameters);
+                networkParameters
+        );
     }
 
     /**
      * Deserialize a private key from its compact byte representation.
      */
-    public static PrivateKey fromCompactSerialization(@NotNull byte[] serialization,
-                                                      @NotNull NetworkParameters network) {
+    public static PrivateKey fromCompactSerialization(
+            @NotNull byte[] serialization,
+            @NotNull NetworkParameters network
+    ) {
 
         // the serialization for our extended private key is the concatenation of the raw private
         // key and the chain code, each of them 32 bytes
         final byte[] privateKey = ByteUtils.subArray(serialization, 0, PRIVATE_KEY_LENGTH_IN_BYTES);
         final byte[] chainCode = ByteUtils.subArray(serialization, PRIVATE_KEY_LENGTH_IN_BYTES);
 
+        return PrivateKey.fromBytes32(privateKey, chainCode, network);
+    }
+
+    /**
+     * Creates a private key from a byte32 & chainCode.
+     */
+    public static PrivateKey fromBytes32(
+            @NotNull byte[] key32,
+            @NotNull byte[] chainCode,
+            NetworkParameters networkParameters
+    ) {
+        Preconditions.checkArgument(
+                key32 != null && key32.length == 32,
+                "key32 must be 32 bytes length"
+        );
+        Preconditions.checkArgument(
+                chainCode != null && chainCode.length == 32,
+                "chainCode must be 32 bytes length"
+        );
+
         final DeterministicKey deterministicKey = new DeterministicKey(
                 ImmutableList.of(),
                 chainCode,
-                Encodings.bytesToBigInteger(privateKey),
+                Encodings.bytesToBigInteger(key32),
                 null
         );
 
-        return new PrivateKey("m", deterministicKey, network);
+        return new PrivateKey("m", deterministicKey, networkParameters);
     }
 
     /**
      * Creates an extended private key from a DeterministicKey.
      */
-    private PrivateKey(@NotNull String absoluteDerivationPath,
-                       @NotNull DeterministicKey deterministicKey,
-                       NetworkParameters networkParameters) {
+    private PrivateKey(
+            @NotNull String absoluteDerivationPath,
+            @NotNull DeterministicKey deterministicKey,
+            NetworkParameters networkParameters
+    ) {
 
         if (deterministicKey.isPubKeyOnly()) {
             throw new IllegalArgumentException("No private key provided.");
@@ -190,8 +219,10 @@ public class PrivateKey extends BaseKey {
                     absolutePathToDerive);
 
             if (!isPrefix(parsedAbsoluteDerivationPath, childNumbers)) {
-                throw new InvalidDerivationBranchException(absoluteDerivationPath,
-                        absolutePathToDerive);
+                throw new InvalidDerivationBranchException(
+                        absoluteDerivationPath,
+                        absolutePathToDerive
+                );
             }
 
             final List<ChildNumber> childNumbersToDerive = childNumbers.subList(
@@ -199,8 +230,10 @@ public class PrivateKey extends BaseKey {
                     childNumbers.size()
             );
 
-            final DeterministicKey derivedKey = deriveDeterministicKey(deterministicKey,
-                    childNumbersToDerive);
+            final DeterministicKey derivedKey = deriveDeterministicKey(
+                    deterministicKey,
+                    childNumbersToDerive
+            );
 
             return new PrivateKey(absolutePathToDerive, derivedKey, networkParameters);
 
@@ -348,7 +381,7 @@ public class PrivateKey extends BaseKey {
     @Override
     public String toString() {
         return "PrivateKey{\n"
-                + "\tabsoluteDerivationPath='" + absoluteDerivationPath + "\',\n"
+                + "\tabsoluteDerivationPath='" + absoluteDerivationPath + "',\n"
                 + "\tparsedAbsoluteDerivationPath=" + parsedAbsoluteDerivationPath + ",\n"
                 + "\tdeterministicKey=" + deterministicKey + "\n"
                 + '}';

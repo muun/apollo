@@ -10,6 +10,7 @@ import io.muun.apollo.data.preferences.ClientVersionRepository;
 import io.muun.apollo.domain.ClipboardManager;
 import io.muun.apollo.domain.EmailReportManager;
 import io.muun.apollo.domain.action.base.ActionState;
+import io.muun.apollo.domain.action.session.LogoutAction;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
@@ -37,6 +38,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -98,6 +100,9 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     @Inject
     protected LogoutOptionsSelector logoutOptionsSel;
+
+    @Inject
+    protected LogoutAction logout;
 
     @Inject
     protected Analytics analytics;
@@ -262,7 +267,12 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             Timber.e(error);
         }
 
-        analytics.report(new AnalyticsEvent.E_ERROR(AnalyticsEvent.ERROR_TYPE.GENERIC));
+        analytics.report(new AnalyticsEvent.E_ERROR(
+                AnalyticsEvent.ERROR_TYPE.GENERIC,
+                error.getClass().getSimpleName(),
+                error.getLocalizedMessage(),
+                Log.getStackTraceString(error).replace("\n", " ")
+        ));
 
         // Our current error handling logic is this:
         // - If error is one of our known fatal error -> handleFatalError()
@@ -306,7 +316,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
             view.showErrorDialog(
                     R.string.secure_storage_error,
-                    () -> navigator.navigateToLogout(getContext())
+                    this::logout
             );
 
         } else {
@@ -314,6 +324,11 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         }
 
         return true;
+    }
+
+    protected void logout() {
+        logout.run();
+        navigator.navigateToLauncher(getContext());
     }
 
     /**
@@ -368,7 +383,6 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         }
 
         final long value = bundle.getLong(key);
-        bundle.remove(key);
 
         return Optional.of(value);
     }
@@ -379,8 +393,9 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      *
      * @param condition The condition to be tested.
      * @param fieldName The name of the argument.
+     * @return whether condition was met or not
      */
-    protected void checkArgument(boolean condition, String fieldName) {
+    protected boolean checkArgument(boolean condition, String fieldName) {
 
         if (!condition) {
 
@@ -395,7 +410,11 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                     () -> showErrorReportDialog(error, false),
                     () -> view.finishActivity()
             );
+
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -466,7 +485,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     protected <T> Observable.Transformer<ActionState<T>, T> handleStates(
             @Nullable Action1<Boolean> handleLoading,
-            @Nullable Action1<Throwable> handleError) {
+            @Nullable Action1<Throwable> handleError
+    ) {
 
         return observable -> observable
                 .doOnNext(state -> {
@@ -488,7 +508,11 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      */
     private void showErrorReportDialog(Throwable error, boolean standalone) {
 
-        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG());
+        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(
+                error.getClass().getSimpleName(),
+                error.getLocalizedMessage(),
+                Log.getStackTraceString(error).replace("\n", " ")
+        ));
 
         final MuunDialog.Builder builder = new MuunDialog.Builder()
                 .layout(R.layout.dialog_custom_layout)

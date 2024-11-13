@@ -3,10 +3,11 @@ package io.muun.apollo.presentation.ui.select_amount
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.data.serialization.SerializationUtils
+import io.muun.apollo.databinding.ActivitySelectAmountBinding
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BaseActivity
@@ -73,14 +74,17 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         }
     }
 
-    @BindView(R.id.select_amount_header)
-    lateinit var header: MuunHeader
+    private val binding: ActivitySelectAmountBinding
+        get() = getBinding() as ActivitySelectAmountBinding
 
-    @BindView(R.id.muun_amount_input)
-    lateinit var amountInput: MuunAmountInput
+    private val header: MuunHeader
+        get() = binding.selectAmountHeader
 
-    @BindView(R.id.confirm_amount_button)
-    lateinit var confirmButton: MuunButton
+    private val amountInput: MuunAmountInput
+        get() = binding.muunAmountInput
+
+    private val confirmButton: MuunButton
+        get() = binding.confirmAmountButton
 
     override fun inject() {
         component.inject(this)
@@ -90,12 +94,20 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         return R.layout.activity_select_amount
     }
 
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySelectAmountBinding::inflate
+    }
+
     override fun initializeUi() {
         super.initializeUi()
 
         header.attachToActivity(this)
         header.showTitle(getString(R.string.select_amount_title))
         header.setNavigation(MuunHeader.Navigation.BACK)
+
+        confirmButton.setOnClickListener {
+            onConfirmButtonClick()
+        }
 
         amountInput.isEnabled = false // Wait for ExchangeRateProvider to be fully init
     }
@@ -160,8 +172,7 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         return true
     }
 
-    @OnClick(R.id.confirm_amount_button)
-    fun onConfirmButtonClick() {
+    private fun onConfirmButtonClick() {
         presenter.confirmSelectedAmount()
     }
 

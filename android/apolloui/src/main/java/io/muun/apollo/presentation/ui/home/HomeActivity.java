@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.HomeActivityBinding;
 import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
@@ -16,14 +17,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import kotlin.jvm.functions.Function1;
 
 import java.util.Objects;
 import javax.validation.constraints.NotNull;
@@ -53,12 +56,14 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     }
 
     static String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
+
     public static String NEW_OP_ID = "NEW_OP_ID";
 
-    @BindView(R.id.home_header)
-    MuunHeader header;
-
     private NavController navController;
+
+    private HomeActivityBinding binding() {
+        return (HomeActivityBinding) getBinding();
+    }
 
     @Override
     protected void inject() {
@@ -71,13 +76,18 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     }
 
     @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return HomeActivityBinding::inflate;
+    }
+
+    @Override
     protected int getMenuResource() {
         return R.menu.home_activity;
     }
 
     @Override
     public MuunHeader getHeader() {
-        return header;
+        return binding().homeHeader;
     }
 
     @Override

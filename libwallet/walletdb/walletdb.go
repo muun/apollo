@@ -47,6 +47,10 @@ func Open(path string) (*DB, error) {
 	return &DB{db}, nil
 }
 
+func (d *DB) NewFeeBumpRepository() FeeBumpRepository {
+	return &GORMFeeBumpRepository{db: d.db}
+}
+
 func migrate(db *gorm.DB) error {
 	opts := gormigrate.Options{
 		UseTransaction: true,
@@ -117,6 +121,31 @@ func migrate(db *gorm.DB) error {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.Table("invoices").DropColumn(gorm.ToColumnName("Metadata")).Error
+			},
+		},
+		{
+			ID: "Init fee bump tables",
+			Migrate: func(tx *gorm.DB) error {
+
+				type FeeBumpFunction struct {
+					gorm.Model
+					Position         uint
+					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`
+				}
+
+				type PartialLinearFunction struct {
+					gorm.Model
+					LeftClosedEndpoint float64
+					RightOpenEndpoint  float64
+					Slope              float64
+					Intercept          float64
+					FunctionPosition   uint
+				}
+				// Create tables FeeBumpFunction and PartialLinearFunction
+				return tx.AutoMigrate(&FeeBumpFunction{}, &PartialLinearFunction{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable(&FeeBumpFunction{}, &PartialLinearFunction{}).Error
 			},
 		},
 	})

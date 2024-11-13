@@ -1,6 +1,6 @@
 package fees
 
-import "github.com/btcsuite/btcutil"
+import "github.com/btcsuite/btcd/btcutil"
 
 const dustThreshold = 546
 

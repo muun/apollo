@@ -1,8 +1,11 @@
 package io.muun.apollo.presentation.ui.fragments.create_password
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentCreatePasswordBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.view.MuunButton
@@ -11,14 +14,17 @@ import io.muun.apollo.presentation.ui.view.MuunTextInput
 
 class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), CreatePasswordView {
 
-    @BindView(R.id.create_password_input)
-    lateinit var passwordInput: MuunTextInput
+    private val binding: FragmentCreatePasswordBinding
+        get() = getBinding() as FragmentCreatePasswordBinding
 
-    @BindView(R.id.create_password_confirm_input)
-    lateinit var passwordConfirmInput: MuunTextInput
+    private val passwordInput: MuunTextInput
+        get() = binding.createPasswordInput
 
-    @BindView(R.id.create_password_confirm)
-    lateinit var confirmButton: MuunButton
+    private val passwordConfirmInput: MuunTextInput
+        get() = binding.createPasswordConfirmInput
+
+    private val confirmButton: MuunButton
+        get() = binding.createPasswordConfirm
 
     override fun inject() {
         component.inject(this)
@@ -27,23 +33,19 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
     override fun getLayoutResource() =
         R.layout.fragment_create_password
 
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentCreatePasswordBinding::inflate
+    }
+
     override fun initializeUi(view: View) {
         passwordInput.setPasswordRevealEnabled(true)
         passwordInput.setOnChangeListener(this) {
-            // Ugly check needed for some convoluted scenario where we receive input and fragment
-            // is being re-created or something
-            if (::passwordInput.isInitialized) {
-                validatePassword()
-            }
+            validatePassword()
         }
 
         passwordConfirmInput.setPasswordRevealEnabled(true)
         passwordConfirmInput.setOnChangeListener(this) {
-            // Ugly check needed for some convoluted scenario where we receive input and fragment
-            // is being re-created or something
-            if (::passwordConfirmInput.isInitialized) {
-                validatePassword()
-            }
+            validatePassword()
         }
 
         confirmButton.isEnabled = false

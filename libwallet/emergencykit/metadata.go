@@ -3,7 +3,6 @@ package emergencykit
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -80,7 +79,7 @@ func (mr *MetadataReader) ReadMetadata() (*Metadata, error) {
 	}
 
 	// Create the temporary directory, with a deferred call to clean up:
-	tmpDir, err := ioutil.TempDir("", "ek-metadata-*")
+	tmpDir, err := os.MkdirTemp("", "ek-metadata-*")
 	if err != nil {
 		return nil, fmt.Errorf("ReadMetadata failed to create a temporary directory")
 	}
@@ -94,7 +93,7 @@ func (mr *MetadataReader) ReadMetadata() (*Metadata, error) {
 	}
 
 	// Read the contents of the file:
-	metadataBytes, err := ioutil.ReadFile(filepath.Join(tmpDir, metadataName))
+	metadataBytes, err := os.ReadFile(filepath.Join(tmpDir, metadataName))
 	if err != nil {
 		return nil, fmt.Errorf("ReadMetadata failed to read the extracted file: %w", err)
 	}
@@ -128,7 +127,7 @@ func (mw *MetadataWriter) WriteMetadata(metadata *Metadata) error {
 	}
 
 	// Write to the temporary file, with a deferred call to clean up:
-	err = ioutil.WriteFile(tmpFile, metadataBytes, os.FileMode(0600))
+	err = os.WriteFile(tmpFile, metadataBytes, os.FileMode(0600))
 	if err != nil {
 		return fmt.Errorf("WriteMetadata failed to write a temporary file: %w", err)
 	}

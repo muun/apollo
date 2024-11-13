@@ -1,6 +1,5 @@
 package io.muun.apollo.data.net.base
 
-import com.facebook.stetho.okhttp3.StethoInterceptor
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.HoustonConfig
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor
@@ -102,10 +101,6 @@ open class BaseClient<ServiceT> protected constructor(
                 val loggingInterceptor = HttpLoggingInterceptor()
                     .setLevel(HttpLoggingInterceptor.Level.BODY)
                 builder.addInterceptor(loggingInterceptor)
-            }
-
-            if (!Globals.INSTANCE.isReleaseBuild && config.getBoolean("net.interceptors.stetho")) {
-                builder.addNetworkInterceptor(StethoInterceptor())
             }
             return builder.build()
         }

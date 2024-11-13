@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 func TestNewChallengePrivateKey(t *testing.T) {

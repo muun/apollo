@@ -384,7 +384,7 @@ open class NewOperationTests : BaseInstrumentationTest() {
 
         newOpScreen.submit()
 
-        homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.subtract(total))
 
         autoFlows.checkOperationDetails(amount, description, fee) {
             homeScreen.goToOperationDetail(description, isPending = true)

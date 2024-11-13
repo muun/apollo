@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/muun/libwallet/addresses"
 
 	"github.com/btcsuite/btcd/chaincfg"
@@ -98,6 +98,6 @@ func (c *coinV3) signature(index int, tx *wire.MsgTx, userKey *HDPublicKey, muun
 		return nil, fmt.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
-	return signNonNativeSegwitInput(
+	return signNonNativeSegwitInputV0(
 		index, tx, signingKey, redeemScript, witnessScript, c.Amount)
 }

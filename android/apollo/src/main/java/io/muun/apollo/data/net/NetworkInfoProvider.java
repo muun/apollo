@@ -42,9 +42,9 @@ public class NetworkInfoProvider {
 
     /**
      * Get the type of network of the current active network (e.g WIFI, MOBILE).
+     * IMPORTANT NOTE: This code is USED ONLY FOR API < 23.
+     * For API 23+ we are using ConnectivityManager with NetworkCapabilities#hasTransport
      */
-    // TODO for API 23+ we should stop using NetworkInfo() and getActiveNetwork() +
-    //  NetworkCapabilities#hasTransport
     public String getCurrentTransport() {
         final Optional<NetworkInfo> activeNetworkInfo = watchNetworkInfo().toBlocking().first();
         return activeNetworkInfo.map(NetworkInfo::getTypeName).orElse("UNKNOWN");

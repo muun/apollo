@@ -25,7 +25,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
         autoFlows.lnUrlWithdrawViaReceive()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 
     @Test
@@ -37,7 +37,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
         autoFlows.lnUrlWithdrawViaSend()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 
     @Test
@@ -49,7 +49,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
         autoFlows.lnUrlWithdrawViaSend(LappClient.LnUrlVariant.SLOW)
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change immediately
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore)  // balance should not change immediately
         homeScreen.waitUntilBalanceEquals(balanceBefore.add(lnurlWithdrawAmount))
     }
 
@@ -112,7 +112,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
             .press()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore)  // balance should not change
     }
 
     @Test
@@ -130,7 +130,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
             .press()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore)  // balance should not change
     }
 
     @Test
@@ -148,7 +148,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
             .press()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore)  // balance should not change
     }
 
     @Test
@@ -166,7 +166,7 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
             .press()
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore)  // balance should not change
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore)  // balance should not change
     }
 
     @Test
@@ -180,6 +180,6 @@ open class LnUrlWithdrawTests : BaseInstrumentationTest() {
         }
 
         // We should be at home by now
-        homeScreen.checkBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.add(lnurlWithdrawAmount))
     }
 }

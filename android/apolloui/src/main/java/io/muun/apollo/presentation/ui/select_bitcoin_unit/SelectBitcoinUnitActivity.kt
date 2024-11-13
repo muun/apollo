@@ -2,9 +2,11 @@ package io.muun.apollo.presentation.ui.select_bitcoin_unit
 
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivitySelectBitcoinUnitBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.utils.UiUtils
@@ -19,14 +21,17 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
             Intent(context, SelectBitcoinUnitActivity::class.java)
     }
 
-    @BindView(R.id.select_currency_header)
-    lateinit var header: MuunHeader
+    private val binding: ActivitySelectBitcoinUnitBinding
+        get() = getBinding() as ActivitySelectBitcoinUnitBinding
 
-    @BindView(R.id.bitcoin_unit_btc)
-    lateinit var bitcoinUnitItem: MuunSettingItem
+    private val header: MuunHeader
+        get() = binding.selectCurrencyHeader
 
-    @BindView(R.id.bitcoin_unit_sat)
-    lateinit var satoshisUnitItem: MuunSettingItem
+    private val bitcoinUnitItem: MuunSettingItem
+        get() = binding.bitcoinUnitBtc
+
+    private val satoshisUnitItem: MuunSettingItem
+        get() = binding.bitcoinUnitSat
 
     @State
     @JvmField
@@ -37,6 +42,10 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
 
     override fun getLayoutResource() =
         R.layout.activity_select_bitcoin_unit
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySelectBitcoinUnitBinding::inflate
+    }
 
     override fun initializeUi() {
         super.initializeUi()

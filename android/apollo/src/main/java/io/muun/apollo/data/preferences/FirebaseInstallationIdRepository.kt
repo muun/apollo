@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences
 
 import android.content.Context
+import io.muun.apollo.data.preferences.rx.Preference
 import rx.Observable
 import timber.log.Timber
 import javax.inject.Inject
@@ -17,14 +18,14 @@ class FirebaseInstallationIdRepository @Inject constructor(
         private const val BIG_QUERY_PSEUDO_ID = "big_query_pseudo_id"
     }
 
-    private val fcmTokenPreference = rxSharedPreferences.getString(FCM_TOKEN_KEY)
+    private val fcmTokenPreference: Preference<String>
+        get() = rxSharedPreferences.getString(FCM_TOKEN_KEY)
 
-    private val bigQueryPseudoIdPreference = rxSharedPreferences.getString(BIG_QUERY_PSEUDO_ID)
+    private val bigQueryPseudoIdPreference: Preference<String>
+        get() = rxSharedPreferences.getString(BIG_QUERY_PSEUDO_ID)
 
-    override fun getFileName(): String {
-        // legacy name to avoid migration
-        return "fcmToken"
-    }
+    // legacy name to avoid migration
+    override val fileName get() = "fcmToken"
 
     fun storeBigQueryPseudoId(id: String) {
         bigQueryPseudoIdPreference.set(id)

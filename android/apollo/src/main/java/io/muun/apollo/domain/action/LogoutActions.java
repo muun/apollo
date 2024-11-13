@@ -5,70 +5,66 @@ import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
-import io.muun.apollo.data.preferences.BaseRepository;
-import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository;
-import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
+import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
 import io.muun.common.utils.Preconditions;
 
-import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
 public class LogoutActions {
 
-    // Presentation
-    private final Context context;
-
     // Domain
     private final ContactActions contactActions; // TODO should be dismembered (as this action bag)
+
     private final AsyncActionStore asyncActionStore;
+
     private final DaoManager daoManager;
+
     private final ApplicationLockManager lockManager;
+
     private final LogoutOptionsSelector logoutOptionsSel;
+
     private final SignupDraftManager signupDraftManager;
+
+    private final ClearRepositoriesAction clearRepositories;
 
     // Data
     private final TaskScheduler taskScheduler;
-    private final SecureStorageProvider secureStorageProvider;
-    private final NotificationService notificationService;
-    private final RepositoryRegistry repositoryRegistry;
-    private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
-    private final LibwalletDataDirectory libwalletDataDirectory;
 
-    private final List<String> thirdPartyPreferencesToClear;
+    private final SecureStorageProvider secureStorageProvider;
+
+    private final NotificationService notificationService;
+
+    private final LibwalletDataDirectory libwalletDataDirectory;
 
     /**
      * Constructor.
      */
     @Inject
-    public LogoutActions(Context context,
-                         ContactActions contactActions,
-                         AsyncActionStore asyncActionStore,
-                         DaoManager daoManager,
-                         ApplicationLockManager lockManager,
-                         LogoutOptionsSelector logoutOptionsSel,
-                         SignupDraftManager signupDraftManager,
-                         TaskScheduler taskScheduler,
-                         SecureStorageProvider secureStorageProvider,
-                         NotificationService notificationService,
-                         RepositoryRegistry repositoryRegistry,
-                         FirebaseInstallationIdRepository firebaseInstallationIdRepository,
-                         LibwalletDataDirectory libwalletDataDirectory) {
-
-        this.context = context;
+    public LogoutActions(
+            ContactActions contactActions,
+            AsyncActionStore asyncActionStore,
+            DaoManager daoManager,
+            ApplicationLockManager lockManager,
+            LogoutOptionsSelector logoutOptionsSel,
+            SignupDraftManager signupDraftManager,
+            ClearRepositoriesAction clearRepositories,
+            TaskScheduler taskScheduler,
+            SecureStorageProvider secureStorageProvider,
+            NotificationService notificationService,
+            LibwalletDataDirectory libwalletDataDirectory
+    ) {
 
         this.contactActions = contactActions;
         this.asyncActionStore = asyncActionStore;
@@ -76,15 +72,12 @@ public class LogoutActions {
         this.lockManager = lockManager;
         this.logoutOptionsSel = logoutOptionsSel;
         this.signupDraftManager = signupDraftManager;
+        this.clearRepositories = clearRepositories;
 
         this.taskScheduler = taskScheduler;
         this.secureStorageProvider = secureStorageProvider;
         this.notificationService = notificationService;
-        this.repositoryRegistry = repositoryRegistry;
-        this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.libwalletDataDirectory = libwalletDataDirectory;
-
-        this.thirdPartyPreferencesToClear = createThirdPartyPreferencesList();
     }
 
     /**
@@ -163,7 +156,7 @@ public class LogoutActions {
         asyncActionStore.resetAllExceptLogout();
         secureStorageProvider.wipe();
 
-        clearRepositoriesForLogout();
+        clearRepositories.clearForLogout();
         contactActions.stopWatchingContacts();
         daoManager.delete();
 
@@ -171,63 +164,5 @@ public class LogoutActions {
 
         notificationService.cancelAllNotifications();
         libwalletDataDirectory.reset();
-    }
-
-    /**
-     * Destroy all data in non-encrypted repositories.
-     * Warning: this method is supposed to be used solely in PreferencesMigrationManager, since we
-     * shouldn't be needing any "full wipe preference migration" anymore, this method is left just
-     * for the sake of completeness.
-     */
-    public void clearAllRepositories() {
-        clearRepositoriesForLogout();
-        clearRepository(firebaseInstallationIdRepository);
-    }
-
-    /**
-     * Destroy all data in non-encrypted repositories that should be cleared upon logout. We avoid
-     * clearing some repositories on logout (e.g FcmTokenRepository).
-     */
-    private void clearRepositoriesForLogout() {
-        for (BaseRepository repository : repositoryRegistry.repositoriesToClearOnLogout()) {
-            clearRepository(repository);
-        }
-
-        for (String fileName : thirdPartyPreferencesToClear) {
-            context.getSharedPreferences(fileName, Context.MODE_PRIVATE).edit().clear().apply();
-        }
-    }
-
-    private void clearRepository(BaseRepository repository) {
-        try {
-            repository.clear();
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-    }
-
-    private List<String> createThirdPartyPreferencesList() {
-        // NOTE: there is no reliable way of listing all SharedPreferences. The XML files are
-        // *usually* located in a known directory, but some vendors change this. We cannot control
-        // where the directory lies in a particular device, but we can know and control the actual
-        // preferences created by Apollo's dependencies.
-
-        // The following list was created by logging into Apollo, and listing the XML files created
-        // in the data/shared_prefs folder of the application.
-
-        // ON-RELEASE verify that the list matches the actual files added by our dependencies. This
-        // won't crash if files do not exist, but we could miss some.
-        return Arrays.asList(
-            "TwitterAdvertisingInfoPreferences",
-            "WebViewChromiumPrefs",
-            "com.crashlytics.prefs",
-            "com.crashlytics.sdk.android:answers:settings",
-            "com.crashlytics.sdk.android.crashlytics-core"
-                + ":com.crashlytics.android.core.CrashlyticsCore",
-
-            "com.google.android.gms.appid",
-            "com.google.android.gms.measurement.prefs",
-            "io.fabric.sdk.android:fabric:io.fabric.sdk.android.Onboarding"
-        );
     }
 }

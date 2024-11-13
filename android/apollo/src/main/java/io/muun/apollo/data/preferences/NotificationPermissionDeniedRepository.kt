@@ -13,11 +13,10 @@ class NotificationPermissionDeniedRepository @Inject constructor(
         private const val NOTIFICATION_PERMISSION_DENIED = "notification_permission_denied"
     }
 
-    private val permissionDeniedPref: Preference<Boolean> = rxSharedPreferences
-        .getBoolean(NOTIFICATION_PERMISSION_DENIED)
+    private val permissionDeniedPref: Preference<Boolean>
+        get() = rxSharedPreferences.getBoolean(NOTIFICATION_PERMISSION_DENIED)
 
-    override fun getFileName() =
-        "notification_permission_denied"
+    override val fileName get() = "notification_permission_denied"
 
     fun setHasPreviouslyDeniedNotificationPermission() {
         permissionDeniedPref.set(true)

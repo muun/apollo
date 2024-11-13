@@ -58,6 +58,9 @@ public class LnInvoiceTestData {
         @JsonProperty("tokens")
         public long amountInSatoshis;
 
+        @JsonProperty("payment_secret")
+        public String paymentSecret;
+
         /**
          * Json constructor.
          */

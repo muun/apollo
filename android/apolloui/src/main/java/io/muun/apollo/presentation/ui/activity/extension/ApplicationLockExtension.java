@@ -96,7 +96,7 @@ public class ApplicationLockExtension extends ActivityExtension {
             lockOverlay.attachToRoot();
             disableSoftInput();
 
-            analytics.report(new AnalyticsEvent.S_PIN_LOCKED());
+            analytics.report(new AnalyticsEvent.S_PIN_LOCKED(getActivity()));
         }
 
         updateLockOverlayAttempts();

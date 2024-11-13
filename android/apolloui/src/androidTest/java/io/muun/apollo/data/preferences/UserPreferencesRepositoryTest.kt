@@ -42,7 +42,7 @@ class UserPreferencesRepositoryTest {
     fun we_can_safely_remove_user_preferences_from_Apollo() {
 
         // 1. Store "old" UserPreferences. Notice the presence of "lightningDefaultForReceiving"
-        userPreferencesRepo.sharedPreferences
+        userPreferencesRepo.getSharedPreferencesForTesting()
             .edit()
             .putString(
                 TEST_KEY,
@@ -66,12 +66,13 @@ class UserPreferencesRepositoryTest {
     }
 
     private fun checkOldUserPreferencesRead() {
-        val pref: Preference<OldStoredUserPreferences> = userPreferencesRepo.rxSharedPreferences
-            .getObject(
-                TEST_KEY,
-                OldStoredUserPreferences(),
-                JsonPreferenceAdapter(OldStoredUserPreferences::class.java)
-            )
+        val pref: Preference<OldStoredUserPreferences> =
+            userPreferencesRepo.getRxSharedPreferencesForTesting()
+                .getObject(
+                    TEST_KEY,
+                    OldStoredUserPreferences(),
+                    JsonPreferenceAdapter(OldStoredUserPreferences::class.java)
+                )
 
         val oldPrefs = pref.asObservable().toBlocking().first()
 
@@ -102,12 +103,13 @@ class UserPreferencesRepositoryTest {
     }
 
     private fun checkNewUserPreferencesRead() {
-        val preference: Preference<StoredUserPreferences> = userPreferencesRepo.rxSharedPreferences
-            .getObject(
-                TEST_KEY,
-                StoredUserPreferences(),
-                JsonPreferenceAdapter(StoredUserPreferences::class.java)
-            )
+        val preference: Preference<StoredUserPreferences> =
+            userPreferencesRepo.getRxSharedPreferencesForTesting()
+                .getObject(
+                    TEST_KEY,
+                    StoredUserPreferences(),
+                    JsonPreferenceAdapter(StoredUserPreferences::class.java)
+                )
 
         val first = preference.asObservable().map { it.toModel() }.toBlocking().first()
 

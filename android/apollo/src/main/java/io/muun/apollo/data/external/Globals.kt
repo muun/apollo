@@ -61,21 +61,6 @@ abstract class Globals {
     abstract val deviceManufacturer: String
 
     /**
-     * Get the fingerprint of the device where app is running.
-     */
-    abstract val fingerprint: String
-
-    /**
-     * Get the hardware name of the device where app is running.
-     */
-    abstract val hardware: String
-
-    /**
-     * Get the bootloader name of the device where app is running.
-     */
-    abstract val bootloader: String
-
-    /**
      * Get the bitcoin network specs/parameters of the network this build is using.
      */
     abstract val network: NetworkParameters

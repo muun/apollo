@@ -10,12 +10,12 @@ import (
 const (
 	EKVersionNeverExported = -1
 	// EKVersionOnlyKeys is the encrypted keys to be written down / emailed
-	EKVersionOnlyKeys      = 1
+	EKVersionOnlyKeys = 1
 	// EKVersionDescriptors is the first PDF including the descriptors
-	EKVersionDescriptors   = 2
+	EKVersionDescriptors = 2
 	// EKVersionMusig add the musig descriptors
-	EKVersionMusig         = 3
-	ekVersionCurrent       = EKVersionMusig
+	EKVersionMusig   = 3
+	ekVersionCurrent = EKVersionMusig
 )
 
 // EKInput input struct to fill the PDF

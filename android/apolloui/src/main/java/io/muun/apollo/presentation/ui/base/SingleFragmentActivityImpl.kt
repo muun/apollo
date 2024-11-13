@@ -2,8 +2,10 @@ package io.muun.apollo.presentation.ui.base
 
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivitySingleFragmentBinding
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import timber.log.Timber
 
@@ -26,8 +28,11 @@ class SingleFragmentActivityImpl :
         }
     }
 
-    @BindView(R.id.header)
-    lateinit var headerView: MuunHeader
+    private val binding: ActivitySingleFragmentBinding
+        get() = getBinding() as ActivitySingleFragmentBinding
+
+    private val headerView: MuunHeader
+        get() = binding.header
 
     override fun inject() {
         component.inject(this)
@@ -35,6 +40,10 @@ class SingleFragmentActivityImpl :
 
     override fun getLayoutResource(): Int =
         R.layout.activity_single_fragment
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySingleFragmentBinding::inflate
+    }
 
     override fun getFragmentsContainer() =
         R.id.container

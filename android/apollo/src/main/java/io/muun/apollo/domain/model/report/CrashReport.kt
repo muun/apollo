@@ -8,13 +8,13 @@ data class CrashReport(
     val message: String,
     val error: Throwable,
     val originalError: Throwable?,
-    val metadata: MutableMap<String, Serializable>
+    val metadata: MutableMap<String, Serializable>,
 ) {
 
     fun print() =
         "Tag:$tag\nMessage:$message\nError:${printError()}\nMetadata:{\n\n${printMetadata()}}"
 
-    private fun printMetadata(): String {
+    fun printMetadata(): String {
         val builder = StringBuilder()
         for (key in metadata.keys) {
             builder.append("$key=${metadata[key]}\n\n")
@@ -22,5 +22,9 @@ data class CrashReport(
         return builder.toString()
     }
 
-    private fun printError() = Log.getStackTraceString(error)
+    fun printError(): String =
+        Log.getStackTraceString(error)
+
+    fun getTrackingTitle(): String =
+        error.javaClass.simpleName + ":" + error.localizedMessage?.replace("\n", " ")
 }

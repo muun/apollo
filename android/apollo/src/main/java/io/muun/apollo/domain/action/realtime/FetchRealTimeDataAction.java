@@ -85,8 +85,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
     }
 
     private boolean shouldSync() {
-        final boolean isFeeRecent = feeWindowRepository.isSet()
-                && feeWindowRepository.fetchOne().isRecent();
+        final boolean isFeeRecent = feeWindowRepository.isFeeRecent();
 
         final boolean isExchangeRateRecent = exchangeRateWindowRepository.isSet()
                 && exchangeRateWindowRepository.fetchOne().isRecent();

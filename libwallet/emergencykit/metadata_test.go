@@ -2,7 +2,6 @@ package emergencykit
 
 import (
 	"encoding/hex"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -63,7 +62,7 @@ func TestReadWriteMetadata(t *testing.T) {
 }
 
 func createTmpDir(t *testing.T) string {
-	tmpDir, err := ioutil.TempDir("", "pdf")
+	tmpDir, err := os.MkdirTemp("", "pdf")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory %s: %v", tmpDir, err)
 	}
@@ -77,7 +76,7 @@ func createPdfFile(t *testing.T, path string) {
 		t.Fatalf("Failed to hex-decode the sample PDF data: %v", err)
 	}
 
-	err = ioutil.WriteFile(path, content, os.FileMode(0600))
+	err = os.WriteFile(path, content, os.FileMode(0600))
 	if err != nil {
 		t.Fatalf("Failed to write PDF to %s: %v", path, err)
 	}

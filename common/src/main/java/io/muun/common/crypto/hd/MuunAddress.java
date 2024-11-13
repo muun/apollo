@@ -82,6 +82,7 @@ public class MuunAddress {
         return toBitcoinJ().getHash();
     }
 
+    @SuppressWarnings({"DanglingJavadoc", "MissingJavadocMethod"})
     /**
      * Deprecated and commented out as a deterrent. This method "falls short" for regtest addresses:
      * as it uses the base58 serialization to read the data, it does not distinguish between

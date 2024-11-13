@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	BackendFeatureTaproot = "TAPROOT"
-	BackendFeatureTaprootPreactivation = "TAPROOT_PREACTIVATION"
-	BackendFeatureApolloBiometrics = "APOLLO_BIOMETRICS"
-	BackendFeatureHighFeesHomeBanner = "HIGH_FEES_HOME_BANNER"
-	BackendFeatureHighFeesReceiveFlow = "HIGH_FEES_RECEIVE_FLOW"
+	BackendFeatureTaproot                  = "TAPROOT"
+	BackendFeatureTaprootPreactivation     = "TAPROOT_PREACTIVATION"
+	BackendFeatureApolloBiometrics         = "APOLLO_BIOMETRICS"
+	BackendFeatureHighFeesHomeBanner       = "HIGH_FEES_HOME_BANNER"
+	BackendFeatureHighFeesReceiveFlow      = "HIGH_FEES_RECEIVE_FLOW"
+	BackendFeatureEffectiveFeesCalculation = "EFFECTIVE_FEES_CALCULATION"
 
 	UserActivatedFeatureStatusOff                 = "off"
 	UserActivatedFeatureStatusCanPreactivate      = "can_preactivate"
@@ -28,7 +29,7 @@ type UserActivatedFeature interface {
 	BackendPreactivationFeature() string
 }
 
-type taprootUserActivatedFeature struct {}
+type taprootUserActivatedFeature struct{}
 
 func (t *taprootUserActivatedFeature) Blockheight(network *Network) int {
 
@@ -138,5 +139,6 @@ func DetermineUserActivatedFeatureStatus(
 
 }
 
-
-
+func DetermineBackendActivatedFeatureStatus(flag string) bool {
+	return Cfg.FeatureStatusProvider.IsBackendFlagEnabled(flag)
+}

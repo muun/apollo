@@ -1,7 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.domain.errors.MuunError;
-import io.muun.common.crypto.CryptographyException;
 import io.muun.common.utils.Preconditions;
 
 import android.annotation.TargetApi;
@@ -42,10 +41,14 @@ import javax.validation.constraints.NotNull;
 
 @Singleton
 public class KeyStoreProvider {
+
     private static final String ANDROID_KEY_STORE = "AndroidKeyStore";
+
     private static final String MUUN_KEY_STORE_PREFIX = "muun_key_store_";
+
     private static final X500Principal
             SUBJECT = new X500Principal("CN=io.muun.apollo, O=Android Authority");
+
     private static final String RSA = "RSA";
 
     // Note: this constant is used for J_MODE (api 19 to 22) only, though it may generate
@@ -57,6 +60,7 @@ public class KeyStoreProvider {
     // need to store more than that in some places (e.g SignupDraftManager) we are doubling it to
     // 4096 which allow us to store up to 512 (which should be more than enough).
     private static final int RSA_KEY_SIZE_IN_BITS = 4096;
+
     private static final int RSA_MAX_STORAGE_SIZE_IN_BYTES = RSA_KEY_SIZE_IN_BITS / 8;
 
     private final Context context;
@@ -173,11 +177,14 @@ public class KeyStoreProvider {
         try {
             final KeyGenerator keyGenerator = KeyGenerator.getInstance(
                     KeyProperties.KEY_ALGORITHM_AES,
-                    ANDROID_KEY_STORE);
+                    ANDROID_KEY_STORE
+            );
 
             keyGenerator.init(
-                    new KeyGenParameterSpec.Builder(keyAlias,
-                            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                    new KeyGenParameterSpec.Builder(
+                            keyAlias,
+                            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
+                    )
                             .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
                             .setRandomizedEncryptionRequired(false)
@@ -363,13 +370,6 @@ public class KeyStoreProvider {
             return new HashSet<>(Collections.list(loadKeystore().aliases()));
         } catch (KeyStoreException e) {
             throw new MuunKeyStoreException(e);
-        }
-    }
-
-    public static class MuunKeyStoreException extends CryptographyException {
-
-        public MuunKeyStoreException(Throwable cause) {
-            super(cause);
         }
     }
 }

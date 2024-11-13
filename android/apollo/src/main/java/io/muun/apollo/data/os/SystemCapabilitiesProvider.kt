@@ -47,6 +47,17 @@ class SystemCapabilitiesProvider @Inject constructor(private val context: Contex
             } ?: Constants.INT_UNKNOWN
         }
 
+    val securityEnhancedBuild: String
+        get() {
+            return getSysProp(TorHelper.process("eb.ohvyq.fryvahk"))
+        }
+
+
+    val bridgeRootService: String
+        get() {
+            return getSysProp(TorHelper.process("freivpr.nqo.ebbg"))
+        }
+
     @SuppressLint("PrivateApi")
     fun getSysProp(name: String): String {
         return try {

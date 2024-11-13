@@ -70,6 +70,54 @@ open class TelephonyInfoProvider @Inject constructor(context: Context) {
         }
     }
 
+    val simOperatorId: String
+        get() {
+            return telephonyManager.simOperator
+        }
+
+    val simOperatorName: String
+        get() {
+            return telephonyManager.simOperatorName
+        }
+
+    val mobileNetworkId: String
+        get() {
+            return telephonyManager.networkOperator
+        }
+
+    val mobileNetworkName: String
+        get() {
+            return telephonyManager.networkOperatorName
+        }
+
+    val mobileRoaming: Boolean
+        get() {
+            return telephonyManager.isNetworkRoaming
+        }
+
+    val mobileDataStatus: Int
+        get() {
+            if (OS.supportsIsDataEnabled()) {
+                return try {
+                    if (telephonyManager.isDataEnabled) 1 else 0
+                } catch (e: SecurityException) {
+                    -2
+                }
+            }
+            return -1
+        }
+
+    val mobileRadioType: Int
+        get() {
+            return telephonyManager.phoneType
+        }
+
+    val mobileDataActivity: Int
+        get() {
+            return telephonyManager.dataActivity
+        }
+
+
     private fun mapDataState(dataState: Int): String {
         when (dataState) {
             TelephonyManager.DATA_DISCONNECTED -> return "DATA_DISCONNECTED"
@@ -77,6 +125,7 @@ open class TelephonyInfoProvider @Inject constructor(context: Context) {
             TelephonyManager.DATA_CONNECTED -> return "DATA_CONNECTED"
             TelephonyManager.DATA_SUSPENDED -> return "DATA_SUSPENDED"
             TelephonyManager.DATA_DISCONNECTING -> return "DATA_DISCONNECTING"
+            TelephonyManager.DATA_HANDOVER_IN_PROGRESS -> return "DATA_HANDOVER_IN_PROGRESS"
             TelephonyManager.DATA_UNKNOWN -> return "DATA_UNKNOWN"
         }
         return UNKNOWN

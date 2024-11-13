@@ -1,23 +1,33 @@
 package io.muun.apollo.presentation.ui.fragments.create_email_help
 
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentCreateEmailHelpBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 class CreateEmailHelpFragment : SingleFragment<CreateEmailHelpPresenter>() {
 
-    @BindView(R.id.text)
-    lateinit var textView: TextView
+    private val binding: FragmentCreateEmailHelpBinding
+        get() = getBinding() as FragmentCreateEmailHelpBinding
+
+    private val textView: TextView
+        get() = binding.text
 
     override fun inject() =
         component.inject(this)
 
     override fun getLayoutResource() =
         R.layout.fragment_create_email_help
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentCreateEmailHelpBinding::inflate
+    }
 
     override fun initializeUi(view: View) {
         val styledRes = StyledStringRes(

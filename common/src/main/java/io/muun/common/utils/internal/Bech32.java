@@ -106,7 +106,7 @@ public class Bech32 {
      * @param bech the bec32 encoded string
      *
      * @return an object containing the encoding, human-readable part and data part
-     * @throws Exception if there's a decoding error
+     * @throws IllegalArgumentException if there's a decoding error
      */
     public static Decoded decode(String bech) {
         return decode(bech, BIP_0173_CHARACTER_LIMIT);
@@ -124,7 +124,7 @@ public class Bech32 {
      * @param limit the maximum string length acceptable
      *
      * @return an object containing the encoding, human-readable part and data part
-     * @throws Exception if there's a decoding error
+     * @throws IllegalArgumentException if there's a decoding error
      */
     public static Decoded decode(String bech, long limit) {
         if (!bech.equals(bech.toLowerCase()) && !bech.equals(bech.toUpperCase())) {

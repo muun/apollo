@@ -20,15 +20,15 @@ class MigrateFingerprintsAction @Inject constructor(
             ::Pair
         )
             .doOnNext { (userKeyFingerprint, muunKeyFingerprint) ->
-                keysRepository.storeUserKeyFingerprint(userKeyFingerprint)
-                keysRepository.storeMuunKeyFingerprint(muunKeyFingerprint)
+                keysRepository.storeUserKeyFingerprint(userKeyFingerprint!!)
+                keysRepository.storeMuunKeyFingerprint(muunKeyFingerprint!!)
             }
             .toVoid()
 
-    private fun getMuunKeyFingerprint() =
+    private fun getMuunKeyFingerprint(): Observable<String> =
         houstonClient.fetchMuunKeyFingerprint()
 
-    private fun getUserKeyFingerprint() =
+    private fun getUserKeyFingerprint(): Observable<String> =
         keysRepository.basePrivateKey
             .map { Encodings.bytesToHex(it.fingerprint) }
 

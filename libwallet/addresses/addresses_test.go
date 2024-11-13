@@ -1,7 +1,7 @@
 package addresses
 
 import (
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/muun/libwallet/hdpath"
 )
 
@@ -21,7 +21,7 @@ func derive(key *hdkeychain.ExtendedKey, fromPath, toPath string) *hdkeychain.Ex
 		if index.Hardened {
 			modifier = hdkeychain.HardenedKeyStart
 		}
-		key, err = key.Child(index.Index | modifier)
+		key, err = key.Derive(index.Index | modifier)
 		if err != nil {
 			panic(err)
 		}

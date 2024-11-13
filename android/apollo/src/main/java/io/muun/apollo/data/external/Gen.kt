@@ -10,7 +10,6 @@ import io.muun.apollo.domain.model.IncomingSwap
 import io.muun.apollo.domain.model.IncomingSwapHtlc
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.model.Operation
-import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.PublicProfile
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapBestRouteFees
@@ -44,7 +43,6 @@ import org.javamoney.moneta.Money
 import org.threeten.bp.ZonedDateTime
 import javax.money.CurrencyUnit
 import javax.money.Monetary
-import javax.money.MonetaryAmount
 import kotlin.random.Random
 
 object Gen {
@@ -250,7 +248,9 @@ object Gen {
             pair.second,
             transactionHash() + ":0",
             UtxoStatus.CONFIRMED,
-            pair.second
+            pair.second,
+            "m/schema:1'/recovery:1'",
+            1
         )
 
     /**
@@ -269,6 +269,14 @@ object Gen {
     fun nextTransactionSize(vararg entries: SizeForAmount, expectedDebtInSat: Long = 0) =
         NextTransactionSize(sizeProgression(*entries), 1, expectedDebtInSat)
 
+    /**
+     * Get a FeeBumpFunctions vector
+     */
+    fun feeBumpFunctions() =
+        listOf(
+            "QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA", // [[100, 0, 0], [+Inf, 1, 2]]
+            "f4AAAD+AAAAAAAAA"                  // [[+Inf, 1, 0]]]
+        )
     /**
      * Get a Transaction Hash.
      */

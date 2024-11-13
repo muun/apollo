@@ -20,16 +20,14 @@ open class UserPreferencesRepository @Inject constructor(
         private const val KEY = "USER_PREFERENCES"
     }
 
-    private val preference: Preference<StoredUserPreferences> =
-        rxSharedPreferences.getObject(
+    private val preference: Preference<StoredUserPreferences>
+        get() = rxSharedPreferences.getObject(
             KEY,
             StoredUserPreferences(),
             JsonPreferenceAdapter(StoredUserPreferences::class.java)
         )
 
-    override fun getFileName(): String {
-        return KEY
-    }
+    override val fileName get() = KEY
 
     open fun watch(): Observable<UserPreferences> {
         return preference.asObservable()

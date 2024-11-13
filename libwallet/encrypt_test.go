@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 func TestPublicKeyEncryption(t *testing.T) {
@@ -201,7 +201,7 @@ func TestPublicKeyDecryptV1(t *testing.T) {
 		fakePrivKey, _ := fakeHdPrivKey.key.ECPrivKey()
 
 		hash := sha256.Sum256(fakePayload)
-		fakeSig, _ := btcec.SignCompact(btcec.S256(), fakePrivKey, hash[:], false)
+		fakeSig, _ := ecdsa.SignCompact(fakePrivKey, hash[:], false)
 
 		plaintext := bytes.NewBuffer(nil)
 		addVariableBytes(plaintext, fakeSig)

@@ -18,8 +18,7 @@ public class SingleActionPresenter extends BasePresenter<BaseView> {
      * Executes a REQUEST_UPDATE action from SingleActionActivity.
      */
     public void requestUpdateAction() {
-        navigator.navigateToLogout(getContext());
-
+        logout();
         navigator.openPlayStore(getContext());
     }
 
@@ -27,7 +26,7 @@ public class SingleActionPresenter extends BasePresenter<BaseView> {
      * Executes a REQUEST_RESTART action from SingleActionActivity.
      */
     public void requestRestartAction() {
-        navigator.navigateToLogout(getContext());
+        logout();
     }
 
     /**

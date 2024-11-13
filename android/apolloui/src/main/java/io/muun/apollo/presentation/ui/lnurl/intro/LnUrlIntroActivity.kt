@@ -2,24 +2,19 @@ package io.muun.apollo.presentation.ui.lnurl.intro
 
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.OperationUri
-import io.muun.apollo.presentation.ui.base.BasePresenter
-import io.muun.apollo.presentation.ui.base.BaseView
+import io.muun.apollo.databinding.ActivityLnurlIntroBinding
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class LnUrlIntroActivity: SingleFragmentActivity<LnUrlIntroPresenter>() {
+class LnUrlIntroActivity : SingleFragmentActivity<LnUrlIntroPresenter>() {
 
     companion object {
         fun getStartActivityIntent(context: Context) =
             Intent(context, LnUrlIntroActivity::class.java)
     }
-
-    @BindView(R.id.lnurl_intro_header)
-    lateinit var muunHeader: MuunHeader
 
     override fun inject() {
         component.inject(this)
@@ -28,8 +23,14 @@ class LnUrlIntroActivity: SingleFragmentActivity<LnUrlIntroPresenter>() {
     override fun getLayoutResource(): Int =
         R.layout.activity_lnurl_intro
 
-    override fun getHeader(): MuunHeader =
-        muunHeader
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityLnurlIntroBinding::inflate
+    }
+
+    private val binding: ActivityLnurlIntroBinding
+        get() = getBinding() as ActivityLnurlIntroBinding
+
+    override fun getHeader(): MuunHeader = binding.lnurlIntroHeader
 
     override fun initializeUi() {
         super.initializeUi()
@@ -38,10 +39,14 @@ class LnUrlIntroActivity: SingleFragmentActivity<LnUrlIntroPresenter>() {
         header.showTitle(R.string.home_footer_action_receive)
         header.setNavigation(MuunHeader.Navigation.BACK)
         header.setElevated(true)
+
+        binding.lnurlIntroAction.setOnClickListener {
+            onContinueClick()
+        }
     }
 
-    @OnClick(R.id.lnurl_intro_action)
-    fun onContinueClick() {
+
+    private fun onContinueClick() {
         presenter.continueWithLnUrlFlow()
     }
 }

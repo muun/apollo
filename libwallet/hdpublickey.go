@@ -7,8 +7,8 @@ import (
 
 	"github.com/muun/libwallet/hdpath"
 
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 // HDPublicKey is an HD capable pub key
@@ -47,7 +47,7 @@ func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 		return nil, fmt.Errorf("can't derive a hardened pub key (index %v)", index)
 	}
 
-	child, err := p.key.Child(uint32(index))
+	child, err := p.key.Derive(uint32(index))
 	if err != nil {
 		return nil, err
 	}

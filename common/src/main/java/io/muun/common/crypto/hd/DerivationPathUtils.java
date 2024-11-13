@@ -87,9 +87,9 @@ public class DerivationPathUtils {
                 indexString = childParts[1];
             }
 
-            final Integer index;
+            final int index;
             try {
-                index = Integer.valueOf(indexString);
+                index = Integer.parseInt(indexString);
             } catch (NumberFormatException exception) {
                 throw new InvalidDerivationPathException(absolutePath);
             }

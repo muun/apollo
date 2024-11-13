@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/crypto/scrypt"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 const (
@@ -113,7 +113,7 @@ func ConvertToKey(code, salt string) (*btcec.PrivateKey, error) {
 	}
 
 	// 2nd return value is the pub key which we don't need right now
-	priv, _ := btcec.PrivKeyFromBytes(btcec.S256(), input)
+	priv, _ := btcec.PrivKeyFromBytes(input)
 	return priv, nil
 }
 

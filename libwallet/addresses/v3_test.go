@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 func TestCreateAddressV3(t *testing.T) {

@@ -3,14 +3,14 @@ package walletdb
 import (
 	"bytes"
 	"crypto/rand"
-	"io/ioutil"
 	"math"
+	"os"
 	"path"
 	"testing"
 )
 
 func TestOpen(t *testing.T) {
-	dir, err := ioutil.TempDir("", "libwallet")
+	dir, err := os.MkdirTemp("", "libwallet")
 	if err != nil {
 		panic(err)
 	}
@@ -23,7 +23,7 @@ func TestOpen(t *testing.T) {
 }
 
 func TestInvoices(t *testing.T) {
-	dir, err := ioutil.TempDir("", "libwallet")
+	dir, err := os.MkdirTemp("", "libwallet")
 	if err != nil {
 		panic(err)
 	}

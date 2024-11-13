@@ -2,6 +2,9 @@
 <resources>
 
     <!-- General-purpose strings -->
+    <string name="no">No</string>
+    <string name="yes">Sí</string>
+    <string name="yes_cancel">Sí, cancelar</string>
     <string name="cancel">Cancelar</string>
     <string name="dismiss">Aceptar</string>
     <string name="stay">Seguir</string>
@@ -79,7 +82,7 @@
 
     <string name="new_operation_abort_alert_title">¿Cancelar pago?</string>
     <string name="new_operation_abort_alert_body">
-        Estás a punto de cancelar el pago y volver a la pantalla de inicio.
+        ¿Quieres cancelar el pago y volver a la pantalla de inicio?
     </string>
 
     <string name="new_operation_swap_title">Pagar por lightning</string>

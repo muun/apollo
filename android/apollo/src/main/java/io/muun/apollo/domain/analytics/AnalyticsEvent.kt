@@ -1,8 +1,10 @@
 package io.muun.apollo.domain.analytics
 
+import android.app.Activity
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.common.model.OperationDirection
 import java.util.*
 
@@ -30,7 +32,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_AUTHORIZE_EMAIL : AnalyticsEvent()
     class S_PIN_CHOOSE : AnalyticsEvent()
     class S_PIN_REPEAT : AnalyticsEvent()
-    class S_PIN_LOCKED : AnalyticsEvent()
+    class S_PIN_LOCKED(activity: Activity) : AnalyticsEvent(
+        listOf("screen" to activity.javaClass.simpleName)
+    )
+
     class S_SIGN_IN_WITH_RC : AnalyticsEvent()
     class S_SIGN_IN_WITH_RC_AUTHORIZE_EMAIL : AnalyticsEvent()
 
@@ -461,7 +466,12 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         )
     )
 
-    class E_ERROR_REPORT_DIALOG : AnalyticsEvent()
+    class E_ERROR_REPORT_DIALOG(vararg extras: Any) : AnalyticsEvent(
+        listOf(
+            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
+                .toTypedArray()
+        )
+    )
 
     enum class LNURL_WITHDRAW_STATE_TYPE {
         CONTACTING,
@@ -501,8 +511,14 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         PDF_EXPORTED
     }
 
-    class E_CRASHLYTICS_ERROR(value: String) : AnalyticsEvent(
-        listOf("title" to value)
+    class E_CRASHLYTICS_ERROR(report: CrashReport) : AnalyticsEvent(
+        listOf(
+            "title" to report.getTrackingTitle(),
+            "tag" to report.tag,
+            "message" to report.message,
+            "error" to report.printError().replace("\n", " "),
+            "metadata" to report.printMetadata()
+        )
     )
 
     class E_BREADCRUMB(value: String) : AnalyticsEvent(

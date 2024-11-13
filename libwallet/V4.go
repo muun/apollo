@@ -3,7 +3,7 @@ package libwallet
 import (
 	"fmt"
 
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/muun/libwallet/addresses"
 
 	"github.com/btcsuite/btcd/chaincfg"
@@ -85,7 +85,7 @@ func (c *coinV4) signature(index int, tx *wire.MsgTx, userKey *HDPublicKey, muun
 		return nil, err
 	}
 
-	return signNativeSegwitInput(
+	return signNativeSegwitInputV0(
 		index, tx, signingKey, witnessScript, c.Amount)
 }
 

@@ -21,8 +21,8 @@ class PaymentContextSelector @Inject constructor(
         Observable.combineLatest(
             userSel.watch(),
             exchangeRateWindowRepository.fetch(),
-            feeWindowRepository.fetch(),
-            transactionSizeRepository.watchNextTransactionSize(),
+            feeWindowRepository.fetchNonNull(),
+            transactionSizeRepository.watchNonNullNts(),
             minFeeRateRepository.fetch(),
             ::PaymentContext
         )

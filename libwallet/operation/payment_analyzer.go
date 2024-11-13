@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/muun/libwallet/fees"
 )
 
@@ -125,11 +125,15 @@ type PaymentAnalysis struct {
 	TotalInSat  int64          // AmountInSat + fees (may include other than FeeInSat). May provide extra information in case of error status (e.g payment can't be made).
 }
 
-func NewPaymentAnalyzer(feeWindow *FeeWindow, nts *NextTransactionSize) *PaymentAnalyzer {
+func NewPaymentAnalyzer(
+	feeWindow *FeeWindow,
+	nts *NextTransactionSize,
+	feeBumpFunctions []*FeeBumpFunction,
+) *PaymentAnalyzer {
 	return &PaymentAnalyzer{
 		feeWindow:           feeWindow,
 		nextTransactionSize: nts,
-		feeCalculator:       &feeCalculator{nts},
+		feeCalculator:       &feeCalculator{nts, feeBumpFunctions},
 	}
 }
 

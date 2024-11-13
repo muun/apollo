@@ -13,11 +13,10 @@ class PlayIntegrityNonceRepository @Inject constructor(
         private const val PLAY_INTEGRITY_NONCE = "play_integrity_nonce"
     }
 
-    private val noncePref: Preference<String> = rxSharedPreferences
-        .getString(PLAY_INTEGRITY_NONCE)
+    private val noncePref: Preference<String>
+        get() = rxSharedPreferences.getString(PLAY_INTEGRITY_NONCE)
 
-    override fun getFileName() =
-        "play_integrity_nonce"
+    override val fileName get() = "play_integrity_nonce"
 
     fun store(nonce: String?) {
         noncePref.set(nonce)

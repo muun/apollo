@@ -3,13 +3,15 @@ package io.muun.apollo.presentation.ui.send
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivitySendBinding
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.P2PState
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -29,35 +31,42 @@ class SendActivity : SingleFragmentActivity<SendPresenter>(), SendView {
             Intent(context, SendActivity::class.java)
     }
 
-    @BindView(R.id.header)
-    lateinit var muunHeader: MuunHeader
+    private val binding: ActivitySendBinding
+        get() = getBinding() as ActivitySendBinding
+    private val muunHeader: MuunHeader
+        get() = binding.header
 
-    @BindView(R.id.paste_button)
-    lateinit var pasteButton: MuunButton
+    private val pasteButton: MuunButton
+        get() = binding.pasteButton
 
-    @BindView(R.id.uri_paster)
-    lateinit var uriPaster: MuunUriPaster
+    private val uriPaster: MuunUriPaster
+        get() = binding.uriPaster
 
-    @BindView(R.id.uri_input)
-    lateinit var uriInput: MuunUriInput
+    private val uriInput: MuunUriInput
+        get() = binding.uriInput
 
-    @BindView(R.id.uri_status_message)
-    lateinit var uriStatusMessage: StatusMessage
+    private val uriStatusMessage: StatusMessage
+        get() = binding.uriStatusMessage
 
-    @BindView(R.id.contact_list)
-    lateinit var contactList: MuunContactList
+    private val contactList: MuunContactList
+        get() = binding.contactList
 
-    @BindView(R.id.confirm)
-    lateinit var confirmButton: MuunButton
 
-    @BindView(R.id.button_layout)
-    lateinit var buttonLayout: MuunButtonLayout
+    private val confirmButton: MuunButton
+        get() = binding.confirm
+
+    private val buttonLayout: MuunButtonLayout
+        get() = binding.buttonLayout
 
     override fun inject() =
         component.inject(this)
 
     override fun getLayoutResource() =
         R.layout.activity_send
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySendBinding::inflate
+    }
 
     override fun getHeader() =
         muunHeader

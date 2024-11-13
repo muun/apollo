@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.single_action;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SingleActionActivityV2Binding;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment;
@@ -12,6 +13,9 @@ import io.muun.common.utils.Preconditions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,6 +49,11 @@ public class V2SingleActionActivity extends SingleFragmentActivity<V2SingleActio
     @Override
     protected int getLayoutResource() {
         return R.layout.single_action_activity_v2;
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SingleActionActivityV2Binding::inflate;
     }
 
     @Override

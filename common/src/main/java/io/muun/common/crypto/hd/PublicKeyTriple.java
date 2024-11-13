@@ -9,15 +9,19 @@ import org.bitcoinj.core.NetworkParameters;
 public class PublicKeyTriple {
 
     private final PublicKey userPublicKey;
+
     private final PublicKey muunPublicKey;
+
     private final PublicKey swapServerPublicKey;
 
     /**
      * Constructor.
      */
-    public PublicKeyTriple(PublicKey userPublicKey,
-                           PublicKey muunPublicKey,
-                           PublicKey swapServerPublicKey) {
+    public PublicKeyTriple(
+            PublicKey userPublicKey,
+            PublicKey muunPublicKey,
+            PublicKey swapServerPublicKey
+    ) {
         this.userPublicKey = userPublicKey;
         this.muunPublicKey = muunPublicKey;
         this.swapServerPublicKey = swapServerPublicKey;
@@ -46,11 +50,12 @@ public class PublicKeyTriple {
         return userPublicKey.getLastLevelIndex();
     }
 
-    /*
-      Deprecated and commented out as a deterrent. This method "falls short" for regtest addresses:
-      as it uses the base58 serialization to read the data, it does not distinguish between testnet
-      and regtest addresses. Leaving the code commented in case someone in the future has the same
-      idea.
+    @SuppressWarnings({"DanglingJavadoc", "MissingJavadocMethod"})
+    /**
+     * Deprecated and commented out as a deterrent. This method "falls short" for regtest addresses:
+     * as it uses the base58 serialization to read the data, it does not distinguish between testnet
+     * and regtest addresses. Leaving the code commented in case someone in the future has the same
+     * idea.
      */
     //public NetworkParameters getNetworkParameters() {
     //    return userPublicKey.getNetworkParameters();
@@ -65,7 +70,8 @@ public class PublicKeyTriple {
         return new PublicKeyTriple(
                 userPublicKey.deriveFromAbsolutePath(absolutePath),
                 muunPublicKey.deriveFromAbsolutePath(absolutePath),
-                swapServerPublicKey.deriveFromAbsolutePath(absolutePath));
+                swapServerPublicKey.deriveFromAbsolutePath(absolutePath)
+        );
     }
 
     /**
@@ -85,13 +91,15 @@ public class PublicKeyTriple {
 
     /**
      * Derive all PublicKeys at the same index.
+     *
      * @throws KeyDerivationException if the index is invalid.
      */
     public PublicKeyTriple deriveChild(int childIndex) throws KeyDerivationException {
         return new PublicKeyTriple(
                 userPublicKey.deriveChild(childIndex),
                 muunPublicKey.deriveChild(childIndex),
-                swapServerPublicKey.deriveChild(childIndex));
+                swapServerPublicKey.deriveChild(childIndex)
+        );
     }
 
     /**

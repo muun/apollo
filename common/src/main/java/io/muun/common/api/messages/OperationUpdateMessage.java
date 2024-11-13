@@ -40,7 +40,13 @@ public class OperationUpdateMessage extends AbstractMessage {
 
     @Override
     public String toLog() {
-        return String.format("Update about tx '%s' with %s confirmations", hash, confirmations);
+        return String.format(
+                "Operation %s is now in status %s. Associated tx '%s' has now %s confirmations",
+                id,
+                status.toString(),
+                hash,
+                confirmations
+        );
     }
 
     /**

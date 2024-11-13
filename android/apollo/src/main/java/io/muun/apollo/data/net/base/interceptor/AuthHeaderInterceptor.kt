@@ -26,18 +26,26 @@ class AuthHeaderInterceptor @Inject constructor(
     }
 
     override fun processResponse(originalResponse: Response): Response {
-        // Save the token in the response header if one is found
+        // Save the token in the response header if one is found...
         val authHeaderValue = originalResponse.header(HeaderUtils.AUTHORIZATION)
-        HeaderUtils.getBearerTokenFromHeader(authHeaderValue)
-            .ifPresent { serverJwt: String -> authRepository.storeServerJwt(serverJwt) }
+        val requestAuthHeaderValue = originalResponse.request().header(HeaderUtils.AUTHORIZATION)
+
+        // But avoid redundant jwt saves (involves writing to keystore) if we can
+        if (authHeaderValue != requestAuthHeaderValue) {
+            HeaderUtils.getBearerTokenFromHeader(authHeaderValue)
+                .ifPresent { serverJwt: String ->
+                    authRepository.storeServerJwt(serverJwt)
+                }
+        }
 
         // We need a reliable way (across all envs: local, CI, prd, etc...) to identify the logout
         // requests. We could inject HoustonConfig and build the entire URL (minus port)
         // or... we can do this :)
         val url = originalResponse.request().url().url().toString()
         val isLogout = url.endsWith("sessions/logout")
+        val isDelete = url.endsWith("user/delete")
 
-        if (!isLogout) {
+        if (!isLogout && !isDelete) {
             val sessionStatusHeaderValue = originalResponse.header(HeaderUtils.SESSION_STATUS)
             HeaderUtils.getSessionStatusFromHeader(sessionStatusHeaderValue)
                 .ifPresent { sessionStatus: SessionStatus ->

@@ -38,15 +38,6 @@ class GlobalsImpl : Globals() {
     override val deviceManufacturer: String
         get() = Build.MANUFACTURER
 
-    override val fingerprint: String
-        get() = Build.FINGERPRINT
-
-    override val hardware: String
-        get() = Build.HARDWARE
-
-    override val bootloader: String
-        get() = Build.BOOTLOADER
-
     override val muunLinkHost: String
         get() = BuildConfig.MUUN_LINK_HOST
 

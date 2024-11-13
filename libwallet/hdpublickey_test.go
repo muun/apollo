@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 func TestHDPublicKey_DerivedAt(t *testing.T) {

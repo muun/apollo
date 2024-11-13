@@ -1,9 +1,11 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.external.Globals;
+import io.muun.apollo.data.os.BuildInfoProvider;
 import io.muun.apollo.data.os.CpuInfo;
 import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
+import io.muun.apollo.data.os.PackageManagerInfoProvider;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BackgroundEvent;
@@ -17,6 +19,9 @@ import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.SystemUserInfo;
 import io.muun.apollo.domain.model.user.UserProfile;
+import io.muun.common.api.AndroidAppInfoJson;
+import io.muun.common.api.AndroidBuildInfoJson;
+import io.muun.common.api.AndroidDeviceFeaturesJson;
 import io.muun.common.api.AndroidSystemUserInfoJson;
 import io.muun.common.api.BackgroundEventJson;
 import io.muun.common.api.BitcoinAmountJson;
@@ -41,6 +46,7 @@ import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
+import io.muun.common.api.UnconfirmedOutpointsJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -49,6 +55,8 @@ import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.DebtType;
 import io.muun.common.model.PhoneNumber;
+import io.muun.common.model.SizeForAmount;
+import io.muun.common.model.UtxoStatus;
 import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
@@ -74,7 +82,8 @@ import javax.validation.constraints.NotNull;
 
 public class ApiObjectsMapper {
 
-    @Inject ApiObjectsMapper() {
+    @Inject
+    ApiObjectsMapper() {
     }
 
     /**
@@ -211,7 +220,16 @@ public class ApiObjectsMapper {
             @NonNull final String glEsVersion,
             @NonNull final CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo
+            @NonNull GooglePlayHelper.PlayInfo playInfo,
+            final BuildInfoProvider.BuildInfo buildInfo,
+            final PackageManagerInfoProvider.AppInfo appInfo,
+            final PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
+            final String signatureHash,
+            final int quickEmProps,
+            final int emArchitecture,
+            final String securityEnhancedBuild,
+            final String bridgeRootService,
+            final long appSize
     ) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
@@ -232,9 +250,10 @@ public class ApiObjectsMapper {
                 installSourceInfo.getInstallingPackageName(),
                 installSourceInfo.getInitiatingPackageName(),
                 installSourceInfo.getInitiatingPackageSigningInfo(),
-                Globals.INSTANCE.getFingerprint(),
-                Globals.INSTANCE.getHardware(),
-                Globals.INSTANCE.getBootloader(),
+                //@TODO: Redundancy removal: Next 3 and also at Houston (data present in buildInfo)
+                buildInfo.getFingerprint(),
+                buildInfo.getHardware(),
+                buildInfo.getBootloader(),
                 bootCount,
                 glEsVersion,
                 cpuInfo.getLegacyData(),
@@ -244,7 +263,16 @@ public class ApiObjectsMapper {
                 playServicesInfo.getVersionName(),
                 playServicesInfo.getClientVersionCode(),
                 playInfo.getVersionCode(),
-                playInfo.getVersionName()
+                playInfo.getVersionName(),
+                mapBuildInfo(buildInfo),
+                mapAppInfo(appInfo),
+                mapDeviceFeatures(deviceFeatures),
+                signatureHash,
+                mapQemuProps(quickEmProps),
+                emArchitecture,
+                mapSeLinux(securityEnhancedBuild),
+                mapAdbRootService(bridgeRootService),
+                appSize
         );
     }
 
@@ -279,6 +307,79 @@ public class ApiObjectsMapper {
         return result;
     }
 
+    private AndroidBuildInfoJson mapBuildInfo(BuildInfoProvider.BuildInfo buildInfo) {
+        return new AndroidBuildInfoJson(
+                buildInfo.getAbis(),
+                buildInfo.getFingerprint(),
+                buildInfo.getHardware(),
+                buildInfo.getBootloader(),
+                buildInfo.getManufacturer(),
+                buildInfo.getBrand(),
+                buildInfo.getDisplay(),
+                buildInfo.getTime(),
+                buildInfo.getHost(),
+                buildInfo.getType(),
+                buildInfo.getRadioVersion(),
+                buildInfo.getSecurityPatch(),
+                buildInfo.getBaseOs()
+        );
+    }
+
+    private AndroidAppInfoJson mapAppInfo(PackageManagerInfoProvider.AppInfo appInfo) {
+        return new AndroidAppInfoJson(
+                appInfo.getName(),
+                appInfo.getLabel(),
+                appInfo.getIcon(),
+                appInfo.getDebuggable(),
+                appInfo.getPersistent()
+        );
+    }
+
+
+    private AndroidDeviceFeaturesJson mapDeviceFeatures(
+            PackageManagerInfoProvider.DeviceFeatures deviceFeatures
+    ) {
+        return new AndroidDeviceFeaturesJson(
+                deviceFeatures.getTouch(),
+                deviceFeatures.getProximity(),
+                deviceFeatures.getAccelerometer(),
+                deviceFeatures.getGyro(),
+                deviceFeatures.getCompass(),
+                deviceFeatures.getTelephony(),
+                deviceFeatures.getCdma(),
+                deviceFeatures.getGsm(),
+                deviceFeatures.getCameras(),
+                deviceFeatures.getPc(),
+                deviceFeatures.getPip(),
+                deviceFeatures.getDactylogram()
+        );
+    }
+
+    @Nullable
+    private Boolean mapAdbRootService(String signalValue) {
+        if (signalValue == null) {
+            return null;
+        }
+        return signalValue.equals("1");
+    }
+
+    @Nullable
+    private Boolean mapSeLinux(String signalValue) {
+        if (signalValue == null) {
+            return null;
+        }
+        return signalValue.equals("1");
+    }
+
+    @Nullable
+    private Boolean mapQemuProps(Integer signalValue) {
+        if (signalValue == null) {
+            return null;
+        }
+        return signalValue == 1;
+    }
+
+
     /**
      * Map a CreateFirstSession object.
      */
@@ -296,8 +397,16 @@ public class ApiObjectsMapper {
             @NonNull String glEsVersion,
             @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo
-
+            @NonNull GooglePlayHelper.PlayInfo playInfo,
+            BuildInfoProvider.BuildInfo buildInfo,
+            PackageManagerInfoProvider.AppInfo appInfo,
+            PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
+            String signatureHash,
+            Integer quickEmProps,
+            Integer emArchitecture,
+            String securityEnhancedBuild,
+            String bridgeRootService,
+            Long appSize
     ) {
 
         return new CreateFirstSessionJson(
@@ -312,7 +421,16 @@ public class ApiObjectsMapper {
                         glEsVersion,
                         cpuInfo,
                         playServicesInfo,
-                        playInfo
+                        playInfo,
+                        buildInfo,
+                        appInfo,
+                        deviceFeatures,
+                        signatureHash,
+                        quickEmProps,
+                        emArchitecture,
+                        securityEnhancedBuild,
+                        bridgeRootService,
+                        appSize
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -337,7 +455,16 @@ public class ApiObjectsMapper {
             @NonNull String glEsVersion,
             @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo
+            @NonNull GooglePlayHelper.PlayInfo playInfo,
+            final BuildInfoProvider.BuildInfo buildInfo,
+            final PackageManagerInfoProvider.AppInfo appInfo,
+            final PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
+            final String signatureHash,
+            final Integer quickEmProps,
+            final Integer emArchitecture,
+            final String securityEnhancedBuild,
+            final String bridgeRootService,
+            final Long appSize
     ) {
 
         return new CreateLoginSessionJson(
@@ -352,7 +479,16 @@ public class ApiObjectsMapper {
                         glEsVersion,
                         cpuInfo,
                         playServicesInfo,
-                        playInfo
+                        playInfo,
+                        buildInfo,
+                        appInfo,
+                        deviceFeatures,
+                        signatureHash,
+                        quickEmProps,
+                        emArchitecture,
+                        securityEnhancedBuild,
+                        bridgeRootService,
+                        appSize
                 ),
                 gcmToken,
                 email
@@ -375,7 +511,16 @@ public class ApiObjectsMapper {
             @NonNull String glEsVersion,
             @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo
+            @NonNull GooglePlayHelper.PlayInfo playInfo,
+            final BuildInfoProvider.BuildInfo buildInfo,
+            final PackageManagerInfoProvider.AppInfo appInfo,
+            final PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
+            final String signatureHash,
+            final Integer quickEmProps,
+            final Integer emArchitecture,
+            final String securityEnhancedBuild,
+            final String bridgeRootService,
+            final Long appSize
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -390,7 +535,16 @@ public class ApiObjectsMapper {
                         glEsVersion,
                         cpuInfo,
                         playServicesInfo,
-                        playInfo
+                        playInfo,
+                        buildInfo,
+                        appInfo,
+                        deviceFeatures,
+                        signatureHash,
+                        quickEmProps,
+                        emArchitecture,
+                        securityEnhancedBuild,
+                        bridgeRootService,
+                        appSize
                 ),
                 gcmToken,
                 new ChallengeKeyJson(
@@ -549,7 +703,8 @@ public class ApiObjectsMapper {
      * Map fulfillment data.
      */
     public IncomingSwapFulfillmentData mapFulfillmentData(
-            final IncomingSwapFulfillmentDataJson json) {
+            final IncomingSwapFulfillmentDataJson json
+    ) {
 
         return new IncomingSwapFulfillmentData(
                 Encodings.hexToBytes(json.fulfillmentTxHex),
@@ -573,8 +728,10 @@ public class ApiObjectsMapper {
     }
 
     @Nullable
-    private ExportEmergencyKitJson.Method mapExportMethod(@NotNull EmergencyKitExport.Method
-                                                                  meth) {
+    private ExportEmergencyKitJson.Method mapExportMethod(
+            @NotNull EmergencyKitExport.Method
+                    meth
+    ) {
         switch (meth) {
             case UNKNOWN:
                 return null;
@@ -587,5 +744,23 @@ public class ApiObjectsMapper {
             default:
                 throw new MissingCaseError(meth);
         }
+    }
+
+    /**
+     *  Creates a UnconfirmedOutpointsJson.
+     */
+    @NotNull
+    public UnconfirmedOutpointsJson mapUnconfirmedOutpointsJson(
+            @NotNull List<SizeForAmount> sizeProgression
+    ) {
+        final List<String> unconfirmedUtxos = new ArrayList<>();
+
+        for (final SizeForAmount sizeForAmount : sizeProgression) {
+            if (sizeForAmount.status == UtxoStatus.UNCONFIRMED) {
+                unconfirmedUtxos.add(sizeForAmount.outpoint);
+            }
+        }
+
+        return new UnconfirmedOutpointsJson(unconfirmedUtxos);
     }
 }

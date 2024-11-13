@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 type ChallengePublicKey struct {
@@ -15,7 +15,7 @@ type ChallengePublicKey struct {
 
 func NewChallengePublicKeyFromSerialized(serializedKey []byte) (*ChallengePublicKey, error) {
 
-	pubKey, err := btcec.ParsePubKey(serializedKey, btcec.S256())
+	pubKey, err := btcec.ParsePubKey(serializedKey)
 	if err != nil {
 		return nil, err
 	}

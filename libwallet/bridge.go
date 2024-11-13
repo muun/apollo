@@ -5,7 +5,7 @@ type StringList struct {
 }
 
 func NewStringList() *StringList {
- 	return &StringList{}
+	return &StringList{}
 }
 
 func NewStringListWithElements(elems []string) *StringList {
@@ -32,6 +32,10 @@ func (l *StringList) Contains(s string) bool {
 	}
 
 	return false
+}
+
+func (l *StringList) ConvertToArray() []string {
+	return l.elems
 }
 
 type IntList struct {

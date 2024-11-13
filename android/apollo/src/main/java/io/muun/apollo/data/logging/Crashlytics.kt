@@ -110,9 +110,7 @@ object Crashlytics {
         }
 
         analyticsProvider?.report(
-            AnalyticsEvent.E_CRASHLYTICS_ERROR(
-                report.error.javaClass.simpleName + ":" + report.error.localizedMessage
-            )
+            AnalyticsEvent.E_CRASHLYTICS_ERROR(report)
         )
 
         crashlytics?.recordException(report.error)

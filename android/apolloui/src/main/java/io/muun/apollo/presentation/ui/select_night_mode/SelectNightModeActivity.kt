@@ -2,10 +2,12 @@ package io.muun.apollo.presentation.ui.select_night_mode
 
 import android.content.Context
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivitySelectNightModeBinding
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.utils.OS
@@ -15,30 +17,39 @@ import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 
-class SelectNightModeActivity: BaseActivity<SelectNightModePresenter>(), SelectNightModeView {
+class SelectNightModeActivity : BaseActivity<SelectNightModePresenter>(), SelectNightModeView {
 
     companion object {
         fun getStartActivityIntent(context: Context) =
             Intent(context, SelectNightModeActivity::class.java)
     }
 
-    @BindView(R.id.select_dark_mode_header)
-    lateinit var header: MuunHeader
+    private val binding: ActivitySelectNightModeBinding
+        get() = getBinding() as ActivitySelectNightModeBinding
 
-    @BindView(R.id.night_mode_dark)
-    lateinit var darkModeItem: MuunSettingItem
+    private val header: MuunHeader
+        get() = binding.selectDarkModeHeader
 
-    @BindView(R.id.night_mode_light)
-    lateinit var lightModeItem: MuunSettingItem
 
-    @BindView(R.id.night_mode_follow_system)
-    lateinit var followSystemItem: MuunSettingItem
+    private val darkModeItem: MuunSettingItem
+        get() = binding.nightModeDark
+
+
+    private val lightModeItem: MuunSettingItem
+        get() = binding.nightModeLight
+
+    private val followSystemItem: MuunSettingItem
+        get() = binding.nightModeFollowSystem
 
     override fun inject() =
         component.inject(this)
 
     override fun getLayoutResource() =
         R.layout.activity_select_night_mode
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivitySelectNightModeBinding::inflate
+    }
 
     override fun initializeUi() {
         super.initializeUi()
@@ -102,12 +113,12 @@ class SelectNightModeActivity: BaseActivity<SelectNightModePresenter>(), SelectN
                 presenter.reportNightModeChange(NightMode.DARK)
             }
 
-            NightMode.LIGHT  -> {
+            NightMode.LIGHT -> {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 presenter.reportNightModeChange(NightMode.LIGHT)
             }
 
-            NightMode.FOLLOW_SYSTEM  -> {
+            NightMode.FOLLOW_SYSTEM -> {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 presenter.reportNightModeChange(NightMode.FOLLOW_SYSTEM)
             }

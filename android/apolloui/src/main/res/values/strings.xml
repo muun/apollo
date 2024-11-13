@@ -6,6 +6,9 @@
     <string name="confirm_link_handler_label" translatable="false">Muun</string>
 
     <!-- General-purpose strings -->
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="yes_cancel">Yes, cancel</string>
     <string name="cancel">Cancel</string>
     <string name="dismiss">Dismiss</string>
     <string name="stay">Stay</string>
@@ -83,7 +86,7 @@
 
     <string name="new_operation_abort_alert_title">Cancel payment?</string>
     <string name="new_operation_abort_alert_body">
-        You are about to cancel this payment and go back to the home screen
+        Do you want to cancel this payment and go back to the home screen?
     </string>
 
     <string name="new_operation_swap_title">Pay via lightning</string>

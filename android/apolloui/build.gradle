@@ -1,5 +1,5 @@
 buildscript {
-    ext.nav_version = "2.4.1"
+    ext.nav_version = "2.7.7" // Next version upgrade requires bump minSdk to 21
 
     dependencies { // Add third party gradle plugins
         classpath 'com.google.gms:google-services:4.3.15'    // Google Services plugin
@@ -10,8 +10,6 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.15.0'
-    id 'org.owasp.dependencycheck' version '5.3.2.1'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'org.jetbrains.kotlin.android'
 }
@@ -84,6 +82,8 @@ static def configExternalLinks(productFlavor, String host) {
 
 
 android {
+    namespace "io.muun.apollo"
+
     compileSdk 34
 
     buildFeatures {
@@ -94,8 +94,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 19
         targetSdk 34
-        versionCode 1202
-        versionName "52.2"
+        versionCode 1203
+        versionName "52.3"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -332,6 +332,8 @@ android {
 
 ext {
     version_butterknife = '10.1.0'
+    version_mockk = '1.13.7'    // Latest version targeting kotlin 1.8.20
+    version_lifecycle = '2.6.2' // Upcoming versions require AGP 8.3.1
 }
 
 dependencies {
@@ -368,8 +370,12 @@ dependencies {
     // We need to specify versions for customtabs and cardview because some dependencies use them
     implementation 'androidx.browser:browser:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
+
+    // Lifecycles only (without ViewModel or LiveData)
+    implementation "androidx.lifecycle:lifecycle-runtime:$version_lifecycle"
+    // ProcessLifecycleOwner provides a lifecycle for the whole application process
+    implementation "androidx.lifecycle:lifecycle-process:$version_lifecycle"
+
     // for WebView
     implementation 'androidx.webkit:webkit:1.1.0'
 
@@ -395,6 +401,8 @@ dependencies {
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
     testImplementation 'org.assertj:assertj-core:3.8.0'
     testImplementation 'junit:junit:4.12'
+    testImplementation "io.mockk:mockk:$version_mockk"
+
     // Can't use Jake Wharton's threeten lib for test. For more info see:
     // https://github.com/JakeWharton/ThreeTenABP/issues/47
     testImplementation 'org.threeten:threetenbp:1.6.8'
@@ -419,11 +427,11 @@ dependencies {
 
     // Android Navigation Component
 
-    // 1. Kotlin Implementation
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    // 1. Views/Fragments Integration
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
 
-    // 2. Feature module Support
+    // 2. Feature module Support for Fragments
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
 
     // 3. Testing Navigation

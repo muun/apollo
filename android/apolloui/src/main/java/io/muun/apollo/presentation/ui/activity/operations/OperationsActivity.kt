@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.transition.Slide
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.animation.DecelerateInterpolator
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityOperationsBinding
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -24,8 +26,11 @@ class OperationsActivity
             Intent(context, OperationsActivity::class.java)
     }
 
-    @BindView(R.id.header)
-    lateinit var headerView: MuunHeader
+    private val binding: ActivityOperationsBinding
+        get() = getBinding() as ActivityOperationsBinding
+
+    private val headerView: MuunHeader
+        get() = binding.header
 
     override fun inject() {
         component.inject(this)
@@ -33,6 +38,10 @@ class OperationsActivity
 
     override fun getLayoutResource(): Int =
         R.layout.activity_operations
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityOperationsBinding::inflate
+    }
 
     override fun getFragmentsContainer() =
         R.id.container
