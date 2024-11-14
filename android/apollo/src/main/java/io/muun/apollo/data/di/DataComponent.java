@@ -5,6 +5,7 @@ import io.muun.apollo.data.apis.DriveUploader;
 import io.muun.apollo.data.async.gcm.GcmMessageListenerService;
 import io.muun.apollo.data.async.tasks.MuunWorkerFactory;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
+import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.db.contact.ContactDao;
 import io.muun.apollo.data.db.operation.OperationDao;
 import io.muun.apollo.data.db.public_profile.PublicProfileDao;
@@ -110,4 +111,6 @@ public interface DataComponent extends ActionComponent {
     NotificationService notificationService();
 
     Analytics analytics();
+
+    DaoManager daoManager();
 }

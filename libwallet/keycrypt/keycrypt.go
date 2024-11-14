@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 
 	"github.com/muun/libwallet/aescbc"
 	"golang.org/x/crypto/scrypt"

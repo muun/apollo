@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btclog"
 	lndsphinx "github.com/lightningnetwork/lightning-onion"
 	"github.com/lightningnetwork/lnd/htlcswitch/hop"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -23,21 +24,29 @@ func Validate(
 	amount lnwire.MilliSatoshi,
 	net *chaincfg.Params,
 ) error {
-	router := lndsphinx.NewRouter(nodeKey, net, lndsphinx.NewMemoryReplayLog())
+	hop.UseLogger(btclog.Disabled)
+	router := lndsphinx.NewRouter(&lndsphinx.PrivKeyECDH{PrivKey: nodeKey}, net, lndsphinx.NewMemoryReplayLog())
 	if err := router.Start(); err != nil {
 		return fmt.Errorf("could not start router for validating onion blob: %w", err)
 	}
 	onionProcessor := hop.NewOnionProcessor(router)
-	onionProcessor.Start()
-	iterator, code := onionProcessor.DecodeHopIterator(
+	err := onionProcessor.Start()
+	if err != nil {
+		return err
+	}
+	defer onionProcessor.Stop()
+
+	iterator, err := onionProcessor.ReconstructHopIterator(
 		bytes.NewReader(onionBlob),
 		paymentHash,
-		expiry,
+		hop.ReconstructBlindingInfo{
+			IncomingExpiry: expiry,
+		},
 	)
-	if code != lnwire.CodeNone {
-		return fmt.Errorf("failed decode sphinx due to %v", code.String())
+	if err != nil {
+		return fmt.Errorf("failed decode sphinx due to %w", err)
 	}
-	payload, err := iterator.HopPayload()
+	payload, _, err := iterator.HopPayload()
 	if err != nil {
 		return err
 	}

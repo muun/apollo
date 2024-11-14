@@ -33,7 +33,7 @@ open class IncomingSwapTests : BaseInstrumentationTest() {
         val amountInSats: Long = 400_000
         autoFlows.receiveMoneyFromLNWithAmountLessInvoice(amountInSats)
 
-        homeScreen.checkBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(amountInSats))
+        homeScreen.waitUntilBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(amountInSats))
 
         autoFlows.logOut()
 
@@ -41,12 +41,12 @@ open class IncomingSwapTests : BaseInstrumentationTest() {
 
         autoFlows.signIn(user.email, user.password, pin = user.pin)
 
-        homeScreen.checkBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(amountInSats))
+        homeScreen.waitUntilBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(amountInSats))
 
         val note = "spendAllFunds"
         autoFlows.spendAllFunds(note)
 
-        homeScreen.checkBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(0))
+        homeScreen.waitUntilBalanceCloseTo(BitcoinUtils.satoshisToBitcoins(0))
 
         LappClient().generateBlocks(1)
 

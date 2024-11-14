@@ -137,66 +137,66 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 		{
 			"backend only preactivation for pre-activated user",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: exportedBoth,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      exportedBoth,
 				backendFeatures: backendFeaturesWithTaprootPreactivation,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusPreactivated,
 		},
 		{
 			"backend only preactivation for scheduled activated user with no kit",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: neverExportedKit,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      neverExportedKit,
 				backendFeatures: backendFeaturesWithTaprootPreactivation,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusOff,
 		},
 		{
 			"backend only preactivation for scheduled activated user with latest kit",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: exportedOnlyLatest,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      exportedOnlyLatest,
 				backendFeatures: backendFeaturesWithTaprootPreactivation,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusScheduledActivation,
 		},
 		{
 			"backend turned off for pre-activated user",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: exportedBoth,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      exportedBoth,
 				backendFeatures: backendFeaturesWithoutTaproot,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusOff,
 		},
 		{
 			"backend turned off for scheduled activated user with no kit",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: neverExportedKit,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      neverExportedKit,
 				backendFeatures: backendFeaturesWithoutTaproot,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusOff,
 		},
 		{
 			"backend turned off for scheduled activated user with latest kit",
 			args{
-				feature: UserActivatedFeatureTaproot,
-				height: postTaprootActivationHeight,
-				kitVersion: exportedOnlyLatest,
+				feature:         UserActivatedFeatureTaproot,
+				height:          postTaprootActivationHeight,
+				kitVersion:      exportedOnlyLatest,
 				backendFeatures: backendFeaturesWithoutTaproot,
-				network: Mainnet(),
+				network:         Mainnet(),
 			},
 			UserActivatedFeatureStatusOff,
 		},
@@ -207,5 +207,33 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 				t.Errorf("DetermineUserActivatedFeatureStatus() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+type TestBackendActivatedFeatureStatusProvider struct{}
+
+func (t TestBackendActivatedFeatureStatusProvider) IsBackendFlagEnabled(flag string) bool {
+	return flag == BackendFeatureEffectiveFeesCalculation
+}
+
+func Test_DetermineBackendActivatedFeatureStatus(t *testing.T) {
+	Cfg = &Config{
+		DataDir:               "",
+		FeatureStatusProvider: TestBackendActivatedFeatureStatusProvider{},
+	}
+
+	var status = DetermineBackendActivatedFeatureStatus(BackendFeatureEffectiveFeesCalculation)
+	if !status {
+		t.Errorf("DetermineBackendActivatedFeatureStatus(BackendFeatureEffectiveFeesCalculation) = %v, want %v", status, true)
+	}
+
+	status = DetermineBackendActivatedFeatureStatus(BackendFeatureHighFeesHomeBanner)
+	if status {
+		t.Errorf("DetermineBackendActivatedFeatureStatus(BackendFeatureHighFeesHomeBanner) = %v, want %v", status, false)
+	}
+
+	status = DetermineBackendActivatedFeatureStatus("UnknownFlag")
+	if status {
+		t.Errorf("DetermineBackendActivatedFeatureStatus(\"UnknownFlag\") = %v, want %v", status, false)
 	}
 }

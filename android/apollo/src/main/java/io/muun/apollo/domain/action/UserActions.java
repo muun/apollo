@@ -30,20 +30,23 @@ public class UserActions {
     public static final String NOTIFY_LOGOUT_ACTION = "user/logout";
 
     private final UserRepository userRepository;
+
     private final AuthRepository authRepository;
 
     private final HoustonClient houstonClient;
 
-    private final ContactActions contactActions;
-
     private final UpdateProfilePictureAction updateProfilePictureAction;
 
     public final AsyncAction1<PhoneNumber, UserPhoneNumber> createPhoneAction;
+
     public final AsyncAction1<VerificationType, Void> resendVerificationCodeAction;
+
     public final AsyncAction1<String, UserPhoneNumber> confirmPhoneAction;
+
     public final AsyncAction1<UserProfile, UserProfile> createProfileAction;
 
     public final AsyncAction2<String, String, User> updateUsernameAction;
+
     public final AsyncAction1<CurrencyUnit, User> updatePrimaryCurrencyAction;
 
     public final AsyncAction2<FeedbackCategory, String, Void> submitFeedbackAction;
@@ -54,18 +57,17 @@ public class UserActions {
      * Constructor.
      */
     @Inject
-    public UserActions(AsyncActionStore asyncActionStore,
-                       UserRepository userRepository,
-                       AuthRepository authRepository,
-                       HoustonClient houstonClient,
-                       ContactActions contactActions,
-                       UpdateProfilePictureAction updateProfilePictureAction) {
+    public UserActions(
+            AsyncActionStore asyncActionStore,
+            UserRepository userRepository,
+            AuthRepository authRepository,
+            HoustonClient houstonClient,
+            UpdateProfilePictureAction updateProfilePictureAction
+    ) {
 
         this.userRepository = userRepository;
         this.authRepository = authRepository;
         this.houstonClient = houstonClient;
-
-        this.contactActions = contactActions;
 
         this.updateProfilePictureAction = updateProfilePictureAction;
 

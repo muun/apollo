@@ -29,7 +29,7 @@ public class SigninActions {
      * Delete session/auth related data currently stored, both in preferences as in secure storage.
      */
     public void clearSession() {
-        authRepository.clear();
+        authRepository.clearSession();
     }
 
     /**

@@ -77,7 +77,7 @@ open class BaseInstrumentationTest : WithMuunInstrumentationHelpers {
         userRepository = dataComponent.userRepository()
         authRepository = dataComponent.authRepository()
         signupDraftManager = dataComponent.signupDraftManager()
-        navigator = Navigator(logoutActions, UserSelector(userRepository))
+        navigator = Navigator(UserSelector(userRepository))
 
         syncApplicationDataAction = dataComponent.syncApplicationDataAction()
 

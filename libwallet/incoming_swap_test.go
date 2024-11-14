@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
 	sphinx "github.com/lightningnetwork/lightning-onion"
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/lightningnetwork/lnd/record"
@@ -122,7 +122,11 @@ func TestFulfillHtlc(t *testing.T) {
 		panic(err)
 	}
 
-	sigHashes := txscript.NewTxSigHashes(fulfillmentTx)
+	// prevFetcher is the structure used to select a virtual outpoint
+	prevFetcher := txscript.NewCannedPrevOutputFetcher(
+		pkScript, amt)
+
+	sigHashes := txscript.NewTxSigHashes(fulfillmentTx, prevFetcher)
 	muunSignature, err := txscript.RawTxInWitnessSignature(
 		fulfillmentTx,
 		sigHashes,
@@ -257,18 +261,21 @@ func TestFulfillHtlcWithCollect(t *testing.T) {
 
 	outputPath := "m/schema:1'/recovery:1'/34/56"
 	addr := newAddressAt(userKey, muunKey, outputPath, network)
-
-	fulfillmentTx.AddTxOut(&wire.TxOut{
+	txOut := wire.TxOut{
 		PkScript: addr.ScriptAddress(),
 		Value:    outputAmount,
-	})
+	}
+	fulfillmentTx.AddTxOut(&txOut)
 
 	muunSignKey, err := muunHtlcKey.key.ECPrivKey()
 	if err != nil {
 		panic(err)
 	}
 
-	sigHashes := txscript.NewTxSigHashes(fulfillmentTx)
+	prevFetcher := txscript.NewCannedPrevOutputFetcher(
+		txOut.PkScript, txOut.Value)
+
+	sigHashes := txscript.NewTxSigHashes(fulfillmentTx, prevFetcher)
 	muunSignature, err := txscript.RawTxInWitnessSignature(
 		fulfillmentTx,
 		sigHashes,
@@ -788,13 +795,13 @@ func createSphinxPacket(nodePublicKey *btcec.PublicKey, paymentHash, paymentSecr
 
 	b := &bytes.Buffer{}
 	tlv.MustNewStream(tlvRecords...).Encode(b)
-	hopPayload, err := sphinx.NewHopPayload(nil, b.Bytes())
+	hopPayload, err := sphinx.NewTLVHopPayload(b.Bytes())
 	if err != nil {
 		panic(err)
 	}
 	paymentPath[0].HopPayload = hopPayload
 
-	ephemeralKey, err := btcec.NewPrivateKey(btcec.S256())
+	ephemeralKey, err := btcec.NewPrivateKey()
 	if err != nil {
 		panic(err)
 	}
@@ -836,13 +843,13 @@ func createMppSphinxPacket(
 
 	b := &bytes.Buffer{}
 	tlv.MustNewStream(tlvRecords...).Encode(b)
-	hopPayload, err := sphinx.NewHopPayload(nil, b.Bytes())
+	hopPayload, err := sphinx.NewTLVHopPayload(b.Bytes())
 	if err != nil {
 		panic(err)
 	}
 	paymentPath[0].HopPayload = hopPayload
 
-	ephemeralKey, err := btcec.NewPrivateKey(btcec.S256())
+	ephemeralKey, err := btcec.NewPrivateKey()
 	if err != nil {
 		panic(err)
 	}

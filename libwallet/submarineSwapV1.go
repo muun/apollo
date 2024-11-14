@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/swaps"
 )
 
@@ -45,7 +45,7 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 		return fmt.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
-	sig, err := signNonNativeSegwitInput(
+	sig, err := signNonNativeSegwitInputV0(
 		index, tx, userKey, redeemScript, witnessScript, c.Amount)
 	if err != nil {
 		return err

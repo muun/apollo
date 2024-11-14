@@ -23,16 +23,16 @@ public class MuunInputSubmarineSwapV101 {
     }
 
     @NotNull
-    private String refundAddress;
+    private final String refundAddress;
 
     @NotNull
-    private byte[] swapPaymentHash256;
+    private final byte[] swapPaymentHash256;
 
     @NotNull
-    private byte[] swapServerPublicKey;
+    private final byte[] swapServerPublicKey;
 
     @NotNull
-    private long lockTime;
+    private final long lockTime;
 
     /**
      * Constructor.

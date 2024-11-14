@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.app
 
 import android.content.Context
-import androidx.annotation.RequiresApi
 import androidx.emoji2.text.EmojiCompat
 import androidx.emoji2.text.EmojiCompat.MetadataRepoLoader
 import androidx.emoji2.text.EmojiCompat.MetadataRepoLoaderCallback
@@ -27,7 +26,6 @@ class BundledEmojiCompatConfig(ctx: Context) : EmojiCompat.Config(BundledMetadat
 
         private val mContext: Context
 
-        @RequiresApi(19)
         override fun load(loaderCallback: MetadataRepoLoaderCallback) {
             Preconditions.checkNotNull(loaderCallback, "loaderCallback cannot be null")
             val runnable = InitRunnable(mContext, loaderCallback)
@@ -41,7 +39,6 @@ class BundledEmojiCompatConfig(ctx: Context) : EmojiCompat.Config(BundledMetadat
         }
     }
 
-    @RequiresApi(19)
     private class InitRunnable(
         private val mContext: Context,
         private val mLoaderCallback: MetadataRepoLoaderCallback,

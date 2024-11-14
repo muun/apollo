@@ -8,10 +8,10 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.annotation.AnimRes
-import butterknife.BindColor
-import butterknife.BindDrawable
-import butterknife.BindView
+import androidx.core.content.ContextCompat
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewNewOpBadgeBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.isBtc
@@ -24,31 +24,37 @@ import javax.money.MonetaryAmount
 class NewOpBadge @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    style: Int = 0
+    style: Int = 0,
 ) : MuunView(context, attrs, style) {
 
+    private val binding: ViewNewOpBadgeBinding
+        get() = _binding as ViewNewOpBadgeBinding
+
     // Components:
-    @BindView(R.id.badge_text)
-    lateinit var text: TextView
+
+    private val text: TextView
+        get() = binding.badgeText
 
     // Resources:
 
-    @BindDrawable(R.drawable.new_op_badge_blue_bkg)
-    lateinit var outgoingTxBkg: Drawable
+    private val outgoingTxBkg: Drawable?
+        get() = ContextCompat.getDrawable(context, R.drawable.new_op_badge_blue_bkg)
 
-    @BindColor(R.color.blue)
-    @JvmField
-    internal var outgoingTxColor: Int = 0
+    private val outgoingTxColor: Int
+        get() = ContextCompat.getColor(context, R.color.blue)
 
-    @BindDrawable(R.drawable.new_op_badge_green_bkg)
-    lateinit var incomingTxBkg: Drawable
+    private val incomingTxBkg: Drawable?
+        get() = ContextCompat.getDrawable(context, R.drawable.new_op_badge_green_bkg)
 
-    @BindColor(R.color.green)
-    @JvmField
-    internal var incomingTxColor: Int = 0
+    private val incomingTxColor: Int
+        get() = ContextCompat.getColor(context, R.color.green)
 
     override val layoutResource: Int
         get() = R.layout.view_new_op_badge
+
+    override fun viewBinder(): ((View) -> ViewBinding) {
+        return ViewNewOpBadgeBinding::bind
+    }
 
     fun setAmount(amountInBtc: MonetaryAmount, bitcoinUnit: BitcoinUnit) {
         Preconditions.checkArgument(!amountInBtc.isZero)
@@ -56,7 +62,7 @@ class NewOpBadge @JvmOverloads constructor(
 
         val amountInSats = BitcoinUtils.bitcoinsToSatoshis(amountInBtc)
         var content = BitcoinHelper.formatFlexBitcoinAmount(
-                amountInSats, true, bitcoinUnit, locale()
+            amountInSats, true, bitcoinUnit, locale()
         )
 
         if (amountInBtc.isPositive) {

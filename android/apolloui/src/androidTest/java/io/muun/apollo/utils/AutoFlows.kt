@@ -462,7 +462,7 @@ class AutoFlows(
         val total = newOpScreen.confirmedTotal
         newOpScreen.submit()
 
-        homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.subtract(total))
 
         checkOperationDetails(amount, description, fee) {
             homeScreen.goToOperationDetail(description, isPending = true)
@@ -556,7 +556,7 @@ class AutoFlows(
 
         newOpScreen.submit()
 
-        homeScreen.checkBalanceCloseTo(balanceBefore.subtract(total))
+        homeScreen.waitUntilBalanceCloseTo(balanceBefore.subtract(total))
 
         // Account for the special case where swap is completed REALLY fast
 
@@ -834,7 +834,7 @@ class AutoFlows(
             balanceBefore.subtract(total)
         }
 
-        homeScreen.checkBalanceCloseTo(expectedBalance)
+        homeScreen.waitUntilBalanceCloseTo(expectedBalance)
     }
 
     private fun goToSettingsAndClickDeleteWallet() {

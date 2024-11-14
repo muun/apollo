@@ -3,7 +3,7 @@ package io.muun.apollo.data.os
 import io.muun.apollo.domain.errors.CpuInfoError
 import timber.log.Timber
 import java.io.File
-import java.util.*
+import java.util.Scanner
 
 private const val CPU_INFO_PATH = "/proc/cpuinfo"
 private const val CPU_INFO_KEY_VALUE_DELIMITER = ": "
@@ -53,11 +53,13 @@ object CpuInfoProvider {
      */
     private fun getLegacyCpuInfo(): Map<String, String> {
         val map: MutableMap<String, String> = HashMap()
-        val s = Scanner(File(CPU_INFO_PATH))
-        while (s.hasNextLine()) {
-            val cpuInfoValues = s.nextLine().split(CPU_INFO_KEY_VALUE_DELIMITER)
-            if (cpuInfoValues.size > 1) map[cpuInfoValues[0].trim { it <= ' ' }] =
-                cpuInfoValues[1].trim { it <= ' ' }
+
+        Scanner(File(CPU_INFO_PATH)).use { s ->
+            while (s.hasNextLine()) {
+                val cpuInfoValues = s.nextLine().split(CPU_INFO_KEY_VALUE_DELIMITER)
+                if (cpuInfoValues.size > 1) map[cpuInfoValues[0].trim { it <= ' ' }] =
+                    cpuInfoValues[1].trim { it <= ' ' }
+            }
         }
 
         return map

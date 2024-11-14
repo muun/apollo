@@ -40,8 +40,8 @@ class DecryptAndStoreKeySetAction @Inject constructor(
         if (keySet.muunKey != null) {
             Preconditions.checkNotNull(keySet.muunKeyFingerprint)
 
-            keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey)
-            keysRepository.storeMuunKeyFingerprint(keySet.muunKeyFingerprint)
+            keysRepository.storeEncryptedMuunPrivateKey(keySet.muunKey!!)
+            keysRepository.storeMuunKeyFingerprint(keySet.muunKeyFingerprint!!)
         }
 
         val userPrivateKey = KeyCrypter().decrypt(keySet.encryptedPrivateKey, userInput)

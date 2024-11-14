@@ -35,8 +35,8 @@ class StartRecoveryCodeSetupAction @Inject constructor(
                 Preconditions.checkNotNull(setupChallengeResponse.muunKey)
                 Preconditions.checkNotNull(setupChallengeResponse.muunKeyFingerprint)
 
-                keysRepository.storeEncryptedMuunPrivateKey(setupChallengeResponse.muunKey)
-                keysRepository.storeMuunKeyFingerprint(setupChallengeResponse.muunKeyFingerprint)
+                keysRepository.storeEncryptedMuunPrivateKey(setupChallengeResponse.muunKey!!)
+                keysRepository.storeMuunKeyFingerprint(setupChallengeResponse.muunKeyFingerprint!!)
             }
             .onErrorResumeNext { error ->
                 Observable.error(StartRecoveryCodeSetupError(error))

@@ -14,14 +14,14 @@ class NightModeRepository @Inject constructor(
         private const val KEY = "current_night_mode"
     }
 
-    private val nightModePreference: Preference<NightMode> = rxSharedPreferences.getEnum(
-        KEY,
-        NightMode.FOLLOW_SYSTEM,
-        NightMode::class.java
-    )
+    private val nightModePreference: Preference<NightMode>
+        get() = rxSharedPreferences.getEnum(
+            KEY,
+            NightMode.FOLLOW_SYSTEM,
+            NightMode::class.java
+        )
 
-    override fun getFileName(): String =
-        "current_night_mode"
+    override val fileName get() = "current_night_mode"
 
     fun storeNightMode(mode: NightMode) {
         nightModePreference.set(mode)

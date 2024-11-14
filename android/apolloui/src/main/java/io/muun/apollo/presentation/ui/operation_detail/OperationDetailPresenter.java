@@ -27,6 +27,7 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
     public static final String OPERATION_ID_KEY = "OPERATION_ID";
 
     private final OperationActions operationActions;
+
     private final BitcoinUnitSelector bitcoinUnitSel;
 
     private final LinkBuilder linkBuilder;
@@ -43,10 +44,12 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
      * Constructor.
      */
     @Inject
-    public OperationDetailPresenter(OperationActions operationActions,
-                                    BitcoinUnitSelector bitcoinUnitSel,
-                                    LinkBuilder linkBuilder,
-                                    BlockchainHeightRepository blockchainHeightRepository) {
+    public OperationDetailPresenter(
+            OperationActions operationActions,
+            BitcoinUnitSelector bitcoinUnitSel,
+            LinkBuilder linkBuilder,
+            BlockchainHeightRepository blockchainHeightRepository
+    ) {
 
         this.operationActions = operationActions;
         this.bitcoinUnitSel = bitcoinUnitSel;
@@ -59,12 +62,15 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
         super.setUp(arguments);
 
         final Optional<Long> maybeOperationId = takeLongArgument(arguments, OPERATION_ID_KEY);
-        checkArgument(maybeOperationId.isPresent(), "operationId");
 
-        bitcoinUnit = bitcoinUnitSel.get();
+        final boolean precondition = checkArgument(maybeOperationId.isPresent(), "operationId");
 
-        operationId = maybeOperationId.get();
-        bindOperation();
+        if (precondition) {
+            bitcoinUnit = bitcoinUnitSel.get();
+
+            operationId = maybeOperationId.get();
+            bindOperation();
+        }
     }
 
     private void bindOperation() {
@@ -72,10 +78,11 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
                 .fetchOperationById(operationId)
                 .doOnNext(this::reportOperationDetail)
                 .map(op -> UiOperation.fromOperation(
-                        op,
-                        linkBuilder,
-                        bitcoinUnit,
-                        getContext())
+                                op,
+                                linkBuilder,
+                                bitcoinUnit,
+                                getContext()
+                        )
                 )
                 .compose(getAsyncExecutor())
                 .doOnNext(view::setOperation);

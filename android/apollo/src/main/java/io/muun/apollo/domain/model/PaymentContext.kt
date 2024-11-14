@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model
 
 import io.muun.apollo.domain.model.user.User
 import io.muun.common.Rules
-import newop.PaymentContext
+import newop.InitialPaymentContext
 
 /**
  * The contextual information required to analyze and process a PaymentRequest.
@@ -21,8 +21,8 @@ class PaymentContext(
     /**
      * Adapt apollo's (java) model to libwallet's (go).
      */
-    fun toLibwallet(submarineSwap: SubmarineSwap?): PaymentContext {
-        val libwalletPayCtx = PaymentContext()
+    fun toLibwallet(submarineSwap: SubmarineSwap?): InitialPaymentContext {
+        val libwalletPayCtx = InitialPaymentContext()
         libwalletPayCtx.feeWindow = feeWindow.toLibwallet()
         libwalletPayCtx.exchangeRateWindow = exchangeRateWindow.toLibwallet()
         libwalletPayCtx.nextTransactionSize = nextTransactionSize.toLibwallet()

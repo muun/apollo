@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 type Path string

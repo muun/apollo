@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.app;
 import io.muun.apollo.BuildConfig;
 import io.muun.apollo.R;
 import io.muun.apollo.data.external.Globals;
-import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.analytics.NewOperationOrigin;
 import io.muun.apollo.domain.model.FeedbackCategory;
@@ -77,12 +76,10 @@ public class Navigator {
 
     private static final String PLAY_STORE_PACKAGE_NAME = "io.muun.apollo";
 
-    private final LogoutActions logoutActions;
     private final UserSelector userSel;
 
     @Inject
-    public Navigator(LogoutActions logoutActions, UserSelector userSelector) {
-        this.logoutActions = logoutActions;
+    public Navigator(UserSelector userSelector) {
         this.userSel = userSelector;
     }
 
@@ -469,15 +466,6 @@ public class Navigator {
     }
 
     /**
-     * Immediately logs out the user, then navigates back to the launcher.
-     * CAREFUL! Code after this call can fail when it finds empty repositories/databases.
-     */
-    public void navigateToLogout(@NotNull Context context) {
-        logoutActions.destroyRecoverableWallet();
-        navigateToLauncher(context);
-    }
-
-    /**
      * Restart the application.
      */
     public void navigateToLauncher(@NotNull Context context) {
@@ -489,14 +477,11 @@ public class Navigator {
     }
 
     /**
-     * Immediately logs out the user, then navigates back to the delete wallet success screen.
+     * Navigates to the delete wallet success screen.
+     * Meant to be used after successfully deleting a wallet.
      * CAREFUL! Code after this call can fail when it finds empty repositories/databases.
      */
-    public void navigateToDeleteWallet(@NotNull Context context) {
-        final Optional<String> maybeSupportId = userSel.getOptional().flatMap(User::getSupportId);
-
-        logoutActions.dangerouslyDestroyWallet();
-
+    public void navigateToDeleteWallet(@NotNull Context context, Optional<String> maybeSupportId) {
         final Intent intent = SuccessDeleteWalletActivity
                 .getStartActivityIntent(context, maybeSupportId);
 

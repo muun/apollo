@@ -8,7 +8,7 @@ import (
 var testPaymentContext = createTestPaymentContext()
 
 func createTestPaymentContext() *PaymentContext {
-	var context = &PaymentContext{
+	var initialContext = &InitialPaymentContext{
 		NextTransactionSize: &NextTransactionSize{
 			ExpectedDebtInSat: 10_000,
 		},
@@ -19,14 +19,16 @@ func createTestPaymentContext() *PaymentContext {
 		PrimaryCurrency:          "BTC",
 		MinFeeRateInSatsPerVByte: 1.0,
 	}
-	context.NextTransactionSize.AddSizeForAmount(&SizeForAmount{
+	initialContext.NextTransactionSize.AddSizeForAmount(&SizeForAmount{
 		AmountInSat: 100_000_000,
 		SizeInVByte: 240,
 		UtxoStatus:  "CONFIRMED",
 	})
 
-	context.ExchangeRateWindow.AddRate("BTC", 1)
-	context.ExchangeRateWindow.AddRate("USD", 32_000)
+	initialContext.ExchangeRateWindow.AddRate("BTC", 1)
+	initialContext.ExchangeRateWindow.AddRate("USD", 32_000)
+
+	context := initialContext.newPaymentContext(nil)
 
 	return context
 }

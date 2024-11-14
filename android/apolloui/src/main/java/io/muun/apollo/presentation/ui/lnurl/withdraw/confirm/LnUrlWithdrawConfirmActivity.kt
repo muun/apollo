@@ -3,13 +3,14 @@ package io.muun.apollo.presentation.ui.lnurl.withdraw.confirm
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityLnurlWithdrawConfirmBinding
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-class LnUrlWithdrawConfirmActivity: SingleFragmentActivity<LnUrlWithdrawConfirmPresenter>() {
+class LnUrlWithdrawConfirmActivity : SingleFragmentActivity<LnUrlWithdrawConfirmPresenter>() {
 
     companion object {
         const val ARG_LNURL = "lnurl"
@@ -22,9 +23,6 @@ class LnUrlWithdrawConfirmActivity: SingleFragmentActivity<LnUrlWithdrawConfirmP
             arguments.getString(ARG_LNURL)!!
     }
 
-    @BindView(R.id.lnurl_withdraw_confirm_header)
-    lateinit var muunHeader: MuunHeader
-
     override fun inject() {
         component.inject(this)
     }
@@ -32,8 +30,22 @@ class LnUrlWithdrawConfirmActivity: SingleFragmentActivity<LnUrlWithdrawConfirmP
     override fun getLayoutResource(): Int =
         R.layout.activity_lnurl_withdraw_confirm
 
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityLnurlWithdrawConfirmBinding::inflate
+    }
+
+    private val binding: ActivityLnurlWithdrawConfirmBinding
+        get() = getBinding() as ActivityLnurlWithdrawConfirmBinding
+
     override fun getHeader(): MuunHeader =
-        muunHeader
+        binding.lnurlWithdrawConfirmHeader
+
+    private fun getBackButton() =
+        binding.lnurlWithdrawConfirmBackAction
+
+    private fun getConfirmButton() =
+        binding.lnurlWithdrawConfirmAction
+
 
     override fun initializeUi() {
         super.initializeUi()
@@ -42,15 +54,22 @@ class LnUrlWithdrawConfirmActivity: SingleFragmentActivity<LnUrlWithdrawConfirmP
         header.showTitle(R.string.showqr_title)
         header.setNavigation(MuunHeader.Navigation.BACK)
         header.setElevated(true)
+
+        getConfirmButton().setOnClickListener {
+            onContinueClick()
+        }
+
+        getBackButton().setOnClickListener {
+            onBackClick()
+        }
+
     }
 
-    @OnClick(R.id.lnurl_withdraw_confirm_back_action)
-    fun onBackClick() {
+    private fun onBackClick() {
         finishActivity()
     }
 
-    @OnClick(R.id.lnurl_withdraw_confirm_action)
-    fun onContinueClick() {
+    private fun onContinueClick() {
         presenter.continueWithLnUrlFlow()
     }
 }

@@ -13,11 +13,10 @@ class NotificationPermissionSkippedRepository @Inject constructor(
         private const val NOTIFICATION_PERMISSION_SKIPPED = "notification_permission_skipped"
     }
 
-    private val permissionSkippedPref: Preference<Boolean> = rxSharedPreferences
-        .getBoolean(NOTIFICATION_PERMISSION_SKIPPED)
+    private val permissionSkippedPref: Preference<Boolean>
+        get() = rxSharedPreferences.getBoolean(NOTIFICATION_PERMISSION_SKIPPED)
 
-    override fun getFileName() =
-        "notification_permission_skipped"
+    override val fileName get() = "notification_permission_skipped"
 
     fun store(permissionSkipped: Boolean) {
         permissionSkippedPref.set(permissionSkipped)

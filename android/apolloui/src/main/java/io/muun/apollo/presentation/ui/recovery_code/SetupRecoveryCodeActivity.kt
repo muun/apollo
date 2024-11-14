@@ -2,8 +2,10 @@ package io.muun.apollo.presentation.ui.recovery_code
 
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.RecoveryCodeActivityBinding
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
@@ -29,8 +31,11 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
         }
     }
 
-    @BindView(R.id.recovery_code_header)
-    lateinit var muunHeader: MuunHeader
+    private val binding: RecoveryCodeActivityBinding
+        get() = getBinding() as RecoveryCodeActivityBinding
+
+    private val muunHeader: MuunHeader
+        get() = binding.recoveryCodeHeader
 
     override fun inject() {
         component.inject(this)
@@ -38,6 +43,10 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
 
     override fun getLayoutResource(): Int =
         R.layout.recovery_code_activity
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return RecoveryCodeActivityBinding::inflate
+    }
 
     override fun getFragmentsContainer(): Int =
         R.id.fragment_container

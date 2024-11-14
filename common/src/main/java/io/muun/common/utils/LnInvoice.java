@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 
 /**
  * Utility class to decode and encode (and store the component data) of BOLT-11 Lighting Network
@@ -64,6 +65,7 @@ public class LnInvoice {
     private static final int P2PKH_ADDRESS_VERSION = 17;
     private static final int P2SH_ADDRESS_VERSION = 18;
     private static final int WITNESS_V0_ADDRESS_VERSION = 0;
+    private static final int PAYMENT_SECRET_BYTE_LENGTH = 32;
     private static final Map<String, String> DIVISORS;
 
     static {
@@ -84,6 +86,7 @@ public class LnInvoice {
         aMap.put(6, new Tag("x", "expiry", "number"));
         aMap.put(9, new Tag("f", "fallback_address", "chain_address"));
         aMap.put(13, new Tag("d", "description", "string"));
+        aMap.put(16, new Tag("s", "payment_secret", "sha256_hash"));
         aMap.put(19, new Tag("n", "destination_public_key", "public_key"));
         aMap.put(23, new Tag("h", "description_hash", "sha256_hash"));
         aMap.put(24, new Tag("c", "min_final_cltv_expiry", "number"));
@@ -106,6 +109,7 @@ public class LnInvoice {
     public final String id; // paymentHash hex-encoded
     public final boolean isExpired;
     public final Amount amount;
+    public final String paymentSecret;
     //private ??? routes;
 
     private LnInvoice(String original,
@@ -117,7 +121,8 @@ public class LnInvoice {
                       String destinationPubKey,
                       ZonedDateTime expiresAt,
                       String id,
-                      Amount amount) {
+                      Amount amount,
+                      String paymentSecret) {
         this.original = original;
         this.addresses = addresses;
         this.cltvDelta = cltvDelta;
@@ -129,6 +134,7 @@ public class LnInvoice {
         this.id = id;
         this.isExpired = expiresAt.compareTo(ZonedDateTime.now(ZoneOffset.UTC)) < 0;
         this.amount = amount;
+        this.paymentSecret = paymentSecret;
     }
 
     public ZonedDateTime getExpirationTime() {
@@ -137,6 +143,7 @@ public class LnInvoice {
 
     /**
      * Decodes a Bech32 encoded LN Invoice into its component data.
+     * If the decoding fails, throws an exception.
      *
      * @param params        The network parameters that determine which network the invoice is from
      * @param bech32Invoice a Bech32 LN Invoice
@@ -147,13 +154,7 @@ public class LnInvoice {
         final String expectedHeader = getHeader(params);
 
         // Separate the Human Readable Part from the data part by decoding bech32
-        final Bech32.Decoded decoded;
-        try {
-            decoded = Bech32.decode(bech32Invoice, Long.MAX_VALUE);
-        } catch (IllegalArgumentException e) {
-            // TODO throw error
-            throw e;
-        }
+        final Bech32.Decoded decoded = Bech32.decode(bech32Invoice, Long.MAX_VALUE);
 
         final String hrp = decoded.hrp;
         final byte[] data = decoded.data;
@@ -234,11 +235,12 @@ public class LnInvoice {
 
         // Let's parse the tagged fields
 
-        Long cltvDelta = 9L; // Default is 9, if not specified.
+        long cltvDelta = 9L; // Default is 9, if not specified.
         String description = null;
         String descriptionHash = null;
         final List<String> addresses = new ArrayList<>();
         byte[] paymentHash = null;
+        String paymentSecret = null;
         ZonedDateTime expiresAt = null;
 
         int cursor = 0;
@@ -327,6 +329,20 @@ public class LnInvoice {
 
                     break;
 
+                case "s":
+
+                    try {
+                        final byte[] paymentSecretEncoded = unpackBits(tagData, true);
+                        if (paymentSecretEncoded.length != PAYMENT_SECRET_BYTE_LENGTH) {
+                            throw new IllegalArgumentException("InvalidPaymentSecretByteLength");
+                        }
+                        paymentSecret = Encodings.bytesToHex(paymentSecretEncoded);
+
+                    } catch (IllegalArgumentException e) {
+                        throw new ParsingException("PaymentRequestPaymentSecret");
+                    }
+                    break;
+
                 case "x": // Expiration Seconds
                     try {
                         expiresAt = paymentRequestExpiration(tagData, createdAt);
@@ -374,8 +390,29 @@ public class LnInvoice {
                 destination,
                 expiresAt,
                 Encodings.bytesToHex(paymentHash),
-                invoiceAmount
+                invoiceAmount,
+                paymentSecret
         );
+    }
+
+    /**
+     * Decodes a Bech32 encoded LN Invoice into its component data.
+     * If the decoding fails, return null.
+     *
+     * @param params        The network parameters that determine which network the invoice is from
+     * @param bech32Invoice a Bech32 LN Invoice
+     * @return a LnInvoice object with the parsed data
+     */
+    public static LnInvoice decodeOrNull(
+            @Nonnull final NetworkParameters params,
+            @Nonnull final String bech32Invoice
+    ) {
+        try {
+            return decode(params, bech32Invoice);
+        } catch (final Exception e) {
+            // Invalid invoice, nothing to see here
+        }
+        return null;
     }
 
     /**
@@ -417,6 +454,10 @@ public class LnInvoice {
         packedBytes = appendSignature(identityKey, header, packedBytes);
 
         return Bech32.encode(header, packedBytes);
+    }
+
+    public String getDestinationPubKey() {
+        return destinationPubKey;
     }
 
     private static byte[] appendSignature(final PrivateKey identityKey,

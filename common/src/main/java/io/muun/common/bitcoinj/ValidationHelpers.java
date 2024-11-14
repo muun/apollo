@@ -28,7 +28,7 @@ public class ValidationHelpers {
     // We run a very simple validation, aimed at preventing common user mistakes. This expression
     // does NOT attempt to filter invalid emails in general.
     private static final Pattern emailPattern = Pattern
-            .compile("[^@ ]+@[^@ ]+[.][^@ ]*[a-zA-Z0-9]$");
+            .compile("[^@ ]+@[^@ ]+[.][^@ ]*[a-zA-Z\\d]$");
 
     /**
      * Check if an e-mail address is valid.

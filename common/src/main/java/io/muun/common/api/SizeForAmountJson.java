@@ -24,26 +24,47 @@ public class SizeForAmountJson {
     @NotNull
     public Integer deltaInWeightUnits;
 
+    @NotNull
+    public String derivationPath;
+
+    @NotNull
+    public Integer addressVersion;
 
     /**
      * Json constructor.
      */
     public SizeForAmountJson() {
+        //
     }
 
     /**
      * Houston constructor.
      */
-    public SizeForAmountJson(Long amountInSatoshis,
-                             Long sizeInBytes,
-                             String outpoint,
-                             UtxoStatusJson status,
-                             Integer deltaInWeightUnits) {
+    public SizeForAmountJson(
+            Long amountInSatoshis,
+            Long sizeInBytes,
+            String outpoint,
+            UtxoStatusJson status,
+            Integer deltaInWeightUnits,
+            String derivationPath,
+            Integer addressVersion
+
+    ) {
 
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
         this.outpoint = outpoint;
         this.status = status;
         this.deltaInWeightUnits = deltaInWeightUnits;
+        this.derivationPath = derivationPath;
+        this.addressVersion = addressVersion;
+    }
+
+    /**
+     * Return the transaction id associated to the given outpoint.
+     * Recall that outpoints are of the form "txId:outputIndex".
+     */
+    public String getOutpointTxId() {
+        return outpoint.substring(0, outpoint.indexOf(":"));
     }
 }

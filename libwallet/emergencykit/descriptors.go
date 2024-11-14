@@ -17,8 +17,8 @@ var descriptorFormats = []string{
 	"sh(wsh(multi(2, %s/1'/1'/1/*, %s/1'/1'/1/*)))", // V3 external
 	"wsh(multi(2, %s/1'/1'/0/*, %s/1'/1'/0/*))",     // V4 change
 	"wsh(multi(2, %s/1'/1'/1/*, %s/1'/1'/1/*))",     // V4 external
-	"tr(musig(%s/1'/1'/0/*, %s/1'/1'/0/*))", // V5 change
-	"tr(musig(%s/1'/1'/1/*, %s/1'/1'/1/*))", // V5 external
+	"tr(musig(%s/1'/1'/0/*, %s/1'/1'/0/*))",         // V5 change
+	"tr(musig(%s/1'/1'/1/*, %s/1'/1'/1/*))",         // V5 external
 }
 
 // GetDescriptors returns an array of raw output descriptors.

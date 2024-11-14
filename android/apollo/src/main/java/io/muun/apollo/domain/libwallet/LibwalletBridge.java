@@ -24,6 +24,7 @@ import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
 
+import libwallet.BackendActivatedFeatureStatusProvider;
 import libwallet.Config;
 import libwallet.EKInput;
 import libwallet.EKOutput;
@@ -49,9 +50,14 @@ public class LibwalletBridge {
     /**
      * Initialize libwallet.
      */
-    public static void init(String dataDir) {
+    public static void init(
+            String dataDir,
+            BackendActivatedFeatureStatusProvider featureStatusProvider
+    ) {
         final Config config = new Config();
         config.setDataDir(dataDir);
+        config.setFeatureStatusProvider(featureStatusProvider);
+        config.setAppLogSink(new LibwalletLogAdapter());
 
         Libwallet.init(config);
     }

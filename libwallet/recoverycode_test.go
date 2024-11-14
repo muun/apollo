@@ -17,8 +17,8 @@ func TestRecoveryCodeToKey(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "boop",
-			args:    args{
+			name: "boop",
+			args: args{
 				code: "3V4N-R9EC-V3TQ-NRB3-Q7NY-9HXP-CSDC-B5BC",
 				salt: "63f701fda4fc0b0c",
 			},

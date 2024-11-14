@@ -23,6 +23,7 @@ import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.PublicProfile;
 import io.muun.apollo.domain.model.RealTimeData;
+import io.muun.apollo.domain.model.RealTimeFees;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.TransactionPushed;
 import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
@@ -51,6 +52,7 @@ import io.muun.common.api.PendingChallengeUpdateJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
+import io.muun.common.api.RealTimeFeesJson;
 import io.muun.common.api.SizeForAmountJson;
 import io.muun.common.api.SubmarineSwapJson;
 import io.muun.common.api.TransactionPushedJson;
@@ -238,7 +240,8 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
      */
     @NotNull
     private ExchangeRateWindow mapExchangeRateWindow(
-            @NotNull io.muun.common.api.ExchangeRateWindow window) {
+            @NotNull io.muun.common.api.ExchangeRateWindow window
+    ) {
 
         return new ExchangeRateWindow(
                 window.id,
@@ -411,6 +414,30 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         );
     }
 
+    /**
+     * Create a bag of real-time fees data provided by Houston.
+     */
+    @NotNull
+    public RealTimeFees mapRealTimeFees(@NotNull RealTimeFeesJson realTimeFeesJson) {
+        // Convert to domain model FeeWindow
+        final FeeWindow feeWindow = new FeeWindow(
+                1L, // It will be deleted later
+                mapZonedDateTime(realTimeFeesJson.computedAt),
+                realTimeFeesJson.targetFeeRates.confTargetToTargetFeeRateInSatPerVbyte,
+                realTimeFeesJson.targetFeeRates.fastConfTarget,
+                realTimeFeesJson.targetFeeRates.mediumConfTarget,
+                realTimeFeesJson.targetFeeRates.slowConfTarget
+        );
+
+        return new RealTimeFees(
+                realTimeFeesJson.feeBumpFunctions,
+                feeWindow,
+                realTimeFeesJson.minMempoolFeeRateInSatPerVbyte,
+                realTimeFeesJson.minFeeRateIncrementToReplaceByFeeInSatPerVbyte,
+                mapZonedDateTime(realTimeFeesJson.computedAt)
+        );
+    }
+
     private List<ForwardingPolicy> mapForwadingPolicies(
             final List<ForwardingPolicyJson> forwardingPolicies
     ) {
@@ -474,7 +501,9 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                 sizeForAmount.sizeInBytes.intValue(),
                 sizeForAmount.outpoint,
                 UtxoStatus.fromJson(sizeForAmount.status),
-                sizeForAmount.deltaInWeightUnits
+                sizeForAmount.deltaInWeightUnits,
+                sizeForAmount.derivationPath,
+                sizeForAmount.addressVersion
         );
     }
 

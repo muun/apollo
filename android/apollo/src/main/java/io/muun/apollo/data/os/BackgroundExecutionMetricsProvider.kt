@@ -9,8 +9,8 @@ import android.os.PowerManager
 import android.os.SystemClock
 import io.muun.apollo.data.net.ConnectivityInfoProvider
 import io.muun.apollo.data.net.NetworkInfoProvider
+import io.muun.apollo.data.net.TrafficStatsInfoProvider
 import kotlinx.serialization.Serializable
-import java.util.Locale
 import javax.inject.Inject
 
 private const val UNSUPPORTED = -1
@@ -27,6 +27,8 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
     private val resourcesInfoProvider: ResourcesInfoProvider,
     private val systemCapabilitiesProvider: SystemCapabilitiesProvider,
     private val dateTimeZoneProvider: DateTimeZoneProvider,
+    private val localeInfoProvider: LocaleInfoProvider,
+    private val trafficStatsInfoProvider: TrafficStatsInfoProvider,
 ) {
 
     private val powerManager: PowerManager by lazy {
@@ -49,11 +51,11 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             hardwareCapabilitiesProvider.getFreeRamInBytes(),
             telephonyInfoProvider.dataState,
             telephonyInfoProvider.getSimStates().toTypedArray(),
-            networkInfoProvider.currentTransport,
+            getCurrentTransport(),
             SystemClock.uptimeMillis(),
             SystemClock.elapsedRealtime(),
             hardwareCapabilitiesProvider.bootCount,
-            Locale.getDefault().toString(),
+            localeInfoProvider.language,
             dateTimeZoneProvider.timeZoneOffsetSeconds,
             telephonyInfoProvider.region.orElse(""),
             telephonyInfoProvider.simRegion,
@@ -71,7 +73,20 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             connectivityInfoProvider.proxySocks,
             dateTimeZoneProvider.autoDateTime,
             dateTimeZoneProvider.autoTimeZone,
-            dateTimeZoneProvider.timeZoneId
+            dateTimeZoneProvider.timeZoneId,
+            localeInfoProvider.dateFormat,
+            localeInfoProvider.regionCode,
+            dateTimeZoneProvider.calendarIdentifier,
+            trafficStatsInfoProvider.androidMobileRxTraffic,
+            telephonyInfoProvider.simOperatorId,
+            telephonyInfoProvider.simOperatorName,
+            telephonyInfoProvider.mobileNetworkId,
+            telephonyInfoProvider.mobileNetworkName,
+            telephonyInfoProvider.mobileRoaming,
+            telephonyInfoProvider.mobileDataStatus,
+            telephonyInfoProvider.mobileRadioType,
+            telephonyInfoProvider.mobileDataActivity,
+            connectivityInfoProvider.networkLink
         )
 
     @Suppress("ArrayInDataClass")
@@ -114,6 +129,19 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val autoDateTime: Int,
         private val autoTimeZone: Int,
         private val timeZoneId: String,
+        private val androidDateFormat: String,
+        private val regionCode: String,
+        private val androidCalendarIdentifier: String,
+        private val androidMobileRxTraffic: Long,
+        private val androidSimOperatorId: String,
+        private val androidSimOperatorName: String,
+        private val androidMobileOperatorId: String,
+        private val mobileOperatorName: String,
+        private val androidMobileRoaming: Boolean,
+        private val androidMobileDataStatus: Int,
+        private val androidMobileRadioType: Int,
+        private val androidMobileDataActivity: Int,
+        private val androidNetworkLink: ConnectivityInfoProvider.NetworkLink?
     )
 
     /**
@@ -195,4 +223,20 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             else -> "UNREADABLE"
         }
     }
+
+    /**
+     * While NetworkInfo (used in networkInfoProvider) has been deprecated, its functionality
+     * is complemented by ConnectivityManager methods for newer APIs. Backward compatibility
+     * is maintained in the response values to ensure consistent data handling across all
+     * Android versions
+     */
+    private fun getCurrentTransport(): String {
+        return if (OS.supportsActiveNetwork()) {
+            connectivityInfoProvider.currentTransportNewerApi
+        } else {
+            networkInfoProvider.currentTransport
+        }
+
+    }
+
 }

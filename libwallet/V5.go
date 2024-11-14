@@ -1,18 +1,17 @@
 package libwallet
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
 	"github.com/muun/libwallet/musig"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
 )
 
 // CreateAddressV5 returns a P2TR MuunAddress using Musig with the signing and cosigning keys.
@@ -44,12 +43,12 @@ func (c *coinV5) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muu
 
 	userEcPriv, err := derivedUserKey.key.ECPrivKey()
 	if err != nil {
-		return fmt.Errorf("failed to obtain ECPrivKey from derivedUserKey") // TODO: necessary handling?
+		return fmt.Errorf("failed to obtain ECPrivKey from derivedUserKey: %w", err)
 	}
 
 	muunEcPub, err := derivedMuunKey.key.ECPubKey()
 	if err != nil {
-		return fmt.Errorf("failed to obtain ECPubKey from derivedMuunKey") // TODO: necessary handling?
+		return fmt.Errorf("failed to obtain ECPubKey from derivedMuunKey: %w", err)
 	}
 
 	sigHash, err := txscriptw.CalcTaprootSigHash(tx, c.SigHashes, index, txscript.SigHashAll)
@@ -75,12 +74,12 @@ func (c *coinV5) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 
 	userEcPriv, err := derivedUserKey.key.ECPrivKey()
 	if err != nil {
-		return fmt.Errorf("failed to obtain ECPrivKey from derivedUserKey") // TODO: necessary handling?
+		return fmt.Errorf("failed to obtain ECPrivKey from derivedUserKey: %w", err)
 	}
 
 	muunEcPriv, err := derivedMuunKey.key.ECPrivKey()
 	if err != nil {
-		return fmt.Errorf("failed to obtain ECPrivKey from derivedMuunKey") // TODO: necessary handling?
+		return fmt.Errorf("failed to obtain ECPrivKey from derivedMuunKey: %w", err)
 	}
 
 	sigHash, err := txscriptw.CalcTaprootSigHash(tx, c.SigHashes, index, txscript.SigHashAll)
@@ -90,9 +89,16 @@ func (c *coinV5) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 	var toSign [32]byte
 	copy(toSign[:], sigHash)
 
-	userPubNonce := musig.GeneratePubNonce(c.UserSessionId)
+	userPubNonce, err := musig.MuSig2GenerateNonce(
+		musig.Musig2v040Muun,
+		c.UserSessionId[:],
+		nil,
+	)
+	if err != nil {
+		return err
+	}
 
-	err = c.signFirstWith(index, tx, userEcPriv.PubKey(), muunEcPriv, userPubNonce, toSign)
+	err = c.signFirstWith(index, tx, userEcPriv.PubKey(), muunEcPriv, userPubNonce.PubNonce, toSign)
 	if err != nil {
 		return err
 	}
@@ -114,22 +120,30 @@ func (c *coinV5) signFirstWith(
 	// user. We call the variables below "muunSessionId" and "muunPubNonce" to follow convention,
 	// but Muun servers play no role in this code path and both are locally generated.
 	muunSessionId := musig.RandomSessionId()
-	muunPubNonce := musig.GeneratePubNonce(muunSessionId)
+	muunPubNonce, err := musig.MuSig2GenerateNonce(
+		musig.Musig2v040Muun,
+		muunSessionId[:],
+		muunPriv.PubKey().SerializeCompressed(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to generate nonce: %w", err)
+	}
 
 	muunPartialSig, err := musig.ComputeMuunPartialSignature(
-		toSign,
-		userPub,
-		muunPriv,
-		userPubNonce,
-		muunSessionId,
-		nil,
+		musig.Musig2v040Muun,
+		toSign[:],
+		userPub.SerializeCompressed(),
+		muunPriv.Serialize(),
+		userPubNonce[:],
+		muunSessionId[:],
+		musig.KeySpendOnlyTweak(),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to add first signature: %w", err)
 	}
 
-	c.MuunPubNonce = muunPubNonce
-	c.MuunPartialSig = muunPartialSig
+	copy(c.MuunPubNonce[:], muunPubNonce.PubNonce[0:66])
+	copy(c.MuunPartialSig[:], muunPartialSig[0:32])
 
 	return nil
 }
@@ -143,14 +157,15 @@ func (c *coinV5) signSecondWith(
 	toSign [32]byte,
 ) error {
 
-	rawCombinedSig, err := musig.AddUserSignatureAndCombine(
-		toSign,
-		userPriv,
-		muunPub,
-		c.MuunPartialSig,
-		c.MuunPubNonce,
-		userSessionId,
-		nil,
+	rawCombinedSig, err := musig.ComputeUserPartialSignature(
+		musig.Musig2v040Muun,
+		toSign[:],
+		userPriv.Serialize(),
+		muunPub.SerializeCompressed(),
+		c.MuunPartialSig[:],
+		c.MuunPubNonce[:],
+		userSessionId[:],
+		musig.KeySpendOnlyTweak(),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to add second signature and combine: %w", err)
@@ -160,28 +175,4 @@ func (c *coinV5) signSecondWith(
 
 	tx.TxIn[index].Witness = wire.TxWitness{sig}
 	return nil
-}
-
-type MusigNonces struct {
-	sessionIds [][32]byte
-	publicNonces [][66]byte
-}
-
-func (m *MusigNonces) GetPubnonceHex(index int) string {
-	return hex.EncodeToString(m.publicNonces[index][:])
-}
-
-func GenerateMusigNonces(count int) *MusigNonces {
-	sessionIds := make([][32]byte, 0)
-	publicNonces := make([][66]byte, 0)
-
-	for i := 0; i < count; i += 1 {
-		sessionIds = append(sessionIds, musig.RandomSessionId())
-		publicNonces = append(publicNonces, musig.GeneratePubNonce(sessionIds[i]))
-	}
-
-	return &MusigNonces{
-		sessionIds,
-		publicNonces,
-	}
 }

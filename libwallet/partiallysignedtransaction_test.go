@@ -1,5 +1,10 @@
 package libwallet
 
+// Tests matching PartiallySignedTransaction_Sign* are generated using the mobile
+// app directly or Houston's OperationTest::generateTestForLibwallet.
+// those tests will ensure that the backend is creating a valid partially signed
+// transaction matching the intent of our inputs
+
 import (
 	"bytes"
 	"encoding/hex"
@@ -7,6 +12,7 @@ import (
 
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/test-go/testify/require"
 
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/walletdb"
@@ -24,6 +30,7 @@ type input struct {
 	submarineSwapV1 inputSubmarineSwapV1
 	submarineSwapV2 inputSubmarineSwapV2
 	incomingSwap    inputIncomingSwap
+	muunPublicNonce []byte
 }
 
 func (i *input) OutPoint() Outpoint {
@@ -55,7 +62,7 @@ func (i *input) IncomingSwap() InputIncomingSwap {
 }
 
 func (i *input) MuunPublicNonce() []byte {
-	return nil
+	return i.muunPublicNonce
 }
 
 type outpoint struct {
@@ -175,6 +182,26 @@ func (i *inputIncomingSwap) CollectInSats() int64 {
 	return i.collectInSats
 }
 
+// generates test nonces using fixed sessionIds and a list of inputs
+func createTestNonces(t *testing.T, userKey *HDPrivateKey, inputList *InputList, userSessionIds []string) *MusigNonces {
+	nonces := EmptyMusigNonces()
+	for index := range inputList.inputs {
+		input := inputList.inputs[index]
+		inputSignerKey, err := userKey.DeriveTo(input.Address().DerivationPath())
+		require.NoError(t, err)
+
+		var sessionId [32]byte
+		copy(sessionId[:], hexToBytes(userSessionIds[index]))
+
+		nonces.generateStaticNonce(
+			input.Address().Version(),
+			inputSignerKey.PublicKey().Raw(),
+			sessionId,
+		)
+	}
+	return nonces
+}
+
 func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 	const (
 		hexTx    = "0100000001706bcabdcdcfd519bdb4534f8ace9f8a3cd614e7b00f074cce0a58913eadfffb0100000000ffffffff022cf46905000000001976a914072b22dfb34153d4e084dce8c6655430d37f12d088aca4de8b00000000001976a914fded0987447ef3273cde87bf8b65a11d1fd9caca88ac00000000"
@@ -199,7 +226,8 @@ func TestPartiallySignedTransaction_SignV1(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
 	// We dont need to use the muunKey in V1
@@ -282,7 +310,8 @@ func TestPartiallySignedTransaction_SignV2(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -331,7 +360,8 @@ func TestPartiallySignedTransaction_SignV3(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(1)
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -345,6 +375,164 @@ func TestPartiallySignedTransaction_SignV3(t *testing.T) {
 	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
 
 	verifyInput(t, signedTx, hexTx1, txIndex1, 0)
+}
+
+func TestPartiallySignedTransaction_SignV5(t *testing.T) {
+	var (
+		encodedUserKey = "tprv8e6WDju7yhq6vuL8raFiMpCMVYpNEpjggzqcX3qW4zsjNBVnwKgAUmQ7vs7bDeHu598aG9teh7or5H8ifLJ2qhZGocBnDEBqAsTs3Gd6wG6"
+		encodedMuunKey = "tpubDBS2rf9CeryjGstPrQVSzQhLGLqFVqEq78xtK26h9fsN7udiokAMuu6DbSzwhSzqCwszcfC2L2zMYoFm9uoiJpkEwyUCuNr3j1XswbHcgAB"
+		hexTx          = "0100000001239fc65d1212989754b0bb146ccc77db370de8db913a5bcbb1e5257ae75e03450100000000ffffffff0174850100000000002251203e3c9519c91c87e84de71a64f65fa481639c900da4e01ba4c23be539c9065ad400000000"
+		userSessionIds = []string{
+			"3afcd7f2cc568aa60552866f7ee8d1de6a6b18293ae9a4cda167434588267f73",
+		}
+		inputTxRaw = []string{
+			"020000000001019da62d921c36e14d8c8567adec86580e95154cddb922f28ed47552f1850272c10000000000feffffff028b4d042a01000000160014290cfc7b1cb593b8b7cfb70e8a5315cb04015fd7a0860100000000002251206814f05813d2505f80ec5a71ca6fbbd99df3aac5e0ed3a506a1c376beb484e9102473044022040d7a4204b14cf1ea32021040d373221f60fcfb42e4da82723b0eb3b7d7bd940022064160bd834d6b530292d9f6f17c07e032a619b88c8ffcb5ef6622a731236ba46012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+		}
+	)
+	inputList := &InputList{inputs: []Input{
+		&input{
+			outpoint:        outpoint{index: 1, amount: 100000, txId: hexToBytes("45035ee77a25e5b1cb5b3a91dbe80d37db77cc6c14bbb054979812125dc69f23")},
+			address:         addresses.New(5, "m/schema:1'/recovery:1'/external:1/0", "bcrt1pdq20qkqn6fg9lq8vtfcu5mammxwl82k9urkn55r2rsmkh66gf6gsumc8uw"),
+			muunPublicNonce: hexToBytes("02b44aef04d3ada7270e1304f4ba1fbf20cca0ca81a80e23be9bf8f3aea7c0a62103f6c8cd699fc2339a33df60f142bb89807c081632a2241bd4af583961a29da9a0"),
+			muunSignature:   hexToBytes("591f2e7afd46a8b234e94428e582f13324cd541d436bde62cef760354771a377"),
+		},
+	}}
+
+	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
+	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
+
+	nonces := createTestNonces(t, userKey, inputList, userSessionIds)
+	partial, _ := NewPartiallySignedTransaction(inputList, hexToBytes(hexTx), nonces)
+	signedRawTx, err := partial.Sign(userKey, muunKey)
+
+	if err != nil {
+		t.Fatalf("failed to sign tx due to %v", err)
+	}
+
+	signedTx := wire.NewMsgTx(0)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
+
+	// validate input signatures
+	for index := range inputList.inputs {
+		verifyInput(t, signedTx, inputTxRaw[index], inputList.inputs[index].OutPoint().Index(), index)
+	}
+}
+
+func TestPartiallySignedTransaction_SignV6(t *testing.T) {
+	var (
+		encodedUserKey = "tprv8dUpNFvQ6NpkxtuYDoDaibgQYbvUnHBqz8GM3zBL4DjNeh9uzhXC49xKx2VksbyxaW3dSFviExbUw4GmkEKJoiTx7UXXi6pPnXMWpB5Lmtf"
+		encodedMuunKey = "tpubDBmgp5wQ4SYkroyXQG3SxUXVZsdmJnL89exWksCAEq9xzujjCd6jpKbYQyyVXLiQk4gBq8AaUULZDbwxFF8DhcTEPzDFYY8g2dsJ1x3xPwN"
+		hexTx          = "01000000017e282eab04b710e5f149e6a3f7dfb8dcb5af006aefecc7e5d2ad1f4bbb4d78db0000000000ffffffff017485010000000000225120e67c60c89364bae43a399e6417a1cce9d2e0498e5eb0646f52d3f279833a2b6000000000"
+		userSessionIds = []string{
+			"98ca651de1178c9a656dfc51e00bb6ff3dd958922a15a84ef270a81c96bcf510",
+		}
+		inputTxRaw = []string{
+			"02000000000101f8880208d09f48d849e68d042194b3295401a88dcc9fa5131ecc78130b7480840000000000feffffff02a086010000000000225120c6eae34415dcc0f4e40367348f483e7d6a30f969a54586fb699b5684988ddb1e8b4d042a01000000160014287cd946de86caf84c507e749f2fbe586bce57b30247304402203c30d6522a082228b6b9ee1bc93a576a46d37e17017db2ae7506c8f288ae181f02206f84ed0e17f70e8b49900450c29cfff84d321850a8e4f662216a4d77c3e80795012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855ef9040000",
+		}
+	)
+	inputList := &InputList{inputs: []Input{
+		&input{
+			outpoint:        outpoint{index: 0, amount: 100000, txId: hexToBytes("db784dbb4b1fadd2e5c7ecef6a00afb5dcb8dff7a3e649f1e510b704ab2e287e")},
+			address:         addresses.New(6, "m/schema:1'/recovery:1'/external:1/0", "bcrt1pcm4wx3q4mnq0feqrvu6g7jp7044rp7tf54zcd7mfndtgfxydmv0qnnmrdl"),
+			muunPublicNonce: hexToBytes("03722e555ae015f5e5b07ff8915fcf9a155ad74f77e27d5908b5a6c5ea313d71db0319258976bd5f967317c61ce634cf182ead2931fc54e31cc05729014b4d210f66"),
+			muunSignature:   hexToBytes("f4d1fee38aebb1d17c0dc85b7a0e48474c0b1de351dfc7f0baa6e9330765881b"),
+		},
+	}}
+
+	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
+	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
+
+	nonces := createTestNonces(t, userKey, inputList, userSessionIds)
+	partial, _ := NewPartiallySignedTransaction(inputList, hexToBytes(hexTx), nonces)
+	signedRawTx, err := partial.Sign(userKey, muunKey)
+
+	if err != nil {
+		t.Fatalf("failed to sign tx due to %v", err)
+	}
+
+	signedTx := wire.NewMsgTx(0)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
+
+	// validate input signatures
+	for index := range inputList.inputs {
+		verifyInput(t, signedTx, inputTxRaw[index], inputList.inputs[index].OutPoint().Index(), index)
+	}
+}
+
+func TestPartiallySignedTransaction_SignAll(t *testing.T) {
+	var (
+		encodedUserKey = "tprv8dhZ55jWbg1oQHf7BkxL8AFJMWB4gZhyp2tzbHtLQd3g3L7b2MBuq3dEJMdgRevAxQ8BFSjgCRoC5jp9zpDnphGvjq8pT5Q2aA111dg5pxS"
+		encodedMuunKey = "tpubDBCFedMe1hS3ba6qSTivfi2f6MieNcgms1b6b9KK1xD6wtvG82dSvYQFgQcF2MBs4kyWEp7MB8tXgYzxiYpxDBnSU2F1sxrict9bNikM9kc"
+		hexTx          = "010000000676cc7d617672313b795a1cac0afe1b045aa2a56face4c61202b733fa543cb4c40000000000ffffffffb3f49f5cfcb0dbaee92be859a79ebd3120964ad3208fc178e3fec5968a194f4b0100000000ffffffff6854626a1687a052653df7630b272446e87bb8eb57a74e537d8ff116248821420100000000ffffffff51849b950f0becdc008da1d072250bd65ddeabfd4a80feed09e25bd0a9ca1e5f0100000000ffffffff7d69cb9ee91913b5d96a4f8c5a32e86a96560c4db3e40f0496772a51186bf0280100000000ffffffffe894cf036db7f07d56b003036477d5c8ed494bbd1cec8a38c355fc88609573140100000000ffffffff01b820090000000000225120a21f34d36f71805071d0e3cb9cd92b0f8267b7ac95db0d60a60d7ec6bbff12db00000000"
+		userSessionIds = []string{
+			"bdc72b8cb2f8278ac5de74a585c8e60729d82635c574a0621e4f086121274227",
+			"edb7f1cad77fabe63751fcc30040a91c02675f8d31df424c7a0c723e2134878a",
+			"cdac321cead1a473bfdf17329f6c31baf30b9f6bd5931282e3dda5f7b2c16f61",
+			"e8a79000514f74990e764e185e5729ec77e17052ff903b8c3788cba3b9e151f3",
+			"a71d46b2292b209147776ecc2f72d9e1d8f815e993d566fc168ccb81663155b2",
+			"0250df31823ed2e8fda46e928645a23ccbafddf39f7649579807c9e49fe5b143",
+		}
+		inputTxRaw = []string{
+			"0200000000010148823860c5e3f3db0f1bd0cc70d02f0d773c878c0a366ffcd01be6444d3d0cc00000000000feffffff02a08601000000000017a914d88e83d1a5d3238decb7d4442c24f7bb3b8da52b87b04f042a01000000160014e21f5442bce128b113a9706a0ce53cc3f43943610247304402203a316d5941a810b5aa33cc08d10a88d754285e98fd88e26b6861b5f404b0b546022017024d58a8ab1ca0c33d081c5e6ca3192f3b1ba72676731e52270a5fb74ecb58012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+			"02000000000101873c68ac3f94b583efe49c3f00ae3cc7f77c9a78bccc3fdf61920edd45545b7f0000000000feffffff02b04f042a01000000160014d66fdb6789560b3fd7b0d000da0d6f22b9c70252a08601000000000017a914b82751531d1ff4fefd7fa348b900ba66d17cdcc7870247304402204bddec0acf2a0d33f7ef89f1202c6d7d4c8151756d368cc45b1c3ed3a828e7800220245589b38c63e6f32333f14d6694fc613bd6354ae354f9309f6cd3fae677c50c012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+			"0200000000010161e13760dbe0f3fcab9ed507538890d017812655f218f9bf2e1b38e5792841f80000000000feffffff028b4d042a01000000160014b00f4fabc6dec5f23326c693d92b65573c9433daa0860100000000002200204eb582ca70159962cff162ada5d0c4f6cdfe7eef173bf4c970ad177fe69ada6402473044022012d3ae236f46c2484be4e19792fb9ce7b4f51c76f6b808000e15f8872a280c7502202195bceec3fdb1d7333badf9be8950ae3210438e5ffb2e30a1573302ddeef36a012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+			"020000000001019dcb550b07a53ec866ec2558f94d8b801ef60200378cd78afcde2f123a9d619a0000000000feffffff024d4f042a01000000160014af568af3154b649bcfd7c3bfdb814043412e817fa0860100000000001976a914320cf4affd84615973e948a47a96f9103d68f8c288ac02473044022075bf561de3708e652cc9910edfd56c0158e86d99e8b3e4e1284c1bef13e72d1802203ff834bd90443dafef0488793cc6a007946ec781d4ac0dea5947a28794dfc748012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+			"02000000000101204b88f3b89ad992a9ce63bf857d08f26ee20a0e6bb4e912ddb41f56d145078c0000000000feffffff028b4d042a01000000160014032c403be2d0a8bb0f3db634a68b31d31fb498c9a0860100000000002251205cedceb4e29b9632835293f5b68fd0de48d93420e6c461b0a1c10dc8ced91be50247304402202523ae6ed227cc7b80f34eb7662d3e90681666828b9ae437249d125dfc14dba602207a82b7ac2ae18ed0e742245e8277364b6bec00a0c7dc428085b577c9a3e98ffe012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e25050000",
+			"02000000000101e33e3ed531e1956474279b70325c8ad5283706fe8bd29b1358f1e1d4d0aac8a30000000000feffffff028b4d042a01000000160014da492a8cc860dab06f59d941c2dec6e88a29b545a08601000000000022512074300b4a8179bfe6eacd7e478c506cd00445ae3dd489634684626c9b04e4ec8d02473044022037b78bd154dac8dcda7ae9f109f4612add9396731bb01ad44f58e14011f7be0f022042b5b13e03815d9ae5748d28d9e70274d9474a315e928b37c4d5a3916572c0af012103ff6f07c524f89457d05a1ee9e2b8d1ae2520916748b2da0c7c1d3655f271855e1b050000",
+		}
+	)
+	inputList := &InputList{inputs: []Input{
+		&input{
+			outpoint:      outpoint{index: 0, amount: 100000, txId: hexToBytes("c4b43c54fa33b70212c6e4ac6fa5a25a041bfe0aac1c5a793b317276617dcc76")},
+			address:       addresses.New(3, "m/schema:1'/recovery:1'/external:1/2", "2NCzGfq4MurQzhodoSFtB2VSEJ8Tc5MN82j"),
+			muunSignature: hexToBytes("3045022100860c48eb2374dbb67ed68dd91198994407a4e933f92e4f3187706f93debf246b02206b7d0607eaad478f6323cb707344739ce0ba8583266a39b617dd0e5bb77633b501"),
+		},
+		&input{
+			outpoint:      outpoint{index: 1, amount: 100000, txId: hexToBytes("4b4f198a96c5fee378c18f20d34a962031bd9ea759e82be9aedbb0fc5c9ff4b3")},
+			address:       addresses.New(2, "m/schema:1'/recovery:1'/external:1/1", "2NA2wRRMNCsfECwvjHwAdPmciFRGrBKzc6W"),
+			muunSignature: hexToBytes("3045022100c907055dd0033f4f28113f566f68a9c0c400f804d83faca36f5f77a92696bf960220379da01e954f5cdee9fc69dfdf59ac33d36b4af5ea801fd011c2911df2ace2b501"),
+		},
+		&input{
+			outpoint:      outpoint{index: 1, amount: 100000, txId: hexToBytes("4221882416f18f7d534ea757ebb87be84624270b63f73d6552a087166a625468")},
+			address:       addresses.New(4, "m/schema:1'/recovery:1'/external:1/3", "bcrt1qf66c9jnszkvk9nl3v2k6t5xy7mxlulh0zualfjts45thle56mfjqvkvgh0"),
+			muunSignature: hexToBytes("3045022100bb2a22510930bc31ddb6b9245eebe5d22499c54d08b326eebd249403f9f6128b02207c10ec0fb8a336230f352b4d2ed10be91cc31d883fd545dfc5124ce8c63a01bf01"),
+		},
+		&input{
+			outpoint: outpoint{index: 1, amount: 100000, txId: hexToBytes("5f1ecaa9d05be209edfe804afdabde5dd60b2572d0a18d00dcec0b0f959b8451")},
+			address:  addresses.New(1, "m/schema:1'/recovery:1'/external:1/0", "mk5bbq9qZ6Hh6u34wxvA4Hs6cEc4AF2HfL"),
+		},
+		&input{
+			outpoint:        outpoint{index: 1, amount: 100000, txId: hexToBytes("28f06b18512a7796040fe4b34d0c56966ae8325a8c4f6ad9b51319e99ecb697d")},
+			address:         addresses.New(6, "m/schema:1'/recovery:1'/external:1/5", "bcrt1ptnkuad8znwtr9q6jj06mdr7smeydjdpqumzxrv9pcyxu3nker0js0h0dfc"),
+			muunPublicNonce: hexToBytes("020129f74df468dadc7a1af0305f12a550a4792559b260f756b67277d1de8d0d6e03fb1229bf2eb848532714bf50d79770b2790c589926b3893c4697106dec17a27f"),
+			muunSignature:   hexToBytes("1be2d8c9f6781372950374bf6986ea32d40473beac5329ca9fe1fe459ce07e26"),
+		},
+		&input{
+			outpoint:        outpoint{index: 1, amount: 100000, txId: hexToBytes("1473956088fc55c3388aec1cbd4b49edc8d577640303b0567df0b76d03cf94e8")},
+			address:         addresses.New(5, "m/schema:1'/recovery:1'/external:1/4", "bcrt1pwscqkj5p0xl7d6kd0ercc5rv6qzytt3a6jykx35yvfkfkp8yajxs77vg44"),
+			muunPublicNonce: hexToBytes("03b844359aea6df24a8c7e1766b6cc81d86827f6a0239eef26bdd02d19d0c7fed103b5d431f46f51b73572a619355d60592cec11f16491220810070fd5150216fbcc"),
+			muunSignature:   hexToBytes("ffc0c05c178fedc4ab2c4edc80dbb1a79d0ef5e6c0e3bfb7744215540c70d53c"),
+		},
+	}}
+
+	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
+	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
+
+	nonces := createTestNonces(t, userKey, inputList, userSessionIds)
+	partial, _ := NewPartiallySignedTransaction(inputList, hexToBytes(hexTx), nonces)
+	signedRawTx, err := partial.Sign(userKey, muunKey)
+
+	if err != nil {
+		t.Fatalf("failed to sign tx due to %v", err)
+	}
+
+	signedTx := wire.NewMsgTx(0)
+	signedTx.Deserialize(bytes.NewReader(signedRawTx.Bytes))
+
+	// validate input signatures
+	for index := range inputList.inputs {
+		verifyInput(t, signedTx, inputTxRaw[index], inputList.inputs[index].OutPoint().Index(), index)
+	}
 }
 
 func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
@@ -401,7 +589,8 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV1(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	muunKey, _ := NewHDPublicKeyFromString(encodedMuunKey, basePath, Regtest())
 	userKey, _ := NewHDPrivateKeyFromString(encodedUserKey, basePath, Regtest())
@@ -437,7 +626,8 @@ func verifyInput(t *testing.T, signedTx *wire.MsgTx, hexPrevTx string, prevIndex
 		txscript.ScriptVerifyStrictEncoding | txscript.ScriptVerifyLowS |
 		txscript.ScriptVerifyWitness | txscript.ScriptVerifyCheckLockTimeVerify
 
-	vm, err := txscript.NewEngine(prevTx.TxOut[prevIndex].PkScript, signedTx, index, flags, nil, nil, prevTx.TxOut[prevIndex].Value)
+	prevOutFetcher := txscript.NewCannedPrevOutputFetcher(prevTx.TxOut[prevIndex].PkScript, prevTx.TxOut[prevIndex].Value)
+	vm, err := txscript.NewEngine(prevTx.TxOut[prevIndex].PkScript, signedTx, index, flags, nil, nil, prevTx.TxOut[prevIndex].Value, prevOutFetcher)
 	if err != nil {
 		t.Fatalf("failed to build script engine: %v", err)
 	}
@@ -492,7 +682,8 @@ func TestPartiallySignedTransaction_SignSubmarineSwapV2(t *testing.T) {
 
 	inputList := &InputList{inputs: inputs}
 	rawTx, _ := hex.DecodeString(hexTx)
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -575,7 +766,8 @@ func TestPartiallySignedTransaction_SignIncomingSwap(t *testing.T) {
 		State:         walletdb.InvoiceStateUsed,
 	})
 
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -647,7 +839,8 @@ func TestPartiallySignedTransaction_SignIncomingSwapCollaboratively(t *testing.T
 
 	setup()
 
-	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nil)
+	nonces := GenerateMusigNonces(len(inputList.inputs))
+	partial, _ := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 
 	signedRawTx, err := partial.Sign(userKey, muunKey)
 
@@ -898,7 +1091,8 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			inputList := &InputList{inputs: tt.fields.inputs}
 			rawTx, _ := hex.DecodeString(tt.fields.tx)
-			p, err := NewPartiallySignedTransaction(inputList, rawTx, nil)
+			nonces := GenerateMusigNonces(len(inputList.inputs))
+			p, err := NewPartiallySignedTransaction(inputList, rawTx, nonces)
 			if err != nil {
 				panic(err)
 			}

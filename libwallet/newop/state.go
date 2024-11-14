@@ -2,12 +2,14 @@ package newop
 
 import (
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/operation"
+	"github.com/muun/libwallet/walletdb"
 )
 
 // Transitions that involve asynchronous work block, so apps should always fire in background and
@@ -261,12 +263,40 @@ type ResolveState struct {
 	PaymentIntent *PaymentIntent
 }
 
-func (s *ResolveState) SetContext(context *PaymentContext) error {
-	return s.setContextWithTime(context, time.Now())
+func (s *ResolveState) SetContext(initialContext *InitialPaymentContext) error {
+	return s.setContextWithTime(initialContext, time.Now())
+}
+
+func loadFeeBumpFunctions() ([]*operation.FeeBumpFunction, error) {
+	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	repository := db.NewFeeBumpRepository()
+	feeBumpFunctions, err := repository.GetAll()
+	// TODO: Check if the data is invalidated, on that case we should refresh it
+
+	if err != nil {
+		return nil, err
+	}
+
+	return feeBumpFunctions, nil
 }
 
 // setContextWithTime is meant only for testing, allows caller to use a fixed time to check invoice expiration
-func (s *ResolveState) setContextWithTime(context *PaymentContext, now time.Time) error {
+func (s *ResolveState) setContextWithTime(initialContext *InitialPaymentContext, now time.Time) error {
+
+	var feeBumpFunctions []*operation.FeeBumpFunction
+	if libwallet.DetermineBackendActivatedFeatureStatus(libwallet.BackendFeatureEffectiveFeesCalculation) {
+		// Load fee bump functions from local DB
+		feeBumpFunctions, _ = loadFeeBumpFunctions()
+
+		// TODO: Handle error - tracking error and refresh fee bump functions
+	}
+
+	context := initialContext.newPaymentContext(feeBumpFunctions)
 
 	// TODO(newop): add type to PaymentIntent to clarify lightning/onchain distinction
 	invoice := s.PaymentIntent.URI.Invoice

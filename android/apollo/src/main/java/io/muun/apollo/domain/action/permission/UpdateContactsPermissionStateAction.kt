@@ -13,7 +13,7 @@ class UpdateContactsPermissionStateAction @Inject constructor(
 ) {
 
     val action = UpdatePermissionStateAction(
-        userRepository::getContactsPermissionState,
+        userRepository::contactsPermissionState,
         this::onContactsPermissionGranted,
         this::onContactsPermissionDenied,
     )

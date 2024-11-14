@@ -1,9 +1,9 @@
 package libwallet
 
-import "io/ioutil"
+import "os"
 
 func setup() {
-	dir, err := ioutil.TempDir("", "libwallet")
+	dir, err := os.MkdirTemp("", "libwallet")
 	if err != nil {
 		panic(err)
 	}

@@ -11,7 +11,8 @@ import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter;
 import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes;
 import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.SignupDraftManager;
-import io.muun.apollo.domain.action.LogoutActions;
+import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
+import io.muun.apollo.domain.action.session.LegacyLogoutUserForMigrationAction;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.common.crypto.ChallengeType;
 import io.muun.common.model.SessionStatus;
@@ -34,7 +35,8 @@ public class PreferencesMigrationManager {
     private final Context context;
 
     private final SignupDraftManager signupDraftManager;
-    private final LogoutActions logoutActions;
+    private final LegacyLogoutUserForMigrationAction legacyLogout;
+    private final ClearRepositoriesAction clearRepositories;
 
     private final SchemaVersionRepository schemaVersionRepository;
     private final AuthRepository authRepository;
@@ -117,7 +119,8 @@ public class PreferencesMigrationManager {
     public PreferencesMigrationManager(
             Context context,
             SignupDraftManager signupDraftManager,
-            LogoutActions logoutActions,
+            LegacyLogoutUserForMigrationAction legacyLogout,
+            ClearRepositoriesAction clearRepositories,
             SchemaVersionRepository schemaVersionRepository,
             AuthRepository authRepository,
             UserRepository userRepository,
@@ -130,7 +133,8 @@ public class PreferencesMigrationManager {
         this.context = context;
 
         this.signupDraftManager = signupDraftManager;
-        this.logoutActions = logoutActions;
+        this.legacyLogout = legacyLogout;
+        this.clearRepositories = clearRepositories;
 
         this.schemaVersionRepository = schemaVersionRepository;
         this.authRepository = authRepository;
@@ -162,11 +166,11 @@ public class PreferencesMigrationManager {
     }
 
     private void clearAllRepositories() {
-        logoutActions.clearAllRepositories();
+        clearRepositories.clearAll();
     }
 
     private void logout() {
-        logoutActions.destroyRecoverableWallet();
+        legacyLogout.run();
     }
 
     /**

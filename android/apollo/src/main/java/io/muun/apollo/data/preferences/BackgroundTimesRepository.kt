@@ -43,14 +43,13 @@ class BackgroundTimesRepository @Inject constructor(
         }
     }
 
-    override fun getFileName(): String =
-        "background_times"
+    override val fileName get() = "background_times"
 
-    private val lastBackgroundBeginTimePreference: Preference<Long?> =
-        rxSharedPreferences.getLong(LAST_BACKGROUND_BEGIN_TIME_KEY, null)
+    private val lastBackgroundBeginTimePreference: Preference<Long?>
+        get() = rxSharedPreferences.getLong(LAST_BACKGROUND_BEGIN_TIME_KEY, null)
 
-    private val backgroundTimesPreferences: Preference<List<StoredBackgroundEvent>> =
-        rxSharedPreferences.getObject(
+    private val backgroundTimesPreferences: Preference<List<StoredBackgroundEvent>>
+        get() = rxSharedPreferences.getObject(
             BACKGROUND_TIMES_KEY,
             emptyList(),
             JsonListPreferenceAdapter(StoredBackgroundEvent::class.java)

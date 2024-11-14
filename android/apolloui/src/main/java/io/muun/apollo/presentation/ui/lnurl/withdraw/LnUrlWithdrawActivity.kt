@@ -2,10 +2,13 @@ package io.muun.apollo.presentation.ui.lnurl.withdraw
 
 import android.content.Context
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
 import androidx.core.content.ContextCompat
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityLnurlWithdrawBinding
+import io.muun.apollo.databinding.FragmentRecoveryToolBinding
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.LnUrlWithdraw
 import io.muun.apollo.domain.model.lnurl.LnUrlError
@@ -42,14 +45,17 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
         val zebedeeCountryLink = "https://zebedee.io/countries/"
     }
 
-    @BindView(R.id.lnurl_withdraw_header)
-    lateinit var muunHeader: MuunHeader
+    private val binding: ActivityLnurlWithdrawBinding
+        get() = getBinding() as ActivityLnurlWithdrawBinding
 
-    @BindView(R.id.lnurl_withdraw_loading)
-    lateinit var loadingView: LoadingView
+    private val muunHeader: MuunHeader
+        get() = binding.lnurlWithdrawHeader
 
-    @BindView(R.id.lnurl_withdraw_action)
-    lateinit var actionButton: MuunButton
+    private val loadingView: LoadingView
+        get() = binding.lnurlWithdrawLoading
+
+    private val actionButton: MuunButton
+        get() = binding.lnurlWithdrawAction
 
     override fun inject() {
         component.inject(this)
@@ -57,6 +63,10 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
 
     override fun getLayoutResource(): Int =
         R.layout.activity_lnurl_withdraw
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityLnurlWithdrawBinding::inflate
+    }
 
     override fun getHeader(): MuunHeader =
         muunHeader

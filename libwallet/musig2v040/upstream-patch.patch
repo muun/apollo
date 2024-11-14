@@ -1,0 +1,677 @@
+libwallet/musig2v040/context.go --- 1/11 --- Go
+ 1 // Copyright (c) 2013-2022 The btcsuite develope  1 // Copyright (c) 2013-2022 The btcsuite develope
+ . rs                                                . rs
+ 2                                                   2 
+ 3 package musig2                                    3 package musig2v040
+ 4                                                   4 
+ 5 import (                                          5 import (
+ .                                                   6     "errors"
+ 6     "fmt"                                         7     "fmt"
+ 7                                                   8 
+ 8     "github.com/btcsuite/btcd/btcec/v2"           9     "github.com/btcsuite/btcd/btcec/v2"
+ 9     "github.com/btcsuite/btcd/btcec/v2/schnorr"  10     "github.com/btcsuite/btcd/btcec/v2/schnorr"
+ .                                                  11     "github.com/btcsuite/btcd/btcec/v2/schnorr/m
+ .                                                  .. usig2"
+10 )                                                12 )
+11                                                  13 
+12 var (                                            14 var (
+
+libwallet/musig2v040/context.go --- 2/11 --- Go
+87 89     // any operations.
+88 90     shouldSort bool
+89 .. 
+90 ..     // sessionNonce will be populated if the earlyNonce option is true.
+91 ..     // After the first session is created, this nonce will be blanked out.
+92 ..     sessionNonce *Nonces
+93 91 }
+94 92 
+95 93 // ContextOption is a functional option argument that allows callers to modify
+
+libwallet/musig2v040/context.go --- 3/11 --- Go
+239 237         opts.keySet = make([]*btcec.PublicKey, 0, opts.numSigners)
+240 238         opts.keySet = append(opts.keySet, pubKey)
+241 ... 
+242 ...         // If early nonce generation is specified, then we'll generate
+243 ...         // the nonce now to pass in to the session once all the callers
+244 ...         // are known.
+245 ...         if opts.earlyNonce {
+246 ...             ctx.sessionNonce, err = GenNonces()
+247 ...             if err != nil {
+248 ...                 return nil, err
+249 ...             }
+250 ...         }
+251 239 
+252 240     default:
+253 241         return nil, ErrSignersNotSpecified
+
+libwallet/musig2v040/context.go --- 4/11 --- Go
+311 }                                               299 }
+312                                                 300 
+313 // EarlySessionNonce returns the early session  301 // EarlySessionNonce returns the early session 
+... nonce, if available.                            ... nonce, if available.
+314 func (c *Context) EarlySessionNonce() (*Nonces, 302 func (c *Context) EarlySessionNonce() (*musig2.
+...  error) {                                       ... Nonces, error) {
+315     if c.sessionNonce == nil {                  ... 
+316         return nil, ErrNoEarlyNonce             303     return nil, ErrNoEarlyNonce
+317     }                                           ... 
+318                                                 ... 
+319     return c.sessionNonce, nil                  ... 
+320 }                                               304 }
+321                                                 305 
+322 // RegisterSigner allows a caller to register a 306 // RegisterSigner allows a caller to register a
+     signer after the context has                        signer after the context has
+
+libwallet/musig2v040/context.go --- 5/11 --- Go
+404 388 // sessionOptions houses the set of functional options that can be used to
+405 389 // modify the musig2 signing protocol.
+406 390 type sessionOptions struct {
+407 391     externalNonce *musig2.Nonces
+408 392 }
+409 393 
+410 394 // defaultSessionOptions returns the default session options.
+
+libwallet/musig2v040/context.go --- 6/11 --- Go
+415 399 // WithPreGeneratedNonce allows a caller to start a session using a nonce
+416 400 // they've generated themselves. This may be useful in protocols where all the
+417 401 // signer keys may not be known before nonce exchange needs to occur.
+418 402 func WithPreGeneratedNonce(nonce *musig2.Nonces) SessionOption {
+419 403     return func(o *sessionOptions) {
+420 404         o.externalNonce = nonce
+421 405     }
+
+libwallet/musig2v040/context.go --- 7/11 --- Go
+433 417 
+434 418     ctx *Context
+435 419 
+436 420     localNonces *musig2.Nonces
+437 421 
+438 422     pubNonces [][musig2.PubNonceSize]byte
+439 423 
+440 424     combinedNonce *[musig2.PubNonceSize]byte
+441 425 
+442 426     msg [32]byte
+443 427 
+
+libwallet/musig2v040/context.go --- 8/11 --- Go
+464                                                 448 
+465     // If an early nonce was specified, then we 449     // If an early nonce was specified, then we
+... 'll automatically add the                       ... 'll automatically add the
+466     // corresponding session option for the cal 450     // corresponding session option for the cal
+... ler.                                            ... ler.
+467     var localNonces *Nonces                     451     var localNonces *musig2.Nonces
+468     if c.sessionNonce != nil {                  ... 
+469         // Apply the early nonce to the session ... 
+... , and also blank out the                        ... 
+470         // session nonce on the context to ensu ... 
+... re it isn't ever re-used                        ... 
+471         // for another session.                 ... 
+472         localNonces = c.sessionNonce            ... 
+473         c.sessionNonce = nil                    ... 
+474     } else if opts.externalNonce != nil {       452     if opts.externalNonce != nil {
+475         // Otherwise if there's a custom nonce  453         // Otherwise if there's a custom nonce 
+... passed in via the                               ... passed in via the
+476         // session options, then use that inste 454         // session options, then use that inste
+... ad.                                             ... ad.
+477         localNonces = opts.externalNonce        455         localNonces = opts.externalNonce
+478     }                                           456     }
+479                                                 457 
+480     // Now that we know we have enough signers, 458     // Now that we know we have enough signers,
+...  we'll either use the caller                    ...  we'll either use the caller
+481     // specified nonce, or generate a fresh set 459     // specified nonce, or generate a fresh set
+... .                                               ... .
+482     var err error                               ... 
+483     if localNonces == nil {                     460     if localNonces == nil {
+484         // At this point we need to generate a  ... 
+... fresh nonce. We'll pass                         ... 
+485         // in some auxiliary information to str ... 
+... engthen the nonce                               ... 
+486         // generated.                           ... 
+487         localNonces, err = GenNonces(           461         return nil, errors.New("a pre-created n
+...                                                 ... once must be passed onto the session")
+488             WithNonceSecretKeyAux(c.signingKey) ... 
+... ,                                               ... 
+489             WithNonceCombinedKeyAux(c.combinedK ... 
+... ey.FinalKey),                                   ... 
+490         )                                       ... 
+491         if err != nil {                         ... 
+492             return nil, err                     ... 
+493         }                                       ... 
+494     }                                           462     }
+495                                                 463 
+496     s := &Session{                              464     s := &Session{
+497         opts:        opts,                      465         opts:        opts,
+498         ctx:         c,                         466         ctx:         c,
+499         localNonces: localNonces,               467         localNonces: localNonces,
+500         pubNonces:   make([][PubNonceSize]byte, 468         pubNonces:   make([][musig2.PubNonceSiz
+...  0, c.opts.numSigners),                         ... e]byte, 0, c.opts.numSigners),
+501         sigs:        make([]*PartialSignature,  469         sigs:        make([]*PartialSignature, 
+... 0, c.opts.numSigners),                          ... 0, c.opts.numSigners),
+502     }                                           470     }
+503                                                 471 
+
+libwallet/musig2v040/context.go --- 9/11 --- Go
+509 477 // PublicNonce returns the public nonce for a signer. This should be sent to
+510 478 // other parties before signing begins, so they can compute the aggregated
+511 479 // public nonce.
+512 480 func (s *Session) PublicNonce() [musig2.PubNonceSize]byte {
+513 481     return s.localNonces.PubNonce
+514 482 }
+515 483 
+
+libwallet/musig2v040/context.go --- 10/11 --- Go
+522 490 // RegisterPubNonce should be called for each public nonce from the set of
+523 491 // signers. This method returns true once all the public nonces have been
+524 492 // accounted for.
+525 493 func (s *Session) RegisterPubNonce(nonce [musig2.PubNonceSize]byte) (bool, error) {
+526 494     // If we already have all the nonces, then this method was called too
+527 495     // many times.
+528 496     haveAllNonces := len(s.pubNonces) == s.ctx.opts.numSigners
+
+libwallet/musig2v040/context.go --- 11/11 --- Go
+562         return nil, ErrSigningContextReuse      530         return nil, ErrSigningContextReuse
+563                                                 531 
+564     // We also need to make sure we have the co 532     // We also need to make sure we have the co
+... mbined nonce, otherwise this                    ... mbined nonce, otherwise this
+565     // funciton was called too early.           533     // function was called too early.
+566     case s.combinedNonce == nil:                534     case s.combinedNonce == nil:
+567         return nil, ErrCombinedNonceUnavailable 535         return nil, ErrCombinedNonceUnavailable
+568     }                                           536     }
+
+libwallet/musig2v040/keys.go --- 1/3 --- Go
+ 1 // Copyright 2013-2022 The btcsuite developers    1 // Copyright 2013-2022 The btcsuite developers
+ 2                                                   2 
+ 3 package musig2                                    3 package musig2v040
+ 4                                                   4 
+ 5 import (                                          5 import (
+ 6     "bytes"                                       6     "bytes"
+ 7     "fmt"                                         7     "fmt"
+ 8     "sort"                                        8     "sort"
+ 9                                                   9 
+ .                                                  10     "github.com/btcsuite/btcd/btcec/v2"
+ .                                                  11     "github.com/btcsuite/btcd/btcec/v2/schnorr"
+ .                                                  12     "github.com/btcsuite/btcd/chaincfg/chainhash
+ .                                                  .. "
+10     secp "github.com/decred/dcrd/dcrec/secp256k1 13     secp "github.com/decred/dcrd/dcrec/secp256k1
+.. /v4"                                             .. /v4"
+11                                                  .. 
+12     "github.com/btcsuite/btcd/btcec/v2"          .. 
+13     "github.com/btcsuite/btcd/btcec/v2/schnorr"  .. 
+14     "github.com/btcsuite/btcd/chaincfg/chainhash .. 
+.. "                                                .. 
+15 )                                                14 )
+16                                                  15 
+17 var (                                            16 var (
+
+libwallet/musig2v040/keys.go --- 2/3 --- Go
+72 // keyHashFingerprint computes the tagged hash o 71 // keyHashFingerprint computes the tagged hash o
+.. f the series of (sorted) public                  .. f the series of (sorted) public
+73 // keys passed as input. This is used to compute 72 // keys passed as input. This is used to compute
+..  the aggregation coefficient                     ..  the aggregation coefficient
+74 // for each key. The final computation is:       73 // for each key. The final computation is:
+75 //   * H(tag=KeyAgg list, pk1 || pk2..)          74 //   - H(tag=KeyAgg list, pk1 || pk2..)
+76 func keyHashFingerprint(keys []*btcec.PublicKey, 75 func keyHashFingerprint(keys []*btcec.PublicKey,
+..  sort bool) []byte {                             ..  sort bool) []byte {
+77     if sort {                                    76     if sort {
+78         keys = sortKeys(keys)                    77         keys = sortKeys(keys)
+
+libwallet/musig2v040/keys.go --- 3/3 --- Go
+101                                                 100 
+102 // aggregationCoefficient computes the key aggr 101 // aggregationCoefficient computes the key aggr
+... egation coefficient for the                     ... egation coefficient for the
+103 // specified target key. The coefficient is com 102 // specified target key. The coefficient is com
+... puted as:                                       ... puted as:
+104 //  * H(tag=KeyAgg coefficient, keyHashFingerpr 103 //   - H(tag=KeyAgg coefficient, keyHashFingerp
+... int(pks) || pk)                                 ... rint(pks) || pk)
+105 func aggregationCoefficient(keySet []*btcec.Pub 104 func aggregationCoefficient(keySet []*btcec.Pub
+... licKey,                                         ... licKey,
+106     targetKey *btcec.PublicKey, keysHash []byte 105     targetKey *btcec.PublicKey, keysHash []byte
+... ,                                               ... ,
+107     secondKeyIdx int) *btcec.ModNScalar {       106     secondKeyIdx int) *btcec.ModNScalar {
+
+libwallet/musig2v040/nonces.go --- 1/8 --- Go
+ 1 // Copyright 2013-2022 The btcsuite developers    1 // Copyright 2013-2022 The btcsuite developers
+ 2                                                   2 
+ 3 package musig2                                    3 package musig2v040
+ 4                                                   4 
+ 5 import (                                          5 import (
+ 6     "bytes"                                       6     "bytes"
+ 7     "crypto/rand"                                 7     "crypto/rand"
+ 8     "encoding/binary"                             8     "crypto/sha256"
+ 9     "io"                                          9     "io"
+10                                                  10 
+11     "github.com/btcsuite/btcd/btcec/v2"          11     "github.com/btcsuite/btcd/btcec/v2"
+12     "github.com/btcsuite/btcd/btcec/v2/schnorr"  12     "github.com/btcsuite/btcd/btcec/v2/schnorr"
+..                                                  13     "github.com/btcsuite/btcd/btcec/v2/schnorr/m
+..                                                  .. usig2"
+13     "github.com/btcsuite/btcd/chaincfg/chainhash 14     "github.com/btcsuite/btcd/chaincfg/chainhash
+.. "                                                .. "
+14 )                                                15 )
+15                                                  .. 
+16 const (                                          .. 
+17     // PubNonceSize is the size of the public no .. 
+.. nces. Each public nonce is                       .. 
+18     // serialized the full compressed encoding,  .. 
+.. which uses 32 bytes for each                     .. 
+19     // nonce.                                    .. 
+20     PubNonceSize = 66                            .. 
+21                                                  .. 
+22     // SecNonceSize is the size of the secret no .. 
+.. nces for musig2. The secret                      .. 
+23     // nonces are the corresponding private keys .. 
+..  to the public nonce points.                     .. 
+24     SecNonceSize = 64                            .. 
+25 )                                                .. 
+26                                                  16 
+27 var (                                            17 var (
+28     // NonceAuxTag is the tag used to optionally 18     // NonceAuxTag is the tag used to optionally
+    mix in the secret key with                          mix in the secret key with
+
+libwallet/musig2v040/nonces.go --- 2/8 --- Go
+33     // optional field) that will be used as the  23     // optional field) that will be used as the 
+.. part of the secret nonce.                        .. part of the secret nonce.
+34     NonceGenTag = []byte("MuSig/nonce")          24     NonceGenTag = []byte("MuSig/nonce")
+35                                                  .. 
+36     byteOrder = binary.BigEndian                 .. 
+37 )                                                25 )
+38                                                  .. 
+39 // zeroSecNonce is a secret nonce that's all zer .. 
+.. oes. This is used to check that                  .. 
+40 // we're not attempting to re-use a nonce, and a .. 
+.. lso protect callers from it.                     .. 
+41 var zeroSecNonce [SecNonceSize]byte              .. 
+42                                                  .. 
+43 // Nonces holds the public and secret nonces req .. 
+.. uired for musig2.                                .. 
+44 //                                               .. 
+45 // TODO(roasbeef): methods on this to help w/ pa .. 
+.. rsing, etc?                                      .. 
+46 type Nonces struct {                             .. 
+47     // PubNonce holds the two 33-byte compressed .. 
+..  encoded points that serve                       .. 
+48     // as the public set of nonces.              .. 
+49     PubNonce [PubNonceSize]byte                  .. 
+50                                                  .. 
+51     // SecNonce holds the two 32-byte scalar val .. 
+.. ues that are the private                         .. 
+52     // keys to the two public nonces.            .. 
+53     SecNonce [SecNonceSize]byte                  .. 
+54 }                                                .. 
+55                                                  26 
+56 // secNonceToPubNonce takes our two secrete nonc 27 // secNonceToPubNonce takes our two secrete nonc
+.. es, and produces their two                       .. es, and produces their two
+57 // corresponding EC points, serialized in compre 28 // corresponding EC points, serialized in compre
+.. ssed format.                                     .. ssed format.
+58 func secNonceToPubNonce(secNonce [SecNonceSize]b 29 func secNonceToPubNonce(secNonce [musig2.SecNonc
+.. yte) [PubNonceSize]byte {                        .. eSize]byte) [musig2.PubNonceSize]byte {
+59     var k1Mod, k2Mod btcec.ModNScalar            30     var k1Mod, k2Mod btcec.ModNScalar
+60     k1Mod.SetByteSlice(secNonce[:btcec.PrivKeyBy 31     k1Mod.SetByteSlice(secNonce[:btcec.PrivKeyBy
+.. tesLen])                                         .. tesLen])
+61     k2Mod.SetByteSlice(secNonce[btcec.PrivKeyByt 32     k2Mod.SetByteSlice(secNonce[btcec.PrivKeyByt
+   esLen:])                                            esLen:])
+
+libwallet/musig2v040/nonces.go --- 3/8 --- Go
+71 42     r1Pub := btcec.NewPublicKey(&r1.X, &r1.Y)
+72 43     r2Pub := btcec.NewPublicKey(&r2.X, &r2.Y)
+73 44 
+74 45     var pubNonce [musig2.PubNonceSize]byte
+75 46 
+76 47     // The public nonces are serialized as: R1 || R2, where both keys are
+77 48     // serialized in compressed format.
+
+libwallet/musig2v040/nonces.go --- 4/8 --- Go
+175     }                                           146     }
+176 }                                               147 }
+177                                                 148 
+178 // withCustomOptions allows a caller to pass a  149 // genNonceAuxBytes writes out the full byte st
+... complete set of custom                          ... ring used to derive a secret
+179 // nonceGenOpts, without needing to create cust 150 // nonce based on some initial randomness as we
+... om and checked structs such as                  ... ll as the series of optional
+180 // *btcec.PrivateKey. This is mainly used to ma 151 // fields. The byte string used for derivation 
+... tch the testcases provided by                   ... is:
+181 // the MuSig2 BIP.                              152 //   - let seed = tagged_hash(
+182 func withCustomOptions(customOpts nonceGenOpts) 153 //     "MuSig/nonce",
+...  NonceGenOption {                               ... 
+183     return func(o *nonceGenOpts) {              154 //     rand || len(aggpk) || aggpk || len(m) ||
+...                                                 ...  m || len(in) || in
+184         o.randReader = customOpts.randReader    155 //     )
+185         o.secretKey = customOpts.secretKey      156 //   - return sha256(seed || i)
+186         o.combinedKey = customOpts.combinedKey  157 //
+187         o.msg = customOpts.msg                  158 // where i is the ith secret nonce being genera
+...                                                 ... ted.
+188         o.auxInput = customOpts.auxInput        159 //
+189     }                                           160 // Muun only provides the rand parameter as ses
+...                                                 ... sionId. All other parameters are encoded as if 
+...                                                 ... they were len=0
+190 }                                               ... 
+191                                                 ... 
+192 // lengthWriter is a function closure that allo ... 
+... ws a caller to control how the                  ... 
+193 // length prefix of a byte slice is written.    ... 
+194 type lengthWriter func(w io.Writer, b []byte) e ... 
+... rror                                            ... 
+195                                                 ... 
+196 // uint8Writer is an implementation of lengthWr ... 
+... iter that writes the length of                  ... 
+197 // the byte slice using 1 byte.                 ... 
+198 func uint8Writer(w io.Writer, b []byte) error { 161 func genNonceAuxBytes(rand []byte, i int) ([]by
+...                                                 ... te, error) {
+199     return binary.Write(w, byteOrder, uint8(len ... 
+... (b)))                                           ... 
+200 }                                               ... 
+201                                                 ... 
+202 // uint32Writer is an implementation of lengthW ... 
+... riter that writes the length of                 ... 
+203 // the byte slice using 4 bytes.                ... 
+204 func uint32Writer(w io.Writer, b []byte) error  ... 
+... {                                               ... 
+205     return binary.Write(w, byteOrder, uint32(le ... 
+... n(b)))                                          ... 
+206 }                                               ... 
+207                                                 ... 
+208 // writeBytesPrefix is used to write out: len(b ... 
+... ) || b, to the passed io.Writer.                ... 
+209 // The lengthWriter function closure is used to ... 
+...  allow the caller to specify the                ... 
+210 // precise byte packing of the length.          ... 
+211 func writeBytesPrefix(w io.Writer, b []byte, le 162     var w bytes.Buffer
+... nWriter lengthWriter) error {                   ... 
+212     // Write out the length of the byte first,  163 
+... followed by the set of bytes                    ... 
+213     // itself.                                  164     // First, write out the randomness generate
+...                                                 ... d in the prior step.
+214     if err := lenWriter(w, b); err != nil {     165     if _, err := w.Write(rand); err != nil {
+215         return err                              166         return nil, err
+216     }                                           167     }
+217                                                 168 
+...                                                 169     // write byte 0 for `sec_key`
+218     if _, err := w.Write(b); err != nil {       170     if err := w.WriteByte(0); err != nil {
+219         return err                              171         return nil, err
+220     }                                           172     }
+221                                                 173 
+222     return nil                                  174     // write byte 0 for `aggpk`
+223 }                                               ... 
+224                                                 ... 
+225 // genNonceAuxBytes writes out the full byte st ... 
+... ring used to derive a secret                    ... 
+226 // nonce based on some initial randomness as we ... 
+... ll as the series of optional                    ... 
+227 // fields. The byte string used for derivation  ... 
+... is:                                             ... 
+228 //  * tagged_hash("MuSig/nonce", rand || len(ag ... 
+... gpk) || aggpk || len(m)                         ... 
+229 //                              || m || len(in) ... 
+...  || in || i).                                   ... 
+230 //                                              ... 
+231 // where i is the ith secret nonce being genera ... 
+... ted.                                            ... 
+232 func genNonceAuxBytes(rand []byte, i int,       ... 
+233     opts *nonceGenOpts) (*chainhash.Hash, error ... 
+... ) {                                             ... 
+234                                                 ... 
+235     var w bytes.Buffer                          ... 
+236                                                 ... 
+237     // First, write out the randomness generate ... 
+... d in the prior step.                            ... 
+238     if _, err := w.Write(rand); err != nil {    175     if err := w.WriteByte(0); err != nil {
+239         return nil, err                         176         return nil, err
+240     }                                           177     }
+241                                                 178 
+242     // Next, we'll write out: len(aggpk) || agg 179     // write byte 0 for `message`
+... pk.                                             ... 
+243     err := writeBytesPrefix(&w, opts.combinedKe 180     if err := w.WriteByte(0); err != nil {
+... y, uint8Writer)                                 ... 
+244     if err != nil {                             ... 
+245         return nil, err                         181         return nil, err
+246     }                                           182     }
+247                                                 183 
+248     // Next, we'll write out the length prefixe 184     // write byte 0 for `extra_input32`
+... d message.                                      ... 
+249     err = writeBytesPrefix(&w, opts.msg, uint8W 185     if err := w.WriteByte(0); err != nil {
+... riter)                                          ... 
+250     if err != nil {                             ... 
+251         return nil, err                         186         return nil, err
+252     }                                           187     }
+253                                                 188 
+254     // Finally we'll write out the auxiliary in ... 
+... put.                                            ... 
+255     err = writeBytesPrefix(&w, opts.auxInput, u 189     seed := chainhash.TaggedHash([]byte("MuSig/
+... int32Writer)                                    ... nonce"), w.Bytes())
+...                                                 190 
+...                                                 191     h := sha256.New()
+...                                                 192     // write the seed to the buffer
+256     if err != nil {                             193     if _, err := h.Write(seed.CloneBytes()); er
+...                                                 ... r != nil {
+257         return nil, err                         194         return nil, err
+258     }                                           195     }
+259                                                 196 
+260     // Next we'll write out the interaction/ind 197     // Next we'll write out the interaction/ind
+... ex number which will                            ... ex number which will
+261     // uniquely generate two nonces given the r 198     // uniquely generate two nonces given the r
+... est of the possibly static                      ... est of the possibly static
+262     // parameters.                              199     // parameters.
+...                                                 200     ith := make([]byte, 1)
+...                                                 201     ith[0] = uint8(i)
+...                                                 202 
+263     if err := binary.Write(&w, byteOrder, uint8 203     if _, err := h.Write(ith); err != nil {
+... (i)); err != nil {                              ... 
+264         return nil, err                         204         return nil, err
+265     }                                           205     }
+266                                                 206 
+267     // With the message buffer complete, we'll  ... 
+... now derive the tagged hash                      ... 
+268     // using our set of params.                 ... 
+269     return chainhash.TaggedHash(NonceGenTag, w. 207     return h.Sum(nil), nil
+... Bytes()), nil                                   ... 
+270 }                                               208 }
+271                                                 209 
+272 // GenNonces generates the secret nonces, as we 210 // Custom implementation of GenNonces to produc
+... ll as the public nonces which                   ... e a bit-to-bit copy of the secp256k1_zkp
+273 // correspond to an EC point generated using th 211 // All other parameters are ignored.
+... e secret nonce as a private key.                ... 
+...                                                 212 //
+...                                                 213 // Pseudo algorithm (|| means byte concat)
+...                                                 214 //
+...                                                 215 //    let seed = TaggedHash("MuSig/nonce", sess
+...                                                 ... ionId || 0 || 0 || 0 || 0)
+...                                                 216 //    let k = [sha256(seed || 0), sha256(seed |
+...                                                 ... | 1)]
+...                                                 217 //    let r = k*G
+...                                                 218 //    return toPublicKeyFormat(r)
+274 func GenNonces(options ...NonceGenOption) (*Non 219 func GenNonces(options ...NonceGenOption) (*mus
+... ces, error) {                                   ... ig2.Nonces, error) {
+275     opts := defaultNonceGenOpts()               220     opts := defaultNonceGenOpts()
+276     for _, opt := range options {               221     for _, opt := range options {
+277         opt(opts)                               222         opt(opts)
+
+libwallet/musig2v040/nonces.go --- 5/8 --- Go
+284 229         return nil, err
+285 230     }
+286 ... 
+287 ...     // If the options contain a secret key, we XOR it with with the tagged
+288 ...     // random bytes.
+289 ...     if len(opts.secretKey) == 32 {
+290 ...         taggedHash := chainhash.TaggedHash(NonceAuxTag, randBytes[:])
+291 ... 
+292 ...         for i := 0; i < chainhash.HashSize; i++ {
+293 ...             randBytes[i] = opts.secretKey[i] ^ taggedHash[i]
+294 ...         }
+295 ...     }
+296 231 
+297 232     // Using our randomness and the set of optional params, generate our
+298 233     // two secret nonces: k1 and k2.
+299 234     k1, err := genNonceAuxBytes(randBytes[:], 0, opts)
+300 235     if err != nil {
+301 236         return nil, err
+302 237     }
+303 238     k2, err := genNonceAuxBytes(randBytes[:], 1, opts)
+304 239     if err != nil {
+305 240         return nil, err
+306 241     }
+
+libwallet/musig2v040/nonces.go --- 6/8 --- Go
+311 246 
+312 247     // The secret nonces are serialized as the concatenation of the two 32
+313 248     // byte secret nonce values.
+314 249     var nonces musig2.Nonces
+315 250     k1Mod.PutBytesUnchecked(nonces.SecNonce[:])
+316 251     k2Mod.PutBytesUnchecked(nonces.SecNonce[btcec.PrivKeyBytesLen:])
+317 252 
+
+libwallet/musig2v040/nonces.go --- 7/8 --- Go
+325 260 
+326 261 // AggregateNonces aggregates the set of a pair of public nonces for each party
+327 262 // into a single aggregated nonces to be used for multi-signing.
+328 263 func AggregateNonces(pubNonces [][musig2.PubNonceSize]byte) ([musig2.PubNonceSize]byte, error) {
+329 264     // combineNonces is a helper function that aggregates (adds) up a
+330 265     // series of nonces encoded in compressed format. It uses a slicing
+331 266     // function to extra 33 bytes at a time from the packed 2x public
+332 267     // nonces.
+333 268     type nonceSlicer func([musig2.PubNonceSize]byte) []byte
+334 269     combineNonces := func(slicer nonceSlicer) (btcec.JacobianPoint, error) {
+335 270         // Convert the set of nonces into jacobian coordinates we can
+336 271         // use to accumulate them all into each other.
+
+libwallet/musig2v040/nonces.go --- 8/8 --- Go
+364 299     // The final nonce public nonce is actually two nonces, one that
+365 300     // aggregate the first nonce of all the parties, and the other that
+366 301     // aggregates the second nonce of all the parties.
+367 302     var finalNonce [musig2.PubNonceSize]byte
+368 303     combinedNonce1, err := combineNonces(func(n [musig2.PubNonceSize]byte) []byte {
+369 304         return n[:btcec.PubKeyBytesLenCompressed]
+370 305     })
+371 306     if err != nil {
+372 307         return finalNonce, err
+373 308     }
+374 309 
+375 310     combinedNonce2, err := combineNonces(func(n [musig2.PubNonceSize]byte) []byte {
+376 311         return n[btcec.PubKeyBytesLenCompressed:]
+377 312     })
+378 313     if err != nil {
+
+libwallet/musig2v040/sign.go --- 1/7 --- Go
+ 1 // Copyright 2013-2022 The btcsuite developers    1 // Copyright 2013-2022 The btcsuite developers
+ 2                                                   2 
+ 3 package musig2                                    3 package musig2v040
+ 4                                                   4 
+ 5 import (                                          5 import (
+ 6     "bytes"                                       6     "bytes"
+ .                                                   7     "crypto/sha256"
+ 7     "fmt"                                         8     "fmt"
+ 8     "io"                                          9     "io"
+ 9                                                  10 
+ .                                                  11     "github.com/btcsuite/btcd/btcec/v2"
+ .                                                  12     "github.com/btcsuite/btcd/btcec/v2/schnorr"
+ .                                                  13     "github.com/btcsuite/btcd/btcec/v2/schnorr/m
+ .                                                  .. usig2"
+ .                                                  14     "github.com/btcsuite/btcd/chaincfg/chainhash
+ .                                                  .. "
+10     secp "github.com/decred/dcrd/dcrec/secp256k1 15     secp "github.com/decred/dcrd/dcrec/secp256k1
+.. /v4"                                             .. /v4"
+11                                                  .. 
+12     "github.com/btcsuite/btcd/btcec/v2"          .. 
+13     "github.com/btcsuite/btcd/btcec/v2/schnorr"  .. 
+14     "github.com/btcsuite/btcd/chaincfg/chainhash .. 
+.. "                                                .. 
+15 )                                                16 )
+16                                                  17 
+17 var (                                            18 var (
+18     // NonceBlindTag is that tag used to constru .. 
+.. ct the value b, which                            .. 
+19     // blinds the second public nonce of each pa .. 
+.. rty.                                             .. 
+20     NonceBlindTag = []byte("MuSig/noncecoef")    .. 
+21                                                  .. 
+22     // ChallengeHashTag is the tag used to const 19     // ChallengeHashTag is the tag used to const
+.. ruct the challenge hash                          .. ruct the challenge hash
+23     ChallengeHashTag = []byte("BIP0340/challenge 20     ChallengeHashTag = []byte("BIP0340/challenge
+   ")                                                  ")
+
+libwallet/musig2v040/sign.go --- 2/7 --- Go
+190 187 // nonce, public nonce, and private keys. This method returns an error if the
+191 188 // generated nonces are either too large, or end up mapping to the point at
+192 189 // infinity.
+193 190 func Sign(secNonce [musig2.SecNonceSize]byte, privKey *btcec.PrivateKey,
+194 191     combinedNonce [musig2.PubNonceSize]byte, pubKeys []*btcec.PublicKey,
+195 192     msg [32]byte, signOpts ...SignOption) (*PartialSignature, error) {
+196 193 
+197 194     // First, parse the set of optional signing options.
+
+libwallet/musig2v040/sign.go --- 3/7 --- Go
+232                                                 229 
+233     // Next we'll compute the value b, that bli 230     // Next we'll compute the value b, that bli
+... nds our second public                           ... nds our second public
+234     // nonce:                                   231     // nonce:
+235     //  * b = h(tag=NonceBlindTag, combinedNonc 232     //  * b = h(combinedNonce || combinedKey ||
+... e || combinedKey || m).                         ...  m). h==sha256
+236     var (                                       233     var (
+237         nonceMsgBuf  bytes.Buffer               ... 
+238         nonceBlinder btcec.ModNScalar           234         nonceBlinder btcec.ModNScalar
+239     )                                           235     )
+...                                                 236 
+...                                                 237     nonceMsgBuf := sha256.New()
+240     nonceMsgBuf.Write(combinedNonce[:])         238     nonceMsgBuf.Write(combinedNonce[:])
+241     nonceMsgBuf.Write(schnorr.SerializePubKey(c 239     nonceMsgBuf.Write(schnorr.SerializePubKey(c
+... ombinedKey.FinalKey))                           ... ombinedKey.FinalKey))
+242     nonceMsgBuf.Write(msg[:])                   240     nonceMsgBuf.Write(msg[:])
+243     nonceBlindHash := chainhash.TaggedHash(     241     nonceBlindHash := nonceMsgBuf.Sum(nil)
+244         NonceBlindTag, nonceMsgBuf.Bytes(),     ... 
+245     )                                           ... 
+246     nonceBlinder.SetByteSlice(nonceBlindHash[:] 242     nonceBlinder.SetByteSlice(nonceBlindHash[:]
+... )                                               ... )
+247                                                 243 
+248     // Next, we'll parse the public nonces into 244     // Next, we'll parse the public nonces into
+     R1 and R2.                                          R1 and R2.
+
+libwallet/musig2v040/sign.go --- 4/7 --- Go
+358             signOpts...,                        354             signOpts...,
+359         )                                       355         )
+360         if !sigValid {                          356         if !sigValid {
+361             return nil, fmt.Errorf("sig is inva 357             return nil, fmt.Errorf("sig is inva
+... lid!")                                          ... lid")
+362         }                                       358         }
+363     }                                           359     }
+364                                                 360 
+
+libwallet/musig2v040/sign.go --- 5/7 --- Go
+368 364 // Verify implements partial signature verification given the public nonce for
+369 365 // the signer, aggregate nonce, signer set and finally the message being
+370 366 // signed.
+371 367 func (p *PartialSignature) Verify(pubNonce [musig2.PubNonceSize]byte,
+372 368     combinedNonce [musig2.PubNonceSize]byte, keySet []*btcec.PublicKey,
+373 369     signingKey *btcec.PublicKey, msg [32]byte, signOpts ...SignOption) bool {
+374 370 
+375 371     pubKey := schnorr.SerializePubKey(signingKey)
+
+libwallet/musig2v040/sign.go --- 6/7 --- Go
+382 378 // verifyPartialSig attempts to verify a partial schnorr signature given the
+383 379 // necessary parameters. This is the internal version of Verify that returns
+384 380 // detailed errors.  signed.
+385 381 func verifyPartialSig(partialSig *PartialSignature, pubNonce [musig2.PubNonceSize]byte,
+386 382     combinedNonce [musig2.PubNonceSize]byte, keySet []*btcec.PublicKey,
+387 383     pubKey []byte, msg [32]byte, signOpts ...SignOption) error {
+388 384 
+389 385     opts := defaultSignOptions()
+
+libwallet/musig2v040/sign.go --- 7/7 --- Go
+431                                                 427 
+432     // Next we'll compute the value b, that bli 428     // Next we'll compute the value b, that bli
+... nds our second public                           ... nds our second public
+433     // nonce:                                   429     // nonce:
+434     //  * b = h(tag=NonceBlindTag, combinedNonc 430     //  * b = h(combinedNonce || combinedKey ||
+... e || combinedKey || m).                         ...  m). h==sha256
+435     var (                                       431     var (
+436         nonceMsgBuf  bytes.Buffer               ... 
+437         nonceBlinder btcec.ModNScalar           432         nonceBlinder btcec.ModNScalar
+438     )                                           433     )
+...                                                 434     nonceMsgBuf := sha256.New()
+439     nonceMsgBuf.Write(combinedNonce[:])         435     nonceMsgBuf.Write(combinedNonce[:])
+440     nonceMsgBuf.Write(schnorr.SerializePubKey(c 436     nonceMsgBuf.Write(schnorr.SerializePubKey(c
+... ombinedKey.FinalKey))                           ... ombinedKey.FinalKey))
+441     nonceMsgBuf.Write(msg[:])                   437     nonceMsgBuf.Write(msg[:])
+442     nonceBlindHash := chainhash.TaggedHash(Nonc 438     nonceBlindHash := nonceMsgBuf.Sum(nil)
+... eBlindTag, nonceMsgBuf.Bytes())                 ... 
+443     nonceBlinder.SetByteSlice(nonceBlindHash[:] 439     nonceBlinder.SetByteSlice(nonceBlindHash[:]
+... )                                               ... )
+444                                                 440 
+445     r1J, err := btcec.ParseJacobian(            441     r1J, err := btcec.ParseJacobian(
+

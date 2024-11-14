@@ -221,12 +221,7 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
                 return null
             }
 
-            val mediaDrm = MediaDrm(drmProviderUuid)
-            val deviceIdBytes = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
-
-            releaseMediaDRM(mediaDrm)
-
-            return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
+            return getDrmIdFromClosableMediaDrm(drmProviderUuid)
 
         } catch (e: Exception) {
             // These two drm provider often return errors though they are listed as "supported"
@@ -234,6 +229,24 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
                 Timber.e(DrmProviderError(drmProviderUuid, e))
             }
             return null
+        }
+    }
+
+    /**
+     * Abstracts basically what try-with-resources does, but since MediaDrm isn't AutoClosable in
+     * all our supported Android versions, we need to do this manually/ad-hoc.
+     * TODO: once our minSdk > 28 (OS.supportsMediaDrmClose()) we could do this with kotlin's
+     *  try-with-resources.
+     */
+    private fun getDrmIdFromClosableMediaDrm(drmProviderUuid: UUID): String {
+        var mediaDrm: MediaDrm? = null
+        try {
+            mediaDrm = MediaDrm(drmProviderUuid)
+            val deviceIdBytes = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
+
+            return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
+        } finally {
+            mediaDrm?.let(::releaseMediaDRM)
         }
     }
 

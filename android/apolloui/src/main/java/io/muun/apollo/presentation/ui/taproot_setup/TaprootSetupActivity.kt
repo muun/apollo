@@ -3,8 +3,10 @@ package io.muun.apollo.presentation.ui.taproot_setup
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.TaprootSetupActivityBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveFragment
@@ -24,8 +26,11 @@ class TaprootSetupActivity : SingleFragmentActivity<TaprootSetupPresenter>(), Ta
         }
     }
 
-    @BindView(R.id.header)
-    lateinit var headerView: MuunHeader
+    private val binding: TaprootSetupActivityBinding
+        get() = getBinding() as TaprootSetupActivityBinding
+
+    private val headerView: MuunHeader
+        get() = binding.header
 
     override fun inject() {
         component.inject(this)
@@ -36,6 +41,10 @@ class TaprootSetupActivity : SingleFragmentActivity<TaprootSetupPresenter>(), Ta
 
     override fun getLayoutResource() =
         R.layout.taproot_setup_activity
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return TaprootSetupActivityBinding::inflate
+    }
 
     override fun getFragmentsContainer() =
         R.id.fragment_container

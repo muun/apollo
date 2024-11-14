@@ -4,6 +4,7 @@ import (
 	"math"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/muun/libwallet/fees"
 )
@@ -38,10 +39,18 @@ var defaultNTS = &NextTransactionSize{
 	ExpectedDebtInSat: 0,
 }
 
+var partialLinearFunction = &PartialLinearFunction{
+	LeftClosedEndpoint: 0,
+	RightOpenEndpoint:  math.Inf(1),
+	Slope:              2,
+	Intercept:          100,
+}
+
 func TestAnalyzeOnChain(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		nts      *NextTransactionSize
+		feeBump  []*FeeBumpFunction
 		payment  *PaymentToAddress
 		expected *PaymentAnalysis
 		err      bool
@@ -197,6 +206,162 @@ func TestAnalyzeOnChain(t *testing.T) {
 				AmountInSat: 9999,
 				FeeInSat:    2400,
 				TotalInSat:  12399,
+			},
+		},
+		{
+			desc: "success with fee bump",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{
+					time.Now(),
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+				&FeeBumpFunction{
+					time.Now(),
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+				&FeeBumpFunction{
+					time.Now(),
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     false,
+				AmountInSat:           7480,
+				FeeRateInSatsPerVByte: 10,
+			},
+			expected: &PaymentAnalysis{
+				Status:      AnalysisStatusOk,
+				AmountInSat: 7480,
+				FeeInSat:    2520,
+				TotalInSat:  10000,
+			},
+		},
+		{
+			desc: "fee bump with several unconfirmed utxos",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusConfirmed,
+					},
+					{
+						AmountInSat: 20_000,
+						SizeInVByte: 440,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+					{
+						AmountInSat: 30_000,
+						SizeInVByte: 780,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{time.Now(), firstFeeBumpFunction},
+				&FeeBumpFunction{time.Now(), secondFeeBumpFunction},
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     false,
+				AmountInSat:           12000,
+				FeeRateInSatsPerVByte: 10,
+			},
+			expected: &PaymentAnalysis{
+				Status:      AnalysisStatusOk,
+				AmountInSat: 12000,
+				FeeInSat:    4520,
+				TotalInSat:  16520,
+			},
+		},
+		{
+			desc: "fee bump with total balance and takeFeeFromAmount is true",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusConfirmed,
+					},
+					{
+						AmountInSat: 20_000,
+						SizeInVByte: 440,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+					{
+						AmountInSat: 30_000,
+						SizeInVByte: 780,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{time.Now(), firstFeeBumpFunction},
+				&FeeBumpFunction{time.Now(), secondFeeBumpFunction},
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     true,
+				AmountInSat:           30000,
+				FeeRateInSatsPerVByte: 10,
+			},
+			expected: &PaymentAnalysis{
+				Status:      AnalysisStatusOk,
+				AmountInSat: 22050,
+				FeeInSat:    7950,
+				TotalInSat:  30000,
+			},
+		},
+		{
+			desc: "valid amount but unpayable because of fee bump",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{
+					time.Now(),
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+			},
+			payment: &PaymentToAddress{
+				TakeFeeFromAmount:     false,
+				AmountInSat:           7500,
+				FeeRateInSatsPerVByte: 10,
+			},
+			expected: &PaymentAnalysis{
+				Status:      AnalysisStatusUnpayable,
+				AmountInSat: 7500,
+				FeeInSat:    2520,
+				TotalInSat:  10020,
 			},
 		},
 		{
@@ -425,9 +590,9 @@ func TestAnalyzeOnChain(t *testing.T) {
 
 			var analyzer *PaymentAnalyzer
 			if tC.nts != nil {
-				analyzer = NewPaymentAnalyzer(defaultFeeWindow, tC.nts)
+				analyzer = NewPaymentAnalyzer(defaultFeeWindow, tC.nts, tC.feeBump)
 			} else {
-				analyzer = NewPaymentAnalyzer(defaultFeeWindow, defaultNTS)
+				analyzer = NewPaymentAnalyzer(defaultFeeWindow, defaultNTS, tC.feeBump)
 			}
 
 			analysis, err := analyzer.ToAddress(tC.payment)
@@ -454,7 +619,9 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFee(t *testing.T) {
 			},
 		},
 		ExpectedDebtInSat: 0,
-	})
+	},
+		nil,
+	)
 
 	analysis, err := analyzer.ToAddress(&PaymentToAddress{
 		TakeFeeFromAmount:     false,
@@ -503,7 +670,9 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFeeUsingTFFA(t *testing.T) 
 			},
 		},
 		ExpectedDebtInSat: 0,
-	})
+	},
+		nil,
+	)
 
 	analysis, err := analyzer.ToAddress(&PaymentToAddress{
 		TakeFeeFromAmount:     true,
@@ -2218,7 +2387,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				feeWindow = tC.feeWindow
 			}
 
-			analyzer := NewPaymentAnalyzer(feeWindow, nts)
+			analyzer := NewPaymentAnalyzer(feeWindow, nts, nil)
 			analysis, err := analyzer.ToInvoice(tC.payment)
 
 			if err == nil && tC.err {

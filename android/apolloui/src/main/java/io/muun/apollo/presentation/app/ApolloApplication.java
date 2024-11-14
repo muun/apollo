@@ -12,6 +12,7 @@ import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
+import io.muun.apollo.data.preferences.FeaturesRepository;
 import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
@@ -86,6 +87,9 @@ public abstract class ApolloApplication extends Application
     @Inject
     BackgroundTimesService backgroundTimesService;
 
+    @Inject
+    FeaturesRepository featuresRepository;
+
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -100,6 +104,7 @@ public abstract class ApolloApplication extends Application
 
         HeapDumper.init(this);
         Crashlytics.init(this);
+        StrictMode.INSTANCE.init();
 
         ensureCurrencyServicesLoaded();
 
@@ -116,9 +121,9 @@ public abstract class ApolloApplication extends Application
 
         setNightMode();
 
-        initializeLibwallet();
-
         setupDebugTools();
+
+        initializeLibwallet();
 
         migrateSharedPreferences();
 
@@ -228,6 +233,9 @@ public abstract class ApolloApplication extends Application
         UserFacingErrorMessages.INSTANCE = new UserFacingErrorMessagesImpl(this);
     }
 
+    /**
+     * TODO: should be done off the main thread.
+     */
     private void initializeDagger() {
         applicationComponent = DaggerApplicationComponent.builder()
                 .dataComponent(getDataComponent())
@@ -239,7 +247,7 @@ public abstract class ApolloApplication extends Application
     private void initializeLibwallet() {
         libwalletDataDirectory.ensureExists();
         final String filesDir = libwalletDataDirectory.getPath().getAbsolutePath();
-        LibwalletBridge.init(filesDir);
+        LibwalletBridge.init(filesDir, featuresRepository);
     }
 
     /**
@@ -261,6 +269,9 @@ public abstract class ApolloApplication extends Application
         this.sendBroadcast(new Intent("com.google.android.intent.action.MCS_HEARTBEAT"));
     }
 
+    /**
+     * TODO: should be done off the main Thread.
+     */
     private void ensureCurrencyServicesLoaded() {
         // This method eagerly loads the CurrencyProviderSpi instances available in the application
         // space, instead of letting the ServiceLoader create them lazily as needed.

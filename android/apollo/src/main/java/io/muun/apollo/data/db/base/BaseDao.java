@@ -27,9 +27,13 @@ import javax.validation.constraints.NotNull;
 public abstract class BaseDao<ModelT extends PersistentModel> {
 
     protected final String tableName;
+
     protected BriteDatabase briteDb;
+
     protected SupportSQLiteDatabase db;
+
     protected Database delightDb;
+
     protected Scheduler scheduler;
 
     /**
@@ -49,10 +53,13 @@ public abstract class BaseDao<ModelT extends PersistentModel> {
         this.delightDb = delightDb;
         this.scheduler = scheduler;
 
-        Preconditions.checkState(
-                briteDatabase.query("SELECT COUNT(*) FROM " + tableName).getCount() == 1,
-                "expected table " + tableName + " to exist"
-        );
+
+        try (Cursor cursor = briteDatabase.query("SELECT COUNT(*) FROM " + tableName)) {
+            Preconditions.checkState(
+                    cursor.getCount() == 1,
+                    "expected table " + tableName + " to exist"
+            );
+        }
     }
 
     /**
@@ -182,9 +189,11 @@ public abstract class BaseDao<ModelT extends PersistentModel> {
 
             // FIXME: This is a racy operation. If another thread inserts any row, the id
             // won't match.
-            final Cursor query = briteDb.query("SELECT last_insert_rowid();");
-            Preconditions.checkState(query.moveToFirst());
-            final long insertedId = query.getLong(0);
+            final long insertedId;
+            try (Cursor query = briteDb.query("SELECT last_insert_rowid();")) {
+                Preconditions.checkState(query.moveToFirst());
+                insertedId = query.getLong(0);
+            }
             if (insertedId < 0) {
                 throw new RuntimeException("Error while inserting new value in the db");
             }

@@ -1,7 +1,7 @@
 package newop
 
 import (
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/muun/libwallet/fees"
 )
 

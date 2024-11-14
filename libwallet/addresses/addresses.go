@@ -3,8 +3,9 @@ package addresses
 import (
 	"fmt"
 
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/muun/libwallet/musig"
 )
 
 const (
@@ -13,6 +14,7 @@ const (
 	V3              = 3
 	V4              = 4
 	V5              = 5
+	V6              = 6
 	SubmarineSwapV1 = 101
 	SubmarineSwapV2 = 102
 	IncomingSwap    = 201
@@ -44,8 +46,19 @@ func Create(version int, userKey, muunKey *hdkeychain.ExtendedKey, path string, 
 		return CreateAddressV4(userKey, muunKey, path, network)
 	case V5:
 		return CreateAddressV5(userKey, muunKey, path, network)
+	case V6:
+		return CreateAddressV6(userKey, muunKey, path, network)
 	default:
 		return nil, fmt.Errorf("unknown or unsupported version %v", version)
+	}
+}
+
+func MusigVersionForAddress(addressVersion int) musig.MusigVersion {
+	switch addressVersion {
+	case V1, V2, V3, V4, V5, SubmarineSwapV1, SubmarineSwapV2, IncomingSwap:
+		return musig.Musig2v040Muun
+	default:
+		return musig.Musig2v100
 	}
 }
 

@@ -12,8 +12,8 @@ import (
 
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
 )
 
 type SigningExpectations struct {
@@ -85,6 +85,8 @@ type Input interface {
 type PartiallySignedTransaction struct {
 	tx     *wire.MsgTx
 	inputs []Input
+
+	// UserNonces
 	nonces *MusigNonces
 }
 
@@ -108,7 +110,7 @@ func (l *InputList) Inputs() []Input {
 }
 
 func NewPartiallySignedTransaction(
-	inputs *InputList, rawTx []byte, nonces *MusigNonces,
+	inputs *InputList, rawTx []byte, userNonces *MusigNonces,
 ) (*PartiallySignedTransaction, error) {
 
 	tx := wire.NewMsgTx(0)
@@ -120,7 +122,7 @@ func NewPartiallySignedTransaction(
 	return &PartiallySignedTransaction{
 		tx:     tx,
 		inputs: inputs.Inputs(),
-		nonces: nonces,
+		nonces: userNonces,
 	}, nil
 }
 
@@ -375,7 +377,7 @@ type coin interface {
 	FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error
 }
 
-func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.TaprootSigHashes, nonces *MusigNonces) (coin, error) {
+func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.TaprootSigHashes, userNonces *MusigNonces) (coin, error) {
 	txID, err := chainhash.NewHash(input.OutPoint().TxId())
 	if err != nil {
 		return nil, err
@@ -388,6 +390,13 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 	amount := btcutil.Amount(input.OutPoint().Amount())
 
 	version := input.Address().Version()
+
+	if userNonces == nil {
+		return nil, fmt.Errorf("userNonces cannot be nil")
+	}
+	if len(userNonces.sessionIds) <= index {
+		return nil, fmt.Errorf("not enough nonces were provided")
+	}
 
 	switch version {
 	case addresses.V1:
@@ -429,7 +438,22 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 			OutPoint:       outPoint,
 			KeyPath:        keyPath,
 			Amount:         amount,
-			UserSessionId:  nonces.sessionIds[index],
+			UserSessionId:  userNonces.sessionIds[index],
+			MuunPubNonce:   nonce,
+			MuunPartialSig: muunPartialSig,
+			SigHashes:      sigHashes,
+		}, nil
+	case addresses.V6:
+		var nonce [66]byte
+		copy(nonce[:], input.MuunPublicNonce())
+		var muunPartialSig [32]byte
+		copy(muunPartialSig[:], input.MuunSignature())
+		return &coinV6{
+			Network:        network.network,
+			OutPoint:       outPoint,
+			KeyPath:        keyPath,
+			Amount:         amount,
+			UserSessionId:  userNonces.sessionIds[index],
 			MuunPubNonce:   nonce,
 			MuunPartialSig: muunPartialSig,
 			SigHashes:      sigHashes,

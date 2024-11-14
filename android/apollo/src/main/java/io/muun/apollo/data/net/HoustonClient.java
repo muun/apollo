@@ -2,11 +2,15 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.data.os.BuildInfoProvider;
 import io.muun.apollo.data.os.CpuInfoProvider;
+import io.muun.apollo.data.os.FileInfoProvider;
 import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.os.HardwareCapabilitiesProvider;
 import io.muun.apollo.data.os.OS_ExtensionsKt;
+import io.muun.apollo.data.os.PackageManagerInfoProvider;
+import io.muun.apollo.data.os.SystemCapabilitiesProvider;
 import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException;
 import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
@@ -34,6 +38,7 @@ import io.muun.apollo.domain.model.PendingChallengeUpdate;
 import io.muun.apollo.domain.model.PlayIntegrityToken;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
+import io.muun.apollo.domain.model.RealTimeFees;
 import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
@@ -71,6 +76,7 @@ import io.muun.common.crypto.ChallengeType;
 import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.model.Diff;
 import io.muun.common.model.PhoneNumber;
+import io.muun.common.model.SizeForAmount;
 import io.muun.common.model.VerificationType;
 import io.muun.common.model.challenge.Challenge;
 import io.muun.common.model.challenge.ChallengeSetup;
@@ -112,6 +118,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     private final GooglePlayHelper googlePlayHelper;
 
+    private final BuildInfoProvider buildInfoProvider;
+
+    private final PackageManagerInfoProvider packageManagerInfoProvider;
+
+    private final FileInfoProvider fileInfoProvider;
+
+    private final SystemCapabilitiesProvider systemCapabilitiesProvider;
+
     /**
      * Constructor.
      */
@@ -122,7 +136,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
             Context context,
             HardwareCapabilitiesProvider hardwareCapabilitiesProvider,
             GooglePlayServicesHelper googlePlayServicesHelper,
-            GooglePlayHelper googlePlayHelper
+            GooglePlayHelper googlePlayHelper,
+            BuildInfoProvider buildInfoProvider,
+            PackageManagerInfoProvider packageManagerInfoProvider,
+            FileInfoProvider fileInfoProvider,
+            SystemCapabilitiesProvider systemCapabilitiesProvider
     ) {
 
         super(HoustonService.class);
@@ -133,6 +151,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
         this.hardwareCapabilitiesProvider = hardwareCapabilitiesProvider;
         this.googlePlayServicesHelper = googlePlayServicesHelper;
         this.googlePlayHelper = googlePlayHelper;
+        this.buildInfoProvider = buildInfoProvider;
+        this.packageManagerInfoProvider = packageManagerInfoProvider;
+        this.fileInfoProvider = fileInfoProvider;
+        this.systemCapabilitiesProvider = systemCapabilitiesProvider;
     }
 
     /**
@@ -160,7 +182,16 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo()
+                googlePlayHelper.getPlayInfo(),
+                buildInfoProvider.getBuildInfo(),
+                packageManagerInfoProvider.getAppInfo(),
+                packageManagerInfoProvider.getDeviceFeatures(),
+                packageManagerInfoProvider.getSignatureHash(),
+                fileInfoProvider.getQuickEmProps(),
+                fileInfoProvider.getEmArchitecture(),
+                systemCapabilitiesProvider.getSecurityEnhancedBuild(),
+                systemCapabilitiesProvider.getBridgeRootService(),
+                fileInfoProvider.getAppSize()
         );
 
         return getService().createFirstSession(params)
@@ -190,7 +221,16 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo()
+                googlePlayHelper.getPlayInfo(),
+                buildInfoProvider.getBuildInfo(),
+                packageManagerInfoProvider.getAppInfo(),
+                packageManagerInfoProvider.getDeviceFeatures(),
+                packageManagerInfoProvider.getSignatureHash(),
+                fileInfoProvider.getQuickEmProps(),
+                fileInfoProvider.getEmArchitecture(),
+                systemCapabilitiesProvider.getSecurityEnhancedBuild(),
+                systemCapabilitiesProvider.getBridgeRootService(),
+                fileInfoProvider.getAppSize()
         );
 
         return getService().createLoginSession(params)
@@ -220,7 +260,16 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 hardwareCapabilitiesProvider.getGlEsVersion(),
                 CpuInfoProvider.INSTANCE.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo()
+                googlePlayHelper.getPlayInfo(),
+                buildInfoProvider.getBuildInfo(),
+                packageManagerInfoProvider.getAppInfo(),
+                packageManagerInfoProvider.getDeviceFeatures(),
+                packageManagerInfoProvider.getSignatureHash(),
+                fileInfoProvider.getQuickEmProps(),
+                fileInfoProvider.getEmArchitecture(),
+                systemCapabilitiesProvider.getSecurityEnhancedBuild(),
+                systemCapabilitiesProvider.getBridgeRootService(),
+                fileInfoProvider.getAppSize()
         );
 
         return getService().createRecoveryCodeLoginSession(session)
@@ -646,6 +695,20 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<RealTimeData> fetchRealTimeData() {
         return getService().fetchRealTimeData().map(modelMapper::mapRealTimeData);
+    }
+
+    /**
+     * Fetch Realtime fees data. It returns all fee related data, including
+     * fee bump functions.
+     *
+     * @param sizeProgression from NTS
+     */
+    public Observable<RealTimeFees> fetchRealTimeFees(
+            List<SizeForAmount> sizeProgression
+    ) {
+        return getService()
+                .fetchRealTimeFees(apiMapper.mapUnconfirmedOutpointsJson(sizeProgression))
+                .map(modelMapper::mapRealTimeFees);
     }
 
     /**

@@ -62,6 +62,7 @@ public class SubmarineSwapFundingOutputJson {
     /**
      * Json constructor.
      */
+    @SuppressWarnings("unused")
     public SubmarineSwapFundingOutputJson() {
     }
 

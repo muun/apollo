@@ -8,7 +8,8 @@ import (
 
 	"github.com/muun/libwallet/hdpath"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 // HDPrivateKey is an HD capable priv key
@@ -79,7 +80,7 @@ func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, err
 		modifier = hdkeychain.HardenedKeyStart
 	}
 
-	child, err := p.key.Child(uint32(index) | modifier)
+	child, err := p.key.Derive(uint32(index) | modifier)
 	if err != nil {
 		return nil, err
 	}
@@ -132,10 +133,7 @@ func (p *HDPrivateKey) Sign(data []byte) ([]byte, error) {
 	}
 
 	hash := sha256.Sum256(data)
-	sig, err := signingKey.Sign(hash[:])
-	if err != nil {
-		return nil, err
-	}
+	sig := ecdsa.Sign(signingKey, hash[:])
 
 	return sig.Serialize(), nil
 }

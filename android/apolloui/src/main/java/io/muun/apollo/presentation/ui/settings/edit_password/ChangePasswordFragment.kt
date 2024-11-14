@@ -1,10 +1,13 @@
 package io.muun.apollo.presentation.ui.settings.edit_password
 
 import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.CheckBox
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentChangePasswordBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.BaseActivity
@@ -15,24 +18,31 @@ import io.muun.common.Rules
 
 class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), ChangePasswordView {
 
-    @BindView(R.id.change_password_input)
-    lateinit var passwordInput: MuunTextInput
+    private val binding: FragmentChangePasswordBinding
+        get() = getBinding() as FragmentChangePasswordBinding
 
-    @BindView(R.id.change_password_confirm_input)
-    lateinit var passwordConfirmInput: MuunTextInput
+    private val passwordInput: MuunTextInput
+        get() = binding.changePasswordInput
 
-    @BindView(R.id.change_password_condition)
-    lateinit var condition: CheckBox
+    private val passwordConfirmInput: MuunTextInput
+        get() = binding.changePasswordConfirmInput
 
-    @BindView(R.id.change_password_continue)
-    lateinit var continueButton: MuunButton
+    private val condition: CheckBox
+        get() = binding.changePasswordCondition
+
+    private val continueButton: MuunButton
+        get() = binding.changePasswordContinue
 
     override fun inject() {
         component.inject(this)
     }
 
     override fun getLayoutResource(): Int {
-        return R.layout.change_password_fragment
+        return R.layout.fragment_change_password
+    }
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentChangePasswordBinding::inflate
     }
 
     override fun initializeUi(view: View) {
@@ -40,19 +50,11 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
 
         passwordInput.setPasswordRevealEnabled(true)
         passwordInput.setOnChangeListener(this) {
-            // Ugly check needed for some convoluted scenario where we receive input and fragment
-            // is being re-created or something
-            if (::passwordInput.isInitialized) {
-                validateInputs()
-            }
+            validateInputs()
         }
         passwordConfirmInput.setPasswordRevealEnabled(true)
         passwordConfirmInput.setOnChangeListener(this) {
-            // Ugly check needed for some convoluted scenario where we receive input and fragment
-            // is being re-created or something
-            if (::passwordConfirmInput.isInitialized) {
-                validateInputs()
-            }
+            validateInputs()
         }
 
         condition.setOnCheckedChangeListener { _, _ ->
@@ -117,7 +119,10 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
     }
 
     private fun onContinueButtonClick() {
-        presenter.submitPassword(passwordInput.text.toString(), passwordConfirmInput.text.toString())
+        presenter.submitPassword(
+            passwordInput.text.toString(),
+            passwordConfirmInput.text.toString()
+        )
     }
 
     private fun isValidPassword(password: String) =

@@ -2,9 +2,11 @@ package io.muun.apollo.presentation.ui.export_keys
 
 import android.content.Context
 import android.content.Intent
+import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ExportKeysActivityBinding
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -28,8 +30,11 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
         }
     }
 
-    @BindView(R.id.export_keys_header)
-    lateinit var headerView: MuunHeader
+    private val binding: ExportKeysActivityBinding
+        get() = getBinding() as ExportKeysActivityBinding
+
+    private val headerView: MuunHeader
+        get() = binding.exportKeysHeader
 
     override fun inject() {
         component.inject(this)
@@ -37,6 +42,10 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
 
     override fun getLayoutResource() =
         R.layout.export_keys_activity
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ExportKeysActivityBinding::inflate
+    }
 
     override fun getFragmentsContainer() =
         R.id.fragment_container

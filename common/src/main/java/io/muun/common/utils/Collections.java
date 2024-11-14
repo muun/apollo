@@ -19,6 +19,14 @@ public final class Collections {
      */
     public static <T> Set<T> intersection(Collection<? extends T> a, Collection<? extends T> b) {
 
+        if (b.size() < a.size()) {
+
+            // A few lines below we will create a copy of `a` and invoke `retainAll(b)` over
+            // `HashSet<>(a)`. That translates to `a.size()` calls to `b.contains` and at most
+            // `a.size()` removals (see https://stackoverflow.com/questions/24754881/what-is-the-time-and-space-complexity-of-method-retainall-when-used-on-hashsets/24755224#24755224
+            // for a reference), so it's always best if `a` is the smaller of the two.
+            return intersection(b, a);
+        }
         final Set<T> intersection = new HashSet<>(a);
         intersection.retainAll(b);
         return intersection;

@@ -22,8 +22,7 @@ class NotificationPermissionStateRepository @Inject constructor(
         PermissionState::class.java
     )
 
-    override fun getFileName() =
-        "notification_permission_state"
+    override val fileName get() = "notification_permission_state"
 
     fun store(permissionState: PermissionState) {
         permissionStatePref.set(permissionState)

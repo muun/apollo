@@ -6,15 +6,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Html
 import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import butterknife.BindView
-import butterknife.BindViews
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityNewOperationBinding
 import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.libwallet.destinationPubKey
@@ -85,101 +86,100 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     // Components:
-    @BindView(R.id.root_view)
-    lateinit var root: ConstraintLayout
+    private val root: ConstraintLayout
+        get() = binding.rootView
 
-    @BindView(R.id.overlay_container)
-    lateinit var overlayContainer: ViewGroup
+    private val overlayContainer: ViewGroup
+        get() = binding.overlayContainer
 
-    @BindView(R.id.new_operation_header)
-    lateinit var muunHeader: MuunHeader
+    private val muunHeader: MuunHeader
+        get() = binding.newOperationHeader
 
-    @BindView(R.id.scrollable_layout)
-    lateinit var scrollableLayout: View
+    private val scrollableLayout: View
+        get() = binding.scrollableLayout
 
-    @BindView(R.id.new_operation_resolving)
-    lateinit var resolvingSpinner: View
+    private val resolvingSpinner: View
+        get() = binding.newOperationResolving
 
-    @BindView(R.id.muun_amount_input)
-    lateinit var amountInput: MuunAmountInput
+    private val amountInput: MuunAmountInput
+        get() = binding.muunAmountInput
 
-    @BindView(R.id.use_all_funds)
-    lateinit var useAllFundsView: TextView
+    private val useAllFundsView: TextView
+        get() = binding.useAllFunds
 
-    @BindView(R.id.muun_note_input)
-    lateinit var descriptionInput: TextInputWithBackHandling
+    private val descriptionInput: TextInputWithBackHandling
+        get() = binding.muunNoteInput
 
-    @BindView(R.id.muun_next_step_button)
-    lateinit var actionButton: MuunButton
+    private val actionButton: MuunButton
+        get() = binding.muunNextStepButton
 
-    @BindView(R.id.new_operation_receiver)
-    lateinit var receiver: MuunPill
+    private val receiver: MuunPill
+        get() = binding.newOperationReceiver
 
-    @BindView(R.id.target_address)
-    lateinit var receiverAddress: TextView
+    private val receiverAddress: TextView
+        get() = binding.targetAddress
 
-    @BindView(R.id.selected_amount)
-    lateinit var selectedAmount: TextView
+    private val selectedAmount: TextView
+        get() = binding.selectedAmount
 
-    @BindView(R.id.amount_label)
-    lateinit var amountLabel: TextView
+    private val amountLabel: TextView
+        get() = binding.amountLabel
 
-    @BindView(R.id.separator_amount)
-    lateinit var amountSeparator: View
+    private val amountSeparator: View
+        get() = binding.separatorAmount
 
-    @BindView(R.id.notes_content)
-    lateinit var descriptionContent: TextView
+    private val descriptionContent: TextView
+        get() = binding.notesContent
 
-    @BindView(R.id.notes_label)
-    lateinit var descriptionLabel: TextView
+    private val descriptionLabel: TextView
+        get() = binding.notesLabel
 
-    @BindView(R.id.fee_label)
-    lateinit var feeLabel: TextView
+    private val feeLabel: TextView
+        get() = binding.feeLabel
 
-    @BindView(R.id.fee_amount)
-    lateinit var feeAmount: TextView
+    private val feeAmount: TextView
+        get() = binding.feeAmount
 
-    @BindView(R.id.total_amount)
-    lateinit var totalAmount: TextView
+    private val totalAmount: TextView
+        get() = binding.totalAmount
 
-    @BindView(R.id.total_label)
-    lateinit var totalLabel: TextView
+    private val totalLabel: TextView
+        get() = binding.totalLabel
+    private val statusMessage: StatusMessage
+        get() = binding.statusMessage
 
-    @BindView(R.id.status_message)
-    lateinit var statusMessage: StatusMessage
-
-    @BindView(R.id.insufficient_funds_message)
-    lateinit var insufficientFundsMessage: StatusMessage
+    private val insufficientFundsMessage: StatusMessage
+        get() = binding.insufficientFundsMessage
 
     // Groups (to toggle visibility):
-    @BindViews(R.id.muun_amount_input, R.id.use_all_funds)
-    lateinit var amountEditableViews: Array<View>
+    private val amountEditableViews: Array<View>
+        get() = arrayOf(binding.muunAmountInput, binding.useAllFunds)
 
-    @BindViews(R.id.amount_label, R.id.selected_amount, R.id.separator_amount)
-    lateinit var amountSelectedViews: Array<View>
+    private val amountSelectedViews: Array<View>
+        get() = arrayOf(binding.amountLabel, binding.selectedAmount, binding.separatorAmount)
 
-    @BindViews(R.id.status_message, R.id.insufficient_funds_message)
-    lateinit var statusMessageViews: Array<View>
+    private val statusMessageViews: Array<View>
+        get() = arrayOf(binding.statusMessage, binding.insufficientFundsMessage)
 
-    @BindViews(
-        R.id.fee_label,
-        R.id.fee_amount,
-        R.id.total_label,
-        R.id.total_amount,
-        R.id.notes_label,
-        R.id.notes_content
-    )
-    lateinit var noteEnteredViews: Array<View>
+    private val noteEnteredViews: Array<View>
+        get() = arrayOf(
+            binding.feeLabel,
+            binding.feeAmount,
+            binding.totalLabel,
+            binding.totalAmount,
+            binding.notesLabel,
+            binding.notesContent,
+        )
 
     // Lightning specific
-    @BindView(R.id.invoice_expiration_countdown)
-    lateinit var invoiceExpirationCountdown: TextView
+    private val invoiceExpirationCountdown: TextView
+        get() = binding.invoiceExpirationCountdown
 
-    @BindView(R.id.one_conf_notice_banner)
-    lateinit var noticeBanner: NoticeBanner
+    private val noticeBanner: NoticeBanner
+        get() = binding.oneConfNoticeBanner
 
-    @BindView(R.id.button_layout_anchor)
-    lateinit var buttonLayoutAnchor: View
+    private val buttonLayoutAnchor: View
+        get() = binding.buttonLayoutAnchor
 
     private var countdownTimer: MuunCountdownTimer? = null
 
@@ -189,6 +189,14 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
 
     override fun getLayoutResource(): Int =
         R.layout.activity_new_operation
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityNewOperationBinding::inflate
+    }
+
+    override fun getBinding(): ActivityNewOperationBinding {
+        return super.getBinding() as ActivityNewOperationBinding
+    }
 
     override fun getHeader(): MuunHeader =
         muunHeader
@@ -520,8 +528,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         MuunDialog.Builder()
             .title(R.string.new_operation_abort_alert_title)
             .message(R.string.new_operation_abort_alert_body)
-            .positiveButton(R.string.abort) { presenter.finishAndGoHome() }
-            .negativeButton(R.string.cancel, null)
+            .positiveButton(R.string.yes_cancel) { presenter.finishAndGoHome() }
+            .negativeButton(R.string.no, null)
             .onDismiss { presenter.cancelAbort() }
             .build()
             .let(this::showDialog)
@@ -655,6 +663,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         receiver.visibility = View.GONE
 
         // 2. Start invoice expiration countdown
+        countdownTimer?.cancel()
         countdownTimer = MuunCountdownTimer(invoice.remainingMillis(), this)
         countdownTimer?.start()
         buttonLayoutAnchor.visibility = View.VISIBLE

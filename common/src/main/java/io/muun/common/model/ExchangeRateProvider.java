@@ -3,7 +3,7 @@ package io.muun.common.model;
 import io.muun.common.Optional;
 import io.muun.common.api.ExchangeRateWindow;
 
-import org.javamoney.moneta.ExchangeRateBuilder;
+import org.javamoney.moneta.convert.ExchangeRateBuilder;
 import org.javamoney.moneta.spi.AbstractRateProvider;
 import org.javamoney.moneta.spi.DefaultNumberValue;
 

@@ -2,8 +2,10 @@ package io.muun.apollo.presentation.ui.migration
 
 import android.content.Context
 import android.content.Intent
-import butterknife.BindView
+import android.view.LayoutInflater
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ActivityMigrationBinding
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.view.LoadingView
 
@@ -14,8 +16,11 @@ class MigrationActivity : BaseActivity<MigrationPresenter>(), MigrationView {
             Intent(context, MigrationActivity::class.java)
     }
 
-    @BindView(R.id.migration_loading)
-    lateinit var loadingView: LoadingView
+    private val binding: ActivityMigrationBinding
+        get() = getBinding() as ActivityMigrationBinding
+
+    private val loadingView: LoadingView
+        get() = binding.migrationLoading
 
     override fun inject() {
         component.inject(this)
@@ -23,6 +28,10 @@ class MigrationActivity : BaseActivity<MigrationPresenter>(), MigrationView {
 
     override fun getLayoutResource(): Int {
         return R.layout.activity_migration
+    }
+
+    override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
+        return ActivityMigrationBinding::inflate
     }
 
     override fun initializeUi() {

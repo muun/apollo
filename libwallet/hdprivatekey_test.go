@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/chaincfg"
 )
 
@@ -279,7 +279,7 @@ func TestHDPrivateKeySign(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sig, err := btcec.ParseSignature(sigBytes, btcec.S256())
+	sig, err := ecdsa.ParseSignature(sigBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -288,7 +288,7 @@ func TestHDPrivateKeySign(t *testing.T) {
 		t.Fatal(err)
 	}
 	hash := sha256.Sum256(data)
-	if ok := sig.Verify(hash[:], pubKey); !ok {
-		t.Fatal(err)
+	if !sig.Verify(hash[:], pubKey) {
+		t.Fatal("sig.Verify failed")
 	}
 }

@@ -12,10 +12,12 @@ import (
 	"path"
 	"time"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
+	"github.com/lightningnetwork/lnd/keychain"
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/lightningnetwork/lnd/netann"
 	"github.com/lightningnetwork/lnd/zpay32"
@@ -324,9 +326,17 @@ func (i *InvoiceBuilder) Build() (string, error) {
 	}
 
 	// sign the invoice with the identity pubkey
-	signer := netann.NewNodeSigner(identityKey)
+	nodeKeyLocator := keychain.KeyLocator{
+		Family: keychain.KeyFamilyNodeKey,
+	}
+	identityKeySigner := keychain.NewPrivKeyMessageSigner(
+		identityKey, nodeKeyLocator,
+	)
+	signer := netann.NewNodeSigner(identityKeySigner)
 	bech32, err := invoice.Encode(zpay32.MessageSigner{
-		SignCompact: signer.SignDigestCompact,
+		SignCompact: func(msg []byte) ([]byte, error) {
+			return signer.SignMessageCompact(msg, false)
+		},
 	})
 	if err != nil {
 		return "", err
@@ -405,7 +415,7 @@ func GetInvoiceMetadata(paymentHash []byte) (string, error) {
 }
 
 func openDB() (*walletdb.DB, error) {
-	return walletdb.Open(path.Join(cfg.DataDir, "wallet.db"))
+	return walletdb.Open(path.Join(Cfg.DataDir, "wallet.db"))
 }
 
 func parsePubKey(s string) (*btcec.PublicKey, error) {
@@ -413,7 +423,7 @@ func parsePubKey(s string) (*btcec.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return btcec.ParsePubKey(bytes, btcec.S256())
+	return btcec.ParsePubKey(bytes)
 }
 
 func verifyTxWitnessSignature(tx *wire.MsgTx, sigHashes *txscript.TxSigHashes, outputIndex int, amount int64, script []byte, sig []byte, signKey *btcec.PublicKey) error {
@@ -421,7 +431,7 @@ func verifyTxWitnessSignature(tx *wire.MsgTx, sigHashes *txscript.TxSigHashes, o
 	if err != nil {
 		return err
 	}
-	signature, err := btcec.ParseDERSignature(sig, btcec.S256())
+	signature, err := ecdsa.ParseDERSignature(sig)
 	if err != nil {
 		return err
 	}

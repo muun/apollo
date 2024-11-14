@@ -7,7 +7,7 @@ import (
 
 	"github.com/btcsuite/btcd/chaincfg"
 
-	"github.com/btcsuite/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 )
 
 var (

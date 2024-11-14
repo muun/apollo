@@ -9,13 +9,13 @@ import javax.validation.constraints.NotNull;
 public class Challenge {
 
     @NotNull
-    public ChallengeType type;
+    public final ChallengeType type;
 
     @NotNull
-    public byte[] challenge;
+    public final byte[] challenge;
 
     @Nullable
-    public byte[] salt;
+    public final byte[] salt;
 
     /**
      * Constructor.

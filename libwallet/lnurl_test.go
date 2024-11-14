@@ -106,7 +106,7 @@ func TestLNURLWithdrawAllowUnsafe(t *testing.T) {
 
 	result := <-listener.ch
 	if result != "DONE" {
-		t.Fatalf(result)
+		t.Fatalf("%s", result)
 	}
 
 	invoiceBuilder.Network(Mainnet())
@@ -119,6 +119,6 @@ func TestLNURLWithdrawAllowUnsafe(t *testing.T) {
 
 	result = <-listener.ch
 	if result != "DONE" {
-		t.Fatalf(result)
+		t.Fatalf("%s", result)
 	}
 }

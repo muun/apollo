@@ -21,20 +21,30 @@ public class SizeForAmount {
 
     public int deltaInWeightUnits;
 
+    public String derivationPath;
+
+    public Integer addressVersion;
+
     /**
      * Manual constructor.
      */
-    public SizeForAmount(long amountInSatoshis,
-                         int sizeInBytes,
-                         String outpoint,
-                         UtxoStatus status,
-                         int deltaInWeightUnits) {
+    public SizeForAmount(
+            long amountInSatoshis,
+            int sizeInBytes,
+            String outpoint,
+            UtxoStatus status,
+            int deltaInWeightUnits,
+            String derivationPath,
+            Integer addressVersion
+    ) {
 
         this.amountInSatoshis = amountInSatoshis;
         this.sizeInBytes = sizeInBytes;
         this.outpoint = outpoint;
         this.status = status;
         this.deltaInWeightUnits = deltaInWeightUnits;
+        this.derivationPath = derivationPath;
+        this.addressVersion = addressVersion;
     }
 
     /**
@@ -87,5 +97,13 @@ public class SizeForAmount {
         final SizeForAmount that = (SizeForAmount) o;
 
         return (amountInSatoshis == that.amountInSatoshis && sizeInBytes == that.sizeInBytes);
+    }
+
+    /**
+     * Return the transaction id associated to the given outpoint.
+     * Recall that outpoints are of the form "txId:outputIndex".
+     */
+    public String getOutpointTxId() {
+        return outpoint.substring(0, outpoint.indexOf(":"));
     }
 }

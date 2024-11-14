@@ -15,15 +15,14 @@ open class MinFeeRateRepository @Inject constructor(
         private const val KEY = "MIN_FEE_RATE"
     }
 
-    private val preference: Preference<Double> = rxSharedPreferences.getObject(
-        KEY,
-        1.0, // Default (lowest limit) just to avoid NPE problems before RTD is pulled
-        DoublePreferenceAdapter.INSTANCE
-    )
+    private val preference: Preference<Double>
+        get() = rxSharedPreferences.getObject(
+            KEY,
+            1.0, // Default (lowest limit) just to avoid NPE problems before RTD is pulled
+            DoublePreferenceAdapter.INSTANCE
+        )
 
-    override fun getFileName(): String {
-        return "min_fee_rate"
-    }
+    override val fileName get() = "min_fee_rate"
 
     /**
      * Fetch an observable instance of the latest min fee rate in weight units.

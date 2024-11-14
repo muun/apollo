@@ -15,8 +15,9 @@ import (
 
 	"github.com/muun/libwallet/aescbc"
 
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 const serializedPublicKeyLength = btcec.PubKeyBytesLenCompressed
@@ -102,7 +103,7 @@ func (e *hdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 	signaturePayload = append(signaturePayload, payload...)
 	signaturePayload = append(signaturePayload, encryptionKey.SerializeCompressed()...)
 	hash := sha256.Sum256(signaturePayload)
-	senderSignature, err := btcec.SignCompact(btcec.S256(), signingKey, hash[:], false)
+	senderSignature, err := ecdsa.SignCompact(signingKey, hash[:], false)
 	if err != nil {
 		return "", fmt.Errorf("Encrypt: failed to sign payload: %w", err)
 	}
@@ -302,7 +303,7 @@ func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	signatureData = append(signatureData, data...)
 	signatureData = append(signatureData, encryptionKey.PubKey().SerializeCompressed()...)
 	hash := sha256.Sum256(signatureData)
-	signatureKey, _, err := btcec.RecoverCompact(btcec.S256(), sig, hash[:])
+	signatureKey, _, err := ecdsa.RecoverCompact(sig, hash[:])
 	if err != nil {
 		return nil, fmt.Errorf("Decrypt: failed to verify signature: %w", err)
 	}
@@ -341,12 +342,12 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 // generateSharedEncryptionSecret performs a ECDH with pubKey
 // Deprecated: this function is unsafe and generateSharedEncryptionSecretForAES should be used
 func generateSharedEncryptionSecret(pubKey *btcec.PublicKey) (*btcec.PublicKey, *big.Int, error) {
-	privEph, err := btcec.NewPrivateKey(btcec.S256())
+	privEph, err := btcec.NewPrivateKey()
 	if err != nil {
 		return nil, nil, fmt.Errorf("generateSharedEncryptionSecretForAES: failed to generate key: %w", err)
 	}
 
-	sharedSecret, _ := pubKey.ScalarMult(pubKey.X, pubKey.Y, privEph.D.Bytes())
+	sharedSecret, _ := btcec.S256().ScalarMult(pubKey.X(), pubKey.Y(), privEph.ToECDSA().D.Bytes())
 
 	return privEph.PubKey(), sharedSecret, nil
 }
@@ -384,12 +385,12 @@ func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext 
 // recoverSharedEncryptionSecret performs an ECDH to recover the encryption secret meant for privKey from rawPubEph
 // Deprecated: this function is unsafe and recoverSharedEncryptionSecretForAES should be used
 func recoverSharedEncryptionSecret(privKey *btcec.PrivateKey, rawPubEph []byte) (*big.Int, error) {
-	pubEph, err := btcec.ParsePubKey(rawPubEph, btcec.S256())
+	pubEph, err := btcec.ParsePubKey(rawPubEph)
 	if err != nil {
 		return nil, fmt.Errorf("recoverSharedEncryptionSecretForAES: failed to parse pub eph: %w", err)
 	}
 
-	sharedSecret, _ := pubEph.ScalarMult(pubEph.X, pubEph.Y, privKey.D.Bytes())
+	sharedSecret, _ := btcec.S256().ScalarMult(pubEph.X(), pubEph.Y(), privKey.ToECDSA().D.Bytes())
 	return sharedSecret, nil
 }
 
@@ -416,7 +417,7 @@ func randomBytes(count int) []byte {
 // What follows are work arounds for https://github.com/golang/go/issues/46893
 
 type DecryptOperation struct {
-	d Decrypter
+	d       Decrypter
 	payload string
 }
 
@@ -432,7 +433,7 @@ func (o *DecryptOperation) Decrypt() ([]byte, error) {
 }
 
 type EncryptOperation struct {
-	e Encrypter
+	e       Encrypter
 	payload []byte
 }
 

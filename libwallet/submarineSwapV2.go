@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
 	"github.com/muun/libwallet/swaps"
 )
 
@@ -45,7 +45,7 @@ func (c *coinSubmarineSwapV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 		return err
 	}
 
-	sig, err := signNativeSegwitInput(
+	sig, err := signNativeSegwitInputV0(
 		index, tx, userKey, witnessScript, c.Amount)
 	if err != nil {
 		return err

@@ -6,8 +6,8 @@ import (
 
 	"github.com/btcsuite/btcd/chaincfg"
 
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/hdpath"
 	hash "golang.org/x/crypto/ripemd160" //lint:ignore SA1019 using deprecated hash function for compatibility
@@ -68,7 +68,7 @@ func (d *KeyDescriptor) DeriveTo(path string) (*hdkeychain.ExtendedKey, error) {
 		if index.Hardened {
 			modifier = hdkeychain.HardenedKeyStart
 		}
-		key, err = key.Child(index.Index | modifier)
+		key, err = key.Derive(index.Index | modifier)
 		if err != nil {
 			return nil, err
 		}

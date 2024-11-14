@@ -30,19 +30,20 @@ public abstract class HoustonIdDao<ModelT extends HoustonIdModel> extends BaseDa
                 return super.store(element);
             }
 
-            final Cursor cursor = briteDb.query(
-                    "select id from " + tableName + " where hid = ?",
-                    String.valueOf(element.getHid())
-            );
+            final String id = String.valueOf(element.getHid());
+            try (Cursor cursor = briteDb.query(
+                    "select id from " + tableName + " where hid = ?", id
+            )) {
 
-            if (cursor.getCount() == 0) {
-                return super.store(element);
-            }
+                if (cursor.getCount() == 0) {
+                    return super.store(element);
+                }
 
-            if (cursor.getCount() == 1) {
-                cursor.moveToFirst();
-                element.setId(cursor.getLong(cursor.getColumnIndex("id")));
-                return super.store(element);
+                if (cursor.getCount() == 1) {
+                    cursor.moveToFirst();
+                    element.setId(cursor.getLong(cursor.getColumnIndex("id")));
+                    return super.store(element);
+                }
             }
 
             return Observable.error(

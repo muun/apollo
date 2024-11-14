@@ -417,7 +417,7 @@ public enum ErrorCode {
             2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
     );
 
-    private static Map<Integer, ErrorCode> errorCodeMap = new HashMap<>();
+    private static final Map<Integer, ErrorCode> errorCodeMap = new HashMap<>();
 
     static {
         for (ErrorCode errorCode : values()) {

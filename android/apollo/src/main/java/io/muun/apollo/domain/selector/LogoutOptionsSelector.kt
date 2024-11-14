@@ -32,7 +32,7 @@ class LogoutOptionsSelector @Inject constructor(
         }
     }
 
-    fun watch(): Observable<LogoutOptions> =
+    private fun watch(): Observable<LogoutOptions> =
         Observable
             .combineLatest(
                 userSel.watch(),

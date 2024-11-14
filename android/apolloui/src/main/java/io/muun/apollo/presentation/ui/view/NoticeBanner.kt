@@ -2,13 +2,15 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewNoticeBannerBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
@@ -26,14 +28,21 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
         }
     }
 
-    @BindView(R.id.banner_icon)
-    lateinit var icon: ImageView
+    private val binding: ViewNoticeBannerBinding
+        get() = _binding as ViewNoticeBannerBinding
 
-    @BindView(R.id.banner_text)
-    lateinit var textView: TextView
+    private val icon: ImageView
+        get() = binding.bannerIcon
+
+    private val textView: TextView
+        get() = binding.bannerText
 
     override val layoutResource: Int
         get() = R.layout.view_notice_banner
+
+    override fun viewBinder(): ((View) -> ViewBinding) {
+        return ViewNoticeBannerBinding::bind
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

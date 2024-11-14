@@ -107,6 +107,10 @@ public class LnInvoiceTest {
             assertThat(invoice.amount.amountInSatoshis).isEqualTo(expected.amountInSatoshis);
         }
 
+        if (expected.paymentSecret != null) {
+            assertThat(invoice.paymentSecret).isEqualTo(expected.paymentSecret);
+        }
+
         // TODO assert routes
     }
 

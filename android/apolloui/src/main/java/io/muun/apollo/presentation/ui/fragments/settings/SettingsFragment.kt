@@ -362,7 +362,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             .layout(R.layout.dialog_custom_layout2)
             .title(R.string.settings_logout_alert_title)
             .message(R.string.settings_logout_alert_body)
-            .positiveButton(R.string.settings_logout_alert_yes) { presenter.logout() }
+            .positiveButton(R.string.settings_logout_alert_yes) { presenter.logoutUser() }
             .negativeButton(R.string.settings_logout_alert_no, null)
             .build()
         showDialog(muunDialog)

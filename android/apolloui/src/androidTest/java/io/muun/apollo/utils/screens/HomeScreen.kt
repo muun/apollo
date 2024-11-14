@@ -14,8 +14,8 @@ import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers.Companion.balanceNotEqualsErrorMessage
 import io.muun.common.utils.Preconditions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
 import javax.money.MonetaryAmount
+import kotlin.math.abs
 import kotlin.random.Random
 
 class HomeScreen(
@@ -44,16 +44,20 @@ class HomeScreen(
             .isTrue
     }
 
-    fun checkBalanceCloseTo(expectedBalance: MonetaryAmount) {
+    fun waitUntilBalanceCloseTo(expectedBalance: MonetaryAmount) {
+        pullNotificationsUntil(20000) {
+            checkBalanceCloseTo(expectedBalance)
+        }
+    }
 
+    private fun checkBalanceCloseTo(expectedBalance: MonetaryAmount): Boolean {
         waitUntilVisible()
 
         val actualBalance = balanceInBtc
 
         assertThat(actualBalance.currency).isEqualTo(expectedBalance.currency)
 
-        assertThat(actualBalance.number.toDouble())
-            .isCloseTo(expectedBalance.number.toDouble(), within(0.00001))
+        return abs(actualBalance.number.toDouble() - expectedBalance.number.toDouble()) < 0.00001
     }
 
     fun goToReceive() {

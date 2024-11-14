@@ -23,7 +23,7 @@ import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.OperationStatus
 import io.muun.common.utils.Preconditions
 import libwallet.Libwallet
-import java.util.*
+import java.util.Locale
 import java.util.regex.Pattern
 import javax.money.MonetaryAmount
 
@@ -375,7 +375,7 @@ abstract class UiOperation(
         if (operation.hash == null || !HEX_NUMBER.matcher(operation.hash!!).find()) {
             context.getString(R.string.not_available)
         } else {
-            linkBuilder.transactionLink(operation.hash)
+            linkBuilder.transactionLink(operation.hash!!)
         }
 
     /**
@@ -385,7 +385,7 @@ abstract class UiOperation(
         if (operation.receiverAddress == null) {
             context.getString(R.string.not_available)
         } else {
-            linkBuilder.addressLink(operation.receiverAddress)
+            linkBuilder.addressLink(operation.receiverAddress!!)
         }
 
     /**

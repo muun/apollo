@@ -6,6 +6,50 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.3] - 2024-10-08
+
+### ADDED
+
+- Several background notification processing reliability improvements
+
+### FIXED
+
+- Fixed cancel payment dialog copy.
+- Fixed low occurrence crash when tapping delete wallet.
+- Fixed low occurrence crash when entering a payment detail from a notification or recent apps
+- Fixed mempool space tx link destination (after mempool.space changed url destination)
+- Released certain resources (like SQLite cursors) that weren't being released to avoid leaks.
+- Fixed countDownTimer lifecycle issue (not being cancelled) in newop (send) screen
+
+### CHANGED
+
+- Upgrade Firebase to get SDK to get Release Monitoring feature.
+- Upgrade Firebase dependencies using BOM (Bill Of Materials). firebase-bom:32.6.0
+- Upgrade Firebase Messaging as part of firebase-bom:32.6.0
+- Upgrade Firebase Crashlytics as part of firebase-bom:32.6.0
+- Upgrade Firebase Analytics as part of firebase-bom:32.6.0
+- Update Go version to 1.22.1
+- Update Kotlin version to 1.8.20
+- Upgrade Dagger to 2.52
+- Upgrade SQDelight to 1.5.5
+- Upgrade libwallet dependencies (like btcd)
+- Removed secp256k1-zkp C code from lib wallet. Replaced it with the native Go version.
+- Refactored and enhanced musig code in libwallet
+- Enhanced debugging and tracing metadata for ANRs troubleshooting
+- Avoid unnecessary writes to Android Keystore
+- Avoid double write/delete to Android Keystore in logouts
+- Reduce Butterknife usage (in slow effort to migrate Butterknife to ViewBinding)
+- Simplified and cleaned libwallet build scripts
+- Avoid needless requests when creating a new wallet
+- Refactored (cleaned up) delete wallet logic
+- Removed Stetho library (long time unused)
+- Kotlinized all the repositories, part of an effort to delay access to shared prefs (lazy access).
+- Introduced MockK for mocking kotlin classes, fields and properties.
+- Upgrade AndroidX Navigation lib version to 2.7.7
+- Upgrade AndroidX WorkManager lib version to 2.9.0
+- Upgrade Android lifecycle aware components libs to 2.6.2
+- Removed no longer needed *-ktx dependencies
+
 ## [52.2] - 2024-09-23
 
 ### FIXED

@@ -9,6 +9,7 @@ import io.muun.apollo.data.net.base.NetworkException
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.errors.SecureStorageError
 import io.muun.apollo.domain.model.report.CrashReport
+import io.muun.common.Optional
 import io.muun.common.model.Currency
 import io.muun.common.rx.ObservableFn
 import io.muun.common.rx.RxHelper
@@ -19,7 +20,7 @@ import libwallet.StringList
 import rx.Observable
 import java.io.Serializable
 import java.net.SocketTimeoutException
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.TimeoutException
 import javax.crypto.BadPaddingException
 import javax.money.Monetary
@@ -92,7 +93,10 @@ inline fun <reified T> Throwable.isInstanceOrIsCausedByError() =
     this is T || isCausedByError<T>()
 
 inline fun <reified T> Throwable.isCausedByError() =
-    ExceptionUtils.getTypedCause(this, T::class.java).isPresent
+    getTypedClause<T>().isPresent
+
+inline fun <reified T> Throwable.getTypedClause(): Optional<T> =
+    ExceptionUtils.getTypedCause(this, T::class.java)
 
 /**
  * Return the list of currencies reported by the device (based on the list of available locales

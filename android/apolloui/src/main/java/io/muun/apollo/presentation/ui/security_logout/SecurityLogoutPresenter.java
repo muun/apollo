@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.security_logout;
 
-import io.muun.apollo.domain.action.LogoutActions;
-import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.action.session.LogoutAction;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.MuunError;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
@@ -18,27 +17,21 @@ import javax.inject.Inject;
 @PerActivity
 public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
 
-    private final LogoutActions logoutActions;
-    private final UserActions userActions;
+    private final LogoutAction logout;
 
     /**
      * Constructor.
      */
     @Inject
-    public SecurityLogoutPresenter(LogoutActions logoutActions, UserActions userActions) {
-        this.logoutActions = logoutActions;
-        this.userActions = userActions;
+    public SecurityLogoutPresenter(LogoutAction logout) {
+        this.logout = logout;
     }
 
     @Override
     public void setUp(Bundle arguments) {
         super.setUp(arguments);
-
-        // TODO we should extract this to an action and refactor SettingsPresenter
-        // We need to "capture" auth header to fire (and forget) notifyLogout request
-        final String jwt = getJwt();
-        logoutActions.destroyRecoverableWallet();
-        userActions.notifyLogoutAction.run(jwt);
+        // TODO this should probably happen BEFORE navigating to this screen, right?
+        logout.run();
     }
 
     /**

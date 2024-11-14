@@ -9,7 +9,8 @@ enum class MuunFeature {
     TAPROOT_PREACTIVATION,
     APOLLO_BIOMETRICS,
     HIGH_FEES_HOME_BANNER,
-    HIGH_FEES_RECEIVE_FLOW;
+    HIGH_FEES_RECEIVE_FLOW,
+    EFFECTIVE_FEES_CALCULATION;
 
     companion object {
 
@@ -20,6 +21,7 @@ enum class MuunFeature {
                 MuunFeatureJson.APOLLO_BIOMETRICS -> APOLLO_BIOMETRICS
                 MuunFeatureJson.HIGH_FEES_HOME_BANNER -> HIGH_FEES_HOME_BANNER
                 MuunFeatureJson.HIGH_FEES_RECEIVE_FLOW -> HIGH_FEES_RECEIVE_FLOW
+                MuunFeatureJson.EFFECTIVE_FEES_CALCULATION -> EFFECTIVE_FEES_CALCULATION
                 else -> throw MissingCaseError(json)
             }
 
@@ -30,6 +32,7 @@ enum class MuunFeature {
                 Libwallet.BackendFeatureApolloBiometrics -> APOLLO_BIOMETRICS
                 Libwallet.BackendFeatureHighFeesHomeBanner -> HIGH_FEES_HOME_BANNER
                 Libwallet.BackendFeatureHighFeesReceiveFlow -> HIGH_FEES_RECEIVE_FLOW
+                Libwallet.BackendFeatureEffectiveFeesCalculation -> EFFECTIVE_FEES_CALCULATION
 
                 else -> throw MissingCaseError(name, "MuunFeature conversion from libwallet")
             }
@@ -42,6 +45,7 @@ enum class MuunFeature {
             APOLLO_BIOMETRICS -> MuunFeatureJson.APOLLO_BIOMETRICS
             HIGH_FEES_HOME_BANNER -> MuunFeatureJson.HIGH_FEES_HOME_BANNER
             HIGH_FEES_RECEIVE_FLOW -> MuunFeatureJson.HIGH_FEES_RECEIVE_FLOW
+            EFFECTIVE_FEES_CALCULATION -> MuunFeatureJson.EFFECTIVE_FEES_CALCULATION
         }
 
     fun toLibwalletModel(): String =
@@ -51,5 +55,6 @@ enum class MuunFeature {
             APOLLO_BIOMETRICS -> Libwallet.BackendFeatureApolloBiometrics
             HIGH_FEES_HOME_BANNER -> Libwallet.BackendFeatureHighFeesHomeBanner
             HIGH_FEES_RECEIVE_FLOW -> Libwallet.BackendFeatureHighFeesReceiveFlow
+            EFFECTIVE_FEES_CALCULATION -> Libwallet.BackendFeatureEffectiveFeesCalculation
         }
 }

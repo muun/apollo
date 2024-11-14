@@ -8,8 +8,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 const (
@@ -51,7 +52,7 @@ func NewChallengePrivateKey(input, salt []byte) *ChallengePrivateKey {
 	key := Scrypt256(input, salt)
 
 	// 2nd return value is the pub key which we don't need right now
-	priv, _ := btcec.PrivKeyFromBytes(btcec.S256(), key)
+	priv, _ := btcec.PrivKeyFromBytes(key)
 
 	return &ChallengePrivateKey{key: priv}
 }
@@ -60,11 +61,7 @@ func NewChallengePrivateKey(input, salt []byte) *ChallengePrivateKey {
 func (k *ChallengePrivateKey) SignSha(payload []byte) ([]byte, error) {
 
 	hash := sha256.Sum256(payload)
-	sig, err := k.key.Sign(hash[:])
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to sign payload: %w", err)
-	}
+	sig := ecdsa.Sign(k.key, hash[:])
 
 	return sig.Serialize(), nil
 }
