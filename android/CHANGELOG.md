@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.4] - 2024-10-18
+
+### FIXED
+
+- Removed some background notification processing reliability improvements that were causing
+errors and crashes
+
 ## [52.3] - 2024-10-08
 
 ### ADDED

@@ -28,7 +28,6 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
     private val systemCapabilitiesProvider: SystemCapabilitiesProvider,
     private val dateTimeZoneProvider: DateTimeZoneProvider,
     private val localeInfoProvider: LocaleInfoProvider,
-    private val trafficStatsInfoProvider: TrafficStatsInfoProvider,
 ) {
 
     private val powerManager: PowerManager by lazy {
@@ -73,20 +72,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             connectivityInfoProvider.proxySocks,
             dateTimeZoneProvider.autoDateTime,
             dateTimeZoneProvider.autoTimeZone,
-            dateTimeZoneProvider.timeZoneId,
-            localeInfoProvider.dateFormat,
-            localeInfoProvider.regionCode,
-            dateTimeZoneProvider.calendarIdentifier,
-            trafficStatsInfoProvider.androidMobileRxTraffic,
-            telephonyInfoProvider.simOperatorId,
-            telephonyInfoProvider.simOperatorName,
-            telephonyInfoProvider.mobileNetworkId,
-            telephonyInfoProvider.mobileNetworkName,
-            telephonyInfoProvider.mobileRoaming,
-            telephonyInfoProvider.mobileDataStatus,
-            telephonyInfoProvider.mobileRadioType,
-            telephonyInfoProvider.mobileDataActivity,
-            connectivityInfoProvider.networkLink
+            dateTimeZoneProvider.timeZoneId
         )
 
     @Suppress("ArrayInDataClass")
@@ -128,20 +114,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val proxySocks: String,
         private val autoDateTime: Int,
         private val autoTimeZone: Int,
-        private val timeZoneId: String,
-        private val androidDateFormat: String,
-        private val regionCode: String,
-        private val androidCalendarIdentifier: String,
-        private val androidMobileRxTraffic: Long,
-        private val androidSimOperatorId: String,
-        private val androidSimOperatorName: String,
-        private val androidMobileOperatorId: String,
-        private val mobileOperatorName: String,
-        private val androidMobileRoaming: Boolean,
-        private val androidMobileDataStatus: Int,
-        private val androidMobileRadioType: Int,
-        private val androidMobileDataActivity: Int,
-        private val androidNetworkLink: ConnectivityInfoProvider.NetworkLink?
+        private val timeZoneId: String
     )
 
     /**
