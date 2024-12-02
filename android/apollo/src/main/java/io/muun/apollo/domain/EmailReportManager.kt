@@ -26,7 +26,15 @@ class EmailReportManager @Inject constructor(
     private val context: Context,
 ) {
 
-    fun buildEmailReport(report: CrashReport, presenterName: String): EmailReport {
+    fun buildAbridgedEmailReport(report: CrashReport, presenterName: String): EmailReport {
+        return buildEmailReport(report, presenterName, abridged = true)
+    }
+
+    fun buildEmailReport(
+        report: CrashReport,
+        presenterName: String,
+        abridged: Boolean = false,
+    ): EmailReport {
 
         val supportId = userSel.getOptional()
             .flatMap { obj: User -> obj.supportId }
@@ -47,7 +55,7 @@ class EmailReportManager @Inject constructor(
             .defaultRegion(telephonyInfoProvider.region.orElse("null"))
             .rootHint(isRootedDeviceAction.actionNow())
             .locale(context.locale())
-            .build()
+            .build(abridged)
     }
 
     private fun getFcmTokenHash() = try {

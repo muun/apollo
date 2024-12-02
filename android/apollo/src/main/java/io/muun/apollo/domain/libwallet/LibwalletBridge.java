@@ -330,6 +330,7 @@ public class LibwalletBridge {
                                                 final NetworkParameters network) {
 
         try {
+            Timber.i("Decrypting payload from peer: %s", payload);
             // TODO: We should actually pass a peer key here
             return toLibwalletModel(userKey, network)
                     .decrypterFrom(null)

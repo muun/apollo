@@ -27,7 +27,7 @@ func Init(c *Config) {
 	Cfg = c
 
 	if Cfg.AppLogSink != nil {
-		logger := slog.New(NewBridgeLogHandler(Cfg.AppLogSink, slog.LevelWarn))
+		logger := slog.New(NewBridgeLogHandler(Cfg.AppLogSink, slog.LevelInfo))
 		slog.SetDefault(logger)
 	}
 }

@@ -58,10 +58,6 @@ object CrashReportBuilder {
         // Prepare the error:
         var error = origError ?: WrappedErrorMessage(message)
 
-        if (error.stackTrace == null) {
-            error.fillInStackTrace()
-        }
-
         error = when (error) {
             is HttpException -> ApiError(error)
             is UnknownCurrencyException -> MissingCurrencyError(error)

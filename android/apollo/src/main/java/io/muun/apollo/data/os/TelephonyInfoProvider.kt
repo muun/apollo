@@ -6,6 +6,7 @@ import io.muun.common.Optional
 import javax.inject.Inject
 
 private const val UNKNOWN = "UNKNOWN"
+private const val DATA_UNKNOWN = -1
 
 // TODO open to make tests work with mockito. We should probably move to mockK
 open class TelephonyInfoProvider @Inject constructor(context: Context) {
@@ -31,8 +32,17 @@ open class TelephonyInfoProvider @Inject constructor(context: Context) {
         }
 
     val dataState: String
-        get() {
-            return mapDataState(telephonyManager.dataState)
+        get() = try {
+            mapDataState(telephonyManager.dataState)
+        } catch (e: Exception) {
+            // 1. Docs mention UnsupportedOperationException If the device does not have
+            // PackageManager#FEATURE_TELEPHONY_DATA.
+            // 2. Undocumented, but we've observed SecurityException: Requires READ_PHONE_STATE in
+            // the wild, in some Samsung Android 5 devices. So, catching that as well.
+
+            // Using our own custom DATA_UNKNOWN instead of TelephonyManager.DATA_UNKNOWN as it was
+            // only added in API 29.
+            mapDataState(DATA_UNKNOWN)
         }
 
     val simRegion: String
