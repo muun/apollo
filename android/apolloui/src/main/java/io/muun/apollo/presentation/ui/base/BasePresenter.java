@@ -38,7 +38,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.util.Log;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -267,11 +266,13 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             Timber.e(error);
         }
 
+        final CrashReport errorReport = CrashReportBuilder.INSTANCE.build(error);
+
         analytics.report(new AnalyticsEvent.E_ERROR(
                 AnalyticsEvent.ERROR_TYPE.GENERIC,
                 error.getClass().getSimpleName(),
                 error.getLocalizedMessage(),
-                Log.getStackTraceString(error).replace("\n", " ")
+                errorReport.printErrorForAnalytics()
         ));
 
         // Our current error handling logic is this:
@@ -508,10 +509,12 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      */
     private void showErrorReportDialog(Throwable error, boolean standalone) {
 
+        final CrashReport errorReport = CrashReportBuilder.INSTANCE.build(error);
+
         analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(
                 error.getClass().getSimpleName(),
                 error.getLocalizedMessage(),
-                Log.getStackTraceString(error).replace("\n", " ")
+                errorReport.printErrorForAnalytics()
         ));
 
         final MuunDialog.Builder builder = new MuunDialog.Builder()
@@ -542,10 +545,23 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         analytics.attachAnalyticsMetadata(report);
 
         final EmailReport emailReport = emailReportManager
-                .buildEmailReport(report, this.getClass().getSimpleName());
+                .buildEmailReport(report, this.getClass().getSimpleName(), false);
 
-        final Intent emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), emailReport);
-        logcat.addLogsAsAttachment(emailIntent);
+        Intent emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), emailReport);
+
+        try {
+            logcat.addLogsAsAttachment(emailIntent);
+        } catch (Throwable t) {
+            // Avoid crashing if ANYTHING goes wrong while trying to attach logs to email
+            Timber.i("Error while attaching logs: %s", t.getMessage());
+
+            // Build EmailReport with stacktrace "trimmed" to avoid crashing at startActivity
+            // Note: We may have to cut down on breadcrumbs or other metadata if this is still
+            // a problem.
+            final EmailReport abridgedEmailReport = emailReportManager
+                    .buildAbridgedEmailReport(report, this.getClass().getSimpleName());
+            emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), abridgedEmailReport);
+        }
 
         if (Email.INSTANCE.hasEmailAppInstalled(getContext())) {
             getContext().startActivity(emailIntent);

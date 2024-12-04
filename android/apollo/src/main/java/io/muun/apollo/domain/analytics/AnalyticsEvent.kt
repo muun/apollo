@@ -6,7 +6,7 @@ import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.report.CrashReport
 import io.muun.common.model.OperationDirection
-import java.util.*
+import java.util.Locale
 
 /**
  * AnalyticsEvent list, shared with Falcon. Names are lower-cased into FBA event IDs, do not rename.
@@ -516,7 +516,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
             "title" to report.getTrackingTitle(),
             "tag" to report.tag,
             "message" to report.message,
-            "error" to report.printError().replace("\n", " "),
+            // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
+            "error" to report.printErrorForAnalytics(),
             "metadata" to report.printMetadata()
         )
     )

@@ -88,7 +88,7 @@ class EmailReport private constructor(val body: String) {
         fun locale(locale: Locale) = apply { this.locale = locale }
 
         @CheckReturnValue
-        fun build(): EmailReport {
+        fun build(abridged: Boolean): EmailReport {
 
             checkNotNull(report)
             checkNotNull(fcmTokenHash)
@@ -127,7 +127,7 @@ class EmailReport private constructor(val body: String) {
                    |Rooted (just a hint, no guarantees): $rootHint
                    |Unsupported Currencies: ${getUnsupportedCurrencies(report!!).contentToString()}
                    |Default Region: $defaultRegion
-                   |${report!!.print()}""".trimMargin()
+                   |${report!!.print(abridged)}""".trimMargin()
 
             Timber.d("EmailReport: \n$body")
             return EmailReport(body)

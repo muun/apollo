@@ -229,6 +229,10 @@ object OS {
     fun supportsKeystoreExceptionPublicMethods(): Boolean =
         isAndroidTiramisuOrNewer()
 
+    fun supportsAvailableNfcAntennas(): Boolean =
+        isAndroidUpsideDownCakeOrNewer()
+
+
     // PRIVATE STUFF:
 
     /**
@@ -313,4 +317,11 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
     private fun isAndroidTiramisuOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+    /**
+     * Whether this OS version is U-14-34 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun isAndroidUpsideDownCakeOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 }

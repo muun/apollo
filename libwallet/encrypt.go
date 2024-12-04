@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"math"
 	"math/big"
 
@@ -207,6 +208,8 @@ func extractVariableString(reader *bytes.Reader, limit int) (string, error) {
 func (d *hdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	// Uses AES128-GCM with associated data. ECDHE is used for key exchange and ECDSA for authentication.
 	// See Encrypt further up for an in depth dive into the scheme used
+
+	slog.Info("Libwallet: Decrypting payload " + payload)
 
 	decoded := base58.Decode(payload)
 	reader := bytes.NewReader(decoded)

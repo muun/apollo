@@ -40,7 +40,6 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
 
-import java.util.Objects;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
@@ -410,7 +409,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
 
     @NotNull
     private ApplicationComponent getApplicationComponent() {
-        return ((BaseActivity) Objects.requireNonNull(getActivity())).getApplicationComponent();
+        return ((BaseActivity) requireActivity()).getApplicationComponent();
     }
 
     /**

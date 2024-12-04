@@ -6,14 +6,33 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-## [52.4] - 2024-10-18
+## [52.5] - 2024-12-02
+
+### ADDED
+
+- Reintroduced background notification processing reliability improvements
+
+### FIXED
+
+- Errors due to non ascii chars in http headers.
+- Error regarding radioVersion in some devices.
+- Error regarding getDataState in some devices.
+- Error regarding TransactionTooLargeException in email report intent.
+
+### CHANGED
+
+- Made json serialization of background execution metrics more reliable.
+- Added troubleshooting logs for decryption of operation metadata ciphertext.
+- Trimmed stacktraces in error reports breadcrumbs and metadata
+
+## [52.4] - 2024-11-18
 
 ### FIXED
 
 - Removed some background notification processing reliability improvements that were causing
 errors and crashes
 
-## [52.3] - 2024-10-08
+## [52.3] - 2024-11-08
 
 ### ADDED
 

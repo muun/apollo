@@ -18,7 +18,7 @@ class BuildInfoProvider @Inject constructor() {
         val time: Long,
         val host: String,
         val type: String,
-        val radioVersion: String,
+        val radioVersion: String?,
         val securityPatch: String,
         val baseOs: String,
     )
