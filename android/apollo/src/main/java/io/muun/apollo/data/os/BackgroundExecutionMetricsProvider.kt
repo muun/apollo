@@ -80,9 +80,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             dateTimeZoneProvider.calendarIdentifier,
             trafficStatsInfoProvider.androidMobileRxTraffic,
             telephonyInfoProvider.simOperatorId,
-            telephonyInfoProvider.simOperatorName,
             telephonyInfoProvider.mobileNetworkId,
-            telephonyInfoProvider.mobileNetworkName,
             telephonyInfoProvider.mobileRoaming,
             telephonyInfoProvider.mobileDataStatus,
             telephonyInfoProvider.mobileRadioType,
@@ -91,7 +89,10 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             nfcProvider.hasNfcFeature(),
             nfcProvider.hasNfcAdapter,
             nfcProvider.isNfcEnabled,
-            nfcProvider.getNfcAntennaPosition().map { "${it.first};${it.second}" }.toTypedArray()
+            nfcProvider.getNfcAntennaPosition().map { "${it.first};${it.second}" }.toTypedArray(),
+            nfcProvider.deviceSizeInMm?.let { "${it.first};${it.second}" } ?: "",
+            nfcProvider.isDeviceFoldable,
+            activityManagerInfoProvider.isBackgroundRestricted
         )
 
     @Suppress("ArrayInDataClass")
@@ -139,9 +140,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val androidCalendarIdentifier: String,
         private val androidMobileRxTraffic: Long,
         private val androidSimOperatorId: String,
-        private val androidSimOperatorName: String,
         private val androidMobileOperatorId: String,
-        private val mobileOperatorName: String,
         private val androidMobileRoaming: Boolean,
         private val androidMobileDataStatus: Int,
         private val androidMobileRadioType: Int,
@@ -150,7 +149,10 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val androidHasNfcFeature: Boolean,
         private val androidHasNfcAdapter: Boolean,
         private val androidNfcEnabled: Boolean,
-        private val androidNfcAntennaPositions: Array<String>
+        private val androidNfcAntennaPositions: Array<String>, // in mms starting bottom-left
+        private val androidDeviceSizeInMms: String,
+        private val androidFoldableDevice: Boolean?,
+        private val isBackgroundRestricted: Boolean
     )
 
     /**

@@ -19,10 +19,13 @@ import javax.validation.constraints.NotNull;
  *
  * <p>For example, client-key/schema:1'/recovery:1'/qr:1/123 is equivalent to the BIP 32 derivation
  * path m/1'/1'/1/123
+ *
+ * <p>The library also supports the `h` suffix instead of single quote `'` for hardened children.
+ * This is a common extension to BIP-32.
  */
 public class DerivationPathUtils {
 
-    private static final String PATH_PATTERN = "^[a-zA-Z\\d\\-]+(/([a-zA-Z\\d\\-]+:)?\\d+'?)*$";
+    private static final String PATH_PATTERN = "^[a-zA-Z\\d\\-]+(/([a-zA-Z\\d\\-]+:)?\\d+('|h)?)*$";
 
     private static final Pattern PATH_REGEX = Pattern.compile(PATH_PATTERN);
 
@@ -66,7 +69,7 @@ public class DerivationPathUtils {
 
         for (int i = 1; i < pathParts.length; i += 1) {
 
-            final boolean isHardened = pathParts[i].endsWith("'");
+            final boolean isHardened = pathParts[i].endsWith("'") || pathParts[i].endsWith("h");
 
             String childString = pathParts[i];
 

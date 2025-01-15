@@ -10,9 +10,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.Scopes
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.tasks.Tasks
-import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.FileContent
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
@@ -112,9 +112,7 @@ class DriveImpl @Inject constructor(
 
         credential.selectedAccount = GoogleSignIn.getLastSignedInAccount(context)!!.account
 
-        val transport = AndroidHttp.newCompatibleTransport()
-
-        return Drive.Builder(transport, GsonFactory(), credential)
+        return Drive.Builder(NetHttpTransport(), GsonFactory(), credential)
             .setApplicationName("Muun")
             .build()
     }

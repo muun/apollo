@@ -191,7 +191,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getEmArchitecture(),
                 systemCapabilitiesProvider.getSecurityEnhancedBuild(),
                 systemCapabilitiesProvider.getBridgeRootService(),
-                fileInfoProvider.getAppSize()
+                fileInfoProvider.getAppSize(),
+                hardwareCapabilitiesProvider.getHardwareAddresses(),
+                systemCapabilitiesProvider.getVbMeta(),
+                fileInfoProvider.getEfsCreationTimeInSeconds()
         );
 
         return getService().createFirstSession(params)
@@ -230,7 +233,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getEmArchitecture(),
                 systemCapabilitiesProvider.getSecurityEnhancedBuild(),
                 systemCapabilitiesProvider.getBridgeRootService(),
-                fileInfoProvider.getAppSize()
+                fileInfoProvider.getAppSize(),
+                hardwareCapabilitiesProvider.getHardwareAddresses(),
+                systemCapabilitiesProvider.getVbMeta(),
+                fileInfoProvider.getEfsCreationTimeInSeconds()
         );
 
         return getService().createLoginSession(params)
@@ -269,7 +275,11 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getEmArchitecture(),
                 systemCapabilitiesProvider.getSecurityEnhancedBuild(),
                 systemCapabilitiesProvider.getBridgeRootService(),
-                fileInfoProvider.getAppSize()
+                fileInfoProvider.getAppSize(),
+                hardwareCapabilitiesProvider.getHardwareAddresses(),
+                systemCapabilitiesProvider.getVbMeta(),
+                fileInfoProvider.getEfsCreationTimeInSeconds()
+
         );
 
         return getService().createRecoveryCodeLoginSession(session)

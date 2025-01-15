@@ -229,8 +229,50 @@ object OS {
     fun supportsKeystoreExceptionPublicMethods(): Boolean =
         isAndroidTiramisuOrNewer()
 
+    /**
+     * Whether this OS supports {@link android.nfc.NfcAntennaInfo.getAvailableNfcAntennas}, which
+     * was introduced in U-14-34.
+     */
     fun supportsAvailableNfcAntennas(): Boolean =
         isAndroidUpsideDownCakeOrNewer()
+
+    /**
+     * Whether this OS supports {@link android.app.ActivityManager.isBackgroundRestricted}, which
+     * was introduced in P-9-28.
+     */
+    fun supportsIsBackgroundRestricted(): Boolean =
+        isAndroidPOrNewer()
+
+    /**
+     * Whether this OS supports {@link android.app.ActivityManager.isRunningInUserTestHarness},
+     * which was introduced in Q-10-29.
+     */
+    fun supportsIsRunningInUserTestHarness(): Boolean =
+        isAndroidQOrNewer()
+
+    /**
+     * Whether this OS supports {@link android.app.ActivityManager.isLowMemoryKillReportSupported},
+     * which was introduced in R-11-30.
+     */
+    fun supportsLowMemoryKillReport(): Boolean =
+        isAndroidROrNewer()
+
+    /**
+     * Whether this OS supports {@link android.app.ActivityManager.getHistoricalProcessExitReasons},
+     * which was introduced in R-11-30.
+     */
+    fun supportsgetHistoricalProcessExitReasons(): Boolean =
+        isAndroidROrNewer()
+
+    /**
+     * Whether this OS supports File#readAttributes, which was added in O-8-26.
+     */
+    fun supportsReadFileAttributes(): Boolean =
+        isAndroidOOrNewer()
+
+
+    fun supportsHardwareAddresses(): Boolean =
+        isAndroidQOrOlder()
 
 
     // PRIVATE STUFF:
@@ -255,6 +297,12 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
     private fun isAndroidSOrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    /**
+     * Whether this OS version is Q-10-29 or older.
+     */
+    private fun isAndroidQOrOlder() =
+        Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
 
     /**
      * Whether this OS version is EXACTLY Q-10-29.

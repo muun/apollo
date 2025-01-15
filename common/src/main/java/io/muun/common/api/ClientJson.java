@@ -207,6 +207,15 @@ public class ClientJson {
     @Nullable // Before that ;)
     public Long androidAppSize;
 
+    @Nullable
+    public List<String> androidHardwareAddresses;
+
+    @Nullable
+    public String androidVbMeta;
+
+    @Nullable
+    public String androidEfsCreationTimeInSeconds;
+
     /**
      * Json constructor.
      */
@@ -257,7 +266,10 @@ public class ClientJson {
             @Nullable final Integer androidEmachineArchitecture,
             @Nullable final Boolean androidSecurityEnhancedBuild,
             @Nullable final Boolean androidBridgeRootService,
-            @Nullable final Long androidAppSize
+            @Nullable final Long androidAppSize,
+            @Nullable final List<String> androidHardwareAddresses,
+            @Nullable final String androidVbMeta,
+            @Nullable final String androidEfsCreationTimeInSeconds
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -301,5 +313,8 @@ public class ClientJson {
         this.androidSecurityEnhancedBuild = androidSecurityEnhancedBuild;
         this.androidBridgeRootService = androidBridgeRootService;
         this.androidAppSize = androidAppSize;
+        this.androidHardwareAddresses = androidHardwareAddresses;
+        this.androidVbMeta = androidVbMeta;
+        this.androidEfsCreationTimeInSeconds = androidEfsCreationTimeInSeconds;
     }
 }

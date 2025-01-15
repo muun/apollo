@@ -25,6 +25,10 @@ android {
 
     compileSdk 34
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         minSdk 19
         targetSdk 34
@@ -34,17 +38,17 @@ android {
 
     buildTypes {
         minified {
-            minifyEnabled true
+            minifyEnabled false
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     lint {
@@ -76,6 +80,11 @@ ext {
     version_mockk = '1.13.7'        // Latest version targeting kotlin 1.8.20
 }
 
+configurations {
+    all {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+}
 
 dependencies {
     api project(':common')
@@ -100,7 +109,7 @@ dependencies {
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
 
     // Logging:
-    api 'com.jakewharton.timber:timber:4.5.1'
+    api 'com.jakewharton.timber:timber:5.0.1'
 
     // Money:
     api 'org.javamoney:moneta-bp:1.0'
@@ -137,9 +146,9 @@ dependencies {
 
     // Google APIs
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
-    implementation 'com.google.api-client:google-api-client-android:1.26.0'
+    implementation('com.google.api-client:google-api-client-android:2.7.0')
     implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
-    implementation 'com.google.http-client:google-http-client-gson:1.26.0'
+    implementation 'com.google.http-client:google-http-client-gson:1.45.0'
 
     // Kotlin:
     // Kotlin serialization runtime library. Note that while the plugin has version the same as

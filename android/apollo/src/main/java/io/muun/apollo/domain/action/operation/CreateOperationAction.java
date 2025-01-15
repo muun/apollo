@@ -15,22 +15,30 @@ import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.common.model.OperationDirection;
 import io.muun.common.rx.ObservableFn;
+import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
 import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 @Singleton
 public class CreateOperationAction {
 
     private final TransactionSizeRepository transactionSizeRepository;
+
     private final OperationDao operationDao;
+
     private final PublicProfileDao publicProfileDao;
+
     private final SubmarineSwapDao submarineSwapDao;
+
     private final IncomingSwapDao incomingSwapDao;
+
     private final IncomingSwapHtlcDao incomingSwapHtlcDao;
+
     private final VerifyFulfillableAction verifyFulfillable;
 
     private final NotificationService notificationService;
@@ -39,14 +47,16 @@ public class CreateOperationAction {
      * Create a new Operation in the local database, and update the transaction size vector.
      */
     @Inject
-    public CreateOperationAction(final TransactionSizeRepository transactionSizeRepository,
-                                 final OperationDao operationDao,
-                                 final PublicProfileDao publicProfileDao,
-                                 final SubmarineSwapDao submarineSwapDao,
-                                 final NotificationService notificationService,
-                                 final IncomingSwapDao incomingSwapDao,
-                                 final IncomingSwapHtlcDao incomingSwapHtlcDao,
-                                 final VerifyFulfillableAction verifyFulfillable) {
+    public CreateOperationAction(
+            final TransactionSizeRepository transactionSizeRepository,
+            final OperationDao operationDao,
+            final PublicProfileDao publicProfileDao,
+            final SubmarineSwapDao submarineSwapDao,
+            final NotificationService notificationService,
+            final IncomingSwapDao incomingSwapDao,
+            final IncomingSwapHtlcDao incomingSwapHtlcDao,
+            final VerifyFulfillableAction verifyFulfillable
+    ) {
 
         this.transactionSizeRepository = transactionSizeRepository;
         this.operationDao = operationDao;
@@ -61,11 +71,14 @@ public class CreateOperationAction {
     /**
      * Create/Store a new Operation in the local database, and update the transaction size vector.
      */
-    public Observable<Operation> action(Operation operation,
-                                        NextTransactionSize nextTransactionSize) {
+    public Observable<Operation> action(
+            Operation operation,
+            @NotNull NextTransactionSize nextTransactionSize
+    ) {
         return saveOperation(operation)
                 .map(savedOperation -> {
                     Timber.i("Updating next transaction size estimation");
+                    logStaleNtsUpdate(operation, nextTransactionSize);
                     transactionSizeRepository.setTransactionSize(nextTransactionSize);
 
                     if (savedOperation.direction == OperationDirection.INCOMING) {
@@ -173,5 +186,26 @@ public class CreateOperationAction {
                             return chain;
                         }
                 ));
+    }
+
+    private void logStaleNtsUpdate(Operation operation, NextTransactionSize newNts) {
+        final NextTransactionSize prevNts = transactionSizeRepository.getNextTransactionSize();
+
+        if (prevNts == null || prevNts.validAtOperationHid == null) {
+            return; // Not a stale update. We've nothing stored yet or we have smth really old.
+        }
+
+        final Long newNtsHid = newNts.validAtOperationHid;
+        Preconditions.checkNotNull(newNtsHid); // New nts' HAVE non-null validAtOperationHid
+
+        // We're interested in the == case too. We want to detect and check if it causes trouble
+        if (prevNts.validAtOperationHid >= newNtsHid) {
+            Timber.e(
+                    "Stale NTS update at CreateOperation op.Hid:%s. %s vs %s",
+                    operation.getHid(),
+                    newNtsHid,
+                    prevNts.validAtOperationHid
+            );
+        }
     }
 }

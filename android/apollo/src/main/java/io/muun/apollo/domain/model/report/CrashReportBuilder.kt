@@ -42,12 +42,12 @@ object CrashReportBuilder {
      * Build a CrashReport by extracting relevant metadata and summarizing messages and traces.
      */
     fun build(origError: Throwable?): CrashReport =
-        build(null, origError?.message, origError)
+        build(origError?.message, origError)
 
     /**
      * Build a CrashReport by extracting relevant metadata and summarizing messages and traces.
      */
-    fun build(tag: String?, origMessage: String?, origError: Throwable?): CrashReport {
+    fun build(origMessage: String?, origError: Throwable?): CrashReport {
         // Prepare the message:
         var message = origMessage ?: ""
 
@@ -71,7 +71,7 @@ object CrashReportBuilder {
         error = summarize(error)
 
         // Done!
-        return CrashReport(tag ?: "Apollo", message, error, origError, metadata)
+        return CrashReport(message, error, origError, metadata)
     }
 
     /** Craft a summarized Throwable */

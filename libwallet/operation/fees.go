@@ -2,7 +2,7 @@ package operation
 
 import (
 	"errors"
-	"fmt"
+	"log/slog"
 	"math"
 )
 
@@ -43,8 +43,7 @@ func (f *feeCalculator) calculateFee(amountInSat int64, feeRateInSatsPerVByte fl
 			var err error
 			feeBumpAmount, err = f.calculateFeeBumpAmount(lastUnconfirmedUtxoUsedIndex, feeRateInSatsPerVByte)
 			if err != nil {
-				// TODO: Add listener to track non-fatal error.
-				fmt.Printf("Non-fatal error calculating fee bump amount: %v\n", err.Error())
+				slog.Error("error calculating fee bump amount.", slog.Any("error", err))
 			}
 		}
 

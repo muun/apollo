@@ -30,6 +30,7 @@ import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.LogoutActions;
 import io.muun.apollo.domain.action.di.ActionComponent;
 import io.muun.apollo.domain.analytics.Analytics;
+import io.muun.apollo.domain.libwallet.LibwalletService;
 
 import android.content.Context;
 import dagger.Component;
@@ -113,4 +114,6 @@ public interface DataComponent extends ActionComponent {
     Analytics analytics();
 
     DaoManager daoManager();
+
+    LibwalletService goLibwalletService();
 }

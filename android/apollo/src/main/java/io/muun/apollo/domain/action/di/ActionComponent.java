@@ -29,7 +29,7 @@ import io.muun.apollo.domain.action.operation.ResolveOperationUriAction;
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction;
 import io.muun.apollo.domain.action.permission.UpdateContactsPermissionStateAction;
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction;
-import io.muun.apollo.domain.action.realtime.FetchRealTimeFeesAction;
+import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction;
 import io.muun.apollo.domain.action.session.CreateLoginSessionAction;
 import io.muun.apollo.domain.action.session.LogInAction;
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
@@ -83,7 +83,7 @@ public interface ActionComponent {
 
     FetchRealTimeDataAction fetchRealTimeDataAction();
 
-    FetchRealTimeFeesAction fetchRealTimeFeesAction();
+    PreloadFeeDataAction fetchRealTimeFeesAction();
 
     ResolveOperationUriAction resolveOperationUriAction();
 

@@ -229,7 +229,10 @@ public class ApiObjectsMapper {
             final int emArchitecture,
             final String securityEnhancedBuild,
             final String bridgeRootService,
-            final long appSize
+            final long appSize,
+            final List<String> hardwareAddresses,
+            final String vbMeta,
+            final String efsCreationTimeInSeconds
     ) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
@@ -272,7 +275,10 @@ public class ApiObjectsMapper {
                 emArchitecture,
                 mapSeLinux(securityEnhancedBuild),
                 mapAdbRootService(bridgeRootService),
-                appSize
+                appSize,
+                hardwareAddresses,
+                vbMeta,
+                efsCreationTimeInSeconds
         );
     }
 
@@ -398,15 +404,18 @@ public class ApiObjectsMapper {
             @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
             @NonNull GooglePlayHelper.PlayInfo playInfo,
-            BuildInfoProvider.BuildInfo buildInfo,
-            PackageManagerInfoProvider.AppInfo appInfo,
-            PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
-            String signatureHash,
-            Integer quickEmProps,
-            Integer emArchitecture,
-            String securityEnhancedBuild,
-            String bridgeRootService,
-            Long appSize
+            final BuildInfoProvider.BuildInfo buildInfo,
+            final PackageManagerInfoProvider.AppInfo appInfo,
+            final PackageManagerInfoProvider.DeviceFeatures deviceFeatures,
+            final String signatureHash,
+            final Integer quickEmProps,
+            final Integer emArchitecture,
+            final String securityEnhancedBuild,
+            final String bridgeRootService,
+            final Long appSize,
+            final List<String> hardwareAddresses,
+            final String vbMeta,
+            final String efsCreationTimeInSeconds
     ) {
 
         return new CreateFirstSessionJson(
@@ -430,7 +439,10 @@ public class ApiObjectsMapper {
                         emArchitecture,
                         securityEnhancedBuild,
                         bridgeRootService,
-                        appSize
+                        appSize,
+                        hardwareAddresses,
+                        vbMeta,
+                        efsCreationTimeInSeconds
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -464,7 +476,10 @@ public class ApiObjectsMapper {
             final Integer emArchitecture,
             final String securityEnhancedBuild,
             final String bridgeRootService,
-            final Long appSize
+            final Long appSize,
+            final List<String> hardwareAddresses,
+            final String vbMeta,
+            final String efsCreationTimeInSeconds
     ) {
 
         return new CreateLoginSessionJson(
@@ -488,7 +503,10 @@ public class ApiObjectsMapper {
                         emArchitecture,
                         securityEnhancedBuild,
                         bridgeRootService,
-                        appSize
+                        appSize,
+                        hardwareAddresses,
+                        vbMeta,
+                        efsCreationTimeInSeconds
                 ),
                 gcmToken,
                 email
@@ -520,7 +538,10 @@ public class ApiObjectsMapper {
             final Integer emArchitecture,
             final String securityEnhancedBuild,
             final String bridgeRootService,
-            final Long appSize
+            final Long appSize,
+            final List<String> hardwareAddresses,
+            final String vbMeta,
+            final String efsCreationTimeInSeconds
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -544,7 +565,10 @@ public class ApiObjectsMapper {
                         emArchitecture,
                         securityEnhancedBuild,
                         bridgeRootService,
-                        appSize
+                        appSize,
+                        hardwareAddresses,
+                        vbMeta,
+                        efsCreationTimeInSeconds
                 ),
                 gcmToken,
                 new ChallengeKeyJson(

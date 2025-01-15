@@ -8,6 +8,7 @@ import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository;
 import io.muun.apollo.data.preferences.MinFeeRateRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
+import io.muun.apollo.domain.model.MuunFeature;
 import io.muun.common.rx.RxHelper;
 
 import rx.Observable;
@@ -74,12 +75,16 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
         return houstonClient.fetchRealTimeData()
                 .doOnNext(realTimeData -> {
                     Timber.d("[Sync] Saving updated fee/rates");
-                    feeWindowRepository.store(realTimeData.feeWindow);
                     exchangeRateWindowRepository.storeLatest(realTimeData.exchangeRateWindow);
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                     forwardingPoliciesRepository.store(realTimeData.forwardingPolicies);
-                    minFeeRateRepository.store(realTimeData.minFeeRateInWeightUnits);
                     featuresRepository.store(realTimeData.features);
+
+                    // When the FF is ON, this data will be stored by FetchRealTimeFeesAction
+                    if (!realTimeData.features.contains(MuunFeature.EFFECTIVE_FEES_CALCULATION)) {
+                        feeWindowRepository.store(realTimeData.feeWindow);
+                        minFeeRateRepository.store(realTimeData.minFeeRateInWeightUnits);
+                    }
                 })
                 .map(RxHelper::toVoid);
     }

@@ -13,7 +13,7 @@ task pmd(type: Pmd) {
     source = fileTree('src/main/java')
 
     reports {
-        xml.enabled = false
-        html.enabled = !xml.enabled
+        xml.required = false
+        html.required = !xml.required
     }
 }

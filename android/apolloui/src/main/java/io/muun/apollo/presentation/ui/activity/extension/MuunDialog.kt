@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup.LayoutParams
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.annotation.StyleRes
 import io.muun.apollo.R
+import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.common.utils.Preconditions
 import rx.functions.Action0
 import javax.annotation.CheckReturnValue
@@ -21,6 +23,7 @@ class MuunDialog private constructor(
     private val layout: Int = 0,    // By default, we'll use AlertDialog default layout
     private val dialogInit: MuunDialogInitializer? = null,
     private val style: Int = R.style.MuunAlertDialog,
+    private val fixedWidthInDp: Int = 0,
     private val titleResId: Int = 0,
     private val title: CharSequence? = null,
     private val messageResId: Int = 0,
@@ -39,6 +42,7 @@ class MuunDialog private constructor(
         private var layout: Int = 0    // By default, we'll use AlertDialog default layout
         private var dialogInit: MuunDialogInitializer? = null
         private var style: Int = R.style.MuunAlertDialog
+        private var fixedWidthInDp: Int = 0
         private var titleResId: Int = 0
         private var title: CharSequence? = null
         private var messageResId: Int = 0
@@ -62,6 +66,11 @@ class MuunDialog private constructor(
         fun layout(@LayoutRes layout: Int, dialogInit: MuunDialogInitializer) = apply {
             this.layout = layout
             this.dialogInit = dialogInit
+        }
+
+        @CheckReturnValue
+        fun fixedWidthInDp(widthInDp: Int) = apply {
+            this.fixedWidthInDp = widthInDp
         }
 
         @CheckReturnValue
@@ -124,6 +133,7 @@ class MuunDialog private constructor(
             layout,
             dialogInit,
             style,
+            fixedWidthInDp,
             titleResId,
             title,
             messageResId,
@@ -163,6 +173,16 @@ class MuunDialog private constructor(
         cancelOnTouchOutside?.let(alertDialog::setCanceledOnTouchOutside)
 
         alertDialog.show()
+
+        // Workaround for nasty dialog width bug in foldable devices and tablets regarding
+        // welcome to Muun dialog (Relative layout is causing trouble? ConstraintLayout has same
+        // issue.)
+        if (fixedWidthInDp != 0) {
+            alertDialog.window!!.setLayout(
+                UiUtils.dpToPx(context, fixedWidthInDp),
+                LayoutParams.WRAP_CONTENT
+            )
+        }
 
         return alertDialog
     }

@@ -121,9 +121,9 @@ class PackageManagerInfoProvider @Inject constructor(private val context: Contex
 
     private fun hasFeature(packageManager: PackageManager, feature: String): Int {
         return if (packageManager.hasSystemFeature(feature)) {
-            Constants.PRESENT
+            Constants.INT_PRESENT
         } else {
-            Constants.ABSENT
+            Constants.INT_ABSENT
         }
     }
 

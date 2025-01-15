@@ -5,6 +5,7 @@ import io.muun.apollo.domain.errors.DebtNegativeError;
 import io.muun.apollo.domain.errors.NullExpectedDebtBugError;
 import io.muun.common.Supports;
 import io.muun.common.model.SizeForAmount;
+import io.muun.common.model.UtxoStatus;
 import io.muun.common.utils.Preconditions;
 import io.muun.common.utils.Since;
 
@@ -160,6 +161,21 @@ public class NextTransactionSize {
         // Houston expects the outpoint list (new clients) or null (old clients or "uninitialized"
         // clients, aka NTS not yet re-fetched)
         return outpoints.isEmpty() ? null : outpoints;
+    }
+
+
+    /**
+     * Filter and returns a complete list of unconfirmed utxos in current size progression.
+     */
+    public List<SizeForAmount> getUnconfirmedUtxos() {
+        final List<SizeForAmount> unconfirmedUtxos = new ArrayList<>();
+        for (SizeForAmount sizeForAmount : sizeProgression) {
+            if (sizeForAmount.status == UtxoStatus.UNCONFIRMED) {
+                unconfirmedUtxos.add(sizeForAmount);
+            }
+        }
+
+        return unconfirmedUtxos;
     }
 
     /**

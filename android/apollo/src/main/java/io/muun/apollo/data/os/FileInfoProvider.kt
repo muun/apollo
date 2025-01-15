@@ -5,6 +5,9 @@ import android.os.Environment
 import timber.log.Timber
 import java.io.File
 import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class FileInfoProvider @Inject constructor(private val context: Context) {
@@ -12,9 +15,9 @@ class FileInfoProvider @Inject constructor(private val context: Context) {
     val quickEmProps: Int
         get() {
             return if (File(TorHelper.process("/flfgrz/ova/drzh-cebcf")).exists()) {
-                Constants.PRESENT
+                Constants.INT_PRESENT
             } else {
-                Constants.ABSENT
+                Constants.INT_ABSENT
             }
         }
 
@@ -49,6 +52,24 @@ class FileInfoProvider @Inject constructor(private val context: Context) {
                 file.length()
             } else {
                 Constants.INT_UNKNOWN.toLong()
+            }
+        }
+
+    val efsCreationTimeInSeconds: String
+        get() {
+            if (!OS.supportsReadFileAttributes()) {
+                return Constants.UNKNOWN
+            }
+            val file = File("/efs")
+            if (!file.exists()) {
+                return Constants.EMPTY
+            }
+            return try {
+                val attr =
+                    Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+                attr.creationTime().to(TimeUnit.SECONDS).toString()
+            } catch (e: Exception) {
+                Constants.ERROR
             }
         }
 

@@ -13,7 +13,6 @@ private const val STACK_TRACE_LIMIT_FOR_EMAIL_REPORTS = 10_000
 private const val STACK_TRACE_LIMIT_FOR_ANALYTICS = 500
 
 data class CrashReport(
-    val tag: String,
     val message: String,
     val error: Throwable,
     val originalError: Throwable?,

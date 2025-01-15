@@ -398,6 +398,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
                 // Ugly hack to "simulate home button press". We need to exit "smoothly", sending
                 // it to the background, as when Home Button is pressed. This gets the job done.
                 // See: https://stackoverflow.com/questions/21253303/exit-android-app-on-back-pressed
+                @SuppressWarnings("UnsafeImplicitIntentLaunch")
                 final Intent intent = new Intent()
                         .setAction(Intent.ACTION_MAIN)
                         .addCategory(Intent.CATEGORY_HOME)

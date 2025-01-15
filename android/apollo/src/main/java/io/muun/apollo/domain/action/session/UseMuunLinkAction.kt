@@ -16,8 +16,8 @@ import javax.inject.Singleton
 @VisibleForTesting // open (non-final) class so mockito can mock/spy
 open class UseMuunLinkAction @Inject constructor(
     private val houstonClient: HoustonClient,
-    private val emailLinkAction: EmailLinkAction
-): BaseAsyncAction1<String, Void>() {
+    private val emailLinkAction: EmailLinkAction,
+) : BaseAsyncAction1<String, Void>() {
 
     private val LINK_PARAM_UUID = "uuid"
 

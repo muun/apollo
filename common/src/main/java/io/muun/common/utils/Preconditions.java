@@ -186,13 +186,42 @@ public final class Preconditions {
     }
 
     /**
+     * Ensures that an string is not null and not empty.
+     *
+     * @param reference a string
+     * @return the non-null reference that was validated
+     * @throws NullPointerException if {@code reference} is null
+     */
+    @Nonnull
+    public static String checkNotNullOrEmpty(@Nullable String reference) {
+        if (reference == null || reference.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        return reference;
+    }
+
+    /**
+     * Ensures that an string is not null and not empty.
+     *
+     * @param reference a string
+     * @return the non-null reference that was validated
+     * @throws NullPointerException if {@code reference} is null
+     */
+    @Nonnull
+    public static String checkNotNullOrEmpty(@Nullable String reference, String errorMessage) {
+        if (reference == null || reference.isEmpty()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+        return reference;
+    }
+
+    /**
      * If a condition is true, ensures that an object reference is not null. If it's false, ensure
      * that the reference is null.
      *
      * @return the null reference that was validated
      * @throws IllegalArgumentException if {@code reference} is not null
      */
-
     public static <T> T checkNotNullOnlyIf(@Nullable T reference, boolean condition) {
         if (condition) {
             return checkNotNull(reference);

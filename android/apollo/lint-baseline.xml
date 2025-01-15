@@ -1,43 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 7.0.4" type="baseline" client="gradle" name="AGP (7.0.4)" variant="all" version="7.0.4">
-
-    <issue
-        id="ObsoleteLintCustomCheck"
-        message="Lint found one or more custom checks that could not be loaded. The most likely reason for this is that it is using an older, incompatible or unsupported API in lint. Make sure these lint checks are updated to the new APIs. The issue registry class is timber.lint.IssueRegistry. The class loading issue is com/android/tools/lint/detector/api/Detector$JavaPsiScanner: ClassLoader.defineClass1(ClassLoader.java:-2)←ClassLoader.defineClass(ClassLoader.java:1012)←ClassLoader.defineClass(ClassLoader.java:874)←UrlClassLoader._defineClass(UrlClassLoader.java:400)←UrlClassLoader.defineClass(UrlClassLoader.java:392)←UrlClassLoader._findClass(UrlClassLoader.java:350)←UrlClassLoader.findClass(UrlClassLoader.java:336)←ClassLoader.loadClass(ClassLoader.java:587)">
-        <location
-            file="../../../../../.gradle/caches/transforms-3/43e08c52115994ad0d4f18e987eae308/transformed/jetified-timber-4.5.1/jars/lint.jar"/>
-    </issue>
-
-    <issue
-        id="ObsoleteLintCustomCheck"
-        message="Lint found one or more custom checks that could not be loaded. The most likely reason for this is that it is using an older, incompatible or unsupported API in lint. Make sure these lint checks are updated to the new APIs. The issue registry class is timber.lint.IssueRegistry. The class loading issue is com/android/tools/lint/detector/api/Detector$JavaPsiScanner: ClassLoader.defineClass1(ClassLoader.java:-2)←ClassLoader.defineClass(ClassLoader.java:1012)←ClassLoader.defineClass(ClassLoader.java:874)←UrlClassLoader._defineClass(UrlClassLoader.java:400)←UrlClassLoader.defineClass(UrlClassLoader.java:392)←UrlClassLoader._findClass(UrlClassLoader.java:350)←UrlClassLoader.findClass(UrlClassLoader.java:336)←ClassLoader.loadClass(ClassLoader.java:587)">
-        <location
-            file="../../../../../.gradle/caches/transforms-3/43e08c52115994ad0d4f18e987eae308/transformed/jetified-timber-4.5.1/jars/lint.jar"/>
-    </issue>
-
-    <issue
-        id="DuplicatePlatformClasses"
-        message="`commons-logging` defines classes that conflict with classes now provided by Android. Solutions include finding newer versions or alternative libraries that don&apos;t have the same problem (for example, for `httpclient` use `HttpUrlConnection` or `okhttp` instead), or repackaging the library using something like `jarjar`.">
-        <location
-            file="build.gradle"/>
-    </issue>
-
-    <issue
-        id="DuplicatePlatformClasses"
-        message="`httpclient` defines classes that conflict with classes now provided by Android. Solutions include finding newer versions or alternative libraries that don&apos;t have the same problem (for example, for `httpclient` use `HttpUrlConnection` or `okhttp` instead), or repackaging the library using something like `jarjar`.">
-        <location
-            file="build.gradle"/>
-    </issue>
+<issues format="6" by="lint 8.5.2" type="baseline" client="gradle" dependencies="false" name="AGP (8.5.2)" variant="all" version="8.5.2">
 
     <issue
         id="ApplySharedPref"
         message="Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
-        errorLine1="                .commit();"
-        errorLine2="                 ~~~~~~~~">
+        errorLine1="            .commit()"
+        errorLine2="             ~~~~~~~~">
         <location
-            file="src/main/java/io/muun/apollo/data/preferences/BaseRepository.java"
-            line="36"
-            column="18"/>
+            file="src/main/java/io/muun/apollo/data/preferences/BaseRepository.kt"
+            line="37"
+            column="14"/>
     </issue>
 
     <issue
@@ -58,7 +30,7 @@
         errorLine2="                       ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="130"
+            line="131"
             column="24"/>
     </issue>
 
@@ -69,7 +41,7 @@
         errorLine2="                   ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="151"
+            line="152"
             column="20"/>
     </issue>
 
@@ -80,7 +52,7 @@
         errorLine2="                      ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="162"
+            line="163"
             column="23"/>
     </issue>
 
@@ -91,7 +63,7 @@
         errorLine2="                      ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="168"
+            line="169"
             column="23"/>
     </issue>
 
@@ -102,7 +74,7 @@
         errorLine2="                  ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="221"
+            line="222"
             column="19"/>
     </issue>
 
@@ -113,7 +85,7 @@
         errorLine2="                  ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="227"
+            line="228"
             column="19"/>
     </issue>
 
@@ -124,7 +96,7 @@
         errorLine2="                      ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="244"
+            line="245"
             column="23"/>
     </issue>
 
@@ -135,24 +107,13 @@
         errorLine2="                          ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
-            line="255"
+            line="256"
             column="27"/>
     </issue>
 
     <issue
-        id="DefaultLocale"
-        message="Implicitly using the default locale is a common source of bugs: Use `toUpperCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
-        errorLine1="                currencyParam.toUpperCase()"
-        errorLine2="                              ~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/domain/action/operation/ResolveMuunUriAction.java"
-            line="71"
-            column="31"/>
-    </issue>
-
-    <issue
         id="Range"
-        message="Value must be ≥ 0"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
         errorLine1="                cursor.getColumnIndex(Phone.CONTACT_ID)"
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -163,7 +124,7 @@
 
     <issue
         id="Range"
-        message="Value must be ≥ 0"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
         errorLine1="                cursor.getColumnIndex(Phone.DISPLAY_NAME)"
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -174,7 +135,7 @@
 
     <issue
         id="Range"
-        message="Value must be ≥ 0"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
         errorLine1="                cursor.getColumnIndex(Phone.CONTACT_LAST_UPDATED_TIMESTAMP)"
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -185,7 +146,7 @@
 
     <issue
         id="Range"
-        message="Value must be ≥ 0"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
         errorLine1="                cursor.getColumnIndex(Phone.NUMBER)"
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -196,45 +157,45 @@
 
     <issue
         id="Range"
-        message="Value must be ≥ 0"
-        errorLine1="                element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                    element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
+        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/data/db/base/HoustonIdDao.java"
-            line="45"
-            column="46"/>
+            line="44"
+            column="50"/>
     </issue>
 
     <issue
         id="Range"
-        message="Value must be ≥ 0"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
         errorLine1="                element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
         errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/data/db/base/HoustonUuidDao.java"
-            line="43"
+            line="44"
             column="46"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.appcompat:appcompat than 1.2.0 is available: 1.5.1"
-        errorLine1="    api &apos;androidx.appcompat:appcompat:1.2.0&apos;"
+        message="A newer version of androidx.appcompat:appcompat than 1.4.2 is available: 1.7.0"
+        errorLine1="    api &apos;androidx.appcompat:appcompat:1.4.2&apos;"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="87"
+            line="96"
             column="9"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of androidx.sqlite:sqlite-framework than 2.0.1 is available: 2.2.0"
+        message="A newer version of androidx.sqlite:sqlite-framework than 2.0.1 is available: 2.4.0"
         errorLine1="    implementation &apos;androidx.sqlite:sqlite-framework:2.0.1&apos;"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="89"
+            line="98"
             column="20"/>
     </issue>
 
@@ -245,7 +206,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="92"
+            line="101"
             column="9"/>
     </issue>
 
@@ -256,7 +217,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="106"
+            line="115"
             column="9"/>
     </issue>
 
@@ -267,19 +228,41 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="107"
+            line="116"
             column="9"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.firebase:firebase-bom than 30.1.0 is available: 31.0.2"
-        errorLine1="    api platform(&apos;com.google.firebase:firebase-bom:30.1.0&apos;)"
-        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="A newer version of com.google.firebase:firebase-bom than 32.1.1 is available: 33.6.0"
+        errorLine1="    api platform(&apos;com.google.firebase:firebase-bom:32.1.1&apos;)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="111"
-            column="18"/>
+            line="120"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-runtime than 2.7.1 is available: 2.10.0"
+        errorLine1="    api &quot;androidx.work:work-runtime:$version_workmanager&quot; // api as needs to be init at app.OnCreate"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="133"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.7.1 is available: 2.10.0"
+        errorLine1="    api &quot;androidx.work:work-runtime-ktx:$version_workmanager&quot; // Kotlin extensions"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="134"
+            column="9"/>
     </issue>
 
     <issue
@@ -289,41 +272,63 @@
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="137"
+            line="142"
             column="20"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.android.gms:play-services-auth than 18.1.0 is available: 20.3.0"
-        errorLine1="    implementation &apos;com.google.android.gms:play-services-auth:18.1.0&apos;"
+        message="A newer version of com.google.android.gms:play-services-auth than 20.6.0 is available: 21.2.0"
+        errorLine1="    implementation &apos;com.google.android.gms:play-services-auth:20.6.0&apos;"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="144"
+            line="149"
             column="20"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of com.google.http-client:google-http-client-gson than 1.26.0 is available: 1.40.1"
-        errorLine1="    implementation &apos;com.google.http-client:google-http-client-gson:1.26.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.2.1 is available: 1.6.3"
+        errorLine1="    api &quot;org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="147"
+            line="157"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.play:integrity than 1.1.0 is available: 1.4.0"
+        errorLine1="    implementation(&apos;com.google.android.play:integrity:1.1.0&apos;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="163"
             column="20"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of org.jetbrains.kotlin:kotlin-stdlib than 1.6.10 is available: 1.7.10"
-        errorLine1="    implementation &quot;org.jetbrains.kotlin:kotlin-stdlib:$global_kotlin_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="A newer version of androidx.test:runner than 1.4.0 is available: 1.6.2"
+        errorLine1="    androidTestImplementation &apos;androidx.test:runner:1.4.0&apos;"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="150"
-            column="20"/>
+            line="166"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test.espresso:espresso-core than 3.4.0 is available: 3.6.1"
+        errorLine1="    androidTestImplementation &apos;androidx.test.espresso:espresso-core:3.4.0&apos;"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle"
+            line="167"
+            column="31"/>
     </issue>
 
     <issue
@@ -333,7 +338,7 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="162"
+            line="169"
             column="24"/>
     </issue>
 
@@ -344,88 +349,341 @@
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="164"
+            line="171"
             column="24"/>
     </issue>
 
     <issue
         id="GradleDependency"
-        message="A newer version of junit:junit than 4.12 is available: 4.13.1"
+        message="A newer version of junit:junit than 4.12 is available: 4.13.2"
         errorLine1="    testImplementation &apos;junit:junit:4.12&apos;"
         errorLine2="                       ~~~~~~~~~~~~~~~~~~">
         <location
             file="build.gradle"
-            line="165"
+            line="172"
             column="24"/>
     </issue>
 
     <issue
-        id="GradleDependency"
-        message="A newer version of org.threeten:threetenbp than 1.3.5 is available: 1.5.1"
-        errorLine1="    testImplementation &apos;org.threeten:threetenbp:1.3.5&apos;"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
+        errorLine1="    ForceFetchFcmAction forceFetchFcmTokenAction();"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~">
         <location
-            file="build.gradle"
-            line="168"
-            column="24"/>
+            file="src/main/java/io/muun/apollo/domain/action/di/ActionComponent.java"
+            line="100"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
+        errorLine1="    UseMuunLinkAction useMuunLinkAction();"
+        errorLine2="    ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/di/ActionComponent.java"
+            line="120"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.i(&quot;ApplicationLockManager#verified: &quot; + verified);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/ApplicationLockManager.java"
+            line="95"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                &quot;ApplicationLockManager#storeIncorrectAttempts: &quot; + incorrectAttempts"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/ApplicationLockManager.java"
+            line="171"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.d(name + &quot;: already running&quot;);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="36"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(name + &quot;: EMPTY&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="129"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(name + &quot;: LOADING&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="134"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(getName() + &quot;: EMPTY&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/BaseAsyncAction.java"
+            line="130"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(getName() + &quot;: LOADING&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/BaseAsyncAction.java"
+            line="135"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                        .doOnNext(list -> Timber.i(&quot;Received op history: size &quot; + list.size()))"
+        errorLine2="                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/OperationActions.java"
+            line="55"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                                            .doOnNext(op -> Timber.i(&quot;processing op:&quot; + op.getId()))"
+        errorLine2="                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/OperationActions.java"
+            line="69"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageNoSuchElementError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="169"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SharedPreferencesCorruptedError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="174"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;KeyStoreCorruptedError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="179"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageError on READ for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="189"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageError on WRITE for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="201"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="        Timber.d(String.format("
+        errorLine2="                 ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/ContactActions.java"
+            line="334"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="                        String.format(&quot;Task  %s rejected from %s. %s&quot;,"
+        errorLine2="                        ^">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/execution/JobExecutor.java"
+            line="64"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="                        String.format("
+        errorLine2="                        ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/fcm/UpdateFcmTokenAction.java"
+            line="65"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="ThrowableNotAtBeginning"
+        message="Throwable should be first argument"
+        errorLine1="            Timber.e(&quot;Failed to record audit trail (&quot; + operation + &quot; &quot; + label + &quot;)&quot;, e);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStoragePreferences.java"
+            line="203"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardwareIds"
+        message="Using `getString` to get device identifiers is not recommended"
+        errorLine1="                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/HardwareCapabilitiesProvider.kt"
+            line="166"
+            column="17"/>
     </issue>
 
     <issue
         id="TrustAllX509TrustManager"
         message="`checkClientTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers">
         <location
-            file="com/google/api/client/util/SslUtils$1.class"/>
+            file="$GRADLE_USER_HOME/caches/modules-2/files-2.1/com.google.http-client/google-http-client/1.45.0/63eb7643e01797d6aa67c75ae31ffcc6c365db18/google-http-client-1.45.0.jar"/>
     </issue>
 
     <issue
         id="TrustAllX509TrustManager"
         message="`checkServerTrusted` is empty, which could cause insecure network traffic due to trusting arbitrary TLS/SSL certificates presented by peers">
         <location
-            file="com/google/api/client/util/SslUtils$1.class"/>
+            file="$GRADLE_USER_HOME/caches/modules-2/files-2.1/com.google.http-client/google-http-client/1.45.0/63eb7643e01797d6aa67c75ae31ffcc6c365db18/google-http-client-1.45.0.jar"/>
     </issue>
 
     <issue
-        id="UnusedResources"
-        message="The resource `R.string.app_name` appears to be unused"
-        errorLine1="    &lt;string name=&quot;app_name&quot;>ApolloLib&lt;/string>"
-        errorLine2="            ~~~~~~~~~~~~~~~">
+        id="Recycle"
+        message="This `InputStream` should be freed up after use with `#close()`"
+        errorLine1="            inputStream = context.getContentResolver().openInputStream(contentUri);"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~">
         <location
-            file="src/main/res/values/strings.xml"
-            line="2"
-            column="13"/>
+            file="src/main/java/io/muun/apollo/data/net/okio/ContentUriRequestBody.java"
+            line="49"
+            column="56"/>
     </issue>
 
     <issue
-        id="IgnoreWithoutReason"
-        message="Test is ignored without giving any explanation"
-        errorLine1="    @Ignore"
-        errorLine2="    ~~~~~~~">
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
-            line="70"
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="233"
             column="5"/>
     </issue>
 
     <issue
-        id="IgnoreWithoutReason"
-        message="Test is ignored without giving any explanation"
-        errorLine1="    @Ignore"
-        errorLine2="    ~~~~~~~">
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
-            line="90"
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="269"
             column="5"/>
     </issue>
 
     <issue
-        id="IgnoreWithoutReason"
-        message="Test is ignored without giving any explanation"
-        errorLine1="    @Ignore"
-        errorLine2="    ~~~~~~~">
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/test/java/io/muun/apollo/domain/action/AddressActionsTest.java"
-            line="108"
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="288"
             column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="    @TargetApi(HONEYCOMB)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/RxSharedPreferences.java"
+            line="212"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="    @TargetApi(HONEYCOMB)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/RxSharedPreferences.java"
+            line="222"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="@TargetApi(HONEYCOMB)"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/StringSetAdapter.java"
+            line="11"
+            column="1"/>
     </issue>
 
     <issue
@@ -453,17 +711,6 @@
     <issue
         id="IgnoreWithoutReason"
         message="Test is ignored without giving any explanation"
-        errorLine1="@Ignore"
-        errorLine2="~~~~~~~">
-        <location
-            file="src/test/java/io/muun/apollo/domain/action/OperationActionsTest.java"
-            line="48"
-            column="1"/>
-    </issue>
-
-    <issue
-        id="IgnoreWithoutReason"
-        message="Test is ignored without giving any explanation"
         errorLine1="    @Ignore"
         errorLine2="    ~~~~~~~">
         <location
@@ -479,7 +726,7 @@
         errorLine2="    ~~~~~~~">
         <location
             file="src/test/java/io/muun/apollo/domain/model/OperationTest.java"
-            line="40"
+            line="34"
             column="5"/>
     </issue>
 

@@ -7,6 +7,7 @@ import io.muun.apollo.domain.action.base.CombineLatestAsyncAction
 import io.muun.apollo.domain.action.operation.ResolveOperationUriAction
 import io.muun.apollo.domain.action.operation.SubmitPaymentAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
+import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_COMPLETED
@@ -78,8 +79,9 @@ class NewOperationPresenter @Inject constructor(
     private val paymentContextSel: PaymentContextSelector,
     private val exchangeRateSel: ExchangeRateSelector,
     private val bitcoinUnitSel: BitcoinUnitSelector,
-    private val submitPaymentAction: SubmitPaymentAction,
-    private val resolveOperationUriAction: ResolveOperationUriAction,
+    private val submitPayment: SubmitPaymentAction,
+    private val resolveOperationUri: ResolveOperationUriAction,
+    private val preloadFeeData: PreloadFeeDataAction,
 ) : BasePresenter<NewOperationView>(),
     RecommendedFeeParentPresenter,
     ManualFeeParentPresenter,
@@ -168,7 +170,7 @@ class NewOperationPresenter @Inject constructor(
         // Set up SubmitPaymentAction. Needs to be set up first (e.g first async action to be
         // subscribed), to avoid its ActionState (will initially fire an EMPTY action state) messing
         // with global handleStates handleLoading action/param.
-        submitPaymentAction
+        submitPayment
             .state
             .compose(handleStates(view::setLoading, this::handleError))
             .doOnNext { operation: Operation ->
@@ -177,13 +179,22 @@ class NewOperationPresenter @Inject constructor(
             .let(this::subscribeTo)
 
         // Set up RealTimeData and PaymentContext
-        CombineLatestAsyncAction(fetchRealTimeData, resolveOperationUriAction)
+        val basicActions = CombineLatestAsyncAction(
+            fetchRealTimeData.state,
+            resolveOperationUri.state
+        )
+
+        CombineLatestAsyncAction(basicActions.getState(), preloadFeeData.state)
             .getState()
             .compose(handleStates(view::setLoading, this::handleError))
-            .doOnNext { (_, paymentRequest) ->
+            .doOnNext { (basicActionsPair, _) ->
                 // Once we've updated exchange and fee rates, we can proceed with our preparations.
                 // This is especially important if we landed here after the user clicked an external
                 // link, since she skipped the home screen and didn't automatically fetch RTD.
+
+                // Both realTimeData and realtimeFees we just call the actions for its side-effects
+                // (aka refreshing the data in local storage).
+                val paymentRequest = basicActionsPair!!.second
 
                 // Note that RTD fetching is instantaneous if it was already up to date.
                 paymentContextSel.watch()
@@ -478,10 +489,16 @@ class NewOperationPresenter @Inject constructor(
 
         fetchRealTimeData.run() // if it's already running (eg ran by home screen), no problem.
 
+        // runIfDataIsInvalidated checks if the fee bump functions in Libwallet are outdated
+        // (invalidated).
+        // If the data is invalidated: make an API call to refresh it.
+        // If the data is fresh: simply returns null to complete loading on this screen.
+        preloadFeeData.runIfDataIsInvalidated()
+
         // This is still needed because we need to:
         // - resolveLnInvoice for submarine swaps TODO mv this to libwallet
         // - resolveMuunUri for P2P/Contacts legacy feature TODO refactor this?
-        resolveOperationUriAction.run(OperationUri.fromString(uri), origin)
+        resolveOperationUri.run(OperationUri.fromString(uri), origin)
 
         view.setInitialBitcoinUnit(bitcoinUnitSel.get())
 
@@ -656,7 +673,7 @@ class NewOperationPresenter @Inject constructor(
                 E_NEW_OP_SUBMITTED(*uncheckedConvert(opSubmittedMetadata(confirmStateViewModel)))
             )
 
-            submitPaymentAction.run(preparedPayment)
+            submitPayment.run(preparedPayment)
         } catch (error: Throwable) {
             handleError(error)
         }
