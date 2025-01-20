@@ -18,12 +18,15 @@ import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.BackgroundTimesService;
 import io.muun.apollo.domain.NightModeManager;
+import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction;
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.BitcoinUnitSelector;
+import io.muun.apollo.domain.sync.FeeDataSyncer;
 import io.muun.apollo.presentation.app.di.ApplicationComponent;
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent;
 import io.muun.apollo.presentation.ui.utils.UserFacingErrorMessagesImpl;
@@ -89,6 +92,15 @@ public abstract class ApolloApplication extends Application
 
     @Inject
     FeaturesRepository featuresRepository;
+
+    @Inject
+    PreloadFeeDataAction preloadFeeData;
+
+    @Inject
+    FeeDataSyncer feeDataSyncer;
+
+    @Inject
+    UserActions userActions;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -340,12 +352,18 @@ public abstract class ApolloApplication extends Application
     public void onStart(@NonNull LifecycleOwner owner) { // app moved to foreground
         analytics.report(new AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND());
         backgroundTimesService.enterForeground();
+
+        if (userActions.isLoggedIn()) {
+            preloadFeeData.run();
+            feeDataSyncer.enterForeground();
+        }
     }
 
     @Override
     public void onStop(@NonNull LifecycleOwner owner) { // app moved to background
         analytics.report(new AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND());
         backgroundTimesService.enterBackground();
+        feeDataSyncer.enterBackground();
     }
 
     @Override

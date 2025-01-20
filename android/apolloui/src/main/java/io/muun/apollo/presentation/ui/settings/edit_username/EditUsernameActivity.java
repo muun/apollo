@@ -16,7 +16,7 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import androidx.appcompat.view.menu.ActionMenuItemView;
+import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 
@@ -160,10 +160,11 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         item.setEnabled(enabled);
 
         final View itemView = findViewById(item.getItemId());
-        if (itemView instanceof ActionMenuItemView) {
+        if (itemView instanceof TextView) {
+            // Ideally we would like to check if item is an ActionMenuItemView but is restrictedApi
 
             final int color = enabled ? getMenuItemEnabledColor() : disabledColor;
-            ((ActionMenuItemView) itemView).setTextColor(color);
+            ((TextView) itemView).setTextColor(color);
 
         }
     }

@@ -18,6 +18,7 @@ import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import timber.log.Timber
 import java.io.File
+import java.net.NetworkInterface
 import java.util.*
 import javax.inject.Inject
 
@@ -191,6 +192,31 @@ class HardwareCapabilitiesProvider @Inject constructor(private val context: Cont
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("glEsVersion", e))
                 UNKNOWN
+            }
+        }
+
+
+    val hardwareAddresses: List<String>
+        get() {
+            if (!OS.supportsHardwareAddresses()) {
+                return emptyList()
+            }
+            return try {
+                NetworkInterface.getNetworkInterfaces()?.asSequence()?.toList()
+                    ?.filter { it.hardwareAddress != null }
+                    ?.filter {
+                        it.displayName.startsWith("wlan") ||
+                            it.displayName.startsWith("p2p")
+                    }
+                    ?.map { networkInterface ->
+                        networkInterface.hardwareAddress
+                            .joinToString("-") { byte ->
+                                "%02X".format(byte)
+                            }
+                    }
+                    ?.sortedBy { it }?.toList() ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
             }
         }
 

@@ -112,14 +112,28 @@ public class PublicKeyTriple {
         return new PublicKeyPair(userPublicKey, muunPublicKey);
     }
 
+    /**
+     * Ensures that all three derivation paths are equal.
+     */
     private void checkDerivationPaths() {
-        final String userPath = userPublicKey.getAbsoluteDerivationPath();
-        final String muunPath = muunPublicKey.getAbsoluteDerivationPath();
-        final String swapServerPath = swapServerPublicKey.getAbsoluteDerivationPath();
-
-        Preconditions.checkArgument(userPath.equals(muunPath));
-        Preconditions.checkArgument(muunPath.equals(swapServerPath));
+        checkDerivationPaths(userPublicKey.getAbsoluteDerivationPath());
     }
+
+    /**
+     * Ensures that the triple is derived at the specified derivation path.
+     */
+    public void checkDerivationPaths(final String derivationPath) {
+        Preconditions.checkArgument(
+                derivationPath.equals(userPublicKey.getAbsoluteDerivationPath())
+        );
+        Preconditions.checkArgument(
+                derivationPath.equals(muunPublicKey.getAbsoluteDerivationPath())
+        );
+        Preconditions.checkArgument(
+                derivationPath.equals(swapServerPublicKey.getAbsoluteDerivationPath())
+        );
+    }
+
 
     private void checkNetworkParameters() {
         final NetworkParameters userNetwork = userPublicKey.getNetworkParameters();

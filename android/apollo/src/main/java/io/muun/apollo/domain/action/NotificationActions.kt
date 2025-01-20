@@ -26,6 +26,11 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
+enum class NotificationProcessingState {
+    STARTED,
+    COMPLETED
+}
+
 @Singleton // important
 class NotificationActions @Inject constructor(
     private val notificationRepository: NotificationRepository,
@@ -50,6 +55,9 @@ class NotificationActions @Inject constructor(
     private val reportQueue: PublishSubject<NotificationReport> = PublishSubject.create()
     private var reportQueueSub: Subscription? = null
 
+    // Notify about the notification processing state.
+    private val processingSubject: PublishSubject<NotificationProcessingState> = PublishSubject.create()
+
     @JvmField
     val pullNotificationsAction: AsyncAction0<Void>
 
@@ -67,6 +75,13 @@ class NotificationActions @Inject constructor(
             reportQueueSub = startProcessingQueue(reportQueue)
         }
         reportQueue.onNext(report)
+    }
+
+    /**
+     * Stream to track the START and COMPLETION of processing a notification batch.
+     */
+    fun getNotificationProcessingState(): Observable<NotificationProcessingState> {
+        return processingSubject
     }
 
     /**
@@ -121,6 +136,8 @@ class NotificationActions @Inject constructor(
 
             Timber.i("[Notifications] Processing List: " + notifications.mapIds().asString())
 
+            processingSubject.onNext(NotificationProcessingState.STARTED)
+
             Observable.from(notifications)
                 .compose(forEach { notification: NotificationJson ->
                     processNotification(notification)
@@ -138,6 +155,9 @@ class NotificationActions @Inject constructor(
                     } else {
                         return@flatMap Observable.just(null)
                     }
+                }
+                .doOnCompleted {
+                    processingSubject.onNext(NotificationProcessingState.COMPLETED)
                 }
                 .toCompletable()
         }

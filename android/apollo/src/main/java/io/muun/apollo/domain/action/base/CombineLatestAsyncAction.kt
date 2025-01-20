@@ -3,38 +3,19 @@ package io.muun.apollo.domain.action.base
 import rx.Observable
 
 class CombineLatestAsyncAction<T, R>(
-    private val actionA: BaseAsyncAction<T>?,
-    private val actionB: BaseAsyncAction<R>?,
+    private val actionStateObservableA: Observable<ActionState<T>>,
+    private val actionStateObservableB: Observable<ActionState<R>>,
 ) {
 
     /**
      * Get the observable state of the action.
      */
     fun getState(): Observable<ActionState<Pair<T?, R?>>> =
-        when {
-
-            actionA != null && actionB != null -> Observable.zip(
-                actionA.state,
-                actionB.state,
+            Observable.zip(
+                actionStateObservableA,
+                actionStateObservableB,
                 this::merge
             )
-
-            actionA != null -> actionA.state.map {
-                if (it.kind == ActionState.Kind.VALUE) {
-                    ActionState.createValue(Pair(it.value, null))
-                } else {
-                    it as ActionState<Pair<T?, R?>>
-                }
-            }
-
-            else -> actionB!!.state.map {
-                if (it.kind == ActionState.Kind.VALUE) {
-                    ActionState.createValue(Pair(null, it.value))
-                } else {
-                    it as ActionState<Pair<T?, R?>>
-                }
-            }
-        }
 
     /**
      * Merge the ActionStates from 2 AsyncActions. Rules are:

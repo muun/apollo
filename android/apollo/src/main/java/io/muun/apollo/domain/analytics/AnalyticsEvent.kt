@@ -514,7 +514,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_CRASHLYTICS_ERROR(report: CrashReport) : AnalyticsEvent(
         listOf(
             "title" to report.getTrackingTitle(),
-            "tag" to report.tag,
             "message" to report.message,
             // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
             "error" to report.printErrorForAnalytics(),

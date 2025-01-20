@@ -5,11 +5,14 @@ import io.muun.apollo.data.db.submarine_swap.SubmarineSwapDao;
 import io.muun.apollo.data.external.NotificationService;
 import io.muun.apollo.data.preferences.TransactionSizeRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
+import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUpdated;
 import io.muun.common.model.OperationStatus;
+import io.muun.common.utils.Preconditions;
 
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,7 +21,9 @@ import javax.inject.Singleton;
 public class UpdateOperationAction extends BaseAsyncAction1<OperationUpdated, Void> {
 
     private final TransactionSizeRepository transactionSizeRepository;
+
     private final OperationDao operationDao;
+
     private final SubmarineSwapDao submarineSwapDao;
 
     private final NotificationService notificationService;
@@ -27,10 +32,12 @@ public class UpdateOperationAction extends BaseAsyncAction1<OperationUpdated, Vo
      * Update an Operation, given fresh data from Houston.
      */
     @Inject
-    public UpdateOperationAction(TransactionSizeRepository transactionSizeRepository,
-                                 OperationDao operationDao,
-                                 SubmarineSwapDao submarineSwapDao,
-                                 NotificationService notificationService) {
+    public UpdateOperationAction(
+            TransactionSizeRepository transactionSizeRepository,
+            OperationDao operationDao,
+            SubmarineSwapDao submarineSwapDao,
+            NotificationService notificationService
+    ) {
 
         this.transactionSizeRepository = transactionSizeRepository;
         this.operationDao = operationDao;
@@ -45,6 +52,9 @@ public class UpdateOperationAction extends BaseAsyncAction1<OperationUpdated, Vo
                     .toBlocking()
                     .first();
 
+            Preconditions.checkNotNull(previousOp); // FetchByHid returns non null (or throws).
+            Preconditions.checkNotNull(previousOp.getId()); // DB stored op HAS an id
+
             if (hasTransitionedToFailure(previousOp, operationUpdated)) {
                 notificationService.showOperationFailedNotification(previousOp.getId());
             }
@@ -56,7 +66,19 @@ public class UpdateOperationAction extends BaseAsyncAction1<OperationUpdated, Vo
                     operationUpdated.status
             );
 
+            final NextTransactionSize prevNts = transactionSizeRepository.getNextTransactionSize();
             transactionSizeRepository.setTransactionSize(operationUpdated.nextTransactionSize);
+            //noinspection StatementWithEmptyBody
+            if (shouldUpdateNts(operationUpdated, prevNts)) {
+                // TODO setTransactionSize should be here
+            } else {
+                Timber.e(
+                        "Stale NTS update at UpdateOperation op.Hid:%s. %s vs %s",
+                        operationUpdated.hid,
+                        operationUpdated.nextTransactionSize.validAtOperationHid,
+                        prevNts.validAtOperationHid
+                );
+            }
 
             if (operationUpdated.submarineSwap != null) {
                 submarineSwapDao.updatePaymentInfo(operationUpdated.submarineSwap);
@@ -83,5 +105,18 @@ public class UpdateOperationAction extends BaseAsyncAction1<OperationUpdated, Vo
             default:
                 return false;
         }
+    }
+
+    /**
+     * We should update NTS if operation update is newer than the latest known operation we have
+     * stored. Else, we're receiving a stale update.
+     */
+    private boolean shouldUpdateNts(OperationUpdated operation, NextTransactionSize currentNts) {
+
+        if (currentNts == null || currentNts.validAtOperationHid == null) {
+            return true; // we have no NTS or a really old one.
+        }
+
+        return operation.hid > currentNts.validAtOperationHid;
     }
 }

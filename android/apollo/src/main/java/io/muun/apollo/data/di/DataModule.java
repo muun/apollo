@@ -20,6 +20,8 @@ import io.muun.apollo.data.os.execution.JobExecutor;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.NotificationPoller;
+import io.muun.apollo.domain.libwallet.GoLibwalletService;
+import io.muun.apollo.domain.libwallet.LibwalletService;
 
 import android.content.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +44,12 @@ public class DataModule {
 
     private final Context applicationContext;
 
-    private final Func3<Context, ExecutionTransformerFactory, RepositoryRegistry, NotificationService>
+    private final Func3<
+            Context,
+            ExecutionTransformerFactory,
+            RepositoryRegistry,
+            NotificationService
+            >
             notificationServiceFactory;
 
     private final Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory;
@@ -54,7 +61,12 @@ public class DataModule {
      */
     public DataModule(
             Context applicationContext,
-            Func3<Context, ExecutionTransformerFactory, RepositoryRegistry, NotificationService> notificationServiceFactory,
+            Func3<
+                    Context,
+                    ExecutionTransformerFactory,
+                    RepositoryRegistry,
+                    NotificationService
+                    > notificationServiceFactory,
             Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory,
             HoustonConfig houstonConfig
     ) {
@@ -188,5 +200,10 @@ public class DataModule {
     @Singleton
     NotificationPoller provideNotificationPoller(final NotificationActions notificationActions) {
         return notificationActions;
+    }
+
+    @Provides
+    LibwalletService provideLibwalletService() {
+        return new GoLibwalletService();
     }
 }

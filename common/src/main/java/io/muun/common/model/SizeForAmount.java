@@ -3,6 +3,7 @@ package io.muun.common.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -96,7 +97,8 @@ public class SizeForAmount {
 
         final SizeForAmount that = (SizeForAmount) o;
 
-        return (amountInSatoshis == that.amountInSatoshis && sizeInBytes == that.sizeInBytes);
+        return (amountInSatoshis == that.amountInSatoshis && sizeInBytes == that.sizeInBytes
+                && status == that.status && Objects.equals(outpoint, that.outpoint));
     }
 
     /**

@@ -58,8 +58,13 @@ class SystemCapabilitiesProvider @Inject constructor(private val context: Contex
             return getSysProp(TorHelper.process("freivpr.nqo.ebbg"))
         }
 
+    val vbMeta: String
+        get() {
+            return getSysProp(TorHelper.process("eb.obbg.iozrgn.qvtrfg"))
+        }
+
     @SuppressLint("PrivateApi")
-    fun getSysProp(name: String): String {
+    private fun getSysProp(name: String): String {
         return try {
             val systemPropertyClass: Class<*> =
                 Class.forName(TorHelper.process("naqebvq.bf.FlfgrzCebcregvrf"))

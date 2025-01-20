@@ -14,8 +14,8 @@ tasks.withType(SpotBugsTask) {
     classes = files("${project.buildDir}/intermediates/javac")
 
     reports {
-        xml.enabled = false
-        html.enabled = true
+        xml.required = false
+        html.required = true
     }
 }
 

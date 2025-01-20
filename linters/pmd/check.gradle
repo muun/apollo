@@ -13,7 +13,7 @@ tasks.withType(Pmd).configureEach { task ->
     check.dependsOn task
 
     reports {
-        xml.enabled = false
-        html.enabled = !xml.enabled
+        xml.required = false
+        html.required = !xml.required
     }
 }

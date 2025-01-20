@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.model.report
 
+import android.app.ApplicationExitInfo
 import android.os.Build
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
@@ -11,7 +12,6 @@ import org.threeten.bp.ZoneOffset
 import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.Locale
-
 import javax.annotation.CheckReturnValue
 
 class EmailReport private constructor(val body: String) {
@@ -31,6 +31,10 @@ class EmailReport private constructor(val body: String) {
         var defaultRegion: String? = null,
         var rootHint: Boolean? = null,
         var locale: Locale? = null,
+        var isLowRamDevice: Boolean? = null,
+        var isBackgroundRestricted: Boolean? = null,
+        var isLowMemoryKillReportSupported: Boolean? = null,
+        var exitReasons: List<ApplicationExitInfo>? = null,
     ) {
 
         @CheckReturnValue
@@ -88,6 +92,24 @@ class EmailReport private constructor(val body: String) {
         fun locale(locale: Locale) = apply { this.locale = locale }
 
         @CheckReturnValue
+        fun isLowRamDevice(isLowRamDevice: Boolean) = apply { this.isLowRamDevice = isLowRamDevice }
+
+        @CheckReturnValue
+        fun isBackgroundRestricted(isBackgroundRestricted: Boolean) = apply {
+            this.isBackgroundRestricted = isBackgroundRestricted
+        }
+
+        @CheckReturnValue
+        fun isLowMemoryKillReportSupported(isLowMemoryKillReportSupported: Boolean) = apply {
+            this.isLowMemoryKillReportSupported = isLowMemoryKillReportSupported
+        }
+
+        @CheckReturnValue
+        fun exitReasons(exitReasons: List<ApplicationExitInfo>) = apply {
+            this.exitReasons = exitReasons
+        }
+
+        @CheckReturnValue
         fun build(abridged: Boolean): EmailReport {
 
             checkNotNull(report)
@@ -102,6 +124,10 @@ class EmailReport private constructor(val body: String) {
             checkNotNull(rootHint)
             checkNotNull(defaultRegion)
             checkNotNull(locale)
+            checkNotNull(isLowRamDevice)
+            checkNotNull(isBackgroundRestricted)
+            checkNotNull(isLowMemoryKillReportSupported)
+            checkNotNull(exitReasons)
 
             val instant = Instant.ofEpochMilli(System.currentTimeMillis())
             val now = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC)
@@ -127,10 +153,26 @@ class EmailReport private constructor(val body: String) {
                    |Rooted (just a hint, no guarantees): $rootHint
                    |Unsupported Currencies: ${getUnsupportedCurrencies(report!!).contentToString()}
                    |Default Region: $defaultRegion
+                   |Low Ram Device: $isLowRamDevice
+                   |Background Restricted: $isBackgroundRestricted
+                   |Low Memory Kill Report Supported: $isLowMemoryKillReportSupported
+                   |Recent Exit reasons: ${formatExitReasons(exitReasons!!)}
                    |${report!!.print(abridged)}""".trimMargin()
 
             Timber.d("EmailReport: \n$body")
             return EmailReport(body)
+        }
+
+        private fun formatExitReasons(exitReasons: List<ApplicationExitInfo>): String {
+            val builder = StringBuilder()
+            builder.append(" {\n")
+
+            for (exitReason in exitReasons) {
+                builder.append("\t$exitReason\n")
+            }
+
+            builder.append("}\n")
+            return builder.toString()
         }
     }
 

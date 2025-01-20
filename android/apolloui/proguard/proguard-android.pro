@@ -66,3 +66,10 @@
 # Couldn't reproduce but adding rule just in case
 # See https://github.com/mozilla-mobile/android-components/issues/6642
 -keep class androidx.lifecycle.** {*;}
+
+-dontwarn org.ietf.jgss.GSSContext
+-dontwarn org.ietf.jgss.GSSCredential
+-dontwarn org.ietf.jgss.GSSException
+-dontwarn org.ietf.jgss.GSSManager
+-dontwarn org.ietf.jgss.GSSName
+-dontwarn org.ietf.jgss.Oid

@@ -2,6 +2,7 @@ package newop
 
 import (
 	"fmt"
+	"log/slog"
 	"path"
 	"strings"
 	"time"
@@ -276,7 +277,6 @@ func loadFeeBumpFunctions() ([]*operation.FeeBumpFunction, error) {
 
 	repository := db.NewFeeBumpRepository()
 	feeBumpFunctions, err := repository.GetAll()
-	// TODO: Check if the data is invalidated, on that case we should refresh it
 
 	if err != nil {
 		return nil, err
@@ -291,9 +291,12 @@ func (s *ResolveState) setContextWithTime(initialContext *InitialPaymentContext,
 	var feeBumpFunctions []*operation.FeeBumpFunction
 	if libwallet.DetermineBackendActivatedFeatureStatus(libwallet.BackendFeatureEffectiveFeesCalculation) {
 		// Load fee bump functions from local DB
-		feeBumpFunctions, _ = loadFeeBumpFunctions()
+		var err error
+		feeBumpFunctions, err = loadFeeBumpFunctions()
 
-		// TODO: Handle error - tracking error and refresh fee bump functions
+		if err != nil {
+			slog.Error("error loading fee bump functions.", slog.Any("error", err))
+		}
 	}
 
 	context := initialContext.newPaymentContext(feeBumpFunctions)

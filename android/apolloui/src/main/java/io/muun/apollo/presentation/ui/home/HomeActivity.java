@@ -162,6 +162,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     public void showWelcomeToMuunDialog() {
         final MuunDialog muunDialog = new MuunDialog.Builder()
                 .layout(R.layout.dialog_welcome_to_muun)
+                .fixedWidthInDp(290) // Workaround for bug with foldables and tablets
                 .style(R.style.MuunWelcomeDialog)
                 .addOnClickAction(R.id.welcome_to_muun_cta, v -> dismissDialog())
                 .build();

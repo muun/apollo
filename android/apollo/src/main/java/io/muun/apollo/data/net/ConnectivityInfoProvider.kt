@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 // TODO we should merge this and NetworkInfoProvider together
-class ConnectivityInfoProvider @Inject constructor(private val context: Context) {
+class ConnectivityInfoProvider @Inject constructor(context: Context) {
 
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -24,7 +24,7 @@ class ConnectivityInfoProvider @Inject constructor(private val context: Context)
         val routesInterfaces: Set<String>?,
         val hasGatewayRoute: Int,
         val dnsAddresses: Set<String>?,
-        val linkHttpProxyHost: String?
+        val linkHttpProxyHost: String?,
     )
 
     val vpnState: Int
@@ -45,17 +45,17 @@ class ConnectivityInfoProvider @Inject constructor(private val context: Context)
 
     val proxyHttp: String
         get() {
-            return System.getProperty("http.proxyHost") ?: ""
+            return System.getProperty("http.proxyHost") ?: Constants.EMPTY
         }
 
     val proxyHttps: String
         get() {
-            return System.getProperty("https.proxyHost") ?: ""
+            return System.getProperty("https.proxyHost") ?: Constants.EMPTY
         }
 
     val proxySocks: String
         get() {
-            return System.getProperty("socks.proxyHost") ?: ""
+            return System.getProperty("socks.proxyHost") ?: Constants.EMPTY
         }
 
 
@@ -68,38 +68,39 @@ class ConnectivityInfoProvider @Inject constructor(private val context: Context)
      */
     val currentTransportNewerApi: String
         get() {
-            if (OS.supportsActiveNetwork()) {
-                val connectivityManager =
-                    context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                val activeNetwork = connectivityManager.activeNetwork ?: return "UNKNOWN"
-                val networkCapabilities =
-                    connectivityManager.getNetworkCapabilities(activeNetwork) ?: return "UNKNOWN"
-                return when {
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+            if (!OS.supportsActiveNetwork()) {
+                return Constants.UNKNOWN
+            }
+
+            val activeNetwork = connectivityManager.activeNetwork ?: return Constants.UNKNOWN
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+                ?: return Constants.UNKNOWN
+
+            return when {
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
                     -> "WIFI"
 
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
                     -> "MOBILE"
 
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)
                     -> "BLUETOOTH"
 
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
                     -> "ETHERNET"
 
-                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
                     -> "VPN"
 
-                    else -> "UNKNOWN"
-                }
+                else -> Constants.UNKNOWN
             }
-            return "UNKNOWN"
         }
 
     val networkLink: NetworkLink?
         get() {
-            if (!OS.supportsActiveNetwork())
+            if (!OS.supportsActiveNetwork()) {
                 return null
+            }
 
             val activeNetwork = connectivityManager.activeNetwork
             val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
@@ -118,13 +119,14 @@ class ConnectivityInfoProvider @Inject constructor(private val context: Context)
                 hasGatewayRoute,
                 dnsAddresses,
                 linkHttpProxyHost
-            );
+            )
         }
 
     private fun getHasGatewayRoute(linkProperties: LinkProperties?): Int {
-        if(!OS.supportsRouteHasGateway()) {
-            return -1
+        if (!OS.supportsRouteHasGateway()) {
+            return Constants.INT_UNKNOWN
         }
+
         return linkProperties?.routes
             ?.any { route -> route.hasGateway() }
             ?.let { if (it) 1 else 0 }

@@ -85,19 +85,9 @@ open class TelephonyInfoProvider @Inject constructor(context: Context) {
             return telephonyManager.simOperator
         }
 
-    val simOperatorName: String
-        get() {
-            return telephonyManager.simOperatorName
-        }
-
     val mobileNetworkId: String
         get() {
             return telephonyManager.networkOperator
-        }
-
-    val mobileNetworkName: String
-        get() {
-            return telephonyManager.networkOperatorName
         }
 
     val mobileRoaming: Boolean

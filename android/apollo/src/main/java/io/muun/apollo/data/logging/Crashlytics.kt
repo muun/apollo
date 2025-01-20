@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Build
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.data.analytics.AnalyticsProvider
+import io.muun.apollo.data.os.ActivityManagerInfoProvider
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.OS
 import io.muun.apollo.data.os.TelephonyInfoProvider
@@ -32,6 +33,7 @@ object Crashlytics {
     }
 
     private var analyticsProvider: AnalyticsProvider? = null
+    private var activityManagerInfoProvider: ActivityManagerInfoProvider? = null
 
     private var bigQueryPseudoId: String? = null
 
@@ -55,6 +57,8 @@ object Crashlytics {
 
         this.defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(customUncaughtExceptionHandler)
+
+        this.activityManagerInfoProvider = ActivityManagerInfoProvider(application)
     }
 
     // enhance crashlytics crashes with custom keys
@@ -101,7 +105,6 @@ object Crashlytics {
 
         // Note: these custom keys are associated with the non-fatal error being tracked but also
         // with the subsequent crash if the error generates one (e.g if error isn't caught/handled).
-        crashlytics?.setCustomKey("tag", report.tag)
         crashlytics?.setCustomKey("message", report.message)
         setStaticCustomKeys()
 
@@ -123,10 +126,26 @@ object Crashlytics {
         crashlytics?.setCustomKey("abi", getSupportedAbi())
         crashlytics?.setCustomKey("isPlayServicesAvailable", googlePlayServicesAvailable.toString())
         crashlytics?.setCustomKey(
-            "installSource-installingPackage", installSource?.installingPackageName ?: "null"
+            "installSource-installingPackage",
+            installSource?.installingPackageName ?: "null"
         )
         crashlytics?.setCustomKey(
-            "installSource-initiatingPackage", installSource?.initiatingPackageName ?: "null"
+            "installSource-initiatingPackage",
+            installSource?.initiatingPackageName ?: "null"
+        )
+
+        crashlytics?.setCustomKey("isLowRamDevice", activityManagerInfoProvider!!.isLowRamDevice)
+        crashlytics?.setCustomKey(
+            "isBackgroundRestricted",
+            activityManagerInfoProvider!!.isBackgroundRestricted
+        )
+        crashlytics?.setCustomKey(
+            "isRunningInUserTestHarness",
+            activityManagerInfoProvider!!.isRunningInUserTestHarness
+        )
+        crashlytics?.setCustomKey(
+            "isLowMemoryKillReportSupported",
+            activityManagerInfoProvider!!.isLowMemoryKillReportSupported
         )
     }
 
@@ -143,13 +162,11 @@ object Crashlytics {
      * message, error) and the error that happened while reporting.
      */
     fun reportReportingError(
-        tag: String?,
         message: String?,
         originalError: Throwable?,
         crashReportingError: Throwable,
     ) {
 
-        tag?.let { crashlytics?.setCustomKey("tag", it) }
         message?.let { crashlytics?.setCustomKey("message", it) }
 
         if (originalError != null) {

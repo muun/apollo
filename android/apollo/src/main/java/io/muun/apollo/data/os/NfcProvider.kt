@@ -27,6 +27,10 @@ class NfcProvider @Inject constructor(private val context: Context) {
     val isNfcEnabled: Boolean
         get() = nfcAdapter != null && nfcAdapter.isEnabled
 
+    /**
+     * Location of the antenna in millimeters. 0 is the bottom-left when the user is facing the
+     * screen and the device orientation is Portrait.
+     */
     fun getNfcAntennaPosition(): List<Pair<Float, Float>> {
         val result = mutableListOf<Pair<Float, Float>>()
 
@@ -43,4 +47,38 @@ class NfcProvider @Inject constructor(private val context: Context) {
 
         return result
     }
+
+    val deviceSizeInMm: Pair<Int, Int>?
+        get() {
+            try {
+                return if (OS.supportsAvailableNfcAntennas()) {
+                    // nfcAntennaInfo was added alongside with availableNfcAntennas
+                    nfcAdapter?.nfcAntennaInfo?.let { nfcAntennaInfo ->
+                        Pair(nfcAntennaInfo.deviceWidth, nfcAntennaInfo.deviceHeight)
+                    }
+
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Timber.i("Error while reading NFC data from NFC compat device: ${e.message}")
+                return null
+            }
+        }
+
+    val isDeviceFoldable: Boolean?
+        get() {
+            try {
+                return if (OS.supportsAvailableNfcAntennas()) {
+                    // nfcAntennaInfo was added alongside with availableNfcAntennas
+                    nfcAdapter?.nfcAntennaInfo?.isDeviceFoldable
+
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                Timber.i("Error while reading NFC data from NFC compat device: ${e.message}")
+                return null
+            }
+        }
 }

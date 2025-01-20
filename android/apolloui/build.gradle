@@ -1,4 +1,5 @@
 buildscript {
+
     ext.nav_version = "2.7.7" // Next version upgrade requires bump minSdk to 21
 
     dependencies { // Add third party gradle plugins
@@ -88,14 +89,15 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     defaultConfig {
         applicationId "io.muun.apollo"
         minSdk 19
         targetSdk 34
-        versionCode 1205
-        versionName "52.5"
+        versionCode 1206
+        versionName "52.6"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -274,12 +276,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     lint {
@@ -288,6 +290,11 @@ android {
         textReport true
         lintConfig file("$rootDir/linters/android-lint/config.xml")
         baseline file('lint-baseline.xml')
+
+        // Workaround linter bug regarding our addition of test sources (e.g apollo lib). Reported
+        // issues have broken location since apollo test sources aren't inside this module.
+        // TODO fix this
+        ignoreTestSources true
     }
 
     packagingOptions {
@@ -304,11 +311,6 @@ android {
         exclude 'lib/x86_64/linux/libscrypt.so'
         merge 'META-INF/services/javax.money.spi.CurrencyProviderSpi'
         exclude 'META-INF/rxjava.properties'
-    }
-
-    dexOptions {
-        preDexLibraries true
-        dexInProcess = true
     }
 
     // See: http://tools.android.com/tech-docs/unit-testing-support#TOC-Method-...-not-mocked.-

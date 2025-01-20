@@ -105,6 +105,9 @@ public class LnInvoiceTest {
         if (expected.amountWithMillis != null) {
             assertThat(invoice.amount.amountWithMillis).isEqualTo(expected.amountWithMillis);
             assertThat(invoice.amount.amountInSatoshis).isEqualTo(expected.amountInSatoshis);
+            assertThat(invoice.amount.btcAmount.toMilliSats()).isEqualTo(
+                    Long.parseLong(expected.amountWithMillis)
+            );
         }
 
         if (expected.paymentSecret != null) {
@@ -125,11 +128,12 @@ public class LnInvoiceTest {
 
         final long shortChannelId = RandomGenerator.getLong();
         final String description = "Test!";
+        final BtcAmount btcAmount = BtcAmount.fromSats(1000);
         final String rawInvoice = LnInvoice.encodeForTest(
                 network,
                 identityKey,
                 paymentHash,
-                BtcAmount.fromSats(1000),
+                btcAmount,
                 144,
                 description,
                 publicNodeKey.getPublicKeyBytes(),
@@ -142,6 +146,7 @@ public class LnInvoiceTest {
         final LnInvoice decoded = LnInvoice.decode(network, rawInvoice);
 
         assertEquals(1000, decoded.amount.amountInSatoshis);
+        assertEquals(btcAmount, decoded.amount.btcAmount);
         assertArrayEquals(paymentHash, Encodings.hexToBytes(decoded.id));
         assertEquals(144L, decoded.cltvDelta.longValue());
         assertEquals(description, decoded.description);

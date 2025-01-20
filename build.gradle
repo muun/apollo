@@ -6,14 +6,11 @@ buildscript {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven { url 'https://storage.googleapis.com/r8-releases/raw'}
     }
 
     dependencies { // Add third party gradle plugins
         // Android Gradle Plugin (AGP)
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        // Add in custom r8 version, remove this when updating the android gradle plugin.
-        classpath 'com.android.tools:r8:8.0.28'
+        classpath 'com.android.tools.build:gradle:8.5.2'
         // We're using a patched version of SQLDelight, for reproducible builds. Thanks JitPack!
         classpath 'com.github.muun.sqldelight:gradle-plugin:1.5.5-reproducible-build'
     }
@@ -57,10 +54,6 @@ subprojects {
             google()
             mavenCentral()
             maven { url "https://plugins.gradle.org/m2/" }
-        }
-
-        dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$global_kotlin_version"
         }
     }
 

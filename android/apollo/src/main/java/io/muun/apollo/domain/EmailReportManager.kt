@@ -1,6 +1,7 @@
 package io.muun.apollo.domain
 
 import android.content.Context
+import io.muun.apollo.data.os.ActivityManagerInfoProvider
 import io.muun.apollo.data.os.GooglePlayHelper
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.TelephonyInfoProvider
@@ -21,6 +22,7 @@ class EmailReportManager @Inject constructor(
     private val googlePlayServicesHelper: GooglePlayServicesHelper,
     private val googlePlayHelper: GooglePlayHelper,
     private val telephonyInfoProvider: TelephonyInfoProvider,
+    private val activityManagerInfoProvider: ActivityManagerInfoProvider,
     private val isRootedDeviceAction: IsRootedDeviceAction,
     private val firebaseInstallationIdRepo: FirebaseInstallationIdRepository,
     private val context: Context,
@@ -55,6 +57,10 @@ class EmailReportManager @Inject constructor(
             .defaultRegion(telephonyInfoProvider.region.orElse("null"))
             .rootHint(isRootedDeviceAction.actionNow())
             .locale(context.locale())
+            .isLowRamDevice(activityManagerInfoProvider.isLowRamDevice)
+            .isBackgroundRestricted(activityManagerInfoProvider.isBackgroundRestricted)
+            .isLowMemoryKillReportSupported(activityManagerInfoProvider.isLowMemoryKillReportSupported)
+            .exitReasons(activityManagerInfoProvider.exitReasons)
             .build(abridged)
     }
 

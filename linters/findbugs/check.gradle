@@ -12,8 +12,8 @@ task spotbugsMain(type: SpotBugsTask) {
     effort = 'max'
 
     reports {
-        xml.enabled = false
-        html.enabled = !xml.enabled
+        xml.required = false
+        html.required = !xml.required
     }
 }
 

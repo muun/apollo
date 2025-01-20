@@ -8,68 +8,68 @@ class MuunTree : Timber.DebugTree() {
 
     /**
      * Log a message, taking steps to enrich and report errors.
+     * Automatically infers the tag from the calling class (See Timber.DebugTree).
      */
-    override fun log(priority: Int, tag: String?, message: String?, error: Throwable?) {
+    override fun log(priority: Int, error: Throwable?, message: String?, vararg args: Any?) {
         // For low priority logs, we don't have any special treatment:
         if (priority < Log.INFO) {
-            sendToLogcat(priority, tag, message, error)
+            sendToLogcat(priority, message, error)
             return
         }
 
         when (priority) {
             Log.INFO -> {
-                sendToLogcat(Log.INFO, "Breadcrumb", message!!, null)
+                sendToLogcat(Log.INFO, "Breadcrumb: ${message!!}", null)
                 @Suppress("DEPRECATION") // I know. These are the only allowed usages.
                 Crashlytics.logBreadcrumb(message)
             }
             Log.WARN -> {
-                sendToLogcat(Log.WARN, tag, message!!, null)
+                sendToLogcat(Log.WARN, message!!, null)
                 @Suppress("DEPRECATION") // I know. These are the only allowed usages.
                 Crashlytics.logBreadcrumb("Warning: $message")
             }
             else -> { // Log.ERROR && Log.ASSERT
-                sendCrashReport(tag, message, error)
+                sendCrashReport(message, error)
             }
         }
     }
 
-    private fun sendCrashReport(tag: String?, message: String?, error: Throwable?) {
+    private fun sendCrashReport(message: String?, error: Throwable?) {
         try {
-            sendPreparedCrashReport(tag, message, error)
+            sendPreparedCrashReport(message, error)
 
         } catch (crashReportingError: Throwable) {
-            sendFallbackCrashReport(tag, message, error, crashReportingError)
+            sendFallbackCrashReport(message, error, crashReportingError)
         }
     }
 
-    private fun sendPreparedCrashReport(tag: String?, message: String?, error: Throwable?) {
-        val report = CrashReportBuilder.build(tag, message, error)
+    private fun sendPreparedCrashReport(message: String?, error: Throwable?) {
+        val report = CrashReportBuilder.build(message, error)
 
         if (LoggingContext.sendToCrashlytics) {
             Crashlytics.reportError(report)
         }
 
-        sendToLogcat(Log.ERROR, report.tag, "${report.message} ${report.metadata}", report.error)
+        sendToLogcat(Log.ERROR, "${report.message} ${report.metadata}", report.error)
     }
 
     private fun sendFallbackCrashReport(
-        tag: String?,
         message: String?,
         error: Throwable?,
         crashReportingError: Throwable,
     ) {
 
-        sendToLogcat(Log.ERROR, "CrashReport:$tag", "During error processing", crashReportingError)
-        sendToLogcat(Log.ERROR, "CrashReport:$tag", message, error)
+        sendToLogcat(Log.ERROR, "During error processing", crashReportingError)
+        sendToLogcat(Log.ERROR, message, error)
 
         if (LoggingContext.sendToCrashlytics) {
-            Crashlytics.reportReportingError(tag, message, error, crashReportingError)
+            Crashlytics.reportReportingError(message, error, crashReportingError)
         }
     }
 
-    private fun sendToLogcat(priority: Int, tag: String?, message: String?, error: Throwable?) {
+    private fun sendToLogcat(priority: Int, message: String?, error: Throwable?) {
         if (LoggingContext.sendToLogcat) {
-            super.log(priority, tag, message, error)
+            super.log(priority, message, error)
         }
     }
 }

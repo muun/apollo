@@ -32,8 +32,8 @@ func EncryptNoPadding(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func DecryptPkcs7(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
-	paddedPlaintext, err := DecryptNoPadding(key, iv, cypertext)
+func DecryptPkcs7(key []byte, iv []byte, ciphertext []byte) ([]byte, error) {
+	paddedPlaintext, err := DecryptNoPadding(key, iv, ciphertext)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func DecryptPkcs7(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 	return pkcs7UnPadding(paddedPlaintext)
 }
 
-func DecryptNoPadding(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
+func DecryptNoPadding(key []byte, iv []byte, ciphertext []byte) ([]byte, error) {
 	if len(key) != KeySize {
 		return nil, fmt.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
 	}
@@ -50,10 +50,10 @@ func DecryptNoPadding(key []byte, iv []byte, cypertext []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	plaintext := make([]byte, len(cypertext))
+	plaintext := make([]byte, len(ciphertext))
 
 	mode := cipher.NewCBCDecrypter(block, iv)
-	mode.CryptBlocks(plaintext, cypertext)
+	mode.CryptBlocks(plaintext, ciphertext)
 
 	return plaintext, nil
 }

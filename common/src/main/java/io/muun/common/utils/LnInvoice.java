@@ -776,10 +776,12 @@ public class LnInvoice {
 
         public final String amountWithMillis;
         public final long amountInSatoshis;
+        public final BtcAmount btcAmount;
 
         private Amount(String amountWithMillis, long amountInSatoshis) {
             this.amountWithMillis = amountWithMillis;
             this.amountInSatoshis = amountInSatoshis;
+            this.btcAmount = BtcAmount.fromMilliSats(Long.parseLong(amountWithMillis));
         }
     }
 

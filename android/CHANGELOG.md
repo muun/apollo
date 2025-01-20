@@ -6,6 +6,29 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.6] - 2025-01-14
+
+### ADDED
+
+- Background notification processing reliability improvements
+- Support h for hardened children in BIP32 derivation paths
+
+### FIXED
+
+- Visual bug regarding welcomeToMuun dialog width in foldables and tablets.
+
+### CHANGED
+
+- Upgraded Gradle to 8.10
+- Upgraded Android Gradle Plugin (AGP) to 8.5.2
+- Upgraded Timber to 5.0.1 with related api changes
+- Upgraded google-api-client-android:2.7.0 with related api changes
+- Upgraded google-http-client-gson:1.45.0
+- Updated linter baseline.xml
+- Enhanced errors and email error reports with app exit reasons and lowRam and background restricted
+metadata.
+
+
 ## [52.5] - 2024-12-02
 
 ### ADDED
@@ -97,6 +120,8 @@ errors and crashes
 ### CHANGED
 
 - Upgraded compiledSdkVersion and targetSdkVersion to 34
+- Upgraded Gradle to 7.5.1
+- Upgraded Android Gradle Plugin (AGP) to 7.4.2
 - Upgraded go version to 1.21.11
 - Enhanced password input for change password flow (consistency with rest of the app)
 - Enhanced error metadata for strange secure storage errors
