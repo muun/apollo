@@ -77,6 +77,12 @@ class BackgroundTimesRepository @Inject constructor(
         return backgroundTimesPreferences.get()!!.map { it.toModel() }
     }
 
+    fun getLatestBackgroundTimes(): List<BackgroundEvent> {
+        return backgroundTimesPreferences.get()!!
+            .takeLast(10)
+            .map { it.toModel() }
+    }
+
     fun pruneIfGreaterThan(maxBkgTimesArraySize: Int) {
         val storedBkgTimes = getBackgroundTimes()
         val bkgTimes = storedBkgTimes.takeLast(maxBkgTimesArraySize)

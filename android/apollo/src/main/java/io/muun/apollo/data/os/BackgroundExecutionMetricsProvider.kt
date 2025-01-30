@@ -10,6 +10,8 @@ import android.os.SystemClock
 import io.muun.apollo.data.net.ConnectivityInfoProvider
 import io.muun.apollo.data.net.NetworkInfoProvider
 import io.muun.apollo.data.net.TrafficStatsInfoProvider
+import io.muun.apollo.data.preferences.BackgroundTimesRepository
+import io.muun.apollo.domain.model.BackgroundEvent
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
@@ -30,6 +32,7 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
     private val localeInfoProvider: LocaleInfoProvider,
     private val trafficStatsInfoProvider: TrafficStatsInfoProvider,
     private val nfcProvider: NfcProvider,
+    private val bkgTimesRepo: BackgroundTimesRepository,
 ) {
 
     private val powerManager: PowerManager by lazy {
@@ -92,7 +95,8 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             nfcProvider.getNfcAntennaPosition().map { "${it.first};${it.second}" }.toTypedArray(),
             nfcProvider.deviceSizeInMm?.let { "${it.first};${it.second}" } ?: "",
             nfcProvider.isDeviceFoldable,
-            activityManagerInfoProvider.isBackgroundRestricted
+            activityManagerInfoProvider.isBackgroundRestricted,
+            bkgTimesRepo.getLatestBackgroundTimes()
         )
 
     @Suppress("ArrayInDataClass")
@@ -152,7 +156,8 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val androidNfcAntennaPositions: Array<String>, // in mms starting bottom-left
         private val androidDeviceSizeInMms: String,
         private val androidFoldableDevice: Boolean?,
-        private val isBackgroundRestricted: Boolean
+        private val isBackgroundRestricted: Boolean,
+        private val bkgTimes: List<BackgroundEvent>,
     )
 
     /**
