@@ -67,7 +67,8 @@ class RepositoryRegistry {
         NightModeRepository::class.java,
         SchemaVersionRepository::class.java,
         NotificationPermissionDeniedRepository::class.java,
-        NotificationPermissionSkippedRepository::class.java
+        NotificationPermissionSkippedRepository::class.java,
+        BackgroundTimesRepository::class.java
     )
 
     // Note: the use of a map is critical here for 2 reasons, both of them related to memory

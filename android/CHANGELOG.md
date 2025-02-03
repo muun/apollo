@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [52.7] - 2025-01-30
+
+### ADDED
+
+- Background notification processing reliability improvements
+
 ## [52.6] - 2025-01-14
 
 ### ADDED
