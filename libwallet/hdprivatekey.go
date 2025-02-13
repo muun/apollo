@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/muun/libwallet/encryption"
 	"github.com/muun/libwallet/hdpath"
 
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
@@ -75,6 +77,13 @@ func (p *HDPrivateKey) String() string {
 // DerivedAt derives a new child priv key, which may be hardened
 // index should be uint32 but for java compat we use int64
 func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, error) {
+	if index&hdkeychain.HardenedKeyStart != 0 {
+		return nil, fmt.Errorf("index should not be hardened (index %v)", index)
+	}
+	if index < 0 || index > int64(hdkeychain.HardenedKeyStart) {
+		return nil, fmt.Errorf("index is out of bounds (index %v)", index)
+	}
+
 	var modifier uint32
 	if hardened {
 		modifier = hdkeychain.HardenedKeyStart
@@ -124,6 +133,52 @@ func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 	return derivedKey, nil
 }
 
+// Deprecated: deriveToPathWithHardenedBug derives the key up to the provided path, using a buggy
+// derivation algorithm that causes hardened private key derivation to differ from the HD wallet
+// BIP. We updated our logic to use the new version, but we still need this buggy algorithm for
+// any keys that we derived before the fix.
+// For information on the bug see ExtendedKey#DeriveNonStandard.
+func (p *HDPrivateKey) deriveToPathWithHardenedBug(path string) (*HDPrivateKey, error) {
+
+	if !strings.HasPrefix(path, p.Path) {
+		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
+	}
+
+	firstPath, err := hdpath.Parse(p.Path)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
+	}
+
+	secondPath, err := hdpath.Parse(path)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
+	}
+
+	derivedKey := &p.key
+	derivedKeyPath := firstPath
+
+	for depth, level := range secondPath.IndexesFrom(firstPath) {
+
+		var modifier uint32
+		if level.Hardened {
+			modifier = hdkeychain.HardenedKeyStart
+		}
+
+		index := level.Index | modifier
+		derivedKeyPath = derivedKeyPath.Child(index)
+		derivedKey, err = derivedKey.DeriveNonStandard(index)
+		if err != nil {
+			return nil, fmt.Errorf("failed to derive key at path %v on depth %v: %w", path, depth, err)
+		}
+	}
+
+	return &HDPrivateKey{
+		key:     *derivedKey,
+		Network: p.Network,
+		Path:    path,
+	}, nil
+}
+
 // Sign a payload using the backing EC key
 func (p *HDPrivateKey) Sign(data []byte) ([]byte, error) {
 
@@ -138,20 +193,86 @@ func (p *HDPrivateKey) Sign(data []byte) ([]byte, error) {
 	return sig.Serialize(), nil
 }
 
-func (p *HDPrivateKey) Decrypter() Decrypter {
-	return &hdPrivKeyDecrypter{p, nil, true}
+type keyProvider struct {
+	key *HDPrivateKey
 }
 
-func (p *HDPrivateKey) DecrypterFrom(senderKey *PublicKey) Decrypter {
-	return &hdPrivKeyDecrypter{p, senderKey, false}
+func (k keyProvider) WithPath(path string) (*btcec.PrivateKey, error) {
+	derivedKey, err := k.key.DeriveTo(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return derivedKey.key.ECPrivKey()
+}
+
+func (k keyProvider) WithPathUsingHardenedBug(path string) (*btcec.PrivateKey, error) {
+	derivedKey, err := k.key.deriveToPathWithHardenedBug(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return derivedKey.key.ECPrivKey()
+}
+
+func (k keyProvider) Path() string {
+	return k.key.Path
+}
+
+func (p *HDPrivateKey) Decrypter() Decrypter {
+	return &encryption.HdPrivKeyDecrypter{
+		KeyProvider: keyProvider{key: p},
+		SenderKey:   nil,
+		FromSelf:    true,
+	}
+}
+
+func (p *HDPrivateKey) DecrypterFrom(sender *PublicKey) Decrypter {
+
+	var senderKey *btcec.PublicKey
+	if sender != nil {
+		senderKey = sender.key
+	}
+
+	return &encryption.HdPrivKeyDecrypter{
+		KeyProvider: keyProvider{key: p},
+		SenderKey:   senderKey,
+		FromSelf:    false,
+	}
 }
 
 func (p *HDPrivateKey) Encrypter() Encrypter {
-	return &hdPubKeyEncrypter{p.PublicKey(), p}
+	key, err := p.key.ECPrivKey()
+	if err != nil {
+		panic(err)
+	}
+
+	return &encryption.HdPubKeyEncrypter{
+		ReceiverKey:     key.PubKey(),
+		ReceiverKeyPath: p.Path,
+		SenderKey:       key,
+	}
 }
 
 func (p *HDPrivateKey) EncrypterTo(receiver *HDPublicKey) Encrypter {
-	return &hdPubKeyEncrypter{receiver, p}
+	key, err := p.key.ECPrivKey()
+	if err != nil {
+		panic(err)
+	}
+
+	var receiverKey *btcec.PublicKey
+	if receiver != nil {
+		receiverKey, err = receiver.key.ECPubKey()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return &encryption.HdPubKeyEncrypter{
+		ReceiverKey:     receiverKey,
+		ReceiverKeyPath: p.Path,
+		SenderKey:       key,
+	}
 }
 
 // What follows is a workaround for https://github.com/golang/go/issues/46893

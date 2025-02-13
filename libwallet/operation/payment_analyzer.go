@@ -118,11 +118,12 @@ const (
 
 // PaymentAnalysis encodes whether a payment can be made or not and some important extra metadata about the payment.
 type PaymentAnalysis struct {
-	Status      AnalysisStatus // encodes the result of a payment's analysis
-	AmountInSat int64          // payment amount (e.g the amount the recipient will receive)
-	FeeInSat    int64          // encodes the onchain fee (other fees may apply, e.g routing/lightning fee)
-	SwapFees    *fees.SwapFees // metadata related to the swap (if one exists for payment)
-	TotalInSat  int64          // AmountInSat + fees (may include other than FeeInSat). May provide extra information in case of error status (e.g payment can't be made).
+	Status        AnalysisStatus // encodes the result of a payment's analysis
+	AmountInSat   int64          // payment amount (e.g the amount the recipient will receive)
+	FeeTotalInSat int64          // encodes the onchain total fee (other fees may apply, e.g routing/lightning fee)
+	FeeBumpInSat  int64          // fee bump to apply CPFP in unconfirmed utxos
+	SwapFees      *fees.SwapFees // metadata related to the swap (if one exists for payment)
+	TotalInSat    int64          // AmountInSat + fees (may include other than FeeTotalInSat). May provide extra information in case of error status (e.g payment can't be made).
 }
 
 func NewPaymentAnalyzer(
@@ -168,7 +169,7 @@ func (a *PaymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis
 }
 
 func (a *PaymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*PaymentAnalysis, error) {
-	fee := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, true)
+	fee, feeBump := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, true)
 
 	total := payment.AmountInSat
 	amount := total - fee
@@ -179,39 +180,43 @@ func (a *PaymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*Paym
 			amount = 0
 		}
 		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: amount,
-			TotalInSat:  payment.AmountInSat,
-			FeeInSat:    fee,
+			Status:        AnalysisStatusUnpayable,
+			AmountInSat:   amount,
+			TotalInSat:    payment.AmountInSat,
+			FeeTotalInSat: fee,
+			FeeBumpInSat:  feeBump,
 		}, nil
 	}
 
 	return &PaymentAnalysis{
-		Status:      AnalysisStatusOk,
-		AmountInSat: amount,
-		TotalInSat:  payment.AmountInSat,
-		FeeInSat:    fee,
+		Status:        AnalysisStatusOk,
+		AmountInSat:   amount,
+		TotalInSat:    payment.AmountInSat,
+		FeeTotalInSat: fee,
+		FeeBumpInSat:  feeBump,
 	}, nil
 }
 
 func (a *PaymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddress) (*PaymentAnalysis, error) {
-	fee := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, false)
+	fee, feeBump := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, false)
 	total := payment.AmountInSat + fee
 
 	if total > a.totalBalance() {
 		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: payment.AmountInSat,
-			FeeInSat:    fee,
-			TotalInSat:  total,
+			Status:        AnalysisStatusUnpayable,
+			AmountInSat:   payment.AmountInSat,
+			FeeTotalInSat: fee,
+			FeeBumpInSat:  feeBump,
+			TotalInSat:    total,
 		}, nil
 	}
 
 	return &PaymentAnalysis{
-		Status:      AnalysisStatusOk,
-		AmountInSat: payment.AmountInSat,
-		TotalInSat:  total,
-		FeeInSat:    fee,
+		Status:        AnalysisStatusOk,
+		AmountInSat:   payment.AmountInSat,
+		TotalInSat:    total,
+		FeeTotalInSat: fee,
+		FeeBumpInSat:  feeBump,
 	}, nil
 }
 
@@ -280,20 +285,20 @@ func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *f
 
 	if total > a.totalBalance() {
 		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: amount,
-			TotalInSat:  total,
-			FeeInSat:    0,
-			SwapFees:    swapFees,
+			Status:        AnalysisStatusUnpayable,
+			AmountInSat:   amount,
+			TotalInSat:    total,
+			FeeTotalInSat: 0,
+			SwapFees:      swapFees,
 		}, nil
 	}
 
 	return &PaymentAnalysis{
-		Status:      AnalysisStatusOk,
-		AmountInSat: amount,
-		TotalInSat:  total,
-		FeeInSat:    0,
-		SwapFees:    swapFees,
+		Status:        AnalysisStatusOk,
+		AmountInSat:   amount,
+		TotalInSat:    total,
+		FeeTotalInSat: 0,
+		SwapFees:      swapFees,
 	}, nil
 }
 
@@ -326,26 +331,28 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 		return nil, err
 	}
 
-	fee := a.feeCalculator.Fee(outputAmount, feeRate, false)
+	fee, feeBump := a.feeCalculator.Fee(outputAmount, feeRate, false)
 	total := outputAmount + fee
 	totalForUser := total - collectAmount
 
 	if total > a.utxoBalance() || totalForUser > a.totalBalance() {
 		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: payment.AmountInSat,
-			FeeInSat:    fee,
-			TotalInSat:  totalForUser,
-			SwapFees:    swapFees,
+			Status:        AnalysisStatusUnpayable,
+			AmountInSat:   payment.AmountInSat,
+			FeeTotalInSat: fee,
+			FeeBumpInSat:  feeBump,
+			TotalInSat:    totalForUser,
+			SwapFees:      swapFees,
 		}, nil
 	}
 
 	return &PaymentAnalysis{
-		Status:      AnalysisStatusOk,
-		AmountInSat: payment.AmountInSat,
-		FeeInSat:    fee,
-		TotalInSat:  totalForUser,
-		SwapFees:    swapFees,
+		Status:        AnalysisStatusOk,
+		AmountInSat:   payment.AmountInSat,
+		FeeTotalInSat: fee,
+		FeeBumpInSat:  feeBump,
+		TotalInSat:    totalForUser,
+		SwapFees:      swapFees,
 	}, nil
 }
 
@@ -376,13 +383,14 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		return nil, err
 	}
 
-	zeroConfFeeInSat := a.computeFeeForTFFASwap(payment, zeroConfFeeRate)
+	zeroConfFeeInSat, zeroConfFeeBumpInSat := a.computeFeeForTFFASwap(payment, zeroConfFeeRate)
 	if zeroConfFeeInSat > a.totalBalance() {
 		// We can't even pay the onchain fee
 		return &PaymentAnalysis{
-			Status:     AnalysisStatusUnpayable,
-			FeeInSat:   zeroConfFeeInSat,
-			TotalInSat: a.totalBalance() + int64(zeroConfFeeRate),
+			Status:        AnalysisStatusUnpayable,
+			FeeTotalInSat: zeroConfFeeInSat,
+			FeeBumpInSat:  zeroConfFeeBumpInSat,
+			TotalInSat:    a.totalBalance() + int64(zeroConfFeeRate),
 		}, nil
 	}
 
@@ -392,9 +400,10 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		//  - negative conf target (we're using 0)
 		//  - no route for amount (should be guaranteed by BestRouteFees struct)
 		return &PaymentAnalysis{
-			Status:     AnalysisStatusUnpayable,
-			FeeInSat:   zeroConfFeeInSat,
-			TotalInSat: a.totalBalance() + zeroConfFeeInSat,
+			Status:        AnalysisStatusUnpayable,
+			FeeTotalInSat: zeroConfFeeInSat,
+			FeeBumpInSat:  zeroConfFeeBumpInSat,
+			TotalInSat:    a.totalBalance() + zeroConfFeeInSat,
 		}, nil
 	}
 
@@ -406,9 +415,10 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 			//  - negative conf target (we're using 1)
 			//  - no route for amount (should be guaranteed by BestRouteFees struct)
 			return &PaymentAnalysis{
-				Status:     AnalysisStatusUnpayable,
-				FeeInSat:   zeroConfFeeInSat,
-				TotalInSat: a.totalBalance() + zeroConfFeeInSat,
+				Status:        AnalysisStatusUnpayable,
+				FeeTotalInSat: zeroConfFeeInSat,
+				FeeBumpInSat:  zeroConfFeeBumpInSat,
+				TotalInSat:    a.totalBalance() + zeroConfFeeInSat,
 			}, nil
 		}
 	}
@@ -416,15 +426,17 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 	amount := params.Amount
 	lightningFee := params.RoutingFee
 	onChainFee := params.OnChainFee
+	onChainFeeBump := params.OnChainFeeBump
 
 	if amount <= 0 {
 		// We can't pay the combined fee
 		// This can be either cause we can't pay both fees summed or we had to bump to
 		// 1-conf and we can't pay that.
 		return &PaymentAnalysis{
-			Status:     AnalysisStatusUnpayable,
-			FeeInSat:   zeroConfFeeInSat,
-			TotalInSat: a.totalBalance() + zeroConfFeeInSat,
+			Status:        AnalysisStatusUnpayable,
+			FeeTotalInSat: zeroConfFeeInSat,
+			FeeBumpInSat:  zeroConfFeeBumpInSat,
+			TotalInSat:    a.totalBalance() + zeroConfFeeInSat,
 		}, nil
 	}
 
@@ -458,27 +470,30 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 
 	if !canPay {
 		return &PaymentAnalysis{
-			Status:      AnalysisStatusUnpayable,
-			AmountInSat: int64(amount),
-			FeeInSat:    int64(onChainFee),
-			TotalInSat:  payment.AmountInSat,
-			SwapFees:    swapFees,
+			Status:        AnalysisStatusUnpayable,
+			AmountInSat:   int64(amount),
+			FeeTotalInSat: int64(onChainFee),
+			FeeBumpInSat:  int64(onChainFeeBump),
+			TotalInSat:    payment.AmountInSat,
+			SwapFees:      swapFees,
 		}, nil
 	}
 
 	return &PaymentAnalysis{
-		Status:      AnalysisStatusOk,
-		AmountInSat: int64(amount),
-		FeeInSat:    int64(onChainFee),
-		TotalInSat:  payment.AmountInSat,
-		SwapFees:    swapFees,
+		Status:        AnalysisStatusOk,
+		AmountInSat:   int64(amount),
+		FeeTotalInSat: int64(onChainFee),
+		FeeBumpInSat:  int64(onChainFeeBump),
+		TotalInSat:    payment.AmountInSat,
+		SwapFees:      swapFees,
 	}, nil
 }
 
 type swapParams struct {
-	Amount     btcutil.Amount
-	OnChainFee btcutil.Amount
-	RoutingFee btcutil.Amount
+	Amount         btcutil.Amount
+	OnChainFee     btcutil.Amount
+	OnChainFeeBump btcutil.Amount
+	RoutingFee     btcutil.Amount
 }
 
 // computeParamsForTFFASwap takes care of the VERY COMPLEX task of calculating
@@ -538,7 +553,7 @@ func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 		return nil, err
 	}
 
-	onChainFeeInSat := a.computeFeeForTFFASwap(payment, feeRate)
+	onChainFeeInSat, onChainFeeBumpInSat := a.computeFeeForTFFASwap(payment, feeRate)
 
 	for _, bestRouteFees := range payment.BestRouteFees {
 		amount := btcutil.Amount(
@@ -566,9 +581,10 @@ func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 			// it will be burn as on-chain fee.
 
 			return &swapParams{
-				Amount:     amount,
-				RoutingFee: lightningFee,
-				OnChainFee: btcutil.Amount(onChainFeeInSat),
+				Amount:         amount,
+				RoutingFee:     lightningFee,
+				OnChainFee:     btcutil.Amount(onChainFeeInSat),
+				OnChainFeeBump: btcutil.Amount(onChainFeeBumpInSat),
 			}, nil
 		}
 	}
@@ -577,7 +593,10 @@ func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 	return nil, errors.New("none of the best route fees have enough capacity")
 }
 
-func (a *PaymentAnalyzer) computeFeeForTFFASwap(payment *PaymentToInvoice, feeRate float64) int64 {
+func (a *PaymentAnalyzer) computeFeeForTFFASwap(
+	payment *PaymentToInvoice,
+	feeRate float64,
+) (totalFee int64, feeBump int64) {
 	// Compute tha on-chain fee. As its TFFA, we want to calculate the fee for the total balance
 	// including any sats we want to collect.
 	onChainAmount := a.totalBalance() + int64(payment.FundingOutputPolicies.PotentialCollect)

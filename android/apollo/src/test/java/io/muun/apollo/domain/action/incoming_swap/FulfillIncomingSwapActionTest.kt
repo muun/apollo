@@ -13,7 +13,10 @@ import io.muun.apollo.data.external.Gen
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
+import io.muun.apollo.data.preferences.TransactionSizeRepository
+import io.muun.apollo.domain.libwallet.LibwalletService
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
+import io.muun.apollo.domain.model.FulfillmentPushedResult
 import io.muun.apollo.domain.model.IncomingSwap
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData
 import io.muun.apollo.domain.model.Preimage
@@ -38,6 +41,10 @@ class FulfillIncomingSwapActionTest : BaseTest() {
     private val keysRepository = mockk<KeysRepository>(relaxed = true)
 
     private val incomingSwapDao = mockk<IncomingSwapDao>(relaxed = true)
+
+    private val transactionSizeRepository = mockk<TransactionSizeRepository>(relaxed = true)
+
+    private val libwalletService = mockk<LibwalletService>(relaxed = true)
 
     private lateinit var action: FulfillIncomingSwapAction
 
@@ -70,7 +77,9 @@ class FulfillIncomingSwapActionTest : BaseTest() {
             operationDao,
             keysRepository,
             params,
-            incomingSwapDao
+            incomingSwapDao,
+            transactionSizeRepository,
+            libwalletService
         )
     }
 
@@ -126,6 +135,10 @@ class FulfillIncomingSwapActionTest : BaseTest() {
             "",
             1
         )
+        val fulfillmentPushedResult = FulfillmentPushedResult(
+            Gen.nextTransactionSize(),
+            Gen.feeBumpFunctions()
+        )
 
         every {
             operationDao.fetchByIncomingSwapUuid(swap.houstonUuid)
@@ -147,12 +160,14 @@ class FulfillIncomingSwapActionTest : BaseTest() {
         every {
             houstonClient.pushFulfillmentTransaction(swap.houstonUuid, any())
         } returns
-            Completable.complete()
+            Single.just(fulfillmentPushedResult)
 
         action.action(swap.houstonUuid).toBlocking().subscribe()
 
         verify(exactly = 0) { houstonClient.expireInvoice(swap.getPaymentHash()) }
         verify(exactly = 1) { houstonClient.pushFulfillmentTransaction(any(), any()) }
+        verify(exactly = 1) { transactionSizeRepository.setTransactionSize(any())}
+        verify(exactly = 1) { libwalletService.persistFeeBumpFunctions(any(), any())}
     }
 
     @Test

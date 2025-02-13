@@ -5,7 +5,10 @@ import io.muun.apollo.data.db.incoming_swap.IncomingSwapDao
 import io.muun.apollo.data.db.operation.OperationDao
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
+import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
+import io.muun.apollo.domain.libwallet.LibwalletService
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByError
@@ -28,6 +31,8 @@ open class FulfillIncomingSwapAction @Inject constructor(
     private val keysRepository: KeysRepository,
     private val network: NetworkParameters,
     private val incomingSwapDao: IncomingSwapDao,
+    private val transactionSizeRepository: TransactionSizeRepository,
+    private val libwalletService: LibwalletService,
 ) : BaseAsyncAction1<String, Unit>() {
 
     override fun action(incomingSwapUuid: String): Observable<Unit> {
@@ -105,6 +110,17 @@ open class FulfillIncomingSwapAction @Inject constructor(
             .map { RawTransaction(Encodings.bytesToHex(it.fullfillmentTx!!)) }
             .flatMapCompletable { tx ->
                 houstonClient.pushFulfillmentTransaction(op.incomingSwap.houstonUuid, tx)
+                    .flatMap { fulfillmentPushed ->
+                        Single.fromCallable {
+                            transactionSizeRepository.setTransactionSize(
+                                fulfillmentPushed.nextTransactionSize
+                            )
+                            libwalletService.persistFeeBumpFunctions(
+                                fulfillmentPushed.feeBumpFunctions,
+                                FeeBumpRefreshPolicy.NTS_CHANGED
+                            )
+                        }
+                    }.toCompletable()
             }
     }
 

@@ -4,6 +4,7 @@ import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.FeeBumpFunctions
 import io.muun.apollo.domain.model.FeeWindow
 import io.muun.apollo.domain.model.ForwardingPolicy
 import io.muun.apollo.domain.model.IncomingSwap
@@ -273,9 +274,12 @@ object Gen {
      * Get a FeeBumpFunctions vector
      */
     fun feeBumpFunctions() =
-        listOf(
-            "QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA", // [[100, 0, 0], [+Inf, 1, 2]]
-            "f4AAAD+AAAAAAAAA"                  // [[+Inf, 1, 0]]]
+        FeeBumpFunctions(
+            "idTest",
+            listOf(
+                "QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA", // [[100, 0, 0], [+Inf, 1, 2]]
+                "f4AAAD+AAAAAAAAA"                  // [[+Inf, 1, 0]]]
+            )
         )
     /**
      * Get a Transaction Hash.
