@@ -2,9 +2,11 @@ package libwallet
 
 import (
 	"crypto/sha256"
+	"math"
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
 )
 
@@ -291,4 +293,30 @@ func TestHDPrivateKeySign(t *testing.T) {
 	if !sig.Verify(hash[:], pubKey) {
 		t.Fatal("sig.Verify failed")
 	}
+}
+
+func TestHDPrivateKey_DeriveAt(t *testing.T) {
+	seed := randomBytes(16)
+	priv, err := NewHDPrivateKey(seed, network)
+
+	t.Run("derive negative index fails", func(t *testing.T) {
+		_, err = priv.DerivedAt(-1, false)
+		if err == nil {
+			t.Errorf("derived a priv key with negative index")
+		}
+	})
+
+	t.Run("derive bigger than uint31 index fails", func(t *testing.T) {
+		_, err = priv.DerivedAt(math.MaxInt64, false)
+		if err == nil {
+			t.Errorf("derived a priv key with int64 index")
+		}
+	})
+
+	t.Run("derive with implicit hardened index fails", func(t *testing.T) {
+		_, err = priv.DerivedAt(hdkeychain.HardenedKeyStart, false)
+		if err == nil {
+			t.Errorf("derived a priv key with implicit hardened index")
+		}
+	})
 }

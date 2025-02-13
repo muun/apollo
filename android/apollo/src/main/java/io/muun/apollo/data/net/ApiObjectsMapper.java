@@ -7,6 +7,7 @@ import io.muun.apollo.data.os.GooglePlayHelper;
 import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.os.PackageManagerInfoProvider;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BackgroundEvent;
 import io.muun.apollo.domain.model.BitcoinAmount;
@@ -44,9 +45,9 @@ import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
+import io.muun.common.api.RealTimeFeesRequestJson;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
-import io.muun.common.api.UnconfirmedOutpointsJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserProfileJson;
 import io.muun.common.crypto.ChallengePublicKey;
@@ -232,7 +233,9 @@ public class ApiObjectsMapper {
             final long appSize,
             final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds
+            final String efsCreationTimeInSeconds,
+            final Boolean isLowRamDevice,
+            final Long firstInstallTimeInMs
     ) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
@@ -278,7 +281,9 @@ public class ApiObjectsMapper {
                 appSize,
                 hardwareAddresses,
                 vbMeta,
-                efsCreationTimeInSeconds
+                efsCreationTimeInSeconds,
+                isLowRamDevice,
+                firstInstallTimeInMs
         );
     }
 
@@ -415,7 +420,9 @@ public class ApiObjectsMapper {
             final Long appSize,
             final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds
+            final String efsCreationTimeInSeconds,
+            final Boolean isLowRamDevice,
+            final Long firstInstallTimeInMs
     ) {
 
         return new CreateFirstSessionJson(
@@ -442,7 +449,10 @@ public class ApiObjectsMapper {
                         appSize,
                         hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds
+                        efsCreationTimeInSeconds,
+                        isLowRamDevice,
+                        firstInstallTimeInMs
+
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -479,7 +489,9 @@ public class ApiObjectsMapper {
             final Long appSize,
             final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds
+            final String efsCreationTimeInSeconds,
+            final Boolean isLowRamDevice,
+            final Long firstInstallTimeInMs
     ) {
 
         return new CreateLoginSessionJson(
@@ -506,7 +518,9 @@ public class ApiObjectsMapper {
                         appSize,
                         hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds
+                        efsCreationTimeInSeconds,
+                        isLowRamDevice,
+                        firstInstallTimeInMs
                 ),
                 gcmToken,
                 email
@@ -541,7 +555,9 @@ public class ApiObjectsMapper {
             final Long appSize,
             final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds
+            final String efsCreationTimeInSeconds,
+            final Boolean isLowRamDevice,
+            final Long firstInstallTimeInMs
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -568,7 +584,9 @@ public class ApiObjectsMapper {
                         appSize,
                         hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds
+                        efsCreationTimeInSeconds,
+                        isLowRamDevice,
+                        firstInstallTimeInMs
                 ),
                 gcmToken,
                 new ChallengeKeyJson(
@@ -771,11 +789,12 @@ public class ApiObjectsMapper {
     }
 
     /**
-     *  Creates a UnconfirmedOutpointsJson.
+     *  Creates a RealTimeFeesRequestJson.
      */
     @NotNull
-    public UnconfirmedOutpointsJson mapUnconfirmedOutpointsJson(
-            @NotNull List<SizeForAmount> sizeProgression
+    public RealTimeFeesRequestJson mapRealTimeFeesRequestJson(
+            @NotNull List<SizeForAmount> sizeProgression,
+            @NotNull FeeBumpRefreshPolicy feeBumpRefreshPolicy
     ) {
         final List<String> unconfirmedUtxos = new ArrayList<>();
 
@@ -784,7 +803,28 @@ public class ApiObjectsMapper {
                 unconfirmedUtxos.add(sizeForAmount.outpoint);
             }
         }
+        ;
+        return new RealTimeFeesRequestJson(
+                unconfirmedUtxos,
+                mapFeeBumpRefreshPolicy(feeBumpRefreshPolicy)
+        );
+    }
 
-        return new UnconfirmedOutpointsJson(unconfirmedUtxos);
+    @NotNull
+    private RealTimeFeesRequestJson.FeeBumpRefreshPolicy mapFeeBumpRefreshPolicy(
+            @NotNull FeeBumpRefreshPolicy feeBumpRefreshPolicy
+    ) {
+        switch (feeBumpRefreshPolicy) {
+            case PERIODIC:
+                return RealTimeFeesRequestJson.FeeBumpRefreshPolicy.PERIODIC;
+            case FOREGROUND:
+                return RealTimeFeesRequestJson.FeeBumpRefreshPolicy.FOREGROUND;
+            case NTS_CHANGED:
+                return RealTimeFeesRequestJson.FeeBumpRefreshPolicy.CHANGED_NEXT_TRANSACTION_SIZE;
+            case NEW_OP_BLOCKINGLY:
+                return RealTimeFeesRequestJson.FeeBumpRefreshPolicy.NEW_OPERATION;
+            default:
+                throw new MissingCaseError(feeBumpRefreshPolicy);
+        }
     }
 }

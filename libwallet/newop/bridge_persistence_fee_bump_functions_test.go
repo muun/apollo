@@ -8,7 +8,6 @@ import (
 	"path"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestDecodeFeeBumpFunctions(t *testing.T) {
@@ -72,7 +71,6 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 			encodedFunctionList: []string{"QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA"}, // [[100, 0, 0], [+Inf, 1, 2]]
 			expectedFunctions: []*operation.FeeBumpFunction{
 				{
-					CreatedAt: time.Now(),
 					PartialLinearFunctions: []*operation.PartialLinearFunction{
 						{
 							LeftClosedEndpoint: 0,
@@ -99,7 +97,6 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 			},
 			expectedFunctions: []*operation.FeeBumpFunction{
 				{
-					CreatedAt: time.Now(),
 					PartialLinearFunctions: []*operation.PartialLinearFunction{
 						{
 							LeftClosedEndpoint: 0,
@@ -139,9 +136,12 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 	}
 	defer db.Close()
 
+	uuid := "uuid"
+	refreshPolicy := "foreground"
+
 	for _, tC := range testCases {
 		functionList := libwallet.NewStringListWithElements(tC.encodedFunctionList)
-		err := PersistFeeBumpFunctions(functionList)
+		err := PersistFeeBumpFunctions(functionList, uuid, refreshPolicy)
 
 		if err != nil && tC.err {
 			t.Fatal(err)
@@ -149,18 +149,20 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 
 		repository := db.NewFeeBumpRepository()
 
-		feeBumpFunctions, err := repository.GetAll()
+		feeBumpFunctionSet, err := repository.GetAll()
 
 		if err != nil {
 			t.Fatalf("error getting bump functions")
 		}
 
-		if len(feeBumpFunctions) != len(tC.expectedFunctions) {
+		if len(feeBumpFunctionSet.FeeBumpFunctions) != len(tC.expectedFunctions) ||
+			feeBumpFunctionSet.RefreshPolicy != refreshPolicy ||
+			feeBumpFunctionSet.UUID != uuid {
 			t.Fatalf("fee bump functions were not saved properly")
 		}
 
 		for i, expectedFunction := range tC.expectedFunctions {
-			if !reflect.DeepEqual(expectedFunction.PartialLinearFunctions, feeBumpFunctions[i].PartialLinearFunctions) {
+			if !reflect.DeepEqual(expectedFunction.PartialLinearFunctions, feeBumpFunctionSet.FeeBumpFunctions[i].PartialLinearFunctions) {
 				t.Fatalf("fee bump functions were not saved properly")
 			}
 		}

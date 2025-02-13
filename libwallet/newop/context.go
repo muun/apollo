@@ -27,7 +27,7 @@ type PaymentContext struct {
 	SubmarineSwap            *SubmarineSwap
 	//***********************************
 
-	feeBumpFunctions []*operation.FeeBumpFunction
+	feeBumpFunctionSet *operation.FeeBumpFunctionSet
 }
 
 func (c *PaymentContext) totalBalance() int64 {
@@ -46,15 +46,22 @@ func (c *PaymentContext) toBitcoinAmount(sats int64, inputCurrency string) *Bitc
 	}
 }
 
+func (c *PaymentContext) getFeeBumpFunctions() []*operation.FeeBumpFunction {
+	if c.feeBumpFunctionSet == nil {
+		return nil
+	}
+	return c.feeBumpFunctionSet.FeeBumpFunctions
+}
+
 func newPaymentAnalyzer(context *PaymentContext) *operation.PaymentAnalyzer {
 	return operation.NewPaymentAnalyzer(
 		context.FeeWindow.toInternalType(),
 		context.NextTransactionSize.toInternalType(),
-		context.feeBumpFunctions,
+		context.getFeeBumpFunctions(),
 	)
 }
 
-func (ipc *InitialPaymentContext) newPaymentContext(feeBumpFunctions []*operation.FeeBumpFunction) *PaymentContext {
+func (ipc *InitialPaymentContext) newPaymentContext(feeBumpFunctionSet *operation.FeeBumpFunctionSet) *PaymentContext {
 	return &PaymentContext{
 		FeeWindow:                ipc.FeeWindow,
 		NextTransactionSize:      ipc.NextTransactionSize,
@@ -62,6 +69,6 @@ func (ipc *InitialPaymentContext) newPaymentContext(feeBumpFunctions []*operatio
 		PrimaryCurrency:          ipc.PrimaryCurrency,
 		MinFeeRateInSatsPerVByte: ipc.MinFeeRateInSatsPerVByte,
 		SubmarineSwap:            ipc.SubmarineSwap,
-		feeBumpFunctions:         feeBumpFunctions,
+		feeBumpFunctionSet:       feeBumpFunctionSet,
 	}
 }

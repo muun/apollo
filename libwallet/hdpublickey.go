@@ -46,6 +46,9 @@ func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 	if index&hdkeychain.HardenedKeyStart != 0 {
 		return nil, fmt.Errorf("can't derive a hardened pub key (index %v)", index)
 	}
+	if index < 0 || index > int64(hdkeychain.HardenedKeyStart) {
+		return nil, fmt.Errorf("index is out of bounds (index %v)", index)
+	}
 
 	child, err := p.key.Derive(uint32(index))
 	if err != nil {

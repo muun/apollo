@@ -13,10 +13,12 @@ import io.muun.apollo.domain.action.integrity.GooglePlayIntegrityCheckAction
 import io.muun.apollo.domain.action.keys.SyncPublicKeySetAction
 import io.muun.apollo.domain.action.operation.FetchNextTransactionSizeAction
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
+import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
 import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
 import io.muun.apollo.domain.errors.InitialSyncError
 import io.muun.apollo.domain.errors.InitialSyncNetworkError
 import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.model.LoginWithRc
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByNetworkError
 import io.muun.apollo.domain.utils.toVoid
@@ -37,6 +39,7 @@ class SyncApplicationDataAction @Inject constructor(
     private val syncPublicKeySet: SyncPublicKeySetAction,
     private val fetchNextTransactionSize: FetchNextTransactionSizeAction,
     private val fetchRealTimeData: FetchRealTimeDataAction,
+    private val preloadFeeDataAction: PreloadFeeDataAction,
     private val createFirstSession: CreateFirstSessionAction,
     private val finishLoginWithRc: FinishLoginWithRcAction,
     private val registerInvoices: RegisterInvoicesAction,
@@ -80,6 +83,7 @@ class SyncApplicationDataAction @Inject constructor(
             fetchUserInfo(),
             fetchNextTransactionSize.action(),
             fetchRealTimeData.action(),
+            preloadFeeDataAction.action(FeeBumpRefreshPolicy.FOREGROUND),
             runOnlyIf(!isFirstSession) { syncContacts(hasContactsPermission) },
             Observable.fromCallable(apiMigrationsManager::reset),
         )

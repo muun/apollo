@@ -8,7 +8,9 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.newop.PushTransactionSlowError;
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
+import io.muun.apollo.domain.libwallet.LibwalletService;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationCreated;
@@ -52,6 +54,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
     private final ContactActions contactActions;
     private final OperationMetadataMapper operationMapper;
 
+    private final LibwalletService libwalletService;
+
     /**
      * Submit an outgoing payment to Houston, and update local data in response.
      */
@@ -62,7 +66,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                                PublicProfileDao publicProfileDao,
                                HoustonClient houstonClient,
                                ContactActions contactActions,
-                               OperationMetadataMapper operationMetadataMapper) {
+                               OperationMetadataMapper operationMetadataMapper,
+                               LibwalletService libwalletService) {
 
         this.createOperation = createOperation;
         this.userRepository = userRepository;
@@ -71,6 +76,7 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
         this.houstonClient = houstonClient;
         this.contactActions = contactActions;
         this.operationMapper = operationMetadataMapper;
+        this.libwalletService = libwalletService;
     }
 
     @Override
@@ -107,6 +113,11 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                                     .flatMap(txPushed -> {
                                         // Maybe Houston updated the operation status:
                                         mergedOperation.status = txPushed.operation.getStatus();
+
+                                        libwalletService.persistFeeBumpFunctions(
+                                                txPushed.feeBumpFunctions,
+                                                FeeBumpRefreshPolicy.NTS_CHANGED
+                                        );
 
                                         return createOperation.action(
                                                 mergedOperation, txPushed.nextTransactionSize
