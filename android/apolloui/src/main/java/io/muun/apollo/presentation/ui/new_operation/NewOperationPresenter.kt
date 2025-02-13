@@ -30,6 +30,7 @@ import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
 import io.muun.apollo.domain.errors.newop.SwapFailedException
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.libwallet.Invoice.parseInvoice
 import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.BitcoinAmount
@@ -493,7 +494,7 @@ class NewOperationPresenter @Inject constructor(
         // (invalidated).
         // If the data is invalidated: make an API call to refresh it.
         // If the data is fresh: simply returns null to complete loading on this screen.
-        preloadFeeData.runIfDataIsInvalidated()
+        preloadFeeData.runIfDataIsInvalidated(FeeBumpRefreshPolicy.NEW_OP_BLOCKINGLY)
 
         // This is still needed because we need to:
         // - resolveLnInvoice for submarine swaps TODO mv this to libwallet
@@ -719,6 +720,10 @@ class NewOperationPresenter @Inject constructor(
         val debtAmountInSat = stateVm.validated.swapInfo?.swapFees?.debtAmountInSat
         val outputAmountInSat = stateVm.validated.swapInfo?.swapFees?.outputAmountInSat
         val outputPaddingInSat = stateVm.validated.swapInfo?.swapFees?.outputPaddingInSat
+        val feeBumpSetUUID = stateVm.validated.feeBumpInfo?.setUUID
+        val feeBumpAmountInSat = stateVm.validated.feeBumpInfo?.amountInSat
+        val feeBumpPolicy = stateVm.validated.feeBumpInfo?.refreshPolicy
+        val feeBumpSecondsSinceLastUpdate = stateVm.validated.feeBumpInfo?.secondsSinceLastUpdate
 
         objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
         objects.add(("sats_per_virtual_byte" to feeRateInSatsPerVbyte))
@@ -734,6 +739,12 @@ class NewOperationPresenter @Inject constructor(
         objects.add(("debtAmountInSat" to debtAmountInSat.toString()))
         objects.add(("outputAmountInSat" to outputAmountInSat.toString()))
         objects.add(("outputPaddingInSat" to outputPaddingInSat.toString()))
+        objects.add("fee_bump_set_uuid" to feeBumpSetUUID.toString())
+        objects.add("fee_bump_amount_in_sat" to feeBumpAmountInSat.toString())
+        objects.add("fee_bump_policy" to feeBumpPolicy.toString())
+        objects.add(
+            "fee_bump_seconds_since_last_update" to feeBumpSecondsSinceLastUpdate.toString()
+        )
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))

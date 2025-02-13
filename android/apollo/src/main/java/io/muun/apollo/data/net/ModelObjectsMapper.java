@@ -10,8 +10,10 @@ import io.muun.apollo.domain.model.CreateSessionOk;
 import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
 import io.muun.apollo.domain.model.ExchangeRateWindow;
+import io.muun.apollo.domain.model.FeeBumpFunctions;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.ForwardingPolicy;
+import io.muun.apollo.domain.model.FulfillmentPushedResult;
 import io.muun.apollo.domain.model.IncomingSwap;
 import io.muun.apollo.domain.model.IncomingSwapHtlc;
 import io.muun.apollo.domain.model.MuunFeature;
@@ -33,6 +35,7 @@ import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserPreferences;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.Optional;
+import io.muun.common.Rules;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyUpdateMigrationJson;
 import io.muun.common.api.CommonModelObjectsMapper;
@@ -40,8 +43,10 @@ import io.muun.common.api.CreateFirstSessionOkJson;
 import io.muun.common.api.CreateSessionOkJson;
 import io.muun.common.api.CreateSessionRcOkJson;
 import io.muun.common.api.ExportEmergencyKitJson;
+import io.muun.common.api.FeeBumpFunctionsJson;
 import io.muun.common.api.FeeWindowJson;
 import io.muun.common.api.ForwardingPolicyJson;
+import io.muun.common.api.FulfillmentPushedJson;
 import io.muun.common.api.IncomingSwapHtlcJson;
 import io.muun.common.api.IncomingSwapJson;
 import io.muun.common.api.MuunFeatureJson;
@@ -76,6 +81,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -111,7 +118,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     }
 
     /**
-     * Create a date time.
+     * Create a nullable date time.
      */
     @Nullable
     private ZonedDateTime mapZonedDateTime(@Nullable MuunZonedDateTime dateTime) {
@@ -119,6 +126,14 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
             return null;
         }
 
+        return mapNonNullableZonedDateTime(dateTime);
+    }
+
+    /**
+     * Create a date time.
+     */
+    @NotNull
+    private ZonedDateTime mapNonNullableZonedDateTime(@NotNull MuunZonedDateTime dateTime) {
         return ((ApolloZonedDateTime) dateTime).dateTime;
     }
 
@@ -376,7 +391,32 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         return new TransactionPushed(
                 txPushed.hex,
                 mapNextTransactionSize(txPushed.nextTransactionSize),
-                mapOperation(txPushed.updatedOperation)
+                mapOperation(txPushed.updatedOperation),
+                mapFeeBumpFunctions(txPushed.feeBumpFunctions)
+        );
+    }
+
+    /**
+     * Create a FeeBumpFunctions object.
+     */
+    @NotNull
+    public FeeBumpFunctions mapFeeBumpFunctions(
+            @NotNull FeeBumpFunctionsJson feeBumpFunctionsJson
+    ) {
+        return new FeeBumpFunctions(
+                feeBumpFunctionsJson.uuid,
+                feeBumpFunctionsJson.functions
+        );
+    }
+
+    /**
+     * Map push fulfillment result data.
+     */
+    public FulfillmentPushedResult mapFulfillmentPushed(final FulfillmentPushedJson json) {
+
+        return new FulfillmentPushedResult(
+                mapNextTransactionSize(json.nextTransactionSize),
+                mapFeeBumpFunctions(json.feeBumpFunctions)
         );
     }
 
@@ -422,20 +462,44 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
         // Convert to domain model FeeWindow
         final FeeWindow feeWindow = new FeeWindow(
                 1L, // It will be deleted later
-                mapZonedDateTime(realTimeFeesJson.computedAt),
-                realTimeFeesJson.targetFeeRates.confTargetToTargetFeeRateInSatPerVbyte,
+                mapNonNullableZonedDateTime(realTimeFeesJson.computedAt),
+                mapConfTargetToTargetFeeRateInSatPerVbyte(
+                        realTimeFeesJson.targetFeeRates.confTargetToTargetFeeRateInSatPerVbyte
+                ),
                 realTimeFeesJson.targetFeeRates.fastConfTarget,
                 realTimeFeesJson.targetFeeRates.mediumConfTarget,
                 realTimeFeesJson.targetFeeRates.slowConfTarget
         );
 
+        final FeeBumpFunctions feeBumpFunctions = new FeeBumpFunctions(
+                realTimeFeesJson.feeBumpFunctions.uuid,
+                realTimeFeesJson.feeBumpFunctions.functions
+        );
+
         return new RealTimeFees(
-                realTimeFeesJson.feeBumpFunctions,
+                feeBumpFunctions,
                 feeWindow,
                 realTimeFeesJson.minMempoolFeeRateInSatPerVbyte,
                 realTimeFeesJson.minFeeRateIncrementToReplaceByFeeInSatPerVbyte,
-                mapZonedDateTime(realTimeFeesJson.computedAt)
+                mapNonNullableZonedDateTime(realTimeFeesJson.computedAt)
         );
+    }
+
+    private static SortedMap<Integer, Double> mapConfTargetToTargetFeeRateInSatPerVbyte(
+            SortedMap<Integer, Double> confTargetToTargetFeeRateInSatPerVbyte
+    ) {
+        final SortedMap<Integer, Double> targetedFeeRates = new TreeMap<>();
+
+        for (final var entry: confTargetToTargetFeeRateInSatPerVbyte.entrySet()) {
+
+            final var target = entry.getKey();
+            final var feeRateInSatPerVbyte = entry.getValue();
+            targetedFeeRates.put(
+                    target,
+                    Rules.toSatsPerWeight(feeRateInSatPerVbyte)
+            );
+        }
+        return targetedFeeRates;
     }
 
     private List<ForwardingPolicy> mapForwadingPolicies(

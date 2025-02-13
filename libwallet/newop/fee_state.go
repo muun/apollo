@@ -10,7 +10,8 @@ type FeeState struct {
 	State              string
 	Amount             *BitcoinAmount
 	RateInSatsPerVByte float64
-	TargetBlocks       int64 // 0 if target not found
+	TargetBlocks       int64        // 0 if target not found
+	FeeBumpInfo        *FeeBumpInfo // info for effective fee tracking/troubleshooting
 }
 
 func (f *FeeState) IsFinal() bool {

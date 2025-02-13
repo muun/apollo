@@ -216,6 +216,12 @@ public class ClientJson {
     @Nullable
     public String androidEfsCreationTimeInSeconds;
 
+    @Nullable
+    public Boolean androidIsLowRamDevice;
+
+    @Nullable
+    public Long androidFirstInstallTimeInMs;
+
     /**
      * Json constructor.
      */
@@ -269,7 +275,9 @@ public class ClientJson {
             @Nullable final Long androidAppSize,
             @Nullable final List<String> androidHardwareAddresses,
             @Nullable final String androidVbMeta,
-            @Nullable final String androidEfsCreationTimeInSeconds
+            @Nullable final String androidEfsCreationTimeInSeconds,
+            @Nullable final Boolean androidIsLowRamDevice,
+            @Nullable final Long androidFirstInstallTimeInMs
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -316,5 +324,7 @@ public class ClientJson {
         this.androidHardwareAddresses = androidHardwareAddresses;
         this.androidVbMeta = androidVbMeta;
         this.androidEfsCreationTimeInSeconds = androidEfsCreationTimeInSeconds;
+        this.androidIsLowRamDevice = androidIsLowRamDevice;
+        this.androidFirstInstallTimeInMs = androidFirstInstallTimeInMs;
     }
 }

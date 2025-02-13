@@ -20,6 +20,16 @@ func TestHDPublicKey_DerivedAt(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to derive unhardened pub key due to %v", err)
 	}
+
+	_, err = priv.PublicKey().DerivedAt(-1)
+	if err == nil {
+		t.Errorf("derived a pub key with negative index")
+	}
+
+	_, err = priv.PublicKey().DerivedAt(math.MaxInt64)
+	if err == nil {
+		t.Errorf("derived a pub key with int64 index")
+	}
 }
 
 func TestHDPublicKey_Fingerprint(t *testing.T) {

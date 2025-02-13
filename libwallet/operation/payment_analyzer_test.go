@@ -4,7 +4,6 @@ import (
 	"math"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/muun/libwallet/fees"
 )
@@ -63,10 +62,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 10000,
-				FeeInSat:    100,
-				TotalInSat:  10100,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   10000,
+				FeeTotalInSat: 100,
+				FeeBumpInSat:  0,
+				TotalInSat:    10100,
 			},
 		},
 		{
@@ -77,10 +77,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 999_900,
-				FeeInSat:    100,
-				TotalInSat:  1_000_000,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   999_900,
+				FeeTotalInSat: 100,
+				FeeBumpInSat:  0,
+				TotalInSat:    1_000_000,
 			},
 		},
 		{
@@ -156,10 +157,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 5000,
-				FeeInSat:    2400,
-				TotalInSat:  7400,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   5000,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    7400,
 			},
 		},
 		{
@@ -179,10 +181,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 9000,
-				FeeInSat:    2400,
-				TotalInSat:  11400,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   9000,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    11400,
 			},
 		},
 		{
@@ -202,10 +205,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 9999,
-				FeeInSat:    2400,
-				TotalInSat:  12399,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   9999,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    12399,
 			},
 		},
 		{
@@ -223,17 +227,14 @@ func TestAnalyzeOnChain(t *testing.T) {
 			},
 			feeBump: []*FeeBumpFunction{
 				&FeeBumpFunction{
-					time.Now(),
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
 				&FeeBumpFunction{
-					time.Now(),
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
 				&FeeBumpFunction{
-					time.Now(),
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -244,10 +245,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 7480,
-				FeeInSat:    2520,
-				TotalInSat:  10000,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   7480,
+				FeeTotalInSat: 2520,
+				FeeBumpInSat:  120,
+				TotalInSat:    10000,
 			},
 		},
 		{
@@ -276,8 +278,8 @@ func TestAnalyzeOnChain(t *testing.T) {
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{time.Now(), firstFeeBumpFunction},
-				&FeeBumpFunction{time.Now(), secondFeeBumpFunction},
+				&FeeBumpFunction{firstFeeBumpFunction},
+				&FeeBumpFunction{secondFeeBumpFunction},
 			},
 			payment: &PaymentToAddress{
 				TakeFeeFromAmount:     false,
@@ -285,10 +287,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12000,
-				FeeInSat:    4520,
-				TotalInSat:  16520,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12000,
+				FeeTotalInSat: 4520,
+				FeeBumpInSat:  120,
+				TotalInSat:    16520,
 			},
 		},
 		{
@@ -317,8 +320,8 @@ func TestAnalyzeOnChain(t *testing.T) {
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{time.Now(), firstFeeBumpFunction},
-				&FeeBumpFunction{time.Now(), secondFeeBumpFunction},
+				&FeeBumpFunction{firstFeeBumpFunction},
+				&FeeBumpFunction{secondFeeBumpFunction},
 			},
 			payment: &PaymentToAddress{
 				TakeFeeFromAmount:     true,
@@ -326,10 +329,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 22050,
-				FeeInSat:    7950,
-				TotalInSat:  30000,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   22050,
+				FeeTotalInSat: 7950,
+				FeeBumpInSat:  150,
+				TotalInSat:    30000,
 			},
 		},
 		{
@@ -347,7 +351,6 @@ func TestAnalyzeOnChain(t *testing.T) {
 			},
 			feeBump: []*FeeBumpFunction{
 				&FeeBumpFunction{
-					time.Now(),
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -358,10 +361,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 7500,
-				FeeInSat:    2520,
-				TotalInSat:  10020,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   7500,
+				FeeTotalInSat: 2520,
+				FeeBumpInSat:  120,
+				TotalInSat:    10020,
 			},
 		},
 		{
@@ -381,10 +385,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 7600,
-				FeeInSat:    2400,
-				TotalInSat:  10_000,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   7600,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    10_000,
 			},
 		},
 		{
@@ -422,10 +427,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 0,
-				FeeInSat:    2400,
-				TotalInSat:  1000,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   0,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    1000,
 			},
 		},
 		{
@@ -445,10 +451,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 0,
-				FeeInSat:    2400,
-				TotalInSat:  600,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   0,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    600,
 			},
 		},
 		{
@@ -463,10 +470,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 10000,
-				FeeInSat:    100,
-				TotalInSat:  10100,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   10000,
+				FeeTotalInSat: 100,
+				FeeBumpInSat:  0,
+				TotalInSat:    10100,
 			},
 		},
 		{
@@ -481,10 +489,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 1,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 989_900,
-				FeeInSat:    100,
-				TotalInSat:  990_000,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   989_900,
+				FeeTotalInSat: 100,
+				FeeBumpInSat:  0,
+				TotalInSat:    990_000,
 			},
 		},
 		{
@@ -515,10 +524,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 989_500,
-				FeeInSat:    1000,
-				TotalInSat:  990_500,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   989_500,
+				FeeTotalInSat: 1000,
+				FeeBumpInSat:  0,
+				TotalInSat:    990_500,
 			},
 		},
 		{
@@ -554,10 +564,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 100,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 0,
-				FeeInSat:    24000,
-				TotalInSat:  2000,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   0,
+				FeeTotalInSat: 24000,
+				FeeBumpInSat:  0,
+				TotalInSat:    2000,
 			},
 		},
 		{
@@ -577,10 +588,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				FeeRateInSatsPerVByte: 10,
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 200,
-				FeeInSat:    2400,
-				TotalInSat:  2600,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   200,
+				FeeTotalInSat: 2400,
+				FeeBumpInSat:  0,
+				TotalInSat:    2600,
 			},
 		},
 	}
@@ -634,8 +646,11 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFee(t *testing.T) {
 	if analysis.Status != AnalysisStatusUnpayable {
 		t.Fatal("expected analysis to be unpayable")
 	}
-	if analysis.FeeInSat != 2400 {
-		t.Fatalf("expected fee to be %v, but got %v", 2400, analysis.FeeInSat)
+	if analysis.FeeTotalInSat != 2400 {
+		t.Fatalf("expected fee to be %v, but got %v", 2400, analysis.FeeTotalInSat)
+	}
+	if analysis.FeeBumpInSat != 0 {
+		t.Fatalf("expected fee bump to be %v, but got %v", 0, analysis.FeeBumpInSat)
 	}
 	if analysis.TotalInSat != 12399 {
 		t.Fatalf("expected total to be %v, but got %v", 12399, analysis.TotalInSat)
@@ -653,8 +668,11 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFee(t *testing.T) {
 	if analysis.Status != AnalysisStatusUnpayable {
 		t.Fatal("expected analysis to be unpayable")
 	}
-	if analysis.FeeInSat != 60 {
-		t.Fatalf("expected fee to be %v, but got %v", 60, analysis.FeeInSat)
+	if analysis.FeeTotalInSat != 60 {
+		t.Fatalf("expected fee to be %v, but got %v", 60, analysis.FeeTotalInSat)
+	}
+	if analysis.FeeBumpInSat != 0 {
+		t.Fatalf("expected fee bump to be %v, but got %v", 0, analysis.FeeBumpInSat)
 	}
 	if analysis.TotalInSat != 10059 {
 		t.Fatalf("expected total to be %v, but got %v", 10059, analysis.TotalInSat)
@@ -685,8 +703,11 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFeeUsingTFFA(t *testing.T) 
 	if analysis.Status != AnalysisStatusUnpayable {
 		t.Fatal("expected analysis to be unpayable")
 	}
-	if analysis.FeeInSat != 2400 {
-		t.Fatalf("expected fee to be %v, but got %v", 2400, analysis.FeeInSat)
+	if analysis.FeeTotalInSat != 2400 {
+		t.Fatalf("expected fee to be %v, but got %v", 2400, analysis.FeeTotalInSat)
+	}
+	if analysis.FeeBumpInSat != 0 {
+		t.Fatalf("expected fee bump to be %v, but got %v", 0, analysis.FeeBumpInSat)
 	}
 	if analysis.TotalInSat != 600 {
 		t.Fatalf("expected total to be %v, but got %v", 600, analysis.TotalInSat)
@@ -704,8 +725,11 @@ func TestAnalyzeOnChainValidAmountButUnpayableWithAnyFeeUsingTFFA(t *testing.T) 
 	if analysis.Status != AnalysisStatusUnpayable {
 		t.Fatal("expected analysis to be unpayable")
 	}
-	if analysis.FeeInSat != 60 {
-		t.Fatalf("expected fee to be %v, but got %v", 60, analysis.FeeInSat)
+	if analysis.FeeTotalInSat != 60 {
+		t.Fatalf("expected fee to be %v, but got %v", 60, analysis.FeeTotalInSat)
+	}
+	if analysis.FeeBumpInSat != 0 {
+		t.Fatalf("expected fee bump to be %v, but got %v", 0, analysis.FeeBumpInSat)
 	}
 	if analysis.AmountInSat != 540 {
 		t.Fatalf("expected amount to be %v, but got %v", 540, analysis.TotalInSat)
@@ -720,6 +744,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 		desc      string
 		feeWindow *FeeWindow
 		nts       *NextTransactionSize
+		feeBump   []*FeeBumpFunction
 		payment   *PaymentToInvoice
 		expected  *PaymentAnalysis
 		err       bool
@@ -844,10 +869,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 100,
-				FeeInSat:    240,
-				TotalInSat:  1340,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 240,
+				TotalInSat:    1340,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        1100,
 					DebtType:            fees.DebtTypeNone,
@@ -882,10 +907,57 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 100,
-				FeeInSat:    240,
-				TotalInSat:  1341,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 240,
+				TotalInSat:    1341,
+				SwapFees: &fees.SwapFees{
+					OutputAmount:        1101,
+					DebtType:            fees.DebtTypeNone,
+					DebtAmount:          0,
+					RoutingFee:          1,
+					OutputPadding:       1000,
+					ConfirmationsNeeded: 0,
+				},
+			},
+		},
+		{
+			desc: "swap with valid amount and fee bump",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+			},
+			payment: &PaymentToInvoice{
+				TakeFeeFromAmount: false,
+				AmountInSat:       100,
+				SwapFees: &fees.SwapFees{
+					OutputAmount:        1101,
+					DebtType:            fees.DebtTypeNone,
+					DebtAmount:          0,
+					RoutingFee:          1,
+					OutputPadding:       1000,
+					ConfirmationsNeeded: 0,
+				},
+			},
+			expected: &PaymentAnalysis{
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 342,
+				FeeBumpInSat:  102,
+				TotalInSat:    1443,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        1101,
 					DebtType:            fees.DebtTypeNone,
@@ -920,10 +992,57 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 100,
-				FeeInSat:    2400,
-				TotalInSat:  3501,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 2400,
+				TotalInSat:    3501,
+				SwapFees: &fees.SwapFees{
+					OutputAmount:        1101,
+					DebtType:            fees.DebtTypeNone,
+					DebtAmount:          0,
+					RoutingFee:          1,
+					OutputPadding:       1000,
+					ConfirmationsNeeded: 1,
+				},
+			},
+		},
+		{
+			desc: "swap with valid amount with 1-conf and fee bump",
+			nts: &NextTransactionSize{
+				SizeProgression: []SizeForAmount{
+					{
+						AmountInSat: 10_000,
+						SizeInVByte: 240,
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						UtxoStatus:  UtxosStatusUnconfirmed,
+					},
+				},
+				ExpectedDebtInSat: 0,
+			},
+			feeBump: []*FeeBumpFunction{
+				&FeeBumpFunction{
+					[]*PartialLinearFunction{
+						partialLinearFunction,
+					}},
+			},
+			payment: &PaymentToInvoice{
+				TakeFeeFromAmount: false,
+				AmountInSat:       100,
+				SwapFees: &fees.SwapFees{
+					OutputAmount:        1101,
+					DebtType:            fees.DebtTypeNone,
+					DebtAmount:          0,
+					RoutingFee:          1,
+					OutputPadding:       1000,
+					ConfirmationsNeeded: 1,
+				},
+			},
+			expected: &PaymentAnalysis{
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 2520,
+				FeeBumpInSat:  120,
+				TotalInSat:    3621,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        1101,
 					DebtType:            fees.DebtTypeNone,
@@ -983,10 +1102,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 500,
-				FeeInSat:    240,
-				TotalInSat:  10240,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   500,
+				FeeTotalInSat: 240,
+				TotalInSat:    10240,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        10000,
 					DebtType:            fees.DebtTypeNone,
@@ -1021,10 +1140,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 500,
-				FeeInSat:    240,
-				TotalInSat:  11240,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   500,
+				FeeTotalInSat: 240,
+				TotalInSat:    11240,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        11000,
 					DebtType:            fees.DebtTypeNone,
@@ -1050,10 +1169,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 100,
-				FeeInSat:    0,
-				TotalInSat:  101,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 0,
+				TotalInSat:    101,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
 					DebtType:            fees.DebtTypeLend,
@@ -1079,10 +1198,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 100,
-				FeeInSat:    0,
-				TotalInSat:  100,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   100,
+				FeeTotalInSat: 0,
+				TotalInSat:    100,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
 					DebtType:            fees.DebtTypeLend,
@@ -1145,10 +1264,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 100,
-				FeeInSat:    0,
-				TotalInSat:  110,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   100,
+				FeeTotalInSat: 0,
+				TotalInSat:    110,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
 					DebtType:            fees.DebtTypeLend,
@@ -1183,10 +1302,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 5000,
-				FeeInSat:    240,
-				TotalInSat:  5240,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   5000,
+				FeeTotalInSat: 240,
+				TotalInSat:    5240,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        8000,
 					DebtType:            fees.DebtTypeCollect,
@@ -1221,10 +1340,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 5000,
-				FeeInSat:    240,
-				TotalInSat:  5241,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   5000,
+				FeeTotalInSat: 240,
+				TotalInSat:    5241,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        8001,
 					DebtType:            fees.DebtTypeCollect,
@@ -1259,10 +1378,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 5000,
-				FeeInSat:    2400,
-				TotalInSat:  7401,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   5000,
+				FeeTotalInSat: 2400,
+				TotalInSat:    7401,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        8001,
 					DebtType:            fees.DebtTypeCollect,
@@ -1297,10 +1416,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 7400,
-				FeeInSat:    240,
-				TotalInSat:  7740,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   7400,
+				FeeTotalInSat: 240,
+				TotalInSat:    7740,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        10500,
 					DebtType:            fees.DebtTypeCollect,
@@ -1335,10 +1454,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 7400,
-				FeeInSat:    240,
-				TotalInSat:  7740,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   7400,
+				FeeTotalInSat: 240,
+				TotalInSat:    7740,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        10500,
 					DebtType:            fees.DebtTypeCollect,
@@ -1373,10 +1492,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12160,
-				FeeInSat:    240,
-				TotalInSat:  12400,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12160,
+				FeeTotalInSat: 240,
+				TotalInSat:    12400,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        14160,
 					DebtType:            fees.DebtTypeCollect,
@@ -1411,10 +1530,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12160,
-				FeeInSat:    240,
-				TotalInSat:  12401,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12160,
+				FeeTotalInSat: 240,
+				TotalInSat:    12401,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        14161,
 					DebtType:            fees.DebtTypeCollect,
@@ -1449,10 +1568,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 12401,
-				FeeInSat:    240,
-				TotalInSat:  12641,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   12401,
+				FeeTotalInSat: 240,
+				TotalInSat:    12641,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        14401,
 					DebtType:            fees.DebtTypeCollect,
@@ -1491,10 +1610,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12401,
-				FeeInSat:    0,
-				TotalInSat:  12411,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12401,
+				FeeTotalInSat: 0,
+				TotalInSat:    12411,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
 					DebtType:            fees.DebtTypeLend,
@@ -1533,10 +1652,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12401,
-				FeeInSat:    240,
-				TotalInSat:  12651,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12401,
+				FeeTotalInSat: 240,
+				TotalInSat:    12651,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        13421,
 					DebtType:            fees.DebtTypeCollect,
@@ -1575,10 +1694,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12401,
-				FeeInSat:    240,
-				TotalInSat:  12651,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12401,
+				FeeTotalInSat: 240,
+				TotalInSat:    12651,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        12411,
 					DebtType:            fees.DebtTypeNone,
@@ -1617,10 +1736,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 12401,
-				FeeInSat:    2400,
-				TotalInSat:  14811,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   12401,
+				FeeTotalInSat: 2400,
+				TotalInSat:    14811,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        12411,
 					DebtType:            fees.DebtTypeNone,
@@ -1660,10 +1779,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 316798,
-				FeeInSat:    25300,
-				TotalInSat:  342434,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   316798,
+				FeeTotalInSat: 25300,
+				TotalInSat:    342434,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        337820,
 					DebtType:            fees.DebtTypeCollect,
@@ -1741,10 +1860,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 0,
-				FeeInSat:    785,
-				TotalInSat:  1585,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   0,
+				FeeTotalInSat: 785,
+				TotalInSat:    1585,
 			},
 		},
 		{
@@ -1776,10 +1895,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 9977,
-				FeeInSat:    64,
-				TotalInSat:  10055,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   9977,
+				FeeTotalInSat: 64,
+				TotalInSat:    10055,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        30677,
 					DebtType:            fees.DebtTypeCollect,
@@ -1819,10 +1938,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 10159,
-				FeeInSat:    124,
-				TotalInSat:  10290,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   10159,
+				FeeTotalInSat: 124,
+				TotalInSat:    10290,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        43458,
 					DebtType:            fees.DebtTypeCollect,
@@ -1862,9 +1981,9 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:     AnalysisStatusUnpayable,
-				FeeInSat:   98,
-				TotalInSat: 86,
+				Status:        AnalysisStatusUnpayable,
+				FeeTotalInSat: 98,
+				TotalInSat:    86,
 			},
 		},
 		{
@@ -1896,10 +2015,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 133,
-				FeeInSat:    103,
-				TotalInSat:  240,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   133,
+				FeeTotalInSat: 103,
+				TotalInSat:    240,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    4,
 					OutputPadding: 163,
@@ -1938,10 +2057,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 1263,
-				FeeInSat:    119,
-				TotalInSat:  1385,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   1263,
+				FeeTotalInSat: 119,
+				TotalInSat:    1385,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    3,
 					OutputPadding: 0,
@@ -1980,10 +2099,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 52,
-				FeeInSat:    66,
-				TotalInSat:  119,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   52,
+				FeeTotalInSat: 66,
+				TotalInSat:    119,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    1,
 					OutputPadding: 0,
@@ -2022,10 +2141,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 2470,
-				FeeInSat:    76,
-				TotalInSat:  2550,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   2470,
+				FeeTotalInSat: 76,
+				TotalInSat:    2550,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    4,
 					OutputPadding: 0,
@@ -2068,10 +2187,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 59223,
-				FeeInSat:    215,
-				TotalInSat:  59477,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   59223,
+				FeeTotalInSat: 215,
+				TotalInSat:    59477,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    39,
 					OutputPadding: 0,
@@ -2114,10 +2233,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 72369,
-				FeeInSat:    213,
-				TotalInSat:  72667,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   72369,
+				FeeTotalInSat: 213,
+				TotalInSat:    72667,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    85,
 					OutputPadding: 0,
@@ -2156,10 +2275,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 98800,
-				FeeInSat:    84,
-				TotalInSat:  98972,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   98800,
+				FeeTotalInSat: 84,
+				TotalInSat:    98972,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    88,
 					OutputPadding: 0,
@@ -2198,10 +2317,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 249,
-				FeeInSat:    101,
-				TotalInSat:  353,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   249,
+				FeeTotalInSat: 101,
+				TotalInSat:    353,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    3,
 					OutputPadding: 72,
@@ -2240,10 +2359,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 321,
-				FeeInSat:    101,
-				TotalInSat:  425,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   321,
+				FeeTotalInSat: 101,
+				TotalInSat:    425,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    3,
 					OutputPadding: 0,
@@ -2283,10 +2402,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 			},
 			// In this scenario there's 1 sat that is lost and will be burn in fees to the miner
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusOk,
-				AmountInSat: 53534,
-				FeeInSat:    90,
-				TotalInSat:  53704,
+				Status:        AnalysisStatusOk,
+				AmountInSat:   53534,
+				FeeTotalInSat: 90,
+				TotalInSat:    53704,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    79,
 					OutputPadding: 0,
@@ -2325,10 +2444,10 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:      AnalysisStatusUnpayable,
-				AmountInSat: 446,
-				FeeInSat:    53,
-				TotalInSat:  500,
+				Status:        AnalysisStatusUnpayable,
+				AmountInSat:   446,
+				FeeTotalInSat: 53,
+				TotalInSat:    500,
 				SwapFees: &fees.SwapFees{
 					RoutingFee:    1,
 					OutputPadding: 99,
@@ -2367,9 +2486,9 @@ func TestAnalyzeOffChain(t *testing.T) {
 				},
 			},
 			expected: &PaymentAnalysis{
-				Status:     AnalysisStatusUnpayable,
-				FeeInSat:   84,
-				TotalInSat: 99056,
+				Status:        AnalysisStatusUnpayable,
+				FeeTotalInSat: 84,
+				TotalInSat:    99056,
 			},
 		},
 	}
@@ -2387,7 +2506,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				feeWindow = tC.feeWindow
 			}
 
-			analyzer := NewPaymentAnalyzer(feeWindow, nts, nil)
+			analyzer := NewPaymentAnalyzer(feeWindow, nts, tC.feeBump)
 			analysis, err := analyzer.ToInvoice(tC.payment)
 
 			if err == nil && tC.err {

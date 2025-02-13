@@ -245,15 +245,20 @@ func TestOnChainFixedAmountChangeFeeWithFeeBump(t *testing.T) {
 	defer db.Close()
 
 	repository := db.NewFeeBumpRepository()
-	repository.Store([]*operation.FeeBumpFunction{
-		&operation.FeeBumpFunction{PartialLinearFunctions: []*operation.PartialLinearFunction{
-			&operation.PartialLinearFunction{
-				LeftClosedEndpoint: 0,
-				RightOpenEndpoint:  math.Inf(1),
-				Slope:              2,
-				Intercept:          300,
+	repository.Store(&operation.FeeBumpFunctionSet{
+		UUID: "uuid",
+		FeeBumpFunctions: []*operation.FeeBumpFunction{
+			{
+				PartialLinearFunctions: []*operation.PartialLinearFunction{
+					{
+						LeftClosedEndpoint: 0,
+						RightOpenEndpoint:  math.Inf(1),
+						Slope:              2,
+						Intercept:          300,
+					},
+				},
 			},
-		}},
+		},
 	})
 
 	resolveState.SetContext(&context)
@@ -799,6 +804,7 @@ func TestOnChainChangeCurrency(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningSendZeroFunds(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -846,6 +852,7 @@ func TestLightningSendZeroFunds(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningSendZeroFundsTFFA(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -893,6 +900,7 @@ func TestLightningSendZeroFundsTFFA(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningSendNegativeFunds(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -940,6 +948,7 @@ func TestLightningSendNegativeFunds(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningSendNegativeFundsWithTFFA(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1011,6 +1020,7 @@ func TestLightningExpiredInvoice(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningInvoiceWithAmount(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1062,6 +1072,7 @@ func TestLightningInvoiceWithAmount(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningWithAmountBack(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1122,6 +1133,7 @@ func TestLightningWithAmountBack(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningInvoiceWithAmountAndDescription(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1170,6 +1182,7 @@ func TestLightningInvoiceWithAmountAndDescription(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestLightningAmountlessInvoice(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1238,6 +1251,7 @@ func TestLightningAmountlessInvoice(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestInvoiceOneConf(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1308,6 +1322,7 @@ func TestAmountConversion(t *testing.T) {
 	// Then, for amount/total the amount in sat and in primary currency differed
 	// in 1 sat.
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1365,6 +1380,7 @@ func TestAmountConversion(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestInvoiceUnpayable(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 
@@ -1417,6 +1433,7 @@ func TestInvoiceUnpayable(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestInvoiceLend(t *testing.T) {
 
+	setupStateTests(t)
 	listener := newTestListener()
 	startState := NewOperationFlow(listener)
 

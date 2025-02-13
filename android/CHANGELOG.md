@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [53.1] - 2025-02-13
+
+### ADDED
+
+- Revamped real time fees calculation
+- Background notification processing reliability improvements
+
 ## [52.7] - 2025-01-30
 
 ### ADDED

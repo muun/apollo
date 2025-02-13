@@ -11,6 +11,7 @@ import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.libwallet.LibwalletService
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeFees
@@ -71,18 +72,21 @@ class PreloadFeeDataActionTest: BaseTest() {
 
     @Test
     fun testRunTwiceShouldRunOneTimeBecauseOfThrottling() {
-        every { houstonClient.fetchRealTimeFees(any()) }.returns(Observable.just(realTimeFees))
+        every { houstonClient.fetchRealTimeFees(any(), any()) }.returns(Observable.just(realTimeFees))
         every { transactionSizeRepository.nextTransactionSize }
             .returns(Gen.nextTransactionSize(sizeProgressionWithUnconfirmedUtxos))
         every { featureSelector.get(MuunFeature.EFFECTIVE_FEES_CALCULATION) }.returns(true)
 
-        TestUtils.fetchItemFromObservable(preloadFeeData.action())
+        TestUtils.fetchItemFromObservable(preloadFeeData.action(FeeBumpRefreshPolicy.PERIODIC))
 
-        TestUtils.fetchItemFromObservable(preloadFeeData.action())
+        TestUtils.fetchItemFromObservable(preloadFeeData.action(FeeBumpRefreshPolicy.PERIODIC))
 
         verify(exactly = 1) { feeWindowRepository.store(feeWindow) }
         verify(exactly = 1) { minFeeRateRepository.store(minFeeRateInWeightUnits) }
-        verify(exactly = 1) { libwalletService.persistFeeBumpFunctions(feeBumpFunctions) }
+        verify(exactly = 1) { libwalletService.persistFeeBumpFunctions(
+            feeBumpFunctions,
+            FeeBumpRefreshPolicy.PERIODIC
+        ) }
 
         // TODO we should test throttling logic (e.g multiple calls in after a threshold should
         //  run action multiple times)
@@ -90,16 +94,19 @@ class PreloadFeeDataActionTest: BaseTest() {
 
     @Test
     fun testForceRunTwiceShouldCallServicesTwoTimes() {
-        every { houstonClient.fetchRealTimeFees(any()) }.returns(Observable.just(realTimeFees))
+        every { houstonClient.fetchRealTimeFees(any(), any()) }.returns(Observable.just(realTimeFees))
         every { transactionSizeRepository.nextTransactionSize }
             .returns(Gen.nextTransactionSize(sizeProgressionWithUnconfirmedUtxos))
         every { featureSelector.get(MuunFeature.EFFECTIVE_FEES_CALCULATION) }.returns(true)
 
-        TestUtils.fetchItemFromObservable(preloadFeeData.runForced())
-        TestUtils.fetchItemFromObservable(preloadFeeData.runForced())
+        TestUtils.fetchItemFromObservable(preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED))
+        TestUtils.fetchItemFromObservable(preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED))
 
         verify(exactly = 2) { feeWindowRepository.store(feeWindow) }
         verify(exactly = 2) { minFeeRateRepository.store(minFeeRateInWeightUnits) }
-        verify(exactly = 2) { libwalletService.persistFeeBumpFunctions(feeBumpFunctions) }
+        verify(exactly = 2) { libwalletService.persistFeeBumpFunctions(
+            feeBumpFunctions,
+            FeeBumpRefreshPolicy.NTS_CHANGED
+        ) }
     }
 }

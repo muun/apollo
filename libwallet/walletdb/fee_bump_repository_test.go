@@ -5,6 +5,7 @@ import (
 	"path"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/muun/libwallet/operation"
 )
@@ -18,72 +19,93 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 
 	repository := db.NewFeeBumpRepository()
 
-	expectedFeeBumpFunctions := []*operation.FeeBumpFunction{
-		{
-			PartialLinearFunctions: []*operation.PartialLinearFunction{
-				{
-					LeftClosedEndpoint: 0,
-					RightOpenEndpoint:  300,
-					Slope:              2,
-					Intercept:          300,
-				},
-				{
-					LeftClosedEndpoint: 300,
-					RightOpenEndpoint:  math.Inf(1),
-					Slope:              3,
-					Intercept:          200,
-				},
-			},
-		},
-		{
-			PartialLinearFunctions: []*operation.PartialLinearFunction{
-				{
-					LeftClosedEndpoint: 0,
-					RightOpenEndpoint:  100,
-					Slope:              2,
-					Intercept:          100,
-				},
-				{
-					LeftClosedEndpoint: 100,
-					RightOpenEndpoint:  math.Inf(1),
-					Slope:              3,
-					Intercept:          500,
+	expectedFeeBumpFunctionSet := &operation.FeeBumpFunctionSet{
+		CreatedAt:     time.Now(),
+		UUID:          "uuid1",
+		RefreshPolicy: "foreground",
+		FeeBumpFunctions: []*operation.FeeBumpFunction{
+			{
+				PartialLinearFunctions: []*operation.PartialLinearFunction{
+					{
+						LeftClosedEndpoint: 0,
+						RightOpenEndpoint:  300,
+						Slope:              2,
+						Intercept:          300,
+					},
+					{
+						LeftClosedEndpoint: 300,
+						RightOpenEndpoint:  math.Inf(1),
+						Slope:              3,
+						Intercept:          200,
+					},
 				},
 			},
-		},
-		{
-			PartialLinearFunctions: []*operation.PartialLinearFunction{
-				{
-					LeftClosedEndpoint: 0,
-					RightOpenEndpoint:  1000,
-					Slope:              2,
-					Intercept:          1000,
+			{
+				PartialLinearFunctions: []*operation.PartialLinearFunction{
+					{
+						LeftClosedEndpoint: 0,
+						RightOpenEndpoint:  100,
+						Slope:              2,
+						Intercept:          100,
+					},
+					{
+						LeftClosedEndpoint: 100,
+						RightOpenEndpoint:  math.Inf(1),
+						Slope:              3,
+						Intercept:          500,
+					},
 				},
-				{
-					LeftClosedEndpoint: 1000,
-					RightOpenEndpoint:  math.Inf(1),
-					Slope:              3,
-					Intercept:          1500,
+			},
+			{
+				PartialLinearFunctions: []*operation.PartialLinearFunction{
+					{
+						LeftClosedEndpoint: 0,
+						RightOpenEndpoint:  1000,
+						Slope:              2,
+						Intercept:          1000,
+					},
+					{
+						LeftClosedEndpoint: 1000,
+						RightOpenEndpoint:  math.Inf(1),
+						Slope:              3,
+						Intercept:          1500,
+					},
 				},
 			},
 		},
 	}
 
-	err = repository.Store(expectedFeeBumpFunctions)
+	err = repository.Store(expectedFeeBumpFunctionSet)
 	if err != nil {
 		t.Fatalf("failed to save fee bump functions: %v", err)
 	}
 
-	loadedFeeBumpFunctions, err := repository.GetAll()
+	loadedFeeBumpFunctionSet, err := repository.GetAll()
 	if err != nil {
 		t.Fatalf("failed to load fee bump functions: %v", err)
 	}
 
-	if len(loadedFeeBumpFunctions) != len(expectedFeeBumpFunctions) {
-		t.Errorf("expected %d fee bump functions, got %d", len(expectedFeeBumpFunctions), len(loadedFeeBumpFunctions))
+	if loadedFeeBumpFunctionSet.UUID != expectedFeeBumpFunctionSet.UUID {
+		t.Errorf("expected %v UUID, got %v", expectedFeeBumpFunctionSet.UUID, loadedFeeBumpFunctionSet.UUID)
 	}
 
-	for i, loadedFeeBumpFunction := range loadedFeeBumpFunctions {
+	if loadedFeeBumpFunctionSet.RefreshPolicy != expectedFeeBumpFunctionSet.RefreshPolicy {
+		t.Errorf(
+			"expected %v refresh policy, got %v",
+			expectedFeeBumpFunctionSet.RefreshPolicy,
+			loadedFeeBumpFunctionSet.RefreshPolicy,
+		)
+	}
+
+	if len(loadedFeeBumpFunctionSet.FeeBumpFunctions) != len(expectedFeeBumpFunctionSet.FeeBumpFunctions) {
+		t.Errorf(
+			"expected %d fee bump functions, got %d",
+			len(expectedFeeBumpFunctionSet.FeeBumpFunctions),
+			len(loadedFeeBumpFunctionSet.FeeBumpFunctions))
+	}
+
+	expectedFeeBumpFunctions := expectedFeeBumpFunctionSet.FeeBumpFunctions
+	for i, loadedFeeBumpFunction := range loadedFeeBumpFunctionSet.FeeBumpFunctions {
 		if len(loadedFeeBumpFunction.PartialLinearFunctions) != len(expectedFeeBumpFunctions[i].PartialLinearFunctions) {
 			t.Errorf(
 				"expected %d intervals, got %d",
@@ -107,8 +129,8 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 		t.Fatalf("failed getting creation date: %v", err)
 	}
 
-	if loadedFeeBumpFunctions[0].CreatedAt != *creationDate {
-		t.Fatalf("date mismatch: got: %v, expected: %v", *creationDate, loadedFeeBumpFunctions[0].CreatedAt)
+	if loadedFeeBumpFunctionSet.CreatedAt != *creationDate {
+		t.Fatalf("date mismatch: got: %v, expected: %v", *creationDate, loadedFeeBumpFunctionSet.CreatedAt)
 	}
 
 	err = repository.RemoveAll()
@@ -116,12 +138,12 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 		t.Fatalf("failed removing all fee bump functions: %v", err)
 	}
 
-	loadedFeeBumpFunctions, err = repository.GetAll()
+	loadedFeeBumpFunctionSet, err = repository.GetAll()
 	if err != nil {
 		t.Fatalf("failed to load fee bump functions: %v", err)
 	}
 
-	if len(loadedFeeBumpFunctions) != 0 {
+	if len(loadedFeeBumpFunctionSet.FeeBumpFunctions) != 0 {
 		t.Fatalf("fee bump functions were not removed")
 	}
 

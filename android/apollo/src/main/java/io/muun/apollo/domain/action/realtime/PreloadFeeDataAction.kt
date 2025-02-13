@@ -4,14 +4,15 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
-import io.muun.apollo.domain.action.base.BaseAsyncAction0
+import io.muun.apollo.domain.action.base.BaseAsyncAction1
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.libwallet.LibwalletService
+import io.muun.apollo.domain.model.FeeBumpFunctions
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeFees
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.Rules
-import io.muun.common.model.UtxoStatus
 import io.muun.common.rx.RxHelper
 import rx.Observable
 import timber.log.Timber
@@ -31,7 +32,7 @@ class PreloadFeeDataAction @Inject constructor(
     private val transactionSizeRepository: TransactionSizeRepository,
     private val featureSelector: FeatureSelector,
     private val libwalletService: LibwalletService,
-) : BaseAsyncAction0<Void>() {
+) : BaseAsyncAction1<FeeBumpRefreshPolicy, Void>() {
 
     companion object {
         private const val throttleIntervalInMilliseconds: Long = 10 * 1000
@@ -42,31 +43,31 @@ class PreloadFeeDataAction @Inject constructor(
     /**
      * Force re-fetch of Houston's RealTimeFees, bypassing throttling logic.
      */
-    fun runForced(): Observable<Void> {
-        return syncRealTimeFees()
+    fun runForced(refreshPolicy: FeeBumpRefreshPolicy): Observable<Void> {
+        return syncRealTimeFees(refreshPolicy)
     }
 
-    fun runIfDataIsInvalidated() {
+    fun runIfDataIsInvalidated(refreshPolicy: FeeBumpRefreshPolicy) {
         super.run(Observable.defer {
             if (libwalletService.areFeeBumpFunctionsInvalidated()) {
-                return@defer this.syncRealTimeFees()
+                return@defer this.syncRealTimeFees(refreshPolicy)
             } else {
                 return@defer Observable.just(null)
             }
         })
     }
 
-    override fun action(): Observable<Void> {
+    override fun action(t: FeeBumpRefreshPolicy): Observable<Void> {
         return Observable.defer {
             if (shouldUpdateData()) {
-                return@defer syncRealTimeFees()
+                return@defer syncRealTimeFees(t)
             } else {
                 return@defer Observable.just(null).toVoid()
             }
         }
     }
 
-    private fun syncRealTimeFees(): Observable<Void> {
+    private fun syncRealTimeFees(refreshPolicy: FeeBumpRefreshPolicy): Observable<Void> {
         if (!featureSelector.get(MuunFeature.EFFECTIVE_FEES_CALCULATION)) {
             return Observable.just(null)
         }
@@ -77,13 +78,17 @@ class PreloadFeeDataAction @Inject constructor(
             if (nts.unconfirmedUtxos.isEmpty()) {
                 // If there are no unconfirmed UTXOs, it means there are no fee bump functions.
                 // Remove the fee bump functions by storing an empty list.
-                libwalletService.persistFeeBumpFunctions(emptyList())
+                val emptyFeeBumpFunctions = FeeBumpFunctions("", emptyList())
+                libwalletService.persistFeeBumpFunctions(emptyFeeBumpFunctions, refreshPolicy)
             }
-            return houstonClient.fetchRealTimeFees(nts.unconfirmedUtxos)
+            return houstonClient.fetchRealTimeFees(nts.unconfirmedUtxos, refreshPolicy)
                 .doOnNext { realTimeFees: RealTimeFees ->
                     Timber.d("[Sync] Saving updated fees")
                     storeFeeData(realTimeFees)
-                    libwalletService.persistFeeBumpFunctions(realTimeFees.feeBumpFunctions)
+                    libwalletService.persistFeeBumpFunctions(
+                        realTimeFees.feeBumpFunctions,
+                        refreshPolicy
+                    )
                     lastSyncTime = Date()
                 }
                 .map(RxHelper::toVoid)

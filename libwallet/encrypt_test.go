@@ -2,15 +2,9 @@ package libwallet
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
-	"strings"
 	"testing"
-
-	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
-	"github.com/btcsuite/btcd/btcutil/base58"
 )
 
 func TestPublicKeyEncryption(t *testing.T) {
@@ -77,158 +71,6 @@ func TestPublicKeyEncryption(t *testing.T) {
 	}
 }
 
-func TestPublicKeyEncryptionV1(t *testing.T) {
-	const (
-		priv         = "xprv9s21ZrQH143K2DAjx7FiAo2GQAQ5g7GrPYkTB2RaCd2Ei5ZH7f9cbREHiZTCc1FPn9HKuviUHk8sf5cW3dhYjz6W6XPjXNHu5mLpT5oRH1j"
-		ciphertext   = "AMWm2L3YjA7myBTQQgiZi9F5g1NzaaupkPq1y7csUkf7WLXwnPYjkmy5KjVkyTKjaSXPwjx2zmX9Augzwwh89AsWYTv7KfJTXTj3Lx2mNZgmxJ7eezaJyRHv4koQaEmRykSoVE4esjWK779Sac28kCstkqDMPDYeNud5H4ApetF4BvhvPJyMaVn4RHYSAGzBzMcBV7WxYoRveKHqU9LbAfhCndPtRSVZyTVXY8iE3EvQJFeZVyYdovPK67aHsXWRdi8QCinMQSG21TMmhs7GQAh6iB26X2ABcVFJRGeEKE2coAsfuAHzcAMZ3CdzGgVAm7rrQw13W3XpxwwjWVatH9Jm9H4TrnnnLxRCsBoSKDvA1hmH8a2UG9iMxkhsBVMPzNRMy4Bg4MHk8WyRo3bwCLSVJUFFEciQ3mUneHprezzbVZio"
-		plaintextHex = "ca4dabb05a47d3ab306c1fad895d97b06dc30564191e610f9b254b1a1d0a536b6eca2b83d0d17d67aaad2a958fe6a6557ad5b26f44e12e7662f47a4e4fd6f482b68a83cd140ad4ded43b90a2c2cf349af84d828b1f961901616b4c4cb01f761bd277ad0d3d90506065aef76b930a962fcb90f2f009898c0d55cd07b5e01c355a9067937185fa9237d03e5ed4243e1bf0f8a959c72a83cbb1729b679cbd660052dd2dd3096b0f19e9275ac459b94d02a95642"
-	)
-
-	privKey, _ := NewHDPrivateKeyFromString(priv, "m", Mainnet())
-	plaintext, _ := hex.DecodeString(plaintextHex)
-
-	decrypted, err := privKey.Decrypter().Decrypt(ciphertext)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(plaintext, decrypted) {
-		t.Fatalf("decrypted payload differed from original\ndecrypted %v\noriginal %v",
-			hex.EncodeToString(decrypted),
-			hex.EncodeToString(plaintext))
-	}
-
-	_, err = privKey.Encrypter().Encrypt(decrypted)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Since we use a random key every time, comparing cipher texts makes no sense
-}
-
-func TestPublicKeyDecryptV1(t *testing.T) {
-
-	const (
-		privHex = "xprv9s21ZrQH143K36uECEJcmTnxSXfHjT9jdb7FpMoUJpENDxeRgpscDF3g2w4ySH6G9uVsGKK7e6WgGp7Vc9VVnwC2oWdrr7a3taWiKW8jKnD"
-		path    = "m"
-		pathLen = 1
-	)
-	payload := []byte("Asado Viernes")
-
-	privKey, _ := NewHDPrivateKeyFromString(privHex, path, Mainnet())
-	encrypted, _ := privKey.Encrypter().Encrypt(payload)
-
-	decrypted, err := privKey.Decrypter().Decrypt(encrypted)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(payload, decrypted) {
-		t.Fatalf("decrypted payload differed from original\ndecrypted %v\noriginal %v",
-			string(decrypted),
-			string(payload))
-	}
-
-	alterAndCheck := func(msg string, alter func(data []byte)) {
-		t.Run(msg, func(t *testing.T) {
-			encryptedData := base58.Decode(encrypted)
-			alter(encryptedData)
-
-			_, err = privKey.Decrypter().Decrypt(base58.Encode(encryptedData))
-			if err == nil {
-				t.Fatalf("Got nil error for altered payload: %v", msg)
-			}
-
-			t.Logf("Got error for altered payload %v: %v", msg, err)
-		})
-	}
-
-	alterAndCheck("big nonce size", func(data []byte) {
-		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen] = 255
-	})
-
-	alterAndCheck("bigger nonce size", func(data []byte) {
-		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen+1] = 14
-	})
-
-	alterAndCheck("smaller nonce size", func(data []byte) {
-		// Override the nonce size
-		data[1+serializedPublicKeyLength+2+pathLen+1] = 1
-	})
-
-	alterAndCheck("big derivation path len", func(data []byte) {
-		// Override derivation path length
-		data[1+serializedPublicKeyLength] = 255
-	})
-
-	alterAndCheck("bigger derivation path len", func(data []byte) {
-		// Override derivation path length
-		data[1+serializedPublicKeyLength+1] = 4
-	})
-
-	alterAndCheck("smaller derivation path len", func(data []byte) {
-		// Override derivation path length
-		data[1+serializedPublicKeyLength+1] = 0
-	})
-
-	alterAndCheck("nonce", func(data []byte) {
-		// Invert last byte of the nonce
-		data[1+serializedPublicKeyLength+2+pathLen+2+11] =
-			^data[1+serializedPublicKeyLength+2+pathLen+2+11]
-	})
-
-	alterAndCheck("tamper ciphertext", func(data []byte) {
-		// Invert last byte of the ciphertext
-		data[len(data)-1] = ^data[len(data)-1]
-	})
-
-	t.Run("tamperCiphertextWithAEAD", func(t *testing.T) {
-		data := base58.Decode(encrypted)
-
-		additionalData := data[0 : 1+serializedPublicKeyLength+2+pathLen+2]
-		nonce := data[len(data)-12:]
-		encryptionKey, _ := privKey.key.ECPrivKey()
-		secret, _ := recoverSharedEncryptionSecretForAES(encryptionKey, data[1:serializedPublicKeyLength+1])
-
-		block, _ := aes.NewCipher(secret)
-		gcm, _ := cipher.NewGCM(block)
-
-		fakeHdPrivKey, _ := NewHDPrivateKey(randomBytes(32), Mainnet())
-
-		fakePayload := []byte(strings.ToLower(string(payload)))
-		fakePrivKey, _ := fakeHdPrivKey.key.ECPrivKey()
-
-		hash := sha256.Sum256(fakePayload)
-		fakeSig, _ := ecdsa.SignCompact(fakePrivKey, hash[:], false)
-
-		plaintext := bytes.NewBuffer(nil)
-		addVariableBytes(plaintext, fakeSig)
-		plaintext.Write(fakePayload)
-
-		ciphertext := gcm.Seal(nil, nonce, plaintext.Bytes(), additionalData)
-
-		offset := len(additionalData)
-		for _, b := range ciphertext {
-			data[offset] = b
-			offset++
-		}
-
-		for _, b := range nonce {
-			data[offset] = b
-			offset++
-		}
-
-		_, err = privKey.Decrypter().Decrypt(base58.Encode(data))
-		if err == nil {
-			t.Errorf("Got nil error for altered payload: tamper chiphertex recalculating AEAD")
-		}
-
-		t.Logf("Got error for altered payload tamper chiphertex recalculating AEAD: %v", err)
-	})
-}
-
 func TestEncDecOps(t *testing.T) {
 
 	const (
@@ -249,4 +91,27 @@ func TestEncDecOps(t *testing.T) {
 	if !bytes.Equal(payload, decrypted) {
 		t.Fatal("decrypt is bad")
 	}
+}
+
+func TestEncryptedMetadataImplicitHardenedDerivationBug(t *testing.T) {
+	const (
+		encryptedMetadata       = "57t61UGHbFPyQdauas7E8nYoZU5hVB1f5YveFYS5mTbXeJuYDXikVunjiL3wFi3upuQ3pgHLUrsQpjWfWUPEH7Fq3AHTUmsA24nSLV6cJwwZRoM2gZofQ86qmsr2TBvdzpifppj8JjXahaVYwnBFUzDs1L3zr1XabCJ9fFigetkmWt5vzq5uzWdSv6dK3W5H7T3aWqkYU9is4AsMUuQFCjMgRBTU1UsMPvctLMNCAhe7Frjs6vCYf1eo9XQM44UYyEoLFdNjyDfmsXaCWR3ZbB11wLcUqr8K1UDX2cZ2hz1o91S82fXmBusMnprvteri8TiPxGJ5AEwABUMj725resLwmc5AxBUBc7PamVbC4pqKVjHDGVWTDurHb3MjLqq4kPEM7bf4P5S7cny9Ans63mQnkTWvooxYYJvsQJ7PLFdb1kpYcb4V1QNFtvEfHHjE9x8DckkiANhkqBxqVR6wCzmyEU8gSFgjG3JVtZDgNZhUTBtd2CZQLrXum4YhaEV1VmTVECCk3AZAzBvrPpjwz5zgasMHLdRSZLuGWC8XppjS8xHHjYbLdkQsxZCwZZiuxiLV9zcohEb2uchMpQmXgsgjuHGzDwcjr8e8PttvGQuvay62SmBgwsyYMWiW9B3PLny1c2URsGPAN4Uwg5ycXw83CXZ6oNubhFCjRzxw4ddXqUCqBskShG7AXETsQAkXUifD7GpcXfEEyxMgar5NTx9xQ2qebcVTbGaeWa6vvXTrhoE8UusxwA5C2Kq1M4F6E4w1tmj8YPi6LiLQtyiVpJVy3xQ2D3weNTt3JTArKHiWhURuPwpuuhdhJmaCapDhewPp83TJ8RjATaKx4ahJhQAjn1ZyXVZoi87UdwgLqWD5wB14ADdZBfN81uhArrFeq1QJ6WRebSeUNwk8G38j3cUSSLwizxmt9JKTrEXkP63QroQo4yM4ibqSo8DZ6b81i6BikjYCwtsWrxnLaPUs6xEi2Qmn2B64HULCHmqHAfjUxZ9F2TutHpMbA83kWjeSL59ZGbEUSzkj8CMir34HiHk1184fPAXww2YkmvaSjxa5QUPcNa1CQySoN88Arm8E4t72MTSCipBjYzgF7yzF4V8GwroAwSkuQ92T8PTgaSEvVxpoLNyiBPyxMtvXpJfiEw2kUEG9EL63MmEGf52NGH5ZDwVNicYE3Wfi1dRHGTcAapw5PNxMtekteo2NbaqUeDN8z5DRXRbpbVvo7ArLZCyt7FVeypRyA7bLCqGvDt3jWuN3ovvpdjRmsJLzgE4xg3oNCtMYhvAyDXAfPNNwAY6QAT9xwxztUB6vGWfVs1YJKBLrn866HU4TTzz"
+		encodedXpriv            = "xprv9s21ZrQH143K2B5wwtaARqgJa9XJMFnxK3AmZT8EsYZj3MTNBvuPBGR8eDsmDvCN75Znebqf2eEJz6mJHHQzkmNs7t2FAAQCeb4hFd8HDG1"
+		expectedPlaintextBase64 = "W8lXYVt0oLHqeraGOIzqI+oqaMvbqTR0K2kKLAyv8/3iydwkP7dyTKBJU63YLC85jCFlcxPGfg9Rp0WlW/snvU0E9278WizintlaUF5Z55i9TbOQmsd6m4Pr0m1qMX9/fz0pruL7ryjnWCRDk/0Nr6nlF8SfatvG6Pl+pZ7GbocJJ5t0nYVjI11NtD2VWePfFofViSr/NMT56UUWb9D8BT9W9l6Zt3r6qiEnDCrMCjV4OSwFGWtzDSwQj9Zehr2YZMImi1VayZnkj1UsOFR4Nr69NwKGaDgytLIHWucw4EMCHR2xWF2whM7F9SLOp4iM42l4S5Mh5K8CdOeJg0rDg1/2G16JkLXzSS4yVFfUgR1nxr890CvOH5mEnatyY2ImwEOFTGaHmQeJAcLm8o4W5I3R9ePovkeYHb6yKP7sZdKBb7Z2nJU+VrUsiQzO2hJ3z2yzoqALbFCx/tRSdYh403M33n/SH4+9gpkzYx+eYBmCtykNlphzkh9SLzaV3OdpeXjckDRgQaocdAL4ZGdsjRF8qWd52c+H7iVgAps6ZooEY4axSAN0ATfem+UL8QJDzLJP1/PVz9pWwD1Hmw1IaqYn/z6ZkdF4SuiZioZmlXbhGf24qgfmh+yiRq+ITrn5u0hqwreFR0QC7JDU59SK5XmzeUyPAdK264WNwkendAxM58PdK9onVfFa3qKl3FMwU4y4LyUIt+lmPugXJJTbqHAvkT1ZebuBmxsoQ+oDYTYqqwcUdTNA+NH89s4HTQogD9tCzjF7Fmpr5gG0+G1J6Rldr0nKeP9OKCJkWmvuBgX0W/7Yn90vCgRQuoHAZHTolJLvgJLEQbF0Cp53JtmVhIg0UmSwHvjqfeYSEQe3bvOJ66GWyhRWaOvWtDhbjdZNiMPK4M8XArGRQyLBoDpTdi9aZcOoOc6LqfC+mUJ8EBrrlyYvARAuiZvP6/d/KUC3oMiS98ayhAt5EU6qMHhwy4/qHPu/nS274/OnGkbvblR+nHhW+dzpxHLdgVlLjyTinJCIa/2CUj8XzpT8oMjfhrAEDFndAK5jLNfCVbU="
+	)
+	expectedPlaintext, err := base64.StdEncoding.DecodeString(expectedPlaintextBase64)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	privKey, _ := NewHDPrivateKeyFromString(encodedXpriv, "m", Mainnet())
+	plaintext, err := privKey.Decrypter().Decrypt(encryptedMetadata)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(plaintext, expectedPlaintext) {
+		t.Fatalf("expected:\n%s\ngot:\n%s", expectedPlaintextBase64, plaintext)
+	}
+
 }

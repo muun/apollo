@@ -5,7 +5,6 @@ import io.muun.common.dates.MuunZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,7 +17,7 @@ public class RealTimeFeesJson {
      * TODO we should be able to link to UnconfirmedOutpointsJson (lives in clients module).
      */
     @NotNull
-    public List<String> feeBumpFunctions;
+    public FeeBumpFunctionsJson feeBumpFunctions;
 
     @NotNull
     public TargetFeeRatesJson targetFeeRates;
@@ -42,7 +41,7 @@ public class RealTimeFeesJson {
      * All args constructor.
      */
     public RealTimeFeesJson(
-            List<String> feeBumpFunctions,
+            FeeBumpFunctionsJson feeBumpFunctions,
             TargetFeeRatesJson targetFeeRates,
             double minMempoolFeeRateInSatPerVbyte,
             double minFeeRateIncrementToReplaceByFeeInSatPerVbyte,

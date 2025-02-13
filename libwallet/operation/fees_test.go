@@ -121,18 +121,21 @@ func TestFeeCalculatorForAmountZero(t *testing.T) {
 		feeRateInSatsPerVbyte float64
 		takeFeeFromAmount     bool
 		expectedFeeInSat      int64
+		expectedFeeBumpInSat  int64
 	}{
 		{
 			desc:                  "calculate for amount zero",
 			feeRateInSatsPerVbyte: 1,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculate for amount zero with TFFA",
 			feeRateInSatsPerVbyte: 1,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 	}
 
@@ -149,18 +152,26 @@ func TestFeeCalculatorForAmountZero(t *testing.T) {
 
 			for _, nts := range allNts {
 				calculator := feeCalculator{&nts, nil}
-				feeInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+				feeInSat, feeBumpInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
 
 				if feeInSat != tC.expectedFeeInSat {
 					t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
 				}
+
+				if feeBumpInSat != tC.expectedFeeBumpInSat {
+					t.Fatalf("expected fee bump = %v, got %v", tC.expectedFeeBumpInSat, feeBumpInSat)
+				}
 			}
 
 			calculator := feeCalculator{}
-			feeInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+			feeInSat, feeBumpInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
 
 			if feeInSat != tC.expectedFeeInSat {
 				t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
+			}
+
+			if feeBumpInSat != tC.expectedFeeBumpInSat {
+				t.Fatalf("expected fee bump = %v, got %v", tC.expectedFeeBumpInSat, feeBumpInSat)
 			}
 		})
 	}
@@ -175,6 +186,7 @@ func TestFeeCalculator(t *testing.T) {
 		feeRateInSatsPerVbyte float64
 		takeFeeFromAmount     bool
 		expectedFeeInSat      int64
+		expectedFeeBumpInSat  int64
 	}{
 		{
 			desc:                  "empty fee calculator",
@@ -183,6 +195,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "empty fee calculator with TFFA",
@@ -191,6 +204,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:        "non empty fee calculator",
@@ -209,6 +223,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      2400,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "fails when balance is zero",
@@ -217,6 +232,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "fails when balance is zero with TFFA",
@@ -225,6 +241,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      0,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "fails when amount greater than balance",
@@ -233,6 +250,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      5800,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "fails when amount greater than balance with TFFA",
@@ -241,6 +259,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      5800,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when amount plus fee is greater than balance",
@@ -249,6 +268,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      5800,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates reduced amount and fee with TFFA",
@@ -257,6 +277,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      2300,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			// This case can't really happen since our PaymentAnalyzer enforces amount ==  totalBalance for TFFA
@@ -267,6 +288,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      1100,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates use-all-funds fee with TFFA",
@@ -275,6 +297,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      2300,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee does not require an additional UTXO (1)",
@@ -283,6 +306,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[0].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee does not require an additional UTXO (2)",
@@ -291,6 +315,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[1].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee does not require an additional UTXO (3)",
@@ -299,6 +324,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[2].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee does not require an additional UTXO (4)",
@@ -307,6 +333,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[3].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee requires an additional UTXO (1)",
@@ -315,6 +342,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[1].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee requires an additional UTXO (2)",
@@ -323,6 +351,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[2].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when paying fee requires an additional UTXO (3)",
@@ -331,6 +360,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      defaultNts.SizeProgression[3].SizeInVByte * 10,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:                  "calculates when negative UTXOs are larger than positive UTXOs",
@@ -339,6 +369,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      8400, // which is > 64, aka singleNegativeUtxoNts.TotalBalance()
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:        "calculates when feeBumpFunctions is loaded using 1 utxo unconfirmed",
@@ -353,6 +384,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      2420,
+			expectedFeeBumpInSat:  120,
 		},
 		{
 			desc:        "calculates when feeBumpFunctions is loaded using 2 unconfirmed utxos",
@@ -367,6 +399,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      3550,
+			expectedFeeBumpInSat:  150,
 		},
 		{
 			desc:        "calculates when we have less feeBumpFunctions than unconfirmed utxos (use the last function)",
@@ -380,6 +413,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     true,
 			expectedFeeInSat:      3520,
+			expectedFeeBumpInSat:  120,
 		},
 		{
 			desc:        "calculates when it does not have unconfirmed utxos",
@@ -394,6 +428,7 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 10,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      4000,
+			expectedFeeBumpInSat:  0,
 		},
 		{
 			desc:        "calculates when feeRate is exactly on left/right endpoint",
@@ -408,15 +443,24 @@ func TestFeeCalculator(t *testing.T) {
 			feeRateInSatsPerVbyte: 100,
 			takeFeeFromAmount:     false,
 			expectedFeeInSat:      11700,
+			expectedFeeBumpInSat:  700,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 
-			feeInSat := tC.feeCalculator.Fee(tC.amountInSat, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+			feeInSat, feeBumpInSat := tC.feeCalculator.Fee(
+				tC.amountInSat,
+				tC.feeRateInSatsPerVbyte,
+				tC.takeFeeFromAmount,
+			)
 
 			if feeInSat != tC.expectedFeeInSat {
 				t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
+			}
+
+			if feeBumpInSat != tC.expectedFeeBumpInSat {
+				t.Fatalf("expected fee bump = %v, got %v", tC.expectedFeeBumpInSat, feeBumpInSat)
 			}
 		})
 	}

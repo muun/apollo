@@ -107,7 +107,7 @@ func (p Path) Indexes() []PathIndex {
 			name = parts[0]
 		}
 
-		index, err := strconv.ParseUint(parts[len(parts)-1], 10, 32)
+		index, err := strconv.ParseUint(parts[len(parts)-1], 10, 31)
 		if err != nil {
 			panic("path is malformed: " + err.Error())
 		}
