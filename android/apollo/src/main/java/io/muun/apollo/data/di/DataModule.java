@@ -18,6 +18,7 @@ import io.muun.apollo.data.os.Configuration;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.os.execution.JobExecutor;
 import io.muun.apollo.data.preferences.RepositoryRegistry;
+import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.NotificationActions;
 import io.muun.apollo.domain.action.NotificationPoller;
 import io.muun.apollo.domain.libwallet.GoLibwalletService;
@@ -47,7 +48,7 @@ public class DataModule {
     private final Func3<
             Context,
             ExecutionTransformerFactory,
-            RepositoryRegistry,
+            UserRepository,
             NotificationService
             >
             notificationServiceFactory;
@@ -64,7 +65,7 @@ public class DataModule {
             Func3<
                     Context,
                     ExecutionTransformerFactory,
-                    RepositoryRegistry,
+                    UserRepository,
                     NotificationService
                     > notificationServiceFactory,
             Func1<Context, AppStandbyBucketProvider> appStandbyBucketProviderFactory,
@@ -127,9 +128,13 @@ public class DataModule {
     NotificationService provideNotificationService(
             Context context,
             ExecutionTransformerFactory executionTransformerFactory,
-            RepositoryRegistry repoRegistry
+            UserRepository userRepository
     ) {
-        return notificationServiceFactory.call(context, executionTransformerFactory, repoRegistry);
+        return notificationServiceFactory.call(
+                context,
+                executionTransformerFactory,
+                userRepository
+        );
     }
 
     @Provides

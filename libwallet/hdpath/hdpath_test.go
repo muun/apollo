@@ -80,3 +80,15 @@ func TestParsingAndValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestHDPathRejectsImplicitlyHardenedPath(t *testing.T) {
+	// This test is built weird cause the call we want to test doesn't return an error but instead
+	// panics. We _can_ "catch" a panic via this defer-recover construction. If the call doesn't
+	// panic, `t.Fatalf()` fails the test
+	defer func() {
+		recover()
+	}()
+
+	indexes := MustParse("m/2147483648").Indexes()
+	t.Fatalf("expected panic, got value %v", indexes)
+}

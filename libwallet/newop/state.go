@@ -130,12 +130,32 @@ func (a *AmountInfo) mutating(f func(*AmountInfo)) *AmountInfo {
 	return &mutated
 }
 
+type FeeBumpInfo struct {
+	SetUUID                string
+	AmountInSat            int64
+	RefreshPolicy          string
+	SecondsSinceLastUpdate int64
+}
+
+func NewFeeBumpInfo(feeBumpFunctionSet *operation.FeeBumpFunctionSet, bumpAmount int64) *FeeBumpInfo {
+	if feeBumpFunctionSet == nil {
+		return nil
+	}
+	return &FeeBumpInfo{
+		SetUUID:                feeBumpFunctionSet.UUID,
+		AmountInSat:            bumpAmount,
+		RefreshPolicy:          feeBumpFunctionSet.RefreshPolicy,
+		SecondsSinceLastUpdate: feeBumpFunctionSet.GetSecondsSinceLastUpdate(),
+	}
+}
+
 type Validated struct {
 	analysis       *operation.PaymentAnalysis
 	Fee            *BitcoinAmount
 	FeeNeedsChange bool
 	Total          *BitcoinAmount
 	SwapInfo       *SwapInfo
+	FeeBumpInfo    *FeeBumpInfo // info for effective fee tracking/troubleshooting
 }
 
 type SwapInfo struct {
@@ -268,7 +288,7 @@ func (s *ResolveState) SetContext(initialContext *InitialPaymentContext) error {
 	return s.setContextWithTime(initialContext, time.Now())
 }
 
-func loadFeeBumpFunctions() ([]*operation.FeeBumpFunction, error) {
+func loadFeeBumpFunctions() (*operation.FeeBumpFunctionSet, error) {
 	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
 	if err != nil {
 		return nil, err
@@ -276,30 +296,30 @@ func loadFeeBumpFunctions() ([]*operation.FeeBumpFunction, error) {
 	defer db.Close()
 
 	repository := db.NewFeeBumpRepository()
-	feeBumpFunctions, err := repository.GetAll()
+	feeBumpFunctionSet, err := repository.GetAll()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return feeBumpFunctions, nil
+	return feeBumpFunctionSet, nil
 }
 
 // setContextWithTime is meant only for testing, allows caller to use a fixed time to check invoice expiration
 func (s *ResolveState) setContextWithTime(initialContext *InitialPaymentContext, now time.Time) error {
 
-	var feeBumpFunctions []*operation.FeeBumpFunction
+	var feeBumpFunctionSet *operation.FeeBumpFunctionSet
 	if libwallet.DetermineBackendActivatedFeatureStatus(libwallet.BackendFeatureEffectiveFeesCalculation) {
 		// Load fee bump functions from local DB
 		var err error
-		feeBumpFunctions, err = loadFeeBumpFunctions()
+		feeBumpFunctionSet, err = loadFeeBumpFunctions()
 
 		if err != nil {
 			slog.Error("error loading fee bump functions.", slog.Any("error", err))
 		}
 	}
 
-	context := initialContext.newPaymentContext(feeBumpFunctions)
+	context := initialContext.newPaymentContext(feeBumpFunctionSet)
 
 	// TODO(newop): add type to PaymentIntent to clarify lightning/onchain distinction
 	invoice := s.PaymentIntent.URI.Invoice
@@ -719,14 +739,18 @@ func (s *ValidateState) emitAnalysisOk(analysis *operation.PaymentAnalysis, feeN
 		)
 	}
 	fee := s.PaymentContext.toBitcoinAmount(
-		analysis.FeeInSat,
+		analysis.FeeTotalInSat,
 		s.Amount.InInputCurrency.Currency,
 	)
+
+	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, analysis.FeeBumpInSat)
+
 	validated := &Validated{
 		analysis:       analysis,
 		Fee:            fee,
 		FeeNeedsChange: feeNeedsChange,
 		Total:          amount.add(fee),
+		FeeBumpInfo:    feeBumpInfo,
 	}
 
 	amountInfo := s.AmountInfo.mutating(func(info *AmountInfo) {
@@ -839,7 +863,7 @@ func (s *ValidateLightningState) emitAnalysisOk(analysis *operation.PaymentAnaly
 	}
 
 	onchainFee := s.PaymentContext.toBitcoinAmount(
-		analysis.FeeInSat,
+		analysis.FeeTotalInSat,
 		s.Amount.InInputCurrency.Currency,
 	)
 
@@ -863,6 +887,8 @@ func (s *ValidateLightningState) emitAnalysisOk(analysis *operation.PaymentAnaly
 
 	isOneConf := analysis.SwapFees.ConfirmationsNeeded > 0
 
+	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, totalFee.InSat)
+
 	validated := &Validated{
 		Fee:      totalFee,
 		Total:    amount.add(totalFee),
@@ -872,6 +898,7 @@ func (s *ValidateLightningState) emitAnalysisOk(analysis *operation.PaymentAnaly
 			SwapFees:   swapFees,
 			IsOneConf:  isOneConf,
 		},
+		FeeBumpInfo: feeBumpInfo,
 	}
 
 	amountInfo := s.AmountInfo.mutating(func(info *AmountInfo) {
@@ -1018,6 +1045,8 @@ func (s *EditFeeState) CalculateFee(rateInSatsPerVByte float64) (*FeeState, erro
 		return nil, err
 	}
 
+	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, analysis.FeeTotalInSat)
+
 	// TODO(newop): add targetblock to analysis result
 	switch analysis.Status {
 	// TODO: this should never happen, right? It should have been detected earlier
@@ -1028,16 +1057,18 @@ func (s *EditFeeState) CalculateFee(rateInSatsPerVByte float64) (*FeeState, erro
 	case operation.AnalysisStatusUnpayable:
 		return &FeeState{
 			State:              FeeStateNeedsChange,
-			Amount:             s.toBitcoinAmount(analysis.FeeInSat),
+			Amount:             s.toBitcoinAmount(analysis.FeeTotalInSat),
 			RateInSatsPerVByte: rateInSatsPerVByte,
 			TargetBlocks:       s.PaymentContext.FeeWindow.nextHighestBlock(rateInSatsPerVByte),
+			FeeBumpInfo:        feeBumpInfo,
 		}, nil
 	case operation.AnalysisStatusOk:
 		return &FeeState{
 			State:              FeeStateFinalFee,
-			Amount:             s.toBitcoinAmount(analysis.FeeInSat),
+			Amount:             s.toBitcoinAmount(analysis.FeeTotalInSat),
 			RateInSatsPerVByte: rateInSatsPerVByte,
 			TargetBlocks:       s.PaymentContext.FeeWindow.nextHighestBlock(rateInSatsPerVByte),
+			FeeBumpInfo:        feeBumpInfo,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unrecognized analysis status: %v", analysis.Status)

@@ -1,4 +1,4 @@
-package libwallet
+package encryption
 
 import (
 	"encoding/hex"

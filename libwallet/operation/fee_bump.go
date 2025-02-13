@@ -5,8 +5,18 @@ import (
 	"time"
 )
 
+type FeeBumpFunctionSet struct {
+	CreatedAt        time.Time
+	UUID             string
+	RefreshPolicy    string
+	FeeBumpFunctions []*FeeBumpFunction
+}
+
+func (fbs *FeeBumpFunctionSet) GetSecondsSinceLastUpdate() int64 {
+	return int64(time.Since(fbs.CreatedAt).Seconds())
+}
+
 type FeeBumpFunction struct {
-	CreatedAt time.Time
 	// it is provided in order by the backend
 	PartialLinearFunctions []*PartialLinearFunction
 }

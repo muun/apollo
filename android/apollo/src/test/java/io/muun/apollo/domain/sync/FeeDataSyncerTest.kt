@@ -14,6 +14,7 @@ import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.NotificationActions
 import io.muun.apollo.domain.action.NotificationProcessingState
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.common.model.SizeForAmount
@@ -94,11 +95,11 @@ class FeeDataSyncerTest: BaseTest() {
 
         feeDataSyncer.enterForeground()
         processingSubject.onNext(NotificationProcessingState.STARTED)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
 
         processingSubject.onNext(NotificationProcessingState.COMPLETED)
         Thread.sleep(200)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
     }
 
     @Test
@@ -108,11 +109,11 @@ class FeeDataSyncerTest: BaseTest() {
 
         feeDataSyncer.enterForeground()
         processingSubject.onNext(NotificationProcessingState.STARTED)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
 
         processingSubject.onNext(NotificationProcessingState.COMPLETED)
         Thread.sleep(200)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
     }
 
     @Test
@@ -122,13 +123,13 @@ class FeeDataSyncerTest: BaseTest() {
 
         feeDataSyncer.enterForeground()
         processingSubject.onNext(NotificationProcessingState.STARTED)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
 
         every { transactionSizeRepository.nextTransactionSize }
             .returns(Gen.nextTransactionSize(finalSizeProgressionWithUnconfirmedUtxos))
         processingSubject.onNext(NotificationProcessingState.COMPLETED)
         Thread.sleep(200)
-        verify(exactly = 1) { preloadFeeData.runForced() }
+        verify(exactly = 1) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
     }
 
     @Test
@@ -138,12 +139,12 @@ class FeeDataSyncerTest: BaseTest() {
 
         feeDataSyncer.enterForeground()
         processingSubject.onNext(NotificationProcessingState.STARTED)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
 
         every { transactionSizeRepository.nextTransactionSize }
             .returns(Gen.nextTransactionSize(initialSizeProgressionWithConfirmedUtxos))
         processingSubject.onNext(NotificationProcessingState.COMPLETED)
         Thread.sleep(200)
-        verify(exactly = 0) { preloadFeeData.runForced() }
+        verify(exactly = 0) { preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED) }
     }
 }
