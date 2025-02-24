@@ -148,6 +148,39 @@ func migrate(db *gorm.DB) error {
 				return tx.DropTable(&FeeBumpFunction{}, &PartialLinearFunction{}).Error
 			},
 		},
+		{
+			ID: "Add top level FeeBumpFunctionSet table and SetID field",
+			Migrate: func(tx *gorm.DB) error {
+
+				type FeeBumpFunctionSet struct {
+					gorm.Model
+					UUID             string
+					RefreshPolicy    string
+					FeeBumpFunctions []FeeBumpFunction `gorm:"foreignKey:SetID"`
+				}
+
+				type FeeBumpFunction struct {
+					gorm.Model
+					Position         uint
+					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`
+					SetID            uint                    `gorm:"default:0;not null"`
+				}
+				// Crea table FeeBumpFunctionSet and migrate FeeBumpFunction
+				return tx.AutoMigrate(&FeeBumpFunctionSet{}, &FeeBumpFunction{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+
+				if err := tx.DropTable(&FeeBumpFunctionSet{}).Error; err != nil {
+					return err
+				}
+
+				if err := tx.Table("fee_bump_functions").DropColumn(gorm.ToColumnName("SetID")).Error; err != nil {
+					return err
+				}
+
+				return nil
+			},
+		},
 	})
 	return m.Migrate()
 }

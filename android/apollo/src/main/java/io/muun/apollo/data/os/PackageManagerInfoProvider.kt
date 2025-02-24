@@ -148,4 +148,10 @@ class PackageManagerInfoProvider @Inject constructor(private val context: Contex
             }
             return Constants.UNKNOWN
         }
+
+    val firstInstallTimeInMs: Long
+        get() {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+           return packageInfo.firstInstallTime
+        }
 }

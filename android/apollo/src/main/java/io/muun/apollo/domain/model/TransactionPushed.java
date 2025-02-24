@@ -15,14 +15,19 @@ public class TransactionPushed {
     @NotNull
     public final OperationWithMetadata operation;
 
+    @NotNull
+    public final FeeBumpFunctions feeBumpFunctions;
+
     /**
      * Constructor.
      */
     public TransactionPushed(@Nullable String hex,
                              NextTransactionSize nextTransactionSize,
-                             OperationWithMetadata operation) {
+                             OperationWithMetadata operation,
+                             FeeBumpFunctions feeBumpFunctions) {
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
         this.operation = operation;
+        this.feeBumpFunctions = feeBumpFunctions;
     }
 }

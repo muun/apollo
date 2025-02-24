@@ -2,6 +2,7 @@ package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
+import io.muun.apollo.data.os.ActivityManagerInfoProvider;
 import io.muun.apollo.data.os.BuildInfoProvider;
 import io.muun.apollo.data.os.CpuInfoProvider;
 import io.muun.apollo.data.os.FileInfoProvider;
@@ -22,6 +23,7 @@ import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException;
 import io.muun.apollo.domain.errors.newop.SwapFailedException;
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException;
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
@@ -29,6 +31,7 @@ import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.CreateSessionOk;
 import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
+import io.muun.apollo.domain.model.FulfillmentPushedResult;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
 import io.muun.apollo.domain.model.NotificationReport;
@@ -126,6 +129,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     private final SystemCapabilitiesProvider systemCapabilitiesProvider;
 
+    private final ActivityManagerInfoProvider activityManagerInfoProvider;
+
     /**
      * Constructor.
      */
@@ -140,7 +145,8 @@ public class HoustonClient extends BaseClient<HoustonService> {
             BuildInfoProvider buildInfoProvider,
             PackageManagerInfoProvider packageManagerInfoProvider,
             FileInfoProvider fileInfoProvider,
-            SystemCapabilitiesProvider systemCapabilitiesProvider
+            SystemCapabilitiesProvider systemCapabilitiesProvider,
+            ActivityManagerInfoProvider activityManagerInfoProvider
     ) {
 
         super(HoustonService.class);
@@ -155,6 +161,7 @@ public class HoustonClient extends BaseClient<HoustonService> {
         this.packageManagerInfoProvider = packageManagerInfoProvider;
         this.fileInfoProvider = fileInfoProvider;
         this.systemCapabilitiesProvider = systemCapabilitiesProvider;
+        this.activityManagerInfoProvider = activityManagerInfoProvider;
     }
 
     /**
@@ -194,7 +201,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getAppSize(),
                 hardwareCapabilitiesProvider.getHardwareAddresses(),
                 systemCapabilitiesProvider.getVbMeta(),
-                fileInfoProvider.getEfsCreationTimeInSeconds()
+                fileInfoProvider.getEfsCreationTimeInSeconds(),
+                activityManagerInfoProvider.isLowRamDevice(),
+                packageManagerInfoProvider.getFirstInstallTimeInMs()
         );
 
         return getService().createFirstSession(params)
@@ -236,7 +245,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getAppSize(),
                 hardwareCapabilitiesProvider.getHardwareAddresses(),
                 systemCapabilitiesProvider.getVbMeta(),
-                fileInfoProvider.getEfsCreationTimeInSeconds()
+                fileInfoProvider.getEfsCreationTimeInSeconds(),
+                activityManagerInfoProvider.isLowRamDevice(),
+                packageManagerInfoProvider.getFirstInstallTimeInMs()
         );
 
         return getService().createLoginSession(params)
@@ -278,8 +289,9 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 fileInfoProvider.getAppSize(),
                 hardwareCapabilitiesProvider.getHardwareAddresses(),
                 systemCapabilitiesProvider.getVbMeta(),
-                fileInfoProvider.getEfsCreationTimeInSeconds()
-
+                fileInfoProvider.getEfsCreationTimeInSeconds(),
+                activityManagerInfoProvider.isLowRamDevice(),
+                packageManagerInfoProvider.getFirstInstallTimeInMs()
         );
 
         return getService().createRecoveryCodeLoginSession(session)
@@ -714,10 +726,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
      * @param sizeProgression from NTS
      */
     public Observable<RealTimeFees> fetchRealTimeFees(
-            List<SizeForAmount> sizeProgression
+            List<SizeForAmount> sizeProgression,
+            FeeBumpRefreshPolicy feeBumpRefreshPolicy
     ) {
         return getService()
-                .fetchRealTimeFees(apiMapper.mapUnconfirmedOutpointsJson(sizeProgression))
+                .fetchRealTimeFees(
+                        apiMapper.mapRealTimeFeesRequestJson(sizeProgression, feeBumpRefreshPolicy)
+                )
                 .map(modelMapper::mapRealTimeFees);
     }
 
@@ -834,12 +849,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
     /**
      * Push the fulfillment TX for an incoming swap.
      */
-    public Completable pushFulfillmentTransaction(
+    public Single<FulfillmentPushedResult> pushFulfillmentTransaction(
             final String incomingSwap,
             final RawTransaction rawTransaction
     ) {
 
-        return getService().pushFulfillmentTransaction(incomingSwap, rawTransaction);
+        return getService().pushFulfillmentTransaction(incomingSwap, rawTransaction)
+                .map(modelMapper::mapFulfillmentPushed);
     }
 
     /**

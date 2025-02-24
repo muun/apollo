@@ -75,6 +75,14 @@ public class PrivateKey extends BaseKey {
         return new PrivateKey("m", deterministicKey, bitcoinContext.getParams());
     }
 
+    public static PrivateKey fromMasterPrivateKey(
+            @NotNull DeterministicKey masterKey,
+            @NotNull NetworkParameters parameters
+    ) {
+
+        return new PrivateKey("m", masterKey, parameters);
+    }
+
     /**
      * Deserialize a base58-encoded extended private key.
      */

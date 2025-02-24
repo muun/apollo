@@ -395,11 +395,11 @@ func deriveMetadataEncryptionKey(key *HDPrivateKey) (*HDPrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	key, err = key.DerivedAt(int64(rand.Int()), false)
+	key, err = key.DerivedAt(int64(rand.Int31()), false)
 	if err != nil {
 		return nil, err
 	}
-	return key.DerivedAt(int64(rand.Int()), false)
+	return key.DerivedAt(int64(rand.Int31()), false)
 }
 
 func GetInvoiceMetadata(paymentHash []byte) (string, error) {

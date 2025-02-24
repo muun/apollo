@@ -24,6 +24,9 @@ public class TransactionPushedJson {
     @Nullable // Null if the broadcast didn't failed.
     public BroadcastErrorJson broadcastErrorCode;
 
+    @NotNull
+    public FeeBumpFunctionsJson feeBumpFunctions;
+
     /**
      * Json constructor.
      */
@@ -37,11 +40,14 @@ public class TransactionPushedJson {
             @Nullable String hex,
             NextTransactionSizeJson nextTransactionSize,
             OperationJson operation,
-            @Nullable BroadcastErrorJson broadcastErrorCode) {
+            @Nullable BroadcastErrorJson broadcastErrorCode,
+            FeeBumpFunctionsJson feeBumpFunctions
+    ) {
 
         this.hex = hex;
         this.nextTransactionSize = nextTransactionSize;
         this.updatedOperation = operation;
         this.broadcastErrorCode = broadcastErrorCode;
+        this.feeBumpFunctions = feeBumpFunctions;
     }
 }

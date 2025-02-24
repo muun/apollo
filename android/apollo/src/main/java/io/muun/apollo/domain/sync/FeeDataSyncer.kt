@@ -6,12 +6,12 @@ import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.NotificationActions
 import io.muun.apollo.domain.action.NotificationProcessingState
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.selector.FeatureSelector
-import io.muun.common.model.SizeForAmount
-import io.muun.common.model.UtxoStatus
 import rx.subscriptions.CompositeSubscription
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -34,14 +34,18 @@ class FeeDataSyncer @Inject constructor(
 
     private var initialNts: NextTransactionSize? = null
 
-    private val intervalInMilliseconds: Long = 45000 // 45 seconds
+    private val intervalInMilliseconds: Long = 60000 // 60 seconds
     private val compositeSubscription = CompositeSubscription()
 
     private val handler = Handler(Looper.getMainLooper())
     private val periodicTask = object : Runnable {
         override fun run() {
-            preloadFeeData.run()
-            handler.postDelayed(this, intervalInMilliseconds)
+            preloadFeeData.run(FeeBumpRefreshPolicy.PERIODIC)
+            try {
+                handler.postDelayed(this, intervalInMilliseconds)
+            } catch (e: Exception) {
+                Timber.e(e, "Fee data periodic task failed.")
+            }
         }
     }
 
@@ -82,9 +86,10 @@ class FeeDataSyncer @Inject constructor(
 
                     NotificationProcessingState.COMPLETED -> {
                         if (shouldUpdateFeeBumpFunctions()) {
-                            preloadFeeData.runForced()
+                            preloadFeeData.runForced(FeeBumpRefreshPolicy.NTS_CHANGED)
                         }
                     }
+
                     else -> {
                         // ignore
                     }

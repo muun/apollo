@@ -96,8 +96,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 19
         targetSdk 34
-        versionCode 1207
-        versionName "52.7"
+        versionCode 1301
+        versionName "53.1"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -433,10 +433,9 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
 
-    // 2. Feature module Support for Fragments
-    implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
+    // (We don't use Feature module Support for Fragments)
 
-    // 3. Testing Navigation
+    // 2. Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
     // Fancy animations

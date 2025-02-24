@@ -13,7 +13,6 @@ import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
 import io.muun.apollo.data.preferences.FeaturesRepository;
-import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.BackgroundTimesService;
@@ -23,6 +22,7 @@ import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction;
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.apollo.domain.selector.BitcoinUnitSelector;
@@ -311,10 +311,10 @@ public abstract class ApolloApplication extends Application
         if (dataComponent == null) {
             final DataModule dataModule = new DataModule(
                     this,
-                    (appContext, transformerFactory, repoRegistry) -> new NotificationServiceImpl(
+                    (appContext, transformerFactory, userRepository) -> new NotificationServiceImpl(
                             appContext,
                             transformerFactory,
-                            new BitcoinUnitSelector(new UserRepository(this, repoRegistry))
+                            new BitcoinUnitSelector(userRepository)
                     ),
                     AppStandbyBucketProviderImpl::new,
                     new HoustonConfigImpl()
@@ -354,7 +354,7 @@ public abstract class ApolloApplication extends Application
         backgroundTimesService.enterForeground();
 
         if (userActions.isLoggedIn()) {
-            preloadFeeData.run();
+            preloadFeeData.run(FeeBumpRefreshPolicy.FOREGROUND);
             feeDataSyncer.enterForeground();
         }
     }
