@@ -1,8 +1,12 @@
 package io.muun.common.api;
 
+import io.muun.common.Supports;
+import io.muun.common.utils.Since;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -17,6 +21,11 @@ public class OperationCreatedJson {
     @Nullable // null if the Operation was already fully signed
     public PartiallySignedTransactionJson partiallySignedTransaction;
 
+    @Since(
+            apolloVersion = Supports.SigningAlternativeTransactions.APOLLO,
+            falconVersion = Supports.SigningAlternativeTransactions.FALCON
+    )
+    public List<PartiallySignedTransactionJson> alternativeTransactions;
 
     /**
      * Deprecated. This remains from the time when utxos were "locked" after 'newOperation'. Since
@@ -43,11 +52,13 @@ public class OperationCreatedJson {
      */
     public OperationCreatedJson(OperationJson operation,
                                 @Nullable PartiallySignedTransactionJson partiallySignedTransaction,
+                                List<PartiallySignedTransactionJson> alternativeTransactions,
                                 NextTransactionSizeJson nextTransactionSize,
                                 @Nullable MuunAddressJson changeAddress) {
 
         this.operation = operation;
         this.partiallySignedTransaction = partiallySignedTransaction;
+        this.alternativeTransactions = alternativeTransactions;
         this.nextTransactionSize = nextTransactionSize;
         this.changeAddress = changeAddress;
     }

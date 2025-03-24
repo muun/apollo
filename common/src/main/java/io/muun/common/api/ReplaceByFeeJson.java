@@ -35,9 +35,13 @@ public class ReplaceByFeeJson {
     /**
      * Constructor.
      */
-    public ReplaceByFeeJson(BitcoinAmountJson fee,
-                            List<String> outpoints) {
+    public ReplaceByFeeJson(
+            BitcoinAmountJson fee,
+            List<String> outpoints,
+            List<String> userPublicNoncesHex
+    ) {
         this.fee = fee;
         this.outpoints = outpoints;
+        this.userPublicNoncesHex = userPublicNoncesHex;
     }
 }

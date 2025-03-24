@@ -21,14 +21,26 @@ type SigningExpectations struct {
 	amount      int64
 	change      MuunAddress
 	fee         int64
+	alternative bool
 }
 
-func NewSigningExpectations(destination string, amount int64, change MuunAddress, fee int64) *SigningExpectations {
+func NewSigningExpectations(destination string, amount int64, change MuunAddress, fee int64, alternative bool) *SigningExpectations {
 	return &SigningExpectations{
 		destination,
 		amount,
 		change,
 		fee,
+		alternative,
+	}
+}
+
+func (e *SigningExpectations) ForAlternativeTransaction() *SigningExpectations {
+	return &SigningExpectations{
+		e.destination,
+		e.amount,
+		e.change,
+		e.fee,
+		true,
 	}
 }
 
@@ -212,16 +224,24 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 	network := userPublicKey.Network
 
-	// We expect TX to be frugal in their ouputs: one to the destination and an optional change.
+	// We expect TX to be frugal in their outputs: one to the destination and an optional change.
 	// If we were to receive more than that, we consider it invalid.
 	if expectations.change != nil {
-		if len(p.tx.TxOut) != 2 {
+
+		// Alternative TXs with change output might not have the destination output, so we
+		// don't do a strict check but rather a sanity one. The strict check will be down
+		// the line.
+		if expectations.alternative {
+			if len(p.tx.TxOut) > 2 {
+				return fmt.Errorf("expected at most destination and change outputs but found %v", len(p.tx.TxOut))
+			}
+
+		} else if len(p.tx.TxOut) != 2 {
 			return fmt.Errorf("expected destination and change outputs but found %v", len(p.tx.TxOut))
 		}
-	} else {
-		if len(p.tx.TxOut) != 1 {
-			return fmt.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
-		}
+
+	} else if len(p.tx.TxOut) != 1 {
+		return fmt.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
 	}
 
 	// Build output script corresponding to the destination address.
@@ -253,14 +273,40 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 		}
 	}
 
-	// Fail if not destination output was found in the TX.
-	if toOutput == nil {
-		return errors.New("destination output is not present")
-	}
+	if expectations.alternative {
+		// Alternative TXs might not have a destination output if there's change present
+		if toOutput == nil && changeOutput == nil {
+			return fmt.Errorf("expected at least one of destination and change outputs but found zero")
+		}
 
-	// Verify destination output value matches expected amount
-	if toOutput.Value != expectedAmount {
-		return fmt.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
+		if toOutput != nil && toOutput.Value >= expectedAmount {
+			return fmt.Errorf("destination amount is mismatched. found %v expected at most %v", toOutput.Value, expectedAmount)
+		}
+
+		if (toOutput == nil || changeOutput == nil) && len(p.tx.TxOut) > 1 {
+			return fmt.Errorf("expected exactly one output and found %v", len(p.tx.TxOut))
+		}
+
+		// Re-adjust our expectations by moving the reduced destination amount
+		// to fee.
+		if toOutput == nil {
+			expectedFee += expectedAmount
+			expectedAmount = 0
+		} else {
+			expectedFee += expectedAmount - toOutput.Value
+			expectedAmount = toOutput.Value
+		}
+
+	} else {
+		// Fail if not destination output was found in the TX.
+		if toOutput == nil {
+			return errors.New("destination output is not present")
+		}
+
+		// Verify destination output value matches expected amount
+		if toOutput.Value != expectedAmount {
+			return fmt.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
+		}
 	}
 
 	/*

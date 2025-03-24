@@ -37,6 +37,7 @@ import io.muun.common.api.PlayIntegrityTokenJson;
 import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PublicProfileJson;
+import io.muun.common.api.PushTransactionsJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.RealTimeData;
 import io.muun.common.api.RealTimeFeesJson;
@@ -260,14 +261,11 @@ public interface HoustonService {
     Completable updateOperationMetadata(@Path("operationId") Long operationId,
                                         @Body UpdateOperationMetadataJson data);
 
-    @PUT("operations/{operationId}/raw-transaction")
-    Observable<TransactionPushedJson> pushTransaction(@Path("operationId") Long operationId);
-
     @NetworkRetry(count = 0)    // No retries. Avoid Musig nonces reuse!
     @ServerRetry(count = 0)     // No retries. Avoid Musig nonces reuse!
-    @PUT("operations/{operationId}/raw-transaction")
-    Observable<TransactionPushedJson> pushTransaction(@Body RawTransaction rawTransaction,
-                                                      @Path("operationId") Long operationId);
+    @PUT("operations/{operationId}/raw-transactions")
+    Observable<TransactionPushedJson> pushTransactions(@Body PushTransactionsJson pushTransactions,
+                                                       @Path("operationId") Long operationId);
 
     @GET("operations/next-transaction-size")
     Observable<NextTransactionSizeJson> fetchNextTransactionSize();

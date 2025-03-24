@@ -62,11 +62,13 @@ import io.muun.common.api.IntegrityCheck;
 import io.muun.common.api.IntegrityStatus;
 import io.muun.common.api.KeySet;
 import io.muun.common.api.LinkActionJson;
+import io.muun.common.api.OperationJson;
 import io.muun.common.api.PasswordSetupJson;
 import io.muun.common.api.PhoneConfirmation;
 import io.muun.common.api.PlayIntegrityTokenJson;
 import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
+import io.muun.common.api.PushTransactionsJson;
 import io.muun.common.api.RawTransaction;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.UpdateOperationMetadataJson;
@@ -100,6 +102,7 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -603,10 +606,14 @@ public class HoustonClient extends BaseClient<HoustonService> {
     public Observable<OperationCreated> newOperation(
             final OperationWithMetadata operation,
             final List<String> outpoints,
-            final MusigNonces musigNonces
+            final MusigNonces musigNonces,
+            final List<MusigNonces> alternativeTxNonces
     ) {
+        final OperationJson operationJson =
+                apiMapper.mapOperation(operation, outpoints, musigNonces, alternativeTxNonces);
+
         return getService()
-                .newOperation(apiMapper.mapOperation(operation, outpoints, musigNonces))
+                .newOperation(operationJson)
                 .map(modelMapper::mapOperationCreated);
     }
 
@@ -623,29 +630,44 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     /**
      * Pushes a raw transaction to Houston.
-     *
-     * @param txHex        The bitcoinj's transaction.
-     * @param operationHid The houston operation id.
      */
-    public Observable<TransactionPushed> pushTransaction(
+    public Observable<TransactionPushed> pushTransactions(
             @Nullable String txHex,
+            @Nullable List<String> alternativeTransactionsHex,
             long operationHid
     ) {
+        final RawTransaction rawTransaction;
+        final ArrayList<RawTransaction> alternativeTransactions = new ArrayList<RawTransaction>();
+
         if (txHex != null) {
-            return getService()
-                    .pushTransaction(new RawTransaction(txHex), operationHid)
-                    // This can happen if we determine the payment can't actually be made. If so, we
-                    // fail fast to avoid broadcasting a transaction saving the user on miner fees.
-                    .compose(ObservableFn.replaceHttpException(
-                            ErrorCode.SWAP_FAILED,
-                            SwapFailedException::new
-                    ))
-                    .map(modelMapper::mapTransactionPushed);
+            Preconditions.checkArgument(alternativeTransactionsHex != null);
+
+            rawTransaction = new RawTransaction(txHex);
+
+            for (var transactionHex : alternativeTransactionsHex) {
+                alternativeTransactions.add(new RawTransaction(transactionHex));
+            }
+
         } else {
-            return getService()
-                    .pushTransaction(operationHid) // empty body when txHex is not given
-                    .map(modelMapper::mapTransactionPushed);
+            Preconditions.checkArgument(alternativeTransactionsHex == null);
+
+            rawTransaction = null;
         }
+
+        final var json = new PushTransactionsJson(
+                rawTransaction,
+                alternativeTransactions
+        );
+
+        return getService()
+                .pushTransactions(json, operationHid)
+                // This can happen if we determine the payment can't actually be made. If so, we
+                // fail fast to avoid broadcasting a transaction saving the user on miner fees.
+                .compose(ObservableFn.replaceHttpException(
+                        ErrorCode.SWAP_FAILED,
+                        SwapFailedException::new
+                ))
+                .map(modelMapper::mapTransactionPushed);
     }
 
     /**

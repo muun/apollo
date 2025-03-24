@@ -63,6 +63,7 @@ import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Pair;
+import io.muun.common.utils.Preconditions;
 
 import android.os.SystemClock;
 import androidx.annotation.NonNull;
@@ -144,14 +145,23 @@ public class ApiObjectsMapper {
     public OperationJson mapOperation(
             final @NotNull OperationWithMetadata operation,
             final List<String> outpoints,
-            final MusigNonces musigNonces
+            final MusigNonces musigNonces,
+            final List<MusigNonces> alternativeTxNonces
     ) {
 
         final Long outputAmountInSatoshis = mapOutputAmountInSatoshis(operation);
 
         final List<String> userPublicNoncesHex = new LinkedList<>();
-        for (int i = 0; i < outpoints.size(); i++) {
+        final long noncesCount = musigNonces.length();
+        for (int i = 0; i < noncesCount; i++) {
             userPublicNoncesHex.add(musigNonces.getPubnonceHex(i));
+        }
+
+        for (final MusigNonces nonces : alternativeTxNonces) {
+            Preconditions.checkState(noncesCount == nonces.length());
+            for (int i = 0; i < noncesCount; i++) {
+                userPublicNoncesHex.add(nonces.getPubnonceHex(i));
+            }
         }
 
         return new OperationJson(

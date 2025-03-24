@@ -53,6 +53,7 @@ import io.muun.common.api.MuunFeatureJson;
 import io.muun.common.api.NextTransactionSizeJson;
 import io.muun.common.api.OperationCreatedJson;
 import io.muun.common.api.OperationJson;
+import io.muun.common.api.PartiallySignedTransactionJson;
 import io.muun.common.api.PendingChallengeUpdateJson;
 import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeySetJson;
@@ -377,8 +378,24 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
                         networkParameters
                 ),
                 mapNextTransactionSize(operationCreated.nextTransactionSize),
-                MuunAddress.fromJson(operationCreated.changeAddress)
+                MuunAddress.fromJson(operationCreated.changeAddress),
+                mapAlternativeTransactions(operationCreated.alternativeTransactions)
         );
+    }
+
+    private List<PartiallySignedTransaction> mapAlternativeTransactions(
+            @Nullable final List<PartiallySignedTransactionJson> txs
+    ) {
+        if (txs == null) {
+            return List.of();
+        }
+
+        final var result = new ArrayList<PartiallySignedTransaction>();
+        for (final var tx : txs) {
+            result.add(PartiallySignedTransaction.fromJson(tx, networkParameters));
+        }
+
+        return result;
     }
 
     /**

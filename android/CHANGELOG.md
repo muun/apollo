@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [53.2] - 2025-03-24
+
+### ADDED
+
+- Alternative transactions signing
+
 ## [53.1] - 2025-02-21
 
 ### ADDED

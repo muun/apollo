@@ -892,6 +892,45 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		changePath2    = "m/schema:1'/recovery:1'/change:0/1"
 		changeVersion2 = addresses.V4
 
+		hexTx5 = "0100000001a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffff02a086010000000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c787302dfa02000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
+
+		txIndex5          = 1
+		txAmount5         = 100000000
+		txIdHex5          = "907e3c0c82b36b11b8543c9e058fe6e23d5ad35881f776e1ca9049e622f2cf80"
+		txAddressPath5    = "m/schema:1'/recovery:1'/external:1/0"
+		txAddress5        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
+		txAddressVersion5 = addresses.V4
+
+		changeAddress5 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath5    = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion5 = addresses.V4
+
+		hexTx6 = "0100000001a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffff02a086010000000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c787e8030000000000002200202ccf0ca2c9b5077ce8345785af26a39277003886fb358877e4083a3fcc5cd66700000000"
+
+		txIndex6          = 1
+		txAmount6         = 100000000
+		txIdHex6          = "69391b987ec374f8e61a5fabb94899cd5efe802ee0f4d890bbbdbd18b05cac0f"
+		txAddressPath6    = "m/schema:1'/recovery:1'/external:1/0"
+		txAddress6        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
+		txAddressVersion6 = addresses.V4
+
+		changeAddress6 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath6    = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion6 = addresses.V4
+
+		hexTx7 = "0100000001a51cc04ab631dee48c989a7cd55c4abc451aa958b09d4579cc9852c52baa57ae0100000000ffffffff01a086010000000000220020452f4ae303ec79acd2bce8f7ddb6469f1060d9146003ea34887e5bbdf021c78700000000"
+
+		txIndex7          = 1
+		txAmount7         = 100000000
+		txIdHex7          = "383136ae84ddd35059a087fb56571f4809d97f09c04eac779ba31f6121818461"
+		txAddressPath7    = "m/schema:1'/recovery:1'/external:1/0"
+		txAddress7        = "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye"
+		txAddressVersion7 = addresses.V4
+
+		changeAddress7 = "bcrt1qg5h54ccra3u6e54uarmamdjxnugxpkg5vqp75dyg0edmmuppc7rsdfcvcp"
+		changePath7    = "m/schema:1'/recovery:1'/change:0/1"
+		changeVersion7 = addresses.V4
+
 		encodedUserKey = "tpubDAKxNPypXDF3GNCpXFUh6sCdxz7DY9eKMgFxYBgyRSiYWXrBLgdtkPuMbQQzrsYLVyPPSHmNcduLRRd9TSMaYrGLryp8KNkkYBm6eka1Bem"
 		encodedMuunKey = "tpubDBZaivUL3Hv8r25JDupShPuWVkGcwM7NgbMBwkhQLfWu18iBbyQCbRdyg1wRMjoWdZN7Afg3F25zs4c8E6Q4VJrGqAw51DJeqacTFABV9u8"
 
@@ -901,6 +940,9 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 	txId1, _ := hex.DecodeString(txIdHex1)
 	txId2, _ := hex.DecodeString(txIdHex2)
 	txId3, _ := hex.DecodeString(txIdHex3)
+	txId5, _ := hex.DecodeString(txIdHex5)
+	txId6, _ := hex.DecodeString(txIdHex6)
+	txId7, _ := hex.DecodeString(txIdHex7)
 
 	userPublicKey, _ := NewHDPublicKeyFromString(
 		encodedUserKey,
@@ -911,6 +953,24 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 		encodedMuunKey,
 		basePath,
 		Regtest())
+
+	tx := wire.NewMsgTx(1)
+	txBytes, _ := hex.DecodeString(hexTx1)
+	_ = tx.Deserialize(bytes.NewReader(txBytes))
+	// Only set one input to reduce boilerplate
+	tx.TxIn = []*wire.TxIn{tx.TxIn[0]}
+	// have 100000000 as input
+	// say 100_000 as change
+	// destination
+	tx.TxOut[1].Value = 1000
+	// change
+	tx.TxOut[0].Value = 100_000
+	tx.TxOut = []*wire.TxOut{tx.TxOut[0]}
+	buffer := new(bytes.Buffer)
+	_ = tx.Serialize(buffer)
+
+	println(tx.TxHash().String())
+	println(hex.EncodeToString(buffer.Bytes()))
 
 	type fields struct {
 		tx     string
@@ -936,6 +996,18 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 	thirdInput := input{
 		outpoint: outpoint{index: txIndex3, amount: txAmount3, txId: txId3},
 		address:  addresses.New(txAddressVersion3, txAddressPath3, txAddress3),
+	}
+	inputForFifthTx := input{
+		outpoint: outpoint{index: txIndex5, amount: txAmount5, txId: txId5},
+		address:  addresses.New(txAddressVersion5, txAddressPath5, txAddress5),
+	}
+	inputForSixthTx := input{
+		outpoint: outpoint{index: txIndex6, amount: txAmount6, txId: txId6},
+		address:  addresses.New(txAddressVersion6, txAddressPath6, txAddress6),
+	}
+	inputForSeventhTx := input{
+		outpoint: outpoint{index: txIndex7, amount: txAmount7, txId: txId7},
+		address:  addresses.New(txAddressVersion7, txAddressPath7, txAddress7),
 	}
 	tests := []struct {
 		name    string
@@ -1086,6 +1158,155 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "alternative with half the destination amount with change",
+			fields: fields{
+				tx:     hexTx5,
+				inputs: []Input{&inputForFifthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount5 - 100_000 - 100,
+					change:      addresses.New(changeVersion5, changePath5, changeAddress5),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+		},
+		{
+			name: "alternative with more change than expected",
+			fields: fields{
+				tx:     hexTx5,
+				inputs: []Input{&inputForFifthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount5 - 10_000 - 100,
+					change:      addresses.New(changeVersion5, changePath5, changeAddress5),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: true,
+		},
+		{
+			name: "alternative with a higher amount than expected",
+			fields: fields{
+				tx:     hexTx5,
+				inputs: []Input{&inputForFifthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      1000,
+					change:      addresses.New(changeVersion5, changePath5, changeAddress5),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: true,
+		},
+		{
+			name: "alternative with mismatched destination address",
+			fields: fields{
+				tx:     hexTx5,
+				inputs: []Input{&inputForFifthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9yzsghvmmn7wv3esylrvn3c469s4ce4thk7qmxdly4tzk4f8vvjsqv0crh",
+					amount:      txAmount5 - 100_000 - 100,
+					change:      addresses.New(changeVersion5, changePath5, changeAddress5),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: true,
+		},
+		{
+			name: "alternative with mismatched change address",
+			fields: fields{
+				tx:     hexTx5,
+				inputs: []Input{&inputForFifthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount5 - 100_000 - 100,
+					change:      addresses.New(changeVersion5, changePath5, txAddress1),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: true,
+		},
+		{
+			name: "alternative with near-dust destination amount with change",
+			fields: fields{
+				tx:     hexTx6,
+				inputs: []Input{&inputForSixthTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount6 - 100_000 - 100,
+					change:      addresses.New(changeVersion6, changePath6, changeAddress6),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+		},
+		{
+			name: "alternative with no destination change",
+			fields: fields{
+				tx:     hexTx7,
+				inputs: []Input{&inputForSeventhTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount7 - 100_000 - 100,
+					change:      addresses.New(changeVersion7, changePath7, changeAddress7),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+		},
+		{
+			name: "alternative with no destination and more change",
+			fields: fields{
+				tx:     hexTx7,
+				inputs: []Input{&inputForSeventhTx},
+			},
+			args: args{
+				expectations: &SigningExpectations{
+					destination: "bcrt1q9n8segkfk5rhe6p527z67f4rjfmsqwyxlv6csalypqarlnzu6ens8cm8ye",
+					amount:      txAmount7 - 9_000 - 100,
+					change:      addresses.New(changeVersion7, changePath7, changeAddress7),
+					fee:         100,
+					alternative: true,
+				},
+				userPublicKey:  userPublicKey,
+				muunPublickKey: muunPublicKey,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1096,11 +1317,43 @@ func TestPartiallySignedTransaction_Verify(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			err = p.Verify(tt.args.expectations, tt.args.userPublicKey, tt.args.muunPublickKey)
-			t.Logf("test %v returned %v", tt.name, err)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Verify() error = %v, wantErr %v", err, tt.wantErr)
+
+			// We do something a bit particular here. We always run alternative and
+			// non-alternative verifications. This allows us to test the invariant
+			// that valid alternative are not valid non-alternative and vice-versa.
+
+			nonAlternativeExpectations := *tt.args.expectations
+			nonAlternativeExpectations.alternative = false
+
+			alternativeExpectations := tt.args.expectations.ForAlternativeTransaction()
+
+			errNonAlternative := p.Verify(&nonAlternativeExpectations, tt.args.userPublicKey, tt.args.muunPublickKey)
+			errAlternative := p.Verify(alternativeExpectations, tt.args.userPublicKey, tt.args.muunPublickKey)
+
+			t.Logf("test %v non-alternative returned %v", tt.name, errNonAlternative)
+			t.Logf("test %v alternative returned %v", tt.name, errAlternative)
+
+			if tt.args.expectations.alternative {
+
+				if (errAlternative != nil) != tt.wantErr {
+					t.Errorf("Verify() error = %v, wantErr %v", errAlternative, tt.wantErr)
+				}
+
+				if errNonAlternative == nil && errAlternative == nil {
+					t.Errorf("Verify() alternative TX should not verify as non-alternative")
+				}
+
+			} else {
+
+				if (errNonAlternative != nil) != tt.wantErr {
+					t.Errorf("Verify() error = %v, wantErr %v", errNonAlternative, tt.wantErr)
+				}
+
+				if errNonAlternative == nil && errAlternative == nil {
+					t.Errorf("Verify() non-alternative TX should not verify as alternative")
+				}
 			}
+
 		})
 	}
 }
