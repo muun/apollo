@@ -17,6 +17,10 @@ func (m *MusigNonces) GetPubnonceHex(index int) string {
 	return hex.EncodeToString(m.publicNonces[index][:])
 }
 
+func (m *MusigNonces) Length() int {
+	return len(m.publicNonces)
+}
+
 // NOTE: this function only generates v040 nonces, used until GenerateNonce is fully adopted.
 // after that this function should be deleted. Currently, this function is only used by gomobile
 func GenerateMusigNonces(count int) *MusigNonces {

@@ -8,10 +8,11 @@ import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletVerificationError;
 import io.muun.apollo.domain.libwallet.errors.PayloadDecryptError;
 import io.muun.apollo.domain.libwallet.errors.PayloadEncryptError;
+import io.muun.apollo.domain.libwallet.model.Address;
 import io.muun.apollo.domain.libwallet.model.Input;
+import io.muun.apollo.domain.libwallet.model.SigningExpectations;
 import io.muun.apollo.domain.model.BitcoinUriContent;
 import io.muun.apollo.domain.model.GeneratedEmergencyKit;
-import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.common.Optional;
@@ -22,7 +23,6 @@ import io.muun.common.crypto.hd.PublicKey;
 import io.muun.common.crypto.hd.PublicKeyPair;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
-import io.muun.common.utils.Preconditions;
 
 import libwallet.BackendActivatedFeatureStatusProvider;
 import libwallet.Config;
@@ -34,7 +34,6 @@ import libwallet.Libwallet;
 import libwallet.MusigNonces;
 import libwallet.MuunPaymentURI;
 import libwallet.Network;
-import libwallet.SigningExpectations;
 import libwallet.Transaction;
 import org.bitcoinj.core.NetworkParameters;
 import org.javamoney.moneta.Money;
@@ -110,14 +109,13 @@ public class LibwalletBridge {
      * Sign a partially signed transaction.
      */
     public static Transaction sign(
-            final Operation userCraftedOp,
             final PrivateKey userPrivateKey,
             final PublicKey muunPublicKey,
             final PartiallySignedTransaction pst,
             final NetworkParameters network,
-            final MusigNonces musigNonces
+            final MusigNonces musigNonces,
+            final SigningExpectations signingExpectations
     ) {
-
         final byte[] unsignedTx = pst.getTransaction().bitcoinSerialize();
 
         final HDPrivateKey userKey = toLibwalletModel(userPrivateKey, network);
@@ -133,7 +131,17 @@ public class LibwalletBridge {
 
         // Attempt client-side verification (log-only for now):
         // We have some cases that aren't considered in libwallet yet, so keep this advisory
-        tryLibwalletVerify(userCraftedOp, userKey.publicKey(), muunKey, libwalletPst);
+
+        try {
+            libwalletPst.verify(
+                    signingExpectations.toLibwalletModel(),
+                    userKey.publicKey(),
+                    muunKey
+            );
+
+        } catch (Throwable error) {
+            Timber.e(new LibwalletVerificationError(error));
+        }
 
         try {
             return libwalletPst.sign(userKey, muunKey);
@@ -392,19 +400,7 @@ public class LibwalletBridge {
     }
 
     private static libwallet.MuunAddress toLibwalletModel(MuunAddress address) {
-        return new libwallet.MuunAddress() {
-            public String address() {
-                return address.getAddress();
-            }
-
-            public String derivationPath() {
-                return address.getDerivationPath();
-            }
-
-            public long version() {
-                return address.getVersion();
-            }
-        };
+        return new Address(address);
     }
 
     /**
@@ -422,31 +418,4 @@ public class LibwalletBridge {
         }
     }
 
-    private static void tryLibwalletVerify(Operation userCraftedOp,
-                                           HDPublicKey userPublicKey,
-                                           HDPublicKey muunPublicKey,
-                                           libwallet.PartiallySignedTransaction libwalletPst) {
-
-        Preconditions.checkArgument(!userCraftedOp.isLendingSwap()); // no tx for LEND swaps
-
-        final MuunAddress changeAddress = userCraftedOp.changeAddress;
-
-        final long outputAmount = userCraftedOp.swap != null
-                ? userCraftedOp.swap.getFundingOutput().getOutputAmountInSatoshis()
-                : userCraftedOp.amount.inSatoshis;
-
-        try {
-            final SigningExpectations expectations = new SigningExpectations(
-                    userCraftedOp.receiverAddress,
-                    outputAmount,
-                    changeAddress == null ? null : toLibwalletModel(changeAddress),
-                    userCraftedOp.fee.inSatoshis
-            );
-
-            libwalletPst.verify(expectations, userPublicKey, muunPublicKey);
-
-        } catch (Throwable error) {
-            Timber.e(new LibwalletVerificationError(error));
-        }
-    }
 }

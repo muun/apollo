@@ -158,4 +158,14 @@ public class Supports {
         int APOLLO = 1;
         int FALCON = NOT_SUPPORTED;
     }
+
+    public interface EffectiveFeesCalculation {
+        int APOLLO = 1300;
+        int FALCON = 1200;
+    }
+
+    public interface SigningAlternativeTransactions {
+        int APOLLO = NOT_SUPPORTED;
+        int FALCON = NOT_SUPPORTED;
+    }
 }

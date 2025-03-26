@@ -3,6 +3,7 @@ package io.muun.common.api;
 import io.muun.common.Supports;
 import io.muun.common.dates.MuunZonedDateTime;
 import io.muun.common.utils.Deprecated;
+import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -59,6 +60,14 @@ public class SubmarineSwapJson {
     @Nullable // Present if the invoice didn't have an amount
     public SubmarineSwapFundingOutputPoliciesJson fundingOutputPolicies;
 
+    // Only present when creating a swap
+    @Since(
+            apolloVersion = Supports.SigningAlternativeTransactions.APOLLO,
+            falconVersion = Supports.SigningAlternativeTransactions.FALCON
+    )
+    @Nullable
+    public Integer maxAlternativeTransactionCount;
+
     /**
      * Json constructor.
      */
@@ -87,7 +96,8 @@ public class SubmarineSwapJson {
                 payedAt,
                 preimageInHex,
                 null,
-                null
+                null,
+                0
         );
     }
 
@@ -105,7 +115,9 @@ public class SubmarineSwapJson {
             @Nullable MuunZonedDateTime payedAt,
             @Nullable String preimageInHex,
             @Nullable List<SubmarineSwapBestRouteFeesJson> bestRouteFees,
-            @Nullable SubmarineSwapFundingOutputPoliciesJson fundingOutputPolicies) {
+            @Nullable SubmarineSwapFundingOutputPoliciesJson fundingOutputPolicies,
+            int maxAlternativeTransactionCount
+    ) {
 
         this.swapUuid = swapUuid;
         this.invoice = invoice;
@@ -130,5 +142,6 @@ public class SubmarineSwapJson {
 
         this.bestRouteFees = bestRouteFees;
         this.fundingOutputPolicies = fundingOutputPolicies;
+        this.maxAlternativeTransactionCount = maxAlternativeTransactionCount;
     }
 }

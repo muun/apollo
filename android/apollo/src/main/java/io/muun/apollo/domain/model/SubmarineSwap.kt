@@ -24,6 +24,7 @@ class SubmarineSwap(
     private val preimageInHex: String?,
     private val bestRouteFees: List<SubmarineSwapBestRouteFees>? = null,            // Transient
     private val fundingOutputPolicies: SubmarineSwapFundingOutputPolicies? = null,  // Transient
+    val maxAlternativeTransactions: Int? = null,                                    // Transient
 ) : HoustonUuidModel(id, houstonUuid) {
 
     companion object {
@@ -42,7 +43,8 @@ class SubmarineSwap(
                 ApolloZonedDateTime.fromMuunZonedDateTime(swap.payedAt)?.dateTime,
                 swap.preimageInHex,
                 swap.bestRouteFees?.map(SubmarineSwapBestRouteFees::fromJson),
-                swap.fundingOutputPolicies?.let(SubmarineSwapFundingOutputPolicies::fromJson)
+                swap.fundingOutputPolicies?.let(SubmarineSwapFundingOutputPolicies::fromJson),
+                swap.maxAlternativeTransactionCount
             )
         }
     }
@@ -87,7 +89,8 @@ class SubmarineSwap(
             SubmarineSwapFees(swapFees.routingFeeInSat, swapFees.outputPaddingInSat),
             expiresAt,
             payedAt,
-            preimageInHex
+            preimageInHex,
+            maxAlternativeTransactions = maxAlternativeTransactions
         )
     }
 
