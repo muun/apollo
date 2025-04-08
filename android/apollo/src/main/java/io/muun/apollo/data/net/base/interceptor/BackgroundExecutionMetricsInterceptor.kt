@@ -2,6 +2,7 @@ package io.muun.apollo.data.net.base.interceptor
 
 import io.muun.apollo.data.net.base.BaseInterceptor
 import io.muun.apollo.data.os.BackgroundExecutionMetricsProvider
+import io.muun.apollo.data.toSafeAscii
 import io.muun.apollo.domain.errors.data.MuunSerializationError
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.selector.UserSelector
@@ -40,7 +41,7 @@ class BackgroundExecutionMetricsInterceptor @Inject constructor(
 
     private fun safelyEncodeJson(originalRequest: Request): String? {
         return try {
-            Json.encodeToString(bemProvider.run())
+            Json.encodeToString(bemProvider.run()).toSafeAscii()
         } catch (e: Throwable) {
             logError(originalRequest, e)
             null

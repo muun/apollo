@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [53.3] - 2025-04-08
+
+### FIXED
+
+- Proper fix for non ascii chars in http headers
+
 ## [53.2] - 2025-03-24
 
 ### ADDED
