@@ -16,3 +16,9 @@ fun MuunZonedDateTime?.toApolloModel(): ZonedDateTime? {
         (this as ApolloZonedDateTime).dateTime
     }
 }
+
+fun String.toSafeAscii() =
+    this.map { if (it.code > 127) "$UNICODE_PREFIX${it.code.toString(16).padStart(4, '0')}" else it }
+        .joinToString("")
+
+private const val UNICODE_PREFIX = "\\u"
