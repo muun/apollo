@@ -20,7 +20,7 @@ public class SessionJson {
     @Nonnegative
     public int version; // this is the clientVersion, not a session version.
 
-    @NotEmpty
+    @Nullable // Nullable after Falcon 1037 before the user grants push notification permission.
     public String gcmRegistrationToken;
 
     @Nullable // This is sent only by newer clients. Older Apollos send it empty.

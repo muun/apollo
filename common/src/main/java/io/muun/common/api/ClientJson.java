@@ -171,6 +171,18 @@ public class ClientJson {
     @Nullable // Before that ;)
     public String googlePlayVersionName;
 
+    @Since(falconVersion = 1018) // Falcon only field
+    @Nullable // Before that ;)
+    public String fallbackDeviceToken;
+
+    @Since(falconVersion = 1018) // Falcon only field
+    @Nullable // Before that ;)
+    public Long iosSystemUptimeInMilliseconds;
+
+    @Since(falconVersion = 1018) // Falcon only field
+    @Nullable // Before that ;)
+    public String iCloudRecordId;
+
     // @TODO: Add @Since with release version
     @Nullable // Before that ;)
     public AndroidBuildInfoJson androidBuildInfo;

@@ -42,4 +42,4 @@ jobs:
 
         with:
           name: apk
-          path: apk/apolloui-prod-release-unsigned.apk
+          path: apk/apolloui-prod-*-release-unsigned.apk

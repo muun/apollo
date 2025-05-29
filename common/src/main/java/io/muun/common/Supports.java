@@ -153,6 +153,11 @@ public class Supports {
         int FALCON = 1012;
     }
 
+    public interface GcmTokenNullability {
+        int APOLLO = NOT_SUPPORTED;
+        int FALCON = 1037;
+    }
+
     // TODO: turn it on as operation updates are supported on Falcon
     public interface OperationUpdatesNotificationsForFalcon {
         int APOLLO = 1;

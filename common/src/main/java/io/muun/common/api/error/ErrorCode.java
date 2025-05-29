@@ -61,6 +61,9 @@ public enum ErrorCode {
     PREVIOUS_IN_FLIGHT_CACHE_EXPIRED(
             4005, StatusCode.SERVER_FAILURE, "The previous retry with the same idempotency key hung"
     ),
+    OBJECT_NOT_FOUND(
+            4006, StatusCode.CLIENT_FAILURE, "Object or resource not found"
+    ),
 
     // validation errors
     JSON_CONSTRAINT_VIOLATION(
@@ -225,6 +228,14 @@ public enum ErrorCode {
     INCOMING_SWAP_ALREADY_FULFILLED(
             2074, StatusCode.CLIENT_FAILURE, "The incoming swap is already fulfilled"
     ),
+    REPEATED_USERS_IN_FRAUD_LABELS(
+            2083, StatusCode.CLIENT_FAILURE, "Repeated users in request parameters"
+    ),
+    INVALID_OUTPOINT(
+            2085,
+            StatusCode.CLIENT_FAILURE,
+            "Invalid outpoint format. Format should honor `txid:index`"
+    ),
     WALLET_NOT_EMPTY(
             2086, StatusCode.CLIENT_FAILURE, "Cannot delete wallet with funds"
     ),
@@ -315,6 +326,17 @@ public enum ErrorCode {
     SWAP_FAILED(
             2084, StatusCode.CLIENT_FAILURE, "Swap failed"
     ),
+    // unexpected errors
+    CLIENT_DISCONNECTED(
+            1005, StatusCode.CLIENT_FAILURE, "Client disconnected during stream processing"
+    ),
+    @Deprecated(atApolloVersion = 19)
+    FACEBOOK_UNAVAILABLE(
+            2003, StatusCode.CLIENT_FAILURE, "Facebook unavailable"
+    ),
+    USER_LOCK_TIMEOUT(
+            2029, StatusCode.SERVER_FAILURE, "User lock timeout"
+    ),
 
     // email errors
     EMAIL_LINK_INVALID(
@@ -325,6 +347,63 @@ public enum ErrorCode {
     ),
     EMAIL_NOT_REGISTERED(
             5003, StatusCode.CLIENT_FAILURE, "Email not registered"
+    ),
+
+    // hardware wallet erorrs
+    HARDWARE_WALLET_NOT_FOUND(
+            6000, StatusCode.CLIENT_FAILURE, "Device not found"
+    ),
+    HARDWARE_WALLET_ALREADY_OWNED(
+            6001, StatusCode.CLIENT_FAILURE, "Device already owned by another User"
+    ),
+
+    // beam errors
+    SESSION_NOT_FOUND(
+            7000, StatusCode.CLIENT_FAILURE, "Requested session wasn't found"
+    ),
+    NOTIFICATION_NOT_FOUND(
+            7001, StatusCode.CLIENT_FAILURE, "Requested notification wasn't found"
+    ),
+    CHANNEL_ALREADY_EXISTS(
+            7002, StatusCode.CLIENT_FAILURE, "Requested channel UUID is already taken"
+    ),
+    CLOSED_CHANNEL(
+            7003, StatusCode.CLIENT_FAILURE, "The channel has been closed"
+    ),
+    CHANNEL_NOT_FOUND(
+            7004, StatusCode.CLIENT_FAILURE, "Requested channel wasn't found"
+    ),
+
+    // relay errors
+    ILLEGAL_PAIRING_STATE(
+            9001, StatusCode.CLIENT_FAILURE, "Illegal pairing state: the session is uninitialized"
+    ),
+    INVALID_CHANNEL_ID(
+            9002, StatusCode.CLIENT_FAILURE, "Invalid chanel uuid"
+    ),
+    INVALID_SESSION_ID(
+            9003, StatusCode.CLIENT_FAILURE, "Invalid session uuid"
+    ),
+    INVALID_NOTIFICATION_ID(
+            9004, StatusCode.CLIENT_FAILURE, "Invalid notification uuid"
+    ),
+
+    // hubble errors
+    @Deprecated
+    STALE_MEMPOOL(
+            8000, StatusCode.SERVER_FAILURE, "Mempool not present or too old"
+    ),
+    @Deprecated
+    INVALID_BLOCK_HASH(
+            8001, StatusCode.SERVER_FAILURE, "Invalid block hash"
+    ),
+
+    // electrum server errors
+    ELECTRUM_SERVER_UNRESPONSIVE(
+            8002, StatusCode.SERVER_FAILURE, "Electrum server returned empty response"
+    ),
+    ELECTRUM_SERVER_CONNECTION_ERROR(
+            8003, StatusCode.SERVER_FAILURE, "Electrum server connection error"
     ),
 
     // swapper errors
@@ -415,6 +494,167 @@ public enum ErrorCode {
     ),
     INVALID_DERIVATION_PATH(
             2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
+    ),
+    BITCOIND_ERROR(
+            8125, StatusCode.CLIENT_FAILURE, "Bitcoind errored while force sweeping"
+    ),
+
+    // rebalancer errors
+    PLAN_NOT_FOUND(
+            8200, StatusCode.CLIENT_FAILURE, "There's no plan with that UUID"
+    ),
+
+    // funder errors
+    NOT_ENOUGH_FUNDS(
+            8300, StatusCode.SERVER_FAILURE, "Not enough funds in wallet"
+    ),
+    DESTINATION_NOT_FOUND(
+            8301, StatusCode.CLIENT_FAILURE, "No output matches that destination"
+    ),
+    AMBIGUOUS_DESTINATION(
+            8302, StatusCode.CLIENT_FAILURE, "Too many outputs match that destination"
+    ),
+    TRANSACTION_NOT_REPLACEABLE(
+            8303, StatusCode.CLIENT_FAILURE, "Trying to replace a transaction without RBF"
+    ),
+    OUTPUTS_ALREADY_SPENT(
+            8304,
+            StatusCode.SERVER_FAILURE,
+            "Can't replace transaction since outputs are already spent"
+    ),
+
+    // syncer errors
+    ADDRESS_NOT_FOUND(
+            10000, StatusCode.CLIENT_FAILURE, "There's no address with that raw serialization"
+    ),
+    PAYMENT_NOT_FOUND(
+            10001, StatusCode.CLIENT_FAILURE, "There's no payment with that UUID"
+    ),
+    INCOMPATIBLE_ADDRESS_METADATA(
+            10002, StatusCode.CLIENT_FAILURE, "Address metadata doesn't match for existing address"
+    ),
+    NO_MATCHING_OUTPUT(
+            10003, StatusCode.CLIENT_FAILURE, "No output found matching the given arguments"
+    ),
+    TRANSACTION_NOT_FOUND(
+            10004, StatusCode.CLIENT_FAILURE, "There's no transaction with that txid"
+    ),
+    NO_MORE_NOTIFICATIONS(
+            10005, StatusCode.CLIENT_FAILURE, "Test payment notification queue is empty"
+    ),
+    OUTPUT_NOT_FOUND(
+            10006, StatusCode.CLIENT_FAILURE, "There's no output with that outpoint"
+    ),
+    NON_REPLACING_OUTPUT(
+            10007, StatusCode.CLIENT_FAILURE, "The selected output has no replacement proof"
+    ),
+    INVALID_OWNER(
+            10008, StatusCode.CLIENT_FAILURE, "Invalid debt operation owner"
+    ),
+    ILLEGAL_ADDRESS_EXPIRY(
+            10009, StatusCode.CLIENT_FAILURE, "Address is non-expirable or already resolved"
+    ),
+    DEFAULT_COLLISION(
+            10010, StatusCode.CLIENT_FAILURE, "Different default amounts for the same transaction"
+    ),
+    DEFAULT_TOO_LATE(
+            10011, StatusCode.CLIENT_FAILURE, "Defaulting after the transaction already settled"
+    ),
+    ILLEGAL_OPERATION(
+            10012, StatusCode.CLIENT_FAILURE, "Illegal debt operation creation request"
+    ),
+    OPERATION_COLLISION(
+            10013, StatusCode.CLIENT_FAILURE, "Different operation amounts for the same factors"
+    ),
+
+    // forwarder errors
+    NO_ROUTE_FOUND(
+            11000,
+            StatusCode.CLIENT_FAILURE,
+            "There isn't any route to the target destination with enough capacity"
+    ),
+    NO_PUBLIC_NODE_FOUND(
+            11001,
+            StatusCode.CLIENT_FAILURE,
+            "There isn't any known public node that can route to the target destination"
+    ),
+    AMOUNTLESS_INVOICE_NOT_SUPPORTED(
+            11002,
+            StatusCode.CLIENT_FAILURE,
+            "We don't support routing to the selected destination without an amount"
+    ),
+    INSUFFICIENT_OUTBOUND_BALANCE(
+            11003,
+            StatusCode.CLIENT_FAILURE,
+            "We don't have enough local balance to route the selected amount to its destination"
+    ),
+    ROUTING_QUOTE_NOT_FOUND(
+            11004,
+            StatusCode.CLIENT_FAILURE,
+            "There was no routing quote with that uuid"
+    ),
+    CONFLICTING_PAYMENT(
+            11005,
+            StatusCode.CLIENT_FAILURE,
+            "Payment hash being used for a different payment"
+    ),
+    NO_NODE_AVAILABLE(
+            11006,
+            StatusCode.SERVER_FAILURE,
+            "There isn't any node available to route the payment from"
+    ),
+    INVALID_NODE_PUBLIC_KEY(
+            11007,
+            StatusCode.CLIENT_FAILURE,
+            "The provided node public key is invalid"
+    ),
+    UNSUPPORTED_NODE_FEATURES(
+            11008,
+            StatusCode.CLIENT_FAILURE,
+            "The invoice has some required features unsupported by our nodes"
+    ),
+    INVOICE_ALREADY_EXPIRED(
+            11009,
+            StatusCode.CLIENT_FAILURE,
+            "The invoice is already expired so we won't execute it"
+    ),
+    LIGHTNING_PAYMENT_NOT_FOUND(
+            11010,
+            StatusCode.CLIENT_FAILURE,
+            "There was no lightning payment with that uuid"
+    ),
+    NODE_NOT_FOUND(
+            11011,
+            StatusCode.SERVER_FAILURE,
+            "The relevant lightning node can't be found"
+    ),
+
+    // mempool errors
+    MEMPOOL_NOT_YET_SYNCED(
+            12001,
+            StatusCode.SERVER_FAILURE,
+            "Internal mempool cache is not yet synced"
+    ),
+    NODE_REJECTED(
+            12002,
+            StatusCode.CLIENT_FAILURE,
+            "transaction can't be broadcasted by the node"
+    ),
+    MEMPOOL_SERVICE_DISABLED(
+            12003,
+            StatusCode.SERVER_FAILURE,
+            "Mempool service is currently disabled"
+    ),
+
+    // server errors
+    JSON_GENERATION_EXCEPTION(
+            1002, StatusCode.SERVER_FAILURE, "Error generating JSON"
+    ),
+    JSON_MISSING_CONSTRUCTOR(
+            1003, StatusCode.SERVER_FAILURE, "Missing empty constructor"
+    ),
+    UNKNOWN_ERROR(
+            100000, StatusCode.SERVER_FAILURE, "Unknown error"
     );
 
     private static final Map<Integer, ErrorCode> errorCodeMap = new HashMap<>();

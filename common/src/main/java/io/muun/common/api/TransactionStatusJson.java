@@ -18,5 +18,8 @@ public enum TransactionStatusJson {
     DROPPED,
 
     /** Transaction was rejected by the network. */
-    FAILED
+    FAILED,
+
+    /** Transaction was prepared but has not been sent yet. */
+    PREPARED
 }
