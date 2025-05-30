@@ -96,8 +96,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 19
         targetSdk 34
-        versionCode 1303
-        versionName "53.3"
+        versionCode 1304
+        versionName "53.4"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -146,6 +146,15 @@ android {
             shrinkResources true
 
             buildConfigField("boolean", "RELEASE", "true")
+
+            splits {
+                abi {
+                    enable true
+                    reset()
+                    include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+                    universalApk false
+                }
+            }
         }
     }
 
@@ -448,6 +457,31 @@ task start(type: Exec, dependsOn: 'assembleDebug') {
 
 task startStaging(type: Exec, dependsOn: 'assembleStaging') {
     commandLine "${rootProject.rootDir}/tools/run-apollo.sh", "staging"
+}
+
+android.applicationVariants.configureEach { variant ->
+    variant.outputs.configureEach { output ->
+        def baseVersionCode = versionCode as int
+        def buildVersionSuffix = project.hasProperty('buildSuffix') ? project.buildSuffix : "000"
+
+        if (!buildVersionSuffix.matches("\\d{3}")) {
+            throw new GradleException("buildSuffix must be a number with 3 digits: '$buildVersionSuffix'")
+        }
+
+        def abiVersionCodeMap = ["x86": 2, "x86_64": 3, "armeabi-v7a": 4, "arm64-v8a": 5]
+        def abi = output.getFilter(com.android.build.OutputFile.ABI)
+        def abiCode = 0
+
+        if (abi != null) {
+            abiCode = abiVersionCodeMap.get(abi) ?: 0
+        }
+
+        output.versionCodeOverride = (baseVersionCode.toString() + buildVersionSuffix + abiCode.toString()) as int
+
+        if (System.getenv("CI")) {
+            println "ABI: ${abi ?: 'universal'}, Final versionCode: ${output.versionCodeOverride}"
+        }
+    }
 }
 
 apply plugin: 'com.google.gms.google-services' // Google Services plugin
