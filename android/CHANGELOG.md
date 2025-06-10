@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [53.4] - 2025-05-29
+
+### CHANGED
+
+- Added multi APK support to bypass 100MB APK size limit.
+
 ## [53.3] - 2025-04-08
 
 ### FIXED

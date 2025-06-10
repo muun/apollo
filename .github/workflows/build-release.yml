@@ -41,7 +41,7 @@ jobs:
 
         with:
           name: apk
-          path: apk/apolloui-prod-release-unsigned.apk
+          path: apk/apolloui-prod-*-release-unsigned.apk
 
       - name: Upload mapping
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # Matches tag v4.3.3
