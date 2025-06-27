@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [53.5] - 2025-06-27
+
+### FIXED
+
+- Error logging and reporting logic.
+
 ## [53.4] - 2025-05-29
 
 ### CHANGED
