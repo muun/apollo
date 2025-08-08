@@ -1,0 +1,16 @@
+[package]
+name = "plonky2-chacha20-poly1305"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plonky2 = {  version = "1.0.2", default-features = false, features = ["std", "parallel"] }
+plonky2_u32 = { path = "../plonky2-u32" }
+plonky2_ecdsa = { path = "../plonky2-ecdsa" }
+num-bigint = "0.4.6"
+num-traits = "0.2.19"
+
+[dev-dependencies]
+anyhow = "1.0.40"
+hex = "0.4.3"
+itertools = "0.10.0"

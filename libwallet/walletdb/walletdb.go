@@ -51,6 +51,10 @@ func (d *DB) NewFeeBumpRepository() FeeBumpRepository {
 	return &GORMFeeBumpRepository{db: d.db}
 }
 
+func (d *DB) NewKeyValueRepository() KeyValueRepository {
+	return &GORMKeyValueRepository{db: d.db}
+}
+
 func migrate(db *gorm.DB) error {
 	opts := gormigrate.Options{
 		UseTransaction: true,
@@ -179,6 +183,22 @@ func migrate(db *gorm.DB) error {
 				}
 
 				return nil
+			},
+		},
+		{
+			ID: "Create key_values table",
+			Migrate: func(tx *gorm.DB) error {
+
+				type KeyValue struct {
+					gorm.Model
+					Key   string `gorm:"unique"`
+					Value *string
+				}
+
+				return tx.AutoMigrate(&KeyValue{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable("key_values").Error
 			},
 		},
 	})

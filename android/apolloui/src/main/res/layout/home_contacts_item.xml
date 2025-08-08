@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         style="@style/muun_item">
 
     <io.muun.apollo.presentation.ui.view.ProfilePictureView
-            android:id="@+id/home_contacts_item_profile_picture"
+            android:id="@+id/profile_picture"
             style="@style/muun_item_icon"
             tools:src="@drawable/profile" />
 
     <TextView
-            android:id="@+id/home_contacts_item_text_full_name"
+            android:id="@+id/name"
             style="@style/muun_item_title"
             android:layout_marginEnd="4dp"
             tools:text="Dario Sneidermanis" />

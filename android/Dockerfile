@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 openjdk:17-jdk-buster@sha256:9217da81dcff19e60861791511ce57c019e47eaf5ca40dc73defe454ba7ea320 AS muun_android_builder
+FROM --platform=linux/amd64 openjdk:17-jdk-slim@sha256:aaa3b3cb27e3e520b8f116863d0580c438ed55ecfa0bc126b41f68c3f62f9774 AS muun_android_builder
 
 ENV NDK_VERSION 22.0.7026061
 ENV ANDROID_PLATFORM_VERSION 28
@@ -56,13 +56,33 @@ RUN sdkmanager --install "ndk;${NDK_VERSION}"
 
 ENV ANDROID_NDK_HOME ${ANDROID_HOME}/ndk/${NDK_VERSION}
 
+FROM rust:1.84 AS rust_builder
+
+ARG RUSTUP_TOOLCHAIN=nightly-2024-12-16
+ARG TARGETS="aarch64-unknown-linux-musl x86_64-unknown-linux-musl aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android"
+
+RUN rustup toolchain install ${RUSTUP_TOOLCHAIN} \
+    && rustup override set ${RUSTUP_TOOLCHAIN} \
+    && rustup target add --toolchain ${RUSTUP_TOOLCHAIN} $TARGETS \
+    && rustup component add clippy \
+    && rustup component add rustfmt
+
+FROM rust_builder AS librs_build
+
+WORKDIR /src
+COPY . /src
+
+RUN TARGETS="$TARGETS" USE_HOST_CARGO=true libwallet/librs/makelibs.sh
+
 FROM muun_android_builder AS build
 
 WORKDIR /src
 COPY . /src
+COPY --from=librs_build /src/libwallet/librs/libs /src/libwallet/librs/libs
+
 RUN tools/bootstrap-gomobile.sh \
     && (cd libwallet; go clean) \
-    && ./gradlew :android:apollo:clean :android:apolloui:clean \
+    && ./gradlew :android:apolloui:clean \
     && ./gradlew :android:libwallet:build :android:apolloui:assembleProdRelease
 
 FROM scratch

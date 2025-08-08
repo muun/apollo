@@ -31,12 +31,14 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
@@ -44,6 +46,11 @@ import androidx.annotation.MenuRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewbinding.ViewBinding;
 import butterknife.ButterKnife;
@@ -171,6 +178,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
             setUpLayout();
             initializePresenter(savedInstanceState);
             initializeUi();
+            setWindowInsets();
 
             presenter.onViewCreated(savedInstanceState);
         } catch (SecureStorageError e) {
@@ -193,6 +201,57 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         tearDownUi();
         _binding = null;
         super.onDestroy();
+    }
+
+    /**
+     * Configures window insets to allow drawing behind system bars and dynamically applies padding
+     * to the root view based on system UI elements like the status bar, navigation bar, and IME.
+     * This ensures proper layout behavior when system UI visibility changes (e.g., keyboard shown).
+     */
+    protected void setWindowInsets() {
+        WindowCompat.setDecorFitsSystemWindows(this.getWindow(), false);
+        final View rootView = getWindow().getDecorView().getRootView();
+
+        setStatusBarIconsColor();
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                rootView,
+                (view, insets) -> {
+                    final Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+                    final Insets navInsets = insets.getInsets(
+                            WindowInsetsCompat.Type.navigationBars()
+                    );
+                    final int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+
+                    final int bottomInset = Math.max(imeInsets.bottom, navInsets.bottom);
+
+                    view.setPadding(
+                            navInsets.left,
+                            topInset,
+                            navInsets.right,
+                            bottomInset
+                    );
+
+                    return WindowInsetsCompat.CONSUMED;
+                }
+        );
+    }
+
+    /**
+     * Sets the status bar icon color based on the current UI mode.
+     * Displays the status bar and adjusts icon appearance for visibility
+     * in light or dark themes.
+     */
+    private void setStatusBarIconsColor() {
+        final int nightModeFlags =
+                getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        final boolean isDarkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+
+        final WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        controller.show(WindowInsetsCompat.Type.statusBars());
+        controller.setAppearanceLightStatusBars(!isDarkMode);
     }
 
     /**

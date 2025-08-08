@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.base.di;
 import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
+import io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
@@ -14,6 +15,7 @@ import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity;
 import io.muun.apollo.presentation.ui.lnurl.withdraw.confirm.LnUrlWithdrawConfirmActivity;
 import io.muun.apollo.presentation.ui.migration.MigrationActivity;
 import io.muun.apollo.presentation.ui.new_operation.NewOperationActivity;
+import io.muun.apollo.presentation.ui.nfc.NfcReaderActivity;
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
@@ -115,4 +117,8 @@ public interface ActivityComponent {
     void inject(LnUrlWithdrawActivity lnUrlWithdrawActivity);
 
     void inject(HighFeesExplanationActivity highFeesExplanationActivity);
+
+    void inject(DiagnosticActivity diagnosticActivity);
+
+    void inject(NfcReaderActivity nfcReaderActivity);
 }

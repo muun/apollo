@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.airbnb.lottie.LottieAnimationView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/lottie_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_width="50dp"
+        tools:layout_height="50dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/nfc_screen_reading_animation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="0dp"
+        android:layout_marginStart="0dp" />

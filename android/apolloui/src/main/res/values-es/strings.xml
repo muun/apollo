@@ -370,13 +370,9 @@
 
     <!-- Generic strings -->
 
-    <string name="slogan">Monedero de custodia propia\npara bitcoin y lightning</string>
-    <string name="network_error_message">
-        No se puede conectar con el servidor de Muun. Esto es normalmente un problema temporario y
-        que suele repararse sin ninguna intervención extra. Aguarda unos segundos, verifica tu
-        conexión a Internet e intenta de nuevo. Si el problema persiste, escribinos a
-        <annotation fontStyle="bold">support@muun.com</annotation> para que podamos ayudarte.
-    </string>
+    <string name="slogan">Monedero de custodia propia</string>
+    <string name="slogan_second_line">para bitcoin y lightning</string>
+    <string name="network_error_message">No se puede conectar con el servidor de Muun. Esto es normalmente un problema temporario y que suele repararse sin ninguna intervención extra. Aguarda unos segundos, verifica tu conexión a Internet e intenta de nuevo. Si el problema persiste, escribinos a <annotation fontStyle="bold">support@muun.com</annotation> para que podamos ayudarte.</string>
 
     <!-- Landing -->
 
@@ -491,7 +487,8 @@
     <string name="home_send_feedback_action_title">Ayuda y comentarios</string>
 
     <!-- WelcomeToMuun -->
-    <string name="welcome_to_muun">Creaste tu monedero.\n¡Bienvenido a Muun!</string>
+    <string name="welcome_to_muun">Creaste tu monedero.</string>
+    <string name="welcome_to_muun_second_line">¡Bienvenido a Muun!</string>
     <string name="welcome_to_muun_cta">Vamos</string>
 
     <!-- Send screen -->
@@ -823,11 +820,8 @@
     <string name="select_currency_most_popular_section_title">Populares</string>
     <string name="select_currency_all_section_title">Ordenadas alfabéticamente</string>
 
-    <string name="edit_password_explanation">
-        Tu contraseña se utiliza por motivos de seguridad. Para cambiarla necesitarás acceso a tu
-        <annotation fontStyle="bold">email</annotation> y a tu
-        <annotation fontStyle="bold">contraseña actual</annotation> o Código de Recuperación.
-    </string>
+    <string name="edit_password_explanation_title">Tu contraseña se utiliza por motivos de seguridad.</string>
+    <string name="edit_password_explanation">Para cambiarla necesitarás acceso a tu <annotation fontStyle="bold">email</annotation> y a tu <annotation fontStyle="bold">contraseña actual</annotation> o Código de Recuperación.</string>
     <string name="edit_password_start">Comenzar cambio de contraseña</string>
 
     <string name="export_keys_intro_action">Crea tu Kit de Emergencia</string>
@@ -1029,10 +1023,7 @@
     <string name="error_dialog_let_us_know">Haznos saber</string>
 
     <string name="error_send_report_dialog_title">Ocurrió un error inesperado</string>
-    <string name="error_send_report_dialog_body">
-        Algo salió mal, pero no sabemos qué. Se generó un reporte de error que nos
-        ayudará a resolverlo. Por favor, envíanoslo por email.
-    </string>
+    <string name="error_send_report_dialog_body">Algo salió mal, pero no sabemos qué. Se generó un reporte de error que nos ayudará a resolverlo. Por favor, envíanoslo por email.</string>
     <string name="error_send_report_dialog_body_short">
         Se generó un reporte de error que ayudará a resolver este problema. Por favor,
         envíanoslo por email.
@@ -1324,9 +1315,8 @@
         inténtalo de nuevo.
     </string>
 
-    <string name="ek_manual_advice_title">
-        ¿Quieres guardar tu Kit manualmente?\nTe damos algunos consejos.
-    </string>
+    <string name="ek_manual_advice_title">¿Quieres guardar tu Kit manualmente?</string>
+    <string name="ek_manual_advice_title_second_line">Te damos algunos consejos.</string>
     <string name="ek_manual_advice_1">
         <annotation fontStyle="bold">Hazlo accesible</annotation>. Debes poder acceder a tu Kit
         en todo momento, incluso si perdieras tu teléfono, te lo robaran o dejara de funcionar.
@@ -1766,5 +1756,14 @@
 
         Payments over Lightning are not affected.
     </string>
+
+    <!--    Nfc Reader Screen-->
+
+    <string name="nfc_reader_screen_title">Tarjeta</string>
+    <string name="nfc_reader_screen_explanation">Por favor apoye su tarjeta de seguridad para autorizar el pago</string>
+    <string name="nfc_reader_screen_go_to_configs_title">NFC desactivado</string>
+    <string name="nfc_reader_screen_enable_nfc">Tu NFC está apagado. Activá NFC desde Configuración para continuar.</string>
+    <string name="nfc_reader_screen_go_to_configs">Ir a configuración</string>
+    <string name="nfc_reader_screen_unknown_coordinates">Ubicación desconocida: por favor, contactá a Franco</string>
 
 </resources>

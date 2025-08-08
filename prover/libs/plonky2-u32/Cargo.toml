@@ -1,0 +1,14 @@
+[package]
+name = "plonky2_u32"
+description = "u32 gadget for Plonky2"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mir-protocol/plonky2"
+edition = "2024"
+
+[dependencies]
+anyhow = { version = "1.0.40", default-features = false }
+itertools = { version = "0.10.5", default-features = false }
+num = "0.4.3"
+plonky2 = { version = "1.0.2" }
+rand = "0.8.5"

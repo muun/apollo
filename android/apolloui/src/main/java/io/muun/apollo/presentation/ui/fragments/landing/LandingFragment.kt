@@ -1,12 +1,13 @@
 package io.muun.apollo.presentation.ui.fragments.landing
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import com.airbnb.lottie.LottieAnimationView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.LandingActivityBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 
 class LandingFragment : SingleFragment<LandingPresenter>() {
 
@@ -28,14 +29,12 @@ class LandingFragment : SingleFragment<LandingPresenter>() {
         }
     }
 
-    @BindView(R.id.login_start)
-    lateinit var recoverWalletButton: MuunButton
+    private val binding: LandingActivityBinding
+        get() = getBinding() as LandingActivityBinding
 
-    @BindView(R.id.signup_start)
-    lateinit var createWalletButton: MuunButton
-
-    @BindView(R.id.animation_view)
-    lateinit var lottieView: LottieAnimationView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return LandingActivityBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
@@ -45,24 +44,26 @@ class LandingFragment : SingleFragment<LandingPresenter>() {
         R.layout.landing_activity
 
     override fun initializeUi(view: View) {
-        if (argumentsBundle.getBoolean(ARG_SHOW_ANIMATION)) {
-            lottieView.setAnimation(R.raw.logo_animation)
-            lottieView.setMinFrame(40) // Small arbitrary correction to json exported animation
-        } else {
-            lottieView.setImageResource(R.drawable.wordmark_blue_beta_big_top)
-        }
+        with(binding) {
+            if (argumentsBundle.getBoolean(ARG_SHOW_ANIMATION)) {
+                lottieView.setAnimation(R.raw.logo_animation)
+                lottieView.setMinFrame(40) // Small arbitrary correction to json exported animation
+            } else {
+                lottieView.setImageResource(R.drawable.wordmark_blue_beta_big_top)
+            }
 
-        createWalletButton.setOnClickListener { onCreateWalletButtonClick() }
-        recoverWalletButton.setOnClickListener { onRecoverWalletButtonClick() }
+            createWalletButton.setOnClickListener { onCreateWalletButtonClick() }
+            recoverWalletButton.setOnClickListener { onRecoverWalletButtonClick() }
+        }
     }
 
     private fun onCreateWalletButtonClick() {
-        createWalletButton.isEnabled = false // avoid double tap while preparing next Fragment
+        binding.createWalletButton.isEnabled = false // avoid double tap while preparing next Fragment
         presenter.startCreateWallet()
     }
 
     private fun onRecoverWalletButtonClick() {
-        recoverWalletButton.isEnabled = false // avoid double tap while preparing next Fragment
+        binding.recoverWalletButton.isEnabled = false // avoid double tap while preparing next Fragment
         presenter.startRecoverWallet()
     }
 

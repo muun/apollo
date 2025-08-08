@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.StatusMessageBinding;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -10,13 +11,12 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
-import butterknife.BindColor;
-import butterknife.BindDrawable;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.annotation.Nullable;
 
@@ -26,23 +26,12 @@ public class StatusMessage extends MuunView {
             .addSizeJava(android.R.attr.textSize, StatusMessage::setTextSize)
             .build();
 
-    @BindView(R.id.message_image)
-    ImageView imageView;
+    private StatusMessageBinding binding;
 
-    @BindView(R.id.message_text)
-    TextView textView;
-
-    @BindDrawable(R.drawable.ic_baseline_warning_24px)
-    Drawable warningIcon;
-
-    @BindColor(R.color.warning_color)
-    int warningColor;
-
-    @BindDrawable(R.drawable.error_badge)
-    Drawable errorIcon;
-
-    @BindColor(R.color.error_color)
-    int errorColor;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return StatusMessageBinding::bind;
+    }
 
     public StatusMessage(Context context) {
         super(context);
@@ -65,6 +54,7 @@ public class StatusMessage extends MuunView {
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
+        binding = (StatusMessageBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
@@ -72,21 +62,21 @@ public class StatusMessage extends MuunView {
      * Set this StatusMessage main image, from a Drawable resource.
      */
     public void setImage(@DrawableRes int resId) {
-        imageView.setImageResource(resId);
+        binding.messageImage.setImageResource(resId);
     }
 
     /**
      * Set this StatusMessage main text, from a String resource.
      */
     public void setText(@StringRes int resId) {
-        textView.setText(resId);
+        binding.messageText.setText(resId);
     }
 
     /**
      * Set this StatusMessage main text, from a CharSequence.
      */
     public void setText(CharSequence text) {
-        textView.setText(text);
+        binding.messageText.setText(text);
     }
 
     /**
@@ -101,7 +91,7 @@ public class StatusMessage extends MuunView {
      * TypedValue} for the possible dimension units.
      */
     public void setTextSize(int unit, float size) {
-        textView.setTextSize(unit, size);
+        binding.messageText.setTextSize(unit, size);
     }
 
     /**
@@ -136,11 +126,15 @@ public class StatusMessage extends MuunView {
                            boolean showIcon,
                            char separator) {
 
+        final ImageView imageView = binding.messageImage;
+        final Drawable warningIcon =
+                ContextCompat.getDrawable(this.getContext(), R.drawable.ic_baseline_warning_24px);
+        final int warningColor = ContextCompat.getColor(this.getContext(), R.color.warning_color);
         imageView.setImageDrawable(warningIcon);
         ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(warningColor));
         imageView.setVisibility(showIcon ? View.VISIBLE : View.GONE);
 
-        textView.setText(TextUtils.concat(
+        binding.messageText.setText(TextUtils.concat(
                 highlight(mainMessage + separator, warningColor),
                 " ",
                 desc
@@ -160,10 +154,14 @@ public class StatusMessage extends MuunView {
      * Predefined way to show an error message.
      */
     public void setError(String mainMessage, CharSequence description) {
+        final ImageView imageView = binding.messageImage;
+        final Drawable errorIcon =
+                ContextCompat.getDrawable(this.getContext(), R.drawable.error_badge);
+        final int errorColor = ContextCompat.getColor(this.getContext(), R.color.error_color);
         imageView.setImageDrawable(errorIcon);
         ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(errorColor));
 
-        textView.setText(TextUtils.concat(
+        binding.messageText.setText(TextUtils.concat(
                 highlight(mainMessage + ".", errorColor),
                 " ",
                 description

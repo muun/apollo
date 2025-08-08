@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-        tools:viewBindingIgnore="true"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        tools:viewBindingIgnore="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
@@ -11,40 +10,66 @@
             android:id="@+id/welcome_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@id/astronaut"
             android:layout_marginStart="36dp"
             android:layout_marginTop="24dp"
             android:layout_marginEnd="36dp"
-            android:layout_marginBottom="19dp"
-            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="2dp"
             android:gravity="center"
+            app:layout_constraintVertical_chainStyle="packed"
             android:lineSpacingMultiplier="1.2"
             android:text="@string/welcome_to_muun"
             android:textAlignment="center"
             android:textColor="@color/text_primary_color"
             android:textSize="18sp"
-            android:fontFamily="sans-serif-medium"/>
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/welcome_title_second_line" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/astronaut"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/welcome_title"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MuunDialogBottomCorners"
-                android:src="@drawable/astronaut" />
+    <TextView
+            android:id="@+id/welcome_title_second_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginBottom="19dp"
+            android:gravity="center"
+            app:layout_constraintVertical_chainStyle="packed"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/welcome_to_muun_second_line"
+            android:textAlignment="center"
+            android:textColor="@color/text_primary_color"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toBottomOf="@id/welcome_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/astronaut" />
 
-        <io.muun.apollo.presentation.ui.view.MuunButton
-                android:id="@+id/welcome_to_muun_cta"
-                style="@style/muun_button_primary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@id/astronaut"
-                android:layout_alignBottom="@id/astronaut"
-                android:layout_marginBottom="26dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:layout_centerHorizontal="true"
-                android:text="@string/welcome_to_muun_cta" />
+    <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/astronaut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MuunDialogBottomCorners"
+            android:src="@drawable/astronaut"
+            app:layout_constraintTop_toBottomOf="@id/welcome_title_second_line"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
+    <io.muun.apollo.presentation.ui.view.MuunButton
+            android:id="@+id/welcome_to_muun_cta"
+            style="@style/muun_button_primary"
+            android:layout_width="match_parent"
+            tools:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="26dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:text="@string/welcome_to_muun_cta"
+            app:layout_constraintStart_toStartOf="@id/astronaut"
+            app:layout_constraintEnd_toEndOf="@id/astronaut"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

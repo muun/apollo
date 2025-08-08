@@ -126,3 +126,19 @@ func (p Path) Indexes() []PathIndex {
 func (p Path) IndexesFrom(parentPath Path) []PathIndex {
 	return p.Indexes()[len(parentPath.Indexes()):]
 }
+
+func (p Path) HasPrefix(prefix Path) bool {
+	indexes := p.Indexes()
+	prefixPathIndexes := prefix.Indexes()
+	if len(prefixPathIndexes) > len(indexes) {
+		return false
+	}
+	for i, prefixPathIndex := range prefixPathIndexes {
+		pathIndex := indexes[i]
+		if pathIndex.Index != prefixPathIndex.Index || pathIndex.Hardened != prefixPathIndex.Hardened {
+			return false
+		}
+	}
+
+	return true
+}

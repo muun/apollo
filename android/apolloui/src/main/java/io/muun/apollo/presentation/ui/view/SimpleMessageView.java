@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SimpleMessageViewBinding;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 
 import android.content.Context;
@@ -8,20 +9,19 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.StringRes;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.annotation.Nullable;
 
 public class SimpleMessageView extends MuunView {
 
-    @BindView(R.id.simple_message_title)
-    TextView title;
+    private SimpleMessageViewBinding binding;
 
-    @BindView(R.id.simple_message_text)
-    TextView text;
-
-    @BindView(R.id.simple_message_button)
-    MuunButton action;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return SimpleMessageViewBinding::bind;
+    }
 
     static final ViewProps<SimpleMessageView> viewProps = new ViewProps.Builder<SimpleMessageView>()
             .addRefJava(R.attr.title, SimpleMessageView::setTitle)
@@ -44,6 +44,7 @@ public class SimpleMessageView extends MuunView {
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        binding = (SimpleMessageViewBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
@@ -56,6 +57,7 @@ public class SimpleMessageView extends MuunView {
      * Set the (optional) title content.
      */
     public void setTitle(@StringRes int resId) {
+        final TextView title = binding.simpleMessageTitle;
         if (resId != 0) {
             title.setText(ExtensionsKt.getStyledString(this, resId));
             title.setVisibility(View.VISIBLE);
@@ -66,13 +68,14 @@ public class SimpleMessageView extends MuunView {
     }
 
     public void setSubtitle(@StringRes int resId) {
-        text.setText(ExtensionsKt.getStyledString(this, resId));
+        binding.simpleMessageText.setText(ExtensionsKt.getStyledString(this, resId));
     }
 
     /**
      * Set the (optional) action text content.
      */
     public void setAction(@StringRes int resId) {
+        final MuunButton action = binding.simpleMessageButton;
         if (resId != 0) {
             action.setText(resId);
             action.setVisibility(View.VISIBLE);
@@ -83,6 +86,6 @@ public class SimpleMessageView extends MuunView {
     }
 
     public void setOnActionClickListener(OnClickListener listener) {
-        action.setOnClickListener(listener);
+        binding.simpleMessageButton.setOnClickListener(listener);
     }
 }

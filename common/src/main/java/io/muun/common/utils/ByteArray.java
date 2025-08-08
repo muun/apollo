@@ -32,15 +32,21 @@ public class ByteArray {
     }
 
     /**
-     * Concat two byte arrays into ine.
+     * Concat multiple byte arrays into one.
      */
-    public static byte[] concat(byte[] first, byte[] second) {
+    public static byte[] concat(byte[]... parts) {
 
-        final byte[] combined = new byte[first.length + second.length];
+        final int totalLength = Arrays.stream(parts)
+                .map(x -> x.length)
+                .reduce(0, Integer::sum);
 
-        System.arraycopy(first, 0, combined, 0, first.length);
-        System.arraycopy(second, 0, combined, first.length, second.length);
+        final byte[] concatenatedArray = new byte[totalLength];
+        int currentPosition = 0;
+        for (byte[] part : parts) {
+            System.arraycopy(part, 0, concatenatedArray, currentPosition, part.length);
+            currentPosition += part.length;
+        }
 
-        return combined;
+        return concatenatedArray;
     }
 }

@@ -1,0 +1,16 @@
+default_platform(:android)
+
+platform :android do
+
+  lane :uploadDogFood do
+    upload_to_play_store(
+      aab: "build/outputs/bundle/dogfoodRelease/apolloui-dogfood-release.aab",
+      validate_only: false,
+      release_status: "completed",
+      json_key: "dogfood-serviceaccount-key.json",
+      package_name: "io.muun.apollo.internal.beta",
+      track: "internal" # production, beta, alpha, internal
+    )
+  end
+
+end

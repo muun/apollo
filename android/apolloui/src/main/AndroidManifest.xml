@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.NFC"/>
 
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
@@ -142,7 +143,6 @@
 
         <activity
                 android:name=".presentation.ui.signup.SignupActivity"
-                android:windowSoftInputMode="adjustResize"
         />
 
         <!-- HomeActivity -->
@@ -157,8 +157,7 @@
         <activity
                 android:name=".presentation.ui.new_operation.NewOperationActivity"
                 android:exported="true"
-                android:parentActivityName=".presentation.ui.home.HomeActivity"
-                android:windowSoftInputMode="adjustResize">
+                android:parentActivityName=".presentation.ui.home.HomeActivity">
 
             <!--
             Note: Scheme matching in the Android framework is case-sensitive, unlike the RFC.
@@ -187,6 +186,13 @@
             </intent-filter>
 
         </activity>
+
+        <!-- NfcReaderActivity -->
+
+        <activity
+                android:name=".presentation.ui.nfc.NfcReaderActivity"
+                android:parentActivityName=".presentation.ui.home.HomeActivity"
+                android:label="@string/nfc_reader_screen_title"/>
 
         <!-- OperationDetailActivity -->
 
@@ -217,7 +223,6 @@
         <activity
                 android:name=".presentation.ui.feedback.email.FeedbackActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
-                android:windowSoftInputMode="adjustResize"
                 android:label="@string/feedback_title"
         />
 
@@ -248,6 +253,13 @@
                 android:name="io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity"
                 />
 
+        <!-- DiagnosticActivity -->
+
+        <activity
+                android:name="io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity"
+                />
+
+
         <!-- EditUsernameActivity -->
 
         <activity
@@ -272,7 +284,6 @@
                 android:name=".presentation.ui.recovery_code.SetupRecoveryCodeActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:label="@string/recovery_code_title"
-                android:windowSoftInputMode="adjustResize"
                 />
 
         <!-- SelectCurrencyActivity -->
@@ -311,19 +322,16 @@
 
         <activity
                 android:name=".presentation.ui.settings.edit_password.EditPasswordActivity"
-                android:windowSoftInputMode="adjustResize"
         />
 
         <!-- SetupP2PActivity -->
 
         <activity
                 android:name="io.muun.apollo.presentation.ui.setup_p2p.SetupP2PActivity"
-                android:windowSoftInputMode="adjustResize"
         />
 
         <activity
                 android:name=".presentation.ui.send.SendActivity"
-                android:windowSoftInputMode="adjustResize"
         />
 
         <activity
@@ -334,13 +342,11 @@
 
         <activity
             android:name=".presentation.ui.settings.success_delete_wallet.SuccessDeleteWalletActivity"
-            android:windowSoftInputMode="adjustResize"
             />
 
         <activity
                 android:name=".presentation.ui.feedback.anon.AnonFeedbackActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
-                android:windowSoftInputMode="adjustResize"
                 android:label="@string/feedback_title"
                 />
 
@@ -359,7 +365,6 @@
 
         <activity
                 android:name=".presentation.ui.select_amount.SelectAmountActivity"
-                android:windowSoftInputMode="adjustResize"
                 />
 
         <!-- SelectNightModeActivity -->
@@ -452,7 +457,8 @@
 
         <receiver
                 android:name=".data.os.sharer.FileSharerReceiver"
-                android:exported="false" />
+                android:exported="false"
+                tools:targetApi="lollipop_mr1" />
 
     </application>
 

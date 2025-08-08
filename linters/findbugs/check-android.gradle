@@ -8,7 +8,7 @@ spotbugs {
 }
 
 tasks.withType(SpotBugsTask) {
-    dependsOn 'assembleDebug'
+    dependsOn 'assembleDebug' // this task no longer exists (haven't for a while)
     group = "verification"
 
     classes = files("${project.buildDir}/intermediates/javac")

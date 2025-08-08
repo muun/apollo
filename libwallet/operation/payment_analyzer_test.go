@@ -1172,6 +1172,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				Status:        AnalysisStatusOk,
 				AmountInSat:   100,
 				FeeTotalInSat: 0,
+				FeeBumpInSat:  0,
 				TotalInSat:    101,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
@@ -1201,6 +1202,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				Status:        AnalysisStatusOk,
 				AmountInSat:   100,
 				FeeTotalInSat: 0,
+				FeeBumpInSat:  0,
 				TotalInSat:    100,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
@@ -1267,6 +1269,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				Status:        AnalysisStatusUnpayable,
 				AmountInSat:   100,
 				FeeTotalInSat: 0,
+				FeeBumpInSat:  0,
 				TotalInSat:    110,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,
@@ -1613,6 +1616,7 @@ func TestAnalyzeOffChain(t *testing.T) {
 				Status:        AnalysisStatusOk,
 				AmountInSat:   12401,
 				FeeTotalInSat: 0,
+				FeeBumpInSat:  0,
 				TotalInSat:    12411,
 				SwapFees: &fees.SwapFees{
 					OutputAmount:        0,

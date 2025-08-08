@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "11965157440",
+    "firebase_url": "https://muun-58bf8.firebaseio.com",
+    "project_id": "muun-58bf8",
+    "storage_bucket": "muun-58bf8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11965157440:android:d2015ed9755b5f26520fa5",
+        "android_client_info": {
+          "package_name": "io.muun.apollo.internal.beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "11965157440-5gpdr3sab0tnguaqp61huu60jj1h0kuv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.muun.apollo.internal.beta",
+            "certificate_hash": "73:8B:46:B0:36:38:86:23:0D:23:3B:98:67:0A:FC:66:51:1F:7E:00"
+          }
+        },
+        {
+          "client_id": "11965157440-3bhq27h2i2qp57064ei1r3glkbo817hd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.muun.apollo.internal.beta",
+            "certificate_hash": "77:F4:44:0D:A4:31:BF:B5:B4:1A:31:3A:0E:16:BA:FA:E8:14:83:BE"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBARwhAR8G0sfBE5EgRGu5CJtbUX-fY4bE"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}

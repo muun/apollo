@@ -1,31 +1,26 @@
 package io.muun.apollo.presentation.ui.fragments.setup_password_accept
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.CheckBox
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentSetupPasswordAcceptBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getStyledString
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 class SetupPasswordAcceptFragment : SingleFragment<SetupPasswordAcceptPresenter>(),
     SetupPasswordAcceptView {
 
-    @BindView(R.id.setup_password_accept_subtitle)
-    lateinit var subtitle: TextView
+    private val binding: FragmentSetupPasswordAcceptBinding
+        get() = getBinding() as FragmentSetupPasswordAcceptBinding
 
-    @BindView(R.id.setup_password_accept_condition_1)
-    lateinit var condition1: CheckBox
-
-    @BindView(R.id.setup_password_accept_condition_2)
-    lateinit var condition2: CheckBox
-
-    @BindView(R.id.setup_password_accept_action)
-    lateinit var acceptButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentSetupPasswordAcceptBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
@@ -35,16 +30,18 @@ class SetupPasswordAcceptFragment : SingleFragment<SetupPasswordAcceptPresenter>
         R.layout.fragment_setup_password_accept
 
     override fun initializeUi(view: View) {
-        subtitle.text = StyledStringRes(
-            requireContext(),
-            R.string.setup_password_accept_why, this::onWhyThisClick
-        ).toCharSequence()
+        with(binding) {
+            setupPasswordAcceptSubtitle.text = StyledStringRes(
+                requireContext(),
+                R.string.setup_password_accept_why, this@SetupPasswordAcceptFragment::onWhyThisClick
+            ).toCharSequence()
 
-        condition1.setOnCheckedChangeListener { _, _ -> updateAcceptButtonState() }
-        condition2.setOnCheckedChangeListener { _, _ -> updateAcceptButtonState() }
+            setupPasswordAcceptCondition1.setOnCheckedChangeListener { _, _ -> updateAcceptButtonState() }
+            setupPasswordAcceptCondition2.setOnCheckedChangeListener { _, _ -> updateAcceptButtonState() }
 
-        acceptButton.setOnClickListener {
-            presenter.acceptTerms()
+            setupPasswordAcceptAction.setOnClickListener {
+                presenter.acceptTerms()
+            }
         }
     }
 
@@ -63,11 +60,14 @@ class SetupPasswordAcceptFragment : SingleFragment<SetupPasswordAcceptPresenter>
     }
 
     override fun setLoading(isLoading: Boolean) {
-        acceptButton.setLoading(isLoading)
+        binding.setupPasswordAcceptAction.setLoading(isLoading)
     }
 
     private fun updateAcceptButtonState() {
-        acceptButton.isEnabled = condition1.isChecked && condition2.isChecked
+        with(binding) {
+            setupPasswordAcceptAction.isEnabled =
+                setupPasswordAcceptCondition1.isChecked && setupPasswordAcceptCondition2.isChecked
+        }
     }
 
     private fun onWhyThisClick(linkId: String) {

@@ -1,0 +1,7 @@
+[package]
+name = "generate"
+edition = "2024"
+
+[dependencies]
+plonky2-cosigning-key-validation = { workspace = true }
+hex = "0.4.3"

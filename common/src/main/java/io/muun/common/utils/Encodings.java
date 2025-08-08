@@ -15,6 +15,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.math.ec.ECPoint;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -44,7 +45,7 @@ public final class Encodings {
      * <p>The regular {@link java.math.BigInteger#toByteArray()} method isn't quite what we often
      * need: it appends a leading zero to indicate that the number is positive and may need padding.
      *
-     * @param number The big integer to serialize.
+     * @param number   The big integer to serialize.
      * @param numBytes The desired size of the resulting byte array.
      * @return {@code numBytes} byte long 0-padded big-endian array.
      */
@@ -261,7 +262,25 @@ public final class Encodings {
     @Nonnull
     public static byte[] ecPublicKeyToBytes(@Nonnull ECPublicKey publicKey) {
 
-        return publicKey.getQ().getEncoded(true);
+        return ecPointToBytes(publicKey.getQ());
+    }
+
+    /**
+     * Serialize a bouncy castle secp256k1 ECPoint into its compressed ASN.1 point
+     * serialization.
+     */
+    @Nonnull
+    public static byte[] ecPointToBytes(@Nonnull ECPoint point) {
+        final boolean compressed = true;
+        return point.getEncoded(compressed);
+    }
+
+    /**
+     * Serialize a bouncy castle secp256k1 EC private key to its big-endian serialization.
+     */
+    @Nonnull
+    public static byte[] ecPrivateKeyToBytes(@Nonnull ECPrivateKey privateKey) {
+        return Encodings.bigIntegerToBytes(privateKey.getD(), 32);
     }
 
     /**

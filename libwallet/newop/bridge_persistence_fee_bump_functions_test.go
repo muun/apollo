@@ -1,13 +1,15 @@
 package newop
 
 import (
-	"github.com/muun/libwallet"
-	"github.com/muun/libwallet/operation"
-	"github.com/muun/libwallet/walletdb"
 	"math"
 	"path"
 	"reflect"
 	"testing"
+
+	"github.com/muun/libwallet"
+	"github.com/muun/libwallet/app_provided_data"
+	"github.com/muun/libwallet/operation"
+	"github.com/muun/libwallet/walletdb"
 )
 
 func TestDecodeFeeBumpFunctions(t *testing.T) {
@@ -128,7 +130,7 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 	}
 
 	// Set temporary file for testing
-	libwallet.Init(&libwallet.Config{DataDir: t.TempDir()})
+	libwallet.Init(&app_provided_data.Config{DataDir: t.TempDir()})
 
 	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
 	if err != nil {

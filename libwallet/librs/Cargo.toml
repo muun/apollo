@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["bindings", "generate"]
+
+[profile.release]
+lto = true
+
+[workspace.dependencies]
+plonky2-cosigning-key-validation = { path = "../../prover/libs/plonky2-cosigning-key-validation" }
+
+[patch.crates-io]
+# Include https://github.com/eira-fransham/crunchy/pull/17 so cross compilation to windows works
+crunchy = { git = "https://github.com/muun/crunchy", rev = "e90d08b348f79c76e80379ab3108383afeb2299d" }

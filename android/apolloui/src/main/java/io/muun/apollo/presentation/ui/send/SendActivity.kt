@@ -9,8 +9,8 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.viewbinding.ViewBinding
-import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.databinding.ActivitySendBinding
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.P2PState
@@ -110,7 +110,7 @@ class SendActivity : SingleFragmentActivity<SendPresenter>(), SendView {
 
         // Bye bye p2p! Only users that have it enabled already can see it
         // Note: keeping this feature on for CI P2P payments tests
-        val enableP2PSetup = state.user.hasP2PEnabled || BuildConfig.FLAVOR == "regtest"
+        val enableP2PSetup = state.user.hasP2PEnabled || Globals.INSTANCE.isCI
 
         contactList.visibility = if (enableP2PSetup) {
             View.VISIBLE

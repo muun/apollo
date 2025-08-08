@@ -29,7 +29,7 @@ class MigrationPresenter @Inject constructor(
         val errorDialog = MuunDialog.Builder()
             .layout(R.layout.dialog_custom_layout)
             .message(R.string.migration_error_message)
-            .positiveButton(R.string.migration_error_retry, this::runMigrations)
+            .positiveButton(resId = R.string.migration_error_retry, action = this::runMigrations)
             .build()
 
         view.showDialog(errorDialog)

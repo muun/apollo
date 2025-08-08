@@ -23,6 +23,7 @@ import org.bitcoinj.crypto.HDDerivationException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.wallet.Wallet;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.nio.ByteBuffer;
@@ -312,6 +313,13 @@ public class PrivateKey extends BaseKey {
                 getPrivKey32(),
                 deterministicKey.getChainCode()
         );
+    }
+
+    /**
+     * Returns the ECPrivateKey of a deterministic key.
+     */
+    public ECPrivateKey getEcPrivateKey() {
+        return Encodings.bytesToEcPrivateKey(getPrivKey32());
     }
 
     /**

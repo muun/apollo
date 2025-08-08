@@ -1,0 +1,14 @@
+[package]
+name = "plonky2_hkdf_sha256"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plonky2 = {  version = "1.0.2", default-features = false, features = ["std", "parallel"] }
+plonky2_sha256 = { path = "../plonky2-sha256" }
+plonky2_bytes = { path = "../plonky2-bytes" }
+
+[dev-dependencies]
+anyhow = "1.0.40"
+hex = "0.4.3"
+hmac-sha256 = "1.1.12"

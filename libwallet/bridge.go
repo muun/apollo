@@ -1,5 +1,13 @@
 package libwallet
 
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/hmac"
+	"crypto/sha1"
+	"github.com/btcsuite/btcd/btcec/v2"
+)
+
 type StringList struct {
 	elems []string
 }
@@ -70,4 +78,43 @@ func (l *IntList) Contains(number int) bool {
 	}
 
 	return false
+}
+
+// TODO: Remove when delete security cards POC
+func EncryptHMacSha1(key []byte, text []byte) []byte {
+	h := hmac.New(sha1.New, key)
+	h.Write(text)
+	return h.Sum(nil)
+}
+
+// TODO: Remove when delete security cards POC
+func GenerateSharedSecret(privateKey *HDPrivateKey, publicKeyBytes []byte) []byte {
+	publicKey, _ := btcec.ParsePubKey(publicKeyBytes)
+	privateKeyFinal, _ := privateKey.key.ECPrivKey()
+	return btcec.GenerateSharedSecret(privateKeyFinal, publicKey)
+}
+
+// TODO: Remove when delete security cards POC
+func AesEncrypt(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, len(plaintext))
+
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext, plaintext)
+
+	return ciphertext, nil
+}
+
+// TODO: Remove when delete security cards POC
+func (p *HDPublicKey) SerializeUncompressed() []byte {
+	key, err := p.key.ECPubKey()
+	if err != nil {
+		panic("failed to extract pub key")
+	}
+
+	return key.SerializeUncompressed()
 }

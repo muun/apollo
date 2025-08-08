@@ -289,6 +289,7 @@ func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *f
 			AmountInSat:   amount,
 			TotalInSat:    total,
 			FeeTotalInSat: 0,
+			FeeBumpInSat:  0,
 			SwapFees:      swapFees,
 		}, nil
 	}
@@ -298,6 +299,7 @@ func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *f
 		AmountInSat:   amount,
 		TotalInSat:    total,
 		FeeTotalInSat: 0,
+		FeeBumpInSat:  0,
 		SwapFees:      swapFees,
 	}, nil
 }

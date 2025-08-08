@@ -1,6 +1,10 @@
 package io.muun.apollo.presentation.ui.new_operation
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.serialization.SerializationUtils
 import io.muun.apollo.domain.action.base.CombineLatestAsyncAction
@@ -35,6 +39,7 @@ import io.muun.apollo.domain.libwallet.Invoice.parseInvoice
 import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.Contact
+import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentContext
@@ -44,6 +49,7 @@ import io.muun.apollo.domain.model.PreparedPayment
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
+import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.PaymentContextSelector
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
@@ -51,6 +57,8 @@ import io.muun.apollo.presentation.ui.fragments.manual_fee.ManualFeeParentPresen
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter.ErrorMetadata
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeParentPresenter
+import io.muun.apollo.presentation.ui.new_operation.NewOperationView.Receiver
+import io.muun.apollo.presentation.ui.nfc.NfcReaderActivity
 import io.muun.common.Rules
 import io.muun.common.utils.Preconditions
 import newop.AbortState
@@ -70,7 +78,7 @@ import newop.ValidateLightningState
 import newop.ValidateState
 import rx.Observable
 import timber.log.Timber
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import javax.money.MonetaryAmount
 
@@ -80,6 +88,7 @@ class NewOperationPresenter @Inject constructor(
     private val paymentContextSel: PaymentContextSelector,
     private val exchangeRateSel: ExchangeRateSelector,
     private val bitcoinUnitSel: BitcoinUnitSelector,
+    private val featureSel: FeatureSelector,
     private val submitPayment: SubmitPaymentAction,
     private val resolveOperationUri: ResolveOperationUriAction,
     private val preloadFeeData: PreloadFeeDataAction,
@@ -114,7 +123,7 @@ class NewOperationPresenter @Inject constructor(
     private var contact: Contact? = null
 
     private val receiver by lazy {
-        object : NewOperationView.Receiver {
+        object : Receiver {
 
             override val swap: SubmarineSwap?
                 get() = this@NewOperationPresenter.submarineSwap
@@ -122,6 +131,10 @@ class NewOperationPresenter @Inject constructor(
             override val contact: Contact?
                 get() = this@NewOperationPresenter.contact
         }
+    }
+
+    private val has2fa by lazy {
+        featureSel.get(MuunFeature.NFC_CARD)
     }
 
     fun startForBitcoinUri(uri: String, operationUri: OperationUri, origin: NewOperationOrigin) {
@@ -223,11 +236,11 @@ class NewOperationPresenter @Inject constructor(
 
         if (submarineSwap == null) {
             val state = stateMachine.value()!! as ConfirmState
-            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmState(state))
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmState(state, has2fa))
 
         } else {
             val state = stateMachine.value()!! as ConfirmLightningState
-            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmLightningState(state))
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmLightningState(state, has2fa))
         }
 
         navigator.navigateToHome(context, op)
@@ -386,6 +399,31 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
+    private fun securityCard2faSuccess() {
+        handleConfirmOperation()
+    }
+
+    fun handleConfirmOperation() {
+        if (receiver.swap == null) {
+            confirmOperation()
+        } else {
+            confirmSwapOperation()
+        }
+    }
+
+    internal fun authenticateWithSecurityCard(activity: NewOperationActivity, activityLauncher: ActivityResultLauncher<Intent>) {
+        navigator.navigateToNfcReaderActivityForResult(
+            /* context = */ activity,
+            /* activityLauncher = */ activityLauncher,
+        )
+    }
+
+    internal fun handleConfirmOperation(result: ActivityResult?) {
+        if (result?.resultCode == Activity.RESULT_OK) {
+            securityCard2faSuccess()
+        }
+    }
+
     /**
      * Finishes the process by sending the ON-CHAIN operation to Houston.
      */
@@ -394,7 +432,7 @@ class NewOperationPresenter @Inject constructor(
 
         reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_OPERATION)
         stateMachine.withState { state: ConfirmState ->
-            submitOperation(ConfirmStateViewModel.fromConfirmState(state))
+            submitOperation(ConfirmStateViewModel.fromConfirmState(state, has2fa))
         }
     }
 
@@ -407,7 +445,7 @@ class NewOperationPresenter @Inject constructor(
         reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_SWAP_OPERATION)
         stateMachine.withState { state: ConfirmLightningState ->
             submitOperation(
-                ConfirmStateViewModel.fromConfirmLightningState(state),
+                ConfirmStateViewModel.fromConfirmLightningState(state, has2fa),
                 submarineSwap!!.withAmountLessInfo(state.validated.swapInfo)
             )
         }
@@ -455,12 +493,20 @@ class NewOperationPresenter @Inject constructor(
         if (submarineSwap != null) {
             params += ("swap_uuid" to submarineSwap!!.houstonUuid)
         }
+        if (has2fa) {
+            params += ("has_2fa" to has2fa.toString())
+        }
         analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(type, *params))
 
     }
 
     fun handleNewOpError(errorType: NewOperationErrorType) {
+        reportNewOpError(errorType)
+        view.showErrorScreen(errorType)
+    }
 
+    // TODO: this should probably be private
+    fun reportNewOpError(errorType: NewOperationErrorType) {
         var params: Array<Pair<String, Any>> = arrayOf()
         if (submarineSwap != null) {
             params += ("swap_uuid" to submarineSwap!!.houstonUuid)
@@ -473,7 +519,6 @@ class NewOperationPresenter @Inject constructor(
                 *params
             )
         )
-        view.showErrorScreen(errorType)
     }
 
     /**
@@ -595,7 +640,7 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmState(state: ConfirmState) {
-        handleConfirmState(ConfirmStateViewModel.fromConfirmState(state))
+        handleConfirmState(ConfirmStateViewModel.fromConfirmState(state, has2fa))
     }
 
     private fun handleConfirmState(confirmStateViewModel: ConfirmStateViewModel) {
@@ -610,7 +655,7 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {
-        handleConfirmState(ConfirmStateViewModel.fromConfirmLightningState(state))
+        handleConfirmState(ConfirmStateViewModel.fromConfirmLightningState(state, has2fa))
     }
 
     private fun handleEditFeeState() {
@@ -730,6 +775,7 @@ class NewOperationPresenter @Inject constructor(
         val feeBumpAmountInSat = stateVm.validated.feeBumpInfo?.amountInSat
         val feeBumpPolicy = stateVm.validated.feeBumpInfo?.refreshPolicy
         val feeBumpSecondsSinceLastUpdate = stateVm.validated.feeBumpInfo?.secondsSinceLastUpdate
+        val has2fa = stateVm.has2fa
 
         objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
         objects.add(("sats_per_virtual_byte" to feeRateInSatsPerVbyte))
@@ -751,6 +797,7 @@ class NewOperationPresenter @Inject constructor(
         objects.add(
             "fee_bump_seconds_since_last_update" to feeBumpSecondsSinceLastUpdate.toString()
         )
+        objects.add("has_2fa" to has2fa.toString())
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))

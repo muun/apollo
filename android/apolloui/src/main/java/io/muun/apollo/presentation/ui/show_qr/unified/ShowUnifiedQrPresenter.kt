@@ -20,7 +20,6 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
 import io.muun.common.bitcoinj.BitcoinUri
-import libwallet.Libwallet
 import org.bitcoinj.core.NetworkParameters
 import javax.inject.Inject
 
@@ -70,7 +69,7 @@ class ShowUnifiedQrPresenter @Inject constructor(
         // We want to re-generate the uri (has an invoice) each time we come back to this fragment.
         view.refresh()
 
-        userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot())
+        userActivatedFeatureStatusSel.watchTaproot()
             .doOnNext { view.setTaprootState(it) }
             .let(this::subscribeTo)
     }

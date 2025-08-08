@@ -76,7 +76,7 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
             .title(R.string.recovery_code_abort_title)
             .message(R.string.recovery_code_abort_body)
             .positiveButton(R.string.abort) { presenter.onSetupAborted() }
-            .negativeButton(R.string.cancel, null)
+            .negativeButton(R.string.cancel)
             .build()
         showDialog(muunDialog)
     }

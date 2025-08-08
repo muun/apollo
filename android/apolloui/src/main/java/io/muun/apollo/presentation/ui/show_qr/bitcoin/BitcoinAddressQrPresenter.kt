@@ -15,7 +15,6 @@ import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
 import io.muun.common.bitcoinj.BitcoinUri
-import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
 
@@ -59,7 +58,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
 
         Observable.combineLatest(
             blockchainHeightSel.watchBlocksToTaproot(),
-            userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+            userActivatedFeatureStatusSel.watchTaproot(),
             view::setTaprootState
         ).let(this::subscribeTo)
     }

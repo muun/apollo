@@ -74,6 +74,14 @@ func (p *HDPrivateKey) String() string {
 	return p.key.String()
 }
 
+func (p *HDPrivateKey) ECPrivateKey() (*btcec.PrivateKey, error) {
+	return p.key.ECPrivKey()
+}
+
+func (p *HDPrivateKey) ChainCode() []byte {
+	return p.key.ChainCode()
+}
+
 // DerivedAt derives a new child priv key, which may be hardened
 // index should be uint32 but for java compat we use int64
 func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, error) {
@@ -105,10 +113,6 @@ func (p *HDPrivateKey) DerivedAt(index int64, hardened bool) (*HDPrivateKey, err
 
 func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 
-	if !strings.HasPrefix(path, p.Path) {
-		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
-	}
-
 	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
@@ -117,6 +121,10 @@ func (p *HDPrivateKey) DeriveTo(path string) (*HDPrivateKey, error) {
 	secondPath, err := hdpath.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
+	}
+
+	if !secondPath.HasPrefix(firstPath) {
+		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
 	}
 
 	indexes := secondPath.IndexesFrom(firstPath)

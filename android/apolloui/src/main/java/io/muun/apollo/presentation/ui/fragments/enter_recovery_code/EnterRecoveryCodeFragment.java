@@ -1,24 +1,29 @@
 package io.muun.apollo.presentation.ui.fragments.enter_recovery_code;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SignupForgotPasswordFragmentBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
-import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox;
 
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindView;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodePresenter>
         implements RecoveryCodeView {
 
-    @BindView(R.id.signup_forgot_password_recovery_code_box)
-    MuunRecoveryCodeBox recoveryCodeBox;
+    private SignupForgotPasswordFragmentBinding binding() {
+        return (SignupForgotPasswordFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.signup_forgot_password_continue)
-    MuunButton continueButton;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SignupForgotPasswordFragmentBinding::inflate;
+    }
 
     @Override
     protected void inject() {
@@ -32,6 +37,10 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
 
     @Override
     protected void initializeUi(View view) {
+        final var binding = binding();
+        final var recoveryCodeBox = binding.signupForgotPasswordRecoveryCodeBox;
+        final var continueButton = binding.signupForgotPasswordContinue;
+
         recoveryCodeBox.setEditable(true);
         recoveryCodeBox.setOnEditedListener(presenter::onRecoveryCodeEdited);
         recoveryCodeBox.requestFocusOnFirstEditableSegment();
@@ -59,6 +68,7 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
     public void onResume() {
         super.onResume();
         // re-trigger validation
+        final var recoveryCodeBox = binding().signupForgotPasswordRecoveryCodeBox;
         presenter.onRecoveryCodeEdited(recoveryCodeBox.getSegmentInputsContent());
         recoveryCodeBox.requestFocusOnFirstEditableSegment();
     }
@@ -76,17 +86,18 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
 
     @Override
     public void setLoading(boolean isLoading) {
-        continueButton.setLoading(isLoading);
-        recoveryCodeBox.setEditable(!isLoading);
+        final var binding = binding();
+        binding.signupForgotPasswordContinue.setLoading(isLoading);
+        binding.signupForgotPasswordRecoveryCodeBox.setEditable(!isLoading);
     }
 
     @Override
     public void setRecoveryCodeError(UserFacingError error) {
-        recoveryCodeBox.setError(error);
+        binding().signupForgotPasswordRecoveryCodeBox.setError(error);
     }
 
     @Override
     public void setConfirmEnabled(boolean isEnabled) {
-        continueButton.setEnabled(isEnabled);
+        binding().signupForgotPasswordContinue.setEnabled(isEnabled);
     }
 }

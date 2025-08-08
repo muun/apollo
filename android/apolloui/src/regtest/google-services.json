@@ -8,42 +8,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:880007565849:android:95b71477f4f55308",
-        "android_client_info": {
-          "package_name": "io.muun.apollo.debug"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "880007565849-iegtr4pdrkkf0qbcu8gvm27pl64hsmro.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyC9BhDZfgz30geRHiPgFsOVrLb3obfzdmI"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "880007565849-cgdit22naai9q1eg89e8btdao5a3cv03.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "880007565849-tfb4sf3icqm5cuflf49nktmv31qf7m1h.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.muun.falcon"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:880007565849:android:ef5949071c84bde7b6d088",
         "android_client_info": {
           "package_name": "io.muun.apollo.regtest"
@@ -59,24 +23,7 @@
         {
           "current_key": "AIzaSyC9BhDZfgz30geRHiPgFsOVrLb3obfzdmI"
         }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "880007565849-cgdit22naai9q1eg89e8btdao5a3cv03.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "880007565849-tfb4sf3icqm5cuflf49nktmv31qf7m1h.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.muun.falcon"
-              }
-            }
-          ]
-        }
-      }
+      ]
     }
   ],
   "configuration_version": "1"

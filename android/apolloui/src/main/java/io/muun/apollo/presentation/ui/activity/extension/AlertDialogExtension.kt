@@ -69,7 +69,7 @@ class AlertDialogExtension @Inject constructor() : ActivityExtension() {
             .onDismiss { onDismiss?.call() }
 
         if (followupAction != null) {
-            builder.positiveButton(R.string.error_dialog_let_us_know, followupAction)
+            builder.positiveButton(resId = R.string.error_dialog_let_us_know, action = followupAction)
         }
 
         showDialog(builder.build())

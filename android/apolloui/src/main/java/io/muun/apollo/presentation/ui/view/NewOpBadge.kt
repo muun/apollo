@@ -28,7 +28,7 @@ class NewOpBadge @JvmOverloads constructor(
 ) : MuunView(context, attrs, style) {
 
     private val binding: ViewNewOpBadgeBinding
-        get() = _binding as ViewNewOpBadgeBinding
+        get() = getBinding() as ViewNewOpBadgeBinding
 
     // Components:
 

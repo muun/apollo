@@ -9,14 +9,13 @@ import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
-import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
 
 class BitcoinSettingsPresenter @Inject constructor(
     private val userPreferencesSel: UserPreferencesSelector,
     private val blockchainHeightSel: BlockchainHeightSelector,
-    private val featureStatusSel: UserActivatedFeatureStatusSelector,
+    private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val updateUserPreferences: UpdateUserPreferencesAction
 ): SingleFragmentPresenter<BitcoinSettingsView, ParentPresenter>() {
 
@@ -32,7 +31,7 @@ class BitcoinSettingsPresenter @Inject constructor(
         val combined = Observable.combineLatest(
             userPreferencesSel.watch().map { userPref -> userPref.defaultAddressType == "taproot" },
             blockchainHeightSel.watchBlocksToTaproot(),
-            featureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+            userActivatedFeatureStatusSel.watchTaproot(),
             ::State
         )
 

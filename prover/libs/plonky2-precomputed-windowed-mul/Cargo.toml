@@ -1,0 +1,13 @@
+[package]
+name = "plonky2_precomputed_windowed_mul"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = { version = "1.0.40", default-features = false }
+plonky2 = { version = "1.0.2" }
+plonky2_ecdsa = { path = "../plonky2-ecdsa" }
+k256 = {features=["arithmetic"], version="0.13.4"}
+
+[dev-dependencies]
+num = { version = "0.4.0", default-features = false }

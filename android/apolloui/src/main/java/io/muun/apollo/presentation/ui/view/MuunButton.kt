@@ -72,7 +72,7 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
     }
 
     private val binding: MuunButtonBinding
-        get() = _binding as MuunButtonBinding
+        get() = getBinding() as MuunButtonBinding
 
     private val button: Button
         get() = binding.muunButtonButton

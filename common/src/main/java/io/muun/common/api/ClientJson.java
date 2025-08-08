@@ -3,7 +3,6 @@ package io.muun.common.api;
 import io.muun.common.Supports;
 import io.muun.common.utils.Deprecated;
 import io.muun.common.utils.Pair;
-import io.muun.common.utils.Since;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,182 +28,147 @@ public class ClientJson {
     @Nonnegative
     public int version;
 
-    @Since(apolloVersion = 704, falconVersion = 611) // Apollo 47.4 and Falcon 2.4.2
-    @Nullable // Before that ;)
+    @Nullable
     public String versionName;
 
-    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
-    @Nullable // Before that ;)
+    @Nullable
     public String deviceModel;
 
-    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
-    @Nullable // Before that ;)
+    @Nullable
     public Long timezoneOffsetInSeconds;
 
-    @Since(apolloVersion = 604, falconVersion = 507) // Apollo 46.4 and Falcon 2.3.2
-    @Nullable // Before that ;)
+    @Nullable
     public String language;
 
-    @Since(apolloVersion = 604) // Apollo 46.4 // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public String bigQueryPseudoId;
 
-    @Since(apolloVersion = 900) // Apollo 49 // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public Boolean isRootHint;
 
-    @Since(apolloVersion = 1003) // Apollo only field
-    @Deprecated(atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO)
-    @Nullable // Before that ;) (and after deprecation)
+    @Nullable
     public Long totalInternalStorage;
 
-    @Since(apolloVersion = 1003) // Apollo only field
     @Deprecated(atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO)
-    @Nullable // Before that ;)
+    @Nullable
     public List<Long> totalExternalStorage;
 
-    @Since(apolloVersion = 1003)
     @Deprecated(
             atApolloVersion = Supports.RefreshTotalInternalStorageAndRam.APOLLO,
             atFalconVersion = Supports.RefreshTotalInternalStorageAndRam.FALCON
     )
-    @Nullable // Before that ;) (and after deprecation)
+    @Nullable
     public Long totalRamStorage;
 
-    @Since(apolloVersion = 1003) // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public String androidId;
 
-    @Since(falconVersion = 1011) // Falcon only field
-    @Nullable // Before that ;)
+    @Nullable
     public String deviceCheckToken;
 
-    @Since(apolloVersion = 1005) // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public Long androidCreationTimestampInMilliseconds;
 
-    @Since(apolloVersion = 1005) // Apollo only field
-    @Deprecated(atApolloVersion = 1007)
-    @Nullable // Before that ;) (and after deprecation)
+    @Nullable
     public List<String> drmClientIds;
 
-    @Since(apolloVersion = 1007) // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public Map<String, String> drmProviderToClientId;
 
-    @Since(apolloVersion = 1006) // Apollo only field
-    @Nullable // Before that ;)
+    @Nullable
     public List<AndroidSystemUserInfoJson> androidSystemUsersInfo;
 
-    @Since(apolloVersion = 1007) // Apollo only field // Apollo 50.7
-    @Nullable // Before that ;)
+    @Nullable
     public Long androidElapsedRealtimeAtSessionCreationInMillis;
 
-    @Since(apolloVersion = 1007) // Apollo only field // Apollo 50.7
-    @Nullable // Before that ;)
+    @Nullable
     public Long androidUptimeAtSessionCreationInMillis;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public String installSource;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public String installInitiatingPackageName;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public String installInitiatingPackageSigningInfo;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     @JsonProperty("fingerprint")
     public String osBuildFingerprint;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     @JsonProperty("hardware")
     public String hardwareName;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     @JsonProperty("bootloader")
     public String systemBootloaderVersion;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public Integer bootCount;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public String glEsVersion;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public Map<String, String> cpuInfoLegacy;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public List<Pair<String, String>> cpuCommonInfo;
 
-    @Since(apolloVersion = 1009) // Apollo only field (for now?) // Apollo 50.9
-    @Nullable // Before that ;)
+    @Nullable
     public List<List<Pair<String, String>>> cpuPerProcessorInfo;
 
-    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
-    @Nullable // Before that ;)
+    @Nullable
     public Long googlePlayServicesVersionCode;
 
-    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
-    @Nullable // Before that ;)
+    @Nullable
     public String googlePlayServicesVersionName;
 
-    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
-    @Nullable // Before that ;)
+    @Nullable
     public Integer googlePlayServicesClientVersionCode;
 
-    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
-    @Nullable // Before that ;)
+    @Nullable
     public Long googlePlayVersionCode;
 
-    @Since(apolloVersion = 1014) // Apollo only field. Apollo 50.14
-    @Nullable // Before that ;)
+    @Nullable
     public String googlePlayVersionName;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
+    public String fallbackDeviceToken;
+
+    @Nullable
+    public Long iosSystemUptimeInMilliseconds;
+
+    @Nullable
+    public String iCloudRecordId;
+
+    @Nullable
     public AndroidBuildInfoJson androidBuildInfo;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public AndroidAppInfoJson androidAppInfo;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public AndroidDeviceFeaturesJson androidDeviceFeatures;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public String androidSignatureHash;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public Boolean androidQuickEmuProps;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public Integer androidEmArchitecture;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public Boolean androidSecurityEnhancedBuild;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public Boolean androidBridgeRootService;
 
-    // @TODO: Add @Since with release version
-    @Nullable // Before that ;)
+    @Nullable
     public Long androidAppSize;
 
     @Nullable
@@ -221,6 +185,9 @@ public class ClientJson {
 
     @Nullable
     public Long androidFirstInstallTimeInMs;
+
+    @Nullable
+    public Map<String, String> androidDeviceRegion;
 
     /**
      * Json constructor.
@@ -277,7 +244,8 @@ public class ClientJson {
             @Nullable final String androidVbMeta,
             @Nullable final String androidEfsCreationTimeInSeconds,
             @Nullable final Boolean androidIsLowRamDevice,
-            @Nullable final Long androidFirstInstallTimeInMs
+            @Nullable final Long androidFirstInstallTimeInMs,
+            @Nullable final Map<String, String> deviceRegion
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -326,5 +294,6 @@ public class ClientJson {
         this.androidEfsCreationTimeInSeconds = androidEfsCreationTimeInSeconds;
         this.androidIsLowRamDevice = androidIsLowRamDevice;
         this.androidFirstInstallTimeInMs = androidFirstInstallTimeInMs;
+        this.androidDeviceRegion = deviceRegion;
     }
 }

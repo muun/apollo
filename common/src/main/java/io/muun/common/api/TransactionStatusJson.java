@@ -2,8 +2,8 @@ package io.muun.common.api;
 
 public enum TransactionStatusJson {
 
-    /** Newly created transactions that hasn't been broadcasted yet. */
-    CREATED,
+    /** Newly created transaction that hasn't been broadcasted yet. */
+    PREPARED,
 
     /** Transaction has already been broadcasted, but hasn't confirmed yet. */
     BROADCASTED,
@@ -18,5 +18,5 @@ public enum TransactionStatusJson {
     DROPPED,
 
     /** Transaction was rejected by the network. */
-    FAILED
+    FAILED,
 }

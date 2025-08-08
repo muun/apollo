@@ -1,23 +1,24 @@
 package io.muun.apollo.presentation.ui.fragments.login_email
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.LoginEmailBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
-import io.muun.apollo.presentation.ui.view.MuunTextInput
 import io.muun.common.bitcoinj.ValidationHelpers
 
 class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView {
 
-    @BindView(R.id.enter_email_input)
-    lateinit var emailInput: MuunTextInput
+    private val binding: LoginEmailBinding
+        get() = getBinding() as LoginEmailBinding
 
-    @BindView(R.id.enter_email_action)
-    lateinit var confirm: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return LoginEmailBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
@@ -26,8 +27,21 @@ class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView
         R.layout.login_email
 
     override fun initializeUi(view: View) {
-        emailInput.setOnChangeListener(this) { validateEmailInput() }
-        validateEmailInput()
+        with(binding) {
+            enterEmailInput.apply {
+                setOnChangeListener(this@LoginEmailFragment) { validateEmailInput() }
+                requestFocusInput()
+            }
+            validateEmailInput()
+
+            enterEmailAction.setOnClickListener {
+                presenter.submitEmail(enterEmailInput.text.toString())
+            }
+
+            enterEmailUseRcOnly.setOnClickListener {
+                presenter.useRecoveryCodeOnlyLogin()
+            }
+        }
     }
 
     override fun setUpHeader() {
@@ -44,30 +58,19 @@ class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView
     }
 
     override fun setLoading(isLoading: Boolean) {
-        confirm.setLoading(isLoading)
+        binding.enterEmailAction.setLoading(isLoading)
     }
 
     override fun autoFillEmail(email: String) {
-        emailInput.setText(email)
+        binding.enterEmailInput.setText(email)
     }
 
     override fun setEmailError(error: UserFacingError?) {
-        emailInput.setError(error)
-    }
-
-    @OnClick(R.id.enter_email_action)
-    fun onConfirmClick() {
-        presenter.submitEmail(emailInput.text.toString())
-    }
-
-    @OnClick(R.id.enter_email_use_rc_only)
-    fun onRecoverWithRecoveryCodeClick(v: View) {
-        presenter.useRecoveryCodeOnlyLogin()
-        confirm.isEnabled
+        binding.enterEmailInput.setError(error)
     }
 
     private fun validateEmailInput() {
         setEmailError(null)
-        confirm.isEnabled = ValidationHelpers.isValidEmail(emailInput.text.toString())
+        binding.enterEmailAction.isEnabled = ValidationHelpers.isValidEmail(binding.enterEmailInput.text.toString())
     }
 }

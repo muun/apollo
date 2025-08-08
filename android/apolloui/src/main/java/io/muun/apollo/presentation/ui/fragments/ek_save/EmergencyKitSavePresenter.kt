@@ -3,6 +3,9 @@ package io.muun.apollo.presentation.ui.fragments.ek_save
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
+import com.google.android.gms.common.api.ApiException
 import io.muun.apollo.R
 import io.muun.apollo.data.apis.DriveAuthenticator
 import io.muun.apollo.data.apis.DriveError
@@ -118,19 +121,26 @@ class EmergencyKitSavePresenter @Inject constructor(
     }
 
     fun reportGoogleSignInComplete(resultIntent: Intent?) {
-        try {
-            driveAuthenticator.getSignedInAccount(resultIntent) // called just for error checking
-            analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_FINISH))
-
-        } catch (e: Throwable) {
-            analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_ERROR))
-            handleError(e)
+        if (handleGoogleSignInResultIntent(resultIntent) == null) {
             return
         }
+
+        analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_FINISH))
 
         val generatedEmergencyKit = parentPresenter.getGeneratedEmergencyKit()
         analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.UPLOAD_START))
         uploadToDrive.run(fileCache.get(FileCache.Entry.EMERGENCY_KIT), generatedEmergencyKit)
+    }
+
+    private fun handleGoogleSignInResultIntent(resultIntent: Intent?): GoogleSignInAccount? {
+        return try {
+            driveAuthenticator.getSignedInAccount(resultIntent) // called just for error checking
+
+        } catch (e: Throwable) {
+            analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.SIGN_IN_ERROR))
+            handleError(e)
+            null
+        }
     }
 
     fun reportCloudFeedback(cloudName: String) {
@@ -195,6 +205,10 @@ class EmergencyKitSavePresenter @Inject constructor(
             analytics.report(E_EK_DRIVE(E_DRIVE_TYPE.UPLOAD_ERROR, error.message ?: ""))
             view.setDriveError(error)
 
+            if (error.cause is ApiException) {
+                handleGoogleSignInError(error.cause as ApiException)
+            }
+
         } else {
             super.handleError(error)
         }
@@ -203,7 +217,7 @@ class EmergencyKitSavePresenter @Inject constructor(
     override fun getEntryEvent() =
         AnalyticsEvent.S_EMERGENCY_KIT_SAVE()
 
-    fun reportGoogleSignInCanceled() {
+    fun reportGoogleSignInCanceled(resultIntent: Intent?) {
         // This method can be called for two reasons that we know of:
         // 1. The user manually dismissed the Google SignIn dialog
         // 2. The user chose an account, but couldn't reach the Google API server
@@ -217,6 +231,29 @@ class EmergencyKitSavePresenter @Inject constructor(
 
         if (!isConnected) {
             view.showTextToast(context.getString(R.string.ek_save_drive_no_internet))
+
+        } else {
+            handleGoogleSignInResultIntent(resultIntent)
+        }
+    }
+
+    private fun handleGoogleSignInError(e: ApiException) {
+        when (e.statusCode) {
+            GoogleSignInStatusCodes.SIGN_IN_CANCELLED -> {
+                Timber.w("GoogleSignIn: User canceled the sign-in flow.")
+            }
+
+            GoogleSignInStatusCodes.SIGN_IN_FAILED -> {
+                Timber.e("GoogleSignIn: Sign-in failed. Please try again.")
+            }
+
+            GoogleSignInStatusCodes.DEVELOPER_ERROR -> {
+                Timber.e("GoogleSignIn: Developer error. Check SHA1, OAuth client, scopes, etc.")
+            }
+
+            else -> {
+                Timber.e("GoogleSignIn: Unknown error: ${e.statusCode}")
+            }
         }
     }
 

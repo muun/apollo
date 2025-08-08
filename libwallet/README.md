@@ -4,7 +4,14 @@
 
 This is the source code repository for muun's wallet core library. Muun is a non-custodial 2-of-2 multisig wallet with a special focus on security and ease of use.
 
-This library is used by our mobile wallets with [gomobile](https://godoc.org/golang.org/x/mobile/cmd/gomobile).
+This library is used by our mobile wallets with [gomobile](https://godoc.org/golang.org/x/mobile/cmd/gomobile) and by the [recovery tool](https://github.com/muun/recovery).
+
+## Setup
+
+1. Install [golang](https://golang.org/)
+2. Install [docker](https://docs.docker.com/engine/install/)
+3. Run `librs/makelibs.sh`
+4. Run `go build -mod=vendor .`
 
 ## Responsible Disclosure
 

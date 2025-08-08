@@ -138,7 +138,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
             .title(R.string.ek_upload_error_title)
             .message(R.string.ek_upload_error_body)
             .positiveButton(R.string.retry) { retrySaveToDrive() }
-            .negativeButton(R.string.cancel, null)
+            .negativeButton(R.string.cancel)
             .build()
 
         showDialog(dialog)
@@ -206,6 +206,7 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         when (requestCode) {
             EmergencyKitSaveOption.SAVE_TO_DRIVE.requestCode ->
                 onExternalResultFromDrive(resultCode, data)
+
             EmergencyKitSaveOption.SHARE_MANUALLY.requestCode -> {
                 // we assume if it's not received an uri the user did not select save to disk option
                 data?.data?.let {
@@ -259,8 +260,9 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         // Report back to Presenter (unless the prompt was dismissed):
         if (resultCode == Activity.RESULT_OK) {
             presenter.reportGoogleSignInComplete(data)
+
         } else {
-            presenter.reportGoogleSignInCanceled()
+            presenter.reportGoogleSignInCanceled(data)
         }
     }
 

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunSettingItemBinding;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -13,7 +14,8 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.annotation.Nullable;
 
@@ -26,17 +28,12 @@ public class MuunSettingItem extends MuunView {
             .addColorList(R.attr.iconTint, MuunSettingItem::setIconColor)
             .build();
 
-    @BindView(R.id.setting_item_label)
-    TextView label;
+    private MuunSettingItemBinding binding;
 
-    @BindView(R.id.setting_item_description)
-    TextView description;
-
-    @BindView(R.id.setting_item_description_icon)
-    ImageView descriptionIcon;
-
-    @BindView(R.id.setting_item_icon)
-    ImageView icon;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return MuunSettingItemBinding::bind;
+    }
 
     public MuunSettingItem(Context context) {
         super(context);
@@ -58,21 +55,22 @@ public class MuunSettingItem extends MuunView {
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
+        binding = (MuunSettingItemBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
     public void setLabel(CharSequence labelText) {
-        label.setText(labelText);
+        binding.settingItemLabel.setText(labelText);
     }
 
     public void setDescription(@StringRes int descriptionRes) {
         showDescription(getContext().getString(descriptionRes));
-        descriptionIcon.setVisibility(GONE);
+        binding.settingItemDescriptionIcon.setVisibility(GONE);
     }
 
     public void setDescription(CharSequence descriptionText) {
         showDescription(descriptionText);
-        descriptionIcon.setVisibility(GONE);
+        binding.settingItemDescriptionIcon.setVisibility(GONE);
     }
 
     public void setDescription(CharSequence descriptionText, @DrawableRes int descriptionIconRes) {
@@ -81,11 +79,13 @@ public class MuunSettingItem extends MuunView {
     }
 
     private void showDescription(CharSequence descriptionText) {
+        final TextView description = binding.settingItemDescription;
         description.setText(descriptionText);
         description.setVisibility(View.VISIBLE);
     }
 
     private void setDescriptionIcon(@DrawableRes int descriptionIconRes) {
+        final ImageView descriptionIcon = binding.settingItemDescriptionIcon;
         descriptionIcon.setImageResource(descriptionIconRes);
         descriptionIcon.setVisibility(VISIBLE);
     }
@@ -95,11 +95,12 @@ public class MuunSettingItem extends MuunView {
     }
 
     public void setIcon(Drawable drawable) {
+        final ImageView icon = binding.settingItemIcon;
         icon.setImageDrawable(drawable);
         icon.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
     }
 
     public void setIconColor(ColorStateList color) {
-        ImageViewCompat.setImageTintList(icon, color);
+        ImageViewCompat.setImageTintList(binding.settingItemIcon, color);
     }
 }

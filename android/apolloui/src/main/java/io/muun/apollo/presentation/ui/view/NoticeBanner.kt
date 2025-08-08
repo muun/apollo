@@ -29,7 +29,7 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
     }
 
     private val binding: ViewNoticeBannerBinding
-        get() = _binding as ViewNoticeBannerBinding
+        get() = getBinding() as ViewNoticeBannerBinding
 
     private val icon: ImageView
         get() = binding.bannerIcon

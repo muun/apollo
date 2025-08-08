@@ -18,7 +18,7 @@ func GenerateSharedEncryptionSecret(pubKey *btcec.PublicKey) (*btcec.PublicKey, 
 
 	sharedSecret, _ := btcec.S256().ScalarMult(pubKey.X(), pubKey.Y(), privEph.ToECDSA().D.Bytes())
 
-	return privEph.PubKey(), paddedSerializeBigInt(aescbc.KeySize, sharedSecret), nil
+	return privEph.PubKey(), PaddedSerializeBigInt(aescbc.KeySize, sharedSecret), nil
 }
 
 // RecoverSharedEncryptionSecret performs an ECDH to recover the encryption secret meant for privKey from rawPubEph
@@ -30,7 +30,7 @@ func RecoverSharedEncryptionSecret(privKey *btcec.PrivateKey, rawPubEph []byte) 
 	}
 
 	sharedSecret, _ := btcec.S256().ScalarMult(pubEph.X(), pubEph.Y(), privKey.ToECDSA().D.Bytes())
-	return paddedSerializeBigInt(aescbc.KeySize, sharedSecret), nil
+	return PaddedSerializeBigInt(aescbc.KeySize, sharedSecret), nil
 }
 
 // GenerateSharedEncryptionSecret performs a ECDH with pubKey and produces a secret usable with AES

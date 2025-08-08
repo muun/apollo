@@ -24,7 +24,6 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.fragments.operations.OperationsCache
 import io.muun.apollo.presentation.ui.fragments.tr_clock_detail.TaprootClockDetailFragment
-import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
 
@@ -76,7 +75,7 @@ class HomeFragmentPresenter @Inject constructor(
                 utxoSetStateSelector.watch(),
                 userSel.watchBalanceHidden(),
                 userSel.watch(),
-                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watchTaproot(),
                 blockchainHeightSel.watchBlocksToTaproot(),
                 featureSelector.fetch(MuunFeature.HIGH_FEES_HOME_BANNER),
                 ::HomeState

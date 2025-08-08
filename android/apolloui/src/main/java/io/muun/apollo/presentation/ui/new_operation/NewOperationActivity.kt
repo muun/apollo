@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,10 +24,12 @@ import io.muun.apollo.domain.libwallet.remainingMillis
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Contact
+import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
+import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -55,6 +58,7 @@ import io.muun.common.exception.MissingCaseError
 import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
+import javax.inject.Inject
 import javax.money.MonetaryAmount
 
 @PerActivity
@@ -84,6 +88,14 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
                 .putExtra(ORIGIN, origin.name)
         }
     }
+
+    @Inject
+    lateinit var featureSelector: FeatureSelector
+
+    private val nfcReaderLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            presenter.handleConfirmOperation(result)
+        }
 
     // Components:
     private val root: ConstraintLayout
@@ -480,10 +492,13 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         actionButton.setText(R.string.new_operation_confirm)
         actionButton.setOnClickListener {
 
-            if (receiver.swap == null) {
-                presenter.confirmOperation()
+            if (featureSelector.get(MuunFeature.NFC_CARD)) {
+                presenter.authenticateWithSecurityCard(
+                    activity = this@NewOperationActivity,
+                    activityLauncher = nfcReaderLauncher
+                )
             } else {
-                presenter.confirmSwapOperation()
+                presenter.handleConfirmOperation()
             }
         }
         actionButton.isEnabled = isValid
@@ -529,7 +544,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             .title(R.string.new_operation_abort_alert_title)
             .message(R.string.new_operation_abort_alert_body)
             .positiveButton(R.string.yes_cancel) { presenter.finishAndGoHome() }
-            .negativeButton(R.string.no, null)
+            .negativeButton(R.string.no)
             .onDismiss { presenter.cancelAbort() }
             .build()
             .let(this::showDialog)

@@ -3,12 +3,10 @@ package libwallet
 import (
 	"errors"
 	"fmt"
-	"strings"
-
-	"github.com/muun/libwallet/hdpath"
-
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/muun/libwallet/hdpath"
 )
 
 // HDPublicKey is an HD capable pub key
@@ -66,10 +64,6 @@ func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 
 func (p *HDPublicKey) DeriveTo(path string) (*HDPublicKey, error) {
 
-	if !strings.HasPrefix(path, p.Path) {
-		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
-	}
-
 	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
@@ -78,6 +72,10 @@ func (p *HDPublicKey) DeriveTo(path string) (*HDPublicKey, error) {
 	secondPath, err := hdpath.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
+	}
+
+	if !secondPath.HasPrefix(firstPath) {
+		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
 	}
 
 	indexes := secondPath.IndexesFrom(firstPath)
@@ -121,4 +119,9 @@ func (p *HDPublicKey) Fingerprint() []byte {
 	hash := btcutil.Hash160(bytes)
 
 	return hash[:4]
+}
+
+// ECPubKey converts the hd public key to a btcec public key and returns it.
+func (p *HDPublicKey) ECPubKey() (*btcec.PublicKey, error) {
+	return p.key.ECPubKey()
 }

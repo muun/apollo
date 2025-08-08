@@ -1,4 +1,5 @@
 libwallet/.gitignore# binary
 libwallet
 .build
+librs/target
 

@@ -78,7 +78,7 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
             .title(R.string.ek_abort_title)
             .message(R.string.ek_abort_body)
             .positiveButton(R.string.abort) { presenter.abortEmergencyKitFlow() }
-            .negativeButton(R.string.cancel, null)
+            .negativeButton(R.string.cancel)
             .build()
             .let(this::showDialog)
     }

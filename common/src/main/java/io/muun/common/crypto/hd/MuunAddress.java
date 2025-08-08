@@ -10,14 +10,21 @@ import javax.validation.constraints.NotNull;
 public class MuunAddress {
 
     public static final int VERSION_P2PKH = 1;
+
     public static final int VERSION_COSIGNED_P2SH = 2;
+
     public static final int VERSION_COSIGNED_P2SH_P2WSH = 3;
+
     public static final int VERSION_COSIGNED_P2WSH = 4;
+
     public static final int VERSION_COSIGNED_P2TR = 5;
-    public static final int VERSION_FUNDING_P2SH_P2WSH = 6; // reserved
+
+    public static final int VERSION_COSIGNED_P2TR_MUSIG2_100 = 6;
+
     public static final int VERSION_FUNDING_P2WSH = 7;
 
     public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
+
     public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
 
     public static final int VERSION_INCOMING_SWAP = 201;

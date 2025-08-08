@@ -23,7 +23,7 @@ open class UiNotificationPoller @Inject constructor(
 ) {
 
     companion object {
-        private val CI = Globals.INSTANCE.oldBuildType == "regtestDebug"
+        private val CI = Globals.INSTANCE.isCI
         private val POLL_INTERVAL_IN_SECS = if (CI) 5 else 2
     }
 

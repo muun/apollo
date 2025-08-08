@@ -2,21 +2,42 @@ package io.muun.apollo.utils
 
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
-import androidx.test.uiautomator.*
-import io.muun.apollo.BuildConfig
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject
+import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.UiObjectNotFoundException
+import androidx.test.uiautomator.UiScrollable
+import androidx.test.uiautomator.UiSelector
+import androidx.test.uiautomator.Until
 import io.muun.apollo.R
 import io.muun.apollo.data.debug.LappClient
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
-import io.muun.apollo.utils.screens.*
+import io.muun.apollo.utils.screens.ChangePasswordScreen
+import io.muun.apollo.utils.screens.EmailPasswordSetupScreen
+import io.muun.apollo.utils.screens.EmergencyKitSetupScreen
+import io.muun.apollo.utils.screens.HomeScreen
+import io.muun.apollo.utils.screens.ManualFeeScreen
+import io.muun.apollo.utils.screens.NewOperationScreen
+import io.muun.apollo.utils.screens.OperationDetailScreen
+import io.muun.apollo.utils.screens.ReceiveScreen
+import io.muun.apollo.utils.screens.RecommendedFeeScreen
+import io.muun.apollo.utils.screens.RecoveryCodeSetupScreen
+import io.muun.apollo.utils.screens.SecurityCenterScreen
+import io.muun.apollo.utils.screens.SettingsScreen
+import io.muun.apollo.utils.screens.SetupP2PScreen
+import io.muun.apollo.utils.screens.SignInScreen
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.javamoney.moneta.Money
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.ParsePosition
-import java.util.*
+import java.util.Locale
 import javax.money.MonetaryAmount
 
 /**
@@ -29,7 +50,7 @@ import javax.money.MonetaryAmount
 interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
 
     companion object {
-        const val resourcePath = BuildConfig.APPLICATION_ID + ":id"
+        val resourcePath = Globals.INSTANCE.applicationId + ":id"
 
         const val moneyEqualsRoundingMarginBTC = 0.00000001
         const val moneyEqualsRoundingMarginFiat = 0.011
@@ -396,7 +417,7 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
     private fun resourceName(@IdRes id: Int): String = context.resources.getResourceName(id)
 
     private fun resourceId(resourceName: String) =
-        context.resources.getIdentifier(resourceName, "id", BuildConfig.APPLICATION_ID)
+        context.resources.getIdentifier(resourceName, "id", Globals.INSTANCE.applicationId)
 
     /**
      *  Scroll to the bottom of the screen.
@@ -538,5 +559,5 @@ interface WithMuunInstrumentationHelpers : WithMuunEspressoHelpers {
         byShortName(resourceShortName(id))
 
     fun byShortName(resourceShortName: String): BySelector =
-        By.res(BuildConfig.APPLICATION_ID, resourceShortName)
+        By.res(Globals.INSTANCE.applicationId, resourceShortName)
 }

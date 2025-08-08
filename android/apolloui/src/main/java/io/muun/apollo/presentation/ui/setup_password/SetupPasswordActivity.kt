@@ -81,7 +81,7 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
             .title(R.string.setup_password_abort_title)
             .message(R.string.setup_password_abort_body)
             .positiveButton(R.string.abort) { presenter.abortPasswordSetup() }
-            .negativeButton(R.string.cancel, null)
+            .negativeButton(R.string.cancel)
             .build()
             .let(this::showDialog)
     }
@@ -92,7 +92,7 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
             .title(R.string.setup_password_skip_title)
             .message(R.string.setup_password_skip_body)
             .positiveButton(R.string.setup_password_skip_yes) { presenter.skipPasswordSetup() }
-            .negativeButton(R.string.setup_password_skip_no, null)
+            .negativeButton(R.string.setup_password_skip_no)
             .build()
             .let(this::showDialog)
     }

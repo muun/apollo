@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package rpc;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/muun/libwallet/api";
+
+service WalletService {
+  rpc DeleteWallet(google.protobuf.Empty) returns (OperationStatus);
+
+  // V2 - use then discard API
+  rpc NfcTransmit(NfcTransmitRequest) returns (NfcTransmitResponse);
+
+  // V3 - NFC security cards Native->Libwallet API
+  rpc SetupSecurityCard(google.protobuf.Empty) returns (XpubResponse);
+  rpc ResetSecurityCard(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc SignMessageSecurityCard(SignMessageSecurityCardRequest) returns (SignMessageSecurityCardResponse);
+
+  // Diagnostic Mode API
+  rpc StartDiagnosticSession(google.protobuf.Empty) returns (DiagnosticSessionDescriptor);
+  rpc PerformDiagnosticScanForUtxos(DiagnosticSessionDescriptor) returns (stream ScanProgressUpdate);
+  rpc SubmitDiagnosticLog(DiagnosticSessionDescriptor) returns (DiagnosticSubmitStatus);
+  rpc StartChallengeSetup(ChallengeSetupRequest) returns (SetupChallengeResponse);
+  rpc FinishRecoveryCodeSetup(FinishRecoveryCodeSetupRequest) returns (google.protobuf.Empty);
+
+  // Key-Value Storage
+  rpc Save(SaveRequest) returns (google.protobuf.Empty);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc SaveBatch(SaveBatchRequest) returns (google.protobuf.Empty);
+  rpc GetBatch(GetBatchRequest) returns (GetBatchResponse);
+}
+
+enum ErrorType {
+  CLIENT = 0;
+  LIBWALLET = 1;
+  HOUSTON = 2;
+}
+
+message ErrorDetail {
+  ErrorType type = 1;
+  int64 code = 2;
+  string message = 3;
+  string developer_message = 4;
+}
+
+message OperationStatus {
+  string status = 1;
+}
+
+message NfcTransmitRequest {
+  bytes apdu_command = 1;
+}
+
+message NfcTransmitResponse {
+  bytes apdu_response = 1;
+  int32 status_code = 2;
+}
+
+message XpubResponse {
+  string base58_xpub = 1;
+}
+
+message SignMessageSecurityCardRequest {
+  string message_hex = 1;
+}
+
+message SignMessageSecurityCardResponse {
+  string signed_message_hex = 1;
+  bool   is_validated = 2;
+}
+
+message DiagnosticSessionDescriptor {
+  string session_id = 1;
+}
+
+message ScanProgressUpdate {
+  oneof update {
+    FoundUtxoReport found_utxo_report = 1;
+    ScanComplete scan_complete = 2;
+  }
+}
+
+message FoundUtxoReport {
+  string address = 1;
+  int64 amount = 2;
+}
+
+message ScanComplete {
+  string status = 1;
+}
+
+message DiagnosticSubmitStatus {
+  int64 status_code = 1;
+  string status_message = 2;
+}
+
+message ChallengeSetupRequest {
+  string type = 1;
+  string public_key = 2;
+  string salt = 3;
+  string encrypted_private_key = 4;
+  int32 version = 5;
+}
+
+message SetupChallengeResponse {
+  optional string muun_key = 1;
+  optional string muun_key_fingerprint = 2;
+}
+
+message FinishRecoveryCodeSetupRequest {
+  string extended_server_cosigning_public_key_base58 = 1;
+  string recovery_code_public_key_hex = 2;
+}
+
+enum NullValue {
+  NULL_VALUE = 0;
+}
+
+message Struct {
+  // Unordered map of dynamically typed values
+  map<string, Value> fields = 1;
+}
+
+message Value {
+  oneof kind {
+    NullValue null_value = 1;
+    double double_value = 2;
+    int32 int_value = 3;
+    int64 long_value = 4;
+    string string_value = 5;
+    bool bool_value = 6;
+  }
+}
+
+message SaveRequest {
+  string key = 1;
+  Value value = 2;
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetResponse {
+  Value value = 1;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message SaveBatchRequest {
+  Struct items = 1;
+}
+
+message GetBatchRequest {
+  repeated string keys = 1;
+}
+
+message GetBatchResponse {
+  Struct items = 1;
+}

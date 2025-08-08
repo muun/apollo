@@ -7,6 +7,7 @@ import io.muun.apollo.domain.action.base.ActionState;
 import io.muun.apollo.domain.action.session.CreateLoginSessionAction;
 import io.muun.apollo.domain.action.session.LogInAction;
 import io.muun.apollo.domain.action.session.rc_only.LogInWithRcAction;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError;
 import io.muun.apollo.domain.errors.rc.CredentialsDontMatchError;
@@ -40,10 +41,6 @@ import timber.log.Timber;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
-
-import static io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE;
-import static io.muun.apollo.domain.analytics.AnalyticsEvent.E_ERROR;
-import static io.muun.apollo.domain.analytics.AnalyticsEvent.E_SIGN_IN_ABORTED;
 
 @PerActivity
 public class SignupPresenter extends BasePresenter<SignupView> implements
@@ -304,7 +301,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
     @Override
     public void cancelEnterPassword() {
         checkStep(SignupStep.LOGIN_PASSWORD);
-        analytics.report(new E_SIGN_IN_ABORTED());
+        analytics.report(new AnalyticsEvent.E_SIGN_IN_ABORTED());
 
         logIn.reset();
         signinActions.clearSession();
@@ -341,18 +338,22 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
             // TODO this is not enforced by design, we must find a better solution.
 
         } else if (error instanceof StaleChallengeKeyError) {
-            analytics.report(new E_ERROR(ERROR_TYPE.RC_STALE_ERROR));
+            analytics.report(new AnalyticsEvent.E_ERROR(AnalyticsEvent.ERROR_TYPE.RC_STALE_ERROR));
             final MuunDialog errorDialog = new MuunDialog.Builder()
                     .layout(R.layout.dialog_custom_layout)
                     .title(R.string.rc_error_stale_rc_title)
                     .message(R.string.rc_error_stale_rc_desc)
-                    .positiveButton(R.string.dismiss, Actions.empty())
+                    .positiveButton(R.string.dismiss, 0, Actions.empty())
                     .build();
 
             view.showDialog(errorDialog);
 
         } else if (error instanceof CredentialsDontMatchError) {
-            analytics.report(new E_ERROR(ERROR_TYPE.RC_CREDENTIALS_DONT_MATCH_ERROR));
+            analytics.report(
+                    new AnalyticsEvent.E_ERROR(
+                            AnalyticsEvent.ERROR_TYPE.RC_CREDENTIALS_DONT_MATCH_ERROR
+                    )
+            );
             final StyledStringRes styledDesc = new StyledStringRes(
                     getContext(),
                     R.string.rc_error_credentials_dont_match_desc
@@ -362,7 +363,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
                     .layout(R.layout.dialog_custom_layout)
                     .title(R.string.rc_error_credentials_dont_match_title)
                     .message(styledDesc.toCharSequence(getSignupDraft().getEmail()))
-                    .positiveButton(R.string.dismiss, Actions.empty())
+                    .positiveButton(R.string.dismiss, 0, Actions.empty())
                     .build();
 
             view.showDialog(errorDialog);

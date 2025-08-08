@@ -356,12 +356,9 @@
 
 
     <!-- Generic strings -->
-    <string name="slogan">Self-custodial wallet\nfor bitcoin and lightning</string>
-    <string name="network_error_message">
-        Can\'t connect to Muun\'s server. This is usually something temporary and self-healing. Wait
-        a couple of seconds, check your Internet connection and try again. If the problem persists,
-        please do contact <annotation fontStyle="bold">support@muun.com</annotation> for help.
-    </string>
+    <string name="slogan">Self-custodial wallet</string>
+    <string name="slogan_second_line">for bitcoin and lightning</string>
+    <string name="network_error_message">Can\'t connect to Muun\'s server. This is usually something temporary and self-healing. Wait a couple of seconds, check your Internet connection and try again. If the problem persists, please do contact <annotation fontStyle="bold">support@muun.com</annotation> for help.</string>
 
     <!-- Landing -->
 
@@ -472,7 +469,8 @@
     <string name="home_send_feedback_action_title">Help and feedback</string>
 
     <!-- WelcomeToMuun -->
-    <string name="welcome_to_muun">You created a new wallet.\nWelcome to Muun!</string>
+    <string name="welcome_to_muun">You created a new wallet.</string>
+    <string name="welcome_to_muun_second_line">Welcome to Muun!</string>
     <string name="welcome_to_muun_cta">Let\'s go</string>
 
     <!-- Send screen -->
@@ -792,10 +790,8 @@
     <string name="select_currency_most_popular_section_title">Most popular</string>
     <string name="select_currency_all_section_title">Countries</string>
 
-    <string name="edit_password_explanation">
-        Your password is used for security.
-        \nTo change it, you need access to your email and your current password or Recovery Code.
-    </string>
+    <string name="edit_password_explanation_title">Your password is used for security.</string>
+    <string name="edit_password_explanation">To change it, you need access to your <annotation fontStyle="bold">email</annotation> and your <annotation fontStyle="bold">current password</annotation> or Recovery Code.</string>
     <string name="edit_password_start">Start</string>
 
     <string name="export_keys_intro_action">Create your Emergency Kit</string>
@@ -991,11 +987,7 @@
     <string name="error_dialog_let_us_know">Let us know</string>
 
     <string name="error_send_report_dialog_title">An unexpected error occurred</string>
-    <string name="error_send_report_dialog_body">
-        Something went wrong but we don\'t know what. We created an error report that
-        we can use to help you. Please send it to
-        <annotation fontStyle="bold">support@muun.com</annotation>.
-    </string>
+    <string name="error_send_report_dialog_body">Something went wrong but we don\'t know what. We created an error report that we can use to help you. Please send it to <annotation fontStyle="bold">support@muun.com</annotation>.</string>
     <string name="error_send_report_dialog_body_short">
         We created an error report that we can use to help you. Please send it to
         <annotation fontStyle="bold">support@muun.com</annotation>.
@@ -1274,9 +1266,8 @@
         try again.
     </string>
 
-    <string name="ek_manual_advice_title">
-        Saving the kit manually?\nHere\’s some advice.
-    </string>
+    <string name="ek_manual_advice_title">Saving the kit manually?</string>
+    <string name="ek_manual_advice_title_second_line">Here\’s some advice.</string>
     <string name="ek_manual_advice_1">
         <annotation fontStyle="bold">Make it accesible</annotation>. You should be able to access
         your Kit at all times, even if your phone is lost, stolen or stops working.
@@ -1711,5 +1702,14 @@
 
         Payments over Lightning are not affected.
     </string>
+
+    <!--    Nfc Reader Screen-->
+
+    <string name="nfc_reader_screen_title">Card</string>
+    <string name="nfc_reader_screen_explanation">Please tap with your security card to authorize the payment</string>
+    <string name="nfc_reader_screen_go_to_configs_title">NFC deactivated</string>
+    <string name="nfc_reader_screen_enable_nfc">Your NFC is turned off. Activate NFC from configurations to continue.</string>
+    <string name="nfc_reader_screen_go_to_configs">Go to configurations</string>
+    <string name="nfc_reader_screen_unknown_coordinates">Unknown location: please contact Franco</string>
 
 </resources>

@@ -1,0 +1,8 @@
+# Ignore all
+**
+
+# ⚠️ whitelist only necessary things
+!android/
+!tools/
+!libwallet/
+!prover/

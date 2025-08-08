@@ -8,14 +8,12 @@ import io.muun.apollo.data.di.DataModule;
 import io.muun.apollo.data.external.DataComponentProvider;
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.external.UserFacingErrorMessages;
-import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.logging.Crashlytics;
 import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.data.logging.MuunTree;
-import io.muun.apollo.data.preferences.FeaturesRepository;
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager;
 import io.muun.apollo.domain.ApplicationLockManager;
-import io.muun.apollo.domain.BackgroundTimesService;
+import io.muun.apollo.domain.BackgroundTimesProcessor;
 import io.muun.apollo.domain.NightModeManager;
 import io.muun.apollo.domain.action.UserActions;
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction;
@@ -48,6 +46,7 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 import androidx.work.Configuration;
+import app_provided_data.Config;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 import rx.plugins.RxJavaHooks;
@@ -55,6 +54,7 @@ import timber.log.Timber;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.concurrent.Executor;
 import javax.inject.Inject;
 import javax.money.spi.CurrencyProviderSpi;
 import javax.validation.constraints.NotNull;
@@ -70,6 +70,9 @@ public abstract class ApolloApplication extends Application
     private DataComponent dataComponent;
 
     @Inject
+    Executor backgroundExecutor;
+
+    @Inject
     PreferencesMigrationManager preferencesMigrationManager;
 
     @Inject
@@ -79,7 +82,7 @@ public abstract class ApolloApplication extends Application
     ApplicationLockManager lockManager;
 
     @Inject
-    LibwalletDataDirectory libwalletDataDirectory;
+    Config libwalletConfig;
 
     @Inject
     NightModeManager nightModeManager;
@@ -88,10 +91,7 @@ public abstract class ApolloApplication extends Application
     DetectAppUpdateAction detectAppUpdate;
 
     @Inject
-    BackgroundTimesService backgroundTimesService;
-
-    @Inject
-    FeaturesRepository featuresRepository;
+    BackgroundTimesProcessor backgroundTimesProcessor;
 
     @Inject
     PreloadFeeDataAction preloadFeeData;
@@ -110,6 +110,9 @@ public abstract class ApolloApplication extends Application
 
     @Override
     public void onCreate() {
+        // The order of the calls in this method is intentional.
+        // Please don't rearrange them without understanding the implications.
+
         super.onCreate();
 
         initializeStaticSingletons();
@@ -131,13 +134,14 @@ public abstract class ApolloApplication extends Application
 
         detectAppUpdate.run();
 
-        setNightMode();
-
         setupDebugTools();
 
         initializeLibwallet();
 
         migrateSharedPreferences();
+
+        // Must run after the prefs migration.
+        setNightMode();
 
         gcmKeepAlive();
 
@@ -164,9 +168,9 @@ public abstract class ApolloApplication extends Application
     }
 
     private void setNightMode() {
-        final NightMode userPreference = nightModeManager.get();
+        final NightMode nightMode = nightModeManager.get();
 
-        switch (userPreference) {
+        switch (nightMode) {
             case DARK:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 break;
@@ -179,7 +183,7 @@ public abstract class ApolloApplication extends Application
                 break; // Shouldn't need to do anything, since current theme is provided by system
 
             default:
-                throw new MissingCaseError(userPreference, "NighMode preference");
+                throw new MissingCaseError(nightMode, "NightMode preference");
         }
     }
 
@@ -194,7 +198,7 @@ public abstract class ApolloApplication extends Application
     @Override
     public Configuration getWorkManagerConfiguration() {
         Timber.d("[MuunWorkerFactory] Application#getWorkManagerConfiguration()");
-        final int loggingLevel = Globals.INSTANCE.isReleaseBuild() ? Log.ERROR : Log.VERBOSE;
+        final int loggingLevel = Globals.INSTANCE.isRelease() ? Log.ERROR : Log.VERBOSE;
         return new Configuration.Builder()
                 .setWorkerFactory(new MuunWorkerFactory(this))
                 .setMinimumLoggingLevel(loggingLevel)
@@ -220,10 +224,11 @@ public abstract class ApolloApplication extends Application
     protected void setupDebugTools() {
         Timber.plant(new MuunTree());
 
-        final boolean isDebug = Globals.INSTANCE.isDebugBuild();
+        final boolean isDebug = Globals.INSTANCE.isDebug();
+        final boolean isDogfood = Globals.INSTANCE.isDogfood();
 
         // Use logcat only for debug builds:
-        LoggingContext.setSendToLogcat(isDebug);
+        LoggingContext.setSendToLogcat(isDebug || isDogfood);
 
         // Use Crashlytics always:
         LoggingContext.setSendToCrashlytics(true);
@@ -257,9 +262,8 @@ public abstract class ApolloApplication extends Application
     }
 
     private void initializeLibwallet() {
-        libwalletDataDirectory.ensureExists();
-        final String filesDir = libwalletDataDirectory.getPath().getAbsolutePath();
-        LibwalletBridge.init(filesDir, featuresRepository);
+        LibwalletBridge.init(libwalletConfig);
+        LibwalletBridge.startServer();
     }
 
     /**
@@ -351,7 +355,7 @@ public abstract class ApolloApplication extends Application
     @Override
     public void onStart(@NonNull LifecycleOwner owner) { // app moved to foreground
         analytics.report(new AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND());
-        backgroundTimesService.enterForeground();
+        backgroundTimesProcessor.enterForeground();
 
         if (userActions.isLoggedIn()) {
             preloadFeeData.run(FeeBumpRefreshPolicy.FOREGROUND);
@@ -362,23 +366,28 @@ public abstract class ApolloApplication extends Application
     @Override
     public void onStop(@NonNull LifecycleOwner owner) { // app moved to background
         analytics.report(new AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND());
-        backgroundTimesService.enterBackground();
+        backgroundTimesProcessor.enterBackground();
         feeDataSyncer.enterBackground();
     }
 
     @Override
     public void onDestroy(@NonNull LifecycleOwner owner) { // app will terminate
+        getDataComponent().walletClient().shutdown();
+        LibwalletBridge.stopServer();
         analytics.report(new AnalyticsEvent.E_APP_WILL_TERMINATE());
     }
 
     private final BroadcastReceiver lockWhenDisplayIsOff = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
 
-            if (action.equals(Intent.ACTION_SCREEN_OFF) && lockManager.isLockConfigured()) {
-                lockManager.setLock();
-            }
+            backgroundExecutor.execute(() -> {
+                final String action = intent.getAction();
+
+                if (action.equals(Intent.ACTION_SCREEN_OFF) && lockManager.isLockConfigured()) {
+                    lockManager.setLock();
+                }
+            });
         }
     };
 }

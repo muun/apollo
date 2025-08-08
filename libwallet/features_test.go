@@ -2,6 +2,8 @@ package libwallet
 
 import (
 	"testing"
+
+	"github.com/muun/libwallet/app_provided_data"
 )
 
 func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
@@ -217,7 +219,7 @@ func (t TestBackendActivatedFeatureStatusProvider) IsBackendFlagEnabled(flag str
 }
 
 func Test_DetermineBackendActivatedFeatureStatus(t *testing.T) {
-	Cfg = &Config{
+	Cfg = &app_provided_data.Config{
 		DataDir:               "",
 		FeatureStatusProvider: TestBackendActivatedFeatureStatusProvider{},
 	}

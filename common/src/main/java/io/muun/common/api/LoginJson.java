@@ -27,6 +27,12 @@ public class LoginJson {
     @JsonProperty("hex") // COMPATIBILITY
     public String challengeSignatureHex;
 
+    /**
+     * This value is the deviceCheckToken required by iOS devices.
+     */
+    @Nullable
+    public String deviceCheckToken;
+
     @Since(
             apolloVersion = Supports.UnverifiedRecoveryCodes.APOLLO,
             falconVersion = Supports.UnverifiedRecoveryCodes.FALCON
@@ -51,5 +57,20 @@ public class LoginJson {
         this.type = type;
         this.challengeSignatureHex = challengeSignatureHex;
         this.challengePublicKey = challengePublicKey;
+    }
+
+    /**
+     * Added only for testing purposes.
+     */
+    public LoginJson(
+            final ChallengeType type,
+            final String challengeSignatureHex,
+            @Nullable final ChallengeKeyJson challengePublicKey,
+            @Nullable final String deviceCheckToken
+    ) {
+        this.type = type;
+        this.challengeSignatureHex = challengeSignatureHex;
+        this.challengePublicKey = challengePublicKey;
+        this.deviceCheckToken = deviceCheckToken;
     }
 }

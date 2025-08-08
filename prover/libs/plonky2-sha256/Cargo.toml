@@ -1,0 +1,10 @@
+[package]
+name = "plonky2_sha256"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plonky2 = {  version = "1.0.2", default-features = false, features = ["std", "parallel"] }
+plonky2_u32 = { path = "../plonky2-u32" }
+anyhow = "1.0.40"
+rand = "0.8.4"

@@ -5,7 +5,6 @@ import io.muun.common.utils.Deprecated;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
@@ -18,7 +17,7 @@ public class CreateFirstSessionJson {
     @NotNull
     public ClientJson client;
 
-    @NotEmpty
+    @Nullable // Nullable after Falcon 1037 before the user grants push notification permission.
     public String gcmToken;
 
     @NotNull
@@ -46,7 +45,7 @@ public class CreateFirstSessionJson {
      * Code constructor.
      */
     public CreateFirstSessionJson(ClientJson client,
-                                  String gcmToken,
+                                  @Nullable String gcmToken,
                                   CurrencyUnit primaryCurrency,
                                   PublicKeyJson basePublicKey,
                                   @Nullable ChallengeSetupJson anonChallengeSetup) {

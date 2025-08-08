@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.phone_number;
 
 import io.muun.apollo.R;
-import io.muun.apollo.data.os.TelephonyInfoProvider;
+import io.muun.apollo.data.afs.InternalMetricsProvider;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.CountryInfo;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
@@ -40,7 +40,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
     MuunButton continueButton;
 
     @Inject
-    TelephonyInfoProvider telephonyInfoProvider;
+    InternalMetricsProvider internalMetricsProvider;
 
     @Override
     protected int getLayoutResource() {
@@ -63,7 +63,7 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
 
         nationalNumber.setOnKeyboardNextListener(continueButton::callOnClick);
 
-        final String userCountryCode = telephonyInfoProvider.getRegion().orElse(null);
+        final String userCountryCode = internalMetricsProvider.getRegion().orElse(null);
         countryPicker.setValue(CountryInfo.findByCode(userCountryCode).orElse(null));
 
         final String whyThisText = getString(R.string.signup_phone_number_why_this);

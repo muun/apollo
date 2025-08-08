@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <io.muun.apollo.presentation.ui.view.MuunButtonLayout
-        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -49,7 +48,7 @@
                 tools:text="Here you have a detailed explanation of why this happened"/>
 
         <LinearLayout
-                android:id="@+id/insuffient_funds_extras"
+                android:id="@+id/insufficient_funds_extras"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -65,7 +64,7 @@
 
             <TextView
                     style="@style/muun_new_op_error_extras_body"
-                    android:id="@+id/insuffient_funds_extras_amount"
+                    android:id="@+id/insufficient_funds_extras_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="24sp"
@@ -79,7 +78,7 @@
 
             <TextView
                     style="@style/muun_new_op_error_extras_body"
-                    android:id="@+id/insuffient_funds_extras_balance"
+                    android:id="@+id/insufficient_funds_extras_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="24sp"

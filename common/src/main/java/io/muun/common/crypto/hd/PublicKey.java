@@ -10,6 +10,7 @@ import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.utils.ByteArray;
+import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -57,6 +58,23 @@ public class PublicKey extends BaseKey {
         final DeterministicKey deterministicKey = DeterministicKey.deserializeB58(
                 base58Serialization,
                 networkParameters
+        );
+
+        return new PublicKey(absoluteDerivationPath, deterministicKey, networkParameters);
+    }
+
+    /**
+     * Deserialize a hex encoded public key.
+     */
+    public static PublicKey fromHexEncoding(
+            @NotNull NetworkParameters networkParameters,
+            @NotNull String absoluteDerivationPath,
+            @NotNull String hexEncoded
+    ) {
+
+        final DeterministicKey deterministicKey = DeterministicKey.deserialize(
+                networkParameters,
+                Encodings.hexToBytes(hexEncoded)
         );
 
         return new PublicKey(absoluteDerivationPath, deterministicKey, networkParameters);

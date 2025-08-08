@@ -4,19 +4,15 @@ import io.muun.common.crypto.hd.PrivateKey;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
 import io.muun.common.utils.Preconditions;
-import io.muun.common.utils.RandomGenerator;
 
 import com.google.common.primitives.Bytes;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.SignatureDecodeException;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
-import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.spec.ECGenParameterSpec;
+import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
@@ -24,8 +20,6 @@ import javax.crypto.SecretKey;
 public class ChallengePublicKey {
 
     public static final int PUBLIC_KEY_LENGTH = MuunEncryptedPrivateKey.PUBLIC_KEY_SIZE;
-
-    private static final String CURVE_NAME = "secp256k1";
 
     private final byte[] key;
 
@@ -134,9 +128,13 @@ public class ChallengePublicKey {
      * @param privateKey the extended private key that will be encrypted.
      * @param walletBirthday the number of days since the timestamp in Bitcoin’s genesis block.
      */
-    public String encryptPrivateKey(PrivateKey privateKey, long walletBirthday) {
+    public String encryptPrivateKey(
+            MuunEncryptedPrivateKey.Version serializationVersion,
+            PrivateKey privateKey,
+            long walletBirthday
+    ) {
 
-        final KeyPair ephemeralKeypair = createEphemeralKeypair();
+        final KeyPair ephemeralKeypair = Cryptography.createEphemeralKeyPair();
 
         final byte[] ephemeralPubkeyBytes = Encodings.ecPublicKeyToBytes(
                 (ECPublicKey) ephemeralKeypair.getPublic()
@@ -161,8 +159,8 @@ public class ChallengePublicKey {
                 true
         );
 
-        final MuunEncryptedPrivateKey encryptedPrivateKey = new MuunEncryptedPrivateKey(
-                MuunEncryptedPrivateKey.CURRENT_VERSION,
+        final MuunEncryptedPrivateKey encryptedPrivateKey = MuunEncryptedPrivateKey.create(
+                serializationVersion,
                 walletBirthday,
                 ephemeralPubkeyBytes,
                 cypherText,
@@ -173,23 +171,32 @@ public class ChallengePublicKey {
     }
 
     /**
-     * Create a random ephemeral key pair in the bitcoin curve.
+     * Encrypt a private key asymmetrically, so that it can be decrypted with the corresponding
+     * challenge private key.
+     *
+     * <p>IMPORTANT: to use this method, the salt of this public key must be NON-NULL.
+     *
+     * <p>Notice that the network parameters won't be included in the serialization, so they must be
+     * provided when decrypting.
+     *
+     * @param muunPrivateKey the encoded muunPrivateKey in base58.
+     * @param privateKey the extended private key that will be encrypted.
+     * @param walletBirthday the number of days since the timestamp in Bitcoin’s genesis block.
      */
-    private KeyPair createEphemeralKeypair() {
+    public String encryptPrivateKey(
+            String muunPrivateKey,
+            PrivateKey privateKey,
+            long walletBirthday
+    ) {
+        final MuunEncryptedPrivateKey.Version version = MuunEncryptedPrivateKey.Version
+                .fromEncryptedPrivateKey(muunPrivateKey);
 
-        final KeyPairGenerator kpg;
+        return encryptPrivateKey(version, privateKey, walletBirthday);
+    }
 
-        try {
-            // Using SpongyCastle's class directly, without java.security/javax.crypto security
-            // providers system, to avoid issues with proguard discarding them.
-            kpg = new KeyPairGeneratorSpi.ECDH();
-
-            kpg.initialize(new ECGenParameterSpec(CURVE_NAME), RandomGenerator.getSecureRandom());
-
-        } catch (GeneralSecurityException e) {
-            throw new RuntimeException(e);
-        }
-
-        return kpg.generateKeyPair();
+    public String getChecksum() {
+        final byte[] keySha = Hashes.sha256(key);
+        final byte[] last8Bytes = Arrays.copyOfRange(keySha, keySha.length - 8, keySha.length);
+        return Encodings.bytesToHex(last8Bytes);
     }
 }

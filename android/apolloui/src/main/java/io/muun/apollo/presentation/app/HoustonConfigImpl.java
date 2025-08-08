@@ -1,8 +1,8 @@
 package io.muun.apollo.presentation.app;
 
 import io.muun.apollo.BuildConfig;
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.data.external.HoustonConfig;
-import io.muun.common.bitcoinj.NetworkParametersHelper;
 
 import org.bitcoinj.core.NetworkParameters;
 
@@ -35,7 +35,7 @@ public class HoustonConfigImpl implements HoustonConfig {
 
     @Override
     public NetworkParameters getNetwork() {
-        return NetworkParametersHelper.getNetworkParametersFromName(BuildConfig.NETWORK_NAME);
+        return Globals.INSTANCE.getNetwork();
     }
 
     @Override

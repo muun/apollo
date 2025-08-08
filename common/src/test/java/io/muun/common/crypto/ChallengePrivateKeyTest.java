@@ -50,10 +50,47 @@ public class ChallengePrivateKeyTest {
 
         final PrivateKey secretKey = PrivateKey.getNewRootPrivateKey(bitcoinContext);
 
-        final String encryptedKey = publicKey.encryptPrivateKey(secretKey, birthday);
-        final PrivateKey decryptedKey = privateKey.decryptPrivateKey(encryptedKey, params);
+        final String encryptedKey = publicKey.encryptPrivateKey(
+                MuunEncryptedPrivateKey.Version.V2,
+                secretKey,
+                birthday
+        );
+        final PrivateKey decryptedKey = privateKey.decryptPrivateKey(
+                encryptedKey,
+                params
+        );
 
         assertThat(secretKey.serializeBase58()).isEqualTo(decryptedKey.serializeBase58());
-        assertThat(MuunEncryptedPrivateKey.fromBase58(encryptedKey).birthday).isEqualTo(birthday);
+        assertThat(
+                MuunEncryptedPrivateKeyV2.fromBase58(encryptedKey).getBirthday()
+        ).isEqualTo(birthday);
+    }
+
+    @Test
+    public void decryptionKeyEncryptedKeyV3() {
+
+        final String rc = "1wer2wer3wer4wer5wer6wer";
+        final byte[] salt = Encodings.hexToBytes("ff2a201264a597b1");
+        final int version = 1;
+        final int birthday = 1234;
+
+        final ChallengePrivateKey privateKey = ChallengePrivateKey.fromUserInput(rc, salt, version);
+        final ChallengePublicKey publicKey = privateKey.getChallengePublicKey();
+
+        final PrivateKey secretKey = PrivateKey.getNewRootPrivateKey(bitcoinContext);
+
+        final String encryptedKey = publicKey.encryptPrivateKey(
+                MuunEncryptedPrivateKey.Version.V3,
+                secretKey,
+                birthday
+        );
+        final PrivateKey decryptedKey = privateKey.decryptPrivateKey(
+                encryptedKey,
+                params
+        );
+
+        assertThat(secretKey.serializeBase58()).isEqualTo(decryptedKey.serializeBase58());
+        assertThat(MuunEncryptedPrivateKeyV3.fromBase58(encryptedKey).getRecoveryCodeSalt())
+                .isEqualTo(salt);
     }
 }

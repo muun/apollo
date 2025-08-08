@@ -1,3 +1,5 @@
+import java.util.regex.Pattern
+
 buildscript {
 
     ext.nav_version = "2.7.7" // Next version upgrade requires bump minSdk to 21
@@ -13,12 +15,14 @@ buildscript {
 plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
+apply plugin: 'com.squareup.sqldelight'
 
 apply from: 'houston.gradle'
 apply from: "${project.rootDir}/linters/checkstyle/check-android.gradle"
@@ -47,11 +51,10 @@ static def commitTag() {
 }
 
 /**
- * Returns the name of the current git branch, truncated to 20 chars.
+ * Returns the name of the current git branch.
  */
 static def branchName() {
-    def branchName = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
-    return branchName.substring(0, Math.min(branchName.length(), 20))
+    return 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
 }
 
 /**
@@ -81,7 +84,6 @@ static def configExternalLinks(productFlavor, String host) {
     productFlavor.buildConfigField "String", "CONFIRM_ACCOUNT_DELETION_PATH", quote(confirmAccountDeletionPath)
 }
 
-
 android {
     namespace "io.muun.apollo"
 
@@ -96,8 +98,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 19
         targetSdk 34
-        versionCode 1305
-        versionName "53.5"
+        versionCode 1500
+        versionName "55.0"
 
         // Needed to make sure these classes are available in the main DEX file for API 19
         // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
@@ -111,10 +113,7 @@ android {
         }.asList().toArray()
 
         // Debug application class, which is interpolated into AndroidManifest.xml
-        manifestPlaceholders = [
-                mainApplicationClass: 'ApolloDebugApplication',
-                usesCleartextTraffic: 'true'
-        ]
+        manifestPlaceholders = [mainApplicationClass: 'ApolloDebugApplication', usesCleartextTraffic: 'true']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -122,16 +121,48 @@ android {
         buildConfigField("String", "BRANCH", quote(branchName()))
         buildConfigField("boolean", "PRODUCTION", "false")
         buildConfigField("boolean", "RELEASE", "false")
+
+        signingConfigs {
+            dogfood {
+
+                def dogfoodKeystoreProps = new Properties()
+                if (file("./dogfood-keystore.properties").exists()) {
+                    dogfoodKeystoreProps.load(
+                            new FileInputStream(file("./dogfood-keystore.properties"))
+                    )
+                }
+
+                def keystoreFilePath = dogfoodKeystoreProps['keystoreFile']
+                storeFile keystoreFilePath != null ? file(keystoreFilePath) : null
+                storePassword dogfoodKeystoreProps['storePassword'] ?: ""
+                keyAlias dogfoodKeystoreProps['keyAlias'] ?: ""
+                keyPassword dogfoodKeystoreProps['keyPassword'] ?: ""
+            }
+        }
     }
 
     buildTypes {
         debug {
+            versionNameSuffix "-debug"
+
             debuggable true
             multiDexEnabled true
             minifyEnabled false
             shrinkResources false
+
+            splits {
+                abi {
+                    enable !gradle.startParameter.taskNames.any { it.contains("Dogfood") }
+                    reset()
+                    include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+                    universalApk false
+                }
+            }
         }
 
+        // TODO research and fix this (probably after upgrade to AGP 9)
+        // debuggable enabled on minified flavor clashes with having minifyEnabled and shrinkResources enabled.
+        // Debuggable enabled has priority over the other flags, and those optimizations are going to be disabled.
         minified {
             debuggable true
             multiDexEnabled true
@@ -158,7 +189,7 @@ android {
         }
     }
 
-    flavorDimensions 'default'
+    flavorDimensions += 'default'
 
     productFlavors {
         local {
@@ -179,49 +210,6 @@ android {
             buildConfigField("String", "OLD_BUILD_TYPE", quote("debug"))
 
             buildConfigField("String", "LAPP_URL", quote("http://" + getLocalIp() + ":7080"))
-
-            signingConfig signingConfigs.debug
-        }
-
-        development {
-            // naming
-            applicationIdSuffix ".debug"
-            resValue "string", "app_name", "Muun (dev-remote)"
-
-            // external link configuration
-            configExternalLinks(owner, "dev.muun.io")
-
-            // server
-            houstonRemoteDev.each { key, value -> buildConfigField("String", key, quote(value)) }
-
-            // We need this in order to be backward compatible with the buildType field
-            // we use to send to the server. Eventually we can deprecate it
-            buildConfigField("String", "OLD_BUILD_TYPE", quote("developmentDebug"))
-
-            // Set empty LAPP_URL so the project builds
-            buildConfigField("String", "LAPP_URL", quote(""))
-
-            signingConfig signingConfigs.debug
-        }
-
-        staging {
-            // naming
-            versionNameSuffix "-" + commitTag()
-            applicationIdSuffix ".staging"
-            resValue "string", "app_name", "Muun (stg-remote)"
-
-            // external link configuration
-            configExternalLinks(owner, "stg.muun.io")
-
-            // server
-            houstonRemoteStg.each { key, value -> buildConfigField("String", key, quote(value)) }
-
-            // We need this in order to be backward compatible with the buildType field
-            // we use to send to the server. Eventually we can deprecate it
-            buildConfigField("String", "OLD_BUILD_TYPE", quote("staging"))
-
-            // Set empty LAPP_URL so the project builds
-            buildConfigField("String", "LAPP_URL", quote(""))
 
             signingConfig signingConfigs.debug
         }
@@ -270,10 +258,71 @@ android {
 
             buildConfigField("boolean", "PRODUCTION", "true")
         }
+
+        dogfood {
+            // naming
+            versionNameSuffix "-" + commitTag()
+            applicationIdSuffix ".internal.beta"
+            resValue "string", "app_name", "Muun (Dogfood)"
+
+            // external link configuration
+            configExternalLinks(owner, "muun.com")
+
+            // Production application class, which is interpolated into AndroidManifest.xml
+            manifestPlaceholders = [
+                    usseCleartextTraffic: 'false'
+            ]
+
+            // server
+            houstonRemotePrd.each { key, value -> buildConfigField("String", key, quote(value)) }
+
+            // We need this in order to be backward compatible with the buildType field
+            // we use to send to the server. Eventually we can deprecate it
+            buildConfigField("String", "OLD_BUILD_TYPE", quote("release"))
+
+            // Set empty LAPP_URL so the project builds
+            buildConfigField("String", "LAPP_URL", quote(""))
+
+            buildConfigField("boolean", "PRODUCTION", "true")
+
+            // App bundles with ABI split enabled
+            // To mimic what we do for prod "multi apk" builds
+            bundle {
+                language {
+                    // This property is set to true by default.
+                    // You can specify `false` to turn off
+                    // generating configuration APKs for language resources.
+                    // These resources are instead packaged with each base and
+                    // feature APK.
+                    // Continue reading below to learn about situations when an app
+                    // might change setting to `false`, otherwise consider leaving
+                    // the default on for more optimized downloads.
+                    enableSplit = false
+                }
+                density {
+                    // This property is set to true by default.
+                    enableSplit = false
+                }
+                abi {
+                    // This property is set to true by default.
+                    enableSplit = true
+                }
+            }
+
+            // Default Signing config. Overridden for release buildType, see androidComponents below
+            signingConfig signingConfigs.debug
+
+        }
     }
 
     sourceSets {
         prod.java.srcDirs = ['src/prod/java']
+
+        main {
+            proto {
+                srcDir "${project.rootDir}/libwallet/presentation/api"
+            }
+        }
 
         String sharedSourceTestDir = file("${project.rootDir}/android/apollo/src/test/java")
         String sharedResourceTestDir = file("${project.rootDir}/android/apollo/src/test/resources")
@@ -342,19 +391,74 @@ android {
 }
 
 ext {
+    // TODO this currently needs to match common's retrofit version. We should refactor to avoid
+    // this discipline on our part. We probably need to extract it to a constant in top-level gradle
+    version_retrofit = '2.5.0'
+    version_workmanager = '2.9.0'   // Next version upgrade requires bump minSdk to 21
     version_butterknife = '10.1.0'
     version_mockk = '1.13.7'    // Latest version targeting kotlin 1.8.20
     version_lifecycle = '2.6.2' // Upcoming versions require AGP 8.3.1
+    version_grpc = "1.57.2"         // This is ancient, but we're stuck until we bump minSdk to 21
 }
 
 dependencies {
+    api(project(':common')) {
+        // bitcoinj has a protobuf version that's really old
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+
     // modules
-    implementation project(':android:apollo')
     // We explictly include libwallet to workaround a limitation of module module builds with local deps
     // https://stackoverflow.com/a/63665094/550
-    api project(':android:libwallet')
+    implementation project(':android:libwallet')
 
+    // Logging:
     implementation 'org.slf4j:slf4j-nop:1.7.14'
+    implementation 'com.jakewharton.timber:timber:5.0.1'
+
+    // Money:
+    implementation 'org.javamoney:moneta-bp:1.0'
+    implementation 'org.zalando:jackson-datatype-money:0.12.0'
+
+    // Firebase:
+    // Import the Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:32.6.0')
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+
+    // Push Notifications:
+    implementation 'com.google.firebase:firebase-messaging'
+    // Debugging:
+    implementation 'com.google.firebase:firebase-crashlytics'
+    // Analytics: Enhance Crashlytics experience (real time crash-free users + breadcrumbs)
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // WorkManager: (see https://github.com/muun/muun/issues/5895)
+    // Guide: https://developer.android.com/topic/libraries/architecture/workmanager/migrating-fb
+    implementation "androidx.work:work-runtime:$version_workmanager" // api as needs to be init at app.OnCreate
+
+    // Networking:
+    implementation "com.squareup.retrofit2:retrofit:$version_retrofit"
+    implementation "com.squareup.retrofit2:converter-jackson:$version_retrofit"
+    implementation "com.squareup.retrofit2:adapter-rxjava:$version_retrofit"
+    implementation "com.squareup.retrofit2:converter-scalars:$version_retrofit"
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+
+    // Google APIs
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.api-client:google-api-client-android:2.7.0'
+    implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
+    implementation 'com.google.http-client:google-http-client-gson:1.45.0'
+
+    // Kotlin:
+    // Kotlin serialization runtime library. Note that while the plugin has version the same as
+    // the compiler one, runtime library has different coordinates, repository and versioning.
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
+
+    // Detect root devices (for error reports metadata and fraud control)
+    implementation 'com.scottyab:rootbeer-lib:0.1.0'
+
+    // Google Play Integrity
+    implementation 'com.google.android.play:integrity:1.1.0'
 
     // dev tools
     debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
@@ -364,9 +468,20 @@ dependencies {
     // debugImplementation because LeakCanary should only run in debug builds.
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 
+    implementation 'androidx.sqlite:sqlite-framework:2.0.1'
+
+    // ReactiveX:
+    implementation 'io.reactivex:rxjava:1.3.0'
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
+
+    // Dependency injection:
+    implementation "com.google.dagger:dagger:$global_version_dagger"
+    annotationProcessor "com.google.dagger:dagger-compiler:$global_version_dagger"
     kapt "com.google.dagger:dagger-compiler:$global_version_dagger"
 
-    // support library
+    // Android support:
+    implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
@@ -390,6 +505,12 @@ dependencies {
     // for WebView
     implementation 'androidx.webkit:webkit:1.1.0'
 
+    // Protobuf & grpc
+    api "io.grpc:grpc-protobuf-lite:$version_grpc"
+    api "io.grpc:grpc-stub:$version_grpc"
+    api "io.grpc:grpc-okhttp:$version_grpc"
+    api "io.grpc:grpc-android:$version_grpc"
+
     // ui
     kapt "com.jakewharton:butterknife-compiler:$version_butterknife"
     implementation "com.jakewharton:butterknife:$version_butterknife"
@@ -406,6 +527,11 @@ dependencies {
     // lifecycle helpers
     implementation 'frankiesardo:icepick:3.2.0'
     kapt 'frankiesardo:icepick-processor:3.2.0'
+
+    // Storage:
+    implementation 'com.squareup.sqlbrite3:sqlbrite:3.2.0'
+    implementation "com.squareup.sqldelight:android-driver:1.5.5"
+    implementation "com.squareup.sqldelight:rxjava2-extensions:1.5.5"
 
     // testing
     testImplementation 'org.mockito:mockito-core:2.8.47'
@@ -451,12 +577,27 @@ dependencies {
     implementation 'com.airbnb.android:lottie:3.5.0'
 }
 
-task start(type: Exec, dependsOn: 'assembleDebug') {
-    commandLine "${rootProject.rootDir}/tools/run-apollo.sh", "debug"
+configurations {
+    configureEach {
+        // Here is a fun thing: We have to stick to grpc version 1.57.2 because
+        // we support minSdk 19. Later versions require minSdk 21.
+        // But... We also use google-api-client-android version 2.7.0 which has
+        // a transitive dependency on a newer version of grpc-context. :/
+        // This forces the dependency resolution to prevent mixed versions from
+        // blowing up on runtime with a ClassNotFoundException.
+        // This entire block should be deleted when we move to minSdk 21.
+        resolutionStrategy {
+            force "io.grpc:grpc-core:1.57.2", "io.grpc:grpc-api:1.57.2"
+        }
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
 }
 
-task startStaging(type: Exec, dependsOn: 'assembleStaging') {
-    commandLine "${rootProject.rootDir}/tools/run-apollo.sh", "staging"
+// Yeap, this is the incantation required to override signingConfig ONLY for dogfoodRelease
+androidComponents {
+    onVariants(selector().withName(Pattern.compile(".*dogfoodRelease.*"))) { variant ->
+        variant.signingConfig?.setConfig(android.signingConfigs.dogfood)
+    }
 }
 
 android.applicationVariants.configureEach { variant ->
@@ -468,13 +609,19 @@ android.applicationVariants.configureEach { variant ->
             throw new GradleException("buildSuffix must be a number with 3 digits: '$buildVersionSuffix'")
         }
 
-        def abiVersionCodeMap = ["x86": 2, "x86_64": 3, "armeabi-v7a": 4, "arm64-v8a": 5]
+        def abiVersionCodeMap = ["dogfood": 1, "x86": 2, "x86_64": 3, "armeabi-v7a": 4, "arm64-v8a": 5]
         def abi = output.getFilter(com.android.build.OutputFile.ABI)
         def abiCode = 0
 
-        if (abi != null) {
+        if (variant.name.containsIgnoreCase('dogfood')) {
+            abiCode = 1
+        } else if (abi != null) {
             abiCode = abiVersionCodeMap.get(abi) ?: 0
         }
+
+        println "baseVersionCode: $baseVersionCode"
+        println "buildVersionSuffix: $buildVersionSuffix"
+        println "abiCode: $abiCode"
 
         output.versionCodeOverride = (baseVersionCode.toString() + buildVersionSuffix + abiCode.toString()) as int
 
@@ -484,9 +631,52 @@ android.applicationVariants.configureEach { variant ->
     }
 }
 
+// Custom build check to enforce a maximum versionName length. Houston has an arbitrary max length
+// of 40 chars for this and we sometimes add suffixes for dogfood app and/or debug builds.
+afterEvaluate {
+    def maxLength = 24
+    def versionName = android.defaultConfig.versionName?.toString() ?: ""
+
+    tasks.register("checkVersionNameLength") {
+        doLast {
+            if (versionName.length() > maxLength) {
+                throw new GradleException(
+                        "❌ versionName '${versionName}' exceeds ${maxLength} characters.\n" +
+                                "Houston has size limit for this."
+                )
+            }
+        }
+    }
+
+    tasks.named("preBuild").configure {
+        dependsOn("checkVersionNameLength")
+    }
+}
+
 apply plugin: 'com.google.gms.google-services' // Google Services plugin
 // We should delete this as soon as we can. google services plugin introduces a dependency strict
 // checking that checks against other projects deps too. There's a conflict with
 // com.google.errorprone:error_prone_annotations. This should be fixed whenever the android deps
 // bump the version of that lib.
 googleServices { disableVersionCheck = true }
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.29.3"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:$version_grpc"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java { option 'lite' }
+            }
+            task.plugins {
+                grpc { option 'lite' }
+            }
+        }
+    }
+}
