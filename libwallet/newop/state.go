@@ -887,7 +887,7 @@ func (s *ValidateLightningState) emitAnalysisOk(analysis *operation.PaymentAnaly
 
 	isOneConf := analysis.SwapFees.ConfirmationsNeeded > 0
 
-	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, totalFee.InSat)
+	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, analysis.FeeBumpInSat)
 
 	validated := &Validated{
 		Fee:      totalFee,
@@ -1045,7 +1045,7 @@ func (s *EditFeeState) CalculateFee(rateInSatsPerVByte float64) (*FeeState, erro
 		return nil, err
 	}
 
-	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, analysis.FeeTotalInSat)
+	feeBumpInfo := NewFeeBumpInfo(s.PaymentContext.feeBumpFunctionSet, analysis.FeeBumpInSat)
 
 	// TODO(newop): add targetblock to analysis result
 	switch analysis.Status {

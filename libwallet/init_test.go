@@ -1,6 +1,10 @@
 package libwallet
 
-import "os"
+import (
+	"os"
+
+	"github.com/muun/libwallet/app_provided_data"
+)
 
 func setup() {
 	dir, err := os.MkdirTemp("", "libwallet")
@@ -8,7 +12,7 @@ func setup() {
 		panic(err)
 	}
 
-	Init(&Config{
+	Init(&app_provided_data.Config{
 		DataDir: dir,
 	})
 }

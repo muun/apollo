@@ -12,7 +12,7 @@ import io.muun.apollo.data.external.Globals
 object StrictMode {
 
     fun init() {
-        if (Globals.INSTANCE.isDebugBuild) {
+        if (Globals.INSTANCE.isDebug) {
 
             // https://developer.android.com/reference/android/os/StrictMode.ThreadPolicy.Builder
             StrictMode.setThreadPolicy(

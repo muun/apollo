@@ -9,12 +9,13 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.isVisible
 import butterknife.BindView
-import io.muun.apollo.BuildConfig
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.domain.ClipboardManager
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.ACTIVE
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_ACTIVATE
@@ -38,10 +39,14 @@ import io.muun.apollo.presentation.ui.view.MuunIconButton
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 import io.muun.common.model.Currency
+import javax.inject.Inject
 
 open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView {
 
     private val REQUEST_NEW_PRIMARY_CURRENCY = 4
+
+    @Inject
+    lateinit var clipboardManager: ClipboardManager
 
     @BindView(R.id.settings_profile_picture)
     lateinit var muunPictureInput: MuunPictureInput
@@ -91,6 +96,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_version_code)
     lateinit var versionCode: TextView
 
+    @BindView(R.id.settings_feature_flag)
+    lateinit var featureFlagLabel: TextView
+
     /** Whether the loading dialog is currently on screen. Required due to limitations of
      * AlertDialogExtensions. It can't handle multiple dismissDialogs() calls prompted by
      * handleStates(). */
@@ -120,10 +128,16 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
 
-        if (Globals.INSTANCE.isDebugBuild) {
+        if (Globals.INSTANCE.isDebug) {
             // TEMP: code for Taproot QA:
 //            versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
             versionCode.setOnClickListener { presenter.openDebugPanel() }
+
+        } else if (Globals.INSTANCE.isDogfood) {
+            versionCode.setOnClickListener {
+                clipboardManager.copy("version", versionCode.text.toString())
+                showTextToast(getString(R.string.show_qr_copied))
+            }
         }
     }
 
@@ -154,6 +168,21 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         setUpGeneralSection(state.user, state.bitcoinUnit, state.exchangeRateWindow)
 
         bitcoinSettingsItem.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
+
+        // Helper code for internal builds
+        if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
+            var textForDisplay = ""
+            val featureFlagsForDisplay = state.features
+                .filter { it != MuunFeature.TAPROOT }
+                .filter { it != MuunFeature.TAPROOT_PREACTIVATION }
+                .filter { it != MuunFeature.EFFECTIVE_FEES_CALCULATION }
+
+            featureFlagsForDisplay.forEach { feature ->
+                textForDisplay += "$feature: ENABLED\n"
+            }
+            featureFlagLabel.visibility = View.VISIBLE
+            featureFlagLabel.text = textForDisplay
+        }
     }
 
     override fun setNightMode(mode: NightMode) {
@@ -346,7 +375,10 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             val muunDialog = MuunDialog.Builder()
                 .title(R.string.settings_logout_explanation_title)
                 .message(R.string.settings_logout_explanation_description)
-                .positiveButton(R.string.settings_logout_explanation_action, null)
+                .positiveButton(
+                    R.string.settings_logout_explanation_action,
+                    resources.getColor(R.color.red)
+                )
                 .build()
             showDialog(muunDialog)
         } else {
@@ -359,11 +391,17 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
      */
     private fun showLogoutDialog() {
         val muunDialog = MuunDialog.Builder()
-            .layout(R.layout.dialog_custom_layout2)
+            .layout(R.layout.dialog_custom_layout)
             .title(R.string.settings_logout_alert_title)
             .message(R.string.settings_logout_alert_body)
-            .positiveButton(R.string.settings_logout_alert_yes) { presenter.logoutUser() }
-            .negativeButton(R.string.settings_logout_alert_no, null)
+            .positiveButton(
+                R.string.settings_logout_alert_yes,
+                resources.getColor(R.color.red)
+            ) { presenter.logoutUser() }
+            .negativeButton(
+                R.string.settings_logout_alert_no,
+                resources.getColor(R.color.text_secondary_color)
+            )
             .build()
         showDialog(muunDialog)
     }
@@ -379,10 +417,13 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     override fun showCantDeleteNonEmptyWalletDialog() {
         val muunDialog = MuunDialog.Builder()
-            .layout(R.layout.dialog_custom_layout2)
+            .layout(R.layout.dialog_custom_layout)
             .title(R.string.settings_delete_wallet_explanation_title)
             .message(R.string.settings_delete_wallet_explanation_description)
-            .positiveButton(R.string.settings_delete_wallet_explanation_action, null)
+            .positiveButton(
+                R.string.settings_delete_wallet_explanation_action,
+                resources.getColor(R.color.red)
+            )
             .build()
         showDialog(muunDialog)
     }
@@ -398,11 +439,17 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         }
 
         val muunDialog = MuunDialog.Builder()
-            .layout(R.layout.dialog_custom_layout2)
+            .layout(R.layout.dialog_custom_layout)
             .title(R.string.settings_delete_wallet_alert_title)
             .message(messageResId)
-            .positiveButton(R.string.settings_delete_wallet_alert_yes) { presenter.deleteWallet() }
-            .negativeButton(R.string.settings_delete_wallet_alert_no, null)
+            .positiveButton(
+                R.string.settings_delete_wallet_alert_yes,
+                resources.getColor(R.color.red)
+            ) { presenter.deleteWallet() }
+            .negativeButton(
+                R.string.settings_delete_wallet_alert_no,
+                resources.getColor(R.color.text_secondary_color)
+            )
             .build()
         showDialog(muunDialog)
     }
@@ -413,13 +460,17 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     }
 
     private fun getVersionForDisplay(): String {
-        val versionName = BuildConfig.VERSION_NAME
-        return if (BuildConfig.PRODUCTION && BuildConfig.RELEASE) {
+        val versionName = Globals.INSTANCE.versionName
+        return if (Globals.INSTANCE.isDogfood) {
+            "$versionName (${Globals.INSTANCE.versionCode})"
+        } else if (Globals.INSTANCE.isProduction && Globals.INSTANCE.isRelease) {
             versionName
         } else {
-            val commit = BuildConfig.COMMIT
-            val branchName = BuildConfig.BRANCH
-            "$versionName (${BuildConfig.FLAVOR}-${BuildConfig.BUILD_TYPE}-$commit-$branchName)"
+            val commit = Globals.INSTANCE.commit
+            val branchName = Globals.INSTANCE.branch
+            val flavor = Globals.INSTANCE.flavor
+            val buildType = Globals.INSTANCE.buildType
+            "$versionName ($flavor-$buildType-$commit-$branchName)"
         }
     }
 

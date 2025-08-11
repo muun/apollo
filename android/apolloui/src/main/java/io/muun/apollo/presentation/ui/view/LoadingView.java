@@ -1,17 +1,17 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.LoadingViewBinding;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -23,14 +23,12 @@ public class LoadingView extends MuunView {
             .addBoolean(R.attr.showTitle, LoadingView::showTitle)
             .build();
 
-    @BindView(R.id.loading_view_spinner)
-    ProgressBar progressBar;
+    private LoadingViewBinding binding;
 
-    @BindView(R.id.loading_view_title)
-    TextView title;
-
-    @BindView(R.id.loading_view_desc)
-    TextView description;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return LoadingViewBinding::bind;
+    }
 
     public LoadingView(Context context) {
         super(context);
@@ -47,6 +45,7 @@ public class LoadingView extends MuunView {
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        binding = (LoadingViewBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
@@ -56,29 +55,29 @@ public class LoadingView extends MuunView {
     }
 
     public void setTitle(@StringRes int resId) {
-        title.setText(resId);
+        binding.loadingViewTitle.setText(resId);
     }
 
     public void setTitle(@NotNull CharSequence text) {
-        title.setText(text);
-        progressBar.setVisibility(View.VISIBLE);
+        binding.loadingViewTitle.setText(text);
+        binding.loadingViewSpinner.setVisibility(View.VISIBLE);
     }
 
     public void setDescription(@NotNull CharSequence text) {
-        description.setText(text);
-        description.setVisibility(View.VISIBLE);
+        binding.loadingViewDesc.setText(text);
+        binding.loadingViewDesc.setVisibility(View.VISIBLE);
     }
 
     public void showTitle(Boolean showText) {
-        title.setVisibility(showText ? View.VISIBLE : View.GONE);
+        binding.loadingViewTitle.setVisibility(showText ? View.VISIBLE : View.GONE);
     }
 
     public void tintProgressBar(@ColorInt int color) {
-        DrawableCompat.setTint(progressBar.getIndeterminateDrawable(), color);
+        DrawableCompat.setTint(binding.loadingViewSpinner.getIndeterminateDrawable(), color);
     }
 
     public void resetViewState() {
-        description.setVisibility(View.GONE);
+        binding.loadingViewDesc.setVisibility(View.GONE);
         tintProgressBar(ContextCompat.getColor(getContext(), R.color.blue));
     }
 }

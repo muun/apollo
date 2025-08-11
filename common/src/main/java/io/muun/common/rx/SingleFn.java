@@ -1,7 +1,7 @@
 package io.muun.common.rx;
 
 import io.muun.common.Optional;
-import io.muun.common.api.error.ErrorCode;
+import io.muun.common.api.error.BaseErrorCode;
 import io.muun.common.exception.HttpException;
 import io.muun.common.utils.ExceptionUtils;
 
@@ -62,7 +62,6 @@ public final class SingleFn {
             } else {
                 return Single.error(error);
             }
-
         });
     }
 
@@ -71,7 +70,7 @@ public final class SingleFn {
      * replaced by the error returned when calling replacer with the original error.
      */
     public static <T> Single.Transformer<T, T> replaceHttpException(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Throwable> replacer) {
 
         return onHttpExceptionResumeNext(
@@ -84,7 +83,7 @@ public final class SingleFn {
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static <T> Single.Transformer<T, T> onHttpExceptionResumeNext(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Single<T>> resumeFunction) {
 
         return single -> single.onErrorResumeNext(error -> {
@@ -100,7 +99,6 @@ public final class SingleFn {
             } else {
                 return Single.error(error);
             }
-
         });
     }
 }

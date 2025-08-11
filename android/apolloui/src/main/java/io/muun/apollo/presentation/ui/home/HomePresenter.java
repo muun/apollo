@@ -22,15 +22,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.os.Bundle;
 import icepick.State;
-import libwallet.Libwallet;
 import rx.Observable;
 
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.validation.constraints.NotNull;
-
-import static io.muun.apollo.presentation.ui.home.HomeActivity.SHOW_WELCOME_TO_MUUN;
 
 @PerActivity
 public class HomePresenter extends BasePresenter<HomeView> implements HomeFragmentParentPresenter {
@@ -132,7 +129,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
     private void setUpTaprootCelebrationDialog() {
         final Observable<?> taprootDialogObs = Observable.combineLatest(
                 userSel.watchPendingTaprootCelebration(),
-                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watchTaproot(),
 
                 (isCelebPending, status) -> {
                     if (!isCelebPending && status == UserActivatedFeatureStatus.PREACTIVATED) {
@@ -197,6 +194,7 @@ public class HomePresenter extends BasePresenter<HomeView> implements HomeFragme
         // ActivityManager.
         // For more info check out: https://stackoverflow.com/a/41574485/901465
         final boolean hasSeenWelcomeToMuun = showWelcomeToMuun.getSeen();
-        return view.getArgumentsBundle().getBoolean(SHOW_WELCOME_TO_MUUN) && !hasSeenWelcomeToMuun;
+        final Bundle argsBundle = view.getArgumentsBundle();
+        return argsBundle.getBoolean(HomeActivity.SHOW_WELCOME_TO_MUUN) && !hasSeenWelcomeToMuun;
     }
 }

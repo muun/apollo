@@ -1,6 +1,5 @@
 package io.muun.apollo.presentation.app;
 
-import io.muun.apollo.BuildConfig;
 import io.muun.apollo.R;
 import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
@@ -15,9 +14,11 @@ import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
+import io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
 import io.muun.apollo.presentation.ui.feedback.email.FeedbackActivity;
+import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment.Flow;
 import io.muun.apollo.presentation.ui.high_fees.HighFeesExplanationActivity;
 import io.muun.apollo.presentation.ui.home.HomeActivity;
@@ -27,6 +28,7 @@ import io.muun.apollo.presentation.ui.lnurl.withdraw.LnUrlWithdrawActivity;
 import io.muun.apollo.presentation.ui.lnurl.withdraw.confirm.LnUrlWithdrawConfirmActivity;
 import io.muun.apollo.presentation.ui.migration.MigrationActivity;
 import io.muun.apollo.presentation.ui.new_operation.NewOperationActivity;
+import io.muun.apollo.presentation.ui.nfc.NfcReaderActivity;
 import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
@@ -59,13 +61,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
 import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
-
-import static io.muun.apollo.presentation.ui.fragments.need_recovery_code.NeedRecoveryCodeFragment.FLOW;
-import static io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity.ActionType.REQUEST_RECOVERY_CODE_SETUP;
 
 
 /**
@@ -173,11 +173,23 @@ public class Navigator {
      */
     public void navigateToDebugPanel(@NotNull Context context) {
 
-        if (!Globals.INSTANCE.isDebugBuild() || BuildConfig.PRODUCTION) {
+        if (!Globals.INSTANCE.isDebug() || Globals.INSTANCE.isProduction()) {
             return; // Line of Last Defense, avoid showing DebugPanel when not intended
         }
 
         final Intent intent = DebugPanelActivity.getStartActivityIntent(context);
+
+        // No animation between activities for now
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+
+        context.startActivity(intent);
+    }
+
+    /**
+     * Takes the user to the diagnostic screen.
+     */
+    public void navigateToDiagnosticMode(Context context) {
+        final Intent intent = DiagnosticActivity.Companion.getStartActivityIntent(context);
 
         // No animation between activities for now
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -517,10 +529,11 @@ public class Navigator {
      */
     public void navigateToMissingRecoveryCode(@NotNull Context context, Flow flow) {
         final Bundle arguments = new Bundle();
-        arguments.putString(FLOW, flow.name());
+        arguments.putString(NeedRecoveryCodeFragment.FLOW, flow.name());
 
+        final var actionType = V2SingleActionActivity.ActionType.REQUEST_RECOVERY_CODE_SETUP;
         final Intent intent = V2SingleActionActivity
-                .getIntent(context, REQUEST_RECOVERY_CODE_SETUP, arguments)
+                .getIntent(context, actionType, arguments)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
         context.startActivity(intent);
@@ -637,5 +650,21 @@ public class Navigator {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
         context.startActivity(intent);
+    }
+
+    /**
+     * Navigates to NFC Reader activity ready to read a tag.
+     *
+     * @param context the caller context from which animate this.
+     * @param activityLauncher the launcher for result that's going to
+     *                         retrieve the status
+     */
+    public void navigateToNfcReaderActivityForResult(
+            @NotNull Context context,
+            ActivityResultLauncher<Intent> activityLauncher
+    ) {
+        activityLauncher.launch(
+                NfcReaderActivity.Companion.getStartActivityIntent(context)
+        );
     }
 }

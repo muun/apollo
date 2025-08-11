@@ -5,11 +5,11 @@ import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.Presenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.utils.PresenterProvider
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 @PerActivity
-class PersistentPresenterExtension @Inject constructor(): ActivityExtension() {
+class PersistentPresenterExtension @Inject constructor() : ActivityExtension() {
 
     companion object {
         const val PERSISTENT_PRESENTER_ID = "__persistentPresenterId"

@@ -23,7 +23,6 @@
             android:paddingStart="@dimen/muun_button_layout_button_box_padding"
             android:paddingEnd="@dimen/muun_button_layout_button_box_padding"
             android:paddingBottom="@dimen/muun_button_layout_button_box_padding"
-            android:orientation="vertical"
-            android:background="@drawable/muun_button_layout_bg" />
+            android:orientation="vertical" />
 
 </FrameLayout>

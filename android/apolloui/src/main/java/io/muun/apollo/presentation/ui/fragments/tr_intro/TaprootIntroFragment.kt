@@ -35,8 +35,8 @@ class TaprootIntroFragment : FlowIntroFragment<
         val dialog = MuunDialog.Builder()
             .title(R.string.tr_setup_intro_abort_title)
             .message(R.string.tr_setup_intro_abort_desc)
-            .positiveButton(R.string.leave, Action0 { presenter.abortIntroduction() })
-            .negativeButton(R.string.stay, null)
+            .positiveButton(R.string.leave) { presenter.abortIntroduction() }
+            .negativeButton(R.string.stay)
             .build()
 
         showDialog(dialog)

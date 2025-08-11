@@ -29,21 +29,21 @@ public class ShakeToDebugExtension extends ActivityExtension {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Globals.INSTANCE.isDebugBuild()) {
+        if (Globals.INSTANCE.isDebug()) {
             initShakeDetection();
         }
     }
 
     @Override
     public void onResume() {
-        if (Globals.INSTANCE.isDebugBuild()) {
+        if (Globals.INSTANCE.isDebug()) {
             resumeShakeDetection();
         }
     }
 
     @Override
     public void onPause() {
-        if (Globals.INSTANCE.isDebugBuild()) {
+        if (Globals.INSTANCE.isDebug()) {
             pauseShakeDetection();
         }
     }

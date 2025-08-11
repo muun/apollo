@@ -21,6 +21,11 @@ const (
 	EncodedKeyLengthLegacy = 136
 )
 
+const (
+	KeySerializationVersion2 = 2
+	KeySerializationVersion3 = 3
+)
+
 type ChallengePrivateKey struct {
 	key *btcec.PrivateKey
 }
@@ -112,12 +117,56 @@ func (k *ChallengePrivateKey) DecryptKey(decodedInfo *EncryptedPrivateKeyInfo, n
 func DecodeEncryptedPrivateKey(encodedKey string) (*EncryptedPrivateKeyInfo, error) {
 	reader := bytes.NewReader(base58.Decode(encodedKey))
 	version, err := reader.ReadByte()
+
 	if err != nil {
 		return nil, fmt.Errorf("decrypting key: %w", err)
 	}
-	if version != 2 {
-		return nil, fmt.Errorf("decrypting key: found key version %v, expected 2", version)
+
+	if version == KeySerializationVersion2 {
+		return decodeEncryptedPrivateKeyV2(reader, encodedKey)
 	}
+
+	if version == KeySerializationVersion3 {
+		return decodeEncryptedPrivateKeyV3(reader)
+	}
+
+	return nil, fmt.Errorf("unrecognized key version %v", version)
+}
+
+func decodeEncryptedPrivateKeyV3(reader *bytes.Reader) (*EncryptedPrivateKeyInfo, error) {
+
+	rawPubEph := make([]byte, serializedPublicKeyLength)
+	ciphertext := make([]byte, 64)
+	recoveryCodeSalt := make([]byte, 8)
+
+	n, err := reader.Read(rawPubEph)
+	if err != nil || n != serializedPublicKeyLength {
+		return nil, errors.New("decrypting key: failed to read pubeph")
+	}
+
+	n, err = reader.Read(ciphertext)
+	if err != nil || n != 64 {
+		return nil, errors.New("decrypting key: failed to read ciphertext")
+	}
+
+	n, err = reader.Read(recoveryCodeSalt)
+
+	if err != nil || n != 8 {
+		return nil, errors.New("decrypting key: failed to read recoveryCodeSalt")
+	}
+
+	result := &EncryptedPrivateKeyInfo{
+		Version:      KeySerializationVersion3,
+		Birthday:     0, //Keys v3 doesn't contain birthday since it was useless.
+		EphPublicKey: hex.EncodeToString(rawPubEph),
+		CipherText:   hex.EncodeToString(ciphertext),
+		Salt:         hex.EncodeToString(recoveryCodeSalt),
+	}
+
+	return result, nil
+}
+
+func decodeEncryptedPrivateKeyV2(reader *bytes.Reader, encodedKey string) (*EncryptedPrivateKeyInfo, error) {
 
 	birthdayBytes := make([]byte, 2)
 	rawPubEph := make([]byte, serializedPublicKeyLength)
@@ -152,7 +201,7 @@ func DecodeEncryptedPrivateKey(encodedKey string) (*EncryptedPrivateKeyInfo, err
 	}
 
 	result := &EncryptedPrivateKeyInfo{
-		Version:      int(version),
+		Version:      KeySerializationVersion2,
 		Birthday:     int(birthday),
 		EphPublicKey: hex.EncodeToString(rawPubEph),
 		CipherText:   hex.EncodeToString(ciphertext),

@@ -59,4 +59,20 @@ public class ChallengePublicKeyTest {
 
         assertThat(passwordPublicKey.verify(data, signedData)).isTrue();
     }
+
+    /**
+     * This test is in sync with challenge_keys_test.go#TestChecksum. The idea is to use the same
+     * input data, so we can assert that a checksum generated in Java has the same value as a
+     * checksum generated in go.
+     */
+    @Test
+    public void getChecksum() {
+        final ChallengePublicKey publicKey = new ChallengePublicKey(
+                serializedPublicKey,
+                salt,
+                version
+        );
+
+        assertThat(publicKey.getChecksum()).isEqualTo("6d2c70f7530e96a6");
+    }
 }

@@ -1,21 +1,22 @@
 package io.muun.apollo.presentation.ui.settings.edit_password
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.StartPasswordChangeFragmentBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.getStyledString
-import io.muun.apollo.presentation.ui.view.MuunButton
 
 class StartPasswordChangeFragment : SingleFragment<StartPasswordChangePresenter>() {
 
-    @BindView(R.id.change_password_start_explanation)
-    lateinit var explanation: TextView
+    private val binding: StartPasswordChangeFragmentBinding
+        get() = getBinding() as StartPasswordChangeFragmentBinding
 
-    @BindView(R.id.change_password_start)
-    lateinit var startButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return StartPasswordChangeFragmentBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
@@ -26,17 +27,21 @@ class StartPasswordChangeFragment : SingleFragment<StartPasswordChangePresenter>
     }
 
     override fun initializeUi(view: View) {
-        explanation.text = getStyledString(R.string.edit_password_explanation)
+        with(binding) {
+            changePasswordStartExplanationTitle.text =
+                getString(R.string.edit_password_explanation_title)
+            changePasswordStartExplanation.text =
+                getStyledString(R.string.edit_password_explanation)
+            changePasswordStart.setOnClickListener {
+                changePasswordStart.isEnabled =
+                    false // avoid double tap while preparing next Fragment
+                presenter.start()
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        startButton.isEnabled = true
-    }
-
-    @OnClick(R.id.change_password_start)
-    fun onStartButtonClick() {
-        startButton.isEnabled = false // avoid double tap while preparing next Fragment
-        presenter.start()
+        binding.changePasswordStart.isEnabled = true
     }
 }

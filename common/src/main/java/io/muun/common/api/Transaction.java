@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,9 +23,6 @@ public class Transaction {
     @Nullable // nullable just for retrocompat.
     public Long feeInSat;
 
-    @Nullable // Null if transaction is incoming or is not in the mempool.
-    public Set<DescendantFeesJson> inMempoolDescendantFees; // excluding this one.
-
     @Nullable // Null if transaction is incoming.
     public List<SizeForAmountJson> spentOutputs;
 
@@ -44,13 +40,11 @@ public class Transaction {
                        Boolean isReplaceableByFee,
                        @Nullable Long sizeInVbytes,
                        @Nullable Long feeInSat,
-                       @Nullable Set<DescendantFeesJson> inMempoolDescendantFees,
                        @Nullable List<SizeForAmountJson> spentOutputs) {
 
         this.hash = hash;
         this.confirmations = confirmations;
         this.isReplaceableByFee = isReplaceableByFee;
-        this.inMempoolDescendantFees = inMempoolDescendantFees;
         this.feeInSat = feeInSat;
         this.sizeInVbytes = sizeInVbytes;
         this.spentOutputs = spentOutputs;

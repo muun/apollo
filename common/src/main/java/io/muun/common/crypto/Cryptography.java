@@ -12,6 +12,7 @@ import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.io.ByteArrayInputStream;
@@ -21,12 +22,15 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -328,5 +332,26 @@ public final class Cryptography {
         private SecretKey generateSecret(String algorithm) throws NoSuchAlgorithmException {
             return super.engineGenerateSecret(algorithm);
         }
+    }
+
+    /**
+     * Create a random ephemeral key pair in the bitcoin curve.
+     */
+    public static KeyPair createEphemeralKeyPair() {
+
+        final KeyPairGenerator kpg;
+
+        try {
+            // Using SpongyCastle's class directly, without java.security/javax.crypto security
+            // providers system, to avoid issues with proguard discarding them.
+            kpg = new KeyPairGeneratorSpi.ECDH();
+
+            kpg.initialize(new ECGenParameterSpec("secp256k1"), RandomGenerator.getSecureRandom());
+
+        } catch (GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
+
+        return kpg.generateKeyPair();
     }
 }

@@ -1,0 +1,25 @@
+[package]
+name = "plonky2-cosigning-key-validation"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "cosigning_key_validation"
+path = "src/lib.rs"
+
+[features]
+std = []
+
+[dependencies]
+anyhow = { version = "1.0.40", default-features = false }
+plonky2 = { version = "1.0.2" }
+plonky2_bytes = {path="../plonky2-bytes"}
+plonky2_u32 = {path="../plonky2-u32"}
+plonky2_ecdsa = { path = "../plonky2-ecdsa" }
+plonky2_precomputed_windowed_mul = {path="../plonky2-precomputed-windowed-mul"}
+plonky2_bitcoin_hpke = { path="../plonky2-bitcoin-hpke"}
+hex = "0.4.3"
+log = "0.4.25"
+
+[dev-dependencies]
+env_logger = "0.10.2"

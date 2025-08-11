@@ -68,9 +68,7 @@ abstract class MuunView : FrameLayout,
     /**
      * Reserved property for View Binding use.
      */
-    @Suppress("PropertyName")
-    protected var _binding: ViewBinding? = null
-        private set
+    private var _binding: ViewBinding? = null
 
     protected val root: ViewGroup
         get() = getChildAt(0) as ViewGroup
@@ -216,6 +214,8 @@ abstract class MuunView : FrameLayout,
         // Do not propagate default behavior to children, since we'll handle this ourselves.
         dispatchThawSelfOnly(container)
     }
+
+    protected fun getBinding(): ViewBinding? = _binding
 
     protected fun <T : View> findViewsByTag(tag: String): List<T> {
         val results: MutableList<T> = LinkedList()

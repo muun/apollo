@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         style="@style/muun_item">
 
     <io.muun.apollo.presentation.ui.view.ProfilePictureView
             style="@style/muun_item_icon"
-            android:id="@+id/home_operations_item_profile_picture"
+            android:id="@+id/image"
             tools:src="@drawable/profile" />
 
     <LinearLayout
@@ -23,14 +22,14 @@
 
             <TextView
                     style="@style/muun_item_title"
-                    android:id="@+id/home_operations_item_title"
+                    android:id="@+id/title"
                     android:maxLines="1"
                     android:ellipsize="end"
                     tools:text="Mr. Foo sent you" />
 
             <TextView
                     style="@style/muun_item_title_badge"
-                    android:id="@+id/home_operations_item_text_amount"
+                    android:id="@+id/amount"
                     tools:text="0.000014 BTC" />
 
         </LinearLayout>
@@ -43,14 +42,14 @@
 
             <TextView
                     style="@style/muun_item_subtitle"
-                    android:id="@+id/home_operations_item_text_description"
+                    android:id="@+id/description"
                     android:maxLines="1"
                     android:ellipsize="end"
                     tools:text="A very long description that should be ellipsized" />
 
             <TextView
                     style="@style/muun_item_subtitle_badge"
-                    android:id="@+id/home_operations_item_text_time"
+                    android:id="@+id/time"
                     tools:text="12:15 PM" />
 
         </LinearLayout>

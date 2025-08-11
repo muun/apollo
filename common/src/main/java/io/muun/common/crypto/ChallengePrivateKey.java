@@ -5,6 +5,7 @@ import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Hashes;
 import io.muun.common.utils.Preconditions;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
@@ -101,19 +102,25 @@ public class ChallengePrivateKey {
      * but is clarified since it might make the key serialization before encryption deffer from the
      * one after decryption.
      */
-    public PrivateKey decryptPrivateKey(String cypherText, NetworkParameters networkParameters) {
+    @VisibleForTesting
+    public PrivateKey decryptPrivateKey(
+            String cypherText,
+            NetworkParameters networkParameters
+    ) {
 
-        final MuunEncryptedPrivateKey encryptedKey = MuunEncryptedPrivateKey.fromBase58(cypherText);
+        final MuunEncryptedPrivateKey encryptedKey = MuunEncryptedPrivateKey.fromBase58(
+                cypherText
+        );
 
-        Preconditions.checkArgument(Arrays.equals(encryptedKey.recoveryCodeSalt, salt));
+        Preconditions.checkArgument(Arrays.equals(encryptedKey.getRecoveryCodeSalt(), salt));
 
         // use the least significant bytes of the ephemeral public key as deterministic IV
         final byte[] iv = Cryptography.extractDeterministicIvFromPublicKeyBytes(
-                encryptedKey.ephemeralPublicKey
+                encryptedKey.getEphemeralPublicKey()
         );
 
         final PublicKey ephemeralPublicKey = Encodings.bytesToEcPublicKey(
-                encryptedKey.ephemeralPublicKey
+                encryptedKey.getEphemeralPublicKey()
         );
 
         // use ECDH to compute a shared secret
@@ -124,7 +131,7 @@ public class ChallengePrivateKey {
 
         // decrypt the plaintext with AES
         final byte[] plainText = Cryptography.aesCbcNoPadding(
-                encryptedKey.cypherText,
+                encryptedKey.getCypherText(),
                 iv,
                 sharedSecret,
                 false

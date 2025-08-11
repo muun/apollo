@@ -1,7 +1,10 @@
 package io.muun.apollo.presentation.ui.fragments.sync;
 
+import io.muun.apollo.R;
 import io.muun.apollo.domain.action.session.SyncApplicationDataAction;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
+import io.muun.apollo.domain.errors.InitialSyncError;
+import io.muun.apollo.domain.errors.InitialSyncNetworkError;
 import io.muun.apollo.domain.model.LoginWithRc;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.SignupStep;
@@ -100,6 +103,22 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
                 });
 
         subscribeTo(observable);
+    }
+
+    @Override
+    public void handleError(Throwable error) {
+        // TODO: this should be done with switch but java version doesn't support Pattern Matching
+        if (error instanceof InitialSyncNetworkError || error instanceof InitialSyncError) {
+            super.reportError(error);
+
+            view.showErrorDialog(
+                    getContext().getString(R.string.network_error_message),
+                    null,
+                    () -> navigator.navigateToLauncher(getContext())
+            );
+        } else {
+            super.handleError(error);
+        }
     }
 
     private boolean canReadContacts() {

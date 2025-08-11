@@ -24,6 +24,7 @@
 
     <!-- Special cases -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_horizontal_margin_l">32dp</dimen>
 
     <dimen name="qr_code_size">274sp</dimen>
 

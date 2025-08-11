@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.base;
 
+import io.muun.apollo.data.nfc.api.NfcSession;
 import io.muun.apollo.presentation.ui.activity.extension.OverflowMenuExtension;
 
 import android.content.Intent;
@@ -10,6 +11,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import org.jetbrains.annotations.NotNull;
 import rx.functions.Action1;
 
 import java.util.ArrayList;
@@ -135,5 +137,9 @@ public abstract class ExtensibleActivity extends AppCompatActivity {
         for (ActivityExtension extension : extensions) {
             action.call(extension);
         }
+    }
+
+    public void onNewNfcSession(@NotNull NfcSession nfcSession) {
+        // Override to handle NFC session
     }
 }

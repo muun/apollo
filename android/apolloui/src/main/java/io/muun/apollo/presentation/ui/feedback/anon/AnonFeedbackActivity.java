@@ -1,20 +1,19 @@
 package io.muun.apollo.presentation.ui.feedback.anon;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.AnonFeedbackActivityBinding;
 import io.muun.apollo.presentation.app.Email;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.common.Optional;
 
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
-import butterknife.BindColor;
-import butterknife.BindView;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
 import javax.validation.constraints.NotNull;
@@ -37,17 +36,14 @@ public class AnonFeedbackActivity
                 .putExtra(SUPPORT_ID, supportId.orElse(null));
     }
 
-    @BindView(R.id.header)
-    MuunHeader header;
+    private AnonFeedbackActivityBinding binding() {
+        return (AnonFeedbackActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.anon_feedback_explanation)
-    HtmlTextView explanation;
-
-    @BindView(R.id.anon_feedback_open_email_app)
-    MuunButton openEmailAppButton;
-
-    @BindColor(R.color.text_secondary_color)
-    int textSecondaryColor;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return AnonFeedbackActivityBinding::inflate;
+    }
 
     @Override
     protected void inject() {
@@ -62,16 +58,19 @@ public class AnonFeedbackActivity
     @Override
     protected void initializeUi() {
         super.initializeUi();
+        final var binding = binding();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.feedback_title);
-        header.setNavigation(Navigation.BACK);
+        binding.header.attachToActivity(this);
+        binding.header.showTitle(R.string.feedback_title);
+        binding.header.setNavigation(Navigation.BACK);
 
-        explanation.setTextColor(textSecondaryColor); // Setting attr in xml isn't working
-        explanation.setText(getExplanationBase());
+        binding.anonFeedbackExplanation.setTextColor(
+                getResources().getColor(R.color.text_secondary_color)
+        ); // Setting attr in xml isn't working
+        binding.anonFeedbackExplanation.setText(getExplanationBase());
 
-        openEmailAppButton.setEnabled(Email.INSTANCE.hasEmailAppInstalled(this));
-        openEmailAppButton.setOnClickListener(v -> presenter.openEmailClient());
+        binding.anonFeedbackOpenEmailApp.setEnabled(Email.INSTANCE.hasEmailAppInstalled(this));
+        binding.anonFeedbackOpenEmailApp.setOnClickListener(v -> presenter.openEmailClient());
     }
 
     @Override
@@ -85,7 +84,7 @@ public class AnonFeedbackActivity
             text = getExplanationBase();
         }
 
-        explanation.setText(text);
+        binding().anonFeedbackExplanation.setText(text);
     }
 
     private CharSequence getExplanationBase() {

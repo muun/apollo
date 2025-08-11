@@ -3,119 +3,84 @@ package io.muun.common.crypto;
 import io.muun.common.utils.Preconditions;
 import io.muun.common.utils.internal.Base58;
 
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+public interface MuunEncryptedPrivateKey {
+    int PUBLIC_KEY_SIZE = 33;
 
-public class MuunEncryptedPrivateKey {
+    enum Version {
+        V2,
+        V3;
 
-    public static final byte CURRENT_VERSION = 0x2;
-    private static final int VERSION_BYTE_SIZE = 1;
-    private static final int BIRTHDAY_BYTE_SIZE = 2;
-    public static final int PUBLIC_KEY_SIZE = 33;
-    private static final int CYPHER_TEXT_SIZE = 64;
-    private static final int MAX_TWO_BYTES = 0xFFFF;
+        static Version fromEncryptedPrivateKey(String serializedPrivateKey) {
+            final byte[] decodedBytes = Base58.decode(serializedPrivateKey);
+            final int firstByte = decodedBytes[0];
 
-    public final byte version;
-    public final long birthday;
-    public final byte[] ephemeralPublicKey;
-    public final byte[] cypherText;
-    public final byte[] recoveryCodeSalt;
+            Preconditions.checkArgument(firstByte == 3 || firstByte == 2);
 
-    /**
-     * Deserialize encrypted private key from base 58.
-     */
-    public static MuunEncryptedPrivateKey fromBase58(String serialization) {
+            if (firstByte == 3) {
+                return V3;
+            }
 
-        return fromBytes(Base58.decode(serialization));
-    }
-
-    /**
-     * Deserialize encrypted private key from a byte array.
-     */
-    public static MuunEncryptedPrivateKey fromBytes(byte[] bytes) {
-
-        try {
-
-            final ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN);
-
-            final byte version;
-            final long birthday;
-            final byte[] publicKey = new byte[PUBLIC_KEY_SIZE];
-            final byte[] cypherText = new byte[CYPHER_TEXT_SIZE];
-
-            version = buffer.get();
-            birthday = buffer.getShort() & MAX_TWO_BYTES;
-            buffer.get(publicKey);
-            buffer.get(cypherText);
-
-            final byte[] salt = new byte[buffer.remaining()];
-
-            buffer.get(salt);
-
-            return new MuunEncryptedPrivateKey(
-                    version,
-                    birthday,
-                    publicKey,
-                    cypherText,
-                    salt
-            );
-
-        } catch (BufferUnderflowException e) {
-            throw new IllegalArgumentException(e);
+            return V2;
         }
     }
 
+    String toBase58();
+
+    byte[] getRecoveryCodeSalt();
+
+    byte[] getEphemeralPublicKey();
+
+    byte[] getCypherText();
+
+    byte getVersion();
+
     /**
-     * Constructor.
+     * Factory MuunEncryptedPrivateKey abstracting the caller from the encryptedKey version.
      */
-    public MuunEncryptedPrivateKey(
-            byte version,
+    @SuppressWarnings("checkstyle:MissingSwitchDefault") // We want to have a compiling error here
+    // if a new value is added.
+    static MuunEncryptedPrivateKey create(
+            Version version,
             long birthday,
             byte[] ephemeralPublicKey,
             byte[] cypherText,
-            byte[] recoveryCodeSalt) {
+            byte[] recoveryCodeSalt
+    ) {
+        switch (version) {
+            case V2:
+                return new MuunEncryptedPrivateKeyV2(
+                        birthday,
+                        ephemeralPublicKey,
+                        cypherText,
+                        recoveryCodeSalt
+                );
+            case V3:
+                return new MuunEncryptedPrivateKeyV3(
+                        ephemeralPublicKey,
+                        cypherText,
+                        recoveryCodeSalt
+                );
+        }
 
-        Preconditions.checkArgument(birthday <= MAX_TWO_BYTES);
-        Preconditions.checkArgument(ephemeralPublicKey.length == PUBLIC_KEY_SIZE);
-        Preconditions.checkArgument(cypherText.length == CYPHER_TEXT_SIZE);
-
-        this.version = version;
-        this.birthday = birthday;
-        this.ephemeralPublicKey = ephemeralPublicKey;
-        this.cypherText = cypherText;
-        this.recoveryCodeSalt = recoveryCodeSalt;
+        throw new IllegalStateException();
     }
 
     /**
-     * Serialized encrypted private key to a byte array.
+     * Factory MuunEncryptedPrivateKey abstracting the caller from the encryptedKey version.
      */
-    public byte[] toBytes() {
+    @SuppressWarnings("checkstyle:MissingSwitchDefault") // We want to have a compiling error here
+    // if a new value is added.
+    static MuunEncryptedPrivateKey fromBase58(
+            String serialization
+    ) {
+        final Version version = Version.fromEncryptedPrivateKey(serialization);
+        switch (version) {
+            case V2:
+                return MuunEncryptedPrivateKeyV2.fromBase58(serialization);
+            case V3:
+                return MuunEncryptedPrivateKeyV3.fromBase58(serialization);
+        }
 
-        final int length =
-                  VERSION_BYTE_SIZE
-                + BIRTHDAY_BYTE_SIZE
-                + ephemeralPublicKey.length
-                + cypherText.length
-                + recoveryCodeSalt.length;
-
-        final ByteBuffer buffer = ByteBuffer.allocate(length).order(ByteOrder.BIG_ENDIAN);
-
-        buffer.put(version);
-        buffer.putShort((short) birthday);
-        buffer.put(ephemeralPublicKey);
-        buffer.put(cypherText);
-        buffer.put(recoveryCodeSalt);
-
-        Preconditions.checkState(!buffer.hasRemaining());
-
-        return buffer.array();
-    }
-
-    /**
-     * Serialized encrypted private key to base 58.
-     */
-    public String toBase58() {
-        return Base58.encode(toBytes());
+        throw new IllegalStateException();
     }
 }

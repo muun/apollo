@@ -42,9 +42,18 @@ type keyProvider struct {
 }
 
 func (k keyProvider) WithPath(path string) (*btcec.PrivateKey, error) {
-	indexes := hdpath.MustParse(path).IndexesFrom(hdpath.MustParse(k.path))
+	parsedPath, err := hdpath.Parse(path)
+	if err != nil {
+		return nil, err
+	}
 
-	var err error
+	parsedTargetPath, err := hdpath.Parse(k.path)
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := parsedPath.IndexesFrom(parsedTargetPath)
+
 	key := k.key
 	for _, index := range indexes {
 		var modifier uint32 = 0
@@ -61,9 +70,18 @@ func (k keyProvider) WithPath(path string) (*btcec.PrivateKey, error) {
 }
 
 func (k keyProvider) WithPathUsingHardenedBug(path string) (*btcec.PrivateKey, error) {
-	indexes := hdpath.MustParse(path).IndexesFrom(hdpath.MustParse(k.path))
+	parsedPath, err := hdpath.Parse(path)
+	if err != nil {
+		return nil, err
+	}
 
-	var err error
+	parsedTargetPath, err := hdpath.Parse(k.path)
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := parsedPath.IndexesFrom(parsedTargetPath)
+
 	key := k.key
 	for _, index := range indexes {
 		var modifier uint32 = 0

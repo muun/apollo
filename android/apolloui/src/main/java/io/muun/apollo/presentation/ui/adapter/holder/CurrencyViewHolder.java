@@ -1,29 +1,21 @@
 package io.muun.apollo.presentation.ui.adapter.holder;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.VItemCurrencyBinding;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.CurrencyViewModel;
 import io.muun.apollo.presentation.ui.helper.MoneyHelper;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.model.Currency;
 
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import butterknife.BindView;
 
 public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
 
-    @BindView(R.id.currency_item_logo)
-    ImageView logo;
-
-    @BindView(R.id.currency_item_label)
-    TextView label;
-
-    @BindView(R.id.currency_item_selected_icon)
-    ImageView selectedIcon;
+    private final VItemCurrencyBinding binding;
 
     public CurrencyViewHolder(View view) {
         super(view);
+        binding = VItemCurrencyBinding.bind(view);
     }
 
     @Override
@@ -34,24 +26,24 @@ public class CurrencyViewHolder extends BaseViewHolder<CurrencyViewModel> {
         final String name = currency.getName();
 
         if (currency.getFlag() != null) {
-            label.setText(String.format("%s %s (%s)", currency.getFlag(), name, code));
-            logo.setVisibility(View.GONE);
+            binding.label.setText(String.format("%s %s (%s)", currency.getFlag(), name, code));
+            binding.logo.setVisibility(View.GONE);
 
         } else {
 
             if (currency.getCode().equals(Currency.BTC.getCode())
                     || currency.getCode().equals("SAT")) {
-                logo.setImageResource(R.drawable.btc_logo);
+                binding.logo.setImageResource(R.drawable.btc_logo);
 
             } else {
-                logo.setImageResource(R.drawable.default_flag);
+                binding.logo.setImageResource(R.drawable.default_flag);
             }
 
-            label.setText(String.format(" %s (%s)", name, code));
-            logo.setVisibility(View.VISIBLE);
+            binding.label.setText(String.format(" %s (%s)", name, code));
+            binding.logo.setVisibility(View.VISIBLE);
         }
 
-        selectedIcon.setVisibility(viewModel.isSelected ? View.VISIBLE : View.GONE);
-        UiUtils.setTint(selectedIcon, R.color.blue);
+        binding.selectedIcon.setVisibility(viewModel.isSelected ? View.VISIBLE : View.GONE);
+        UiUtils.setTint(binding.selectedIcon, R.color.blue);
     }
 }

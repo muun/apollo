@@ -10,9 +10,9 @@ import org.bitcoinj.core.NetworkParameters;
 public enum TransactionStatus {
 
     /**
-     * Newly created transactions that hasn't been broadcasted yet.
+     * Newly created transaction that hasn't been broadcasted yet.
      */
-    CREATED,
+    PREPARED,
 
     /**
      * Transaction has already been broadcasted, but hasn't confirmed yet.
@@ -67,8 +67,8 @@ public enum TransactionStatus {
 
         switch (status) {
 
-            case CREATED:
-                return CREATED;
+            case PREPARED:
+                return PREPARED;
 
             case BROADCASTED:
                 return BROADCASTED;
@@ -106,8 +106,8 @@ public enum TransactionStatus {
 
         switch (this) {
 
-            case CREATED:
-                return TransactionStatusJson.CREATED;
+            case PREPARED:
+                return TransactionStatusJson.PREPARED;
 
             case BROADCASTED:
                 return TransactionStatusJson.BROADCASTED;

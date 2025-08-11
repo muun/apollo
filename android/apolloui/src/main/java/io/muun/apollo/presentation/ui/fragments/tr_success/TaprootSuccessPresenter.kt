@@ -11,7 +11,6 @@ import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.ui.base.Presenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.fragments.single_action.SingleActionPresenter
-import libwallet.Libwallet
 import rx.Observable
 import javax.inject.Inject
 
@@ -27,7 +26,7 @@ class TaprootSuccessPresenter @Inject constructor(
         Observable
             .combineLatest(
                 blockchainHeightSel.watchBlocksToTaproot(),
-                userActivatedFeatureStatusSel.watch(Libwallet.getUserActivatedFeatureTaproot()),
+                userActivatedFeatureStatusSel.watchTaproot(),
                 this::combineState
             )
             .first() // a ton of indirect state dependencies, they just complicate things. Bye.

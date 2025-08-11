@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-        tools:viewBindingIgnore="true"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -8,7 +7,7 @@
         android:orientation="vertical">
 
     <View
-            android:id="@+id/section_header_item_divider"
+            android:id="@+id/divider"
             style="@style/divider"
             android:layout_marginTop="7dp"
             android:layout_marginBottom="7dp" />
@@ -20,7 +19,7 @@
             android:padding="16dp">
 
         <TextView
-                android:id="@+id/section_header_item_label"
+                android:id="@+id/label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"

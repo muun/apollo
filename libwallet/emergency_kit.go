@@ -24,6 +24,7 @@ type EKInput struct {
 	FirstFingerprint   string
 	SecondEncryptedKey string
 	SecondFingerprint  string
+	RcChecksum         string
 }
 
 // EKOutput with the html as string and the verification code
@@ -136,8 +137,8 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 		BirthdayBlock:     secondKey.Birthday,
 		EncryptedKeys:     keys,
 		OutputDescriptors: descriptors,
+		RcChecksum:        ekParams.RcChecksum,
 	}
-
 	return metadata, nil
 }
 

@@ -14,7 +14,7 @@ public class Error {
 
     public StatusCode status;
 
-    public ErrorCode errorCode;
+    public BaseErrorCode errorCode;
 
     public String message;
 
@@ -34,14 +34,14 @@ public class Error {
         this.clientSession = sessionUuid;
     }
 
-    public Error(ErrorCode errorCode) {
+    public Error(BaseErrorCode errorCode) {
         this.requestId = RandomGenerator.getPositiveLong();
         this.status = errorCode.getStatus();
         this.errorCode = errorCode;
         this.message = errorCode.getDescription();
     }
 
-    public Error(ErrorCode errorCode, String message) {
+    public Error(BaseErrorCode errorCode, String message) {
         this(errorCode);
         this.developerMessage = message;
     }

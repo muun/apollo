@@ -5,12 +5,15 @@
 * [OpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) >= 8
 * [Golang](https://golang.org/dl/) >= 1.16
 * [Android NDK](https://developer.android.com/ndk/downloads) >= 21
+* [Docker](https://docs.docker.com/engine/install/) >= 28
 
 ### Instructions
 
 1. Ensure the environment variable `ANDROID_NDK_HOME` points to your NDK installation directory.
-2. Run:
+2. Make sure docker is up and running
+3. Run:
     ```shell
+    libwallet/librs/makelibs.sh
     tools/bootstrap-gomobile.sh
     tools/libwallet-android.sh
     ./gradlew :android:apolloui:assembleProdRelease

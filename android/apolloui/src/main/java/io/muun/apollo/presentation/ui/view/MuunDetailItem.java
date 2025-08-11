@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunDetailItemBinding;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
 import android.content.Context;
@@ -9,12 +10,13 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.annotation.Nullable;
 
@@ -27,20 +29,12 @@ public class MuunDetailItem extends MuunView {
             .addRefJava(R.attr.icon, MuunDetailItem::setIcon)
             .build();
 
-    @BindView(R.id.operation_detail_item_icon_title)
-    ImageView titleIcon;
+    private MuunDetailItemBinding binding;
 
-    @BindView(R.id.operation_detail_item_text_title)
-    TextView title;
-
-    @BindView(R.id.operation_detail_item_text_content)
-    TextView description;
-
-    @BindView(R.id.operation_detail_item_icon_frame)
-    ViewGroup iconFrame;
-
-    @BindView(R.id.operation_detail_item_icon)
-    ImageView icon;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return MuunDetailItemBinding::bind;
+    }
 
     private CustomLinkMovementMethod linkMovementMethod;
 
@@ -66,20 +60,25 @@ public class MuunDetailItem extends MuunView {
         super.setUp(context, attrs);
 
         linkMovementMethod = new CustomLinkMovementMethod();
-        description.setMovementMethod(linkMovementMethod);
 
+        binding = (MuunDetailItemBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
     public void setTitle(CharSequence titleText) {
-        title.setText(titleText);
+        binding.operationDetailItemTextTitle.setText(titleText);
     }
 
     public void setTitleSize(float size) {
-        title.setTextSize(size);
+        binding.operationDetailItemTextTitle.setTextSize(size);
     }
 
+    /**
+     * Sets the icon in the title.
+     * @param resId resource id
+     */
     public void setTitleIcon(@DrawableRes int resId) {
+        final ImageView titleIcon = binding.operationDetailItemIcon;
         if (resId != 0) {
             titleIcon.setImageResource(resId);
             titleIcon.setVisibility(VISIBLE);
@@ -90,7 +89,7 @@ public class MuunDetailItem extends MuunView {
     }
 
     public void setTitleIconTint(@ColorRes int colorId) {
-        UiUtils.setTint(titleIcon, colorId);
+        UiUtils.setTint(binding.operationDetailItemIcon, colorId);
     }
 
     /**
@@ -113,21 +112,28 @@ public class MuunDetailItem extends MuunView {
             return listener.onLongClick(view);
         };
 
+        final TextView description = binding.operationDetailItemTextContent;
+
         description.setLongClickable(true);
         description.setOnLongClickListener(wrappedListener);
+
+        final TextView title = binding.operationDetailItemTextTitle;
 
         title.setLongClickable(true);
         title.setOnLongClickListener(wrappedListener);
     }
 
     public void setOnIconClickListener(OnClickListener listener) {
-        iconFrame.setOnClickListener(listener);
+        binding.operationDetailItemIconFrame.setOnClickListener(listener);
     }
 
     /**
      * Set and show description (if not null/empty).
      */
     public void setDescription(CharSequence descriptionText) {
+        final TextView description = binding.operationDetailItemTextContent;
+
+        description.setMovementMethod(linkMovementMethod);
         if (!TextUtils.isEmpty(descriptionText)) {
             description.setText(descriptionText);
             description.setVisibility(VISIBLE);
@@ -135,18 +141,20 @@ public class MuunDetailItem extends MuunView {
     }
 
     public void hideDescription() {
-        description.setVisibility(GONE);
+        binding.operationDetailItemTextContent.setVisibility(GONE);
     }
 
     private void setMaxLines(Integer maxLines) {
+        final TextView description = binding.operationDetailItemTextContent;
+
         description.setMaxLines(maxLines);
         description.setEllipsize(TextUtils.TruncateAt.END);
         description.setMovementMethod(null); // LinkMovementMethod not compat with ellipse/maxLines
     }
 
     public void setIcon(@DrawableRes int resId) {
-        icon.setImageResource(resId);
-        iconFrame.setVisibility(VISIBLE);
+        binding.operationDetailItemIcon.setImageResource(resId);
+        binding.operationDetailItemIconFrame.setVisibility(VISIBLE);
     }
 
     /**

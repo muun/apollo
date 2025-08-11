@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/muun/libwallet"
+	"github.com/muun/libwallet/app_provided_data"
 	"github.com/muun/libwallet/operation"
 	"github.com/muun/libwallet/walletdb"
 	"github.com/shopspring/decimal"
@@ -76,7 +77,7 @@ func createInitialContext() *InitialPaymentContext {
 
 func setupStateTests(t *testing.T) {
 
-	libwallet.Init(&libwallet.Config{
+	libwallet.Init(&app_provided_data.Config{
 		DataDir:               t.TempDir(),
 		FeatureStatusProvider: TestBackendActivatedFeatureStatusProvider{},
 	})

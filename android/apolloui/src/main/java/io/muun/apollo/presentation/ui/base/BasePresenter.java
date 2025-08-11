@@ -18,9 +18,9 @@ import io.muun.apollo.domain.errors.ExpiredSessionError;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.errors.TooManyRequestsError;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.domain.model.report.CrashReport;
-import io.muun.apollo.domain.model.report.CrashReportBuilder;
 import io.muun.apollo.domain.model.report.EmailReport;
+import io.muun.apollo.domain.model.report.ErrorReport;
+import io.muun.apollo.domain.model.report.ErrorReportBuilder;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
@@ -266,14 +266,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             Timber.e(error);
         }
 
-        final CrashReport errorReport = CrashReportBuilder.INSTANCE.build(error);
-
-        analytics.report(new AnalyticsEvent.E_ERROR(
-                AnalyticsEvent.ERROR_TYPE.GENERIC,
-                error.getClass().getSimpleName(),
-                error.getLocalizedMessage(),
-                errorReport.printErrorForAnalytics()
-        ));
+        reportError(error);
 
         // Our current error handling logic is this:
         // - If error is one of our known fatal error -> handleFatalError()
@@ -282,6 +275,22 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         if (!handleFatalError(error) && !handleNonFatalError(error)) {
             handleUnknownError(error);
         }
+    }
+
+    /**
+     * Reports the unknown error using analytics.
+     *
+     * @param error the caught error
+     */
+    protected void reportError(Throwable error) {
+        final ErrorReport errorReport = ErrorReportBuilder.INSTANCE.build(error);
+
+        analytics.report(new AnalyticsEvent.E_ERROR(
+                AnalyticsEvent.ERROR_TYPE.GENERIC,
+                error.getClass().getSimpleName(),
+                error.getLocalizedMessage(),
+                errorReport.printErrorForAnalytics()
+        ));
     }
 
     /**
@@ -509,7 +518,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      */
     private void showErrorReportDialog(Throwable error, boolean standalone) {
 
-        final CrashReport errorReport = CrashReportBuilder.INSTANCE.build(error);
+        final ErrorReport errorReport = ErrorReportBuilder.INSTANCE.build(error);
 
         analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(
                 error.getClass().getSimpleName(),
@@ -521,9 +530,10 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                 .layout(R.layout.dialog_custom_layout)
                 .positiveButton(
                         R.string.error_send_report_dialog_yes,
+                        0,
                         () -> sendErrorReport(error)
                 )
-                .negativeButton(R.string.cancel, null);
+                .negativeButton(R.string.cancel, 0, null);
 
         if (standalone) {
             builder.title(R.string.error_send_report_dialog_title);
@@ -541,7 +551,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     @Override
     public void sendErrorReport(Throwable error) {
 
-        final CrashReport report = CrashReportBuilder.INSTANCE.build(error);
+        final ErrorReport report = ErrorReportBuilder.INSTANCE.build(error);
         analytics.attachAnalyticsMetadata(report);
 
         final EmailReport emailReport = emailReportManager
@@ -575,9 +585,10 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                     .message(R.string.error_copy_report_dialog_body)
                     .positiveButton(
                             R.string.error_copy_report_dialog_yes,
+                            0,
                             () -> clipboardManager.copy("Muun Error Report", emailReport.getBody())
                     )
-                    .negativeButton(R.string.cancel, null)
+                    .negativeButton(R.string.cancel, 0, null)
                     .build();
 
             view.showDialog(muunDialog);

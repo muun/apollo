@@ -27,8 +27,8 @@ public final class Hashes {
     /**
      * Compute the HMAC-SHA512 authentication code of the given message.
      *
-     * @param key The secret key.
      * @param message The array containing the bytes to authenticate.
+     * @param key The secret key.
      * @return the keyed-hash message authentication code.
      */
     @NotNull
@@ -40,8 +40,8 @@ public final class Hashes {
     /**
      * Compute the HMAC-SHA512 authentication code of the given message.
      *
-     * @param key The secret key.
      * @param message The array containing the bytes to authenticate.
+     * @param key The secret key.
      * @param offset The offset within the array of the bytes to authenticate.
      * @param length The number of bytes to authenticate.
      * @return the keyed-hash message authentication code.
@@ -65,8 +65,8 @@ public final class Hashes {
     /**
      * Compute the HMAC-SHA256 authentication code of the given message.
      *
-     * @param key The secret key.
      * @param message The array containing the bytes to authenticate.
+     * @param key The secret key.
      * @return the keyed-hash message authentication code.
      */
     @NotNull

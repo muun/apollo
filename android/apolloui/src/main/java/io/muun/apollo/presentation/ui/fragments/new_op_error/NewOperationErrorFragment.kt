@@ -1,12 +1,13 @@
 package io.muun.apollo.presentation.ui.fragments.new_op_error
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
-import butterknife.OnClick
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.NewOperationErrorFragmentBinding
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.utils.locale
@@ -41,20 +42,12 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         }
     }
 
-    @BindView(R.id.title)
-    lateinit var title: TextView
+    private val binding: NewOperationErrorFragmentBinding
+        get() = getBinding() as NewOperationErrorFragmentBinding
 
-    @BindView(R.id.description)
-    lateinit var description: TextView
-
-    @BindView(R.id.insuffient_funds_extras)
-    lateinit var insufficientFundsExtras: View
-
-    @BindView(R.id.insuffient_funds_extras_amount)
-    lateinit var insufficientFundsAmount: TextView
-
-    @BindView(R.id.insuffient_funds_extras_balance)
-    lateinit var insufficientFundsBalance: TextView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return NewOperationErrorFragmentBinding::inflate
+    }
 
     @State
     lateinit var btcUnit: BitcoinUnit
@@ -72,16 +65,18 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
     }
 
     override fun setErrorType(errorType: NewOperationErrorType, errorState: ErrorState?) {
-        title.setText(getTitleRes(errorType))
-        description.text = getDescription(errorType, errorState)
-        description.setOnClickListener {
+        with(binding) {
+            title.setText(getTitleRes(errorType))
+            description.text = getDescription(errorType, errorState)
+            description.setOnClickListener {
 
-            if (errorType in arrayOf(INVALID_SWAP, INVOICE_NO_ROUTE, SWAP_FAILED)) {
-                presenter!!.contactSupport()
-                finishActivity()
+                if (errorType in arrayOf(INVALID_SWAP, INVOICE_NO_ROUTE, SWAP_FAILED)) {
+                    presenter!!.contactSupport()
+                    finishActivity()
 
-            } else if (errorType == GENERIC) {
-                presenter!!.sendErrorReport()
+                } else if (errorType == GENERIC) {
+                    presenter!!.sendErrorReport()
+                }
             }
         }
     }
@@ -90,18 +85,25 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         btcUnit = bitcoinUnit
     }
 
-    override fun setBalanceErrorState(state: BalanceErrorState) {
+    override fun initializeUi(view: View?) {
+        binding.exit.setOnClickListener {
+            presenter?.goHomeInDefeat()
+        }
+    }
 
+    override fun setBalanceErrorState(state: BalanceErrorState) {
         val minBalance = state.totalAmount.adapt()
         val balance = state.balance.adapt()
 
-        insufficientFundsAmount.text = MoneyHelper.formatLongMonetaryAmount(
-            minBalance, btcUnit, requireContext().locale()
-        )
-        insufficientFundsBalance.text = MoneyHelper.formatLongMonetaryAmount(
-            balance, btcUnit, requireContext().locale()
-        )
-        insufficientFundsExtras.visibility = View.VISIBLE
+        with(binding) {
+            insufficientFundsExtrasAmount.text = MoneyHelper.formatLongMonetaryAmount(
+                minBalance, btcUnit, requireContext().locale()
+            )
+            insufficientFundsExtrasBalance.text = MoneyHelper.formatLongMonetaryAmount(
+                balance, btcUnit, requireContext().locale()
+            )
+            insufficientFundsExtras.visibility = View.VISIBLE
+        }
     }
 
     private fun getTitleRes(errorType: NewOperationErrorType): Int =
@@ -151,13 +153,8 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         }
     }
 
-    @OnClick(R.id.exit)
-    fun onExitClick() {
-        presenter!!.goHomeInDefeat()
-    }
-
     override fun onBackPressed(): Boolean {
-        onExitClick()
+        presenter?.goHomeInDefeat()
         return true
     }
 }

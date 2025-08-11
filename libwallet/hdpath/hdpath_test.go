@@ -81,6 +81,46 @@ func TestParsingAndValidation(t *testing.T) {
 	}
 }
 
+func TestPrefixRecognition(t *testing.T) {
+	type args struct {
+		path   string
+		prefix string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "empty prefix on empty path", args: args{path: "", prefix: ""}, want: true},
+		{name: "empty prefix on non-empty path", args: args{path: "m", prefix: ""}, want: true},
+		{name: "long prefix on empty path", args: args{path: "", prefix: "m/schema:1'/recovery:1'"}, want: false},
+		{name: "long prefix on short path", args: args{path: "m/schema:1'", prefix: "m/schema:1'/recovery:1'"}, want: false},
+		{name: "same prefix and path", args: args{path: "m/0'/1'/4", prefix: "m/0'/1'/4"}, want: true},
+		{name: "mismatched prefix at start", args: args{path: "m/44'/1'/2", prefix: "m/45'/1'/2"}, want: false},
+		{name: "mismatched prefix at end", args: args{path: "m/44'/1'/2", prefix: "m/44'/1'/5"}, want: false},
+		{name: "comments in path and prefix", args: args{path: "m/schema:1'/recovery:1'", prefix: "m/schema:1'"}, want: true},
+		{name: "comments in path, not in prefix", args: args{path: "m/schema:1'/recovery:1'", prefix: "m/1'"}, want: true},
+		{name: "comments in prefix, not in path", args: args{path: "m/1'/1'", prefix: "m/schema:1'"}, want: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prefix, err := Parse(tt.args.prefix)
+			if err != nil {
+				t.Fatalf("unexpected Parse() error = %v", err)
+			}
+			path, err := Parse(tt.args.path)
+			if err != nil {
+				t.Fatalf("unexpected Parse() error = %v", err)
+			}
+
+			if path.HasPrefix(prefix) != tt.want {
+				t.Errorf("path.HasPrefix() = %v, with path=%v, prefix=%v", !tt.want, tt.args.path, tt.args.prefix)
+			}
+		})
+	}
+}
+
 func TestHDPathRejectsImplicitlyHardenedPath(t *testing.T) {
 	// This test is built weird cause the call we want to test doesn't return an error but instead
 	// panics. We _can_ "catch" a panic via this defer-recover construction. If the call doesn't

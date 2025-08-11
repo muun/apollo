@@ -3,15 +3,9 @@ package io.muun.common.api.error;
 import io.muun.common.net.HttpStatus;
 import io.muun.common.utils.Deprecated;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.Range;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static io.muun.common.utils.Preconditions.checkState;
-
-public enum ErrorCode {
+public enum ErrorCode implements BaseErrorCode {
 
     // http errors (do not use these, they are just a fallback)
     HTTP_NOT_ACCEPTABLE(
@@ -417,18 +411,8 @@ public enum ErrorCode {
             2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
     );
 
-    private static final Map<Integer, ErrorCode> errorCodeMap = new HashMap<>();
-
     static {
-        for (ErrorCode errorCode : values()) {
-
-            checkState(
-                    !errorCodeMap.containsKey(errorCode.code),
-                    "Codes must be unique (" + errorCode.getCode() + ")"
-            );
-
-            errorCodeMap.put(errorCode.code, errorCode);
-        }
+        BaseErrorCode.registerErrorCodes(Range.lessThan(8_200), Range.atLeast(100_000));
     }
 
     private final int code;
@@ -454,20 +438,5 @@ public enum ErrorCode {
 
     public String getDescription() {
         return description;
-    }
-
-    @JsonCreator
-    public static ErrorCode fromValue(int value) {
-
-        if (!errorCodeMap.containsKey(value)) {
-            throw new IllegalArgumentException("Invalid error code: " + value);
-        }
-
-        return errorCodeMap.get(value);
-    }
-
-    @JsonValue
-    public int toValue() {
-        return this.code;
     }
 }

@@ -11,7 +11,8 @@
     <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingBottom="24dp">
 
         <RelativeLayout
                 android:id="@+id/settings_header_section"
@@ -210,10 +211,23 @@
                 android:id="@+id/settings_version_code"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:text="Version 53.3" />
+
+        <TextView
+                android:id="@+id/settings_feature_flag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:textColor="@color/red"
+                android:textSize="14sp"
+                android:lineSpacingExtra="8sp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="XXX Feature Flag is enabled."/>
 
     </LinearLayout>
 

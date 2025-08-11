@@ -1,19 +1,18 @@
 package io.muun.apollo.presentation.ui.feedback.email;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.FeedbackActivityBinding;
 import io.muun.apollo.domain.model.FeedbackCategory;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.LayoutInflater;
 import androidx.annotation.NonNull;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 import javax.validation.constraints.NotNull;
 
@@ -34,17 +33,14 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     // NOTE: keep this value at or below Houston's DB limit.
     private static final int MAX_FEEDBACK_CONTENT_LENGTH = 10000;
 
-    @BindView(R.id.header)
-    MuunHeader header;
+    private FeedbackActivityBinding binding() {
+        return (FeedbackActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.feedback_explanation)
-    TextView feedbackExplanation;
-
-    @BindView(R.id.feedback_content)
-    MuunTextInput feedbackContent;
-
-    @BindView(R.id.submit)
-    MuunButton submit;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return FeedbackActivityBinding::inflate;
+    }
 
     @Override
     protected void inject() {
@@ -59,28 +55,31 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     @Override
     protected void initializeUi() {
         super.initializeUi();
+        final var binding = binding();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.feedback_title);
-        header.setNavigation(Navigation.EXIT);
+        binding.header.attachToActivity(this);
+        binding.header.showTitle(R.string.feedback_title);
+        binding.header.setNavigation(Navigation.EXIT);
 
-        feedbackContent.setOnChangeListener(this, ignored -> onFeedbackContentChange());
-        feedbackContent.setMaxLength(MAX_FEEDBACK_CONTENT_LENGTH);
+        binding.feedbackContent.setOnChangeListener(this, ignored -> onFeedbackContentChange());
+        binding.feedbackContent.setMaxLength(MAX_FEEDBACK_CONTENT_LENGTH);
 
         onFeedbackContentChange();
 
-        submit.setOnClickListener(v -> presenter.submit(feedbackContent.getText().toString()));
+        binding.submit.setOnClickListener(v ->
+                presenter.submit(binding.feedbackContent.getText().toString())
+        );
     }
 
     @Override
     public void setExplanation(@NotNull String explanation) {
-        feedbackExplanation.setText(explanation);
+        binding().feedbackExplanation.setText(explanation);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        feedbackContent.requestFocusInput();
+        binding().feedbackContent.requestFocusInput();
     }
 
     @Override
@@ -92,8 +91,9 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     @Override
     public void setLoading(boolean isLoading) {
         if (!isFinishing()) {
-            submit.setLoading(isLoading);
-            feedbackContent.setEnabled(!isLoading);
+            final var binding = binding();
+            binding.submit.setLoading(isLoading);
+            binding.feedbackContent.setEnabled(!isLoading);
         }
     }
 
@@ -104,7 +104,8 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     }
 
     private void onFeedbackContentChange() {
-        final String text = feedbackContent.getText().toString();
-        submit.setEnabled(text.length() > 0 && text.length() < MAX_FEEDBACK_CONTENT_LENGTH);
+        final var binding = binding();
+        final String text = binding.feedbackContent.getText().toString();
+        binding.submit.setEnabled(text.length() > 0 && text.length() < MAX_FEEDBACK_CONTENT_LENGTH);
     }
 }

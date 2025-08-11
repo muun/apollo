@@ -1,9 +1,11 @@
 package io.muun.apollo.presentation.ui.fragments.enter_email
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentCreateEmailBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -11,23 +13,15 @@ import io.muun.apollo.presentation.ui.fragments.create_email_help.CreateEmailHel
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getStyledString
-import io.muun.apollo.presentation.ui.view.HtmlTextView
-import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunTextInput
 
 class CreateEmailFragment : SingleFragment<CreateEmailPresenter>(), CreateEmailView {
 
-    @BindView(R.id.create_email_subtitle)
-    lateinit var subtitle: TextView
+    private val binding: FragmentCreateEmailBinding
+        get() = getBinding() as FragmentCreateEmailBinding
 
-    @BindView(R.id.create_email_input)
-    lateinit var emailInput: MuunTextInput
-
-    @BindView(R.id.create_email_action)
-    lateinit var confirmButton: MuunButton
-
-    @BindView(R.id.create_email_used_help)
-    lateinit var alreadyUsedLink: HtmlTextView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentCreateEmailBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
@@ -38,18 +32,30 @@ class CreateEmailFragment : SingleFragment<CreateEmailPresenter>(), CreateEmailV
     }
 
     override fun initializeUi(view: View) {
-        StyledStringRes(requireContext(), R.string.create_email_subtitle, this::onSubtitleLinkClick)
-            .toCharSequence()
-            .let(subtitle::setText)
+        with(binding) {
+            val styledCreateEmailSubtitle = StyledStringRes(
+                requireContext(),
+                R.string.create_email_subtitle,
+                this@CreateEmailFragment::onSubtitleLinkClick,
+            )
+            styledCreateEmailSubtitle.toCharSequence()
+                .let(createEmailSubtitle::setText)
 
-        emailInput.setOnChangeListener(this) { validateEmailInput() }
-        validateEmailInput() // in case it was already set by previous state
+            createEmailInput.setOnChangeListener(this@CreateEmailFragment) {
+                validateEmailInput()
+            }
+            validateEmailInput() // in case it was already set by previous state
 
-        confirmButton.setOnClickListener { presenter.submitEmail(emailInput.text.toString()) }
+            createEmailAction.setOnClickListener { presenter.submitEmail(createEmailInput.text.toString()) }
 
-        StyledStringRes(requireContext(), R.string.create_email_help_link, this::onHelpLinkClick)
-            .toCharSequence()
-            .let(alreadyUsedLink::setText)
+            val styledHelpEmail = StyledStringRes(
+                requireContext(),
+                R.string.create_email_help_link,
+                this@CreateEmailFragment::onHelpLinkClick,
+            )
+            styledHelpEmail.toCharSequence()
+                .let(createEmailUsedHelp::setText)
+        }
     }
 
     override fun setUpHeader() {
@@ -65,17 +71,17 @@ class CreateEmailFragment : SingleFragment<CreateEmailPresenter>(), CreateEmailV
     }
 
     override fun setLoading(isLoading: Boolean) {
-        confirmButton.setLoading(isLoading)
-        emailInput.isEnabled = !isLoading
+        binding.createEmailAction.setLoading(isLoading)
+        binding.createEmailInput.isEnabled = !isLoading
     }
 
     override fun setEmail(email: String?) {
-        emailInput.setText(email ?: "")
+        binding.createEmailInput.setText(email ?: "")
     }
 
     override fun setEmailError(error: UserFacingError?) {
-        emailInput.setError(error)
-        alreadyUsedLink.visibility = if (error is EmailAlreadyUsedError) View.VISIBLE else View.GONE
+        binding.createEmailInput.setError(error)
+        binding.createEmailUsedHelp.visibility = if (error is EmailAlreadyUsedError) View.VISIBLE else View.GONE
     }
 
     override fun onBackPressed(): Boolean {
@@ -96,6 +102,6 @@ class CreateEmailFragment : SingleFragment<CreateEmailPresenter>(), CreateEmailV
 
     private fun validateEmailInput() {
         setEmailError(null)
-        confirmButton.isEnabled = presenter.isValidEmail(emailInput.text.toString())
+        binding.createEmailAction.isEnabled = presenter.isValidEmail(binding.createEmailInput.text.toString())
     }
 }

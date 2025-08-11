@@ -1,6 +1,5 @@
 package io.muun.apollo.presentation.app
 
-import android.os.Build
 import io.muun.apollo.BuildConfig
 import io.muun.apollo.data.external.Globals
 import io.muun.common.bitcoinj.NetworkParametersHelper
@@ -14,8 +13,11 @@ class GlobalsImpl : Globals() {
     override val applicationId: String
         get() = BuildConfig.APPLICATION_ID
 
-    override val isDebugBuild: Boolean
+    override val isDebug: Boolean
         get() = BuildConfig.DEBUG
+
+    override val isProduction: Boolean
+        get() = BuildConfig.PRODUCTION
 
     override val buildType: String
         get() = BuildConfig.BUILD_TYPE
@@ -23,20 +25,20 @@ class GlobalsImpl : Globals() {
     override val oldBuildType: String
         get() = BuildConfig.OLD_BUILD_TYPE
 
+    override val flavor: String
+        get() = BuildConfig.FLAVOR
+
+    override val commit: String
+        get() = BuildConfig.COMMIT
+
+    override val branch: String
+        get() = BuildConfig.BRANCH
+
     override val versionCode: Int
         get() = BuildConfig.VERSION_CODE
 
     override val versionName: String
         get() = BuildConfig.VERSION_NAME
-
-    override val deviceName: String
-        get() = Build.DEVICE
-
-    override val deviceModel: String
-        get() = Build.MODEL
-
-    override val deviceManufacturer: String
-        get() = Build.MANUFACTURER
 
     override val muunLinkHost: String
         get() = BuildConfig.MUUN_LINK_HOST

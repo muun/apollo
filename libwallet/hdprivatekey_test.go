@@ -189,6 +189,26 @@ func TestKeyDerivation(t *testing.T) {
 
 		testPath(t, privKey, vector3FirstPath, vector3FirstPriv, vector3FirstPub)
 	})
+
+	t.Run("derivation path has comments", func(t *testing.T) {
+		privKey, _ := NewHDPrivateKeyFromString(vector1PrivKey, "m", Regtest())
+		newPriv, err := privKey.DeriveTo("m/schema:1'/recovery:1'")
+		if err != nil {
+			t.Fatalf("failed to derive key, got error %v", err)
+		}
+		endPriv, err := newPriv.DeriveTo("m/1'/1'/0/4")
+		if err != nil {
+			t.Fatalf("failed to derive key, got error %v", err)
+		}
+		altEndPriv, err := newPriv.DeriveTo("m/schema:1'/recovery:1'/change:0/4")
+		if err != nil {
+			t.Fatalf("failed to derive key, got error %v", err)
+		}
+		if endPriv.String() != altEndPriv.String() {
+			t.Fatalf("derived keys for equivalent paths don't match")
+		}
+
+	})
 }
 
 func TestSymmetricDerivation(t *testing.T) {

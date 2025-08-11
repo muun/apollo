@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-    tools:viewBindingIgnore="true"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,7 +13,7 @@
      image for btc logo and default flag, this way we can correctly display
      both no matter what font size and display resolution. -->
     <ImageView
-            android:id="@+id/currency_item_logo"
+            android:id="@+id/logo"
             android:layout_width="20sp"
             android:layout_height="18sp"
             android:layout_marginStart="1sp"
@@ -26,10 +25,10 @@
             android:contentDescription="@null" />
 
     <TextView
-            android:id="@+id/currency_item_label"
+            android:id="@+id/label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/currency_item_logo"
+            android:layout_toEndOf="@+id/logo"
             android:layout_marginEnd="24dp"
             android:textSize="16sp"
             android:fontFamily="sans-serif"
@@ -39,7 +38,7 @@
             tools:text="🇦🇷 Argentinian Peso (ARS)" />
 
     <ImageView
-            android:id="@+id/currency_item_selected_icon"
+            android:id="@+id/selected_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"

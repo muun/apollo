@@ -27,6 +27,7 @@ type Metadata struct {
 	BirthdayBlock     int            `json:"birthdayBlock"`
 	EncryptedKeys     []*MetadataKey `json:"encryptedKeys"`
 	OutputDescriptors []string       `json:"outputDescriptors"`
+	RcChecksum        string         `json:"rcChecksum"`
 }
 
 // MetadataKey holds an entry in the Metadata key array.

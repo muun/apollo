@@ -1,0 +1,23 @@
+[package]
+name = "plonky2_bitcoin_hpke"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "plonky2_bitcoin_hpke"
+path = "src/lib.rs"
+
+[dependencies]
+plonky2 = {  version = "1.0.2", default-features = false, features = ["std", "parallel"] }
+plonky2_sha256 = { path = "../plonky2-sha256" }
+plonky2_hkdf_sha256 = { path = "../plonky2-hkdf-sha256" }
+plonky2_ecdsa = { path = "../plonky2-ecdsa" }
+plonky2_precomputed_windowed_mul = {path = "../plonky2-precomputed-windowed-mul"}
+plonky2-chacha20-poly1305 = { path = "../plonky2-chacha20-poly1305" }
+plonky2_u32 = { path = "../plonky2-u32" }
+plonky2_bytes = { path = "../plonky2-bytes" }
+
+[dev-dependencies]
+anyhow = "1.0.40"
+hex = "0.4.3"
+env_logger = "0.10.2"

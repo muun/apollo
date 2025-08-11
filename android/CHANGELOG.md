@@ -6,6 +6,24 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.0] - 2025-08-07
+
+### CHANGED
+
+- `nightMode` migrated from shared preferences
+
+### ADDED
+
+- Edge to edge support
+
+### FIXED
+
+- Reproducible builds
+- Reproducible builds context
+- Effective fees sync in background removed
+- Dns resolution fix for android 15
+- Api 19 drawable missing crash
+
 ## [53.5] - 2025-06-27
 
 ### FIXED

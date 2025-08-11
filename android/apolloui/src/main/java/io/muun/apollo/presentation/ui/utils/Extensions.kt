@@ -7,9 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.os.Vibrator
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -40,6 +43,98 @@ fun View.addOnNextLayoutListener(f: () -> Unit) {
     }
 
     viewTreeObserver.addOnGlobalLayoutListener(listener)
+}
+
+/**
+ * Attaches a child view to a parent ViewGroup at a specified origin in millimeters,
+ * with optional positional modifications. If the origin is null, the view is centered
+ * so that its center aligns with the parent’s center.
+ *
+ * @param childView The view to be attached.
+ * @param originXmm The X-axis origin in millimeters, or null to center horizontally.
+ * @param originYmm The Y-axis origin in millimeters, or null to center vertically.
+ * @param modifications An optional lambda to modify the X and Y positions in pixels.
+ *                      If null, the positions are used as-is.
+ */
+fun ViewGroup.attachChildAtMm(
+    childView: View,
+    originXmm: Float? = null,
+    originYmm: Float? = null,
+    modifications: ((Float) -> Float)? = null,
+) {
+    addView(childView)
+
+    viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+        override fun onGlobalLayout() {
+            if (childView.width > 0 && childView.height > 0 && width > 0 && height > 0) {
+                viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                val originXpx = originXmm?.mmToPx(resources = context.resources)
+                    ?: ((width / 2f) - (childView.width / 2f))
+
+                val originYpx = originYmm?.mmToPx(resources = context.resources)
+                    ?: ((height / 2f) - (childView.height / 2f))
+
+                childView.x = modifications?.invoke(originXpx) ?: originXpx
+                childView.y = modifications?.invoke(originYpx) ?: originYpx
+            }
+        }
+    })
+}
+
+/**
+ * Sets the size of a View using dimensions provided in millimeters.
+ *
+ * @receiver The view to resize.
+ * @param widthMm The desired width in millimeters.
+ * @param heightMm The desired height in millimeters.
+ */
+fun View.setSizeInMillimeters(widthMm: Float, heightMm: Float) {
+    layoutParams = layoutParams.apply {
+        width = widthMm.mmToPx(resources = context.resources).toInt()
+        height = heightMm.mmToPx(resources = context.resources).toInt()
+    }
+}
+
+/**
+ * Positions a View on the screen using millimeter-based translation, with an optional offset.
+ *
+ * @receiver The view to be positioned.
+ * @param originXmm The X-axis origin in millimeters.
+ * @param originYmm The Y-axis origin in millimeters.
+ * @param offsetMm An optional offset in millimeters applied to both axes. Default is 10mm.
+ */
+fun View.positionInMillimeters(
+    originXmm: Float,
+    originYmm: Float,
+    offsetMm: Float = 10f,
+) {
+    translationX = originXmm.mmToPx(offsetMm, context.resources)
+    translationY = originYmm.mmToPx(offsetMm, context.resources)
+}
+
+/**
+ * Converts a Float value from millimeters to pixels, optionally adding an offset in millimeters.
+ *
+ * @receiver The millimeter value to convert.
+ * @param offsetMm An optional offset in millimeters to include in the conversion. Default is 0.
+ * @return The converted value in pixels.
+ */
+fun Float.mmToPx(offsetMm: Float = 0f, resources: Resources): Float {
+    val displayMetrics = resources.displayMetrics
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_MM,
+        (this + offsetMm),
+        displayMetrics,
+    )
+}
+
+/**
+ * Triggers a short vibration on the device using the system's [Vibrator] service.
+ */
+internal fun Context.vibrateShort() {
+    val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    vibrator.vibrate(50)
 }
 
 fun View.setUserInteractionEnabled(enabled: Boolean) {

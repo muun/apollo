@@ -2,13 +2,24 @@
 <issues format="6" by="lint 8.5.2" type="baseline" client="gradle" dependencies="false" name="AGP (8.5.2)" variant="all" version="8.5.2">
 
     <issue
+        id="ApplySharedPref"
+        message="Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+        errorLine1="            .commit()"
+        errorLine2="             ~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/BaseRepository.kt"
+            line="37"
+            column="14"/>
+    </issue>
+
+    <issue
         id="CheckResult"
         message="The result of `title` is not used"
         errorLine1="            builder.title(R.string.error_send_report_dialog_title);"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/base/BasePresenter.java"
-            line="529"
+            line="539"
             column="13"/>
     </issue>
 
@@ -19,7 +30,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/base/BasePresenter.java"
-            line="530"
+            line="540"
             column="13"/>
     </issue>
 
@@ -30,8 +41,19 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/base/BasePresenter.java"
-            line="533"
+            line="543"
             column="13"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        Timber.d(String.format("
+        errorLine2="                 ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/ContactActions.java"
+            line="334"
+            column="18"/>
     </issue>
 
     <issue
@@ -52,8 +74,96 @@
         errorLine2="                                                                ~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/new_operation/NewOperationActivity.kt"
-            line="697"
+            line="709"
             column="65"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (bitcoinUri.toLowerCase().startsWith(uriScheme)) {"
+        errorLine2="                       ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="131"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!lnUri.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                   ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="152"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnInvoice.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="163"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnInvoice.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="169"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnUrl.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                  ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="222"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (lnUrl.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                  ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="228"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!lnUrlUri.toLowerCase().startsWith(LN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                      ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="245"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `toLowerCase(Locale)` instead. For strings meant to be internal use `Locale.ROOT`, otherwise `Locale.getDefault()`."
+        errorLine1="        if (!muunLnUrlUri.toLowerCase().startsWith(MUUN_SCHEME + &quot;:&quot;)) {"
+        errorLine2="                          ~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/model/OperationUri.java"
+            line="256"
+            column="27"/>
     </issue>
 
     <issue
@@ -256,17 +366,6 @@
 
     <issue
         id="NewApi"
-        message="Call requires API level 21 (current min is 19): `android.webkit.WebView#createPrintDocumentAdapter`"
-        errorLine1="                webView.createPrintDocumentAdapter(jobName)"
-        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/export/PdfExporter.kt"
-            line="104"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="NewApi"
         message="`android:queryBackground` requires API level 21 (current min is 19)"
         errorLine1="        &lt;item name=&quot;android:queryBackground&quot;>@android:color/transparent&lt;/item>"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -321,13 +420,79 @@
     </issue>
 
     <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                cursor.getColumnIndex(Phone.CONTACT_ID)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="78"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                cursor.getColumnIndex(Phone.DISPLAY_NAME)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="82"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                cursor.getColumnIndex(Phone.CONTACT_LAST_UPDATED_TIMESTAMP)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="86"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                cursor.getColumnIndex(Phone.NUMBER)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/ContactsProvider.java"
+            line="90"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                    element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
+        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/db/base/HoustonIdDao.java"
+            line="44"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="Range"
+        message="Value must be ≥ 0 but `getColumnIndex` can be -1"
+        errorLine1="                element.setId(cursor.getLong(cursor.getColumnIndex(&quot;id&quot;)));"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/db/base/HoustonUuidDao.java"
+            line="44"
+            column="46"/>
+    </issue>
+
+    <issue
         id="UnusedAttribute"
         message="Attribute `usesCleartextTraffic` is only used in API level 23 and higher (current min is 19)"
         errorLine1="            android:usesCleartextTraffic=&quot;${usesCleartextTraffic}&quot;"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="55"
+            line="56"
             column="13"/>
     </issue>
 
@@ -389,45 +554,23 @@
     <issue
         id="UnusedAttribute"
         message="Attribute `android:foreground` has no effect on API levels lower than 23 (current min is 19)"
-        errorLine1="                    android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        errorLine1="                android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/dialog_custom_layout.xml"
-            line="58"
-            column="21"/>
+            line="57"
+            column="17"/>
     </issue>
 
     <issue
         id="UnusedAttribute"
         message="Attribute `android:foreground` has no effect on API levels lower than 23 (current min is 19)"
-        errorLine1="                    android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        errorLine1="                android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/dialog_custom_layout.xml"
-            line="73"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="UnusedAttribute"
-        message="Attribute `android:foreground` has no effect on API levels lower than 23 (current min is 19)"
-        errorLine1="                    android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/dialog_custom_layout2.xml"
-            line="58"
-            column="21"/>
-    </issue>
-
-    <issue
-        id="UnusedAttribute"
-        message="Attribute `android:foreground` has no effect on API levels lower than 23 (current min is 19)"
-        errorLine1="                    android:foreground=&quot;?android:attr/selectableItemBackground&quot;"
-        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/dialog_custom_layout2.xml"
-            line="73"
-            column="21"/>
+            line="72"
+            column="17"/>
     </issue>
 
     <issue
@@ -437,7 +580,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/edit_address_type_item.xml"
-            line="35"
+            line="34"
             column="13"/>
     </issue>
 
@@ -547,7 +690,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/loading_view.xml"
-            line="36"
+            line="35"
             column="13"/>
     </issue>
 
@@ -701,7 +844,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/new_operation_error_fragment.xml"
-            line="47"
+            line="46"
             column="17"/>
     </issue>
 
@@ -723,7 +866,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/simple_message_view.xml"
-            line="36"
+            line="35"
             column="13"/>
     </issue>
 
@@ -734,7 +877,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/simple_message_view.xml"
-            line="51"
+            line="50"
             column="13"/>
     </issue>
 
@@ -778,7 +921,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/layout/v_item_section_header.xml"
-            line="27"
+            line="26"
             column="17"/>
     </issue>
 
@@ -791,50 +934,6 @@
             file="src/main/res/layout/view_balance.xml"
             line="61"
             column="13"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.recovery_code_condition_1)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/recovery_code/accept/AcceptRecoveryCodeFragment.kt"
-            line="16"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.recovery_code_condition_2)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/recovery_code/accept/AcceptRecoveryCodeFragment.kt"
-            line="19"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.recovery_code_accept)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/recovery_code/accept/AcceptRecoveryCodeFragment.kt"
-            line="22"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.edit_address_type)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/AddressTypeItem.kt"
-            line="28"
-            column="15"/>
     </issue>
 
     <issue
@@ -856,50 +955,6 @@
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/activity/extension/AlertDialogExtension.kt"
             line="22"
-            column="16"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.header)"
-        errorLine2="              ~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/anon/AnonFeedbackActivity.java"
-            line="40"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.anon_feedback_explanation)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/anon/AnonFeedbackActivity.java"
-            line="43"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.anon_feedback_open_email_app)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/anon/AnonFeedbackActivity.java"
-            line="46"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindColor(R.color.text_secondary_color)"
-        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/anon/AnonFeedbackActivity.java"
-            line="49"
             column="16"/>
     </issue>
 
@@ -1077,281 +1132,6 @@
             file="src/main/java/io/muun/apollo/presentation/ui/settings/bitcoin/BitcoinSettingsFragment.kt"
             line="31"
             column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_contacts_item_profile_picture)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/ContactViewHolder.java"
-            line="14"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_contacts_item_text_full_name)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/ContactViewHolder.java"
-            line="17"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.create_email_subtitle)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_email/CreateEmailFragment.kt"
-            line="20"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.create_email_input)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_email/CreateEmailFragment.kt"
-            line="23"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.create_email_action)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_email/CreateEmailFragment.kt"
-            line="26"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.create_email_used_help)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_email/CreateEmailFragment.kt"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.currency_item_logo)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/CurrencyViewHolder.java"
-            line="16"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.currency_item_label)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/CurrencyViewHolder.java"
-            line="19"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.currency_item_selected_icon)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/CurrencyViewHolder.java"
-            line="22"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_text_server_address)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="28"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_fund_wallet_onchain)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="31"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_fund_wallet_offchain)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="34"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_generate_blocks)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="37"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_drop_last_tx)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="40"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_drop_tx)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="43"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_undrop_tx)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="46"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_switch_allow_multi_session)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="49"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.debug_button_expire_all_other_sessions)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="52"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_fetch_operations)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="116"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_upload_phone_contacts)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="124"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_fetch_contacts)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="132"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_sync_real_time_data)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="140"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_sync_external_addresses_indexes)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="148"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_integrity_check)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="156"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.debug_button_force_fcm_token_update)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/debug/DebugPanelActivity.java"
-            line="164"
-            column="14"/>
     </issue>
 
     <issue
@@ -1687,94 +1467,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_unlock_edit_password)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="20"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_continue)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="23"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_forgot_password)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="26"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_unlock_reminder)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.signup_continue)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="94"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.signup_forgot_password)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_password/EnterPasswordFragment.java"
-            line="99"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_forgot_password_recovery_code_box)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_recovery_code/EnterRecoveryCodeFragment.java"
-            line="17"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_forgot_password_continue)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/enter_recovery_code/EnterRecoveryCodeFragment.java"
-            line="20"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.title)"
         errorLine2="              ~~~~~~~~~~">
         <location
@@ -2061,50 +1753,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.header)"
-        errorLine2="              ~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/email/FeedbackActivity.java"
-            line="37"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.feedback_explanation)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/email/FeedbackActivity.java"
-            line="40"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.feedback_content)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/email/FeedbackActivity.java"
-            line="43"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.submit)"
-        errorLine2="              ~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/feedback/email/FeedbackActivity.java"
-            line="46"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindDimen(R.dimen.muun_menu_offset)"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -2325,39 +1973,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.login_start)"
-        errorLine2="              ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/landing/LandingFragment.kt"
-            line="31"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.signup_start)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/landing/LandingFragment.kt"
-            line="34"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.animation_view)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/landing/LandingFragment.kt"
-            line="37"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.lightning_settings_loading)"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -2556,39 +2171,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.loading_view_spinner)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/LoadingView.java"
-            line="26"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.loading_view_title)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/LoadingView.java"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.loading_view_desc)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/LoadingView.java"
-            line="32"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.signup_waiting_for_email_open_email_client)"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -2639,50 +2221,6 @@
             file="src/main/java/io/muun/apollo/presentation/ui/fragments/login_authorize/LoginAuthorizeFragment.java"
             line="34"
             column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.enter_email_input)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/login_email/LoginEmailFragment.kt"
-            line="16"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.enter_email_action)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/login_email/LoginEmailFragment.kt"
-            line="19"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.enter_email_action)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/login_email/LoginEmailFragment.kt"
-            line="58"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.enter_email_use_rc_only)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/login_email/LoginEmailFragment.kt"
-            line="63"
-            column="14"/>
     </issue>
 
     <issue
@@ -3012,61 +2550,6 @@
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/view/MuunCountryInput.java"
             line="32"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.operation_detail_item_icon_title)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunDetailItem.java"
-            line="30"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.operation_detail_item_text_title)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunDetailItem.java"
-            line="33"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.operation_detail_item_text_content)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunDetailItem.java"
-            line="36"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.operation_detail_item_icon_frame)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunDetailItem.java"
-            line="39"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.operation_detail_item_icon)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunDetailItem.java"
-            line="42"
             column="15"/>
     </issue>
 
@@ -3612,50 +3095,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setting_item_label)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunSettingItem.java"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setting_item_description)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunSettingItem.java"
-            line="32"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setting_item_description_icon)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunSettingItem.java"
-            line="35"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setting_item_icon)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/MuunSettingItem.java"
-            line="38"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.icon)"
         errorLine2="              ~~~~~~~~~">
         <location
@@ -3761,72 +3200,6 @@
             file="src/main/java/io/muun/apollo/presentation/ui/view/MuunUriPaster.kt"
             line="17"
             column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.title)"
-        errorLine2="              ~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="44"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.description)"
-        errorLine2="              ~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="47"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.insuffient_funds_extras)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="50"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.insuffient_funds_extras_amount)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="53"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.insuffient_funds_extras_balance)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="56"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.exit)"
-        errorLine2="             ~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/new_op_error/NewOperationErrorFragment.kt"
-            line="154"
-            column="14"/>
     </issue>
 
     <issue
@@ -4112,61 +3485,6 @@
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/operation_detail/OperationDetailActivity.java"
             line="94"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_operations_item_profile_picture)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/OperationViewHolder.java"
-            line="16"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_operations_item_title)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/OperationViewHolder.java"
-            line="19"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_operations_item_text_amount)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/OperationViewHolder.java"
-            line="22"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_operations_item_text_description)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/OperationViewHolder.java"
-            line="25"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.home_operations_item_text_time)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/OperationViewHolder.java"
-            line="28"
             column="15"/>
     </issue>
 
@@ -4833,28 +4151,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.section_header_item_divider)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/SectionHeaderViewHolder.java"
-            line="12"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.section_header_item_label)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/adapter/holder/SectionHeaderViewHolder.java"
-            line="15"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.tag_email_skipped)"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -5025,39 +4321,6 @@
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/select_currency/SelectCurrencyActivity.java"
             line="62"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.set_up_pin_input)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/setup_pin_code/SetUpPinCodeActivity.java"
-            line="26"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.back_arrow)"
-        errorLine2="              ~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/setup_pin_code/SetUpPinCodeActivity.java"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindString(R.string.pin_error_on_setup_cancel)"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/setup_pin_code/SetUpPinCodeActivity.java"
-            line="32"
             column="17"/>
     </issue>
 
@@ -5240,88 +4503,22 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
+        errorLine1="    @BindView(R.id.settings_feature_flag)"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/presentation/ui/fragments/settings/SettingsFragment.kt"
+            line="94"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NonConstantResourceId"
+        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.setup_p2p_header)"
         errorLine2="              ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/setup_p2p/SetupP2PActivity.java"
             line="25"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_accept_subtitle)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/setup_password_accept/SetupPasswordAcceptFragment.kt"
-            line="18"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_accept_condition_1)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/setup_password_accept/SetupPasswordAcceptFragment.kt"
-            line="21"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_accept_condition_2)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/setup_password_accept/SetupPasswordAcceptFragment.kt"
-            line="24"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_accept_action)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/setup_password_accept/SetupPasswordAcceptFragment.kt"
-            line="27"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_intro_info_box)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/password_setup_intro/SetupPasswordIntroFragment.kt"
-            line="15"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.create_email_skip)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/password_setup_intro/SetupPasswordIntroFragment.kt"
-            line="18"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.setup_password_intro_action)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/fragments/password_setup_intro/SetupPasswordIntroFragment.kt"
-            line="21"
             column="15"/>
     </issue>
 
@@ -5570,39 +4767,6 @@
     <issue
         id="NonConstantResourceId"
         message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.simple_message_title)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/SimpleMessageView.java"
-            line="17"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.simple_message_text)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/SimpleMessageView.java"
-            line="20"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.simple_message_button)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/SimpleMessageView.java"
-            line="23"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
         errorLine1="    @BindView(R.id.title)"
         errorLine2="              ~~~~~~~~~~">
         <location
@@ -5697,105 +4861,6 @@
             file="src/main/java/io/muun/apollo/presentation/ui/fragments/single_action/SingleActionFragment.java"
             line="33"
             column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.change_password_start_explanation)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/settings/edit_password/StartPasswordChangeFragment.kt"
-            line="14"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.change_password_start)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/settings/edit_password/StartPasswordChangeFragment.kt"
-            line="17"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @OnClick(R.id.change_password_start)"
-        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/settings/edit_password/StartPasswordChangeFragment.kt"
-            line="37"
-            column="14"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.message_image)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="29"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindView(R.id.message_text)"
-        errorLine2="              ~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="32"
-            column="15"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindDrawable(R.drawable.ic_baseline_warning_24px)"
-        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="35"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindColor(R.color.warning_color)"
-        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="38"
-            column="16"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindDrawable(R.drawable.error_badge)"
-        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="41"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="NonConstantResourceId"
-        message="Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, avoid using them as annotation attributes"
-        errorLine1="    @BindColor(R.color.error_color)"
-        errorLine2="               ~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/io/muun/apollo/presentation/ui/view/StatusMessage.java"
-            line="44"
-            column="16"/>
     </issue>
 
     <issue
@@ -6415,300 +5480,25 @@
     </issue>
 
     <issue
-        id="GradleDependency"
-        message="A newer version of com.google.gms:google-services than 4.3.15 is available: 4.4.2"
-        errorLine1="        classpath &apos;com.google.gms:google-services:4.3.15&apos;    // Google Services plugin"
-        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
+        errorLine1="    ForceFetchFcmAction forceFetchFcmTokenAction();"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~">
         <location
-            file="build.gradle"
-            line="6"
-            column="19"/>
+            file="src/main/java/io/muun/apollo/domain/action/di/ActionComponent.java"
+            line="100"
+            column="5"/>
     </issue>
 
     <issue
-        id="GradleDependency"
-        message="A newer version of com.google.firebase:firebase-crashlytics-gradle than 2.9.6 is available: 3.0.2"
-        errorLine1="        classpath &apos;com.google.firebase:firebase-crashlytics-gradle:2.9.6&apos;"
-        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        id="VisibleForTests"
+        message="This class should only be accessed from tests or within private scope"
+        errorLine1="    UseMuunLinkAction useMuunLinkAction();"
+        errorLine2="    ~~~~~~~~~~~~~~~~~">
         <location
-            file="build.gradle"
-            line="7"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.android.material:material than 1.2.1 is available: 1.12.0"
-        errorLine1="    implementation &apos;com.google.android.material:material:1.2.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="361"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.constraintlayout:constraintlayout than 1.1.3 is available: 2.2.0"
-        errorLine1="    implementation &apos;androidx.constraintlayout:constraintlayout:1.1.3&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="362"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.recyclerview:recyclerview than 1.0.0 is available: 1.3.2"
-        errorLine1="    implementation &apos;androidx.recyclerview:recyclerview:1.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="363"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.preference:preference than 1.0.0 is available: 1.2.1"
-        errorLine1="    implementation &apos;androidx.preference:preference:1.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="365"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.emoji2:emoji2 than 1.1.0 is available: 1.5.0"
-        errorLine1="    implementation &quot;androidx.emoji2:emoji2:$emojiVersion&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="367"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.multidex:multidex than 2.0.0 is available: 2.0.1"
-        errorLine1="    implementation &apos;androidx.multidex:multidex:2.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="371"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.browser:browser than 1.0.0 is available: 1.8.0"
-        errorLine1="    implementation &apos;androidx.browser:browser:1.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="373"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-runtime than 2.6.2 is available: 2.8.7"
-        errorLine1="    implementation &quot;androidx.lifecycle:lifecycle-runtime:$version_lifecycle&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="377"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.lifecycle:lifecycle-process than 2.6.2 is available: 2.8.7"
-        errorLine1="    implementation &quot;androidx.lifecycle:lifecycle-process:$version_lifecycle&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="379"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.webkit:webkit than 1.1.0 is available: 1.12.1"
-        errorLine1="    implementation &apos;androidx.webkit:webkit:1.1.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="382"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.github.bumptech.glide:glide than 4.6.1 is available: 4.15.1"
-        errorLine1="    implementation &apos;com.github.bumptech.glide:glide:4.6.1&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="390"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of com.google.zxing:core than 3.3.0 is available: 3.4.1"
-        errorLine1="    implementation &apos;com.google.zxing:core:3.3.0&apos;                    // For showing QR codes"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="394"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of org.mockito:mockito-core than 2.8.47 is available: 3.10.0"
-        errorLine1="    testImplementation &apos;org.mockito:mockito-core:2.8.47&apos;"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="402"
-            column="24"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of org.assertj:assertj-core than 3.8.0 is available: 3.9.1"
-        errorLine1="    testImplementation &apos;org.assertj:assertj-core:3.8.0&apos;"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="404"
-            column="24"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of junit:junit than 4.12 is available: 4.13.2"
-        errorLine1="    testImplementation &apos;junit:junit:4.12&apos;"
-        errorLine2="                       ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="405"
-            column="24"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test:core than 1.4.0 is available: 1.6.1"
-        errorLine1="    androidTestImplementation &apos;androidx.test:core:1.4.0&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="415"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test:rules than 1.4.0 is available: 1.6.1"
-        errorLine1="    androidTestImplementation &apos;androidx.test:rules:1.4.0&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="416"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.ext:junit than 1.1.3 is available: 1.2.1"
-        errorLine1="    androidTestImplementation &apos;androidx.test.ext:junit:1.1.3&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="417"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test:runner than 1.4.0 is available: 1.6.2"
-        errorLine1="    androidTestImplementation &apos;androidx.test:runner:1.4.0&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="418"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of org.assertj:assertj-core than 3.8.0 is available: 3.9.1"
-        errorLine1="    androidTestImplementation &apos;org.assertj:assertj-core:3.8.0&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="419"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.6.1"
-        errorLine1="    androidTestImplementation &apos;androidx.test.espresso:espresso-core:3.5.1&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="424"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.test.uiautomator:uiautomator than 2.2.0 is available: 2.3.0"
-        errorLine1="    androidTestImplementation &apos;androidx.test.uiautomator:uiautomator:2.2.0&apos;"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="427"
-            column="31"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.navigation:navigation-fragment than 2.7.7 is available: 2.8.5"
-        errorLine1="    implementation &quot;androidx.navigation:navigation-fragment:$nav_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="433"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.navigation:navigation-ui than 2.7.7 is available: 2.8.5"
-        errorLine1="    implementation &quot;androidx.navigation:navigation-ui:$nav_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="434"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="GradleDependency"
-        message="A newer version of androidx.navigation:navigation-dynamic-features-fragment than 2.7.7 is available: 2.8.5"
-        errorLine1="    implementation &quot;androidx.navigation:navigation-dynamic-features-fragment:$nav_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="437"
-            column="20"/>
+            file="src/main/java/io/muun/apollo/domain/action/di/ActionComponent.java"
+            line="120"
+            column="5"/>
     </issue>
 
     <issue
@@ -6844,28 +5634,6 @@
     </issue>
 
     <issue
-        id="PrivateResource"
-        message="Overriding `@string/retry` which is marked as private in androidx.navigation:navigation-dynamic-features-fragment:2.7.7. If deliberate, use tools:override=&quot;true&quot;, otherwise pick a different name."
-        errorLine1="    &lt;string name=&quot;retry&quot;>Reintentar&lt;/string>"
-        errorLine2="                  ~~~~~">
-        <location
-            file="src/main/res/values-es/strings.xml"
-            line="13"
-            column="19"/>
-    </issue>
-
-    <issue
-        id="PrivateResource"
-        message="Overriding `@string/retry` which is marked as private in androidx.navigation:navigation-dynamic-features-fragment:2.7.7. If deliberate, use tools:override=&quot;true&quot;, otherwise pick a different name."
-        errorLine1="    &lt;string name=&quot;retry&quot;>Retry&lt;/string>"
-        errorLine2="                  ~~~~~">
-        <location
-            file="src/main/res/values/strings.xml"
-            line="17"
-            column="19"/>
-    </issue>
-
-    <issue
         id="SpUsage"
         message="Should use &quot;`sp`&quot; instead of &quot;`dp`&quot; for text sizes"
         errorLine1="        &lt;item name=&quot;android:textSize&quot;>18dp&lt;/item> &lt;!-- Not SP, we don&apos;t want this to scale -->"
@@ -6923,6 +5691,61 @@
     <issue
         id="BinaryOperationInTimber"
         message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.i(&quot;ApplicationLockManager#verified: &quot; + verified);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/ApplicationLockManager.java"
+            line="95"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                &quot;ApplicationLockManager#storeIncorrectAttempts: &quot; + incorrectAttempts"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/ApplicationLockManager.java"
+            line="171"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.d(name + &quot;: already running&quot;);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="36"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(name + &quot;: EMPTY&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="129"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(name + &quot;: LOADING&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/AsyncAction.java"
+            line="134"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
         errorLine1="            Timber.d(getClass().getSimpleName() + &quot; using viewBinding&quot;);"
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -6967,6 +5790,28 @@
     <issue
         id="BinaryOperationInTimber"
         message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(getName() + &quot;: EMPTY&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/BaseAsyncAction.java"
+            line="130"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="        Timber.d(getName() + &quot;: LOADING&quot;);"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/base/BaseAsyncAction.java"
+            line="135"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
         errorLine1="            Timber.d(getClass().getSimpleName() + &quot; using viewBinding&quot;);"
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -6989,11 +5834,88 @@
     <issue
         id="BinaryOperationInTimber"
         message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                        .doOnNext(list -> Timber.i(&quot;Received op history: size &quot; + list.size()))"
+        errorLine2="                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/OperationActions.java"
+            line="55"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="                                            .doOnNext(op -> Timber.i(&quot;processing op:&quot; + op.getId()))"
+        errorLine2="                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/OperationActions.java"
+            line="69"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageNoSuchElementError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="169"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SharedPreferencesCorruptedError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="174"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;KeyStoreCorruptedError for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="179"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageError on READ for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="189"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
+        errorLine1="            Timber.i(&quot;SecureStorageError on WRITE for key: &quot; + key);"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStorageProvider.java"
+            line="201"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="BinaryOperationInTimber"
+        message="Replace String concatenation with Timber&apos;s string formatting"
         errorLine1="        Timber.i(&quot;SignupPresenter: resumeSignupIfStarted. Step: &quot; + step.name());"
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/io/muun/apollo/presentation/ui/signup/SignupPresenter.java"
-            line="174"
+            line="171"
             column="18"/>
     </issue>
 
@@ -7070,7 +5992,7 @@
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="517"
+            line="515"
             column="5"/>
     </issue>
 
@@ -7081,13 +6003,68 @@
         errorLine2="    ^">
         <location
             file="src/main/res/values-es/strings.xml"
-            line="615"
+            line="612"
             column="5"/>
         <location
             file="src/main/res/values/strings.xml"
-            line="593"
+            line="591"
             column="5"
             message="Conflicting number of arguments (1) here"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="        Timber.d(String.format("
+        errorLine2="                 ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/ContactActions.java"
+            line="334"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="                        String.format(&quot;Task  %s rejected from %s. %s&quot;,"
+        errorLine2="                        ^">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/execution/JobExecutor.java"
+            line="64"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="StringFormatInTimber"
+        message="Using &apos;String#format&apos; inside of &apos;Timber&apos;"
+        errorLine1="                        String.format("
+        errorLine2="                        ^">
+        <location
+            file="src/main/java/io/muun/apollo/domain/action/fcm/UpdateFcmTokenAction.java"
+            line="65"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="ThrowableNotAtBeginning"
+        message="Throwable should be first argument"
+        errorLine1="            Timber.e(&quot;Failed to record audit trail (&quot; + operation + &quot; &quot; + label + &quot;)&quot;, e);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/SecureStoragePreferences.java"
+            line="203"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardwareIds"
+        message="Using `getString` to get device identifiers is not recommended"
+        errorLine1="                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/HardwareCapabilitiesProvider.kt"
+            line="167"
+            column="17"/>
     </issue>
 
     <issue
@@ -7111,19 +6088,8 @@
         errorLine2="                                 ~~~~~">
         <location
             file="src/main/AndroidManifest.xml"
-            line="54"
+            line="55"
             column="34"/>
-    </issue>
-
-    <issue
-        id="OutdatedLibrary"
-        message="androidx.annotation:annotation version 1.0.0 has been reported as outdated by its author.&#xA;The library author recommends using versions:&#xA;  - 1.0.1 or higher&#xA;These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. Carefully evaluate any third-party SDKs before integrating them into your app."
-        errorLine1="    implementation &apos;androidx.annotation:annotation:1.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="364"
-            column="20"/>
     </issue>
 
     <issue
@@ -7193,6 +6159,83 @@
     </issue>
 
     <issue
+        id="Recycle"
+        message="This `InputStream` should be freed up after use with `#close()`"
+        errorLine1="            inputStream = context.getContentResolver().openInputStream(contentUri);"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/net/okio/ContentUriRequestBody.java"
+            line="49"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="233"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="269"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 18"
+        errorLine1="    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/os/secure_storage/KeyStoreProvider.java"
+            line="288"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/RxSharedPreferences.java"
+            line="210"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="    @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/RxSharedPreferences.java"
+            line="220"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 11"
+        errorLine1="@TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/io/muun/apollo/data/preferences/rx/StringSetAdapter.java"
+            line="9"
+            column="1"/>
+    </issue>
+
+    <issue
         id="UseCompoundDrawables"
         message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
         errorLine1="            &lt;LinearLayout"
@@ -7234,17 +6277,6 @@
             file="src/main/res/layout/fragment_security_center.xml"
             line="30"
             column="10"/>
-    </issue>
-
-    <issue
-        id="UseCompoundDrawables"
-        message="This tag and its children can be replaced by one `&lt;TextView/>` and a compound drawable"
-        errorLine1="    &lt;LinearLayout"
-        errorLine2="     ~~~~~~~~~~~~">
-        <location
-            file="src/main/res/layout/start_password_change_fragment.xml"
-            line="10"
-            column="6"/>
     </issue>
 
     <issue
@@ -7361,18 +6393,7 @@
         id="UnusedResources"
         message="The resource `R.drawable.appdrawer_48` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/appdrawer_48.png"/>
-    </issue>
-
-    <issue
-        id="UnusedResources"
-        message="The resource `R.color.green_dark` appears to be unused"
-        errorLine1="    &lt;color name=&quot;green_dark&quot;>#175B2F&lt;/color> &lt;!-- Has DarkMode override -->"
-        errorLine2="           ~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/res/values/colors.xml"
-            line="13"
-            column="12"/>
+            file="src/main/res/drawable-hdpi/appdrawer_48.webp"/>
     </issue>
 
     <issue
@@ -7465,6 +6486,17 @@
 
     <issue
         id="UnusedResources"
+        message="The resource `R.color.muun_button_layout_bg` appears to be unused"
+        errorLine1="    &lt;color name=&quot;muun_button_layout_bg&quot;>@color/white&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="103"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
         message="The resource `R.dimen.muun_button_height_with_margin` appears to be unused"
         errorLine1="    &lt;dimen name=&quot;muun_button_height_with_margin&quot;>74dp&lt;/dimen>"
         errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
@@ -7489,14 +6521,14 @@
         id="UnusedResources"
         message="The resource `R.drawable.ek_clock` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/ek_clock.png"/>
+            file="src/main/res/drawable-hdpi/ek_clock.webp"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.ic_arrow_down` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/ic_arrow_down.png"/>
+            file="src/main/res/drawable-hdpi/ic_arrow_down.webp"/>
     </issue>
 
     <issue
@@ -7517,28 +6549,28 @@
         id="UnusedResources"
         message="The resource `R.mipmap.ic_launcher_round` appears to be unused">
         <location
-            file="src/main/res/mipmap-hdpi/ic_launcher_round.png"/>
+            file="src/main/res/mipmap-hdpi/ic_launcher_round.webp"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.ic_more` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/ic_more.png"/>
+            file="src/main/res/drawable-hdpi/ic_more.webp"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.ic_receive_gray` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/ic_receive_gray.png"/>
+            file="src/main/res/drawable-hdpi/ic_receive_gray.webp"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.ic_send_gray` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/ic_send_gray.png"/>
+            file="src/main/res/drawable-hdpi/ic_send_gray.webp"/>
     </issue>
 
     <issue
@@ -7559,21 +6591,32 @@
         id="UnusedResources"
         message="The resource `R.drawable.img_camera` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/img_camera.png"/>
+            file="src/main/res/drawable-hdpi/img_camera.webp"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.muun_button_layout_bg` appears to be unused"
+        errorLine1="&lt;layer-list xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/muun_button_layout_bg.xml"
+            line="2"
+            column="1"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.paper_pen` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/paper_pen.png"/>
+            file="src/main/res/drawable-hdpi/paper_pen.webp"/>
     </issue>
 
     <issue
         id="UnusedResources"
         message="The resource `R.drawable.question_icon` appears to be unused">
         <location
-            file="src/main/res/drawable-hdpi/question_icon.png"/>
+            file="src/main/res/drawable-hdpi/question_icon.webp"/>
     </issue>
 
     <issue
@@ -7682,7 +6725,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="374"
+            line="371"
             column="13"/>
     </issue>
 
@@ -7693,7 +6736,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="577"
+            line="575"
             column="13"/>
     </issue>
 
@@ -7704,7 +6747,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="726"
+            line="724"
             column="13"/>
     </issue>
 
@@ -7715,7 +6758,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="731"
+            line="729"
             column="13"/>
     </issue>
 
@@ -7726,7 +6769,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="732"
+            line="730"
             column="13"/>
     </issue>
 
@@ -7737,7 +6780,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="733"
+            line="731"
             column="13"/>
     </issue>
 
@@ -7748,7 +6791,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="1112"
+            line="1104"
             column="13"/>
     </issue>
 
@@ -7759,7 +6802,18 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="1248"
+            line="1240"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nfc_reader_screen_go_to_configs_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nfc_reader_screen_go_to_configs_title&quot;>NFC deactivated&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="1710"
             column="13"/>
     </issue>
 
@@ -7778,7 +6832,7 @@
         id="UnusedResources"
         message="The resource `R.drawable.taprrot_rocket2` appears to be unused">
         <location
-            file="src/main/res/drawable-xxhdpi/taprrot_rocket2.png"/>
+            file="src/main/res/drawable-xxhdpi/taprrot_rocket2.webp"/>
     </issue>
 
     <issue
@@ -7865,7 +6919,7 @@
         errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/res/values-es/strings.xml"
-            line="897"
+            line="891"
             column="38"/>
     </issue>
 
@@ -7876,7 +6930,7 @@
         errorLine2="                                       ~~~~~~~~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="1137"
+            line="1129"
             column="40"/>
     </issue>
 
@@ -7887,7 +6941,7 @@
         errorLine2="                                       ~~~~~~~~~~~">
         <location
             file="src/main/res/values-es/strings.xml"
-            line="1176"
+            line="1167"
             column="40"/>
     </issue>
 
@@ -7898,7 +6952,7 @@
         errorLine2="                                     ~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="1460"
+            line="1451"
             column="38"/>
     </issue>
 
@@ -7909,7 +6963,7 @@
         errorLine2="                                     ~~~">
         <location
             file="src/main/res/values/strings.xml"
-            line="1464"
+            line="1455"
             column="38"/>
     </issue>
 
@@ -7934,6 +6988,17 @@
         errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
         errorLine2="^">
         <location
+            file="src/local/res/mipmap-anydpi-v26/ic_launcher.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MonochromeLauncherIcon"
+        message="The application adaptive icon is missing a monochrome tag"
+        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
+        errorLine2="^">
+        <location
             file="src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
             line="2"
             column="1"/>
@@ -7941,31 +7006,31 @@
 
     <issue
         id="IconDipSize"
-        message="The image `ic_clock.png` varies significantly in its density-independent (dip) size across the various density versions: drawable-hdpi/ic_clock.png: 14x14 dp (21x21 px), drawable-mdpi/ic_clock.png: 11x11 dp (11x11 px), drawable-xhdpi/ic_clock.png: 21x21 dp (41x41 px), drawable-xxhdpi/ic_clock.png: 21x21 dp (62x62 px), drawable-xxxhdpi/ic_clock.png: 21x21 dp (82x82 px)">
+        message="The image `ic_clock.webp` varies significantly in its density-independent (dip) size across the various density versions: drawable-hdpi/ic_clock.webp: 14x14 dp (21x21 px), drawable-mdpi/ic_clock.webp: 11x11 dp (11x11 px), drawable-xhdpi/ic_clock.webp: 21x21 dp (41x41 px), drawable-xxhdpi/ic_clock.webp: 21x21 dp (62x62 px), drawable-xxxhdpi/ic_clock.webp: 21x21 dp (82x82 px)">
         <location
-            file="src/main/res/drawable-mdpi/ic_clock.png"/>
+            file="src/main/res/drawable-mdpi/ic_clock.webp"/>
         <location
-            file="src/main/res/drawable-hdpi/ic_clock.png"/>
+            file="src/main/res/drawable-hdpi/ic_clock.webp"/>
         <location
-            file="src/main/res/drawable-xxxhdpi/ic_clock.png"/>
+            file="src/main/res/drawable-xxxhdpi/ic_clock.webp"/>
         <location
-            file="src/main/res/drawable-xxhdpi/ic_clock.png"/>
+            file="src/main/res/drawable-xxhdpi/ic_clock.webp"/>
         <location
-            file="src/main/res/drawable-xhdpi/ic_clock.png"/>
+            file="src/main/res/drawable-xhdpi/ic_clock.webp"/>
     </issue>
 
     <issue
         id="IconLocation"
-        message="Found bitmap drawable `res/drawable/btc_logo.png` in densityless folder">
+        message="Found bitmap drawable `res/drawable/btc_logo.webp` in densityless folder">
         <location
-            file="src/main/res/drawable/btc_logo.png"/>
+            file="src/main/res/drawable/btc_logo.webp"/>
     </issue>
 
     <issue
         id="IconLocation"
-        message="Found bitmap drawable `res/drawable/default_flag.png` in densityless folder">
+        message="Found bitmap drawable `res/drawable/default_flag.webp` in densityless folder">
         <location
-            file="src/main/res/drawable/default_flag.png"/>
+            file="src/main/res/drawable/default_flag.webp"/>
     </issue>
 
     <issue
@@ -8012,28 +7077,28 @@
 
     <issue
         id="IconDensities"
-        message="Missing the following drawables in `drawable-hdpi`: avatar_badge_grey.webp, ic_action_edit_blue.webp, ic_arrow_back.webp, taprrot_rocket2.png">
+        message="Missing the following drawables in `drawable-hdpi`: avatar_badge_grey.webp, ic_action_edit_blue.webp, ic_arrow_back.webp, taprrot_rocket2.webp">
         <location
             file="src/main/res/drawable-hdpi"/>
     </issue>
 
     <issue
         id="IconDensities"
-        message="Missing the following drawables in `drawable-mdpi`: avatar_badge_grey.webp, ic_action_edit_blue.webp, ic_arrow_back.webp, taprrot_rocket2.png">
+        message="Missing the following drawables in `drawable-mdpi`: avatar_badge_grey.webp, ic_action_edit_blue.webp, ic_arrow_back.webp, taprrot_rocket2.webp">
         <location
             file="src/main/res/drawable-mdpi"/>
     </issue>
 
     <issue
         id="IconDensities"
-        message="Missing the following drawables in `drawable-xhdpi`: taprrot_rocket2.png (found in drawable-xxhdpi, drawable-xxxhdpi)">
+        message="Missing the following drawables in `drawable-xhdpi`: taprrot_rocket2.webp (found in drawable-xxhdpi, drawable-xxxhdpi)">
         <location
             file="src/main/res/drawable-xhdpi"/>
     </issue>
 
     <issue
         id="IconDensities"
-        message="Missing the following drawables in `drawable-xxhdpi`: taproot_rocket2.png (found in drawable-hdpi, drawable-mdpi, drawable-xhdpi)">
+        message="Missing the following drawables in `drawable-xxhdpi`: taproot_rocket2.webp (found in drawable-hdpi, drawable-mdpi, drawable-xhdpi)">
         <location
             file="src/main/res/drawable-xxhdpi"/>
     </issue>
@@ -8045,50 +7110,6 @@
             file="src/main/res/drawable/ic_temp.webp"/>
         <location
             file="src/main/res/drawable/ic_settings.webp"/>
-    </issue>
-
-    <issue
-        id="KtxExtensionAvailable"
-        message="Add suffix `-ktx` to enable the Kotlin extensions for this library"
-        errorLine1="    implementation &apos;androidx.preference:preference:1.0.0&apos;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="365"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="KtxExtensionAvailable"
-        message="Add suffix `-ktx` to enable the Kotlin extensions for this library"
-        errorLine1="    implementation &quot;androidx.lifecycle:lifecycle-runtime:$version_lifecycle&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="377"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="KtxExtensionAvailable"
-        message="Add suffix `-ktx` to enable the Kotlin extensions for this library"
-        errorLine1="    implementation &quot;androidx.navigation:navigation-fragment:$nav_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="433"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="KtxExtensionAvailable"
-        message="Add suffix `-ktx` to enable the Kotlin extensions for this library"
-        errorLine1="    implementation &quot;androidx.navigation:navigation-ui:$nav_version&quot;"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="build.gradle"
-            line="434"
-            column="20"/>
     </issue>
 
     <issue
@@ -8109,7 +7130,7 @@
         errorLine2="         ~~~~~~~~~">
         <location
             file="src/main/res/layout/anon_feedback_activity.xml"
-            line="37"
+            line="36"
             column="10"/>
     </issue>
 
@@ -8241,7 +7262,7 @@
         errorLine2="             ~~~~~~~~~">
         <location
             file="src/main/res/layout/muun_setting_item.xml"
-            line="36"
+            line="35"
             column="14"/>
     </issue>
 
@@ -8252,7 +7273,7 @@
         errorLine2="     ~~~~~~~~~">
         <location
             file="src/main/res/layout/muun_setting_item.xml"
-            line="62"
+            line="61"
             column="6"/>
     </issue>
 
@@ -8307,7 +7328,7 @@
         errorLine2="     ~~~~~~~~~">
         <location
             file="src/main/res/layout/status_message.xml"
-            line="11"
+            line="10"
             column="6"/>
     </issue>
 
@@ -8362,7 +7383,7 @@
         errorLine2="                                     ~~~~">
         <location
             file="src/main/res/layout/fragment_create_email.xml"
-            line="43"
+            line="41"
             column="38"/>
     </issue>
 

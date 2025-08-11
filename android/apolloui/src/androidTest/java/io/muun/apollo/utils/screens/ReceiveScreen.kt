@@ -1,5 +1,6 @@
 package io.muun.apollo.utils.screens
 
+import android.Manifest
 import android.content.Context
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
@@ -8,6 +9,7 @@ import io.muun.apollo.domain.libwallet.BitcoinUri
 import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.presentation.ui.show_qr.ShowQrPage
 import io.muun.apollo.utils.Clipboard
+import io.muun.apollo.utils.PermissionGranter
 import io.muun.apollo.utils.WithMuunInstrumentationHelpers
 import io.muun.common.bitcoinj.ValidationHelpers
 import io.muun.common.model.ReceiveFormatPreference
@@ -15,6 +17,7 @@ import io.muun.common.utils.Bech32SegwitAddress
 import io.muun.common.utils.BitcoinUtils
 import org.assertj.core.api.Assertions.assertThat
 import javax.money.MonetaryAmount
+
 
 class ReceiveScreen(
     override val device: UiDevice,
@@ -25,6 +28,8 @@ class ReceiveScreen(
         var lastCopiedFromClipboard: String = ""
             private set
     }
+
+    private val permissionGranter = PermissionGranter(device, context)
 
     sealed class UnifiedQrDraft {
         data class OnChain(
@@ -40,6 +45,10 @@ class ReceiveScreen(
 
     val address: String
         get() {
+            if (label(R.string.priming_notifications_enable).exists()) {
+                label(R.string.priming_notifications_enable).click()
+                permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
+            }
             id(R.id.show_qr_copy).click()
             lastCopiedFromClipboard = Clipboard.read()
             return lastCopiedFromClipboard
@@ -58,6 +67,10 @@ class ReceiveScreen(
 
     val unifiedQr: String
         get() {
+            if (label(R.string.priming_notifications_enable).exists()) {
+                label(R.string.priming_notifications_enable).click()
+                permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
+            }
             id(R.id.show_qr_copy).click()
             lastCopiedFromClipboard = Clipboard.read()
             return lastCopiedFromClipboard
@@ -98,12 +111,20 @@ class ReceiveScreen(
     }
 
     fun addUnifiedQrAmount(amountInSat: Long) {
+        if (label(R.string.priming_notifications_enable).exists()) {
+            label(R.string.priming_notifications_enable).click()
+            permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
+        }
         id(R.id.unified_qr_settings).click()
 
         editAmount(amountInSat)
     }
 
     fun addInvoiceAmount(amountInSat: Long) {
+        if (label(R.string.priming_notifications_enable).exists()) {
+            label(R.string.priming_notifications_enable).click()
+            permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
+        }
         normalizedLabel(ShowQrPage.LN.titleRes).click()
         id(R.id.invoice_settings).click()
 
@@ -144,11 +165,13 @@ class ReceiveScreen(
                 receiveScreen.id(R.id.invoice_settings).assertDoesntExist()
                 receiveScreen.id(R.id.unified_qr_settings).assertDoesntExist()
             }
+
             ReceiveFormatPreference.LIGHTNING -> {
                 receiveScreen.id(R.id.address_settings).assertDoesntExist()
                 receiveScreen.id(R.id.invoice_settings).exists()
                 receiveScreen.id(R.id.unified_qr_settings).assertDoesntExist()
             }
+
             ReceiveFormatPreference.UNIFIED -> {
                 receiveScreen.id(R.id.address_settings).assertDoesntExist()
                 receiveScreen.id(R.id.invoice_settings).assertDoesntExist()

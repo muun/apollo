@@ -29,8 +29,10 @@ class MuunDialog private constructor(
     private val messageResId: Int = 0,
     private val message: CharSequence? = null,
     private val positiveButtonResId: Int = 0,
+    private var positiveButtonColorId: Int = 0,
     private val positiveButtonAction: Action0? = null,
     private val negativeButtonResId: Int = 0,
+    private var negativeButtonColorId: Int = 0,
     private val negativeButtonAction: Action0? = null,
     private val dismissActions: MutableList<DialogInterface.OnDismissListener> = mutableListOf(),
     // Only for custom layout dialogs
@@ -48,8 +50,10 @@ class MuunDialog private constructor(
         private var messageResId: Int = 0
         private var message: CharSequence? = null
         private var positiveButtonResId: Int = 0
+        private var positiveButtonColorId: Int = 0
         private var positiveButtonAction: Action0? = null
         private var negativeButtonResId: Int = 0
+        private var negativeButtonColorId: Int = 0
         private var negativeButtonAction: Action0? = null
         private val dismissActions: MutableList<DialogInterface.OnDismissListener> = mutableListOf()
 
@@ -100,16 +104,18 @@ class MuunDialog private constructor(
             this.messageResId = 0
         }
 
-        fun positiveButton(@StringRes resId: Int, action: Action0? = null) =
+        fun positiveButton(@StringRes resId: Int, color: Int = 0, action: Action0? = null) =
             apply {
                 this.positiveButtonResId = resId
+                this.positiveButtonColorId = color
                 this.positiveButtonAction = action
             }
 
         @CheckReturnValue
-        fun negativeButton(@StringRes resId: Int, action: Action0? = null) =
+        fun negativeButton(@StringRes resId: Int, color: Int = 0, action: Action0? = null) =
             apply {
                 this.negativeButtonResId = resId
+                this.negativeButtonColorId = color
                 this.negativeButtonAction = action
             }
 
@@ -139,8 +145,10 @@ class MuunDialog private constructor(
             messageResId,
             message,
             positiveButtonResId,
+            positiveButtonColorId,
             positiveButtonAction,
             negativeButtonResId,
+            negativeButtonColorId,
             negativeButtonAction,
             dismissActions,
             onClickActions,
@@ -255,27 +263,32 @@ class MuunDialog private constructor(
         }
 
         if (positiveButtonResId != 0) {
-            val positiveButton = view.findViewById<TextView>(R.id.positive_button)
-            positiveButton.text = context.getString(positiveButtonResId)
-            positiveButton.setOnClickListener {
-                positiveButtonAction?.call()
-                dialog.dismiss()
+            with(view.findViewById<TextView>(R.id.positive_button)) {
+                text = context.getString(positiveButtonResId)
+                if(positiveButtonColorId != 0) {
+                    setTextColor(positiveButtonColorId)
+                }
+                setOnClickListener {
+                    positiveButtonAction?.call()
+                    dialog.dismiss()
+                }
+                visibility = View.VISIBLE
             }
-            positiveButton.visibility = View.VISIBLE
-            view.findViewById<View>(R.id.dialog_button_container).visibility = View.VISIBLE
         }
 
         if (negativeButtonResId != 0) {
-            val negativeButton = view.findViewById<TextView>(R.id.negative_button)
-            negativeButton.text = context.getString(negativeButtonResId)
-            negativeButton.setOnClickListener {
-                negativeButtonAction?.call()
-                dialog.dismiss()
+            with(view.findViewById<TextView>(R.id.negative_button)) {
+                text = context.getString(negativeButtonResId)
+                if(negativeButtonColorId != 0) {
+                    setTextColor(negativeButtonColorId)
+                }
+                setOnClickListener {
+                    negativeButtonAction?.call()
+                    dialog.dismiss()
+                }
+                visibility = View.VISIBLE
             }
-            negativeButton.visibility = View.VISIBLE
-            view.findViewById<View>(R.id.dialog_button_container).visibility = View.VISIBLE
         }
-
     }
 
     private fun resolveString(context: Context, resId: Int): CharSequence? {

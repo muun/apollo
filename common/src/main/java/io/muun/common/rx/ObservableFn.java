@@ -1,7 +1,7 @@
 package io.muun.common.rx;
 
 import io.muun.common.Optional;
-import io.muun.common.api.error.ErrorCode;
+import io.muun.common.api.error.BaseErrorCode;
 import io.muun.common.exception.HttpException;
 import io.muun.common.utils.ExceptionUtils;
 
@@ -75,7 +75,6 @@ public final class ObservableFn {
             } else {
                 return Observable.error(error);
             }
-
         });
     }
 
@@ -128,7 +127,7 @@ public final class ObservableFn {
     /**
      * Consume and ignore HttpExceptions of a given type.
      */
-    public static <T> Transformer<T, T> ignoreHttpException(final ErrorCode code) {
+    public static <T> Transformer<T, T> ignoreHttpException(final BaseErrorCode code) {
 
         return onHttpExceptionResumeNext(
                 code,
@@ -141,7 +140,7 @@ public final class ObservableFn {
      * replaced by the error returned when calling replacer with the original error.
      */
     public static <T> Transformer<T, T> replaceHttpException(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Throwable> replacer) {
 
         return onHttpExceptionResumeNext(
@@ -154,7 +153,7 @@ public final class ObservableFn {
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static <T> Transformer<T, T> onHttpExceptionResumeNext(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Observable<T>> resumeFunction) {
 
         return observable -> observable.onErrorResumeNext(error -> {
@@ -171,7 +170,6 @@ public final class ObservableFn {
             } else {
                 return Observable.error(error);
             }
-
         });
     }
 }

@@ -38,8 +38,8 @@ func Test_paddedSerializeBigInt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := paddedSerializeBigInt(tt.args.size, tt.args.x); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("paddedSerializeBigInt() = %v, want %v", got, tt.want)
+			if got := PaddedSerializeBigInt(tt.args.size, tt.args.x); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PaddedSerializeBigInt() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -68,7 +68,7 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
             .title(R.string.change_password_abort_dialog_title)
             .message(R.string.change_password_abort_dialog_message)
             .positiveButton(R.string.change_password_abort_dialog_yes) { abort() }
-            .negativeButton(R.string.change_password_abort_dialog_no, null)
+            .negativeButton(R.string.change_password_abort_dialog_no)
             .build()
 
         parentActivity.showDialog(muunDialog)

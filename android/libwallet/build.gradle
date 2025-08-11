@@ -7,6 +7,11 @@ def libwalletSources = fileTree("${project.rootDir}/libwallet") {
     exclude "**/*_test.go"
 }
 
+def librsSources = fileTree("${project.rootDir}/libwallet/librs") {
+    exclude "target/"
+    exclude "**/*.bin"
+}
+
 task build(type: Exec) {
     group = "build"
     description = "Build libwallet for Android bindings"
@@ -20,6 +25,7 @@ task build(type: Exec) {
     inputs.property("script", script)
 
     inputs.files(libwalletSources)
+    inputs.files(librsSources)
     inputs.file(script)
 
     outputs.file(aar)

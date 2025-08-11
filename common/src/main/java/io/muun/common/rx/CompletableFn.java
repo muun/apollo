@@ -1,7 +1,7 @@
 package io.muun.common.rx;
 
 import io.muun.common.Optional;
-import io.muun.common.api.error.ErrorCode;
+import io.muun.common.api.error.BaseErrorCode;
 import io.muun.common.exception.HttpException;
 import io.muun.common.utils.ExceptionUtils;
 
@@ -69,7 +69,7 @@ public final class CompletableFn {
     /**
      * Consume and ignore HttpExceptions of a given type.
      */
-    public static Completable.Transformer ignoreHttpException(final ErrorCode code) {
+    public static Completable.Transformer ignoreHttpException(final BaseErrorCode code) {
 
         return onHttpExceptionResumeNext(
                 code,
@@ -82,7 +82,7 @@ public final class CompletableFn {
      * gets replaced by the error returned when calling replacer with the original error.
      */
     public static Completable.Transformer replaceHttpException(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Throwable> replacer
     ) {
 
@@ -96,7 +96,7 @@ public final class CompletableFn {
      * Like onTypedErrorResumeNext, but specialized to HttpExceptions.
      */
     public static Completable.Transformer onHttpExceptionResumeNext(
-            final ErrorCode code,
+            final BaseErrorCode code,
             final Func1<HttpException, Completable> resumeFunction
     ) {
 

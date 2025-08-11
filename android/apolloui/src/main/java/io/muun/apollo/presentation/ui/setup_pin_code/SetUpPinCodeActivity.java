@@ -1,16 +1,17 @@
 package io.muun.apollo.presentation.ui.setup_pin_code;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SetUpPinCodeBinding;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
-import io.muun.apollo.presentation.ui.view.MuunPinInput;
 import io.muun.common.exception.MissingCaseError;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindString;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 
 public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
@@ -23,14 +24,14 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
 
     private static final int AFTER_SUCCESS_DELAY_MS = 200;
 
-    @BindView(R.id.set_up_pin_input)
-    MuunPinInput pinInput;
+    private SetUpPinCodeBinding binding() {
+        return (SetUpPinCodeBinding) getBinding();
+    }
 
-    @BindView(R.id.back_arrow)
-    View backButton;
-
-    @BindString(R.string.pin_error_on_setup_cancel)
-    String pinErrorOnCancel;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SetUpPinCodeBinding::inflate;
+    }
 
     @Override
     protected int getLayoutResource() {
@@ -45,8 +46,9 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     @Override
     protected void initializeUi() {
         super.initializeUi();
-        pinInput.setListener(presenter::submitPin);
-        backButton.setOnClickListener((v) -> presenter.goBack());
+        final var binding = binding();
+        binding.setUpPinInput.setListener(presenter::submitPin);
+        binding.backArrow.setOnClickListener((v) -> presenter.goBack());
     }
 
     /**
@@ -54,6 +56,8 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
      */
     @Override
     public void setStep(SetUpPinCodeStep step) {
+        final var binding = binding();
+        final var pinInput = binding.setUpPinInput;
 
         switch (step) {
             case CHOOSE_PIN:
@@ -71,6 +75,10 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     }
 
     private void onChoosePin() {
+        final var binding = binding();
+        final var pinInput = binding.setUpPinInput;
+        final var backButton = binding.backArrow;
+
         pinInput.clear();
         backButton.setVisibility(View.GONE);
         pinInput.setTitle(R.string.choose_your_pin);
@@ -78,6 +86,10 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     }
 
     private void onRepeatPin() {
+        final var binding = binding();
+        final var pinInput = binding.setUpPinInput;
+        final var backButton = binding.backArrow;
+
         new Handler().postDelayed(() -> pinInput.clear(), AFTER_SUCCESS_DELAY_MS);
         backButton.setVisibility(View.VISIBLE);
         pinInput.setTitle(R.string.confirm_your_pin);
@@ -86,11 +98,13 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
 
     @Override
     public void clearPin() {
-        pinInput.clear();
+        binding().setUpPinInput.clear();
     }
 
     @Override
     public void reportPinError() {
+        final var pinInput = binding().setUpPinInput;
+
         pinInput.flashError(() ->
                 pinInput.setErrorMessage(R.string.your_pin_did_not_match)
         );
@@ -98,7 +112,7 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
 
     @Override
     public void reportPinSuccess() {
-        pinInput.setSuccess();
+        binding().setUpPinInput.setSuccess();
         new Handler().postDelayed(this::finishOk, AFTER_SUCCESS_DELAY_MS);
     }
 
@@ -109,15 +123,14 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
 
     @Override
     public void onBackPressed() {
-
-        if (backButton.getVisibility() == View.VISIBLE) {
+        if (binding().backArrow.getVisibility() == View.VISIBLE) {
             // As long as a back arrow is visible,
             // the backPressed navigation should behave in the same way as that arrow
             presenter.goBack();
         } else if (getArgumentsBundle().getBoolean(CAN_CANCEL, true)) {
             super.onBackPressed();
         } else {
-            showTextToast(pinErrorOnCancel);
+            showTextToast(getResources().getString(R.string.pin_error_on_setup_cancel));
         }
     }
 }

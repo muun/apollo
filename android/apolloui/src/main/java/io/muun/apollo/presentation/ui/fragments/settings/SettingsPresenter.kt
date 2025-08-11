@@ -14,14 +14,15 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SETTINGS
 import io.muun.apollo.domain.analytics.AnalyticsEvent.WalletDeleteState
 import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException
 import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException
-import io.muun.apollo.domain.libwallet.UAF_TAPROOT
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
+import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
+import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
@@ -47,6 +48,7 @@ class SettingsPresenter @Inject constructor(
     private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val nightModeManager: NightModeManager,
     private val notificationService: NotificationService,
+    private val featureSelector: FeatureSelector,
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
     class SettingsState(
@@ -54,6 +56,7 @@ class SettingsPresenter @Inject constructor(
         val bitcoinUnit: BitcoinUnit,
         val exchangeRateWindow: ExchangeRateWindow,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
+        val features: List<MuunFeature>,
     )
 
     override fun setUp(arguments: Bundle) {
@@ -71,7 +74,8 @@ class SettingsPresenter @Inject constructor(
                 userSel.watch(),
                 bitcoinUnitSel.watch(),
                 exchangeRateSelector.watchLatestWindow(),
-                userActivatedFeatureStatusSel.watch(UAF_TAPROOT),
+                userActivatedFeatureStatusSel.watchTaproot(),
+                featureSelector.fetch(),
                 ::SettingsState
             )
             .doOnNext { state ->
@@ -94,6 +98,7 @@ class SettingsPresenter @Inject constructor(
                         view.setLoading(false)
                         handleError(state.error)
                     }
+
                     else -> {
                     }
                 }
@@ -108,6 +113,7 @@ class SettingsPresenter @Inject constructor(
                 when (state.kind) {
                     ActionState.Kind.VALUE -> {
                     }
+
                     ActionState.Kind.ERROR -> handleError(state.error)
                     else -> {
                     }

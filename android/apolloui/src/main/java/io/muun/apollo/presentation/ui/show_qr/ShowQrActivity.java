@@ -205,8 +205,8 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
         final MuunDialog muunDialog = new MuunDialog.Builder()
                 .title(R.string.priming_notifications_permanently_denied_dialog_title)
                 .message(styledDesc.toCharSequence())
-                .positiveButton(R.string.go_to_settings, presenter::navigateToSystemSettings)
-                .negativeButton(R.string.cancel, null)
+                .positiveButton(R.string.go_to_settings, 0, presenter::navigateToSystemSettings)
+                .negativeButton(R.string.cancel, 0, null)
                 .build();
 
         showDialog(muunDialog);

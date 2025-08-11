@@ -3,12 +3,13 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
-import android.widget.TextView
-import butterknife.BindView
+import android.view.View
+import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
-import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.databinding.EditAddressTypeItemBinding
 import io.muun.apollo.domain.model.AddressType
+import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.PickerCard.Status
 
@@ -23,10 +24,14 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         fun onAddressTypeChanged(newType: AddressType)
     }
 
-    private lateinit var listener: AddressTypeChangedListener
+    private val binding: EditAddressTypeItemBinding
+        get() = getBinding() as EditAddressTypeItemBinding
 
-    @BindView(R.id.edit_address_type)
-    lateinit var editAddressTypeButton: TextView
+    override fun viewBinder(): ((View) -> ViewBinding) {
+        return EditAddressTypeItemBinding::bind
+    }
+
+    private lateinit var listener: AddressTypeChangedListener
 
     @State
     lateinit var addressType: AddressType
@@ -45,7 +50,7 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
 
-        editAddressTypeButton.setOnClickListener { onAddressTypeClick() }
+        binding.editAddressType.setOnClickListener { onAddressTypeClick() }
     }
 
     fun show(addressType: AddressType) {
@@ -97,7 +102,7 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
             AddressType.TAPROOT -> R.string.taproot
         }
 
-        editAddressTypeButton.setText(buttonText)
+        binding.editAddressType.setText(buttonText)
     }
 
     private fun getLegacyOption(): MuunPicker.Option {

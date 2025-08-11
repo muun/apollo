@@ -14,7 +14,7 @@ public class ApolloDebugApplication extends ApolloApplication {
 
         // The release flavor should override this with an empty method on ApolloProdApplication.
         // We are leaving the extra check for redundancy.
-        if (Globals.INSTANCE.isDebugBuild()) {
+        if (Globals.INSTANCE.isDebug()) {
             if (!OS.INSTANCE.requiresPendingIntentMutabilityFlags()) {
                 // For latest android versions (require mutability flags), don't install blockCanary
                 BlockCanary.install(this, new AppBlockCanaryContext()).start();
