@@ -224,15 +224,15 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
         }
 
-    private fun File.getTotalSpaceSafe() = try {
-        totalSpace
+    private fun File?.getTotalSpaceSafe() = try {
+        this?.totalSpace ?: UNKNOWN_BYTES_AMOUNT
     } catch (e: Exception) {
         Timber.e(HardwareCapabilityError("totalSpace", e))
         UNKNOWN_BYTES_AMOUNT
     }
 
-    private fun File.getFreeSpaceSafe() = try {
-        freeSpace
+    private fun File?.getFreeSpaceSafe() = try {
+        this?.freeSpace ?: UNKNOWN_BYTES_AMOUNT
     } catch (e: Exception) {
         Timber.e(HardwareCapabilityError("freeSpace", e))
         UNKNOWN_BYTES_AMOUNT
@@ -268,15 +268,23 @@ class HardwareCapabilitiesProvider(private val context: Context) {
      * TODO: once our minSdk > 28 (OS.supportsMediaDrmClose()) we could do this with kotlin's
      *  try-with-resources.
      */
-    private fun getDrmIdFromClosableMediaDrm(drmProviderUuid: UUID): String {
+    private fun getDrmIdFromClosableMediaDrm(drmProviderUuid: UUID): String? {
         var mediaDrm: MediaDrm? = null
         try {
             mediaDrm = MediaDrm(drmProviderUuid)
-            val deviceIdBytes = mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
+            val deviceIdBytes = getSafeDeviceId(mediaDrm) ?: return null
 
             return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
         } finally {
             mediaDrm?.let(::releaseMediaDRM)
+        }
+    }
+
+    private fun getSafeDeviceId(mediaDrm: MediaDrm): ByteArray? {
+        return try {
+            mediaDrm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID)
+        } catch (e: Exception) {
+            null
         }
     }
 

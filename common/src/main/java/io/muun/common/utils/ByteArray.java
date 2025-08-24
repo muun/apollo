@@ -36,9 +36,11 @@ public class ByteArray {
      */
     public static byte[] concat(byte[]... parts) {
 
-        final int totalLength = Arrays.stream(parts)
-                .map(x -> x.length)
-                .reduce(0, Integer::sum);
+        int totalLength = 0;
+
+        for (byte[] part : parts) {
+            totalLength += part.length;
+        }
 
         final byte[] concatenatedArray = new byte[totalLength];
         int currentPosition = 0;

@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.1] - 2025-08-22
+
+### FIXED
+
+- Api < 24 crash on missing method
+- Null context fixed on dialog
+
 ## [55.0] - 2025-08-07
 
 ### CHANGED
