@@ -114,7 +114,7 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
             view.showErrorDialog(
                     getContext().getString(R.string.network_error_message),
                     null,
-                    () -> navigator.navigateToLauncher(getContext())
+                    () -> navigator.navigateToLauncher(view.getViewContext())
             );
         } else {
             super.handleError(error);
