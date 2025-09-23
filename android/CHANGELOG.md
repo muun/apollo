@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.1] - 2025-09-23
+
+### FIXED
+
+- Visual issues related to handling of insets in android versions without edge-to-edge support
+(api level < 30).
+
 ## [55.1] - 2025-08-22
 
 ### FIXED
