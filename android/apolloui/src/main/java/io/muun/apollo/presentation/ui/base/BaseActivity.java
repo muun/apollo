@@ -39,6 +39,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
@@ -213,6 +214,10 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         final View rootView = getWindow().getDecorView().getRootView();
 
         setStatusBarIconsColor();
+
+        if (!OS.supportsEdgeToEdge()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(
                 rootView,

@@ -144,6 +144,13 @@ object OS {
     fun supportsActivityTransitions(): Boolean =
         isAndroidLOrNewer()
 
+    /**
+     * Whether this OS has edge-to-edge support (insets), which was added in R-11-30.
+     */
+    @JvmStatic
+    fun supportsEdgeToEdge(): Boolean =
+        isAndroidROrNewer()
+
     // PRIVATE STUFF:
 
     /**
@@ -184,6 +191,13 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
     private fun isAndroidQOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    /**
+     * Whether this OS version is R-11-30 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
+    private fun isAndroidROrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
     /**
      * Whether this OS version is N-7-24 or newer.
