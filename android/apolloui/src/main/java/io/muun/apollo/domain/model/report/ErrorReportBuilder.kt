@@ -67,13 +67,23 @@ object ErrorReportBuilder {
 
         // Prepare the metadata: (needs to happen BEFORE summarization bc we reassign the variable)
         val metadata = extractMetadata(error)
-        metadata["recentRequests"] = LoggingRequestTracker.getRecentRequests().toString()
+        metadata["recentRequests"] = printRecentRequests()
 
         error = summarize(error)
 
         // Done!
         return ErrorReport(tag ?: "Apollo", message, error, origError, metadata)
     }
+
+    private fun printRecentRequests(): String {
+        val builder = StringBuilder("[\n")
+        for (entry in LoggingRequestTracker.getRecentRequests()) {
+            builder.append("\t\t$entry\n")
+        }
+        builder.append("]")
+        return builder.toString()
+    }
+
 
     /** Craft a summarized Throwable */
     private fun summarize(e: Throwable) =

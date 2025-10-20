@@ -26,6 +26,12 @@ const (
 	KeyIsBalanceHidden            string = "isBalanceHidden"
 	KeyNightMode                  string = "nightMode"
 	KeySecurityCardXpubSerialized string = "securityCardXpubSerialized"
+	KeySecurityCardPaired         string = "securityCardClientPaired"
+	// TODO: These three are marked as prototypes to avoid accidentally setting the non-prototype fields
+	//  in a consumer device before finalizing the design. Before production, the "Prototype" suffix must be removed
+	UnverifiedEncryptedMuunKey string = "unverifiedEncryptedMuungKeyPrototype"
+	VerifiedEncryptedMuunKey   string = "verifiedEncryptedMuunKeyPrototype"
+	EncryptedUserKey           string = "encryptedUserKeyPrototype"
 )
 
 type ValueType interface {
@@ -136,6 +142,30 @@ func BuildStorageSchema() map[string]Classification {
 			BackupSecurity:   NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &StringType{},
+		},
+		UnverifiedEncryptedMuunKey: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   Plain,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
+		},
+		VerifiedEncryptedMuunKey: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   Authenticated,
+			SecurityCritical: true,
+			ValueType:        &StringType{},
+		},
+		EncryptedUserKey: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   Authenticated,
+			SecurityCritical: true,
+			ValueType:        &StringType{},
+		},
+		KeySecurityCardPaired: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
 		},
 	}
 }

@@ -66,13 +66,6 @@ object OS {
         isAndroidROrNewer()
 
     /**
-     * Whether this OS supports telephonyManager#getNetworkCountryIso(int slotIndex), which was introduced in
-     * R-11-30.
-     */
-    fun supportsGetNetworkCountryIsoWithSlotIndex(): Boolean =
-        isAndroidROrNewer()
-
-    /**
      * Whether this OS supports Pending Intent mutability flags, which where introduced in M-6-23
      * and are required starting in S-12-31.
      *
@@ -132,13 +125,6 @@ object OS {
         isAndroidSOrNewer()
 
     /**
-     * Whether this OS supports UserManager#getUserCreationTime(UserHandle), which was added
-     * in M-6-23.
-     */
-    fun supportsUserCreationTime(): Boolean =
-        isAndroidMOrNewer()
-
-    /**
      * Whether this OS supports MediaDrm#getSupportedCryptoSchemes(), which was introduced in
      * R-11-30.
      */
@@ -152,9 +138,10 @@ object OS {
         isAndroidMOrNewer()
 
     /**
-     * Whether this OS supports Build.VERSION.BASE_OS, which was introduced in M-6-23.
+     * Whether this OS supports BatteryManager.isCharging, which was introduced in M-6-23.
      */
-    fun supportsBuildVersionBaseOs(): Boolean =
+
+    fun supportsBatteryManagerIsCharging(): Boolean =
         isAndroidMOrNewer()
 
     /**
@@ -168,13 +155,6 @@ object OS {
      */
     fun supportsPIP(): Boolean =
         isAndroidNOrNewer()
-
-    /**
-     * Whether this OS device has biometric hardware to detect a fingerprint, which was introduced
-     * in M-6-23.
-     */
-    fun supportsDactylogram(): Boolean =
-        isAndroidMOrNewer()
 
     /**
      * Whether this OS supports Feature PC, which was introduced in O-8.1-27.
@@ -224,12 +204,6 @@ object OS {
         isAndroidLOrNewer()
 
     /**
-     * Whether this OS supports Calendar#calendarType, which was introduced in O-8-26.
-     */
-    fun supportsCalendarType(): Boolean =
-        isAndroidOOrNewer()
-
-    /**
      * Whether this OS supports {@link android.security.KeyStoreException} public methods, which
      * were introduced in T-13-33.
      */
@@ -271,16 +245,6 @@ object OS {
     fun supportsgetHistoricalProcessExitReasons(): Boolean =
         isAndroidROrNewer()
 
-    /**
-     * Whether this OS supports File#readAttributes, which was added in O-8-26.
-     */
-    fun supportsReadFileAttributes(): Boolean =
-        isAndroidOOrNewer()
-
-
-    fun supportsHardwareAddresses(): Boolean =
-        isAndroidQOrOlder()
-
 
     // PRIVATE STUFF:
 
@@ -304,12 +268,6 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
     private fun isAndroidSOrNewer() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-
-    /**
-     * Whether this OS version is Q-10-29 or older.
-     */
-    private fun isAndroidQOrOlder() =
-        Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
 
     /**
      * Whether this OS version is EXACTLY Q-10-29.

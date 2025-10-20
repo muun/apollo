@@ -125,3 +125,7 @@ func (p *HDPublicKey) Fingerprint() []byte {
 func (p *HDPublicKey) ECPubKey() (*btcec.PublicKey, error) {
 	return p.key.ECPubKey()
 }
+
+func (p *HDPublicKey) ChainCode() []byte {
+	return p.key.ChainCode()
+}

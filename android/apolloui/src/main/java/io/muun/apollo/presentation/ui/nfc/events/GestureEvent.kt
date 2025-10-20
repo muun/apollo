@@ -1,14 +1,34 @@
 package io.muun.apollo.presentation.ui.nfc.events
 
 import android.view.MotionEvent
+import io.muun.apollo.domain.model.SensorEvent
+import org.threeten.bp.ZonedDateTime
 
+/**
+ * Represents a gesture event captured from a [MotionEvent], including gesture type and position data.
+ *
+ * Implements [ISensorEvent] to provide structured data for gesture interactions.
+ *
+ * @property id The unique identifier of the gesture event.
+ * @property eventType The type of the event, defaulted to "gesture".
+ * @property action The gesture action type from [MotionEvent].
+ * @property x The x-coordinate of the gesture event.
+ * @property y The y-coordinate of the gesture event.
+ * @property pointerCount The number of pointers (fingers) involved in the gesture.
+ * @property timestamp The ISO 8601 formatted timestamp when the event was created.
+ */
 internal data class GestureEvent(
+    override val id: Long,
+    override val eventType: String = "gesture",
     val action: Int,
     val x: Float,
     val y: Float,
     val pointerCount: Int,
 ) : ISensorEvent {
-    override fun handle(): List<Pair<String, String>> {
+
+    override val timestamp: ZonedDateTime = ZonedDateTime.now()
+
+    override fun handle(): SensorEvent {
         val actionName = when (action) {
             MotionEvent.ACTION_DOWN -> "gesture_down"
             MotionEvent.ACTION_UP -> "gesture_up"
@@ -26,11 +46,16 @@ internal data class GestureEvent(
             else -> "gesture_unknown_$action"
         }
 
-        return listOf(
-            "gesture_action" to actionName,
-            "gesture_x" to x.toString(),
-            "gesture_y" to y.toString(),
-            "gesture_pointers" to pointerCount.toString()
+        return SensorEvent(
+            eventId = id,
+            eventType = eventType,
+            eventTimestamp = timestamp,
+            eventData = mapOf(
+                "gesture_action" to actionName,
+                "gesture_x" to x.toString(),
+                "gesture_y" to y.toString(),
+                "gesture_pointers" to pointerCount.toString(),
+            )
         )
     }
 }

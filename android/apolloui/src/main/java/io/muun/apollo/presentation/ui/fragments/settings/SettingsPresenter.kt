@@ -239,6 +239,10 @@ class SettingsPresenter @Inject constructor(
         return S_SETTINGS()
     }
 
+    fun navigateToDiagnosticMode() {
+        navigator.navigateToDiagnosticMode(context)
+    }
+
     fun navigateToLightningSettings() {
         navigator.navigateToFragment(context, LightningSettingsFragment::class.java)
     }

@@ -5,20 +5,20 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/btcsuite/btcd/btcutil"
 	"log/slog"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil/base58"
-	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/google/uuid"
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/app_provided_data"
+	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/domain/action/challenge_keys"
 	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
 	"github.com/muun/libwallet/domain/action/nfc"
+	"github.com/muun/libwallet/domain/action/recovery"
 	"github.com/muun/libwallet/domain/diagnostic_mode"
-	"github.com/muun/libwallet/domain/recovery"
-	"github.com/muun/libwallet/electrum"
 	apierrors "github.com/muun/libwallet/errors"
 	"github.com/muun/libwallet/presentation/api"
 	"github.com/muun/libwallet/service"
@@ -30,73 +30,70 @@ import (
 
 type WalletServer struct {
 	api.UnsafeWalletServiceServer
-	nfcBridge               app_provided_data.NfcBridge
-	keysProvider            app_provided_data.KeyProvider
-	network                 *libwallet.Network
-	houstonService          *service.HoustonService
-	keyValueStorage         *storage.KeyValueStorage
-	startChallengeSetup     *challenge_keys.StartChallengeSetupAction
-	submitDiagnostic        *diagnostic_mode_reports.SubmitDiagnosticAction
-	pairSecurityCard        *nfc.PairSecurityCardAction
-	resetSecurityCard       *nfc.ResetSecurityCardAction
-	signMessageSecurityCard *nfc.SignMessageSecurityCardAction
+	nfcBridge                app_provided_data.NfcBridge
+	keyProvider              keys.KeyProvider
+	network                  *libwallet.Network
+	houstonService           service.HoustonService
+	keyValueStorage          *storage.KeyValueStorage
+	startChallengeSetup      *challenge_keys.StartChallengeSetupAction
+	finishChallengeSetup     *challenge_keys.FinishChallengeSetupAction
+	populateEncryptedMuunKey *recovery.PopulateEncryptedMuunKeyAction
+	scanForFunds             *recovery.ScanForFundsAction
+	submitDiagnostic         *diagnostic_mode_reports.SubmitDiagnosticAction
+	buildSweepTx             *recovery.BuildSweepTxAction
+	signSweepTx              *recovery.SignSweepTxAction
+	pairSecurityCard         *nfc.PairSecurityCardAction
+	resetSecurityCard        *nfc.ResetSecurityCardAction
+	signMessageSecurityCard  *nfc.SignMessageSecurityCardAction
+	pairSecurityCardV2       *nfc.PairSecurityCardActionV2
 }
 
 func NewWalletServer(
 	nfcBridge app_provided_data.NfcBridge,
-	keysProvider app_provided_data.KeyProvider,
+	keyProvider keys.KeyProvider,
 	network *libwallet.Network,
-	houstonService *service.HoustonService,
+	houstonService service.HoustonService,
 	keyValueStorage *storage.KeyValueStorage,
 	startChallengeSetup *challenge_keys.StartChallengeSetupAction,
+	finishChallengeSetup *challenge_keys.FinishChallengeSetupAction,
+	obtainVerifiedEncryptedMuunKeyIfAbsent *recovery.PopulateEncryptedMuunKeyAction,
+	scanForFunds *recovery.ScanForFundsAction,
 	submitDiagnostic *diagnostic_mode_reports.SubmitDiagnosticAction,
+	buildSweepTx *recovery.BuildSweepTxAction,
+	signSweepTxAction *recovery.SignSweepTxAction,
 	pairSecurityCard *nfc.PairSecurityCardAction,
 	resetSecurityCard *nfc.ResetSecurityCardAction,
 	signMessageSecurityCard *nfc.SignMessageSecurityCardAction,
+	pairSecurityCardV2 *nfc.PairSecurityCardActionV2,
 ) *WalletServer {
 
 	return &WalletServer{
-		nfcBridge:               nfcBridge,
-		keysProvider:            keysProvider,
-		network:                 network,
-		houstonService:          houstonService,
-		keyValueStorage:         keyValueStorage,
-		startChallengeSetup:     startChallengeSetup,
-		submitDiagnostic:        submitDiagnostic,
-		pairSecurityCard:        pairSecurityCard,
-		resetSecurityCard:       resetSecurityCard,
-		signMessageSecurityCard: signMessageSecurityCard,
+		nfcBridge:                nfcBridge,
+		keyProvider:              keyProvider,
+		network:                  network,
+		houstonService:           houstonService,
+		keyValueStorage:          keyValueStorage,
+		startChallengeSetup:      startChallengeSetup,
+		finishChallengeSetup:     finishChallengeSetup,
+		populateEncryptedMuunKey: obtainVerifiedEncryptedMuunKeyIfAbsent,
+		scanForFunds:             scanForFunds,
+		submitDiagnostic:         submitDiagnostic,
+		buildSweepTx:             buildSweepTx,
+		signSweepTx:              signSweepTxAction,
+		pairSecurityCard:         pairSecurityCard,
+		resetSecurityCard:        resetSecurityCard,
+		signMessageSecurityCard:  signMessageSecurityCard,
+		pairSecurityCardV2:       pairSecurityCardV2,
 	}
 }
 
 // Check we actually implement the interface
 var _ api.WalletServiceServer = (*WalletServer)(nil)
 
-func (WalletServer) DeleteWallet(context.Context, *emptypb.Empty) (*api.OperationStatus, error) {
-	// For now, do nothing. This will probably change in the future.
-	return api.OperationStatus_builder{
-		Status: "ok",
-	}.Build(), nil
-}
-
-func (ws WalletServer) NfcTransmit(ctx context.Context, req *api.NfcTransmitRequest) (*api.NfcTransmitResponse, error) {
-
-	fmt.Printf("WalletServer: nfcTransmit")
-	slog.Debug("WalletServer: nfcTransmit")
-
-	nfcBridgeResponse, err := ws.nfcBridge.Transmit(req.GetApduCommand())
-	if err != nil {
-		// TODO error logging
-		return nil, err
-	}
-
-	return api.NfcTransmitResponse_builder{
-		ApduResponse: nfcBridgeResponse.Response,
-		StatusCode:   nfcBridgeResponse.StatusCode,
-	}.Build(), nil
-}
-
-func (ws WalletServer) SetupSecurityCard(ctx context.Context, message *emptypb.Empty) (*api.XpubResponse, error) {
+func (ws WalletServer) SetupSecurityCard(
+	ctx context.Context,
+	message *emptypb.Empty,
+) (*api.XpubResponse, error) {
 	extendedPublicKey, err := ws.pairSecurityCard.Run()
 	if err != nil {
 		return nil, fmt.Errorf("error pairing security card: %w", err)
@@ -109,7 +106,28 @@ func (ws WalletServer) SetupSecurityCard(ctx context.Context, message *emptypb.E
 	}.Build(), nil
 }
 
-func (ws WalletServer) ResetSecurityCard(ctx context.Context, message *emptypb.Empty) (*emptypb.Empty, error) {
+func (ws WalletServer) SetupSecurityCardV2(
+	ctx context.Context,
+	message *emptypb.Empty,
+) (*api.SetupSecurityCardResponse, error) {
+	response, err := ws.pairSecurityCardV2.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error pairing security card: %w", err)
+	}
+
+	slog.Debug("card paired succesfully")
+	slog.Debug("MetadaCard", "metadata", response.Metadata)
+
+	return api.SetupSecurityCardResponse_builder{
+		IsKnownProvider:   response.IsKnownProvider,
+		IsCardAlreadyUsed: response.IsCardAlreadyUsed,
+	}.Build(), nil
+}
+
+func (ws WalletServer) ResetSecurityCard(
+	ctx context.Context,
+	message *emptypb.Empty,
+) (*emptypb.Empty, error) {
 	err := ws.resetSecurityCard.Run()
 	if err != nil {
 		return nil, err
@@ -136,10 +154,22 @@ func (ws WalletServer) SignMessageSecurityCard(
 	}.Build(), nil
 }
 
-func (ws WalletServer) StartDiagnosticSession(ctx context.Context, empty *emptypb.Empty) (*api.DiagnosticSessionDescriptor, error) {
+func (ws WalletServer) StartDiagnosticSession(
+	ctx context.Context,
+	empty *emptypb.Empty,
+) (*api.DiagnosticSessionDescriptor, error) {
 	sessionId := uuid.NewString()
+
+	logBuffer := bytes.NewBuffer(nil)
+	textHandler := slog.NewTextHandler(logBuffer, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})
+	debugLog := slog.New(textHandler)
+
 	err := diagnostic_mode.AddDiagnosticSession(&diagnostic_mode.DiagnosticSessionData{
-		Id: sessionId,
+		Id:        sessionId,
+		LogBuffer: logBuffer,
+		Logger:    debugLog,
 	})
 	if err != nil {
 		return nil, err
@@ -149,22 +179,20 @@ func (ws WalletServer) StartDiagnosticSession(ctx context.Context, empty *emptyp
 	}.Build(), nil
 }
 
-func (ws WalletServer) PerformDiagnosticScanForUtxos(descriptor *api.DiagnosticSessionDescriptor, g grpc.ServerStreamingServer[api.ScanProgressUpdate]) error {
+func (ws WalletServer) PerformDiagnosticScanForUtxos(
+	descriptor *api.DiagnosticSessionDescriptor,
+	g grpc.ServerStreamingServer[api.ScanProgressUpdate],
+) error {
 	sessionId := descriptor.GetSessionId()
 
 	if sessionData, ok := diagnostic_mode.GetDiagnosticSession(sessionId); ok {
-		sessionData.DebugLog = bytes.NewBuffer(nil)
-		textHandler := slog.NewTextHandler(sessionData.DebugLog, &slog.HandlerOptions{
-			Level: slog.LevelInfo,
-		})
-
-		var servers []string = electrum.PublicServers
-		reports, err := diagnostic_mode.ScanAddresses(ws.keysProvider, electrum.NewServerProvider(servers), ws.network, slog.New(textHandler))
+		reports, err := ws.scanForFunds.Run(sessionData.Logger)
 		if err != nil {
 			return err
 		}
 
 		for report := range reports {
+			sessionData.LastScanReport = report
 			for _, utxo := range report.UtxosFound {
 				_ = g.Send(api.ScanProgressUpdate_builder{
 					FoundUtxoReport: api.FoundUtxoReport_builder{
@@ -185,10 +213,13 @@ func (ws WalletServer) PerformDiagnosticScanForUtxos(descriptor *api.DiagnosticS
 	}
 }
 
-func (ws WalletServer) SubmitDiagnosticLog(ctx context.Context, descriptor *api.DiagnosticSessionDescriptor) (*api.DiagnosticSubmitStatus, error) {
+func (ws WalletServer) SubmitDiagnosticLog(
+	ctx context.Context,
+	descriptor *api.DiagnosticSessionDescriptor,
+) (*api.DiagnosticSubmitStatus, error) {
 	sessionId := descriptor.GetSessionId()
 	if session, ok := diagnostic_mode.GetDiagnosticSession(sessionId); ok {
-		err := ws.submitDiagnostic.Run(sessionId, session.DebugLog.String())
+		err := ws.submitDiagnostic.Run(sessionId, session.LogBuffer.String())
 		if err != nil {
 			return nil, err
 		}
@@ -203,11 +234,68 @@ func (ws WalletServer) SubmitDiagnosticLog(ctx context.Context, descriptor *api.
 	}
 }
 
+func (ws WalletServer) PrepareSweepTx(ctx context.Context, parameters *api.PrepareSweepTxRequest) (*api.PrepareSweepTxResponse, error) {
+	destinationAddressString := parameters.GetDestinationAddress()
+	address, err := btcutil.DecodeAddress(destinationAddressString, ws.network.ToParams())
+	if err != nil {
+		return nil, err
+	}
+
+	descriptor := parameters.GetSessionDescriptor()
+
+	sessionId := descriptor.GetSessionId()
+	if session, ok := diagnostic_mode.GetDiagnosticSession(sessionId); ok {
+		session.SweepTx, err = ws.buildSweepTx.Run(
+			session.LastScanReport.UtxosFound,
+			address,
+			parameters.GetFeeRateInSatsPerVByte(),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		return api.PrepareSweepTxResponse_builder{
+			SessionDescriptor:  descriptor,
+			DestinationAddress: destinationAddressString,
+			TxSizeInBytes:      int64(session.SweepTx.SerializeSize()),
+		}.Build(), nil
+	} else {
+		return nil, fmt.Errorf("invalid sessionId %s", sessionId)
+	}
+}
+
+func (ws WalletServer) SignAndBroadcastSweepTx(ctx context.Context, confirmation *api.SignAndBroadcastSweepTxRequest) (*api.SignAndBroadcastSweepTxResponse, error) {
+	sessionId := confirmation.GetSessionDescriptor().GetSessionId()
+	if session, ok := diagnostic_mode.GetDiagnosticSession(sessionId); ok {
+		signedTx, err := ws.signSweepTx.Run(
+			session.LastScanReport.UtxosFound,
+			session.SweepTx,
+			confirmation.GetRecoveryCode(),
+		)
+		if err != nil {
+			return nil, err
+		}
+		var buf bytes.Buffer
+		err = signedTx.Serialize(&buf)
+		if err != nil {
+			return nil, err
+		}
+		txString := hex.EncodeToString(buf.Bytes())
+
+		return nil, fmt.Errorf("signed tx %v but did not broadcast", txString)
+	} else {
+		return nil, fmt.Errorf("invalid sessionId %s", sessionId)
+	}
+}
+
 // StartChallengeSetup is part of a migration test.
 // This is a minimal switch to call houston from libwallet instead of from native code.
 // Do NOT treat this as a reference.
-// Future implementations should move native logic as much as possible to libwallet instead of duplicating this pattern.
-func (ws WalletServer) StartChallengeSetup(ctx context.Context, req *api.ChallengeSetupRequest) (*api.SetupChallengeResponse, error) {
+// Future implementations should move native logic as much as possible to libwallet instead of
+// duplicating this pattern.
+func (ws WalletServer) StartChallengeSetup(
+	ctx context.Context, req *api.ChallengeSetupRequest,
+) (*api.SetupChallengeResponse, error) {
 
 	challengeSetupJson := model.ChallengeSetupJson{
 		Type:                req.GetType(),
@@ -228,25 +316,38 @@ func (ws WalletServer) StartChallengeSetup(ctx context.Context, req *api.Challen
 	}.Build(), nil
 }
 
-func (ws WalletServer) FinishRecoveryCodeSetup(ctx context.Context, keys *api.FinishRecoveryCodeSetupRequest) (*emptypb.Empty, error) {
-	extendedServerCosigningPublicKey, err := hdkeychain.NewKeyFromString(keys.GetExtendedServerCosigningPublicKeyBase58())
-	if err != nil {
-		return nil, fmt.Errorf("error parsing extended server cosigning key: %w", err)
-	}
+func (ws WalletServer) FinishRecoveryCodeSetup(
+	ctx context.Context,
+	req *api.FinishRecoveryCodeSetupRequest,
+) (*emptypb.Empty, error) {
 
-	if extendedServerCosigningPublicKey.IsPrivate() {
-		return nil, fmt.Errorf("extended server cosigning key must be public")
-	}
-
-	recoveryCodePublicKey, err := hexToPublicKey(keys.GetRecoveryCodePublicKeyHex())
+	recoveryCodePublicKey, err := hexToPublicKey(req.GetRecoveryCodePublicKeyHex())
 	if err != nil {
 		return nil, fmt.Errorf("error parsing recovery code public key: %w", err)
 	}
 
-	err = recovery.FinishRecoveryCodeSetupStub(ws.houstonService, *extendedServerCosigningPublicKey, *recoveryCodePublicKey)
+	err = ws.finishChallengeSetup.Run(recoveryCodePublicKey)
 	if err != nil {
 		return nil, err
 	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (ws WalletServer) PopulateEncryptedMuunKey(
+	ctx context.Context,
+	req *api.PopulateEncryptedMuunKeyRequest,
+) (*emptypb.Empty, error) {
+	recoveryCodePublicKey, err := hexToPublicKey(req.GetRecoveryCodePublicKeyHex())
+	if err != nil {
+		return nil, fmt.Errorf("error parsing recovery code public key: %w", err)
+	}
+
+	err = ws.populateEncryptedMuunKey.Run(recoveryCodePublicKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &emptypb.Empty{}, nil
 }
 

@@ -40,13 +40,13 @@ public class SingleFragmentPresenter<ViewT extends BaseView, ParentT extends Par
         if (parentPresenter != null) {
             parentPresenter.handleError(error);
         } else {
-            Timber.i("ParentPresenter not set in handleError: " + getClass().getSimpleName());
+            Timber.i("ParentPresenter not set in handleError: %s", getClass().getSimpleName());
             try {
                 // We'll try to handle error "ourselves" but, in case we can't we'll avoid crashing
                 // and log error for further research.
                 super.handleError(error);
             } catch (Exception e) {
-                Timber.i("Couldn't handleError 'ourselves': " + getClass().getSimpleName());
+                Timber.i("Couldn't handleError 'ourselves': %s", getClass().getSimpleName());
                 Timber.e(e);
             }
         }

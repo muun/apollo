@@ -32,14 +32,30 @@ func NewHDPrivateKey(seed []byte, network *Network) (*HDPrivateKey, error) {
 	return &HDPrivateKey{key: *key, Network: network, Path: "m"}, nil
 }
 
-// NewHDPrivateKeyFromBytes builds an HD priv key from the compress priv and chain code for a given network
-func NewHDPrivateKeyFromBytes(rawKey, chainCode []byte, network *Network) (*HDPrivateKey, error) {
+// NewMasterHDPrivateKeyFromBytes builds an HD priv key from the compress priv and chain code for a given network
+// The data is assumed to correspond to a master key.
+func NewMasterHDPrivateKeyFromBytes(rawKey, chainCode []byte, network *Network) (*HDPrivateKey, error) {
 
 	parentFP := []byte{0, 0, 0, 0}
 	key := hdkeychain.NewExtendedKey(network.network.HDPrivateKeyID[:],
 		rawKey, chainCode, parentFP, 0, 0, true)
 
 	return &HDPrivateKey{key: *key, Network: network, Path: "m"}, nil
+}
+
+// NewBasePathHDPrivateKeyFromBytes builds an HD priv key from the compress priv and chain code for a given network.
+// The data is assumed to correspond to a key derived at our usual base path "m/schema:1'/recovery:1'".
+func NewBasePathHDPrivateKeyFromBytes(rawKey, chainCode []byte, network *Network) (*HDPrivateKey, error) {
+
+	basePath := "m/schema:1'/recovery:1'"
+	var depth uint8 = 2
+	var childNum uint32 = hdkeychain.HardenedKeyStart + 1
+	isPrivate := true
+	parentFP := []byte{0, 0, 0, 0}
+	key := hdkeychain.NewExtendedKey(network.network.HDPrivateKeyID[:],
+		rawKey, chainCode, parentFP, depth, childNum, isPrivate)
+
+	return &HDPrivateKey{key: *key, Network: network, Path: basePath}, nil
 }
 
 // NewHDPrivateKeyFromString creates an HD priv key from a base58-encoded string

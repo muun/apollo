@@ -111,11 +111,13 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
         if (error instanceof InitialSyncNetworkError || error instanceof InitialSyncError) {
             super.reportError(error);
 
-            view.showErrorDialog(
-                    getContext().getString(R.string.network_error_message),
-                    null,
-                    () -> navigator.navigateToLauncher(view.getViewContext())
-            );
+            if (getContext() != null) { // if fragment is no longer attached avoid NPEs
+                view.showErrorDialog(
+                        getContext().getString(R.string.network_error_message),
+                        null,
+                        () -> navigator.navigateToLauncher(getContext())
+                );
+            }
         } else {
             super.handleError(error);
         }

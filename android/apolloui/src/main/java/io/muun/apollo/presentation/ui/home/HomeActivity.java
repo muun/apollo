@@ -12,6 +12,7 @@ import io.muun.apollo.presentation.ui.view.BlockClock;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -143,6 +144,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         return showMenu;
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         superOnBackPressed();

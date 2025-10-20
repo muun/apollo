@@ -87,21 +87,21 @@ class ShowQrPresenter @Inject constructor(
     }
 
     fun reportNotificationPermissionSkipped() {
-        analytics.report(AnalyticsEvent.E_PUSH_NOTIFICATIONS_PERMISSION_SKIPPED())
+        analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_SKIPPED())
         setNotificationPermissionSkipped.run()
     }
 
     override fun reportNotificationPermissionAsked() {
-        analytics.report(AnalyticsEvent.E_PUSH_NOTIFICATIONS_PERMISSION_ASKED())
+        analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_ASKED())
     }
 
     private fun reportNotificationPermissionNeverAskAgain() {
-        analytics.report(AnalyticsEvent.E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED_PERMANENTLY())
+        analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_PERMA_DECLINED())
         setNotificationPermissionNeverAskAgain.run()
     }
 
     fun reportNotificationPermissionDenied(shouldShowRequestPermissionRationale: Boolean) {
-        analytics.report(AnalyticsEvent.E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED())
+        analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_DECLINED())
 
         // Here we're abusing the fact that shouldShowRequestPermissionRationale starts in false
         // and turns to true the first time the user taps on "Don't allow" (e.g it remains false if
@@ -122,7 +122,7 @@ class ShowQrPresenter @Inject constructor(
     }
 
     fun reportNotificationPermissionGranted() {
-        analytics.report(AnalyticsEvent.E_PUSH_NOTIFICATIONS_PERMISSION_GRANTED())
+        analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_GRANTED())
         view.handleNotificationPermissionGranted()
     }
 

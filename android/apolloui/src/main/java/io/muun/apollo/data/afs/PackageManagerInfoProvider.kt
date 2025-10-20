@@ -26,9 +26,6 @@ class PackageManagerInfoProvider(private val context: Context) {
         get() {
             val packageManager = context.packageManager
 
-            val touchScreen =
-                hasFeature(packageManager, PackageManager.FEATURE_TOUCHSCREEN)
-
             val sensorProximity =
                 hasFeature(packageManager, PackageManager.FEATURE_SENSOR_PROXIMITY)
 
@@ -44,15 +41,6 @@ class PackageManagerInfoProvider(private val context: Context) {
             val telephony =
                 hasFeature(packageManager, PackageManager.FEATURE_TELEPHONY)
 
-            val telephonyCDMA =
-                hasFeature(packageManager, PackageManager.FEATURE_TELEPHONY_CDMA)
-
-            val telephonyGSM =
-                hasFeature(packageManager, PackageManager.FEATURE_TELEPHONY_GSM)
-
-            val cameraAny =
-                hasFeature(packageManager, PackageManager.FEATURE_CAMERA_ANY)
-
             val pip = if (OS.supportsPIP()) {
                 hasFeature(packageManager, PackageManager.FEATURE_PICTURE_IN_PICTURE)
             } else {
@@ -65,25 +53,14 @@ class PackageManagerInfoProvider(private val context: Context) {
                 Constants.INT_UNKNOWN
             }
 
-            val dactylogram = if (OS.supportsDactylogram()) {
-                hasFeature(packageManager, PackageManager.FEATURE_FINGERPRINT)
-            } else {
-                Constants.INT_UNKNOWN
-            }
-
             return PackageManagerDeviceFeatures(
-                touchScreen,
                 sensorProximity,
                 sensorAccelerometer,
                 sensorGyro,
                 sensorCompass,
                 telephony,
-                telephonyCDMA,
-                telephonyGSM,
-                cameraAny,
                 pc,
-                pip,
-                dactylogram
+                pip
             )
         }
 
@@ -131,14 +108,11 @@ class PackageManagerInfoProvider(private val context: Context) {
                 // Not using originatingPackageName since we don't have INSTALL_PACKAGES permission
                 // See: https://developer.android.com/reference/android/content/pm/PackageManager#getInstallSourceInfo(java.lang.String)
                 val installingPackageName = installSourceInfo.installingPackageName
-                val initiatingPackageSigningInfo =
-                    installSourceInfo.initiatingPackageSigningInfo.toString()
                 val initiatingPackageName = installSourceInfo.initiatingPackageName
 
                 return InstallSourceInfo(
                     installingPackageName.toString(),
-                    initiatingPackageName,
-                    initiatingPackageSigningInfo
+                    initiatingPackageName
                 )
             } else {
                 return InstallSourceInfo(
@@ -146,4 +120,7 @@ class PackageManagerInfoProvider(private val context: Context) {
                 )
             }
         }
+
+    val applicationId: String
+        get() = context.packageName
 }

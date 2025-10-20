@@ -4,7 +4,6 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import io.muun.apollo.data.os.OS
 import io.muun.common.Optional
-import timber.log.Timber
 
 private const val UNKNOWN = "UNKNOWN"
 private const val DATA_UNKNOWN = -1
@@ -73,16 +72,6 @@ class TelephonyInfoProvider(context: Context) {
             }
         }
 
-    val simOperatorId: String
-        get() {
-            return telephonyManager.simOperator
-        }
-
-    val mobileNetworkId: String
-        get() {
-            return telephonyManager.networkOperator
-        }
-
     val mobileRoaming: Boolean
         get() {
             return telephonyManager.isNetworkRoaming
@@ -103,29 +92,6 @@ class TelephonyInfoProvider(context: Context) {
     val mobileRadioType: Int
         get() {
             return telephonyManager.phoneType
-        }
-
-    val mobileDataActivity: Int
-        get() {
-            return telephonyManager.dataActivity
-        }
-
-    val regionList: List<String>
-        get() {
-            if (OS.supportsGetNetworkCountryIsoWithSlotIndex()) {
-                return try {
-                    (0 until simSlots)
-                        .toList()
-                        .map {
-                            telephonyManager.getNetworkCountryIso(it)
-                        }
-                } catch (e: Exception) {
-                    //just in unlikely case that SimsLots has a higher that the available slotIndex
-                    Timber.e(e, "SimsLots has a higher that the available slotIndex")
-                    emptyList()
-                }
-            }
-            return emptyList()
         }
 
 

@@ -4,29 +4,18 @@ import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.media.MediaDrm
-import android.os.Build
 import android.os.Environment
-import android.os.UserHandle
-import android.os.UserManager
 import android.provider.Settings
-import androidx.annotation.RequiresApi
 import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.errors.DrmProviderError
 import io.muun.apollo.domain.errors.HardwareCapabilityError
-import io.muun.apollo.domain.errors.SystemUserCreationDateError
-import io.muun.apollo.domain.model.SystemUserInfo
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
 import timber.log.Timber
 import java.io.File
-import java.net.NetworkInterface
 import java.util.*
 
 private const val UNKNOWN = "UNKNOWN"
-
-private const val USER_CREATION_DATE_UNSUPPORTED = -1L
-private const val USER_CREATION_DATE_NO_PROFILES = -2L
-private const val USER_CREATION_DATE_READ_ERROR = -3L
 
 private const val UNKNOWN_BYTES_AMOUNT = -1L
 
@@ -66,9 +55,6 @@ class HardwareCapabilitiesProvider(private val context: Context) {
     private val activityManager: ActivityManager =
         context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
-    private val userManager: UserManager =
-        context.getSystemService(Context.USER_SERVICE) as UserManager
-
     fun getDrmClientIds(): Map<String, String> {
 
         val drmProviderToClientId = HashMap<String, String>()
@@ -90,39 +76,6 @@ class HardwareCapabilitiesProvider(private val context: Context) {
         return drmProviderToClientId
     }
 
-    fun getSystemUsersInfo(): List<SystemUserInfo> {
-
-        if (OS.supportsUserCreationTime()) {
-
-            val isSystemUser = userManager.isSystemUser
-            if (userManager.userProfiles.isEmpty()) {
-                return listOf(SystemUserInfo(USER_CREATION_DATE_NO_PROFILES, isSystemUser))
-            }
-
-            val result = ArrayList<SystemUserInfo>()
-
-            for (up in userManager.userProfiles) {
-                result.add(SystemUserInfo(getCreationTimestampInMilliseconds(up), isSystemUser))
-            }
-
-            return result
-        }
-
-        // Can't get it
-        return listOf(SystemUserInfo(USER_CREATION_DATE_UNSUPPORTED, false))
-    }
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun getCreationTimestampInMilliseconds(userProfile: UserHandle): Long {
-        return try {
-            userManager.getUserCreationTime(userProfile)
-
-        } catch (e: Exception) {
-            Timber.e(SystemUserCreationDateError(userProfile, userManager.isSystemUser, e))
-            USER_CREATION_DATE_READ_ERROR
-        }
-    }
-
     val totalRamInBytes: Long
         get() {
             return try {
@@ -135,34 +88,13 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
         }
 
-    val freeRamInBytes: Long
-        get() {
-            return try {
-                val memInfo = MemoryInfo()
-                activityManager.getMemoryInfo(memInfo)
-                memInfo.availMem
-            } catch (e: Exception) {
-                Timber.e(HardwareCapabilityError("freeRam", e))
-                UNKNOWN_BYTES_AMOUNT
-            }
-        }
-
     val totalInternalStorageInBytes: Long
         get() = Environment.getRootDirectory().getTotalSpaceSafe()
-
-    val freeInternalStorageInBytes: Long
-        get() = Environment.getRootDirectory().getFreeSpaceSafe()
 
     val totalExternalStorageInBytes: List<Long>
         get() {
             val externalVolumeRootDirs: Array<File> = context.getExternalFilesDirs(null)
             return externalVolumeRootDirs.map { it.getTotalSpaceSafe() }
-        }
-
-    val freeExternalStorageInBytes: List<Long>
-        get() {
-            val externalVolumeRootDirs: Array<File> = context.getExternalFilesDirs(null)
-            return externalVolumeRootDirs.map { it.getFreeSpaceSafe() }
         }
 
     val androidId: String
@@ -182,7 +114,8 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
 
             return try {
-                Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
+                val bc = Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
+                return discreteBootcount(bc)
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("bootCount", e))
                 BOOT_COUNT_ERROR
@@ -199,42 +132,10 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
         }
 
-
-    val hardwareAddresses: List<String>
-        get() {
-            if (!OS.supportsHardwareAddresses()) {
-                return emptyList()
-            }
-            return try {
-                NetworkInterface.getNetworkInterfaces()?.asSequence()?.toList()
-                    ?.filter { it.hardwareAddress != null }
-                    ?.filter {
-                        it.displayName.startsWith("wlan") ||
-                            it.displayName.startsWith("p2p")
-                    }
-                    ?.map { networkInterface ->
-                        networkInterface.hardwareAddress
-                            .joinToString("-") { byte ->
-                                "%02X".format(byte)
-                            }
-                    }
-                    ?.sortedBy { it }?.toList() ?: emptyList()
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
-
     private fun File?.getTotalSpaceSafe() = try {
         this?.totalSpace ?: UNKNOWN_BYTES_AMOUNT
     } catch (e: Exception) {
         Timber.e(HardwareCapabilityError("totalSpace", e))
-        UNKNOWN_BYTES_AMOUNT
-    }
-
-    private fun File?.getFreeSpaceSafe() = try {
-        this?.freeSpace ?: UNKNOWN_BYTES_AMOUNT
-    } catch (e: Exception) {
-        Timber.e(HardwareCapabilityError("freeSpace", e))
         UNKNOWN_BYTES_AMOUNT
     }
 
@@ -293,6 +194,16 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             drmObject.close()
         } else {
             drmObject.release()
+        }
+    }
+
+    private fun discreteBootcount(value: Int): Int {
+        val step = 20
+        val buckets = listOf(1, 2, 3, 6, 10, 15)
+        return when {
+            value < 1 -> value
+            value < 20 -> buckets.firstOrNull { it >= value } ?: 20
+            else -> ((value + (step - 1)) / step) * step
         }
     }
 }

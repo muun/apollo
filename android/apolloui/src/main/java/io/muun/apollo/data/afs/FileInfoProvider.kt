@@ -2,14 +2,10 @@ package io.muun.apollo.data.afs
 
 import android.content.Context
 import android.os.Environment
-import io.muun.apollo.data.os.OS
 import io.muun.apollo.data.os.TorHelper
 import timber.log.Timber
 import java.io.File
 import java.io.RandomAccessFile
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
-import java.util.concurrent.TimeUnit
 
 class FileInfoProvider(private val context: Context) {
 
@@ -42,6 +38,7 @@ class FileInfoProvider(private val context: Context) {
                 TorHelper.process("yvo/yvop.fb"),
                 TorHelper.process("yvo/yvop64.fb"),
                 TorHelper.process("yvo/yvoz.fb"),
+                TorHelper.process("yvo64/yvop.fb"),
             )
             val fileToAccess = findExistingFile(fileNames) ?: return Constants.INT_UNKNOWN
             try {
@@ -67,24 +64,6 @@ class FileInfoProvider(private val context: Context) {
                 file.length()
             } else {
                 Constants.INT_UNKNOWN.toLong()
-            }
-        }
-
-    val efsCreationTimeInSeconds: String
-        get() {
-            if (!OS.supportsReadFileAttributes()) {
-                return Constants.UNKNOWN
-            }
-            val file = File("/efs")
-            if (!file.exists()) {
-                return Constants.EMPTY
-            }
-            return try {
-                val attr =
-                    Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-                attr.creationTime().to(TimeUnit.SECONDS).toString()
-            } catch (e: Exception) {
-                Constants.ERROR
             }
         }
 

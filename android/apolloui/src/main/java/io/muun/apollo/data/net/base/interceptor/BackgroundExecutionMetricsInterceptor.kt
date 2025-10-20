@@ -1,7 +1,7 @@
 package io.muun.apollo.data.net.base.interceptor
 
-import io.muun.apollo.data.net.base.BaseInterceptor
 import io.muun.apollo.data.afs.BackgroundExecutionMetricsProvider
+import io.muun.apollo.data.net.base.BaseInterceptor
 import io.muun.apollo.data.toSafeAscii
 import io.muun.apollo.domain.errors.data.MuunSerializationError
 import io.muun.apollo.domain.model.user.User

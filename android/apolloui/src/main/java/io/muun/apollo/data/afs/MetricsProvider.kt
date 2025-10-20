@@ -6,7 +6,6 @@ import io.muun.apollo.data.net.NetworkInfoProvider
 import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.model.BackgroundEvent
 import io.muun.apollo.domain.model.InstallSourceInfo
-import io.muun.apollo.domain.model.SystemUserInfo
 import io.muun.common.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,13 +17,11 @@ class MetricsProvider @Inject constructor(
     private val telephonyInfoProvider: TelephonyInfoProvider,
     private val hardwareCapabilitiesProvider: HardwareCapabilitiesProvider,
     private val packageManagerInfoProvider: PackageManagerInfoProvider,
-    private val cpuInfoProvider: CpuInfoProvider,
     private val buildInfoProvider: BuildInfoProvider,
     private val fileInfoProvider: FileInfoProvider,
     private val systemCapabilitiesProvider: SystemCapabilitiesProvider,
     private val appInfoProvider: AppInfoProvider,
     private val connectivityInfoProvider: ConnectivityInfoProvider,
-    private val resourcesInfoProvider: ResourcesInfoProvider,
     private val dateTimeZoneProvider: DateTimeZoneProvider,
     private val localeInfoProvider: LocaleInfoProvider,
     private val trafficStatsInfoProvider: TrafficStatsInfoProvider,
@@ -33,9 +30,6 @@ class MetricsProvider @Inject constructor(
     private val systemInfoProvider: SystemInfoProvider,
     private val networkInfoProvider: NetworkInfoProvider,
 ) {
-    val appImportance: Int
-        get() = activityManagerInfoProvider.appImportance
-
     val isLowRamDevice: Boolean
         get() = activityManagerInfoProvider.isLowRamDevice
 
@@ -60,12 +54,6 @@ class MetricsProvider @Inject constructor(
     val simRegion: String
         get() = telephonyInfoProvider.simRegion
 
-    val simOperatorId: String
-        get() = telephonyInfoProvider.simOperatorId
-
-    val mobileNetworkId: String
-        get() = telephonyInfoProvider.mobileNetworkId
-
     val mobileRoaming: Boolean
         get() = telephonyInfoProvider.mobileRoaming
 
@@ -75,17 +63,8 @@ class MetricsProvider @Inject constructor(
     val mobileRadioType: Int
         get() = telephonyInfoProvider.mobileRadioType
 
-    val mobileDataActivity: Int
-        get() = telephonyInfoProvider.mobileDataActivity
-
-    val telephonyNetworkRegionList: List<String>
-        get() = telephonyInfoProvider.regionList
-
     val androidId: String
         get() = hardwareCapabilitiesProvider.androidId
-
-    val systemUsersInfo: List<SystemUserInfo>
-        get() = hardwareCapabilitiesProvider.getSystemUsersInfo()
 
     val drmClientIds: Map<String, String>
         get() = hardwareCapabilitiesProvider.getDrmClientIds()
@@ -95,9 +74,6 @@ class MetricsProvider @Inject constructor(
 
     val glEsVersion: String
         get() = hardwareCapabilitiesProvider.glEsVersion
-
-    val hardwareAddresses: List<String>
-        get() = hardwareCapabilitiesProvider.hardwareAddresses
 
     val installSourceInfo: InstallSourceInfo
         get() = packageManagerInfoProvider.installSourceInfo
@@ -113,9 +89,6 @@ class MetricsProvider @Inject constructor(
 
     val firstInstallTimeInMs: Long
         get() = packageManagerInfoProvider.firstInstallTimeInMs
-
-    val cpuInfo: CpuInfo
-        get() = cpuInfoProvider.getCpuInfo()
 
     val buildInfo: BuildInfo
         get() = buildInfoProvider.buildInfo
@@ -135,9 +108,6 @@ class MetricsProvider @Inject constructor(
     val appSize: Long
         get() = fileInfoProvider.appSize
 
-    val efsCreationTimeInSeconds: String
-        get() = fileInfoProvider.efsCreationTimeInSeconds
-
     val securityEnhancedBuild: String
         get() = systemCapabilitiesProvider.securityEnhancedBuild
 
@@ -147,26 +117,14 @@ class MetricsProvider @Inject constructor(
     val vbMeta: String
         get() = systemCapabilitiesProvider.vbMeta
 
-    val deviceRegion: Map<String, String>?
-        get() = systemCapabilitiesProvider.deviceRegion
-
     val totalInternalStorageInBytes: Long
         get() = hardwareCapabilitiesProvider.totalInternalStorageInBytes
-
-    val freeInternalStorageInBytes: Long
-        get() = hardwareCapabilitiesProvider.freeInternalStorageInBytes
-
-    val freeExternalStorageInBytes: List<Long>
-        get() = hardwareCapabilitiesProvider.freeExternalStorageInBytes
 
     val totalExternalStorageInBytes: List<Long>
         get() = hardwareCapabilitiesProvider.totalExternalStorageInBytes
 
     val totalRamInBytes: Long
         get() = hardwareCapabilitiesProvider.totalRamInBytes
-
-    val freeRamInBytes: Long
-        get() = hardwareCapabilitiesProvider.freeRamInBytes
 
     val usbConnected: Int
         get() = systemCapabilitiesProvider.usbConnected
@@ -217,9 +175,6 @@ class MetricsProvider @Inject constructor(
     val networkLink: ConnectivityInfoProvider.NetworkLink?
         get() = connectivityInfoProvider.networkLink
 
-    val displayMetrics: ResourcesInfoProvider.DisplayMetricsInfo
-        get() = resourcesInfoProvider.displayMetrics
-
     val timeZoneOffsetSeconds: Long
         get() = dateTimeZoneProvider.timeZoneOffsetSeconds
 
@@ -232,14 +187,8 @@ class MetricsProvider @Inject constructor(
     val timeZoneId: String
         get() = dateTimeZoneProvider.timeZoneId
 
-    val calendarIdentifier: String
-        get() = dateTimeZoneProvider.calendarIdentifier
-
     val language: String
         get() = localeInfoProvider.language
-
-    val dateFormat: String
-        get() = localeInfoProvider.dateFormat
 
     val regionCode: String
         get() = localeInfoProvider.regionCode
@@ -268,17 +217,14 @@ class MetricsProvider @Inject constructor(
     val batteryLevel: Int
         get() = batteryInfoProvider.batteryLevel
 
-    val maxBatteryLevel: Int
-        get() = batteryInfoProvider.maxBatteryLevel
-
-    val batteryHealth: String
-        get() = batteryInfoProvider.batteryHealth
-
-    val batteryDischargePrediction: Long
-        get() = batteryInfoProvider.batteryDischargePrediction
-
     val batteryStatus: String
         get() = batteryInfoProvider.batteryStatus
+
+    val batteryRemainState: String
+        get() = batteryInfoProvider.batteryRemainState
+
+    val isCharging: Boolean?
+        get() = batteryInfoProvider.isCharging
 
     val currentTimeMillis: Long
         get() = systemInfoProvider.currentTimeMillis
@@ -288,4 +234,10 @@ class MetricsProvider @Inject constructor(
 
     val elapsedRealtime: Long
         get() = systemInfoProvider.elapsedRealtime
+
+    val internalLevel: Pair<Int, Int>
+        get() = systemCapabilitiesProvider.internalLevel
+
+    val applicationId: String
+        get() = packageManagerInfoProvider.applicationId
 }

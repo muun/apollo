@@ -2,17 +2,21 @@ package io.muun.apollo.domain.libwallet
 
 import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
+import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import io.muun.apollo.data.libwallet.UtxoScanUpdate
 import io.muun.apollo.data.nfc.NfcBridger
+import io.muun.apollo.domain.errors.MuunErrorMapper
+import io.muun.apollo.domain.libwallet.errors.ErrorDetailType
+import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
 import rpc.WalletServiceGrpc
-import rpc.WalletServiceOuterClass
+import rpc.WalletServiceGrpc.WalletServiceBlockingStub
+import rpc.WalletServiceGrpc.WalletServiceStub
 import rpc.WalletServiceOuterClass.DiagnosticSessionDescriptor
 import rpc.WalletServiceOuterClass.GetRequest
 import rpc.WalletServiceOuterClass.NullValue
-import rpc.WalletServiceOuterClass.OperationStatus
-import rpc.WalletServiceOuterClass.SignMessageSecurityCardRequest
 import rpc.WalletServiceOuterClass.SaveRequest
+import rpc.WalletServiceOuterClass.SignMessageSecurityCardRequest
 import rpc.WalletServiceOuterClass.Value
 import rx.Emitter
 import rx.Observable
@@ -24,32 +28,24 @@ class WalletClient(private val channel: ManagedChannel) {
 
     private val emptyMessage = Empty.getDefaultInstance()
 
-    fun deleteWallet(): Observable<OperationStatus>? {
-        val handler = { emitter: Emitter<OperationStatus> ->
-            val observer = EventForwardingStreamObserver(emitter)
-            asyncStub.deleteWallet(emptyMessage, observer)
-        }
-
-        return Observable.create(handler, Emitter.BackpressureMode.BUFFER)
-    }
-
-    fun deleteWalletBlocking(): OperationStatus? {
-        return blockingStub.deleteWallet(emptyMessage)
-    }
-
     fun setUpSecurityCard(nfcBridger: NfcBridger) {
 
         nfcBridger.setupBridge()
-        val xpubResponse = blockingStub.setupSecurityCard(emptyMessage)
+        val response = blockingStub.performSyncRequest {
+            setupSecurityCardV2(emptyMessage)
+        }
         nfcBridger.tearDownBridge()
 
-        Timber.d("Paired Security Card: ${xpubResponse.base58Xpub}")
+        Timber.d("Paired Security Card - isKnownProvider: ${response.isKnownProvider}")
+        Timber.d("Paired Security Card - isCardAlreadyUsed: ${response.isCardAlreadyUsed}")
     }
 
     fun resetSecurityCard(nfcBridger: NfcBridger) {
 
         nfcBridger.setupBridge()
-        blockingStub.resetSecurityCard(emptyMessage)
+        blockingStub.performSyncRequest {
+            resetSecurityCard(emptyMessage)
+        }
         nfcBridger.tearDownBridge()
 
         Timber.d("Reset Security Card")
@@ -62,40 +58,37 @@ class WalletClient(private val channel: ManagedChannel) {
             .build()
 
         nfcBridger.setupBridge()
-        val signMessageNfcCardResponse = blockingStub.signMessageSecurityCard(request)
+        val signMessageNfcCardResponse = blockingStub.performSyncRequest {
+            signMessageSecurityCard(request)
+        }
         nfcBridger.tearDownBridge()
 
         return signMessageNfcCardResponse.signedMessageHex.toByteArray()
     }
 
     fun startDiagnosticSession(): Observable<String> {
-        val handler = { emitter: Emitter<DiagnosticSessionDescriptor> ->
-            val observer = EventForwardingStreamObserver(emitter)
-            asyncStub.startDiagnosticSession(emptyMessage, observer)
+        val observable = asyncStub.performAsyncRequest { streamObserver ->
+            startDiagnosticSession(emptyMessage, streamObserver)
         }
-
-        return Observable.create(handler, Emitter.BackpressureMode.BUFFER)
-            .map { it.sessionId }
+        return observable.map { it.sessionId }
     }
 
     fun scanForUtxos(sessionId: String): Observable<UtxoScanUpdate> {
         val scanParams = DiagnosticSessionDescriptor.newBuilder()
             .setSessionId(sessionId)
             .build()
-        val handler = { emitter: Emitter<WalletServiceOuterClass.ScanProgressUpdate> ->
-            val observer = EventForwardingStreamObserver(emitter)
-            asyncStub.performDiagnosticScanForUtxos(scanParams, observer)
-        }
 
-        return Observable.create(handler, Emitter.BackpressureMode.BUFFER)
-            .map {
-                UtxoScanUpdate(
-                    scanComplete = it.hasScanComplete(),
-                    scanStatus = it.scanComplete?.status,
-                    address = it.foundUtxoReport?.address,
-                    amount = it.foundUtxoReport?.amount
-                )
-            }
+        val observable = asyncStub.performAsyncRequest { streamObserver ->
+            performDiagnosticScanForUtxos(scanParams, streamObserver)
+        }
+        return observable.map {
+            UtxoScanUpdate(
+                scanComplete = it.hasScanComplete(),
+                scanStatus = it.scanComplete?.status,
+                address = it.foundUtxoReport?.address,
+                amount = it.foundUtxoReport?.amount
+            )
+        }
     }
 
     fun submitDiagnosticLog(sessionId: String): Observable<String> {
@@ -103,15 +96,12 @@ class WalletClient(private val channel: ManagedChannel) {
             .setSessionId(sessionId)
             .build()
 
-        val handler = { emitter: Emitter<WalletServiceOuterClass.DiagnosticSubmitStatus> ->
-            val observer = EventForwardingStreamObserver(emitter)
-            asyncStub.submitDiagnosticLog(scanParams, observer)
+        val observable = asyncStub.performAsyncRequest { streamObserver ->
+            submitDiagnosticLog(scanParams, streamObserver)
         }
-
-        return Observable.create(handler, Emitter.BackpressureMode.BUFFER)
-            .map {
-                it.statusMessage
-            }
+        return observable.map {
+            it.statusMessage
+        }
     }
 
     fun shutdown() {
@@ -119,16 +109,13 @@ class WalletClient(private val channel: ManagedChannel) {
     }
 
     private fun save(key: String, rpcValue: Value) {
-        try {
-            val saveRequest = SaveRequest.newBuilder()
-                .setKey(key)
-                .setValue(rpcValue)
-                .build()
+        val saveRequest = SaveRequest.newBuilder()
+            .setKey(key)
+            .setValue(rpcValue)
+            .build()
 
-            blockingStub.save(saveRequest)
-        } catch(e: Exception) {
-            Timber.e(e)
-            throw e
+        blockingStub.performSyncRequest {
+            save(saveRequest)
         }
     }
 
@@ -137,13 +124,10 @@ class WalletClient(private val channel: ManagedChannel) {
             .setKey(key)
             .build()
 
-        try {
-            val getResponse = blockingStub.get(getRequest)
-            return getResponse.value
-        } catch (e: Exception) {
-            Timber.e(e)
-            throw e
+        val getResponse = blockingStub.performSyncRequest {
+            get(getRequest)
         }
+        return getResponse.value
     }
 
     fun saveString(key: String, value: String?) {
@@ -170,7 +154,7 @@ class WalletClient(private val channel: ManagedChannel) {
         }
     }
 
-    fun getString(key: String, defaultValue: String) : String =
+    fun getString(key: String, defaultValue: String): String =
         getString(key) ?: defaultValue
 
     fun <T : Enum<T>> saveEnum(key: String, value: T?) {
@@ -178,10 +162,51 @@ class WalletClient(private val channel: ManagedChannel) {
     }
 
     inline fun <reified T : Enum<T>> getEnum(key: String): T? =
-        getString(key) ?.let { enumValueOf<T>(it) }
+        getString(key)?.let { enumValueOf<T>(it) }
 
     inline fun <reified T : Enum<T>> getEnum(key: String, defaultValue: T): T =
         getEnum<T>(key) ?: defaultValue
+
+    private inline fun <T> WalletServiceBlockingStub.performSyncRequest(
+        crossinline rpcCall: WalletServiceBlockingStub.() -> T,
+    ): T {
+        try {
+            return rpcCall()
+        } catch (e: StatusRuntimeException) {
+            throw mapToMuunError(e)
+        } catch (t: Throwable) {
+            Timber.e(t)
+            throw t
+        }
+    }
+
+    private inline fun <T> WalletServiceStub.performAsyncRequest(
+        crossinline rpcCall: WalletServiceStub.(StreamObserver<T>) -> Unit,
+    ): Observable<T> {
+        val handler = { emitter: Emitter<T> ->
+            val observer = EventForwardingStreamObserver(emitter)
+            try {
+                rpcCall(observer)
+            } catch (e: StatusRuntimeException) {
+                val rpcError = mapToMuunError(e)
+                emitter.onError(rpcError)
+            } catch (t: Throwable) {
+                Timber.e(t)
+                emitter.onError(t)
+            }
+        }
+        return Observable.create(handler, Emitter.BackpressureMode.BUFFER)
+    }
+
+    private fun mapToMuunError(statusException: StatusRuntimeException): RuntimeException {
+        val grpcError = LibwalletGrpcError(statusException)
+        Timber.e(grpcError)
+        return grpcError.errorDetail?.code
+            ?.takeIf { grpcError.errorDetail.type == ErrorDetailType.HOUSTON }
+            ?.let(MuunErrorMapper::map)
+            ?: grpcError
+    }
+
 
 }
 

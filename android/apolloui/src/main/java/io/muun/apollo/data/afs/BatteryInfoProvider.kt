@@ -1,28 +1,21 @@
 package io.muun.apollo.data.afs
 
 import android.content.Context
-import android.content.Context.POWER_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.PowerManager
 import io.muun.apollo.data.os.OS
 
-private const val UNSUPPORTED = -1
-private const val UNKNOWN = -2
-
 class BatteryInfoProvider(private val context: Context) {
 
     private val powerManager: PowerManager by lazy {
-        context.getSystemService(POWER_SERVICE) as PowerManager
+        context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 
-    /**
-     * Returns the device battery health, which will be a string constant representing the general
-     * health of this device. Note: Android docs do not explain what these values exactly mean.
-     */
-    val batteryHealth: String
-        get() = getBatteryHealthText(getBatteryProperty(BatteryManager.EXTRA_HEALTH))
+    private val batteryManager: BatteryManager by lazy {
+        context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    }
 
     /**
      * Returns the device battery status, which will be a string constant with one of the following
@@ -36,16 +29,28 @@ class BatteryInfoProvider(private val context: Context) {
     val batteryStatus: String
         get() = getBatteryStatusText(getBatteryProperty(BatteryManager.EXTRA_STATUS))
 
-    /**
-     * (Android only and Android 12+ only) Returns the current battery life remaining estimate,
-     * expressed in nanoseconds. Will be UNKNOWN (-2) if the device is powered, charging, or an error
-     * was encountered. For pre Android 12 devices it will be UNSUPPORTED (-1).
-     */
-    val batteryDischargePrediction: Long
-        get() = if (OS.supportsBatteryDischargePrediction()) {
-            powerManager.batteryDischargePrediction?.toNanos() ?: UNKNOWN.toLong()
+    val isCharging: Boolean?
+        get() = if (OS.supportsBatteryManagerIsCharging()) {
+            batteryManager.isCharging
         } else {
-            UNSUPPORTED.toLong()
+            null
+        }
+
+    val batteryRemainState: String
+        get() {
+            if (!OS.supportsBatteryDischargePrediction()) {
+                return Constants.UNKNOWN
+            }
+            val prediction = powerManager.batteryDischargePrediction?.toNanos()
+            if (prediction == null) {
+                return "CHARGING"
+            }
+
+            return when {
+                prediction < 0 -> "NEGATIVE"
+                prediction.toInt() == 0 -> "ZERO"
+                else -> "POSITIVE"
+            }
         }
 
     /**
@@ -53,12 +58,6 @@ class BatteryInfoProvider(private val context: Context) {
      */
     val batteryLevel: Int
         get() = getBatteryProperty(BatteryManager.EXTRA_LEVEL)
-
-    /**
-     * Returns an integer representing the maximum battery level.
-     */
-    val maxBatteryLevel: Int
-        get() = getBatteryProperty(BatteryManager.EXTRA_SCALE)
 
     private fun getBatteryIntent(): Intent? =
         IntentFilter(Intent.ACTION_BATTERY_CHANGED)
@@ -68,19 +67,6 @@ class BatteryInfoProvider(private val context: Context) {
 
     private fun getBatteryProperty(propertyName: String) =
         getBatteryIntent()?.getIntExtra(propertyName, -1) ?: -1
-
-    private fun getBatteryHealthText(batteryHealth: Int): String {
-        return when (batteryHealth) {
-            BatteryManager.BATTERY_HEALTH_COLD -> "COLD"
-            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "UNSPECIFIED_FAILURE"
-            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "OVER_VOLTAGE"
-            BatteryManager.BATTERY_HEALTH_DEAD -> "DEAD"
-            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "OVERHEAT"
-            BatteryManager.BATTERY_HEALTH_GOOD -> "GOOD"
-            BatteryManager.BATTERY_HEALTH_UNKNOWN -> "UNKNOWN"
-            else -> "UNREADABLE"
-        }
-    }
 
     /**
      * Translate Android's BatteryManager battery status int constants into one of our domain

@@ -6,10 +6,10 @@ import (
 )
 
 type SubmitDiagnosticAction struct {
-	houstonService *service.HoustonService
+	houstonService service.HoustonService
 }
 
-func NewSubmitDiagnosticAction(service *service.HoustonService) *SubmitDiagnosticAction {
+func NewSubmitDiagnosticAction(service service.HoustonService) *SubmitDiagnosticAction {
 	return &SubmitDiagnosticAction{service}
 }
 

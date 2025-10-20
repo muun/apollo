@@ -53,7 +53,7 @@ class MuunTree : Timber.DebugTree() {
         }
 
         // Report.message gets the stacktrace removed so we need original message
-        sendToLogcat(Log.ERROR, tag, "$message ${report.metadata}", report.error)
+        sendToLogcat(Log.ERROR, tag, "$message\n${report.printMetadata()}", report.error)
     }
 
     private fun sendFallbackErrorReport(

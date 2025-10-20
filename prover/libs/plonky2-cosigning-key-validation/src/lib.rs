@@ -3,8 +3,6 @@ mod inputs;
 mod interface;
 mod testing;
 
-pub use circuit::AAD;
-pub use circuit::INFO;
 pub use interface::Proof;
 pub use interface::ProverData;
 pub use interface::ProverInputs;

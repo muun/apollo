@@ -79,30 +79,25 @@ public class AndroidDeviceFeaturesJson {
      * Code constructor.
      */
     public AndroidDeviceFeaturesJson(
-            @Nullable Integer touch,
             @Nullable Integer proximity,
             @Nullable Integer accelerometer,
             @Nullable Integer gyro,
             @Nullable Integer compass,
             @Nullable Integer telephony,
-            @Nullable Integer cdma,
-            @Nullable Integer gsm,
-            @Nullable Integer cameras,
             @Nullable Integer pc,
-            @Nullable Integer pip,
-            @Nullable Integer dactylogram
+            @Nullable Integer pip
     ) {
-        this.touch = mapDeviceFeaturesValue(touch);
+        this.touch = null;
         this.proximity = mapDeviceFeaturesValue(proximity);
         this.accelerometer = mapDeviceFeaturesValue(accelerometer);
         this.gyro = mapDeviceFeaturesValue(gyro);
         this.compass = mapDeviceFeaturesValue(compass);
         this.telephony = mapDeviceFeaturesValue(telephony);
-        this.cdma = mapDeviceFeaturesValue(cdma);
-        this.gsm = mapDeviceFeaturesValue(gsm);
-        this.cameras = mapDeviceFeaturesValue(cameras);
+        this.cdma = null;
+        this.gsm = null;
+        this.cameras = null;
         this.pc = mapDeviceFeaturesValue(pc);
         this.pip = mapDeviceFeaturesValue(pip);
-        this.dactylogram = mapDeviceFeaturesValue(dactylogram);
+        this.dactylogram = null;
     }
 }

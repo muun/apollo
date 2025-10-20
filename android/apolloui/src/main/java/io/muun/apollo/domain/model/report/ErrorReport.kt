@@ -2,6 +2,7 @@ package io.muun.apollo.domain.model.report
 
 import android.util.Log
 import java.io.Serializable
+import java.util.UUID
 import kotlin.math.min
 
 /**
@@ -10,7 +11,6 @@ import kotlin.math.min
  * for email reports).
  */
 private const val STACK_TRACE_LIMIT_FOR_EMAIL_REPORTS = 10_000
-private const val STACK_TRACE_LIMIT_FOR_ANALYTICS = 500
 
 data class ErrorReport(
     val tag: String,
@@ -20,18 +20,24 @@ data class ErrorReport(
     val metadata: MutableMap<String, Serializable>,
 ) {
 
-    fun print(abridged: Boolean) =
-        "Tag:$tag\nMessage:$message\nError:${printError(abridged)}\nMetadata:{\n\n${printMetadata()}}"
+    val uniqueId = UUID.randomUUID().toString()
+
+    fun print(abridged: Boolean): String {
+        val error = printError(abridged)
+        val metadata = printMetadata()
+        return "Id:${uniqueId}\nTag:$tag\nMessage:$message\nError:$error\nMetadata:\n\n$metadata"
+    }
 
     fun printMetadata(): String {
-        val builder = StringBuilder()
+        val builder = StringBuilder("{\n")
         for (key in metadata.keys) {
-            builder.append("$key=${metadata[key]}\n\n")
+            builder.append("\t$key=${metadata[key]}\n")
         }
+        builder.append("}\n")
         return builder.toString()
     }
 
-    private fun printError(abridged: Boolean = false): String {
+    fun printError(abridged: Boolean = false): String {
         val stackTraceString = Log.getStackTraceString(error)
         return if (abridged) {
             val stackTraceCapSizeInChars =
@@ -40,13 +46,6 @@ data class ErrorReport(
         } else {
             stackTraceString
         }
-    }
-
-    fun printErrorForAnalytics(): String {
-        val stackTraceString = Log.getStackTraceString(error)
-        val stackTraceCapSizeInChars = min(STACK_TRACE_LIMIT_FOR_ANALYTICS, stackTraceString.length)
-        return stackTraceString.substring(0, stackTraceCapSizeInChars)
-            .replace("\n", " ")
     }
 
     fun getTrackingTitle(): String =

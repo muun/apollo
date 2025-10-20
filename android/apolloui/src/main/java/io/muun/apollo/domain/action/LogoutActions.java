@@ -10,7 +10,6 @@ import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
-import io.muun.apollo.domain.libwallet.WalletClient;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
@@ -40,8 +39,6 @@ public class LogoutActions {
 
     private final ClearRepositoriesAction clearRepositories;
 
-    private final WalletClient walletClient;
-
     // Data
     private final TaskScheduler taskScheduler;
 
@@ -63,7 +60,6 @@ public class LogoutActions {
             LogoutOptionsSelector logoutOptionsSel,
             SignupDraftManager signupDraftManager,
             ClearRepositoriesAction clearRepositories,
-            WalletClient walletClient,
             TaskScheduler taskScheduler,
             SecureStorageProvider secureStorageProvider,
             NotificationService notificationService,
@@ -77,7 +73,6 @@ public class LogoutActions {
         this.logoutOptionsSel = logoutOptionsSel;
         this.signupDraftManager = signupDraftManager;
         this.clearRepositories = clearRepositories;
-        this.walletClient = walletClient;
 
         this.taskScheduler = taskScheduler;
         this.secureStorageProvider = secureStorageProvider;
@@ -157,8 +152,6 @@ public class LogoutActions {
     private void destroyWallet() {
         Timber.i("destroyWallet");
         taskScheduler.unscheduleAllTasks();
-
-        walletClient.deleteWalletBlocking();
 
         asyncActionStore.resetAllExceptLogout();
         secureStorageProvider.wipe();

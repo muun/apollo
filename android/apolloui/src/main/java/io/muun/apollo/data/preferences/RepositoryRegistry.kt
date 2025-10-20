@@ -89,7 +89,7 @@ class RepositoryRegistry {
 
             loadedRepos[repo.javaClass] = repo
             Timber.d(
-                "RepositoryRegistry#load(${repo.javaClass.simpleName}). Size: ${loadedRepos.size}"
+                "RepositoryRegistry#load(${repo.javaClass}). Size: ${loadedRepos.size}"
             )
         }
     }

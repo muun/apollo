@@ -507,7 +507,7 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     ) {
         final SortedMap<Integer, Double> targetedFeeRates = new TreeMap<>();
 
-        for (final var entry: confTargetToTargetFeeRateInSatPerVbyte.entrySet()) {
+        for (final var entry : confTargetToTargetFeeRateInSatPerVbyte.entrySet()) {
 
             final var target = entry.getKey();
             final var feeRateInSatPerVbyte = entry.getValue();
@@ -537,8 +537,10 @@ public class ModelObjectsMapper extends CommonModelObjectsMapper {
     }
 
     private List<MuunFeature> mapMuunFeatures(List<MuunFeatureJson> features) {
-        features.removeAll(Collections.singletonList(MuunFeatureJson.UNSUPPORTED_FEATURE));
-        return CollectionUtils.mapList(features, MuunFeature.Companion::fromJson);
+        final List<MuunFeature> mappedFeatures =
+                CollectionUtils.mapList(features, MuunFeature.Companion::fromJson);
+        mappedFeatures.removeAll(Collections.singletonList(MuunFeature.UNSUPPORTED_FEATURE));
+        return mappedFeatures;
     }
 
     /**

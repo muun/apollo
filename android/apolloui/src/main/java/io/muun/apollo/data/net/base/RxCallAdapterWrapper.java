@@ -2,30 +2,8 @@ package io.muun.apollo.data.net.base;
 
 import io.muun.apollo.data.logging.LoggingRequestTracker;
 import io.muun.apollo.data.serialization.SerializationUtils;
-import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
-import io.muun.apollo.domain.errors.ExpiredActionLinkError;
-import io.muun.apollo.domain.errors.ExpiredSessionError;
-import io.muun.apollo.domain.errors.InvalidActionLinkError;
-import io.muun.apollo.domain.errors.InvalidChallengeSignatureError;
 import io.muun.apollo.domain.errors.InvalidJsonError;
-import io.muun.apollo.domain.errors.TooManyRequestsError;
-import io.muun.apollo.domain.errors.newop.AmountTooSmallError;
-import io.muun.apollo.domain.errors.newop.ExchangeRateWindowTooOldError;
-import io.muun.apollo.domain.errors.newop.InsufficientFundsError;
-import io.muun.apollo.domain.errors.newop.InvalidAddressError;
-import io.muun.apollo.domain.errors.p2p.CountryNotSupportedError;
-import io.muun.apollo.domain.errors.p2p.ExpiredVerificationCodeError;
-import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError;
-import io.muun.apollo.domain.errors.p2p.InvalidVerificationCodeError;
-import io.muun.apollo.domain.errors.p2p.PhoneNumberAlreadyUsedError;
-import io.muun.apollo.domain.errors.p2p.RevokedVerificationCodeError;
-import io.muun.apollo.domain.errors.p2p.TooManyWrongVerificationCodesError;
-import io.muun.apollo.domain.errors.passwd.EmailAlreadyUsedError;
-import io.muun.apollo.domain.errors.passwd.EmailNotRegisteredError;
-import io.muun.apollo.domain.errors.passwd.IncorrectPasswordError;
-import io.muun.apollo.domain.errors.rc.CredentialsDontMatchError;
-import io.muun.apollo.domain.errors.rc.InvalidRecoveryCodeV2Error;
-import io.muun.apollo.domain.errors.rc.StaleChallengeKeyError;
+import io.muun.apollo.domain.errors.MuunErrorMapper;
 import io.muun.common.Optional;
 import io.muun.common.api.error.Error;
 import io.muun.common.api.error.ErrorCode;
@@ -112,79 +90,8 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER = ObservableFn.replaceTypedError(
                 HttpException.class,
                 error -> {
-                    switch ((ErrorCode) error.getErrorCode()) {
-                        case DEPRECATED_CLIENT_VERSION:
-                            return new DeprecatedClientVersionError();
-
-                        case EXPIRED_SESSION:
-                            return new ExpiredSessionError();
-
-                        case INVALID_PHONE_NUMBER:
-                            return new InvalidPhoneNumberError();
-
-                        case COUNTRY_NOT_SUPPORTED:
-                            return new CountryNotSupportedError();
-
-                        case INVALID_VERIFICATION_CODE:
-                            return new InvalidVerificationCodeError();
-
-                        case REVOKED_VERIFICATION_CODE:
-                            return new RevokedVerificationCodeError();
-
-                        case EXPIRED_VERIFICATION_CODE:
-                            return new ExpiredVerificationCodeError();
-
-                        case TOO_MANY_WRONG_VERIFICATION_CODES:
-                            return new TooManyWrongVerificationCodesError(); // that's a mouthful :)
-
-                        case PHONE_NUMBER_ALREADY_USED:
-                            return new PhoneNumberAlreadyUsedError();
-
-                        case EMAIL_ALREADY_USED:
-                            return new EmailAlreadyUsedError();
-
-                        case EMAIL_NOT_REGISTERED:
-                            return new EmailNotRegisteredError();
-
-                        case INSUFFICIENT_CLIENT_FUNDS:
-                            return new InsufficientFundsError();
-
-                        case INVALID_ADDRESS:
-                            return new InvalidAddressError();
-
-                        case INVALID_PASSWORD:
-                            return new IncorrectPasswordError();
-
-                        case INVALID_CHALLENGE_SIGNATURE:
-                            return new InvalidChallengeSignatureError();
-
-                        case AMOUNT_SMALLER_THAN_DUST:
-                            return new AmountTooSmallError(-1); // symbolic, this shouldn't happen
-
-                        case EXCHANGE_RATE_WINDOW_TOO_OLD:
-                            return new ExchangeRateWindowTooOldError();
-
-                        case EMAIL_LINK_EXPIRED:
-                            return new ExpiredActionLinkError();
-
-                        case EMAIL_LINK_INVALID:
-                            return new InvalidActionLinkError();
-
-                        case RECOVERY_CODE_V2_NOT_SET_UP:
-                            return new InvalidRecoveryCodeV2Error();
-
-                        case HTTP_TOO_MANY_REQUESTS:
-                            return new TooManyRequestsError();
-
-                        case STALE_CHALLENGE_KEY:
-                            return new StaleChallengeKeyError();
-
-                        case CREDENTIALS_DONT_MATCH:
-                            return new CredentialsDontMatchError();
-
-                        default:
-                            return error;
-                    }
+                    final var muunError = MuunErrorMapper.map(error.getErrorCode().getCode());
+                    return muunError != null ? muunError : error;
                 }
         );
     }

@@ -127,6 +127,14 @@ class DebugPanelActivity : BaseActivity<DebugPanelPresenter>(), BaseView {
                 presenter.enterDiagnosticMode()
             }
 
+            debugButtonForceErrorReport.setOnClickListener {
+                presenter.forceErrorReport()
+            }
+
+            debugButtonForceErrorReportDialog.setOnClickListener {
+                presenter.forceErrorReportDialog()
+            }
+
             debugSwitchAllowMultiSession.setOnCheckedChangeListener { _: CompoundButton, _: Boolean ->
                 presenter.toggleMultiSessions()
             }
@@ -227,7 +235,7 @@ class DebugPanelActivity : BaseActivity<DebugPanelPresenter>(), BaseView {
 
                 // TODO do proper error handling
                 val success = try {
-                    presenter.resetSecuritytCard(nfcSession)
+                    presenter.resetSecurityCard(nfcSession)
                     true
                 } catch (e: Exception) {
                     Timber.e(e)

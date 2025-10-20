@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.lnurl.withdraw
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -97,6 +98,7 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         presenter.handleBack()
     }

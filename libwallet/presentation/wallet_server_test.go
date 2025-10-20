@@ -4,17 +4,24 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/muun/libwallet/data/keys"
+	"github.com/muun/libwallet/domain/action/challenge_keys"
+	"github.com/muun/libwallet/domain/action/recovery"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/status"
+	"log"
 	"net"
+	"os"
 	"path"
 	"strconv"
+	"strings"
 	"testing"
+	"time"
 
-	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/muun/libwallet"
 	apierrors "github.com/muun/libwallet/errors"
 	"github.com/muun/libwallet/presentation/api"
@@ -29,7 +36,8 @@ import (
 var bufconnListener *bufconn.Listener
 var walletServer = &WalletServer{}
 
-const houstonUrl string = "http://localhost:8080"
+// 127.0.0.1 instead of localhost to avoid problems with network interfaces in local env
+const houstonUrl string = "http://127.0.0.1:8080"
 
 func defaultProvider() *service.TestProvider {
 	return &service.TestProvider{
@@ -44,6 +52,7 @@ func defaultProvider() *service.TestProvider {
 func init() {
 	walletServer.network = libwallet.Regtest()
 	walletServer.houstonService = service.NewHoustonService(defaultProvider())
+	walletServer.startChallengeSetup = challenge_keys.NewStartChallengeSetupAction(walletServer.houstonService)
 
 	// Initialize grpc server of WalletService with bufconn
 	bufconnListener = bufconn.Listen(1024 * 1024)
@@ -69,10 +78,57 @@ func init() {
 	}()
 }
 
+// TestMain is run before all tests defined in this package
+func TestMain(m *testing.M) {
+	shouldRunHealthcheck := false
+
+	for _, arg := range os.Args {
+		if strings.Contains(arg, "-test.run=_Integration") {
+			shouldRunHealthcheck = true
+			break
+		}
+	}
+
+	if shouldRunHealthcheck {
+		log.Println("Running healthcheck setup for integration tests...")
+
+		if err := waitForHealthcheck(); err != nil {
+			log.Fatalf("Healthcheck failed: %v", err)
+		}
+	} else {
+		log.Println("Skipping healthcheck setup (not running integration tests).")
+	}
+
+	code := m.Run()
+	os.Exit(code)
+}
+
+// waitForHealthcheck pings the healthcheck endpoint until it gets a 200 OK
+func waitForHealthcheck() error {
+	timeout := 30 * time.Second
+	interval := 500 * time.Millisecond
+	deadline := time.Now().Add(timeout)
+	for {
+		if time.Now().After(deadline) {
+			return fmt.Errorf("healthcheck failed after %s", timeout)
+		}
+
+		err := walletServer.houstonService.HealthCheck()
+
+		if err == nil {
+			log.Println("Healthcheck successful.")
+			return nil
+		}
+
+		log.Println("Healthcheck failed:", err)
+		time.Sleep(interval)
+	}
+}
+
 func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("success when saving, reading and deleting a key-value pair", func(t *testing.T) {
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -135,7 +191,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("return error when SaveRequest does not have a key defined", func(t *testing.T) {
 
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -184,7 +240,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("return error when SaveRequest has an invalid key", func(t *testing.T) {
 
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -237,7 +293,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("success when saving a key with NullValue", func(t *testing.T) {
 
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -280,7 +336,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 func TestSaveBatchAndGetBatch(t *testing.T) {
 
 	t.Run("success when saving and reading key-value pairs in batches", func(t *testing.T) {
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -360,7 +416,7 @@ func TestSaveBatchAndGetBatch(t *testing.T) {
 func TestErrorInterceptors(t *testing.T) {
 
 	t.Run("return internal error when rpc execution raises a panic", func(t *testing.T) {
-		setupKeyValueStorage(t)
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -486,20 +542,7 @@ func TestErrorInterceptors(t *testing.T) {
 }
 
 func TestFinishRecoveryCodeSetupEndpoint_Integration(t *testing.T) {
-	encryptedPrivateKey := "v1:512:1:8:582626b7244e1e72:01b0df9b1ffbdfe8eabae00a2c208317:0a6593c59927797f6a850f1775792378b81078ba29c203b41fac51d6d62069fbb5306e6585c7abab06905d86cc01bc3c0302087edec71c9018191e68e72348e06f2b87c4b5ee0efb55c99fd9f3703ebfc94127bebd41fa72bced4747718a5c43219dd010aa2e9be848e387b3c29f4df3:6d2f736368656d613a31272f7265636f766572793a3127"
-
-	seed, err := hdkeychain.GenerateSeed(64 /*bytes*/)
-	if err != nil {
-		t.Fatalf("seed generation failed")
-	}
-	master, err := hdkeychain.NewMaster(seed, walletServer.network.ToParams())
-	if err != nil {
-		t.Fatalf("master seed generation failed")
-	}
-	masterPublic, err := master.Neuter()
-	if err != nil {
-		t.Fatalf("derivation failed")
-	}
+	setupKeyValueStorage(t, storage.BuildStorageSchema())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -507,31 +550,69 @@ func TestFinishRecoveryCodeSetupEndpoint_Integration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
-
-	createFirstSession(t)
-
-	_, err = walletServer.houstonService.ChallengeKeySetupStart(model.ChallengeSetupJson{
-		Type:                "RECOVERY_CODE",
-		PublicKey:           hex.EncodeToString(recoveryCodePublicKey.SerializeCompressed()),
-		EncryptedPrivateKey: encryptedPrivateKey,
-		Version:             2,
-		Salt:                "dfb80ea8c30959e8",
-	})
+	userPrivateKey, err := libwallet.NewHDPrivateKey(
+		[]byte("1234567891011121314"),
+		libwallet.Regtest(),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = walletServer.FinishRecoveryCodeSetup(context.Background(), api.FinishRecoveryCodeSetupRequest_builder{
-		ExtendedServerCosigningPublicKeyBase58: masterPublic.String(),
-		RecoveryCodePublicKeyHex:               hex.EncodeToString(recoveryCodePublicKey.SerializeCompressed()),
-	}.Build())
+	encryptedPrivateKey, err := libwallet.KeyEncrypt(userPrivateKey, recoveryCode)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
+
+	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
+		createFirstSessionOkJson.CosigningPublicKey.Key,
+		createFirstSessionOkJson.CosigningPublicKey.Path,
+		libwallet.Regtest())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	walletServer.keyProvider = NewMockKeyProvider(userPrivateKey, muunPublicKey, 0)
+	computeAndStoreEncryptedMuunKeyAction := recovery.NewComputeAndStoreEncryptedMuunKeyAction(
+		walletServer.keyValueStorage,
+		walletServer.keyProvider,
+	)
+	walletServer.finishChallengeSetup = challenge_keys.NewFinishChallengeSetupAction(
+		walletServer.houstonService,
+		walletServer.keyValueStorage,
+		computeAndStoreEncryptedMuunKeyAction,
+	)
+
+	_, err = walletServer.StartChallengeSetup(
+		context.Background(),
+		api.ChallengeSetupRequest_builder{
+			Type:                "RECOVERY_CODE",
+			PublicKey:           hex.EncodeToString(recoveryCodePublicKey.SerializeCompressed()),
+			Salt:                "dfb80ea8c30959e8",
+			EncryptedPrivateKey: encryptedPrivateKey,
+			Version:             2,
+		}.Build(),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = walletServer.FinishRecoveryCodeSetup(
+		context.Background(),
+		api.FinishRecoveryCodeSetupRequest_builder{
+			RecoveryCodePublicKeyHex: hex.EncodeToString(
+				recoveryCodePublicKey.SerializeCompressed(),
+			),
+		}.Build(),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func createFirstSession(t *testing.T) model.CreateFirstSessionOkJson {
+func createFirstSession(t *testing.T, key *libwallet.HDPublicKey) model.CreateFirstSessionOkJson {
 	provider := defaultProvider()
 	strClientVersion, err := strconv.Atoi(provider.ClientVersion)
 	if err != nil {
@@ -548,7 +629,7 @@ func createFirstSession(t *testing.T) model.CreateFirstSessionOkJson {
 		GcmToken:        nil,
 		PrimaryCurrency: "USD",
 		BasePublicKey: model.PublicKeyJson{
-			Key:  "tpubDAygaiK3eZ9hpC3aQkxtu5fGSTK4P7QKTwwGExN8hGZytjpEfsrUjtM8ics8Y7YLrvf1GLBZTFjcpmkEP1KKTRyo8D2ku5zz49bRudDrngd",
+			Key:  key.String(),
 			Path: "m/schema:1'/recovery:1'",
 		},
 	}
@@ -559,10 +640,10 @@ func createFirstSession(t *testing.T) model.CreateFirstSessionOkJson {
 	return sessionOkJson
 }
 
-func setupKeyValueStorage(t *testing.T) {
+func setupKeyValueStorage(t *testing.T, schema map[string]storage.Classification) {
 	// Create a new empty DB providing a new dataFilePath
 	dataFilePath := path.Join(t.TempDir(), "test.db")
-	keyValueStorage := storage.NewKeyValueStorage(dataFilePath, buildStorageSchemaForTests())
+	keyValueStorage := storage.NewKeyValueStorage(dataFilePath, schema)
 
 	// For testing purpose, change reference to this new keyValueStorage in order to have a new empty DB
 	walletServer.keyValueStorage = keyValueStorage
@@ -650,4 +731,46 @@ func buildStorageSchemaForTests() map[string]storage.Classification {
 			ValueType:        &storage.StringType{},
 		},
 	}
+}
+
+type mockKeyProvider struct {
+	userPrivateKey  *libwallet.HDPrivateKey
+	muunPublicKey   *libwallet.HDPublicKey
+	maxDerivedIndex int
+}
+
+func NewMockKeyProvider(
+	userPrivateKey *libwallet.HDPrivateKey,
+	muunPublicKey *libwallet.HDPublicKey,
+	maxDerivedIndex int,
+) keys.KeyProvider {
+	return &mockKeyProvider{
+		userPrivateKey:  userPrivateKey,
+		muunPublicKey:   muunPublicKey,
+		maxDerivedIndex: maxDerivedIndex,
+	}
+}
+
+func (m *mockKeyProvider) UserPrivateKey() (*libwallet.HDPrivateKey, error) {
+	return m.userPrivateKey, nil
+}
+
+func (m *mockKeyProvider) UserPublicKey() (*libwallet.HDPublicKey, error) {
+	return m.userPrivateKey.PublicKey(), nil
+}
+
+func (m *mockKeyProvider) MuunPublicKey() (*libwallet.HDPublicKey, error) {
+	return m.muunPublicKey, nil
+}
+
+func (m *mockKeyProvider) MaxDerivedIndex() int {
+	return m.maxDerivedIndex
+}
+
+func (m *mockKeyProvider) EncryptedMuunPrivateKey() (*libwallet.EncryptedPrivateKeyInfo, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockKeyProvider) SetMaxDerivedIndex(maxDerivedIndex int) {
+	m.maxDerivedIndex = maxDerivedIndex
 }

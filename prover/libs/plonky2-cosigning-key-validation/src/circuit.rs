@@ -21,8 +21,7 @@ pub const D: usize = 2;
 pub type C = KeccakGoldilocksConfig;
 pub type F = <C as GenericConfig<D>>::F;
 
-pub const INFO: &str = "muun.com/cosigning-key/2/2";
-pub const AAD: &str = "";
+pub const INFO: &[u8] = b"muun.com/cosigning-key/2/2/recovery-code";
 
 pub struct Circuit {
     pub circuit: CircuitData<F, C, D>,
@@ -34,6 +33,7 @@ impl Circuit {
         let config = CircuitConfig {
             zero_knowledge: true,
             num_wires: 190,
+            num_routed_wires: 85,
             ..CircuitConfig::standard_recursion_config()
         };
 
@@ -48,8 +48,9 @@ impl Circuit {
         let recovery_code_precomputed_windowed_mul =
             builder.add_virtual_precomputed_windowed_mul_target();
 
-        let info = builder.constant_bytes(INFO.as_bytes());
-        let aad = builder.constant_bytes(AAD.as_bytes());
+        let info = builder.constant_bytes(INFO);
+
+        let aad = builder.constant_bytes(&[]);
 
         let plaintext_scalar_bytes = serialize_private_key(&mut builder, plaintext_scalar.clone());
 

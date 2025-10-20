@@ -66,6 +66,9 @@ type MockNfcBridge struct {
 	mockCard *MockMuunCard
 }
 
+// Ensure MockNfcBridge complies with NfcBridge interface API
+var _ app_provided_data.NfcBridge = (*MockNfcBridge)(nil)
+
 func NewMockNfcBridge(network *libwallet.Network) *MockNfcBridge {
 	return &MockNfcBridge{
 		mockCard: &MockMuunCard{

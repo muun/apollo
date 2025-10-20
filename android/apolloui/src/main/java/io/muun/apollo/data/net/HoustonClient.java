@@ -35,6 +35,7 @@ import io.muun.apollo.domain.model.PlayIntegrityToken;
 import io.muun.apollo.domain.model.PublicKeySet;
 import io.muun.apollo.domain.model.RealTimeData;
 import io.muun.apollo.domain.model.RealTimeFees;
+import io.muun.apollo.domain.model.SensorEventBatch;
 import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
@@ -63,6 +64,7 @@ import io.muun.common.api.PreimageJson;
 import io.muun.common.api.PublicKeySetJson;
 import io.muun.common.api.PushTransactionsJson;
 import io.muun.common.api.RawTransaction;
+import io.muun.common.api.SensorEventBatchJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserJson;
@@ -158,12 +160,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 bigQueryPseudoId,
                 isRootHint,
                 metricsProvider.getAndroidId(),
-                metricsProvider.getSystemUsersInfo(),
                 metricsProvider.getDrmClientIds(),
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                metricsProvider.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
                 googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
@@ -175,17 +175,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getSecurityEnhancedBuild(),
                 metricsProvider.getBridgeRootService(),
                 metricsProvider.getAppSize(),
-                metricsProvider.getHardwareAddresses(),
                 metricsProvider.getVbMeta(),
-                metricsProvider.getEfsCreationTimeInSeconds(),
                 metricsProvider.isLowRamDevice(),
                 metricsProvider.getFirstInstallTimeInMs(),
-                metricsProvider.getDeviceRegion(),
                 metricsProvider.getDeviceName(),
                 metricsProvider.getTimeZoneOffsetSeconds(),
                 metricsProvider.getLanguage(),
                 metricsProvider.getUptimeMillis(),
-                metricsProvider.getElapsedRealtime()
+                metricsProvider.getElapsedRealtime(),
+                metricsProvider.getApplicationId()
         );
 
         return getService().createFirstSession(params)
@@ -208,12 +206,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 bigQueryPseudoId,
                 isRootHint,
                 metricsProvider.getAndroidId(),
-                metricsProvider.getSystemUsersInfo(),
                 metricsProvider.getDrmClientIds(),
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                metricsProvider.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
                 googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
@@ -225,17 +221,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getSecurityEnhancedBuild(),
                 metricsProvider.getBridgeRootService(),
                 metricsProvider.getAppSize(),
-                metricsProvider.getHardwareAddresses(),
                 metricsProvider.getVbMeta(),
-                metricsProvider.getEfsCreationTimeInSeconds(),
                 metricsProvider.isLowRamDevice(),
                 metricsProvider.getFirstInstallTimeInMs(),
-                metricsProvider.getDeviceRegion(),
                 metricsProvider.getDeviceName(),
                 metricsProvider.getTimeZoneOffsetSeconds(),
                 metricsProvider.getLanguage(),
                 metricsProvider.getUptimeMillis(),
-                metricsProvider.getElapsedRealtime()
+                metricsProvider.getElapsedRealtime(),
+                metricsProvider.getApplicationId()
         );
 
         return getService().createLoginSession(params)
@@ -258,12 +252,10 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 bigQueryPseudoId,
                 isRootHint,
                 metricsProvider.getAndroidId(),
-                metricsProvider.getSystemUsersInfo(),
                 metricsProvider.getDrmClientIds(),
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                metricsProvider.getCpuInfo(),
                 googlePlayServicesHelper.getPlayServicesInfo(),
                 googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
@@ -275,17 +267,15 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getSecurityEnhancedBuild(),
                 metricsProvider.getBridgeRootService(),
                 metricsProvider.getAppSize(),
-                metricsProvider.getHardwareAddresses(),
                 metricsProvider.getVbMeta(),
-                metricsProvider.getEfsCreationTimeInSeconds(),
                 metricsProvider.isLowRamDevice(),
                 metricsProvider.getFirstInstallTimeInMs(),
-                metricsProvider.getDeviceRegion(),
                 metricsProvider.getDeviceName(),
                 metricsProvider.getTimeZoneOffsetSeconds(),
                 metricsProvider.getLanguage(),
                 metricsProvider.getUptimeMillis(),
-                metricsProvider.getElapsedRealtime()
+                metricsProvider.getElapsedRealtime(),
+                metricsProvider.getApplicationId()
         );
 
         return getService().createRecoveryCodeLoginSession(session)
@@ -917,5 +907,18 @@ public class HoustonClient extends BaseClient<HoustonService> {
      */
     public Observable<Void> confirmAccountDeletion(String uuid) {
         return getService().confirmAccountDeletion(new LinkActionJson(uuid));
+    }
+
+    /**
+     * Map the provided SensorEventBatch to its JSON representation and sends
+     * it to the backend service.
+     *
+     * @param sensorEventBatch The batch of sensor events to be mapped and saved.
+     * @return An Observable indicating the completion of the save operation.
+     */
+    public Observable<Void> saveSensorEventBatch(final SensorEventBatch sensorEventBatch) {
+        final SensorEventBatchJson mappedBatch = apiMapper.mapSensorEventBatch(sensorEventBatch);
+
+        return getService().saveSensorEventBatch(mappedBatch);
     }
 }

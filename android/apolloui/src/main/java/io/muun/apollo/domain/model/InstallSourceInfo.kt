@@ -7,5 +7,4 @@ package io.muun.apollo.domain.model
 data class InstallSourceInfo(
     val installingPackageName: String,
     val initiatingPackageName: String? = null, //If !OS.supportsInstallSourceInfo()
-    val initiatingPackageSigningInfo: String? = null, // If !OS.supportsInstallSourceInfo()
 )

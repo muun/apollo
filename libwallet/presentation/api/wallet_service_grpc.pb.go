@@ -20,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WalletService_DeleteWallet_FullMethodName                  = "/rpc.WalletService/DeleteWallet"
-	WalletService_NfcTransmit_FullMethodName                   = "/rpc.WalletService/NfcTransmit"
 	WalletService_SetupSecurityCard_FullMethodName             = "/rpc.WalletService/SetupSecurityCard"
 	WalletService_ResetSecurityCard_FullMethodName             = "/rpc.WalletService/ResetSecurityCard"
 	WalletService_SignMessageSecurityCard_FullMethodName       = "/rpc.WalletService/SignMessageSecurityCard"
+	WalletService_SetupSecurityCardV2_FullMethodName           = "/rpc.WalletService/SetupSecurityCardV2"
 	WalletService_StartDiagnosticSession_FullMethodName        = "/rpc.WalletService/StartDiagnosticSession"
 	WalletService_PerformDiagnosticScanForUtxos_FullMethodName = "/rpc.WalletService/PerformDiagnosticScanForUtxos"
 	WalletService_SubmitDiagnosticLog_FullMethodName           = "/rpc.WalletService/SubmitDiagnosticLog"
+	WalletService_PrepareSweepTx_FullMethodName                = "/rpc.WalletService/PrepareSweepTx"
+	WalletService_SignAndBroadcastSweepTx_FullMethodName       = "/rpc.WalletService/SignAndBroadcastSweepTx"
 	WalletService_StartChallengeSetup_FullMethodName           = "/rpc.WalletService/StartChallengeSetup"
 	WalletService_FinishRecoveryCodeSetup_FullMethodName       = "/rpc.WalletService/FinishRecoveryCodeSetup"
+	WalletService_PopulateEncryptedMuunKey_FullMethodName      = "/rpc.WalletService/PopulateEncryptedMuunKey"
 	WalletService_Save_FullMethodName                          = "/rpc.WalletService/Save"
 	WalletService_Get_FullMethodName                           = "/rpc.WalletService/Get"
 	WalletService_Delete_FullMethodName                        = "/rpc.WalletService/Delete"
@@ -41,19 +43,20 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WalletServiceClient interface {
-	DeleteWallet(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OperationStatus, error)
-	// V2 - use then discard API
-	NfcTransmit(ctx context.Context, in *NfcTransmitRequest, opts ...grpc.CallOption) (*NfcTransmitResponse, error)
 	// V3 - NFC security cards Native->Libwallet API
 	SetupSecurityCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*XpubResponse, error)
 	ResetSecurityCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SignMessageSecurityCard(ctx context.Context, in *SignMessageSecurityCardRequest, opts ...grpc.CallOption) (*SignMessageSecurityCardResponse, error)
+	SetupSecurityCardV2(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SetupSecurityCardResponse, error)
 	// Diagnostic Mode API
 	StartDiagnosticSession(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DiagnosticSessionDescriptor, error)
 	PerformDiagnosticScanForUtxos(ctx context.Context, in *DiagnosticSessionDescriptor, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ScanProgressUpdate], error)
 	SubmitDiagnosticLog(ctx context.Context, in *DiagnosticSessionDescriptor, opts ...grpc.CallOption) (*DiagnosticSubmitStatus, error)
+	PrepareSweepTx(ctx context.Context, in *PrepareSweepTxRequest, opts ...grpc.CallOption) (*PrepareSweepTxResponse, error)
+	SignAndBroadcastSweepTx(ctx context.Context, in *SignAndBroadcastSweepTxRequest, opts ...grpc.CallOption) (*SignAndBroadcastSweepTxResponse, error)
 	StartChallengeSetup(ctx context.Context, in *ChallengeSetupRequest, opts ...grpc.CallOption) (*SetupChallengeResponse, error)
 	FinishRecoveryCodeSetup(ctx context.Context, in *FinishRecoveryCodeSetupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	PopulateEncryptedMuunKey(ctx context.Context, in *PopulateEncryptedMuunKeyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Key-Value Storage
 	Save(ctx context.Context, in *SaveRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
@@ -68,26 +71,6 @@ type walletServiceClient struct {
 
 func NewWalletServiceClient(cc grpc.ClientConnInterface) WalletServiceClient {
 	return &walletServiceClient{cc}
-}
-
-func (c *walletServiceClient) DeleteWallet(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OperationStatus, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OperationStatus)
-	err := c.cc.Invoke(ctx, WalletService_DeleteWallet_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *walletServiceClient) NfcTransmit(ctx context.Context, in *NfcTransmitRequest, opts ...grpc.CallOption) (*NfcTransmitResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(NfcTransmitResponse)
-	err := c.cc.Invoke(ctx, WalletService_NfcTransmit_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *walletServiceClient) SetupSecurityCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*XpubResponse, error) {
@@ -114,6 +97,16 @@ func (c *walletServiceClient) SignMessageSecurityCard(ctx context.Context, in *S
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SignMessageSecurityCardResponse)
 	err := c.cc.Invoke(ctx, WalletService_SignMessageSecurityCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) SetupSecurityCardV2(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SetupSecurityCardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetupSecurityCardResponse)
+	err := c.cc.Invoke(ctx, WalletService_SetupSecurityCardV2_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +152,26 @@ func (c *walletServiceClient) SubmitDiagnosticLog(ctx context.Context, in *Diagn
 	return out, nil
 }
 
+func (c *walletServiceClient) PrepareSweepTx(ctx context.Context, in *PrepareSweepTxRequest, opts ...grpc.CallOption) (*PrepareSweepTxResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareSweepTxResponse)
+	err := c.cc.Invoke(ctx, WalletService_PrepareSweepTx_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) SignAndBroadcastSweepTx(ctx context.Context, in *SignAndBroadcastSweepTxRequest, opts ...grpc.CallOption) (*SignAndBroadcastSweepTxResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SignAndBroadcastSweepTxResponse)
+	err := c.cc.Invoke(ctx, WalletService_SignAndBroadcastSweepTx_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *walletServiceClient) StartChallengeSetup(ctx context.Context, in *ChallengeSetupRequest, opts ...grpc.CallOption) (*SetupChallengeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SetupChallengeResponse)
@@ -173,6 +186,16 @@ func (c *walletServiceClient) FinishRecoveryCodeSetup(ctx context.Context, in *F
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, WalletService_FinishRecoveryCodeSetup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) PopulateEncryptedMuunKey(ctx context.Context, in *PopulateEncryptedMuunKeyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, WalletService_PopulateEncryptedMuunKey_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -233,19 +256,20 @@ func (c *walletServiceClient) GetBatch(ctx context.Context, in *GetBatchRequest,
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
 type WalletServiceServer interface {
-	DeleteWallet(context.Context, *emptypb.Empty) (*OperationStatus, error)
-	// V2 - use then discard API
-	NfcTransmit(context.Context, *NfcTransmitRequest) (*NfcTransmitResponse, error)
 	// V3 - NFC security cards Native->Libwallet API
 	SetupSecurityCard(context.Context, *emptypb.Empty) (*XpubResponse, error)
 	ResetSecurityCard(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	SignMessageSecurityCard(context.Context, *SignMessageSecurityCardRequest) (*SignMessageSecurityCardResponse, error)
+	SetupSecurityCardV2(context.Context, *emptypb.Empty) (*SetupSecurityCardResponse, error)
 	// Diagnostic Mode API
 	StartDiagnosticSession(context.Context, *emptypb.Empty) (*DiagnosticSessionDescriptor, error)
 	PerformDiagnosticScanForUtxos(*DiagnosticSessionDescriptor, grpc.ServerStreamingServer[ScanProgressUpdate]) error
 	SubmitDiagnosticLog(context.Context, *DiagnosticSessionDescriptor) (*DiagnosticSubmitStatus, error)
+	PrepareSweepTx(context.Context, *PrepareSweepTxRequest) (*PrepareSweepTxResponse, error)
+	SignAndBroadcastSweepTx(context.Context, *SignAndBroadcastSweepTxRequest) (*SignAndBroadcastSweepTxResponse, error)
 	StartChallengeSetup(context.Context, *ChallengeSetupRequest) (*SetupChallengeResponse, error)
 	FinishRecoveryCodeSetup(context.Context, *FinishRecoveryCodeSetupRequest) (*emptypb.Empty, error)
+	PopulateEncryptedMuunKey(context.Context, *PopulateEncryptedMuunKeyRequest) (*emptypb.Empty, error)
 	// Key-Value Storage
 	Save(context.Context, *SaveRequest) (*emptypb.Empty, error)
 	Get(context.Context, *GetRequest) (*GetResponse, error)
@@ -262,12 +286,6 @@ type WalletServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedWalletServiceServer struct{}
 
-func (UnimplementedWalletServiceServer) DeleteWallet(context.Context, *emptypb.Empty) (*OperationStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteWallet not implemented")
-}
-func (UnimplementedWalletServiceServer) NfcTransmit(context.Context, *NfcTransmitRequest) (*NfcTransmitResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NfcTransmit not implemented")
-}
 func (UnimplementedWalletServiceServer) SetupSecurityCard(context.Context, *emptypb.Empty) (*XpubResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetupSecurityCard not implemented")
 }
@@ -276,6 +294,9 @@ func (UnimplementedWalletServiceServer) ResetSecurityCard(context.Context, *empt
 }
 func (UnimplementedWalletServiceServer) SignMessageSecurityCard(context.Context, *SignMessageSecurityCardRequest) (*SignMessageSecurityCardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignMessageSecurityCard not implemented")
+}
+func (UnimplementedWalletServiceServer) SetupSecurityCardV2(context.Context, *emptypb.Empty) (*SetupSecurityCardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetupSecurityCardV2 not implemented")
 }
 func (UnimplementedWalletServiceServer) StartDiagnosticSession(context.Context, *emptypb.Empty) (*DiagnosticSessionDescriptor, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartDiagnosticSession not implemented")
@@ -286,11 +307,20 @@ func (UnimplementedWalletServiceServer) PerformDiagnosticScanForUtxos(*Diagnosti
 func (UnimplementedWalletServiceServer) SubmitDiagnosticLog(context.Context, *DiagnosticSessionDescriptor) (*DiagnosticSubmitStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitDiagnosticLog not implemented")
 }
+func (UnimplementedWalletServiceServer) PrepareSweepTx(context.Context, *PrepareSweepTxRequest) (*PrepareSweepTxResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepareSweepTx not implemented")
+}
+func (UnimplementedWalletServiceServer) SignAndBroadcastSweepTx(context.Context, *SignAndBroadcastSweepTxRequest) (*SignAndBroadcastSweepTxResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignAndBroadcastSweepTx not implemented")
+}
 func (UnimplementedWalletServiceServer) StartChallengeSetup(context.Context, *ChallengeSetupRequest) (*SetupChallengeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartChallengeSetup not implemented")
 }
 func (UnimplementedWalletServiceServer) FinishRecoveryCodeSetup(context.Context, *FinishRecoveryCodeSetupRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FinishRecoveryCodeSetup not implemented")
+}
+func (UnimplementedWalletServiceServer) PopulateEncryptedMuunKey(context.Context, *PopulateEncryptedMuunKeyRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PopulateEncryptedMuunKey not implemented")
 }
 func (UnimplementedWalletServiceServer) Save(context.Context, *SaveRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Save not implemented")
@@ -326,42 +356,6 @@ func RegisterWalletServiceServer(s grpc.ServiceRegistrar, srv WalletServiceServe
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&WalletService_ServiceDesc, srv)
-}
-
-func _WalletService_DeleteWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WalletServiceServer).DeleteWallet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: WalletService_DeleteWallet_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).DeleteWallet(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _WalletService_NfcTransmit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NfcTransmitRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WalletServiceServer).NfcTransmit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: WalletService_NfcTransmit_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).NfcTransmit(ctx, req.(*NfcTransmitRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _WalletService_SetupSecurityCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -418,6 +412,24 @@ func _WalletService_SignMessageSecurityCard_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_SetupSecurityCardV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).SetupSecurityCardV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_SetupSecurityCardV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).SetupSecurityCardV2(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WalletService_StartDiagnosticSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -465,6 +477,42 @@ func _WalletService_SubmitDiagnosticLog_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_PrepareSweepTx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareSweepTxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).PrepareSweepTx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_PrepareSweepTx_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).PrepareSweepTx(ctx, req.(*PrepareSweepTxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_SignAndBroadcastSweepTx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignAndBroadcastSweepTxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).SignAndBroadcastSweepTx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_SignAndBroadcastSweepTx_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).SignAndBroadcastSweepTx(ctx, req.(*SignAndBroadcastSweepTxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WalletService_StartChallengeSetup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChallengeSetupRequest)
 	if err := dec(in); err != nil {
@@ -497,6 +545,24 @@ func _WalletService_FinishRecoveryCodeSetup_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WalletServiceServer).FinishRecoveryCodeSetup(ctx, req.(*FinishRecoveryCodeSetupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_PopulateEncryptedMuunKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PopulateEncryptedMuunKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).PopulateEncryptedMuunKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_PopulateEncryptedMuunKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).PopulateEncryptedMuunKey(ctx, req.(*PopulateEncryptedMuunKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -599,14 +665,6 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*WalletServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "DeleteWallet",
-			Handler:    _WalletService_DeleteWallet_Handler,
-		},
-		{
-			MethodName: "NfcTransmit",
-			Handler:    _WalletService_NfcTransmit_Handler,
-		},
-		{
 			MethodName: "SetupSecurityCard",
 			Handler:    _WalletService_SetupSecurityCard_Handler,
 		},
@@ -619,6 +677,10 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WalletService_SignMessageSecurityCard_Handler,
 		},
 		{
+			MethodName: "SetupSecurityCardV2",
+			Handler:    _WalletService_SetupSecurityCardV2_Handler,
+		},
+		{
 			MethodName: "StartDiagnosticSession",
 			Handler:    _WalletService_StartDiagnosticSession_Handler,
 		},
@@ -627,12 +689,24 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _WalletService_SubmitDiagnosticLog_Handler,
 		},
 		{
+			MethodName: "PrepareSweepTx",
+			Handler:    _WalletService_PrepareSweepTx_Handler,
+		},
+		{
+			MethodName: "SignAndBroadcastSweepTx",
+			Handler:    _WalletService_SignAndBroadcastSweepTx_Handler,
+		},
+		{
 			MethodName: "StartChallengeSetup",
 			Handler:    _WalletService_StartChallengeSetup_Handler,
 		},
 		{
 			MethodName: "FinishRecoveryCodeSetup",
 			Handler:    _WalletService_FinishRecoveryCodeSetup_Handler,
+		},
+		{
+			MethodName: "PopulateEncryptedMuunKey",
+			Handler:    _WalletService_PopulateEncryptedMuunKey_Handler,
 		},
 		{
 			MethodName: "Save",
