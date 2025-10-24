@@ -41,6 +41,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
@@ -210,6 +211,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * This ensures proper layout behavior when system UI visibility changes (e.g., keyboard shown).
      */
     protected void setWindowInsets() {
+        EdgeToEdge.enable(this);
         WindowCompat.setDecorFitsSystemWindows(this.getWindow(), false);
         final View rootView = getWindow().getDecorView().getRootView();
 

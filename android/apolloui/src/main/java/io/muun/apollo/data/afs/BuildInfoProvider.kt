@@ -9,18 +9,16 @@ class BuildInfoProvider {
         get() {
             return BuildInfo(
                 getABIs(),
-                Build.FINGERPRINT,
-                Build.HARDWARE,
                 Build.BOOTLOADER,
                 Build.MANUFACTURER,
                 Build.BRAND,
-                Build.DISPLAY,
-                Build.TIME,
                 Build.HOST,
                 Build.TYPE,
                 Build.getRadioVersion(),
                 getSecurityPatch(),
-                getBaseOs()
+                Build.MODEL,
+                Build.PRODUCT,
+                Build.VERSION.RELEASE,
             )
         }
 
@@ -44,14 +42,6 @@ class BuildInfoProvider {
     private fun getSecurityPatch(): String {
         return if (OS.supportsBuildVersionSecurityPatch()) {
             Build.VERSION.SECURITY_PATCH
-        } else {
-            Constants.UNKNOWN
-        }
-    }
-
-    private fun getBaseOs(): String {
-        return if (OS.supportsBuildVersionBaseOs()) {
-            Build.VERSION.BASE_OS
         } else {
             Constants.UNKNOWN
         }

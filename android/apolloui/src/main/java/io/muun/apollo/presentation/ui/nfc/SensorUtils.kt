@@ -6,10 +6,13 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.TriggerEvent
 import android.hardware.TriggerEventListener
+import android.view.MotionEvent
 import io.muun.apollo.presentation.ui.nfc.events.Acceleration
 import io.muun.apollo.presentation.ui.nfc.events.AccelerometerEvent
+import io.muun.apollo.presentation.ui.nfc.events.GestureEvent
 import io.muun.apollo.presentation.ui.nfc.events.ISensorEvent
 import io.muun.apollo.presentation.ui.nfc.events.MagneticEvent
+import io.muun.apollo.presentation.ui.nfc.events.PressureEvent
 import io.muun.apollo.presentation.ui.nfc.events.Rotation
 import io.muun.apollo.presentation.ui.nfc.events.RotationEvent
 import io.muun.apollo.presentation.ui.nfc.events.SignificantMotionEvent
@@ -21,7 +24,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlin.math.abs
 
+private const val SAMPLING_PERIOD_MS = 10_000
+
 internal object SensorUtils {
+
+    private val eventIdCounter = java.util.concurrent.atomic.AtomicLong(0)
 
     /**
      * Merges multiple sensor flows into a single [Flow] of [ISensorEvent]s.
@@ -34,12 +41,36 @@ internal object SensorUtils {
      */
     internal fun mergedSensorFlow(sensorManager: SensorManager): Flow<ISensorEvent> {
         return merge(
-            subscribeToRotationSensor(sensorManager).map { RotationEvent(it) },
-            subscribeToMagneticSensor(sensorManager).map { MagneticEvent(it) },
-            subscribeToSignificantMotionSensor(sensorManager).map { SignificantMotionEvent(it) },
-            subscribeToAccelerometerSensor(sensorManager).map {
-                AccelerometerEvent(it)
+            subscribeToRotationSensor(sensorManager).map {
+                RotationEvent(
+                    id = nextEventId(),
+                    rotation = it,
+                )
             },
+            subscribeToMagneticSensor(sensorManager).map {
+                MagneticEvent(
+                    id = nextEventId(),
+                    magnetic = it,
+                )
+            },
+            subscribeToSignificantMotionSensor(sensorManager).map {
+                SignificantMotionEvent(
+                    id = nextEventId(),
+                    motion = it,
+                )
+            },
+            subscribeToAccelerometerSensor(sensorManager).map {
+                AccelerometerEvent(
+                    id = nextEventId(),
+                    acceleration = it,
+                )
+            },
+            subscribeToPressureSensor(sensorManager).map {
+                PressureEvent(
+                    id = nextEventId(),
+                    pressure = it
+                )
+            }
         )
     }
 
@@ -106,9 +137,9 @@ internal object SensorUtils {
         }
 
         sensorManager.registerListener(
-            /* listener = */ listener, 
+            /* listener = */ listener,
             /* sensor = */ sensor,
-            /* samplingPeriodUs = */ SensorManager.SENSOR_DELAY_NORMAL,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
         )
 
         awaitClose {
@@ -154,9 +185,9 @@ internal object SensorUtils {
         }
 
         sensorManager.registerListener(
-            listener,
-            sensor,
-            SensorManager.SENSOR_DELAY_NORMAL,
+            /* listener = */ listener,
+            /* sensor = */ sensor,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
         )
 
         awaitClose {
@@ -250,10 +281,74 @@ internal object SensorUtils {
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
 
-        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(
+            /* listener = */ listener,
+            /* sensor = */ sensor,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
+        )
 
         awaitClose {
             sensorManager.unregisterListener(listener)
         }
     }
+
+    /**
+     * Creates a cold [Flow] that emits pressure measurements from the device's barometric pressure sensor.
+     *
+     * Sensor events are sampled with [SensorManager.SENSOR_DELAY_NORMAL], and the listener is automatically
+     * unregistered when the flow collection is cancelled.
+     *
+     * @param sensorManager The [SensorManager] used to access the magnetic field sensor.
+     * @return A cold [Flow] emitting [Float] values representing barometric pressure measurements.
+     */
+    private fun subscribeToPressureSensor(sensorManager: SensorManager) : Flow<Float> = callbackFlow {
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
+
+        if (sensor == null) {
+            close()
+            return@callbackFlow
+        }
+
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                val pressure = event.values[0]
+                trySend(pressure)
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+
+        sensorManager.registerListener(
+            /* listener = */ listener,
+            /* sensor = */ sensor,
+            /* samplingPeriodUs = */ 25_000, // This seems to be the limit of the android API
+        )
+
+        awaitClose {
+            sensorManager.unregisterListener(listener)
+        }
+    }
+
+    /**
+     * Generates a [GestureEvent] from the provided [MotionEvent], assigning it a unique ID.
+     *
+     * @param event The MotionEvent containing gesture details such as action type,
+     * coordinates, and pointer count.
+     * @return A new instance of GestureEvent populated with data from the MotionEvent.
+     */
+    internal fun generateGestureEvent(event: MotionEvent) = GestureEvent(
+        id = nextEventId(),
+        action = event.actionMasked,
+        x = event.x,
+        y = event.y,
+        pointerCount = event.pointerCount,
+    )
+
+    /**
+     * Generates and returns the next unique event ID by incrementing an internal counter.
+     *
+     * @return A unique [Long] representing the next sensor event ID.
+     */
+    private fun nextEventId(): Long = eventIdCounter.incrementAndGet()
+
 }

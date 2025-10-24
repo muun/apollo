@@ -287,9 +287,8 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
         analytics.report(new AnalyticsEvent.E_ERROR(
                 AnalyticsEvent.ERROR_TYPE.GENERIC,
-                error.getClass().getSimpleName(),
-                error.getLocalizedMessage(),
-                errorReport.printErrorForAnalytics()
+                error,
+                errorReport
         ));
     }
 
@@ -520,11 +519,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
         final ErrorReport errorReport = ErrorReportBuilder.INSTANCE.build(error);
 
-        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(
-                error.getClass().getSimpleName(),
-                error.getLocalizedMessage(),
-                errorReport.printErrorForAnalytics()
-        ));
+        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(error, errorReport));
 
         final MuunDialog.Builder builder = new MuunDialog.Builder()
                 .layout(R.layout.dialog_custom_layout)

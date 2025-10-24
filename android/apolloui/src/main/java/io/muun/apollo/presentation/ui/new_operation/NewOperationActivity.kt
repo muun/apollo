@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.new_operation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.os.Handler
 import android.text.Html
 import android.text.TextUtils
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -88,6 +90,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
                 .putExtra(ORIGIN, origin.name)
         }
     }
+
+    @Inject
+    lateinit var viewModel: NewOperationViewModel
 
     @Inject
     lateinit var featureSelector: FeatureSelector
@@ -289,6 +294,12 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         if (amountInput.visibility == View.VISIBLE) {
             amountInput.requestFocusInput()
         }
+        viewModel.subscribeToAllSensors(this, this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.unsubscribeFromAllSensors()
     }
 
     override fun onStop() {
@@ -297,6 +308,11 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             countdownTimer!!.cancel()
             countdownTimer = null
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        viewModel.onGestureDetected(event)
+        return super.onTouchEvent(event)
     }
 
     private fun getValidIntentUri(intent: Intent): String {
@@ -557,6 +573,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         finishActivity()
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
 
         if (shouldIgnoreBackAndExit() || handleBackByOverlayFragment()) {

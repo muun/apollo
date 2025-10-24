@@ -3,8 +3,8 @@ package io.muun.apollo.data.logging
 import android.app.Application
 import android.os.Build
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import io.muun.apollo.data.analytics.AnalyticsProvider
 import io.muun.apollo.data.afs.EarlyMetricsProvider
+import io.muun.apollo.data.analytics.AnalyticsProvider
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.action.debug.ForceErrorReportAction
@@ -102,6 +102,7 @@ object Crashlytics {
 
         // Note: these custom keys are associated with the non-fatal error being tracked but also
         // with the subsequent crash if the error generates one (e.g if error isn't caught/handled).
+        crashlytics?.setCustomKey("errorId", report.uniqueId)
         crashlytics?.setCustomKey("tag", report.tag)
         crashlytics?.setCustomKey("message", report.message)
         setStaticCustomKeys()
@@ -109,6 +110,7 @@ object Crashlytics {
         for (entry in report.metadata.entries) {
             crashlytics?.setCustomKey(entry.key, entry.value.toString())
         }
+
 
         analyticsProvider?.report(
             AnalyticsEvent.E_CRASHLYTICS_ERROR(report)

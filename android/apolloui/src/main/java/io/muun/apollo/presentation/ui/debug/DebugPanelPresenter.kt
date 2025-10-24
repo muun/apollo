@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.debug
 
+import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
@@ -188,7 +189,7 @@ class DebugPanelPresenter @Inject constructor(
     /**
      * Reset a security card to enable re-use. Only to be used in local builds.
      */
-    fun resetSecuritytCard(nfcSession: NfcSession) {
+    fun resetSecurityCard(nfcSession: NfcSession) {
         debugExecutable.resetSecurityCard(nfcSession)
     }
 
@@ -214,6 +215,20 @@ class DebugPanelPresenter @Inject constructor(
             .subscribe(empty) { error: Throwable ->
                 this.handleError(error)
             }
+    }
+
+    /**
+     * Trigger a background, non fatal error tracking. Making it reach Crashlytics and Bigquery.
+     */
+    fun forceErrorReport() {
+        debugExecutable.forceErrorReport()
+    }
+
+    /**
+     * Trigger an error report dialog.
+     */
+    fun forceErrorReportDialog() {
+        handleError(RuntimeException("Forced Error Report Dialog v${Globals.INSTANCE.versionCode}"))
     }
 
     override fun handleError(error: Throwable) {

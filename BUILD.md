@@ -3,8 +3,8 @@
 ### Requirements
 
 * [OpenJDK](https://adoptopenjdk.net/?variant=openjdk11&jvmVariant=hotspot) >= 8
-* [Golang](https://golang.org/dl/) >= 1.16
-* [Android NDK](https://developer.android.com/ndk/downloads) >= 21
+* [Golang](https://golang.org/dl/) = 1.24.x
+* [Android NDK](https://developer.android.com/ndk/downloads) >= 22
 * [Docker](https://docs.docker.com/engine/install/) >= 28
 
 ### Instructions
@@ -28,7 +28,7 @@
 
 ### Instructions
 
-1. Ensure Docker has at least 5 GB of RAM and run:
+1. Ensure Docker has at least 16 GB of RAM, 60 GB of free space on disk and run:
     ```shell
     mkdir -p apk
     DOCKER_BUILDKIT=1 docker build -f android/Dockerfile -o apk .
@@ -49,7 +49,7 @@
     adb pull $(adb shell pm path io.muun.apollo | grep "/base.apk" | sed 's/^package://') apollo-play.apk
     ```
 2. Checkout the commit that corresponds to the version of the app you want to verify.
-3. Ensure Docker has at least 5 GB of RAM and run:
+3. Ensure Docker has at least 16 GB of RAM, 60 GB of free space on disk and run:
     ```shell
     tools/verify-apollo.sh <path-to-verify.apk>
     ```

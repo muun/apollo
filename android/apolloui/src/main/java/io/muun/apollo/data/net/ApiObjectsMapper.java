@@ -1,7 +1,6 @@
 package io.muun.apollo.data.net;
 
 import io.muun.apollo.data.afs.BuildInfo;
-import io.muun.apollo.data.afs.CpuInfo;
 import io.muun.apollo.data.afs.PackageManagerAppInfo;
 import io.muun.apollo.data.afs.PackageManagerDeviceFeatures;
 import io.muun.apollo.data.external.Globals;
@@ -17,14 +16,14 @@ import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.InstallSourceInfo;
 import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PublicProfile;
+import io.muun.apollo.domain.model.SensorEvent;
+import io.muun.apollo.domain.model.SensorEventBatch;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
-import io.muun.apollo.domain.model.SystemUserInfo;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.api.AndroidAppInfoJson;
 import io.muun.common.api.AndroidBuildInfoJson;
 import io.muun.common.api.AndroidDeviceFeaturesJson;
-import io.muun.common.api.AndroidSystemUserInfoJson;
 import io.muun.common.api.BackgroundEventJson;
 import io.muun.common.api.BitcoinAmountJson;
 import io.muun.common.api.ChallengeKeyJson;
@@ -47,6 +46,8 @@ import io.muun.common.api.PhoneNumberJson;
 import io.muun.common.api.PublicKeyJson;
 import io.muun.common.api.PublicProfileJson;
 import io.muun.common.api.RealTimeFeesRequestJson;
+import io.muun.common.api.SensorEventBatchJson;
+import io.muun.common.api.SensorEventJson;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapRequestJson;
 import io.muun.common.api.UserInvoiceJson;
@@ -63,7 +64,6 @@ import io.muun.common.model.challenge.ChallengeSetup;
 import io.muun.common.model.challenge.ChallengeSignature;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.Encodings;
-import io.muun.common.utils.Pair;
 import io.muun.common.utils.Preconditions;
 
 import androidx.annotation.NonNull;
@@ -223,12 +223,10 @@ public class ApiObjectsMapper {
             final String bigQueryPseudoId,
             final boolean isRootHint,
             @NonNull final String androidId,
-            @NonNull final List<SystemUserInfo> systemUsersInfo,
             @NonNull final Map<String, String> drmProviderToClientId,
             @NonNull final InstallSourceInfo installSourceInfo,
             final int bootCount,
             @NonNull final String glEsVersion,
-            @NonNull final CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
             @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
@@ -240,17 +238,15 @@ public class ApiObjectsMapper {
             final String securityEnhancedBuild,
             final String bridgeRootService,
             final long appSize,
-            final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds,
             final Boolean isLowRamDevice,
             final Long firstInstallTimeInMs,
-            final Map<String, String> deviceRegion,
             final String deviceName,
             final Long timeZoneOffsetSeconds,
             final String language,
             final Long uptimeMillis,
-            final Long elapsedRealtime
+            final Long elapsedRealtime,
+            final String applicationId
     ) {
         return new ClientJson(
                 ClientTypeJson.APOLLO,
@@ -264,22 +260,14 @@ public class ApiObjectsMapper {
                 isRootHint,
                 androidId,
                 0,
-                mapSystemUsersInfo(systemUsersInfo),
                 drmProviderToClientId,
                 uptimeMillis,
                 elapsedRealtime,
                 installSourceInfo.getInstallingPackageName(),
                 installSourceInfo.getInitiatingPackageName(),
-                installSourceInfo.getInitiatingPackageSigningInfo(),
-                //@TODO: Redundancy removal: Next 3 and also at Houston (data present in buildInfo)
-                buildInfo.getFingerprint(),
-                buildInfo.getHardware(),
                 buildInfo.getBootloader(),
                 bootCount,
                 glEsVersion,
-                cpuInfo.getLegacyData(),
-                mapListOfPairs(cpuInfo.getCommonInfo()),
-                mapCpuPerProcessorInfo(cpuInfo.getPerProcessorInfo()),
                 playServicesInfo.getVersionCode(),
                 playServicesInfo.getVersionName(),
                 playServicesInfo.getClientVersionCode(),
@@ -294,61 +282,27 @@ public class ApiObjectsMapper {
                 mapSeLinux(securityEnhancedBuild),
                 mapAdbRootService(bridgeRootService),
                 appSize,
-                hardwareAddresses,
                 vbMeta,
-                efsCreationTimeInSeconds,
                 isLowRamDevice,
                 firstInstallTimeInMs,
-                deviceRegion
+                applicationId
         );
-    }
-
-    private List<Pair<String, String>> mapListOfPairs(List<kotlin.Pair<String, String>> info) {
-        final List<Pair<String, String>> result = new ArrayList<>();
-
-        for (kotlin.Pair<String, String> kotlinPair : info) {
-            result.add(new Pair<>(kotlinPair.getFirst(), kotlinPair.getSecond()));
-        }
-        return result;
-    }
-
-    private List<List<Pair<String, String>>> mapCpuPerProcessorInfo(
-            List<List<kotlin.Pair<String, String>>> perProcessorInfo
-    ) {
-        final List<List<Pair<String, String>>> result = new ArrayList<>();
-
-        for (List<kotlin.Pair<String, String>> listOfPairs : perProcessorInfo) {
-            result.add(mapListOfPairs(listOfPairs));
-        }
-        return result;
-    }
-
-    private List<AndroidSystemUserInfoJson> mapSystemUsersInfo(List<SystemUserInfo> usersInfo) {
-        final List<AndroidSystemUserInfoJson> result = new ArrayList<>();
-        for (final SystemUserInfo model : usersInfo) {
-            result.add(new AndroidSystemUserInfoJson(
-                    model.getCreationTimestampInMillis(),
-                    model.isSystemUser()
-            ));
-        }
-        return result;
     }
 
     private AndroidBuildInfoJson mapBuildInfo(BuildInfo buildInfo) {
         return new AndroidBuildInfoJson(
                 buildInfo.getAbis(),
-                buildInfo.getFingerprint(),
-                buildInfo.getHardware(),
+                null,
                 buildInfo.getBootloader(),
                 buildInfo.getManufacturer(),
                 buildInfo.getBrand(),
-                buildInfo.getDisplay(),
-                buildInfo.getTime(),
                 buildInfo.getHost(),
                 buildInfo.getType(),
                 buildInfo.getRadioVersion(),
                 buildInfo.getSecurityPatch(),
-                buildInfo.getBaseOs()
+                buildInfo.getModel(),
+                buildInfo.getProduct(),
+                buildInfo.getRelease()
         );
     }
 
@@ -367,18 +321,13 @@ public class ApiObjectsMapper {
             PackageManagerDeviceFeatures deviceFeatures
     ) {
         return new AndroidDeviceFeaturesJson(
-                deviceFeatures.getTouch(),
                 deviceFeatures.getProximity(),
                 deviceFeatures.getAccelerometer(),
                 deviceFeatures.getGyro(),
                 deviceFeatures.getCompass(),
                 deviceFeatures.getTelephony(),
-                deviceFeatures.getCdma(),
-                deviceFeatures.getGsm(),
-                deviceFeatures.getCameras(),
                 deviceFeatures.getPc(),
-                deviceFeatures.getPip(),
-                deviceFeatures.getDactylogram()
+                deviceFeatures.getPip()
         );
     }
 
@@ -417,12 +366,10 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             @NonNull String androidId,
-            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull Map<String, String> drmProviderToClientId,
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
             @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
@@ -434,17 +381,15 @@ public class ApiObjectsMapper {
             final String securityEnhancedBuild,
             final String bridgeRootService,
             final Long appSize,
-            final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds,
             final Boolean isLowRamDevice,
             final Long firstInstallTimeInMs,
-            final Map<String,String> deviceRegion,
             final String deviceName,
             final Long timeZoneOffsetSeconds,
             final String language,
             final Long uptimeMillis,
-            final Long elapsedRealtime
+            final Long elapsedRealtime,
+            final String applicationId
     ) {
 
         return new CreateFirstSessionJson(
@@ -452,12 +397,10 @@ public class ApiObjectsMapper {
                         bigQueryPseudoId,
                         isRootHint,
                         androidId,
-                        systemUsersInfo,
                         drmProviderToClientId,
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo,
                         playServicesInfo,
                         playInfo,
                         buildInfo,
@@ -469,17 +412,15 @@ public class ApiObjectsMapper {
                         securityEnhancedBuild,
                         bridgeRootService,
                         appSize,
-                        hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds,
                         isLowRamDevice,
                         firstInstallTimeInMs,
-                        deviceRegion,
                         deviceName,
                         timeZoneOffsetSeconds,
                         language,
                         uptimeMillis,
-                        elapsedRealtime
+                        elapsedRealtime,
+                        applicationId
                 ),
                 gcmToken,
                 primaryCurrency,
@@ -497,12 +438,10 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             @NonNull String androidId,
-            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull Map<String, String> drmProviderToClientId,
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
             @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
@@ -514,17 +453,15 @@ public class ApiObjectsMapper {
             final String securityEnhancedBuild,
             final String bridgeRootService,
             final Long appSize,
-            final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds,
             final Boolean isLowRamDevice,
             final Long firstInstallTimeInMs,
-            final Map<String,String> deviceRegion,
             final String deviceName,
             final Long timeZoneOffsetSeconds,
             final String language,
             final Long uptimeMillis,
-            final Long elapsedRealtime
+            final Long elapsedRealtime,
+            final String applicationId
     ) {
 
         return new CreateLoginSessionJson(
@@ -532,12 +469,10 @@ public class ApiObjectsMapper {
                         bigQueryPseudoId,
                         isRootHint,
                         androidId,
-                        systemUsersInfo,
                         drmProviderToClientId,
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo,
                         playServicesInfo,
                         playInfo,
                         buildInfo,
@@ -549,17 +484,15 @@ public class ApiObjectsMapper {
                         securityEnhancedBuild,
                         bridgeRootService,
                         appSize,
-                        hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds,
                         isLowRamDevice,
                         firstInstallTimeInMs,
-                        deviceRegion,
                         deviceName,
                         timeZoneOffsetSeconds,
                         language,
                         uptimeMillis,
-                        elapsedRealtime
+                        elapsedRealtime,
+                        applicationId
                 ),
                 gcmToken,
                 email
@@ -575,12 +508,10 @@ public class ApiObjectsMapper {
             String bigQueryPseudoId,
             boolean isRootHint,
             @NonNull String androidId,
-            @NonNull List<SystemUserInfo> systemUsersInfo,
             @NonNull Map<String, String> drmProviderToClientId,
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull CpuInfo cpuInfo,
             @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
             @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
@@ -592,17 +523,15 @@ public class ApiObjectsMapper {
             final String securityEnhancedBuild,
             final String bridgeRootService,
             final Long appSize,
-            final List<String> hardwareAddresses,
             final String vbMeta,
-            final String efsCreationTimeInSeconds,
             final Boolean isLowRamDevice,
             final Long firstInstallTimeInMs,
-            final Map<String,String> deviceRegion,
             final String deviceName,
             final Long timeZoneOffsetSeconds,
             final String language,
             final Long uptimeMillis,
-            final Long elapsedRealtime
+            final Long elapsedRealtime,
+            final String applicationId
     ) {
 
         return new CreateRcLoginSessionJson(
@@ -610,12 +539,10 @@ public class ApiObjectsMapper {
                         bigQueryPseudoId,
                         isRootHint,
                         androidId,
-                        systemUsersInfo,
                         drmProviderToClientId,
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        cpuInfo,
                         playServicesInfo,
                         playInfo,
                         buildInfo,
@@ -627,17 +554,15 @@ public class ApiObjectsMapper {
                         securityEnhancedBuild,
                         bridgeRootService,
                         appSize,
-                        hardwareAddresses,
                         vbMeta,
-                        efsCreationTimeInSeconds,
                         isLowRamDevice,
                         firstInstallTimeInMs,
-                        deviceRegion,
                         deviceName,
                         timeZoneOffsetSeconds,
                         language,
                         uptimeMillis,
-                        elapsedRealtime
+                        elapsedRealtime,
+                        applicationId
                 ),
                 gcmToken,
                 new ChallengeKeyJson(
@@ -877,5 +802,47 @@ public class ApiObjectsMapper {
             default:
                 throw new MissingCaseError(feeBumpRefreshPolicy);
         }
+    }
+
+    /**
+     * Map a SensorEventBatch.
+     */
+    @NonNull
+    public SensorEventBatchJson mapSensorEventBatch(
+            @NonNull SensorEventBatch sensorEventBatch
+    ) {
+        return new SensorEventBatchJson(
+                mapSensorEvents(sensorEventBatch.getEvents())
+        );
+    }
+
+    /**
+     * Map a list of SensorEvent objects to a list of SensorEventJson representations.
+     *
+     * @param sensorEvent The list of domain model sensor event.
+     * @return A list of SensorEventJson for JSON serialization.
+     */
+    private List<SensorEventJson> mapSensorEvents(List<SensorEvent> sensorEvent) {
+        final List<SensorEventJson> mappedList = new ArrayList<>();
+        for (SensorEvent event : sensorEvent) {
+            mappedList.add(mapSensorEvent(event));
+        }
+
+        return mappedList;
+    }
+
+    /**
+     * Map a single SensorEvent to its SensorEventJson representation.
+     *
+     * @param event The SensorEvent to map.
+     * @return The mapped SensorEventJson containing the event's details.
+     */
+    private SensorEventJson mapSensorEvent(SensorEvent event) {
+        return new SensorEventJson(
+                event.getEventId(),
+                ApolloZonedDateTime.of(event.getEventTimestamp()),
+                event.getEventType(),
+                event.getEventData()
+        );
     }
 }

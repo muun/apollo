@@ -26,6 +26,10 @@ class KeyProvider @Inject constructor(
         return keyData
     }
 
+    override fun fetchEncryptedMuunPrivateKey(): String {
+        return keysRepository.encryptedMuunPrivateKey.toBlocking().first()
+    }
+
     override fun fetchMaxDerivedIndex(): Long {
         return keysRepository.maxWatchingExternalAddressIndex.toLong()
     }

@@ -19,7 +19,7 @@ open class MuunError : RuntimeException {
      * could be another MuunError with its own metadata).
      */
     fun extractMetadata(): MutableMap<String, Serializable> {
-        val mapKeys = metadata.mapKeys { entry -> "${javaClass.canonicalName}.${entry.key}" }
+        val mapKeys = metadata.mapKeys { entry -> "${javaClass.simpleName}.${entry.key}" }
         return mapKeys as MutableMap<String, Serializable>
     }
 

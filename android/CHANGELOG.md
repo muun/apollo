@@ -6,7 +6,22 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
-## [55.1] - 2025-09-23
+## [55.3] - 2025-10-08
+
+### CHANGED
+
+- Bump `targetSDK` to 35
+- Replace ButterKnife with ViewBinding in various screens
+- Migrate ApolloApplication to Kotlin
+- Migrate Dagger @Component to Kotlin
+- Migrate Dagger @Module to Kotlin
+- Update go version to 1.24 to support 16kb pages
+
+### ADDED
+
+- 16kb page support
+
+## [55.2] - 2025-09-23
 
 ### FIXED
 

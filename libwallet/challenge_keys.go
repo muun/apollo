@@ -103,7 +103,7 @@ func (k *ChallengePrivateKey) DecryptKey(decodedInfo *EncryptedPrivateKeyInfo, n
 	rawPrivKey := plaintext[0:32]
 	rawChainCode := plaintext[32:]
 
-	privKey, err := NewHDPrivateKeyFromBytes(rawPrivKey, rawChainCode, network)
+	privKey, err := NewMasterHDPrivateKeyFromBytes(rawPrivKey, rawChainCode, network)
 	if err != nil {
 		return nil, fmt.Errorf("decrypting key: failed to parse key: %w", err)
 	}

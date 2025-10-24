@@ -7,22 +7,22 @@ import "google/protobuf/empty.proto";
 option go_package = "github.com/muun/libwallet/api";
 
 service WalletService {
-  rpc DeleteWallet(google.protobuf.Empty) returns (OperationStatus);
-
-  // V2 - use then discard API
-  rpc NfcTransmit(NfcTransmitRequest) returns (NfcTransmitResponse);
-
   // V3 - NFC security cards Native->Libwallet API
   rpc SetupSecurityCard(google.protobuf.Empty) returns (XpubResponse);
   rpc ResetSecurityCard(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc SignMessageSecurityCard(SignMessageSecurityCardRequest) returns (SignMessageSecurityCardResponse);
+  rpc SetupSecurityCardV2(google.protobuf.Empty) returns (SetupSecurityCardResponse);
 
   // Diagnostic Mode API
   rpc StartDiagnosticSession(google.protobuf.Empty) returns (DiagnosticSessionDescriptor);
   rpc PerformDiagnosticScanForUtxos(DiagnosticSessionDescriptor) returns (stream ScanProgressUpdate);
   rpc SubmitDiagnosticLog(DiagnosticSessionDescriptor) returns (DiagnosticSubmitStatus);
+  rpc PrepareSweepTx(PrepareSweepTxRequest) returns (PrepareSweepTxResponse);
+  rpc SignAndBroadcastSweepTx(SignAndBroadcastSweepTxRequest) returns (SignAndBroadcastSweepTxResponse);
+
   rpc StartChallengeSetup(ChallengeSetupRequest) returns (SetupChallengeResponse);
   rpc FinishRecoveryCodeSetup(FinishRecoveryCodeSetupRequest) returns (google.protobuf.Empty);
+  rpc PopulateEncryptedMuunKey(PopulateEncryptedMuunKeyRequest) returns (google.protobuf.Empty);
 
   // Key-Value Storage
   rpc Save(SaveRequest) returns (google.protobuf.Empty);
@@ -45,21 +45,13 @@ message ErrorDetail {
   string developer_message = 4;
 }
 
-message OperationStatus {
-  string status = 1;
-}
-
-message NfcTransmitRequest {
-  bytes apdu_command = 1;
-}
-
-message NfcTransmitResponse {
-  bytes apdu_response = 1;
-  int32 status_code = 2;
-}
-
 message XpubResponse {
   string base58_xpub = 1;
+}
+
+message SetupSecurityCardResponse {
+  bool is_known_provider = 1;
+  bool is_card_already_used = 2;
 }
 
 message SignMessageSecurityCardRequest {
@@ -96,6 +88,29 @@ message DiagnosticSubmitStatus {
   string status_message = 2;
 }
 
+message PrepareSweepTxRequest {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string destinationAddress = 2;
+  double feeRateInSatsPerVByte = 3;
+}
+
+message PrepareSweepTxResponse {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string destinationAddress = 2;
+  int64 txSizeInBytes = 3;
+  int64 txTotalFee = 4;
+}
+
+message SignAndBroadcastSweepTxRequest {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string recoveryCode = 2;
+}
+
+message SignAndBroadcastSweepTxResponse {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string txid = 2;
+}
+
 message ChallengeSetupRequest {
   string type = 1;
   string public_key = 2;
@@ -110,8 +125,11 @@ message SetupChallengeResponse {
 }
 
 message FinishRecoveryCodeSetupRequest {
-  string extended_server_cosigning_public_key_base58 = 1;
-  string recovery_code_public_key_hex = 2;
+  string recovery_code_public_key_hex = 1;
+}
+
+message PopulateEncryptedMuunKeyRequest {
+  string recovery_code_public_key_hex = 1;
 }
 
 enum NullValue {

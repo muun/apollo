@@ -25,7 +25,7 @@ class DiagnosticActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDiagnosticBinding
     private val component: ActivityComponent
         get() {
-            return (application as ApolloApplication).applicationComponent.activityComponent()
+            return (application as ApolloApplication).getApplicationComponent().activityComponent()
         }
 
     @Inject

@@ -6,10 +6,10 @@ import (
 )
 
 type StartChallengeSetupAction struct {
-	HoustonService *service.HoustonService
+	HoustonService service.HoustonService
 }
 
-func NewStartChallengeSetupAction(houstonService *service.HoustonService) *StartChallengeSetupAction {
+func NewStartChallengeSetupAction(houstonService service.HoustonService) *StartChallengeSetupAction {
 	return &StartChallengeSetupAction{houstonService}
 }
 

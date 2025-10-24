@@ -7,6 +7,7 @@ import io.muun.apollo.data.nfc.NfcBridgerFactory
 import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.action.address.CreateAddressAction
+import io.muun.apollo.domain.action.debug.ForceErrorReportAction
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.errors.debug.DebugExecutableError
@@ -23,6 +24,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class DebugExecutable @Inject constructor(
+    private val forceErrorReportAction: ForceErrorReportAction,
     private val updateUserPreferences: UpdateUserPreferencesAction,
     private val createAddress: CreateAddressAction,
     private val generateInvoice: GenerateInvoiceAction,
@@ -114,6 +116,13 @@ class DebugExecutable @Inject constructor(
         houstonClient.expireAllOtherSessions().toObservable<Void>()
     }.compose(transformerFactory.getAsyncExecutor())
         .compose(errorMapper())
+
+    /**
+     * Trigger a background, non fatal error tracking. Making it reach Crashlytics and Bigquery.
+     */
+    fun forceErrorReport() {
+        forceErrorReportAction.run("Debug Panel")
+    }
 
     private fun <T> errorMapper() = { observable: Observable<T> ->
         observable.onErrorResumeNext { error: Throwable ->

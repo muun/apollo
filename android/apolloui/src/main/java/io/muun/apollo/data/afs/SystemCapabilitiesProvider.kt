@@ -9,6 +9,27 @@ import io.muun.apollo.data.os.TorHelper
 
 class SystemCapabilitiesProvider(private val context: Context) {
 
+    private val levels = linkedMapOf("XVGXNG" to 0,
+        "XVGXNG_JNGPU" to 1,
+        "Y" to 2,
+        "YBYYVCBC" to 2,
+        "YBYYVCBC_ZE1" to 3,
+        "Z" to 4,
+        "A" to 5,
+        "A_ZE1" to 6,
+        "B" to 7,
+        "B_ZE1" to 8,
+        "C" to 9,
+        "D" to 10,
+        "E" to 11,
+        "F" to 12,
+        "F_I2" to 13,
+        "GVENZVFH" to 14,
+        "HCFVQR_QBJA_PNXR" to 15,
+        "INAVYYN_VPR_PERNZ" to 16,
+        "ONXYNIN" to 17
+    )
+
     val bridgeDaemonStatus: String
         get() {
             return getSysPropSecure("vavg.fip.nqoq")
@@ -63,23 +84,15 @@ class SystemCapabilitiesProvider(private val context: Context) {
             return getSysPropSecure("eb.obbg.iozrgn.qvtrfg")
         }
 
-    val deviceRegion: Map<String, String>? by lazy {
-        sequenceOf(
-            "csc" to { getSysPropSecure("eb.pfp.fnyrf_pbqr") },
-            "miui" to { getSysPropSecure("eb.zvhv.ertvba") },
-            "country" to { getSysPropSecure("eb.obbg.pbhagel_ertvba") },
-            "hw" to { getSysPropSecure("eb.pbasvt.uj.ertvba") },
-            "hw_radio" to { getSysPropSecure("eb.iraqbe.uj.enqvb") },
-            "regionmark" to { getSysPropSecure("eb.iraqbe.bccb.ertvbaznex") },
-            "regionmark_fallback" to { getSysPropSecure("eb.bccb.ertvbaznex") },
-            "product" to { getSysPropSecure("eb.cebqhpg.pbhagel.ertvba") },
-            "locale" to { getSysPropSecure("eb.cebqhpg.ybpnyr.ertvba") },
-        ).firstNotNullOfOrNull { (source, function) ->
-            function().takeIf { it.isNotEmpty() }?.let {
-                mapOf("source" to source, "value" to it.take(100))
+    val internalLevel: Pair<Int, Int>
+        get() {
+            val found = levels.entries.lastOrNull { (key, _) ->
+                isCodePresent(key)
             }
+            val value = found?.value?.plus(0x13) ?: -1
+            val maxValue = levels.values.maxOrNull()?.plus(0x13) ?: -1
+            return Pair(value, maxValue)
         }
-    }
 
     @SuppressLint("PrivateApi")
     private fun getSysPropSecure(name: String): String {
@@ -93,4 +106,16 @@ class SystemCapabilitiesProvider(private val context: Context) {
             ""
         }
     }
+
+    private val codesClass = Class.forName(TorHelper.process("naqebvq.bf.Ohvyq\$IREFVBA_PBQRF"))
+
+    private fun isCodePresent(codeName: String): Boolean {
+        return try {
+            codesClass.getField(TorHelper.process(codeName))
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 }

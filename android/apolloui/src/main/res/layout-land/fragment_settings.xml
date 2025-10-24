@@ -161,6 +161,11 @@
                     muun:label="@string/settings_lightning"
                     style="@style/settings_item" />
 
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_diagnostic"
+                    muun:label="@string/settings_diagnostic"
+                    android:visibility="gone"
+                    style="@style/settings_item" />
         </LinearLayout>
 
         <View style="@style/settings_item_separator"/>

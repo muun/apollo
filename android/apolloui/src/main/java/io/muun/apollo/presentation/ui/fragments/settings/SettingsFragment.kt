@@ -84,6 +84,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_lightning)
     lateinit var lightningSettingsItem: MuunSettingItem
 
+    @BindView(R.id.settings_diagnostic)
+    lateinit var diagnosticSettingsItem: MuunSettingItem
+
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
 
@@ -127,6 +130,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         deleteWalletItem.setOnClickListener { deleteWallet() }
         bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
         lightningSettingsItem.setOnClickListener { goToLightningSettings() }
+        diagnosticSettingsItem.setOnClickListener { goToDiagnosticMode() }
 
         if (Globals.INSTANCE.isDebug) {
             // TEMP: code for Taproot QA:
@@ -168,6 +172,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         setUpGeneralSection(state.user, state.bitcoinUnit, state.exchangeRateWindow)
 
         bitcoinSettingsItem.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
+
+        diagnosticSettingsItem.visibility =
+            if (showDiagnosticSettings(state)) View.VISIBLE else View.GONE
 
         // Helper code for internal builds
         if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
@@ -355,6 +362,13 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun goToLightningSettings() {
         presenter.navigateToLightningSettings()
+    }
+
+    private fun showDiagnosticSettings(state: SettingsState): Boolean = state.features.contains(MuunFeature.DIAGNOSTIC_MODE)
+
+
+    private fun goToDiagnosticMode() {
+        presenter.navigateToDiagnosticMode()
     }
 
     private fun showBitcoinSettings(state: SettingsState): Boolean =

@@ -7,12 +7,39 @@ import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.report.ErrorReport
 import io.muun.common.model.OperationDirection
 import java.util.Locale
+import kotlin.math.min
 
 /**
  * AnalyticsEvent list, shared with Falcon. Names are lower-cased into FBA event IDs, do not rename.
  */
 @Suppress("ClassName")
 sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf()) {
+
+    companion object {
+        private const val ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH = 100
+
+        fun buildParamsFor(report: ErrorReport) = listOf(
+            "id" to report.uniqueId,
+            "tag" to report.tag,
+            "title" to report.getTrackingTitle(),
+            "message" to report.message.safelyTrimParamValue(),
+            // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
+            "error" to report.printError(false).safelyTrimParamValue(),
+            "metadata" to report.printMetadata().safelyTrimParamValue()
+        )
+
+        fun buildParamsFor(error: Throwable) = listOf(
+            "errorSimpleName" to error.javaClass.getSimpleName(),
+            "errorLocalizedMessage" to (error.localizedMessage ?: ""),
+        )
+
+        /**
+         * Does Substring while ignoring error if endIndex is out of bounds.
+         */
+        private fun String.safelyTrimParamValue(): String {
+            return substring(0, min(ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH, this.length))
+        }
+    }
 
     val eventId = javaClass.simpleName.lowercase(Locale.ROOT)
     val metadata = metadataKeyValues.toMap()
@@ -459,18 +486,29 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         NFC_2FA_FAILED,
     }
 
-    class E_ERROR(val type: ERROR_TYPE, vararg extras: Any) : AnalyticsEvent(
-        listOf(
-            "type" to type.name.lowercase(Locale.getDefault()),
-            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
-                .toTypedArray()
-        )
-    )
+    class E_ERROR : AnalyticsEvent {
 
-    class E_ERROR_REPORT_DIALOG(vararg extras: Any) : AnalyticsEvent(
+        constructor(type: ERROR_TYPE, vararg extras: Any) : super(
+            listOf(
+                "type" to type.name.lowercase(Locale.getDefault()),
+                *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
+                    .toTypedArray()
+            )
+        )
+
+        constructor(type: ERROR_TYPE, error: Throwable, report: ErrorReport) : super(
+            listOf(
+                "type" to type.name.lowercase(Locale.getDefault()),
+                *buildParamsFor(error).toTypedArray(),
+                *buildParamsFor(report).toTypedArray()
+            )
+        )
+    }
+
+    class E_ERROR_REPORT_DIALOG(error: Throwable, report: ErrorReport) : AnalyticsEvent(
         listOf(
-            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
-                .toTypedArray()
+            *buildParamsFor(error).toTypedArray(),
+            *buildParamsFor(report).toTypedArray()
         )
     )
 
@@ -513,23 +551,16 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     }
 
     class E_CRASHLYTICS_ERROR(report: ErrorReport) : AnalyticsEvent(
-        listOf(
-            "title" to report.getTrackingTitle(),
-            "message" to report.message,
-            // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
-            "error" to report.printErrorForAnalytics(),
-            "metadata" to report.printMetadata()
-        )
+        buildParamsFor(report)
     )
 
     class E_BREADCRUMB(value: String) : AnalyticsEvent(
-        listOf("crumb" to value)
+        listOf("crumb" to value.safelyTrimParamValue())
     )
 
-    class E_PUSH_NOTIFICATIONS_PERMISSION_ASKED : AnalyticsEvent()
-    class E_PUSH_NOTIFICATIONS_PERMISSION_SKIPPED : AnalyticsEvent()
-    class E_PUSH_NOTIFICATIONS_PERMISSION_GRANTED : AnalyticsEvent()
-    class E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED : AnalyticsEvent()
-    class E_PUSH_NOTIFICATIONS_PERMISSION_DECLINED_PERMANENTLY : AnalyticsEvent()
-
+    class E_PUSH_NOTI_PERMISSION_ASKED : AnalyticsEvent()
+    class E_PUSH_NOTI_PERMISSION_SKIPPED : AnalyticsEvent()
+    class E_PUSH_NOTI_PERMISSION_GRANTED : AnalyticsEvent()
+    class E_PUSH_NOTI_PERMISSION_DECLINED : AnalyticsEvent()
+    class E_PUSH_NOTI_PERMISSION_PERMA_DECLINED : AnalyticsEvent()
 }

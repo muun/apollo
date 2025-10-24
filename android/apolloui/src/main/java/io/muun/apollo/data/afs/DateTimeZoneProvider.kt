@@ -2,8 +2,6 @@ package io.muun.apollo.data.afs
 
 import android.content.Context
 import android.provider.Settings
-import io.muun.apollo.data.os.OS
-import java.util.Calendar
 import java.util.TimeZone
 
 class DateTimeZoneProvider(private val context: Context) {
@@ -34,14 +32,5 @@ class DateTimeZoneProvider(private val context: Context) {
     val timeZoneOffsetSeconds: Long
         get() {
             return TimeZone.getDefault().rawOffset / 1000L
-        }
-
-    val calendarIdentifier: String
-        get() {
-            if (OS.supportsCalendarType()) {
-                val calendar = Calendar.getInstance()
-                return calendar.calendarType
-            }
-            return Constants.UNKNOWN
         }
 }

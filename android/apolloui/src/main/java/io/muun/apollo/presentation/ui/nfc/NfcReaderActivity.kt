@@ -11,10 +11,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
-import io.grpc.StatusRuntimeException
 import io.muun.apollo.R
 import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.databinding.NfcReaderActivityBinding
+import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.activity.extension.NfcReaderModeExtension
 import io.muun.apollo.presentation.ui.base.BaseActivity
@@ -75,31 +75,36 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
                         }
 
                         is NfcReaderViewModel.NfcReadState.Error -> {
-
-                            var message = "Error! See Debug logs or dismiss and try again\n\n" +
-                                "${state.cause.message}"
-
-                            if (state.cause is StatusRuntimeException
-                                && state.cause.message?.contains("invalid signature:") == true
-                            ) {
-                                val errorMessage =
-                                    "Invalid Signature Verification! You're probably tapping with" +
-                                        " another (incorrect) security card"
-                                message = errorMessage
-                            }
-
-                            Timber.e("NFC Error: ${state.cause.message}")
-                            viewModel.reportNfcError(state)
-                            MuunDialog.Builder()
-                                .title("Security Card Auth Required")
-                                .message(message)
-                                .build()
-                                .let(::showDialog)
+                            handleNfcError(state)
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun handleNfcError(state: NfcReaderViewModel.NfcReadState.Error) {
+        var message = "Error! See Debug logs or dismiss and try again\n\n${state.cause.message}"
+
+        if (state.cause is LibwalletGrpcError) {
+            val errorDetail = state.cause.errorDetail
+
+            if (errorDetail?.developerMessage?.contains("invalid signature:") == true) {
+                message = "Invalid Signature Verification! You're probably tapping with another " +
+                    "(incorrect) security card"
+
+            } else if (errorDetail?.developerMessage?.isNotEmpty() == true) {
+                message = errorDetail.developerMessage
+            }
+        }
+
+        Timber.e("NFC Error: ${state.cause.message}")
+        viewModel.reportNfcError(state)
+        MuunDialog.Builder()
+            .title("Security Card Auth Required")
+            .message(message)
+            .build()
+            .let(::showDialog)
     }
 
     override fun onResume() {

@@ -2,12 +2,13 @@ package io.muun.apollo.presentation.ui.fragments.home
 
 import android.content.Context
 import android.view.GestureDetector
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.ViewGroup
 import android.widget.TextView
-import butterknife.BindView
-import com.airbnb.lottie.LottieAnimationView
+import androidx.viewbinding.ViewBinding
 import com.skydoves.balloon.ArrowConstraints
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.Balloon
@@ -15,6 +16,7 @@ import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.OnBalloonClickListener
 import com.skydoves.balloon.createBalloon
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentHomeBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
@@ -22,11 +24,7 @@ import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getDrawable
-import io.muun.apollo.presentation.ui.view.BalanceView
-import io.muun.apollo.presentation.ui.view.BlockClock
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHomeCard
-import io.muun.apollo.presentation.ui.view.NewOpBadge
 import io.muun.common.utils.BitcoinUtils
 import org.threeten.bp.ZonedDateTime
 import kotlin.math.abs
@@ -37,35 +35,8 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         private const val NEW_OP_ANIMATION_WINDOW = 15L   // In Seconds
     }
 
-    @BindView(R.id.chevron)
-    lateinit var chevron: LottieAnimationView
-
-    @BindView(R.id.chevron_container)
-    lateinit var chevronContainer: View
-
-    @BindView(R.id.new_op_badge)
-    lateinit var newOpBadge: NewOpBadge
-
-    @BindView(R.id.home_balance_view)
-    lateinit var balanceView: BalanceView
-
-    @BindView(R.id.home_receive_button)
-    lateinit var receiveButton: MuunButton
-
-    @BindView(R.id.home_send_button)
-    lateinit var sendButton: MuunButton
-
-    @BindView(R.id.home_taproot_card)
-    lateinit var taprootCard: MuunHomeCard
-
-    @BindView(R.id.home_security_center_card)
-    lateinit var securityCenterCard: MuunHomeCard
-
-    @BindView(R.id.home_high_fees_card)
-    lateinit var highFeesCard: MuunHomeCard
-
-    @BindView(R.id.home_block_clock)
-    lateinit var blockClock: BlockClock
+    private val binding: FragmentHomeBinding
+        get() = getBinding() as FragmentHomeBinding
 
     var balloon: Balloon? = null
 
@@ -75,6 +46,10 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
 
     override fun getLayoutResource() =
         R.layout.fragment_home
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentHomeBinding::inflate
+    }
 
     override fun initializeUi(view: View) {
         setUpGestureDetectors()
@@ -97,22 +72,22 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         // Having both allows us to retain the default on click (and thus animation) for the chevron
 
         val containerDetector = GestureDetector(
-            requireContext(), GestureListener(chevron, requireContext(), true)
+            requireContext(), GestureListener(binding.chevron, requireContext(), true)
         )
-        chevronContainer.setOnTouchListener { _, event ->
+        binding.chevronContainer.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
-                chevronContainer.performClick()
+                binding.chevronContainer.performClick()
             } else {
                 containerDetector.onTouchEvent(event)
             }
         }
 
         val chevronDetector = GestureDetector(
-            requireContext(), GestureListener(chevron, requireContext(), false)
+            requireContext(), GestureListener(binding.chevron, requireContext(), false)
         )
-        chevron.setOnTouchListener { _, event ->
+        binding.chevron.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
-                chevronContainer.performClick()
+                binding.chevronContainer.performClick()
             } else {
                 chevronDetector.onTouchEvent(event)
             }
@@ -120,7 +95,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     }
 
     private fun initializeCards() {
-        taprootCard.let {
+        binding.homeTaprootCard.let {
             it.icon = getDrawable(R.drawable.ic_star)
             it.setIconTint(R.color.blue)
             it.body = StyledStringRes(requireContext(), R.string.taproot_card_body)
@@ -131,7 +106,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             }
         }
 
-        securityCenterCard.let {
+        binding.homeSecurityCenterCard.let {
             it.icon = getDrawable(R.drawable.ic_lock)
             it.setIconTint(R.color.blue)
             it.body = StyledStringRes(requireContext(), R.string.home_security_center_card_body)
@@ -142,7 +117,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             }
         }
 
-        highFeesCard.let {
+        binding.homeHighFeesCard.let {
             it.icon = getDrawable(R.drawable.ic_baseline_warning_24px)
             it.body = StyledStringRes(requireContext(), R.string.home_high_fees_card_body)
                 .toCharSequence()
@@ -150,11 +125,11 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     }
 
     private fun setUpClickListeners() {
-        balanceView.setOnClickListener { onBalanceClick() }
-        receiveButton.setOnClickListener { presenter.navigateToReceiveScreen() }
-        sendButton.setOnClickListener { presenter.navigateToSendScreen() }
-        chevron.setOnClickListener { presenter.navigateToOperations() }
-        blockClock.setOnClickListener {
+        binding.homeBalanceView.setOnClickListener { onBalanceClick() }
+        binding.homeReceiveButton.setOnClickListener { presenter.navigateToReceiveScreen() }
+        binding.homeSendButton.setOnClickListener { presenter.navigateToSendScreen() }
+        binding.chevron.setOnClickListener { presenter.navigateToOperations() }
+        binding.homeBlockClock.setOnClickListener {
             presenter.navigateToClockDetail()
         }
     }
@@ -193,7 +168,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
     override fun onPause() {
         super.onPause()
 
-        chevron.removeAllLottieOnCompositionLoadedListener()
+        binding.chevron.removeAllLottieOnCompositionLoadedListener()
         balloon?.dismiss()
         balloon = null
         lockManager.setUnlockListener(null)
@@ -228,7 +203,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             setLifecycleOwner(this@HomeFragment)
         }
 
-        chevron.addLottieOnCompositionLoadedListener {
+        binding.chevron.addLottieOnCompositionLoadedListener {
             // Turns out the balloon library has a few known limitations regarding multi line text
             // layout. If we set max width, they seem to solve themselves. But, we can't set a fixed
             // value in the xml so we do this lovely thing here.
@@ -237,45 +212,45 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
                 balloon!!.getContentView().findViewById<TextView>(R.id.new_home_tooltip_text)
             textView.maxWidth = requireView().width - 56 * 2
 
-            balloon!!.showAlignTop(chevron)
+            balloon!!.showAlignTop(binding.chevron)
         }
     }
 
     override fun setState(homeState: HomeFragmentPresenter.HomeState) {
-        balanceView.setBalance(homeState)
+        binding.homeBalanceView.setBalance(homeState)
         setChevronAnimation(homeState.utxoSetState)
 
         // Due to (complex) business logic reasons, only 1 of these cards is currently displayed
         var displayedMuunHomeCard: MuunHomeCard? = null
         if (!homeState.user.isRecoverable) {
-            displayedMuunHomeCard = securityCenterCard
+            displayedMuunHomeCard = binding.homeSecurityCenterCard
 
         } else when (homeState.taprootFeatureStatus) {
             UserActivatedFeatureStatus.OFF -> {} // Do nothing
-            UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = taprootCard
-            UserActivatedFeatureStatus.CAN_ACTIVATE -> displayedMuunHomeCard = taprootCard
-            UserActivatedFeatureStatus.PREACTIVATED -> blockClock.visibility = View.VISIBLE
+            UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = binding.homeTaprootCard
+            UserActivatedFeatureStatus.CAN_ACTIVATE -> displayedMuunHomeCard = binding.homeTaprootCard
+            UserActivatedFeatureStatus.PREACTIVATED -> binding.homeBlockClock.visibility = View.VISIBLE
             UserActivatedFeatureStatus.SCHEDULED_ACTIVATION -> {} // Do nothing
             UserActivatedFeatureStatus.ACTIVE -> {} // Do nothing
         }
 
-        blockClock.value = homeState.blocksToTaproot
+        binding.homeBlockClock.value = homeState.blocksToTaproot
 
         if (displayedMuunHomeCard != null) {
             displayedMuunHomeCard.visibility = View.VISIBLE
-            if (displayedMuunHomeCard == taprootCard) {
-                securityCenterCard.visibility = View.GONE
-                highFeesCard.visibility = View.GONE
+            if (displayedMuunHomeCard == binding.homeTaprootCard) {
+                binding.homeSecurityCenterCard.visibility = View.GONE
+                binding.homeHighFeesCard.visibility = View.GONE
             } else {
-                taprootCard.visibility = View.GONE
-                highFeesCard.visibility = View.GONE
+                binding.homeTaprootCard.visibility = View.GONE
+                binding.homeHighFeesCard.visibility = View.GONE
             }
         } else {
-            taprootCard.visibility = View.GONE
-            securityCenterCard.visibility = View.GONE
+            binding.homeTaprootCard.visibility = View.GONE
+            binding.homeSecurityCenterCard.visibility = View.GONE
 
             if (homeState.highFees) {
-                highFeesCard.visibility = View.VISIBLE
+                binding.homeHighFeesCard.visibility = View.VISIBLE
             }
         }
     }
@@ -301,17 +276,17 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             }
         }
 
-        newOpBadge.setAmount(amountInBtc, bitcoinUnit)
+        binding.newOpBadge.setAmount(amountInBtc, bitcoinUnit)
 
         // Only show animation for recently received or sent ops
         if (newOp.creationDate.isAfter(ZonedDateTime.now().minusSeconds(NEW_OP_ANIMATION_WINDOW))) {
-            newOpBadge.startAnimation(animRes)
+            binding.newOpBadge.startAnimation(animRes)
         }
     }
 
     private fun onBalanceClick() {
-        if (balanceView.isFullyInitialized()) {
-            val hidden = balanceView.toggleVisibility()
+        if (binding.homeBalanceView.isFullyInitialized()) {
+            val hidden = binding.homeBalanceView.toggleVisibility()
             presenter.setBalanceHidden(hidden)
         }
     }
@@ -323,7 +298,7 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             UtxoSetStateSelector.UtxoSetState.CONFIRMED -> R.raw.chevron_regular
         }
 
-        chevron.setAnimation(animationRes)
-        chevron.playAnimation()
+        binding.chevron.setAnimation(animationRes)
+        binding.chevron.playAnimation()
     }
 }

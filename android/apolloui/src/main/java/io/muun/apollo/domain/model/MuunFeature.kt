@@ -1,7 +1,6 @@
 package io.muun.apollo.domain.model
 
 import io.muun.common.api.MuunFeatureJson
-import io.muun.common.exception.MissingCaseError
 import libwallet.Libwallet
 
 enum class MuunFeature {
@@ -13,7 +12,10 @@ enum class MuunFeature {
     HIGH_FEES_RECEIVE_FLOW,
     EFFECTIVE_FEES_CALCULATION,
     NFC_CARD,
-    NFC_SENSORS;
+    NFC_SENSORS,
+    DIAGNOSTIC_MODE,
+
+    UNSUPPORTED_FEATURE;
 
     companion object {
 
@@ -28,7 +30,9 @@ enum class MuunFeature {
                 MuunFeatureJson.OS_VERSION_DEPRECATED_FLOW -> OS_VERSION_DEPRECATED_FLOW
                 MuunFeatureJson.NFC_CARD -> NFC_CARD
                 MuunFeatureJson.NFC_SENSORS -> NFC_SENSORS
-                else -> throw MissingCaseError(json)
+                MuunFeatureJson.DIAGNOSTIC_MODE -> DIAGNOSTIC_MODE
+
+                else -> UNSUPPORTED_FEATURE
             }
 
         fun fromLibwalletModel(name: String): MuunFeature =
@@ -42,8 +46,9 @@ enum class MuunFeature {
                 Libwallet.BackendFeatureOsVersionDeprecatedFlow -> OS_VERSION_DEPRECATED_FLOW
                 Libwallet.BackendFeatureNfcCard -> NFC_CARD
                 Libwallet.BackendFeatureNfcSensors -> NFC_SENSORS
+                Libwallet.BackendFeatureDiagnosticMode -> DIAGNOSTIC_MODE
 
-                else -> throw MissingCaseError(name, "MuunFeature conversion from libwallet")
+                else -> UNSUPPORTED_FEATURE
             }
     }
 
@@ -58,6 +63,9 @@ enum class MuunFeature {
             OS_VERSION_DEPRECATED_FLOW -> MuunFeatureJson.OS_VERSION_DEPRECATED_FLOW
             NFC_CARD -> MuunFeatureJson.NFC_CARD
             NFC_SENSORS -> MuunFeatureJson.NFC_SENSORS
+            DIAGNOSTIC_MODE -> MuunFeatureJson.DIAGNOSTIC_MODE
+
+            UNSUPPORTED_FEATURE -> MuunFeatureJson.UNSUPPORTED_FEATURE
         }
 
     fun toLibwalletModel(): String =
@@ -71,5 +79,8 @@ enum class MuunFeature {
             OS_VERSION_DEPRECATED_FLOW -> Libwallet.BackendFeatureOsVersionDeprecatedFlow
             NFC_CARD -> Libwallet.BackendFeatureNfcCard
             NFC_SENSORS -> Libwallet.BackendFeatureNfcSensors
+            DIAGNOSTIC_MODE -> Libwallet.BackendFeatureDiagnosticMode
+
+            UNSUPPORTED_FEATURE -> Libwallet.BackendFeatureUnsupported
         }
 }

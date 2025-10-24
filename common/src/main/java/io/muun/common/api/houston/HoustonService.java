@@ -42,6 +42,7 @@ import io.muun.common.api.RawTransaction;
 import io.muun.common.api.RealTimeData;
 import io.muun.common.api.RealTimeFeesJson;
 import io.muun.common.api.RealTimeFeesRequestJson;
+import io.muun.common.api.SensorEventBatchJson;
 import io.muun.common.api.SetupChallengeResponse;
 import io.muun.common.api.StartEmailSetupJson;
 import io.muun.common.api.SubmarineSwapJson;
@@ -51,7 +52,7 @@ import io.muun.common.api.UpdateOperationMetadataJson;
 import io.muun.common.api.UserInvoiceJson;
 import io.muun.common.api.UserJson;
 import io.muun.common.api.UserProfileJson;
-import io.muun.common.api.VerifiableServerCosigningKeyJson;
+import io.muun.common.api.VerifiableMuunKeyJson;
 import io.muun.common.api.beam.notification.NotificationReportJson;
 import io.muun.common.model.UserPreferences;
 import io.muun.common.model.VerificationType;
@@ -146,8 +147,8 @@ public interface HoustonService {
     @POST("user/challenge/setup/finish")
     Completable finishChallengeSetup(@Body ChallengeSetupVerifyJson challengeSetupVerifyJson);
 
-    @POST("user/challenge/setup/finish-with-cosigning-key")
-    Observable<VerifiableServerCosigningKeyJson> finishChallengeSetupWithCosigningKey(
+    @POST("user/challenge/setup/finish-with-verifiable-muun-key")
+    Observable<VerifiableMuunKeyJson> finishChallengeSetupWithVerifiableMuunKey(
             @Body ChallengeSetupVerifyJson challengeSetupVerifyJson
     );
 
@@ -222,8 +223,8 @@ public interface HoustonService {
     @POST("user/profile")
     Observable<UserJson> createProfile(@Body UserProfileJson userProfileJson);
 
-    @GET("user/verifiable-server-cosigning-key")
-    Observable<VerifiableServerCosigningKeyJson> getVerifiableServerCosigningKey();
+    @GET("user/verifiable-muun-key")
+    Observable<VerifiableMuunKeyJson> getVerifiableServerCosigningKey();
 
     @POST("user/emergency-kit/exported")
     Observable<Void> reportEmergencyKitExported(@Body ExportEmergencyKitJson json);
@@ -310,6 +311,9 @@ public interface HoustonService {
 
     @POST("integrity/check")
     Observable<IntegrityStatus> checkIntegrity(@Body IntegrityCheck request);
+
+    @POST("internal/save-sensor-event-batch")
+    Observable<Void> saveSensorEventBatch(@Body SensorEventBatchJson sensorEventBatchJson);
 
     // ---------------------------------------------------------------------------------------------
     // Migrations:

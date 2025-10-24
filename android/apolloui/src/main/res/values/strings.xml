@@ -1410,6 +1410,7 @@
     <string name="settings_header_advanced">Advanced settings</string>
     <string name="settings_lightning">Lightning Network</string>
     <string name="settings_bitcoin">Bitcoin Network</string>
+    <string name="settings_diagnostic">Diagnostic Mode</string>
     <string name="dark_mode">Appearance</string>
     <string name="dark_mode_dark">Dark mode</string>
     <string name="dark_mode_light">Light mode</string>

@@ -1,9 +1,14 @@
+# VERY IMPORTANT!!!
+# This file is used by build-release.yml (https://github.com/muun/apollo/blob/eedb679b9a5b7af2c617cc794c8dcf53eb1b4321/.github/workflows/build-release.yml).
+# Any change made here will affect how the APK is built in the OSS repository (github action)
+# and will impact the reproducible build verification.
+
 FROM --platform=linux/amd64 openjdk:17-jdk-slim@sha256:aaa3b3cb27e3e520b8f116863d0580c438ed55ecfa0bc126b41f68c3f62f9774 AS muun_android_builder
 
 ENV NDK_VERSION 22.0.7026061
 ENV ANDROID_PLATFORM_VERSION 28
 ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
-ENV GO_VERSION 1.22.1
+ENV GO_VERSION 1.24.7
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \

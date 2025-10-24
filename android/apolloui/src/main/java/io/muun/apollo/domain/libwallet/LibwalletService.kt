@@ -14,7 +14,8 @@ interface LibwalletService {
     // Fee Bump Functions section
     fun persistFeeBumpFunctions(
         feeBumpFunctions: FeeBumpFunctions,
-        refreshPolicy: FeeBumpRefreshPolicy
+        refreshPolicy: FeeBumpRefreshPolicy,
     )
+
     fun areFeeBumpFunctionsInvalidated(): Boolean
 }

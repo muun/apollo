@@ -76,9 +76,6 @@ public class ClientJson {
     public Map<String, String> drmProviderToClientId;
 
     @Nullable
-    public List<AndroidSystemUserInfoJson> androidSystemUsersInfo;
-
-    @Nullable
     public Long androidElapsedRealtimeAtSessionCreationInMillis;
 
     @Nullable
@@ -189,6 +186,33 @@ public class ClientJson {
     @Nullable
     public Map<String, String> androidDeviceRegion;
 
+    @Nullable
+    public String androidApplicationId;
+
+    @Nullable
+    public String iosAppDisplayName;
+
+    @Nullable
+    public String iosAppId;
+
+    @Nullable
+    public String iosAppName;
+
+    @Nullable
+    public String iosAppPrimaryIconHash;
+
+    @Nullable
+    public Boolean iosIsSoftDevice;
+
+    @Nullable
+    public String iosSoftDeviceName;
+
+    @Nullable
+    public Boolean iosHasGyro;
+
+    @Nullable
+    public Integer iosInstallSource;
+
     /**
      * Json constructor.
      */
@@ -211,21 +235,14 @@ public class ClientJson {
             @Nullable final Boolean isRootHint,
             @Nullable String androidId,
             final long androidCreationTimestampInMilliseconds,
-            @Nullable List<AndroidSystemUserInfoJson> systemUsersInfo,
             @SuppressWarnings("NullableProblems") final Map<String, String> drmProviderClientIds,
             final long androidElapsedRealtimeAtSessionCreationInMillis,
             final long androidUptimeAtSessionCreationInMillis,
             @Nullable final String installSource,
             @Nullable final String installInitiatingPackageName,
-            @Nullable final String installInitiatingPackageSigningInfo,
-            @Nullable final String osBuildFingerprint,
-            @Nullable final String hardwareName,
             @Nullable final String systemBootloaderVersion,
             final int bootCount,
             @Nullable final String glEsVersion,
-            @Nullable final Map<String, String> cpuInfoLegacy,
-            @Nullable final List<Pair<String, String>> cpuCommonInfo,
-            @Nullable final List<List<Pair<String, String>>> cpuPerProcessorInfo,
             @Nullable final Long googlePlayServicesVersionCode,
             @Nullable final String googlePlayServicesVersionName,
             @Nullable final Integer googlePlayServicesClientVersionCode,
@@ -240,12 +257,10 @@ public class ClientJson {
             @Nullable final Boolean androidSecurityEnhancedBuild,
             @Nullable final Boolean androidBridgeRootService,
             @Nullable final Long androidAppSize,
-            @Nullable final List<String> androidHardwareAddresses,
             @Nullable final String androidVbMeta,
-            @Nullable final String androidEfsCreationTimeInSeconds,
             @Nullable final Boolean androidIsLowRamDevice,
             @Nullable final Long androidFirstInstallTimeInMs,
-            @Nullable final Map<String, String> deviceRegion
+            @Nullable final String applicationId
     ) {
         this.type = type;
         this.buildType = buildType;
@@ -259,22 +274,15 @@ public class ClientJson {
         this.androidId = androidId;
         this.androidCreationTimestampInMilliseconds = androidCreationTimestampInMilliseconds;
         this.drmClientIds = null;
-        this.androidSystemUsersInfo = systemUsersInfo;
         this.drmProviderToClientId = drmProviderClientIds;
         this.androidElapsedRealtimeAtSessionCreationInMillis =
                 androidElapsedRealtimeAtSessionCreationInMillis;
         this.androidUptimeAtSessionCreationInMillis = androidUptimeAtSessionCreationInMillis;
         this.installSource = installSource;
         this.installInitiatingPackageName = installInitiatingPackageName;
-        this.installInitiatingPackageSigningInfo = installInitiatingPackageSigningInfo;
-        this.osBuildFingerprint = osBuildFingerprint;
-        this.hardwareName = hardwareName;
         this.systemBootloaderVersion = systemBootloaderVersion;
         this.bootCount = bootCount;
         this.glEsVersion = glEsVersion;
-        this.cpuInfoLegacy = cpuInfoLegacy;
-        this.cpuCommonInfo = cpuCommonInfo;
-        this.cpuPerProcessorInfo = cpuPerProcessorInfo;
         this.googlePlayServicesVersionCode = googlePlayServicesVersionCode;
         this.googlePlayServicesVersionName = googlePlayServicesVersionName;
         this.googlePlayServicesClientVersionCode = googlePlayServicesClientVersionCode;
@@ -289,11 +297,9 @@ public class ClientJson {
         this.androidSecurityEnhancedBuild = androidSecurityEnhancedBuild;
         this.androidBridgeRootService = androidBridgeRootService;
         this.androidAppSize = androidAppSize;
-        this.androidHardwareAddresses = androidHardwareAddresses;
         this.androidVbMeta = androidVbMeta;
-        this.androidEfsCreationTimeInSeconds = androidEfsCreationTimeInSeconds;
         this.androidIsLowRamDevice = androidIsLowRamDevice;
         this.androidFirstInstallTimeInMs = androidFirstInstallTimeInMs;
-        this.androidDeviceRegion = deviceRegion;
+        this.androidApplicationId = applicationId;
     }
 }

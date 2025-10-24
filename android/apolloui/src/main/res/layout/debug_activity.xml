@@ -166,6 +166,24 @@
                 android:text="Enter diagnostic mode"
                 tools:ignore="HardcodedText" />
 
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_force_error_report"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Force error report tracking"
+                tools:ignore="HardcodedText" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                style="@style/muun_button_primary"
+                android:layout_marginTop="8dp"
+                android:id="@+id/debug_button_force_error_report_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Force error report dialog"
+                tools:ignore="HardcodedText" />
+
         <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/debug_switch_allow_multi_session"
                 android:layout_width="match_parent"

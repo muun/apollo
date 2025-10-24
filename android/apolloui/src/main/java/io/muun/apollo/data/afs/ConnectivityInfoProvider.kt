@@ -18,9 +18,7 @@ class ConnectivityInfoProvider(context: Context) {
     data class NetworkLink(
         val interfaceName: String?,
         val routesSize: Int?,
-        val routesInterfaces: Set<String>?,
         val hasGatewayRoute: Int,
-        val dnsAddresses: Set<String>?,
         val linkHttpProxyHost: String?,
     )
 
@@ -103,18 +101,13 @@ class ConnectivityInfoProvider(context: Context) {
             val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
 
             val routesSize = linkProperties?.routes?.size
-            val routesInterfaces = linkProperties?.routes?.mapNotNull { it.`interface` }?.toSet()
             val interfaceName = linkProperties?.interfaceName
-            val dnsAddresses =
-                linkProperties?.dnsServers?.map { it.hostAddress ?: Constants.EMPTY }?.toSet()
             val linkHttpProxyHost = linkProperties?.httpProxy?.host ?: Constants.EMPTY
             val hasGatewayRoute = getHasGatewayRoute(linkProperties)
             return NetworkLink(
                 interfaceName,
                 routesSize,
-                routesInterfaces,
                 hasGatewayRoute,
-                dnsAddresses,
                 linkHttpProxyHost
             )
         }

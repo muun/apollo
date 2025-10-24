@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import io.muun.apollo.data.afs.MetricsProvider
 import io.muun.apollo.data.nfc.NfcBridgerFactory
 import io.muun.apollo.data.nfc.api.NfcSession
+import io.muun.apollo.domain.action.sensor.StoreSensorsDataAction
 import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_ERROR
@@ -40,6 +41,7 @@ class NfcReaderViewModel @Inject constructor(
     private val nfcBridgerFactory: NfcBridgerFactory,
     private val analytics: Analytics,
     private val metricsProvider: MetricsProvider,
+    private val storeSensorsDataAction: StoreSensorsDataAction,
 ) : ViewModel() {
 
     sealed class NfcReadState {
@@ -142,10 +144,7 @@ class NfcReaderViewModel @Inject constructor(
 
         sensorJob = lifecycleOwner.lifecycleScope.launch {
             mergedFlow.collect { event ->
-                event.handle().forEach { (eventKey, eventValue) ->
-                    Timber.d("Sensor [$eventKey]: $eventValue")
-                    // TODO: send to server for storage
-                }
+                storeSensorsDataAction.run(event)
             }
         }
     }
@@ -163,12 +162,7 @@ class NfcReaderViewModel @Inject constructor(
      * @param event The [MotionEvent] containing gesture information such as action type, coordinates, and pointer count.
      */
     internal fun onGestureDetected(event: MotionEvent) {
-        val gesture = GestureEvent(
-            action = event.actionMasked,
-            x = event.x,
-            y = event.y,
-            pointerCount = event.pointerCount,
-        )
+        val gesture = SensorUtils.generateGestureEvent(event)
         _gestureEvents.tryEmit(gesture)
     }
 

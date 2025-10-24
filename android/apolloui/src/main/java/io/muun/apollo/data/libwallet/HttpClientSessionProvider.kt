@@ -3,9 +3,9 @@ package io.muun.apollo.data.libwallet
 import android.content.Context
 import android.os.Build
 import app_provided_data.Session
+import io.muun.apollo.data.afs.BackgroundExecutionMetricsProvider
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.HoustonConfig
-import io.muun.apollo.data.afs.BackgroundExecutionMetricsProvider
 import io.muun.apollo.data.preferences.AuthRepository
 import io.muun.apollo.data.preferences.ClientVersionRepository
 import io.muun.apollo.data.toSafeAscii
@@ -27,10 +27,10 @@ class HttpClientSessionProvider @Inject constructor(
 ): app_provided_data.HttpClientSessionProvider {
 
     override fun session(): Session {
-        var language = applicationContext.locale().language
+        val language = applicationContext.locale().language
 
         val session = Session()
-        var authToken = authRepository.serverJwt.orElse("")
+        val authToken = authRepository.serverJwt.orElse("")
         session.authToken = authToken
         session.clientType = ClientTypeJson.APOLLO.toString()
         session.clientVersion = Globals.INSTANCE.versionCode.toString()

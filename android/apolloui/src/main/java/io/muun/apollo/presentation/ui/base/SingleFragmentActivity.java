@@ -8,6 +8,7 @@ import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.common.utils.Preconditions;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -131,6 +132,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
 
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         if (shouldIgnoreBackAndExit()) {
