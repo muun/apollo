@@ -16,7 +16,6 @@ import javax.inject.Inject
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
-        view.setBitcoinUnit(bitcoinUnitSel.get())
 
         parentPresenter
             .watchEditFeeState()
@@ -34,4 +33,7 @@ import javax.inject.Inject
     fun reportShowManualFeeInfo() {
         analytics.report(S_MORE_INFO(S_MORE_INFO_TYPE.MANUAL_FEE))
     }
+
+    fun getBitcoinUnit() = bitcoinUnitSel.get()
+
 }

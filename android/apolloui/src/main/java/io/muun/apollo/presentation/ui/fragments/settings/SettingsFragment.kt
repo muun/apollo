@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import butterknife.BindView
 import io.muun.apollo.R
@@ -27,6 +28,7 @@ import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BlockchainHeightSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
+import io.muun.apollo.presentation.biometrics.BiometricsController
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.settings.SettingsPresenter.SettingsState
@@ -38,6 +40,8 @@ import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
 import io.muun.apollo.presentation.ui.view.MuunIconButton
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
+import io.muun.apollo.presentation.ui.view.MuunSwitchSettingItem
+import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.common.model.Currency
 import javax.inject.Inject
 
@@ -47,6 +51,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     @Inject
     lateinit var clipboardManager: ClipboardManager
+
+    @Inject
+    lateinit var biometricsController: BiometricsController
 
     @BindView(R.id.settings_profile_picture)
     lateinit var muunPictureInput: MuunPictureInput
@@ -87,8 +94,14 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_diagnostic)
     lateinit var diagnosticSettingsItem: MuunSettingItem
 
+    @BindView(R.id.settings_biometrics)
+    lateinit var biometricsSettingsItem: MuunSwitchSettingItem
+
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
+
+    @BindView(R.id.security_section)
+    lateinit var securitySection: View
 
     @BindView(R.id.settings_logout)
     lateinit var logoutItem: View
@@ -98,6 +111,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     @BindView(R.id.settings_version_code)
     lateinit var versionCode: TextView
+
+    @BindView(R.id.settings_disable_feature_flags)
+    lateinit var disableFeatureFlags: TextView
 
     @BindView(R.id.settings_feature_flag)
     lateinit var featureFlagLabel: TextView
@@ -150,6 +166,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         parentActivity.header.visibility = View.GONE
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         menu.clear() // Effectively state that we don't want menu items. Yeap, this is how its done.
@@ -167,6 +184,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     override fun setState(state: SettingsState) {
         setUpRecoveryAndLogoutSection(state.user)
+        setupSecuritySection()
         setUpPublicProfileSection(state.user)
         setUpWalletDetailsSection(state.user)
         setUpGeneralSection(state.user, state.bitcoinUnit, state.exchangeRateWindow)
@@ -178,14 +196,41 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
         // Helper code for internal builds
         if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
-            var textForDisplay = ""
+
+            if (state.features.contains(MuunFeature.NFC_CARD_V2)) {
+                disableFeatureFlags.visibility = View.VISIBLE
+                disableFeatureFlags.setOnClickListener {
+                    presenter.navigateToDisableFeatureFlags()
+                }
+
+            } else {
+                disableFeatureFlags.visibility = View.GONE
+            }
+
+            var textForDisplay = RichText()
             val featureFlagsForDisplay = state.features
                 .filter { it != MuunFeature.TAPROOT }
                 .filter { it != MuunFeature.TAPROOT_PREACTIVATION }
                 .filter { it != MuunFeature.EFFECTIVE_FEES_CALCULATION }
 
             featureFlagsForDisplay.forEach { feature ->
-                textForDisplay += "$feature: ENABLED\n"
+                val isDisabled = state.featureOverrides.contains(feature)
+                val status = if (isDisabled) {
+                    "DISABLED"
+                } else {
+                    "ENABLED"
+                }
+
+                val textColor = if (isDisabled) {
+                    ContextCompat.getColor(requireContext(), R.color.gray_light)
+                } else {
+                    ContextCompat.getColor(requireContext(), R.color.red)
+                }
+
+                textForDisplay = textForDisplay.concat(
+                    RichText("$feature: $status\n")
+                        .setForegroundColor(textColor)
+                )
             }
             featureFlagLabel.visibility = View.VISIBLE
             featureFlagLabel.text = textForDisplay
@@ -214,6 +259,34 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             setUpRecoverableUser(user)
         } else {
             setUpUnrecoverableUser()
+        }
+    }
+
+    private fun setupSecuritySection() {
+        if (!biometricsController.getAuthenticationStatus().canAuthenticate) {
+            securitySection.visibility = View.GONE
+            return
+        }
+
+        securitySection.visibility = View.VISIBLE
+        biometricsSettingsItem.setChecked(biometricsController.hasUserOptedInBiometrics())
+        biometricsSettingsItem.setOnCheckedChangeListener { switch, checked ->
+            if (checked) {
+                biometricsController.authenticate(
+                    activity = requireActivity(),
+                    promptTitle = getString(R.string.biometrics_setup_title),
+                    promptSubtitle = getString(R.string.biometrics_setup_subtitle),
+                    onSuccess = {
+                        biometricsController.setUserOptInBiometrics(true)
+                    },
+                    onFailure = { error ->
+                        switch.isChecked = false
+                        parentActivity.showSnackBar(requireNotNull(error.message))
+                    }
+                )
+            } else {
+                biometricsController.setUserOptInBiometrics(false)
+            }
         }
     }
 
@@ -364,7 +437,8 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         presenter.navigateToLightningSettings()
     }
 
-    private fun showDiagnosticSettings(state: SettingsState): Boolean = state.features.contains(MuunFeature.DIAGNOSTIC_MODE)
+    private fun showDiagnosticSettings(state: SettingsState): Boolean =
+        state.features.contains(MuunFeature.DIAGNOSTIC_MODE)
 
 
     private fun goToDiagnosticMode() {

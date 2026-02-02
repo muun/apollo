@@ -4,14 +4,13 @@ import io.muun.apollo.domain.model.Sha256Hash
 import org.bitcoinj.core.NetworkParameters
 import org.threeten.bp.ZonedDateTime
 
-class DecodedInvoice constructor(
+class DecodedInvoice(
     val original: String,
     val amountInSat: Long?,
     val description: String,
     val expirationTime: ZonedDateTime,
-    val destinationPublicKey: String,
     val paymentHash: Sha256Hash,
-    val networkParameters: NetworkParameters
+    val networkParameters: NetworkParameters,
 ) {
 
     fun remainingMillis(): Long {

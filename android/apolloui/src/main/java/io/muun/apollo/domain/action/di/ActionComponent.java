@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.di;
 
+import io.muun.apollo.domain.FeatureOverrideStore;
 import io.muun.apollo.domain.LoggingContextManager;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.CurrencyActions;
@@ -136,4 +137,6 @@ public interface ActionComponent {
     DeleteWalletAction deleteWalletAction();
 
     DebugExecutable debugExecutable();
+
+    FeatureOverrideStore featureOverrideStore();
 }

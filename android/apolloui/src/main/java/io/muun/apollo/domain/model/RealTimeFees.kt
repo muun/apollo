@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.model
 
+import io.muun.apollo.domain.model.feebump.FeeBumpFunctions
 import org.threeten.bp.ZonedDateTime
 
 data class RealTimeFees(

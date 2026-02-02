@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        tools:viewBindingIgnore="true"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="12dp"
         android:orientation="horizontal"
-        tools:ignore="RtlSymmetry">
-
-    <View style="@style/pin_indicator_bubble" />
-    <View style="@style/pin_indicator_bubble" />
-    <View style="@style/pin_indicator_bubble" />
-    <View style="@style/pin_indicator_bubble" />
-
-</LinearLayout>
+        android:id="@+id/root"
+        tools:ignore="RtlSymmetry" />

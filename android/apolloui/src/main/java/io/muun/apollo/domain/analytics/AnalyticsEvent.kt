@@ -3,8 +3,10 @@ package io.muun.apollo.domain.analytics
 import android.app.Activity
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
+import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.report.ErrorReport
+import io.muun.apollo.domain.model.report.ErrorReportBuilder
 import io.muun.common.model.OperationDirection
 import java.util.Locale
 import kotlin.math.min
@@ -18,26 +20,31 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     companion object {
         private const val ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH = 100
 
-        fun buildParamsFor(report: ErrorReport) = listOf(
+        fun buildParamsFor(report: ErrorReport): List<Pair<String, String>> = listOf(
             "id" to report.uniqueId,
             "tag" to report.tag,
             "title" to report.getTrackingTitle(),
-            "message" to report.message.safelyTrimParamValue(),
+            "message" to report.message,
             // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
-            "error" to report.printError(false).safelyTrimParamValue(),
-            "metadata" to report.printMetadata().safelyTrimParamValue()
+            "error" to report.printError(false),
+            "metadata" to report.printMetadata()
         )
 
-        fun buildParamsFor(error: Throwable) = listOf(
-            "errorSimpleName" to error.javaClass.getSimpleName(),
-            "errorLocalizedMessage" to (error.localizedMessage ?: ""),
-        )
+        fun buildParamsFor(error: Throwable): List<Pair<String, String>> {
+            return listOf(
+                "errorToString" to error.toString(),
+                "errorSimpleName" to error.javaClass.getSimpleName(),
+                "errorLocalizedMessage" to (error.localizedMessage ?: ""),
+                *buildParamsFor(ErrorReportBuilder.build(error)).toTypedArray()
+            )
+        }
 
         /**
          * Does Substring while ignoring error if endIndex is out of bounds.
          */
-        private fun String.safelyTrimParamValue(): String {
-            return substring(0, min(ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH, this.length))
+        fun safelyTrimParamValue(paramValue: String): String {
+            return paramValue
+                .substring(0, min(ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH, paramValue.length))
         }
     }
 
@@ -98,7 +105,16 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_NEW_OP_AMOUNT(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
     class S_NEW_OP_DESCRIPTION(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
     class S_NEW_OP_CONFIRMATION(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
-    class S_SETTINGS : AnalyticsEvent()
+    class S_SETTINGS(
+        biometricsCanAuthenticate: Boolean,
+        biometricsCannotAuthenticateReason: String? = null,
+    ) : AnalyticsEvent(
+        listOfNotNull(
+            "biometrics_feature_status" to if (biometricsCanAuthenticate) "enabled" else "disabled",
+            biometricsCannotAuthenticateReason?.let { "biometrics_feature_status_reason" to it }
+        )
+    )
+
     class S_SETTINGS_BITCOIN_NETWORK : AnalyticsEvent()
     class S_SETTINGS_LIGHTNING_NETWORK : AnalyticsEvent()
     class S_CURRENCY_PICKER : AnalyticsEvent()
@@ -199,14 +215,15 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_NEW_OP_ERROR(
         val origin: S_NEW_OP_ORIGIN,
         val type: S_NEW_OP_ERROR_TYPE,
-        vararg extras: Any,
+        val cause: Throwable?,
+        vararg params: Pair<String, Any>,
     ) : AnalyticsEvent(
         listOf(
 
             "origin" to origin.name.lowercase(Locale.getDefault()),
             "type" to type.name.lowercase(Locale.getDefault()),
-            *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
-                .toTypedArray()
+            *(cause?.let { buildParamsFor(it).toTypedArray() } ?: emptyArray()),
+            *params
         )
     )
 
@@ -274,6 +291,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_LNURL_FROM_SEND : AnalyticsEvent()
     class S_LNURL_WITHDRAW : AnalyticsEvent()
     class S_LNURL_SCAN_QR : AnalyticsEvent()
+    class S_BIOMETRICS_AUTH : AnalyticsEvent()
 
 
     // User interaction events:
@@ -312,7 +330,10 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         CONFIRM_SWAP_OPERATION,
         BACK,
         CANCEL_ABORT,
-        ABORT
+        ABORT,
+        DISABLE_FLAG_DIALOG_SHOWN,
+        CANCEL_DISABLE_FLAG,
+        DISABLE_FLAG
     }
 
     class E_NEW_OP_ACTION(val type: E_NEW_OP_ACTION_TYPE, vararg params: Pair<String, Any>) :
@@ -320,8 +341,20 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
             listOf("type" to type.name.lowercase(), *params)
         )
 
-    class E_NEW_OP_SUBMITTED(vararg extras: Pair<String, Any>) : AnalyticsEvent(listOf(*extras))
+    class E_NEW_OP_SUBMITTED(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
     class E_NEW_OP_COMPLETED(vararg params: Pair<String, Any>) : AnalyticsEvent(listOf(*params))
+
+    // Note:
+    // - Only to be used with operation.direction == OperationDirection.INCOMING
+    // - We want to know that "user used Muun to receive a payment”, this doesn't account for
+    // payments dropped/cancelled. But it's a good proxy.
+    class E_PAYMENT_RECEIVED(val operation: Operation) : AnalyticsEvent(
+        listOf(
+            "type" to if (operation.isIncomingSwap) "lightning" else "onchain",
+            "is_external" to operation.isExternal,
+            "is_rbf" to operation.isRbf
+        )
+    )
 
     class E_SCAN_QR_ASK_CAMERA_PERMISSION : AnalyticsEvent()
     class E_SCAN_QR_CAMERA_PERMISSION_GRANTED : AnalyticsEvent()
@@ -396,6 +429,23 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_PIN(type: PIN_TYPE) :
         AnalyticsEvent(listOf("type" to type.name.lowercase(Locale.getDefault())))
 
+    class E_APP_UPDATE(
+        previousVersionCode: Int,
+        previousVersionName: String,
+        currentVersionCode: Int,
+        currentVersionName: String,
+    ) : AnalyticsEvent(
+        listOf(
+            // Multiple params for easy querying for different scenarios
+            "previous" to "$previousVersionName ($previousVersionCode)",
+            "current" to "$currentVersionName ($currentVersionCode)",
+            "previous_version_code" to previousVersionCode,
+            "previous_version_name" to previousVersionName,
+            "current_version_code" to currentVersionCode,
+            "current_version_name" to currentVersionName
+        )
+    )
+
     class E_APP_WILL_GO_TO_BACKGROUND : AnalyticsEvent()
     class E_APP_WILL_ENTER_FOREGROUND : AnalyticsEvent()
     class E_APP_WILL_TERMINATE : AnalyticsEvent()
@@ -412,7 +462,6 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     )
 
     class E_ADDRESS_SHARE_TOUCHED : AnalyticsEvent()
-    class E_MENU_TAP : AnalyticsEvent()
     class E_BALANCE_TAP : AnalyticsEvent()
 
     enum class PASSWORD_ERROR {
@@ -488,27 +537,34 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
 
     class E_ERROR : AnalyticsEvent {
 
-        constructor(type: ERROR_TYPE, vararg extras: Any) : super(
+        /**
+         * Convenience constructor. Should only be used for simple, hyper defined errors.
+         */
+        @Deprecated("Should use a constructor receiving Throwable cause")
+        constructor(type: ERROR_TYPE, vararg params: Pair<String, Any>) : super(
             listOf(
                 "type" to type.name.lowercase(Locale.getDefault()),
-                *extras.mapIndexed { index: Int, extra: Any -> Pair("extra$index", extra) }
-                    .toTypedArray()
+                *params
             )
         )
 
-        constructor(type: ERROR_TYPE, error: Throwable, report: ErrorReport) : super(
+        constructor(type: ERROR_TYPE, error: Throwable, vararg params: Pair<String, Any>) : super(
             listOf(
                 "type" to type.name.lowercase(Locale.getDefault()),
                 *buildParamsFor(error).toTypedArray(),
-                *buildParamsFor(report).toTypedArray()
+                *params
             )
         )
     }
 
-    class E_ERROR_REPORT_DIALOG(error: Throwable, report: ErrorReport) : AnalyticsEvent(
+    class E_ERROR_REPORT_DIALOG(error: Throwable) : AnalyticsEvent(
+        listOf(*buildParamsFor(error).toTypedArray())
+    )
+
+    class E_FEATURE_FLAG_OVERRIDE(ffName: String, isEnabled: Boolean) : AnalyticsEvent(
         listOf(
-            *buildParamsFor(error).toTypedArray(),
-            *buildParamsFor(report).toTypedArray()
+            "name" to ffName,
+            "is_enabled" to isEnabled
         )
     )
 
@@ -555,7 +611,7 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     )
 
     class E_BREADCRUMB(value: String) : AnalyticsEvent(
-        listOf("crumb" to value.safelyTrimParamValue())
+        listOf("crumb" to value)
     )
 
     class E_PUSH_NOTI_PERMISSION_ASKED : AnalyticsEvent()
@@ -563,4 +619,59 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_PUSH_NOTI_PERMISSION_GRANTED : AnalyticsEvent()
     class E_PUSH_NOTI_PERMISSION_DECLINED : AnalyticsEvent()
     class E_PUSH_NOTI_PERMISSION_PERMA_DECLINED : AnalyticsEvent()
+
+    class E_SECURITY_CARD_SIGN_SUCCESS : AnalyticsEvent()
+
+    enum class SECURITY_CARD_TAP_PARAM {
+        DETECTED,
+        // other values but they're ios only
+    }
+
+    class E_SECURITY_CARD_TAP(param: SECURITY_CARD_TAP_PARAM) : AnalyticsEvent(
+        listOf("type" to param)
+    )
+
+    class E_SECURITY_CARD_TAP_ERROR(code: String?, message: String?) : AnalyticsEvent(
+        listOfNotNull(
+            code?.let { "code" to it },
+            message?.let { "message" to it }
+        )
+    )
+
+    class E_WORKMANAGER_TASK_STARTED(type: String, startedMillis: Long) : AnalyticsEvent(
+        listOf(
+            "type" to type,
+            "started" to startedMillis
+        )
+    )
+
+    class E_WORKMANAGER_TASK_SUCCESS(type: String, durationInMillis: Long) : AnalyticsEvent(
+        listOf(
+            "type" to type,
+            "duration" to durationInMillis
+        )
+    )
+
+    class E_WORKMANAGER_TASK_STOPPED(
+        type: String,
+        stopReason: String,
+        durationMillis: Long?,
+    ) : AnalyticsEvent(
+        listOfNotNull(
+            "type" to type,
+            "stopReason" to stopReason,
+            durationMillis?.let { "duration" to it }
+        )
+    )
+
+    class E_BIOMETRICS_AUTH_SUCCESS : AnalyticsEvent()
+    class E_BIOMETRICS_AUTH_ERROR(
+        code: String,
+        description: String,
+    ) : AnalyticsEvent(
+        listOf(
+            "code" to code,
+            "desc" to description
+        )
+    )
 }

@@ -106,6 +106,6 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     private void onFeedbackContentChange() {
         final var binding = binding();
         final String text = binding.feedbackContent.getText().toString();
-        binding.submit.setEnabled(text.length() > 0 && text.length() < MAX_FEEDBACK_CONTENT_LENGTH);
+        binding.submit.setEnabled(!text.isEmpty() && text.length() < MAX_FEEDBACK_CONTENT_LENGTH);
     }
 }

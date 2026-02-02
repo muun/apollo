@@ -12,6 +12,7 @@ class BuildInfoProvider {
                 Build.BOOTLOADER,
                 Build.MANUFACTURER,
                 Build.BRAND,
+                Build.DISPLAY,
                 Build.HOST,
                 Build.TYPE,
                 Build.getRadioVersion(),
@@ -19,6 +20,7 @@ class BuildInfoProvider {
                 Build.MODEL,
                 Build.PRODUCT,
                 Build.VERSION.RELEASE,
+                AfsUtils.epochAtUtcMidnight(Build.TIME)
             )
         }
 
@@ -32,11 +34,7 @@ class BuildInfoProvider {
         get() = Build.VERSION.SDK_INT
 
     private fun getABIs(): List<String> {
-        return if (OS.supportsBuildSupportedAbis()) {
-            Build.SUPPORTED_ABIS.toList()
-        } else {
-            emptyList()
-        }
+        return Build.SUPPORTED_ABIS.toList()
     }
 
     private fun getSecurityPatch(): String {

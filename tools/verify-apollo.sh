@@ -41,7 +41,7 @@ unzip -q -o "$apk_to_verify" -d "$tmp/to_verify"
 # Remove the signature since OSS users won't have Muuns private signing key
 rm -r "$tmp"/to_verify/{META-INF,resources.arsc}
 
-# Compare /lib first
+# Find baseline arch based on /lib
 lib_dirs_in_verify=($(find "$tmp/to_verify/lib" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true))
 
 echo "Found lib directory in APK to verify: ${lib_dirs_in_verify[*]}"
@@ -86,8 +86,17 @@ echo "Comparing files..."
 
 diff_non_lib=$(diff -r "$tmp/to_verify" "$tmp/baseline" || true)
 
+# Print diff output
+echo "$diff_non_lib"
+
 if [ -n "$diff_non_lib" ]; then
     echo "Verification failed :("
+
+    apk_dir="$(dirname "$apk_to_verify")"
+    cp -r "$tmp/baseline" "$apk_dir"
+    cp -r "$tmp/to_verify" "$apk_dir"
+    echo "Leaving baseline and to_verify directories at $apk_dir for inspection"
+
     exit 5
 fi
 

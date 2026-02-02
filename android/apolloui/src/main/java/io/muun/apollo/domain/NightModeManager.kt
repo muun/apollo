@@ -1,12 +1,12 @@
 package io.muun.apollo.domain
 
-import io.muun.apollo.domain.libwallet.WalletClient
+import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.model.NightMode
 import rx.Observable
 import rx.subjects.BehaviorSubject
 import javax.inject.Inject
 
-class NightModeManager @Inject constructor(private val walletClient: WalletClient) {
+class NightModeManager @Inject constructor(private val libwalletClient: LibwalletClient) {
 
     companion object {
         private const val KEY = "nightMode"
@@ -20,10 +20,10 @@ class NightModeManager @Inject constructor(private val walletClient: WalletClien
             .distinctUntilChanged()
 
     fun get(): NightMode =
-        walletClient.getEnum(KEY, NightMode.FOLLOW_SYSTEM)
+        libwalletClient.getEnum(KEY, NightMode.FOLLOW_SYSTEM)
 
     fun save(mode: NightMode) {
-        walletClient.saveEnum(KEY, mode)
+        libwalletClient.saveEnum(KEY, mode)
         nightModeSubject.onNext(mode)
     }
 }

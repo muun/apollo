@@ -26,12 +26,24 @@ const (
 	KeyIsBalanceHidden            string = "isBalanceHidden"
 	KeyNightMode                  string = "nightMode"
 	KeySecurityCardXpubSerialized string = "securityCardXpubSerialized"
-	KeySecurityCardPaired         string = "securityCardClientPaired"
+	KeyBiometricsOptIn            string = "biometricsOptIn"
+	KeyPinLength                  string = "pinLength"
 	// TODO: These three are marked as prototypes to avoid accidentally setting the non-prototype fields
 	//  in a consumer device before finalizing the design. Before production, the "Prototype" suffix must be removed
 	UnverifiedEncryptedMuunKey string = "unverifiedEncryptedMuungKeyPrototype"
 	VerifiedEncryptedMuunKey   string = "verifiedEncryptedMuunKeyPrototype"
 	EncryptedUserKey           string = "encryptedUserKeyPrototype"
+
+	// ==== Feature flag overrides ====
+	FeatureFlagOverridesNfcCardV2Key = "featureFlagOverrides:nfcCardV2"
+	// ==== End of feature flag overrides ====
+	// ==== Temporary keys for mock houston. Will remove soon ====
+	KeyLastRandomPrivKeyInHex           string = "lastRandomPrivKeyInHex"
+	KeySecurityCardUsageCount           string = "securityCardUsageCount"
+	KeySecretCardBytesInHex             string = "secretCardBytesInHex"
+	KeySecurityCardPairingSlot          string = "securityCardPairingSlot"
+	KeyTimeSinceLastChallengeUnixMillis string = "timeSinceLastChallengeUnixMillis"
+	// ==== End of temporary keys for mock houston ====
 )
 
 type ValueType interface {
@@ -143,6 +155,18 @@ func BuildStorageSchema() map[string]Classification {
 			SecurityCritical: false,
 			ValueType:        &StringType{},
 		},
+                KeyBiometricsOptIn: {
+                        BackupType:       NoAutoBackup,
+                        BackupSecurity:   NotApplicable,
+                        SecurityCritical: false,
+                        ValueType:        &BoolType{},
+                },
+                KeyPinLength: {
+                        BackupType:       NoAutoBackup,
+                        BackupSecurity:   NotApplicable,
+                        SecurityCritical: false,
+                        ValueType:        &IntType{},
+                },
 		UnverifiedEncryptedMuunKey: {
 			BackupType:       AsyncAutoBackup,
 			BackupSecurity:   Plain,
@@ -161,11 +185,45 @@ func BuildStorageSchema() map[string]Classification {
 			SecurityCritical: true,
 			ValueType:        &StringType{},
 		},
-		KeySecurityCardPaired: {
+		// ==== Feature flag overrides ====
+		FeatureFlagOverridesNfcCardV2Key: {
 			BackupType:       AsyncAutoBackup,
 			BackupSecurity:   NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &BoolType{},
 		},
+		// ==== End of feature flag overrides ====
+		// ==== Temporary keys for mock houston. Will remove soon ====
+		KeyLastRandomPrivKeyInHex: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
+		},
+		KeySecurityCardUsageCount: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        IntType{},
+		},
+		KeySecretCardBytesInHex: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        StringType{},
+		},
+		KeySecurityCardPairingSlot: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        IntType{},
+		},
+		KeyTimeSinceLastChallengeUnixMillis: {
+			BackupType:       AsyncAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        LongType{},
+		},
+		// ==== End of temporary keys for mock houston ====
 	}
 }

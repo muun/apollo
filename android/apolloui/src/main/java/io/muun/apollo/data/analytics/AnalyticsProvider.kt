@@ -75,7 +75,9 @@ class AnalyticsProvider @Inject constructor(context: Context) {
     private fun actuallyReport(event: AnalyticsEvent) {
         val bundle = Bundle().apply {
             putString("eventName", event.eventId)
-            event.metadata.forEach { putString(it.key, it.value.toString()) }
+            event.metadata.forEach {
+                putString(it.key, AnalyticsEvent.safelyTrimParamValue(it.value.toString()))
+            }
         }
 
         fba.logEvent(event.eventId, bundle)

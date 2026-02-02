@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/muun/libwallet/librs"
 	"log/slog"
 	"math/big"
 	"testing"
@@ -144,12 +145,15 @@ func verifyZeroKnowledgeProof(
 		return false
 	}
 
-	// TODO as a temporary workaround for dl_iterate_phdr (which is currently required by librs)
-	//  not being available in api level 19 we are short-circuiting the verification. This is not
-	//  a problem because proof verification is not currently in use anyway.
-	_ = proofBytes
-	result := "ok"
-
+	result := string(
+		librs.Plonky2ServerKeyVerify(
+			proofBytes,
+			recoveryCodePublicKey.SerializeUncompressed(),
+			secondHalfKeyEncryptedToRecoveryCode.GetEncapsulatedKey().SerializeUncompressed(),
+			ciphertext,
+			secondHalfPubkey.SerializeUncompressed(),
+		),
+	)
 	if result != "ok" {
 		slog.Error("error calling librs.Plonky2ServerKeyVerify", slog.Any("error", err))
 		return false

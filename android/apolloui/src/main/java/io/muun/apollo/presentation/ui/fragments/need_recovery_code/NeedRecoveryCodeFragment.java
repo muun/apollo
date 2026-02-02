@@ -64,8 +64,4 @@ public class NeedRecoveryCodeFragment extends SingleActionFragment<NeedRecoveryC
         presenter.goToRecoveryCodeSetup();
     }
 
-    @Override
-    public boolean onBackPressed() {
-        return false;
-    }
 }

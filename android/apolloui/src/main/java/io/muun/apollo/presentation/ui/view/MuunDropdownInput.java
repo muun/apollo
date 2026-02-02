@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.utils.OS;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -17,7 +16,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
-import androidx.core.graphics.drawable.DrawableCompat;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -30,6 +28,7 @@ import javax.annotation.Nullable;
 public class MuunDropdownInput<T> extends MuunView {
 
     public interface OnChangeListener<Item> {
+
         /**
          * This method will be called when a new item has been selected.
          */
@@ -48,6 +47,7 @@ public class MuunDropdownInput<T> extends MuunView {
     private DropdownAdapter adapter;
 
     private boolean notifyChanges = true;
+
     private OnChangeListener<T> changeListener;
 
     public MuunDropdownInput(Context context) {
@@ -92,13 +92,9 @@ public class MuunDropdownInput<T> extends MuunView {
     private void setSpinnerBackground() {
         // Doing this here in code as we can't easily and reliably do it via xml
         // Head's up we maaaaay have to adjust this to support rtl layouts
-        Drawable drawable = spinnerBkg;
-        if (OS.supportsBackgroundTintList()) {
-            spinner.setBackgroundTintList(spinnerBkgTintList);
-        } else {
-            drawable = DrawableCompat.wrap(drawable);
-            DrawableCompat.setTintList(drawable, spinnerBkgTintList);
-        }
+        // TODO: after minSdk bump to 21 we may be able to handle this in xml
+        final Drawable drawable = spinnerBkg;
+        spinner.setBackgroundTintList(spinnerBkgTintList);
         spinner.setBackground(drawable);
     }
 

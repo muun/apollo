@@ -34,8 +34,8 @@ import io.muun.apollo.domain.SignupDraftManager
 import io.muun.apollo.domain.action.LogoutActions
 import io.muun.apollo.domain.action.di.ActionComponent
 import io.muun.apollo.domain.analytics.Analytics
-import io.muun.apollo.domain.libwallet.LibwalletService
-import io.muun.apollo.domain.libwallet.WalletClient
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
+import io.muun.apollo.domain.libwallet.LibwalletClient
 import org.bitcoinj.core.NetworkParameters
 import java.util.concurrent.Executor
 import javax.inject.Singleton
@@ -118,11 +118,11 @@ interface DataComponent : ActionComponent {
 
     fun libwalletConfig(): Config
 
-    fun walletClient(): WalletClient
+    fun libwalletClient(): LibwalletClient
 
     fun nfcBridgerFactory(): NfcBridgerFactory
 
-    fun goLibwalletService(): LibwalletService
+    fun feeBumpFunctionsProvider(): FeeBumpFunctionsProvider
 
     fun metricsProvider(): MetricsProvider
 }

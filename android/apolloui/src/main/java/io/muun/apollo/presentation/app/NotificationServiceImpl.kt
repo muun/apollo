@@ -27,6 +27,8 @@ import io.muun.apollo.data.async.tasks.LnPaymentFailedNotificationWorker
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
+import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.libwallet.Invoice
 import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.LnUrlWithdraw
@@ -57,6 +59,7 @@ class NotificationServiceImpl @Inject constructor(
     private val context: Context,
     private val executionTransformerFactory: ExecutionTransformerFactory,
     private val bitcoinUnitSel: BitcoinUnitSelector,
+    private val analytics: Analytics,
 ) : NotificationService {
 
     companion object {
@@ -132,6 +135,8 @@ class NotificationServiceImpl @Inject constructor(
     override fun showNewOperationNotification(@NotNull operation: Operation) {
         Preconditions.checkNotNull(operation.id)
         Preconditions.checkArgument(operation.direction == OperationDirection.INCOMING)
+
+        analytics.report(AnalyticsEvent.E_PAYMENT_RECEIVED(operation))
 
         if (operation.isExternal) {
             showNewOperationFromNetworkNotification(operation)

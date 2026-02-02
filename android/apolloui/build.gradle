@@ -35,6 +35,9 @@ apply from: "${project.rootDir}/linters/pmd/check-android.gradle"
 
 
 check.dependsOn 'lint'
+tasks.matching { it.name.startsWith('lint') }.configureEach {task ->
+    task.dependsOn(':common:animalsnifferMain')
+}
 
 /**
  * Insert quotes around string fields that are injected literally into code, like a C macro.
@@ -87,7 +90,7 @@ static def configExternalLinks(productFlavor, String host) {
 android {
     namespace "io.muun.apollo"
 
-    compileSdk 34
+    compileSdk 35
 
     buildFeatures {
         viewBinding true
@@ -96,17 +99,13 @@ android {
 
     defaultConfig {
         applicationId "io.muun.apollo"
-        minSdk 19
+        minSdk 21
         targetSdk 35
-        versionCode 1503
-        versionName "55.3"
-
-        // Needed to make sure these classes are available in the main DEX file for API 19
-        // See: https://spin.atomicobject.com/2018/07/16/support-kitkat-multidex/
-        multiDexKeepProguard file('./proguard/proguard-multidex.pro')
+        versionCode 1504
+        versionName "55.4"
 
         // Use default Proguard file, bundled with Android Gradle Plugin
-        // See: https://foreachi.com/android/androidx-proguard/
+        // See: https://issuetracker.google.com/issues/126772206
         proguardFiles getDefaultProguardFile("proguard-android.txt")
         proguardFiles files {
             file('./proguard').listFiles().findAll { it.path.endsWith('.pro') }
@@ -146,7 +145,6 @@ android {
             versionNameSuffix "-debug"
 
             debuggable true
-            multiDexEnabled true
             minifyEnabled false
             shrinkResources false
 
@@ -165,14 +163,12 @@ android {
         // Debuggable enabled has priority over the other flags, and those optimizations are going to be disabled.
         minified {
             debuggable true
-            multiDexEnabled true
             minifyEnabled true
             shrinkResources true
         }
 
         release {
             debuggable false
-            multiDexEnabled true
             minifyEnabled true
             shrinkResources true
 
@@ -455,8 +451,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1"
 
     // Detect root devices (for error reports metadata and fraud control)
-    // TODO: go back to `com.scottyab:rootbeer-lib:x.x.x` after dropping API 19 support
-    implementation 'com.github.muun:rootbeer:0.1.0'
+    implementation 'com.scottyab:rootbeer-lib:0.1.1'
 
     // Google Play Integrity
     implementation 'com.google.android.play:integrity:1.1.0'
@@ -490,11 +485,11 @@ dependencies {
     implementation 'androidx.preference:preference:1.0.0'
     def emojiVersion = "1.1.0" // We need targetSdkVersion 32 to bump
     implementation "androidx.emoji2:emoji2:$emojiVersion"
-    implementation "androidx.activity:activity:1.8.2"
+    // We need targetSdkVersion 36 to bump
+    implementation "androidx.activity:activity-ktx:1.10.1"
 
     // Remove gridlayout-v7 once we drop minSDK version 19
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation 'androidx.multidex:multidex:2.0.0'
     // We need to specify versions for customtabs and cardview because some dependencies use them
     implementation 'androidx.browser:browser:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -577,6 +572,9 @@ dependencies {
 
     // Fancy animations
     implementation 'com.airbnb.android:lottie:3.5.0'
+
+    // Biometrics
+    implementation 'androidx.biometric:biometric:1.4.0-alpha04'
 }
 
 configurations {

@@ -145,12 +145,6 @@ object OS {
         isAndroidMOrNewer()
 
     /**
-     * Whether this OS supports Build.SUPPORTED_ABIS, which was introduced in L-5.0-21.
-     */
-    fun supportsBuildSupportedAbis(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
      * Whether this OS supports Feature Picture and Picture, which was introduced in N-7-24.
      */
     fun supportsPIP(): Boolean =
@@ -191,19 +185,6 @@ object OS {
         isAndroidQOrNewer()
 
     /**
-     * Whether this OS supports ConnectivityManager#getNetworkCapabilities, which was introduced
-     * in L-5.0-21.
-     */
-    fun supportsNetworkCapabilities(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS supports Build.SUPPORTED_ABIS, which was introduced in L-5-21.
-     */
-    fun supportsSupportedAbis(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
      * Whether this OS supports {@link android.security.KeyStoreException} public methods, which
      * were introduced in T-13-33.
      */
@@ -242,18 +223,25 @@ object OS {
      * Whether this OS supports {@link android.app.ActivityManager.getHistoricalProcessExitReasons},
      * which was introduced in R-11-30.
      */
-    fun supportsgetHistoricalProcessExitReasons(): Boolean =
+    fun supportsGetHistoricalProcessExitReasons(): Boolean =
         isAndroidROrNewer()
 
+    /**
+     * Whether this OS supports WorkManager getStopReason.
+     * See: https://developer.android.com/reference/androidx/work/WorkInfo#getStopReason()
+     */
+    fun supportsWorkManagerStopReason(): Boolean {
+        return isAndroidSOrNewer()
+    }
 
     // PRIVATE STUFF:
 
     /**
-     * Whether this OS version is P-9-28 or newer.
+     * Whether this OS version is LMR1-5.1-22 or newer.
      */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
-    private fun isAndroidPOrNewer() =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+    private fun isAndroidLMr1OrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
 
     /**
      * Whether this OS version is M-6-23 or newer.
@@ -263,11 +251,32 @@ object OS {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
 
     /**
-     * Whether this OS version is S-12-31 or newer.
+     * Whether this OS version is N-7-24 or newer.
      */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
-    private fun isAndroidSOrNewer() =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
+    private fun isAndroidNOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    /**
+     * Whether this OS version is O-8-26 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
+    private fun isAndroidOOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+    /**
+     * Whether this OS version is O-8.1-27 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O_MR1)
+    private fun isAndroidOMr1OrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+
+    /**
+     * Whether this OS version is P-9-28 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
+    private fun isAndroidPOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 
     /**
      * Whether this OS version is EXACTLY Q-10-29.
@@ -283,27 +292,6 @@ object OS {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
     /**
-     * Whether this OS version is L-5.0-21 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-    private fun isAndroidLOrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-
-    /**
-     * Whether this OS version is LMR1-5.1-22 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP_MR1)
-    private fun isAndroidLMr1OrNewer() =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-
-    /**
-     * Whether this OS version is O-8-26 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
-    private fun isAndroidOOrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
-    /**
      * Whether this OS version is R-11-30 or newer.
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
@@ -311,18 +299,11 @@ object OS {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
     /**
-     * Whether this OS version is N-7-24 or newer.
+     * Whether this OS version is S-12-31 or newer.
      */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
-    private fun isAndroidNOrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-
-    /**
-     * Whether this OS version is O-8.1-27 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O_MR1)
-    private fun isAndroidOMr1OrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+    private fun isAndroidSOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     /**
      * Whether this OS version is T-13-33 or newer.

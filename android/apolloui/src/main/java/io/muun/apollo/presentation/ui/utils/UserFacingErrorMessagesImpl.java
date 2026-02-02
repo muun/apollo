@@ -3,9 +3,11 @@ package io.muun.apollo.presentation.ui.utils;
 import io.muun.apollo.R;
 import io.muun.apollo.data.external.UserFacingErrorMessages;
 import io.muun.apollo.domain.errors.EmptyFieldError;
+import io.muun.apollo.domain.model.BiometricAuthenticationErrorReason;
 import io.muun.common.exception.MissingCaseError;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import javax.inject.Inject;
@@ -203,6 +205,19 @@ public class UserFacingErrorMessagesImpl extends UserFacingErrorMessages {
     @Override
     public String saveEkToDisk() {
         return get(R.string.ek_emergency_kit_save_failure);
+    }
+
+    @Override
+    public String biometricsAuthenticationError(
+            @NonNull BiometricAuthenticationErrorReason reason
+    ) {
+        final @StringRes int errorStringRes = switch (reason) {
+            case LOCKOUT -> R.string.biometrics_setup_error_lockout_desc;
+            case LOCKOUT_PERMANENT -> R.string.biometrics_setup_error_lockout_permanent_desc;
+            case GENERAL -> R.string.biometrics_setup_error_generic_desc;
+        };
+
+        return get(errorStringRes);
     }
 
     private String get(@StringRes int resId, Object... args) {

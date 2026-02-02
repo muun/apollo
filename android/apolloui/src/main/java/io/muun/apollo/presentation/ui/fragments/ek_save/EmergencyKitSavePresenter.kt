@@ -272,7 +272,7 @@ class EmergencyKitSavePresenter @Inject constructor(
             SaveToDiskExporter.saveToDisk(context, localFile.uri, treeUri)
         } catch (e: Exception) {
             handleError(SaveEkToDiskError(e))
-            analytics.report(E_ERROR(ERROR_TYPE.EMERGENCY_KIT_SAVE_ERROR, e.toString()))
+            analytics.report(E_ERROR(ERROR_TYPE.EMERGENCY_KIT_SAVE_ERROR, e))
         }
     }
 }

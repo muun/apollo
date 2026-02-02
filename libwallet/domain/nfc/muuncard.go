@@ -37,11 +37,11 @@ const swMuuncardHmacErrorBufferOverflow = 0x6884
 const swMuuncardSecureChannelNotInitialized = 0x6985
 
 type MuunCard struct {
-	rawCard *SmartCard
+	rawCard *JavaCard
 }
 
 func NewCard(nfcBridge app_provided_data.NfcBridge) *MuunCard {
-	return &MuunCard{rawCard: newSmartCard(nfcBridge)}
+	return &MuunCard{rawCard: newJavaCard(nfcBridge)}
 }
 
 // CardErrorCode represents our internal domain error codes
@@ -51,6 +51,7 @@ const (
 	ErrInternal           CardErrorCode = 1
 	ErrSlotOccupied       CardErrorCode = 2
 	ErrSlotNotInitialized CardErrorCode = 3
+	ErrAppletIdNotFound   CardErrorCode = 4
 )
 
 var cardStatusToError = map[uint16]*CardError{

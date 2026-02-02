@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 
 public class MuunCountryInput extends MuunView {
 
-    private static int REQUEST_COUNTRY = 4411;
+    private static final int REQUEST_COUNTRY = 4411;
 
     public interface OnChangeListener {
         void onChange(Optional<CountryInfo> countryInfo);

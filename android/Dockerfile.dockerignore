@@ -1,0 +1,16 @@
+# Ignore all
+**
+
+# ⚠️ whitelist only necessary things
+!.git/
+!android/
+!common/
+!gradlew
+!gradle.properties
+!gradle/
+!build.gradle
+!settings.gradle
+!libwallet/
+!linters/
+!prover/
+!tools/

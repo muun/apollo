@@ -13,7 +13,6 @@ import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.SecurityLevel
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterView.TaskStatus
-import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.getDrawable
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
@@ -128,10 +127,8 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
         if (sc.emailSetupSkipped()) {
             binding.taskEmail.status = MuunTaskCard.Status.SKIPPED
             binding.tagEmailSkipped.visibility = View.VISIBLE
-            if (!OS.supportsTranslateZ()) { // we can't use translateZ in api levels below 21 :(
-                binding.tagEmailSkipped.bringToFront()
-                (binding.tagEmailSkipped.parent as View).invalidate()
-            }
+            binding.tagEmailSkipped.bringToFront()
+            (binding.tagEmailSkipped.parent as View).invalidate()
 
         } else {
             binding.taskEmail.status = toCardStatus(status)
@@ -156,11 +153,13 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
             binding.taskEmail.icon = getDrawable(R.drawable.ic_step_1_skipped)
 
         } else {
-            binding.taskEmail.icon = getDrawable(when (status) {
-                TaskStatus.DONE -> R.drawable.ic_check
-                TaskStatus.PENDING -> R.drawable.ic_step_1_blue
-                TaskStatus.BLOCKED -> R.drawable.ic_step_1_gray
-            })
+            binding.taskEmail.icon = getDrawable(
+                when (status) {
+                    TaskStatus.DONE -> R.drawable.ic_check
+                    TaskStatus.PENDING -> R.drawable.ic_step_1_blue
+                    TaskStatus.BLOCKED -> R.drawable.ic_step_1_gray
+                }
+            )
         }
     }
 
@@ -182,43 +181,53 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
                 stringWithEmail(R.string.task_rc_body_done, securityCenter.email()!!)
         }
 
-        binding.taskRecoveryCode.icon = getDrawable(when (status) {
-            TaskStatus.DONE -> R.drawable.ic_check
-            TaskStatus.PENDING -> R.drawable.ic_step_2_blue
-            TaskStatus.BLOCKED -> R.drawable.ic_step_2_gray
-        })
+        binding.taskRecoveryCode.icon = getDrawable(
+            when (status) {
+                TaskStatus.DONE -> R.drawable.ic_check
+                TaskStatus.PENDING -> R.drawable.ic_step_2_blue
+                TaskStatus.BLOCKED -> R.drawable.ic_step_2_gray
+            }
+        )
     }
 
     private fun setExportKeysStatus(status: TaskStatus, hasOldExportKeysOnly: Boolean) {
         binding.taskExportKeys.status = toCardStatus(status)
 
-        binding.taskExportKeys.title = getString(when (status) {
-            TaskStatus.DONE -> {
-                if (hasOldExportKeysOnly) {
-                    R.string.task_export_keys_done_title_old
-                } else {
-                    R.string.task_export_keys_done_title
+        binding.taskExportKeys.title = getString(
+            when (status) {
+                TaskStatus.DONE -> {
+                    if (hasOldExportKeysOnly) {
+                        R.string.task_export_keys_done_title_old
+                    } else {
+                        R.string.task_export_keys_done_title
+                    }
                 }
-            }
-            else -> R.string.task_export_keys_pending_title
-        })
 
-        binding.taskExportKeys.body = StyledStringRes(requireContext(), when (status) {
-            TaskStatus.DONE -> {
-                if (hasOldExportKeysOnly) {
-                    R.string.task_export_keys_done_body_old
-                } else {
-                    R.string.task_export_keys_done_body
+                else -> R.string.task_export_keys_pending_title
+            }
+        )
+
+        binding.taskExportKeys.body = StyledStringRes(
+            requireContext(), when (status) {
+                TaskStatus.DONE -> {
+                    if (hasOldExportKeysOnly) {
+                        R.string.task_export_keys_done_body_old
+                    } else {
+                        R.string.task_export_keys_done_body
+                    }
                 }
-            }
-            else -> R.string.task_export_keys_pending_body
-        }).toCharSequence()
 
-        binding.taskExportKeys.icon = getDrawable(when (status) {
-            TaskStatus.DONE -> R.drawable.ic_check
-            TaskStatus.PENDING -> R.drawable.ic_step_3_blue
-            TaskStatus.BLOCKED -> R.drawable.ic_step_3_gray
-        })
+                else -> R.string.task_export_keys_pending_body
+            }
+        ).toCharSequence()
+
+        binding.taskExportKeys.icon = getDrawable(
+            when (status) {
+                TaskStatus.DONE -> R.drawable.ic_check
+                TaskStatus.PENDING -> R.drawable.ic_step_3_blue
+                TaskStatus.BLOCKED -> R.drawable.ic_step_3_gray
+            }
+        )
     }
 
     private fun toCardStatus(status: TaskStatus) =

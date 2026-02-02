@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.fragments.error
 
 import android.content.Context
 import androidx.annotation.StringRes
+import io.muun.apollo.R
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.StyledStringRes.StringResWithArgs
@@ -27,6 +28,15 @@ interface ErrorViewModel {
 
         @CheckReturnValue
         fun title(title: String) = apply { this.title = title }
+
+        /**
+         * Convenience method for development and internal testing. Always prefer descriptionRes
+         * for real, productive use cases.
+         */
+        @CheckReturnValue
+        fun description(desc: String) =
+            descriptionRes(R.string.error_desc_styled_string_fallback_to_arg)
+                .descriptionArgs(desc)
 
         @CheckReturnValue
         fun descriptionRes(@StringRes descRes: Int) = apply { this.descRes = descRes }

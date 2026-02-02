@@ -39,12 +39,6 @@ class NfcReaderModeExtension @Inject constructor(context: Context) : ActivityExt
                 options
             )
         }
-
-        if (Globals.INSTANCE.isDebug) {
-            Handler(Looper.getMainLooper()).postDelayed({
-                activity.onNewNfcSession(NfcSessionBuilder.fakeNfcSession())
-            }, 2000)
-        }
     }
 
     fun disableReaderMode() {

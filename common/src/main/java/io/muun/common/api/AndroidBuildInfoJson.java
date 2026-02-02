@@ -58,6 +58,9 @@ public class AndroidBuildInfoJson {
     @Nullable
     public String release;
 
+    @Nullable
+    public Long date;
+
     /**
      * Json constructor.
      */
@@ -74,19 +77,22 @@ public class AndroidBuildInfoJson {
             @Nullable String bootloader,
             @Nullable String manufacturer,
             @Nullable String brand,
+            @Nullable String display,
             @Nullable String host,
             @Nullable String type,
             @Nullable String radioVersion,
             @Nullable String securityPatch,
             @Nullable String model,
             @Nullable String product,
-            @Nullable String release
+            @Nullable String release,
+            @Nullable Long date
     ) {
         this.abis = abis;
         this.fingerprint = fingerprint;
         this.bootloader = bootloader;
         this.manufacturer = manufacturer;
         this.brand = brand;
+        this.display = display;
         this.host = host;
         this.type = type;
         this.radioVersion = radioVersion;
@@ -94,5 +100,6 @@ public class AndroidBuildInfoJson {
         this.model = model;
         this.product = product;
         this.release = release;
+        this.date = date;
     }
 }

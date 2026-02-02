@@ -4,7 +4,6 @@ import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -213,26 +212,6 @@ public final class Optional<ValueT> {
      */
     public ValueT orElseThrow() throws IllegalStateException {
         return orElseThrow(IllegalStateException::new);
-    }
-
-    /**
-     * If a value is present, returns a sequential {@link Stream} containing
-     * only that value, otherwise returns an empty {@code Stream}.
-     *
-     * <p>This method can be used to transform a {@code Stream} of optional
-     * elements to a {@code Stream} of present value elements:
-     * <pre>{@code
-     *     Stream<Optional<T>> os = ..
-     *     Stream<T> s = os.flatMap(Optional::stream)
-     * }</pre>
-     *
-     */
-    public Stream<ValueT> stream() {
-        if (!isPresent()) {
-            return Stream.empty();
-        } else {
-            return Stream.of(value);
-        }
     }
 
     @Override

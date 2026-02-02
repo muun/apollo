@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.setup_pin_code;
 
 import io.muun.apollo.R;
 import io.muun.apollo.databinding.SetUpPinCodeBinding;
+import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.common.exception.MissingCaseError;
 
@@ -11,7 +12,10 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import androidx.viewbinding.ViewBinding;
+import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+
+import javax.inject.Inject;
 
 
 public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
@@ -22,7 +26,11 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
                 .putExtra(CAN_CANCEL, canCancel);
     }
 
+    @Inject
+    BiometricsController biometricsController;
+
     private static final int AFTER_SUCCESS_DELAY_MS = 200;
+    private static final int PIN_LENGTH = 6;
 
     private SetUpPinCodeBinding binding() {
         return (SetUpPinCodeBinding) getBinding();
@@ -47,6 +55,7 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     protected void initializeUi() {
         super.initializeUi();
         final var binding = binding();
+        binding.setUpPinInput.setPinLength(PIN_LENGTH);
         binding.setUpPinInput.setListener(presenter::submitPin);
         binding.backArrow.setOnClickListener((v) -> presenter.goBack());
     }
@@ -113,7 +122,30 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     @Override
     public void reportPinSuccess() {
         binding().setUpPinInput.setSuccess();
-        new Handler().postDelayed(this::finishOk, AFTER_SUCCESS_DELAY_MS);
+        new Handler().postDelayed(
+                this::setupBiometricsIfPossibleAndFinishOk,
+                AFTER_SUCCESS_DELAY_MS
+        );
+    }
+
+    private void setupBiometricsIfPossibleAndFinishOk() {
+        if (biometricsController.getAuthenticationStatus().getCanAuthenticate()) {
+            biometricsController.authenticate(this,
+                    getString(R.string.biometrics_setup_title),
+                    getString(R.string.biometrics_setup_subtitle),
+                    () -> {
+                        biometricsController.setUserOptInBiometrics(true);
+                        finishOk();
+                        return Unit.INSTANCE;
+                    },
+                    (error) -> {
+                        finishOk();
+                        return Unit.INSTANCE;
+                    }
+            );
+        } else {
+            finishOk();
+        }
     }
 
     private void finishOk() {

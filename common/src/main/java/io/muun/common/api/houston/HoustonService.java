@@ -17,6 +17,7 @@ import io.muun.common.api.CreateSessionRcOkJson;
 import io.muun.common.api.DiffJson;
 import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
+import io.muun.common.api.FeasibleAreaJson;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.FulfillmentPushedJson;
 import io.muun.common.api.IncomingSwapFulfillmentDataJson;
@@ -314,6 +315,9 @@ public interface HoustonService {
 
     @POST("internal/save-sensor-event-batch")
     Observable<Void> saveSensorEventBatch(@Body SensorEventBatchJson sensorEventBatchJson);
+
+    @GET("internal/nfc/feasible-area/{modelName}")
+    Single<FeasibleAreaJson> fetchFeasibleArea(@Path("modelName") String modelName);
 
     // ---------------------------------------------------------------------------------------------
     // Migrations:

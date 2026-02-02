@@ -25,8 +25,8 @@ class NewOperationViewModel @Inject constructor(
 
     private var sensorJob: Job? = null
 
-    private val _gestureEvents = MutableSharedFlow<ISensorEvent>(extraBufferCapacity = 64)
-    private val gestureEvents: Flow<ISensorEvent> = _gestureEvents
+    private val _appEvents = MutableSharedFlow<ISensorEvent>(extraBufferCapacity = 64)
+    private val appEvents: Flow<ISensorEvent> = _appEvents
 
     /**
      * Subscribes to a merged flow of multiple sensor events using a coroutine launched in the given [lifecycleOwner]'s scope.
@@ -48,7 +48,7 @@ class NewOperationViewModel @Inject constructor(
 
         val mergedFlow = merge(
             SensorUtils.mergedSensorFlow(sensorManager),
-            gestureEvents,
+            appEvents,
         )
 
         sensorJob = lifecycleOwner.lifecycleScope.launch {
@@ -72,6 +72,13 @@ class NewOperationViewModel @Inject constructor(
      */
     internal fun onGestureDetected(event: MotionEvent) {
         val gesture = SensorUtils.generateGestureEvent(event)
-        _gestureEvents.tryEmit(gesture)
+        _appEvents.tryEmit(gesture)
+    }
+
+    internal fun generateAppEvent(eventName: String) {
+        val gesture = SensorUtils.generateAppEvent(
+            eventName
+        )
+        _appEvents.tryEmit(gesture)
     }
 }

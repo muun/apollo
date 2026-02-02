@@ -14,7 +14,6 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentView
 import io.muun.apollo.presentation.ui.fragments.operations.OperationsFragment
-import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 
@@ -53,15 +52,12 @@ class OperationsActivity
         OperationsFragment.newInstance()!!
 
     override fun setAnimation() {
-
-        if (OS.supportsActivityTransitions()) {
-            val slide = Slide()
-            slide.slideEdge = Gravity.BOTTOM
-            slide.duration = 300
-            slide.interpolator = DecelerateInterpolator()
-            slide.excludeTarget(android.R.id.statusBarBackground, true)
-            window.exitTransition = slide
-            window.enterTransition = slide
-        }
+        val slide = Slide()
+        slide.slideEdge = Gravity.BOTTOM
+        slide.duration = 300
+        slide.interpolator = DecelerateInterpolator()
+        slide.excludeTarget(android.R.id.statusBarBackground, true)
+        window.exitTransition = slide
+        window.enterTransition = slide
     }
 }

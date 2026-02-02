@@ -14,7 +14,6 @@ import io.muun.apollo.presentation.ui.activity.extension.ApplicationLockExtensio
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension;
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension.Caller;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
-import io.muun.apollo.presentation.ui.activity.extension.OverflowMenuExtension;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension.PermissionRequester;
 import io.muun.apollo.presentation.ui.activity.extension.PersistentPresenterExtension;
@@ -25,7 +24,6 @@ import io.muun.apollo.presentation.ui.base.di.ActivityComponent;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.FloatingOverflowMenu;
 
 import android.Manifest;
 import android.app.Activity;
@@ -45,6 +43,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
@@ -103,9 +102,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     SnackBarExtension snackBarExtension;
 
     @Inject
-    OverflowMenuExtension overflowMenuExtension;
-
-    @Inject
     PersistentPresenterExtension persistentPresenterExtension;
 
     @Inject
@@ -158,7 +154,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         addExtension(permissionManagerExtension);
         addExtension(alertDialogExtension);
         addExtension(snackBarExtension);
-        addExtension(overflowMenuExtension);
         addExtension(persistentPresenterExtension);
         addExtension(screenshotBlockExtension);
     }
@@ -177,10 +172,12 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
             Icepick.restoreInstanceState(this, savedInstanceState);
 
+            // setWindowInsets() should be called before setContentView() (inside setUpLayout()) to
+            // prevent redrawing
+            setWindowInsets();
             setUpLayout();
             initializePresenter(savedInstanceState);
             initializeUi();
-            setWindowInsets();
 
             presenter.onViewCreated(savedInstanceState);
         } catch (SecureStorageError e) {
@@ -211,15 +208,16 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * This ensures proper layout behavior when system UI visibility changes (e.g., keyboard shown).
      */
     protected void setWindowInsets() {
-        EdgeToEdge.enable(this);
-        WindowCompat.setDecorFitsSystemWindows(this.getWindow(), false);
+        if (OS.supportsEdgeToEdge()) {
+            EdgeToEdge.enable(this);
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(this.getWindow(), false);
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
         final View rootView = getWindow().getDecorView().getRootView();
 
         setStatusBarIconsColor();
-
-        if (!OS.supportsEdgeToEdge()) {
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
 
         ViewCompat.setOnApplyWindowInsetsListener(
                 rootView,
@@ -296,7 +294,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
     @Override
     @CallSuper
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onSaveInstanceState");
         super.onSaveInstanceState(outState);
         Icepick.saveInstanceState(this, outState);
@@ -437,7 +435,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
@@ -694,7 +692,14 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
      * Show an indefinite snack bar.
      */
     public void showSnackBar(int messageResId) {
-        snackBarExtension.showSnackBarIndefinite(messageResId);
+        snackBarExtension.showSnackBarIndefinite(getString(messageResId));
+    }
+
+    /**
+     * Show an indefinite snack bar.
+     */
+    public void showSnackBar(CharSequence text) {
+        snackBarExtension.showSnackBarIndefinite(text);
     }
 
     /**
@@ -715,10 +720,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     public PresenterT getPresenter() {
         Timber.d("Lifecycle: " + this + "#getPresenter:" + presenter);
         return presenter; // make available to fragment presenters
-    }
-
-    protected void setUpOverflowMenu(FloatingOverflowMenu.Builder builder) {
-        getExtension(OverflowMenuExtension.class).setUpOverFlowMenu(builder);
     }
 
     protected boolean isPresenterPersistent() {

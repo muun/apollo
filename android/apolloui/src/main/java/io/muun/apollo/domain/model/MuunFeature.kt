@@ -12,8 +12,10 @@ enum class MuunFeature {
     HIGH_FEES_RECEIVE_FLOW,
     EFFECTIVE_FEES_CALCULATION,
     NFC_CARD,
+    NFC_CARD_V2,
     NFC_SENSORS,
     DIAGNOSTIC_MODE,
+    SECURITY_CARDS_MARKETPLACE,
 
     UNSUPPORTED_FEATURE;
 
@@ -29,8 +31,10 @@ enum class MuunFeature {
                 MuunFeatureJson.EFFECTIVE_FEES_CALCULATION -> EFFECTIVE_FEES_CALCULATION
                 MuunFeatureJson.OS_VERSION_DEPRECATED_FLOW -> OS_VERSION_DEPRECATED_FLOW
                 MuunFeatureJson.NFC_CARD -> NFC_CARD
+                MuunFeatureJson.NFC_CARD_V2 -> NFC_CARD_V2
                 MuunFeatureJson.NFC_SENSORS -> NFC_SENSORS
                 MuunFeatureJson.DIAGNOSTIC_MODE -> DIAGNOSTIC_MODE
+                MuunFeatureJson.SECURITY_CARDS_MARKETPLACE -> SECURITY_CARDS_MARKETPLACE
 
                 else -> UNSUPPORTED_FEATURE
             }
@@ -45,8 +49,10 @@ enum class MuunFeature {
                 Libwallet.BackendFeatureEffectiveFeesCalculation -> EFFECTIVE_FEES_CALCULATION
                 Libwallet.BackendFeatureOsVersionDeprecatedFlow -> OS_VERSION_DEPRECATED_FLOW
                 Libwallet.BackendFeatureNfcCard -> NFC_CARD
+                Libwallet.BackendFeatureNfcCardV2 -> NFC_CARD_V2
                 Libwallet.BackendFeatureNfcSensors -> NFC_SENSORS
                 Libwallet.BackendFeatureDiagnosticMode -> DIAGNOSTIC_MODE
+                Libwallet.BackendFeatureSecurityCardsMarketplace -> SECURITY_CARDS_MARKETPLACE
 
                 else -> UNSUPPORTED_FEATURE
             }
@@ -62,8 +68,10 @@ enum class MuunFeature {
             EFFECTIVE_FEES_CALCULATION -> MuunFeatureJson.EFFECTIVE_FEES_CALCULATION
             OS_VERSION_DEPRECATED_FLOW -> MuunFeatureJson.OS_VERSION_DEPRECATED_FLOW
             NFC_CARD -> MuunFeatureJson.NFC_CARD
+            NFC_CARD_V2 -> MuunFeatureJson.NFC_CARD_V2
             NFC_SENSORS -> MuunFeatureJson.NFC_SENSORS
             DIAGNOSTIC_MODE -> MuunFeatureJson.DIAGNOSTIC_MODE
+            SECURITY_CARDS_MARKETPLACE -> MuunFeatureJson.SECURITY_CARDS_MARKETPLACE
 
             UNSUPPORTED_FEATURE -> MuunFeatureJson.UNSUPPORTED_FEATURE
         }
@@ -78,8 +86,10 @@ enum class MuunFeature {
             EFFECTIVE_FEES_CALCULATION -> Libwallet.BackendFeatureEffectiveFeesCalculation
             OS_VERSION_DEPRECATED_FLOW -> Libwallet.BackendFeatureOsVersionDeprecatedFlow
             NFC_CARD -> Libwallet.BackendFeatureNfcCard
+            NFC_CARD_V2 -> Libwallet.BackendFeatureNfcCardV2
             NFC_SENSORS -> Libwallet.BackendFeatureNfcSensors
             DIAGNOSTIC_MODE -> Libwallet.BackendFeatureDiagnosticMode
+            SECURITY_CARDS_MARKETPLACE -> Libwallet.BackendFeatureSecurityCardsMarketplace
 
             UNSUPPORTED_FEATURE -> Libwallet.BackendFeatureUnsupported
         }

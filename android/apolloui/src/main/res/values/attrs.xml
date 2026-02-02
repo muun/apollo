@@ -46,6 +46,18 @@
         <attr name="textMaxWidthPercent" format="float"/>
     </declare-styleable>
 
+    <declare-styleable name="MuunSwitchSettingItem">
+        <attr name="checked" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="MuunPinInput">
+        <attr name="pinLength" format="integer"/>
+    </declare-styleable>
+
+    <declare-styleable name="MuunPinIndicator">
+        <attr name="length" format="integer"/>
+    </declare-styleable>
+
     <!-- For reason can't be called just 'picture' (probably clashes with some other attr) -->
     <attr name="pictureDrawable" format="reference" />
     <attr name="expandedLabel" format="reference" />

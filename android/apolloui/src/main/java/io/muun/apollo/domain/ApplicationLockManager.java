@@ -97,6 +97,11 @@ public class ApplicationLockManager {
         return verified;
     }
 
+    public synchronized void unlockWithBiometrics() {
+        unsetLock();
+        resetRemainingAttempts();
+    }
+
     /**
      * Automatically set the application locked state after a delay. Can be canceled (see below).
      */
@@ -128,6 +133,10 @@ public class ApplicationLockManager {
 
     public int getMaxAttempts() {
         return MAX_ATTEMPTS;
+    }
+
+    public int getPinLength() {
+        return pinManager.getPinLength();
     }
 
     public synchronized int getRemainingAttempts() {

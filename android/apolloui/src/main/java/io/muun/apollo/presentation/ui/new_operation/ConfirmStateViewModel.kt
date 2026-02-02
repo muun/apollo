@@ -15,29 +15,26 @@ class ConfirmStateViewModel private constructor(
     val validated: Validated,
     val note: String,
     val update: String,
-    val has2fa: Boolean,
 ) {
 
     companion object {
 
-        fun fromConfirmState(state: ConfirmState, has2fa: Boolean) =
+        fun fromConfirmState(state: ConfirmState) =
             ConfirmStateViewModel(
                 state.resolved,
                 state.amountInfo,
                 state.validated,
                 state.note,
                 state.update,
-                has2fa
             )
 
-        fun fromConfirmLightningState(state: ConfirmLightningState, has2fa: Boolean) =
+        fun fromConfirmLightningState(state: ConfirmLightningState) =
             ConfirmStateViewModel(
                 state.resolved,
                 state.amountInfo,
                 state.validated,
                 state.note,
                 state.update,
-                has2fa
             )
     }
 

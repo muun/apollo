@@ -225,8 +225,8 @@ public class IntegrityAction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class IntegrityFailureMessage {
-        public IntegrityCheck check;
-        public IntegrityStatus status;
+        public final IntegrityCheck check;
+        public final IntegrityStatus status;
 
         public IntegrityFailureMessage(IntegrityCheck check, IntegrityStatus status) {
             this.check = check;

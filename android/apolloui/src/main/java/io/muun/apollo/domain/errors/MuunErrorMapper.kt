@@ -47,6 +47,7 @@ object MuunErrorMapper {
         ErrorCode.CREDENTIALS_DONT_MATCH to { CredentialsDontMatchError() },
     )
 
+    // TODO: values() should be changed when updated kotlin to 1.9.0 or superior
     private val errorCodeByNumericCode: Map<Long, ErrorCode> =
         ErrorCode.values().associateBy { it.code.toLong() }
 

@@ -16,7 +16,7 @@ type HoustonService interface {
 	SubmitDiagnosticsScanData(req model.DiagnosticScanDataJson) error
 	ChallengeSecurityCardPair() (model.ChallengeSecurityCardPairJson, error)
 	RegisterSecurityCard(req model.RegisterSecurityCardJson) (model.RegisterSecurityCardOkJson, error)
-	ChallengeSecurityCardSign() (model.ChallengeSecurityCardSignJson, error)
+	ChallengeSecurityCardSign(req model.ChallengeSecurityCardSignJson) (model.ChallengeSecurityCardSignResponseJson, error)
 	SolveSecurityCardChallenge(req model.SolveSecurityCardChallengeJson) error
 }
 
@@ -122,7 +122,9 @@ func (h *HoustonClient) RegisterSecurityCard(
 	panic("implement me")
 }
 
-func (h *HoustonClient) ChallengeSecurityCardSign() (model.ChallengeSecurityCardSignJson, error) {
+func (h *HoustonClient) ChallengeSecurityCardSign(
+	req model.ChallengeSecurityCardSignJson,
+) (model.ChallengeSecurityCardSignResponseJson, error) {
 	//TODO implement me
 	panic("implement me")
 }

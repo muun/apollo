@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.action.realtime
 
 import io.muun.apollo.domain.action.base.BaseAsyncAction1
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
-import io.muun.apollo.domain.libwallet.LibwalletService
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.utils.toVoid
 import rx.Observable
 import javax.inject.Inject
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class PreloadFeeDataAction @Inject constructor(
     private val syncRealTimeFees: SyncRealTimeFees,
-    private val libwalletService: LibwalletService,
+    private val feeBumpFunctionsProvider: FeeBumpFunctionsProvider,
 ) : BaseAsyncAction1<FeeBumpRefreshPolicy, Void>() {
 
     /**
@@ -25,7 +25,7 @@ class PreloadFeeDataAction @Inject constructor(
 
     fun runIfDataIsInvalidated(refreshPolicy: FeeBumpRefreshPolicy) {
         super.run(Observable.defer {
-            if (libwalletService.areFeeBumpFunctionsInvalidated()) {
+            if (feeBumpFunctionsProvider.areFeeBumpFunctionsInvalidated()) {
                 return@defer syncRealTimeFees.sync(refreshPolicy)
             } else {
                 return@defer Observable.just(null)

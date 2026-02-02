@@ -11,10 +11,10 @@ import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.realtime.SyncRealTimeFees
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
-import io.muun.apollo.domain.libwallet.LibwalletService
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeFees
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.common.model.SizeForAmount
 import io.muun.common.model.UtxoStatus
@@ -32,7 +32,7 @@ class SyncRealTimeFeesTest: BaseTest() {
     private val transactionSizeRepository = mockk<TransactionSizeRepository>(relaxed = true)
     private val houstonClient = mockk<HoustonClient>()
     private val featureSelector = mockk<FeatureSelector>(relaxed = true)
-    private val libwalletService = mockk<LibwalletService>(relaxed = true)
+    private val feeBumpFunctionsProvider = mockk<FeeBumpFunctionsProvider>(relaxed = true)
 
     private lateinit var syncRealTimeFees: SyncRealTimeFees
 
@@ -68,7 +68,7 @@ class SyncRealTimeFeesTest: BaseTest() {
             minFeeRateRepository,
             transactionSizeRepository,
             featureSelector,
-            libwalletService
+            feeBumpFunctionsProvider
         )
     }
 
@@ -85,7 +85,7 @@ class SyncRealTimeFeesTest: BaseTest() {
 
         verify(exactly = 1) { feeWindowRepository.store(feeWindow) }
         verify(exactly = 1) { minFeeRateRepository.store(minFeeRateInWeightUnits) }
-        verify(exactly = 1) { libwalletService.persistFeeBumpFunctions(
+        verify(exactly = 1) { feeBumpFunctionsProvider.persistFeeBumpFunctions(
             feeBumpFunctions,
             FeeBumpRefreshPolicy.PERIODIC
         ) }

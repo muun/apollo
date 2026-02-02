@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import butterknife.BindColor;
 import butterknife.BindView;
 
@@ -97,7 +98,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.edit_username_save:
 
@@ -147,7 +148,7 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         final String firstNameText = firstName.getText().toString();
         final String lastNameText = lastName.getText().toString();
 
-        final boolean bothNotEmpty = firstNameText.length() > 0 && lastNameText.length() > 0;
+        final boolean bothNotEmpty = !firstNameText.isEmpty() && !lastNameText.isEmpty();
         toggleMenuButtonEnabled(saveMenuItem, bothNotEmpty);
     }
 

@@ -52,6 +52,7 @@ import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.ChangePasswordFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.StartPasswordChangeFragment;
 import io.muun.apollo.presentation.ui.settings.edit_password.success.EditPasswordSuccessFragment;
+import io.muun.apollo.presentation.ui.settings.flags.DisableFeatureFlagsFragment;
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment;
 import io.muun.apollo.presentation.ui.show_qr.bitcoin.BitcoinAddressQrFragment;
 import io.muun.apollo.presentation.ui.show_qr.ln.LnInvoiceQrFragment;
@@ -173,6 +174,8 @@ public interface FragmentComponent {
     void inject(LightningSettingsFragment lightningSettingsFragment);
 
     void inject(BitcoinSettingsFragment bitcoinSettingsFragment);
+
+    void inject(DisableFeatureFlagsFragment disableFeatureFlagsFragment);
 
     void inject(TaprootIntroFragment taprootIntroFragment);
 

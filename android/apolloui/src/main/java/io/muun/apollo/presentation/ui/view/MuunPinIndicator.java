@@ -1,14 +1,20 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunPinIndicatorBinding;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.BindDrawable;
+import android.widget.LinearLayout;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 import rx.functions.Action0;
 
 import java.util.ArrayList;
@@ -16,6 +22,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public class MuunPinIndicator extends MuunView {
+
+    static final ViewProps<MuunPinIndicator> viewProps = new ViewProps.Builder<MuunPinIndicator>()
+            .addInt(R.attr.length, MuunPinIndicator::setLength)
+            .build();
 
     public enum PinIndicatorState {
         NORMAL,
@@ -25,17 +35,24 @@ public class MuunPinIndicator extends MuunView {
 
     public static final int FLASH_DURATION_MS = 1000;
 
-    @BindDrawable(R.drawable.muun_bubble_on)
-    Drawable bubbleBackgroundOn;
+    private final Drawable bubbleBackgroundOn =
+            ContextCompat.getDrawable(getContext(), R.drawable.muun_bubble_on);
 
-    @BindDrawable(R.drawable.muun_bubble_off)
-    Drawable bubbleBackgroundOff;
+    private final Drawable bubbleBackgroundOff =
+            ContextCompat.getDrawable(getContext(), R.drawable.muun_bubble_off);
 
-    @BindDrawable(R.drawable.muun_bubble_success)
-    Drawable bubbleBackgroundSuccess;
+    private final Drawable bubbleBackgroundSuccess =
+            ContextCompat.getDrawable(getContext(), R.drawable.muun_bubble_success);
 
-    @BindDrawable(R.drawable.muun_bubble_error)
-    Drawable bubbleBackgroundError;
+    private final Drawable bubbleBackgroundError =
+            ContextCompat.getDrawable(getContext(), R.drawable.muun_bubble_error);
+
+    private MuunPinIndicatorBinding binding;
+
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return MuunPinIndicatorBinding::bind;
+    }
 
     private int progress;
     private PinIndicatorState state;
@@ -60,23 +77,10 @@ public class MuunPinIndicator extends MuunView {
     }
 
     @Override
-    protected void setUp(Context context, @Nullable AttributeSet attrs) {
+    protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
-        final ViewGroup root = getRoot();
-
-        // NOTE: could be adapted to hold a variable number of bubbles. Not necessary for now.
-        final int numBubbles = root.getChildCount();
-        bubbles = new ArrayList<>(numBubbles);
-
-        for (int i = 0; i < numBubbles; i++) {
-            bubbles.add(root.getChildAt(i));
-        }
-
-        state = PinIndicatorState.NORMAL;
-        progress = 0;
-
-        updateBubbles();
+        binding = (MuunPinIndicatorBinding) getBinding();
+        viewProps.transfer(attrs, this);
     }
 
     /**
@@ -103,6 +107,55 @@ public class MuunPinIndicator extends MuunView {
 
         this.progress = progress;
         updateBubbles();
+    }
+
+    /**
+     * Set the number of bubbles to draw.
+     */
+    public void setLength(int length) {
+        final ViewGroup root = binding.root;
+
+        if (bubbles != null) {
+            bubbles.clear();
+        }
+        bubbles = createBubbleViews(length);
+
+        root.removeAllViews();
+        for (int i = 0; i < bubbles.size(); i++) {
+            root.addView(bubbles.get(i));
+        }
+        updateBubbles();
+    }
+
+    /**
+     * Returns the number of bubbles currently displayed.
+     */
+    public int getLength() {
+        return bubbles.size();
+    }
+
+    private List<View> createBubbleViews(int size) {
+        final int bubbleSize = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                12.f,
+                getContext().getResources().getDisplayMetrics()
+        );
+
+        final ArrayList<View> bubbleViews = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            bubbleViews.add(createBubbleView(bubbleSize));
+        }
+        return bubbleViews;
+    }
+
+    private View createBubbleView(int size) {
+        final View bubble = new View(getContext());
+        final LinearLayout.LayoutParams layoutParams =
+                new LinearLayout.LayoutParams(size, size);
+        layoutParams.setMarginEnd(size);
+        bubble.setLayoutParams(layoutParams);
+
+        return bubble;
     }
 
     private void resetStateAfterDelay(@Nullable Action0 onComplete) {

@@ -2,6 +2,7 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -17,6 +19,7 @@ import rx.functions.Action0;
 import timber.log.Timber;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 
 public class MuunLockOverlay extends MuunView {
@@ -28,10 +31,15 @@ public class MuunLockOverlay extends MuunView {
          * This method will be called once a pin is fully/completely entered.
          */
         void onPinEntered(String pin);
+
+        void onUnlockUsingBiometrics();
     }
 
     @BindView(R.id.unlock_pin_input)
     MuunPinInput pinInput;
+
+    @Inject
+    BiometricsController biometricsController;
 
     private LockOverlayListener listener;
 
@@ -57,8 +65,12 @@ public class MuunLockOverlay extends MuunView {
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         pinInput.setListener(this::onPinEntered);
+        pinInput.setBiometricsRequestedListener(this::onUnlockUsingBiometrics);
     }
 
     /**
@@ -75,6 +87,27 @@ public class MuunLockOverlay extends MuunView {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
+
+        if (biometricsController.hasUserOptedInBiometrics()) {
+            final var windowReadyListener = new ViewTreeObserver.OnWindowFocusChangeListener() {
+                @Override
+                public void onWindowFocusChanged(boolean hasFocus) {
+                    if (hasFocus) {
+                        getActivity().getWindow()
+                                .getDecorView()
+                                .getViewTreeObserver()
+                                .removeOnWindowFocusChangeListener(this);
+
+                        onUnlockUsingBiometrics();
+                    }
+                }
+            };
+
+            getActivity().getWindow()
+                    .getDecorView()
+                    .getViewTreeObserver()
+                    .addOnWindowFocusChangeListener(windowReadyListener);
+        }
     }
 
     /**
@@ -119,6 +152,10 @@ public class MuunLockOverlay extends MuunView {
         new Handler().postDelayed(this::resetLastPin, CONCURRENT_ACCESS_WINDOW_MS);
     }
 
+    public void setPinLength(int length) {
+        pinInput.setPinLength(length);
+    }
+
     public void setListener(LockOverlayListener lockOverlayListener) {
         this.listener = lockOverlayListener;
     }
@@ -143,6 +180,12 @@ public class MuunLockOverlay extends MuunView {
             lastPin = pin;
 
             this.listener.onPinEntered(pin);
+        }
+    }
+
+    private void onUnlockUsingBiometrics() {
+        if (this.listener != null) {
+            this.listener.onUnlockUsingBiometrics();
         }
     }
 

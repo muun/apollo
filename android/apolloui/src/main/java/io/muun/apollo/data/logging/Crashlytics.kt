@@ -3,10 +3,10 @@ package io.muun.apollo.data.logging
 import android.app.Application
 import android.os.Build
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.installations.FirebaseInstallations
 import io.muun.apollo.data.afs.EarlyMetricsProvider
 import io.muun.apollo.data.analytics.AnalyticsProvider
 import io.muun.apollo.data.os.GooglePlayServicesHelper
-import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.action.debug.ForceErrorReportAction
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.fcm.FcmTokenNotAvailableError
@@ -56,6 +56,16 @@ object Crashlytics {
 
         this.defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(customUncaughtExceptionHandler)
+
+        FirebaseInstallations.getInstance().id
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val fid = task.result
+                    crashlytics?.setCustomKey("instanceId", fid)
+                } else {
+                    crashlytics?.setCustomKey("instanceId", "unavailable")
+                }
+            }
     }
 
     // enhance crashlytics crashes with custom keys
@@ -149,12 +159,8 @@ object Crashlytics {
         )
     }
 
-    private fun getSupportedAbi() =
-        if (OS.supportsSupportedAbis()) {
-            Build.SUPPORTED_ABIS[0]
-        } else {
-            "api19"
-        }
+    private fun getSupportedAbi(): String =
+        Build.SUPPORTED_ABIS[0]
 
     /**
      * Send a "fallback" reporting error to Crashlytics. This means that there was an error while

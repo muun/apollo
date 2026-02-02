@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/muun_screen_margin">
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/disable_feature_flags_info"
+            android:textColor="@color/text_secondary_color"
+            android:gravity="start"
+            android:textSize="16sp" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/disable_feature_flags_security_card_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/disable_feature_flags_security_card"
+            android:layout_marginTop="@dimen/muun_screen_margin"
+            android:layout_marginBottom="@dimen/muun_screen_margin"
+            android:textSize="@dimen/muun_text_size_body" />
+
+</LinearLayout>

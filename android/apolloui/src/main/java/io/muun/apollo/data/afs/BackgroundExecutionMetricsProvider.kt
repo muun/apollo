@@ -1,12 +1,18 @@
 package io.muun.apollo.data.afs
 
+import io.muun.apollo.data.os.GooglePlayHelper
+import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.domain.model.BackgroundEvent
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 class BackgroundExecutionMetricsProvider @Inject constructor(
-    private val metricsProvider: MetricsProvider
+    private val metricsProvider: MetricsProvider,
+    private val googlePlayServicesHelper: GooglePlayServicesHelper,
+    private val googlePlayHelper: GooglePlayHelper,
 ) {
+
+    private val playServicesInfo = googlePlayServicesHelper.getPlayServicesInfo()
 
     fun run(): BackgroundExecutionMetrics =
         BackgroundExecutionMetrics(
@@ -33,9 +39,9 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             metricsProvider.bridgeEnabled,
             metricsProvider.bridgeDaemonStatus,
             metricsProvider.developerEnabled,
-            metricsProvider.proxyHttp,
-            metricsProvider.proxyHttps,
-            metricsProvider.proxySocks,
+            metricsProvider.proxyHttpType,
+            metricsProvider.proxyHttpsType,
+            metricsProvider.proxySocksType,
             metricsProvider.autoDateTime,
             metricsProvider.autoTimeZone,
             metricsProvider.timeZoneId,
@@ -55,7 +61,18 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             metricsProvider.latestBackgroundTimes,
             metricsProvider.internalLevel.let { "${it.first};${it.second}" },
             metricsProvider.batteryRemainState,
-            metricsProvider.isCharging
+            metricsProvider.isCharging,
+            metricsProvider.defaultFsDate,
+            metricsProvider.androidFsDate,
+            metricsProvider.hasUniqueBaseDateInExternalStorage,
+            metricsProvider.externalStorageMinDate,
+            metricsProvider.hasNewEntriesInAppExternalStorage,
+            playServicesInfo.versionCode,
+            playServicesInfo.versionName,
+            playServicesInfo.clientVersionCode,
+            googlePlayHelper.versionCode,
+            googlePlayHelper.versionName,
+            metricsProvider.buildInfo
         )
 
     @Suppress("ArrayInDataClass")
@@ -84,9 +101,9 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val bridgeEnabled: Int,
         private val bridgeDaemonStatus: String,
         private val developerEnabled: Int,
-        private val proxyHttp: String,
-        private val proxyHttps: String,
-        private val proxySocks: String,
+        private val proxyHttpType: Int,
+        private val proxyHttpsType: Int,
+        private val proxySocksType: Int,
         private val autoDateTime: Int,
         private val autoTimeZone: Int,
         private val timeZoneId: String,
@@ -106,6 +123,17 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val bkgTimes: List<BackgroundEvent>,
         private val internalLevel: String,
         private val batteryRemainState: String,
-        private val isCharging: Boolean?
+        private val isCharging: Boolean?,
+        private val defaultFsDate: Long,
+        private val androidFsDate: Long,
+        private var hasUniqueBaseDateInExternalStorage: Int,
+        private var externalStorageMinDate: Long,
+        private var hasNewEntriesInAppExternalStorage: Int,
+        private var googlePlayServicesVersionCode: Long,
+        private var googlePlayServicesVersionName: String,
+        private var googlePlayServicesClientVersionCode: Int,
+        private var googlePlayVersionCode: Long,
+        private var googlePlayVersionName: String,
+        private var buildInfo: BuildInfo
     )
 }

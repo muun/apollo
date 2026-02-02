@@ -14,7 +14,7 @@ public class AutoSizeDecoration implements DecorationTransformation {
     private final TextPaint paint = new TextPaint();
     private final int maxSizePx;
     private float maxWidthPx;
-    private float minSizePx;
+    private final float minSizePx;
 
     private DecorationHandler target;
     private String currentText;

@@ -18,7 +18,11 @@ const cla = 0x00
 // Most of the instructions are described in the ISO7816 interface document.
 // https://docs.oracle.com/en/java/javacard/3.2/jcapi/api_classic/javacard/framework/ISO7816.html
 const insSelect = 0xA4
+
+// Standard JavaCard response status words
 const responseOk = 0x9000
+const swWrongData = 0x6A80
+const swInsNotSupported = 0x6D00
 
 const (
 	iso7816OffsetIns   = 1
@@ -30,7 +34,7 @@ const (
 	hmacSha1SizeInBytes = 20
 )
 
-type SmartCard struct {
+type JavaCard struct {
 	nfcBridge app_provided_data.NfcBridge
 }
 
@@ -39,12 +43,12 @@ type CardResponse struct {
 	StatusCode uint16
 }
 
-func newSmartCard(nfcBridge app_provided_data.NfcBridge) *SmartCard {
-	return &SmartCard{nfcBridge: nfcBridge}
+func newJavaCard(nfcBridge app_provided_data.NfcBridge) *JavaCard {
+	return &JavaCard{nfcBridge: nfcBridge}
 }
 
-// selectApplet sends the ISO select apdu command with the specified AppletId to this SmartCard
-func (c *SmartCard) selectApplet(appletId string) error {
+// selectApplet sends the ISO select apdu command with the specified AppletId to this JavaCard
+func (c *JavaCard) selectApplet(appletId string) error {
 
 	selectAPDU, err := newSelectAPDU(appletId)
 	if err != nil {
@@ -67,7 +71,7 @@ func (c *SmartCard) selectApplet(appletId string) error {
 	return nil
 }
 
-func (c *SmartCard) transmit(message []byte) (*CardResponse, error) {
+func (c *JavaCard) transmit(message []byte) (*CardResponse, error) {
 	resp, err := c.nfcBridge.Transmit(message)
 	if err != nil {
 		return nil, err

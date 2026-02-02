@@ -11,14 +11,13 @@ import io.muun.apollo.presentation.ui.utils.OS;
 
 import android.os.Bundle;
 import icepick.State;
+import kotlin.Pair;
 import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import timber.log.Timber;
 
 import javax.inject.Inject;
-
-import static io.muun.apollo.presentation.ui.scan_qr.ScanQrView.ARG_LNURL_FLOW;
 
 @PerActivity
 public class ScanQrPresenter extends BasePresenter<ScanQrView> {
@@ -40,8 +39,8 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
     public void setUp(Bundle arguments) {
         super.setUp(arguments);
 
-        if (arguments.getString(ARG_LNURL_FLOW) != null) {
-            this.lnUrlFlow = LnUrlFlow.valueOf(arguments.getString(ARG_LNURL_FLOW));
+        if (arguments.getString(ScanQrView.ARG_LNURL_FLOW) != null) {
+            this.lnUrlFlow = LnUrlFlow.valueOf(arguments.getString(ScanQrView.ARG_LNURL_FLOW));
 
             if (lnUrlFlow == LnUrlFlow.STARTED_FROM_RECEIVE) {
                 setUpClipboard();
@@ -113,7 +112,8 @@ public class ScanQrPresenter extends BasePresenter<ScanQrView> {
             analytics.report(new AnalyticsEvent.S_NEW_OP_ERROR(
                     AnalyticsEvent.S_NEW_OP_ORIGIN.fromModel(origin),
                     AnalyticsEvent.S_NEW_OP_ERROR_TYPE.INVALID_ADDRESS,
-                    text
+                    ex,
+                    new Pair<String, Object>("text", text)
             ));
 
             return;

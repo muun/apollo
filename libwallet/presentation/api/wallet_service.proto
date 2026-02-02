@@ -12,6 +12,7 @@ service WalletService {
   rpc ResetSecurityCard(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc SignMessageSecurityCard(SignMessageSecurityCardRequest) returns (SignMessageSecurityCardResponse);
   rpc SetupSecurityCardV2(google.protobuf.Empty) returns (SetupSecurityCardResponse);
+  rpc SignMessageSecurityCardV2(google.protobuf.Empty) returns (google.protobuf.Empty);
 
   // Diagnostic Mode API
   rpc StartDiagnosticSession(google.protobuf.Empty) returns (DiagnosticSessionDescriptor);
@@ -30,6 +31,7 @@ service WalletService {
   rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
   rpc SaveBatch(SaveBatchRequest) returns (google.protobuf.Empty);
   rpc GetBatch(GetBatchRequest) returns (GetBatchResponse);
+  rpc GetByPrefix(GetByPrefixRequest) returns (GetBatchResponse);
 }
 
 enum ErrorType {
@@ -179,4 +181,8 @@ message GetBatchRequest {
 
 message GetBatchResponse {
   Struct items = 1;
+}
+
+message GetByPrefixRequest {
+  string prefix = 1;
 }

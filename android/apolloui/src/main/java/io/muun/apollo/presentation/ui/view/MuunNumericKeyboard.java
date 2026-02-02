@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
 import android.content.Context;
@@ -11,11 +12,17 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewTreeLifecycleOwner;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.BindViews;
 
+import java.lang.ref.WeakReference;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 
 public class MuunNumericKeyboard extends MuunView {
@@ -24,6 +31,8 @@ public class MuunNumericKeyboard extends MuunView {
         void onNumberKey(int number);
 
         void onDeleteKey();
+
+        void onBiometricsKey();
     }
 
     private static final String[] NUMBER_KEY_LETTERS = {
@@ -55,11 +64,19 @@ public class MuunNumericKeyboard extends MuunView {
     })
     TextView[] numberKeys;
 
+    @BindView(R.id.key_biometrics)
+    ImageView biometricsKey;
+
     @BindView(R.id.key_del)
     ImageView deleteKey;
 
     @BindColor(R.color.text_secondary_color)
     int alphabetCharactersColor;
+
+    @Inject
+    BiometricsController biometricsController;
+
+    private BiometricsKeyVisibilityHandler biometricsKeyVisibilityHandler;
 
     private OnKeyListener listener;
 
@@ -83,6 +100,9 @@ public class MuunNumericKeyboard extends MuunView {
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        if (getComponent() != null) {
+            getComponent().inject(this);
+        }
 
         for (int i = 0; i < numberKeys.length; i++) {
             final int number = i;
@@ -132,6 +152,12 @@ public class MuunNumericKeyboard extends MuunView {
         }
     }
 
+    private void onBiometricsKeyClicked() {
+        if (listener != null) {
+            listener.onBiometricsKey();
+        }
+    }
+
     private void onDeleteKeyClicked() {
         if (listener != null && deleteKey.isEnabled()) {
             listener.onDeleteKey();
@@ -161,5 +187,57 @@ public class MuunNumericKeyboard extends MuunView {
         );
 
         super.onMeasure(minMeasuredWidth, heightMeasureSpec);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        biometricsKeyVisibilityHandler =
+                new BiometricsKeyVisibilityHandler(ViewTreeLifecycleOwner.get(this));
+        biometricsKeyVisibilityHandler.attach();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        if (biometricsKeyVisibilityHandler != null) {
+            biometricsKeyVisibilityHandler.detach();
+            biometricsKeyVisibilityHandler = null;
+        }
+    }
+
+    private class BiometricsKeyVisibilityHandler implements DefaultLifecycleObserver {
+        private final WeakReference<LifecycleOwner> lifecycleOwner;
+
+        BiometricsKeyVisibilityHandler(LifecycleOwner lifecycleOwner) {
+            this.lifecycleOwner = new WeakReference<>(lifecycleOwner);
+        }
+
+        @Override
+        public void onResume(@NonNull LifecycleOwner owner) {
+            if (biometricsController.hasUserOptedInBiometrics()
+                    && biometricsController.getAuthenticationStatus().getCanAuthenticate()) {
+                biometricsKey.setOnClickListener(ignored -> onBiometricsKeyClicked());
+                biometricsKey.setVisibility(View.VISIBLE);
+            } else {
+                biometricsKey.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        public void attach() {
+            final LifecycleOwner lifecycleOwner = this.lifecycleOwner.get();
+            if (lifecycleOwner != null) {
+                lifecycleOwner.getLifecycle().addObserver(this);
+            }
+        }
+
+        public void detach() {
+            final LifecycleOwner lifecycleOwner = this.lifecycleOwner.get();
+            if (lifecycleOwner != null) {
+                lifecycleOwner.getLifecycle().removeObserver(this);
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ type SecurityCardMetadata struct {
 	GlobalPublicKeyInHex string
 	CardVendorInHex      string
 	CardModelInHex       string
-	FirmwareVersion      int
-	UsageCount           int
+	FirmwareVersion      uint16
+	UsageCount           uint16
 	LanguageCodeInHex    string
 }

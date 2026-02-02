@@ -4,7 +4,6 @@ package io.muun.apollo.presentation.ui.view;
 import io.muun.apollo.R;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.UserFacingError;
-import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.exception.MissingCaseError;
 
@@ -64,6 +63,7 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
             LINEAR_OUT_SLOW_IN_INTERPOLATOR = new LinearOutSlowInInterpolator();
 
     public interface OnChangeListener {
+
         /**
          * This method is called to notify you that the content for this input has
          * changed. Parameter newText contains the new input/content.
@@ -72,6 +72,7 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
     }
 
     public interface OnKeyboardNextListener {
+
         /**
          * This method is called to notify you that the NEXT key/action has been pressed on the IME.
          * See: {@link TextView#setOnEditorActionListener(TextView.OnEditorActionListener)}.
@@ -80,6 +81,7 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
     }
 
     public interface OnKeyboardDoneListener {
+
         /**
          * This method is called to notify you that the DONE key/action has been pressed on the IME.
          * See: {@link TextView#setOnEditorActionListener(TextView.OnEditorActionListener)}.
@@ -110,11 +112,8 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
                 .addRefJava(android.R.attr.nextFocusForward, MuunTextInput::setNextFocusForwardId)
                 .addSizeJava(android.R.attr.textSize, MuunTextInput::setTextSize)
                 .addEnum(android.R.attr.textStyle, MuunTextInput::setTextStyle)
-                .addEnum(android.R.attr.imeOptions, MuunTextInput::setImeOptions);
-
-        if (OS.supportsLetterSpacing()) {
-            builder.addFloat(android.R.attr.letterSpacing, MuunTextInput::setLetterSpacing);
-        }
+                .addEnum(android.R.attr.imeOptions, MuunTextInput::setImeOptions)
+                .addFloat(android.R.attr.letterSpacing, MuunTextInput::setLetterSpacing);
 
         viewProps = builder.build();
     }
@@ -454,9 +453,7 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
      * Set the letter spacing, on API levels that support it.
      */
     public void setLetterSpacing(float letterSpacing) {
-        if (OS.supportsLetterSpacing()) {
-            editText.setLetterSpacing(letterSpacing);
-        }
+        editText.setLetterSpacing(letterSpacing);
     }
 
     /**

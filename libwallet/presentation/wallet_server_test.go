@@ -5,14 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/muun/libwallet/data/keys"
-	"github.com/muun/libwallet/domain/action/challenge_keys"
-	"github.com/muun/libwallet/domain/action/recovery"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/resolver"
-	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"os"
@@ -21,6 +13,15 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/muun/libwallet/data/keys"
+	"github.com/muun/libwallet/domain/action/challenge_keys"
+	"github.com/muun/libwallet/domain/action/recovery"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/resolver"
+	"google.golang.org/grpc/status"
 
 	"github.com/muun/libwallet"
 	apierrors "github.com/muun/libwallet/errors"
@@ -413,6 +414,118 @@ func TestSaveBatchAndGetBatch(t *testing.T) {
 
 }
 
+func TestGetByPrefix(t *testing.T) {
+	t.Run("success when getting key-value pairs by prefix", func(t *testing.T) {
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
+
+		// Initialize grpc client of WalletService with bufconn
+		conn, ctx := newGrpcClient(t)
+		defer conn.Close()
+		client := api.NewWalletServiceClient(conn)
+
+		// Create Struct message with a map of key-values
+		items := map[string]any{
+			"featureFlag:useDiagnosticMode":     true,
+			"featureFlag:isDogfood":             false,
+			"featureFlag:supportsNfc":           true,
+			"featureFlag:utxoSelectionStrategy": "LIFO",
+			// Add a key that doesn't match the prefix
+			"email": "some@email.com",
+		}
+		protoItems, err := toProtoValueMap(items)
+		if err != nil {
+			t.Fatalf("failed to create Struct for items: %v", err)
+		}
+
+		// Create SaveBatchRequest
+		saveBatchReq := api.SaveBatchRequest_builder{
+			Items: protoItems,
+		}.Build()
+
+		// Call grpc client with SaveBatchRequest
+		_, err = client.SaveBatch(ctx, saveBatchReq)
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		// Create GetByPrefixRequest
+		getByPrefixReq := api.GetByPrefixRequest_builder{
+			Prefix: "featureFlag:",
+		}.Build()
+
+		// Call grpc client with GetByPrefixRequest
+		getByPrefixResponse, err := client.GetByPrefix(ctx, getByPrefixReq)
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		// Validate returned data
+		responseFields := getByPrefixResponse.GetItems().GetFields()
+
+		if len(responseFields) != 4 {
+			t.Fatalf("want 4 items, but got %v", len(responseFields))
+		}
+
+		_, emailIsPresent := responseFields["email"]
+		if emailIsPresent {
+			t.Fatalf("unexpected key 'email' in response")
+		}
+
+		var want any
+		var got any
+
+		want = true
+		got = responseFields["featureFlag:useDiagnosticMode"].GetBoolValue()
+		if got != want {
+			t.Fatalf("want %v, but got %v for featureFlag:useDiagnosticMode", want, got)
+		}
+
+		want = false
+		got = responseFields["featureFlag:isDogfood"].GetBoolValue()
+		if got != want {
+			t.Fatalf("want %v, but got %v for featureFlag:isDogfood", want, got)
+		}
+
+		want = true
+		got = responseFields["featureFlag:supportsNfc"].GetBoolValue()
+		if got != want {
+			t.Fatalf("want %v, but got %v for featureFlag:supportsNfc", want, got)
+		}
+
+		want = "LIFO"
+		got = responseFields["featureFlag:utxoSelectionStrategy"].GetStringValue()
+		if got != want {
+			t.Fatalf("want %v, but got %v for featureFlag:utxoSelectionStrategy", want, got)
+		}
+	})
+
+	t.Run("success when no keys match prefix", func(t *testing.T) {
+		setupKeyValueStorage(t, buildStorageSchemaForTests())
+
+		// Initialize grpc client of WalletService with bufconn
+		conn, ctx := newGrpcClient(t)
+		defer conn.Close()
+		client := api.NewWalletServiceClient(conn)
+
+		// Create GetByPrefixRequest
+		getByPrefixReq := api.GetByPrefixRequest_builder{
+			Prefix: "nonExistentPrefix:",
+		}.Build()
+
+		// Call grpc client with GetByPrefixRequest
+		getByPrefixResponse, err := client.GetByPrefix(ctx, getByPrefixReq)
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		// Validate that the map is empty
+		responseFields := getByPrefixResponse.GetItems().GetFields()
+		if len(responseFields) != 0 {
+			t.Fatalf("want 0 items, but got %v", len(responseFields))
+		}
+	})
+}
+
 func TestErrorInterceptors(t *testing.T) {
 
 	t.Run("return internal error when rpc execution raises a panic", func(t *testing.T) {
@@ -727,6 +840,30 @@ func buildStorageSchemaForTests() map[string]storage.Classification {
 		"primaryCurrency": {
 			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &storage.StringType{},
+		},
+		"featureFlag:useDiagnosticMode": {
+			BackupType:       storage.AsyncAutoBackup,
+			BackupSecurity:   storage.Plain,
+			SecurityCritical: false,
+			ValueType:        &storage.BoolType{},
+		},
+		"featureFlag:isDogfood": {
+			BackupType:       storage.AsyncAutoBackup,
+			BackupSecurity:   storage.Plain,
+			SecurityCritical: false,
+			ValueType:        &storage.BoolType{},
+		},
+		"featureFlag:supportsNfc": {
+			BackupType:       storage.AsyncAutoBackup,
+			BackupSecurity:   storage.Plain,
+			SecurityCritical: false,
+			ValueType:        &storage.BoolType{},
+		},
+		"featureFlag:utxoSelectionStrategy": {
+			BackupType:       storage.AsyncAutoBackup,
+			BackupSecurity:   storage.Plain,
 			SecurityCritical: false,
 			ValueType:        &storage.StringType{},
 		},

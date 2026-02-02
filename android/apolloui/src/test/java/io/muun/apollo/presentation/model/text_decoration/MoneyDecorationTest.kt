@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.model.text_decoration
 
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.Test
-import java.util.*
+import java.util.Locale
 
 /**
  * This test uses a DSL for expressing inputs and expected results.
@@ -24,8 +24,8 @@ class MoneyDecorationTest {
     fun `should allow adding a digit on an empty input`() {
         locales.forEach {
             Given(it, "|")
-                    .add("1")
-                    .expect("1|")
+                .add("1")
+                .expect("1|")
         }
     }
 
@@ -33,8 +33,8 @@ class MoneyDecorationTest {
     fun `when the input is empty should allow adding a single zero on the left`() {
         locales.forEach {
             Given(it, "|")
-                    .add("0")
-                    .expect("0|")
+                .add("0")
+                .expect("0|")
         }
     }
 
@@ -42,8 +42,8 @@ class MoneyDecorationTest {
     fun `when adding a dot as first character should add a zero to the left too`() {
         locales.forEach {
             Given(it, "|")
-                    .add(".")
-                    .expect("0.|")
+                .add(".")
+                .expect("0.|")
         }
 
     }
@@ -52,10 +52,10 @@ class MoneyDecorationTest {
     fun `should be able to add zeros after the decimal separator`() {
         locales.forEach {
             Given(it, "1.|")
-                    .add("0")
-                    .add("0")
-                    .add("0")
-                    .expect("1.000|")
+                .add("0")
+                .add("0")
+                .add("0")
+                .expect("1.000|")
         }
     }
 
@@ -63,8 +63,8 @@ class MoneyDecorationTest {
     fun `when adding more than 3 digits should show thousand separators`() {
         locales.forEach {
             Given(it, "123|")
-                    .add("4567")
-                    .expect("1_234_567|")
+                .add("4567")
+                .expect("1_234_567|")
         }
     }
 
@@ -72,8 +72,8 @@ class MoneyDecorationTest {
     fun `when deleting a thousand separator should delete the character at its left`() {
         locales.forEach {
             Given(it, "12_|345")
-                    .deleteOneCharacter()
-                    .expect("1|_345")
+                .deleteOneCharacter()
+                .expect("1|_345")
         }
     }
 
@@ -106,24 +106,24 @@ class MoneyDecorationTest {
         locales.forEach {
 
             Given(it, "12|_345")
-                    .add("9")
-                    .expect("129_|345")
+                .add("9")
+                .expect("129_|345")
 
             Given(it, "12.|3456")
-                    .deleteOneCharacter()
-                    .expect("12|3_456")
+                .deleteOneCharacter()
+                .expect("12|3_456")
 
             Given(it, "12_345.|678")
-                    .paste(4, 8, "9")
-                    .expect("123_9|78")
+                .paste(4, 8, "9")
+                .expect("123_9|78")
 
             Given(it, "12_345.|678")
-                    .paste(4, 8, "99")
-                    .expect("1_239_9|78")
+                .paste(4, 8, "99")
+                .expect("1_239_9|78")
 
             Given(it, "123_4|56_789")
-                    .add(".")
-                    .expect("1_234.|56789")
+                .add(".")
+                .expect("1_234.|56789")
         }
     }
 
@@ -160,9 +160,11 @@ class MoneyDecorationTest {
     /**
      * Provides a fluent API for generating text operation cases.
      */
-    private class Given(locale: Locale,
-                        initialValue: String,
-                        maxFractionalDigits: Int = Int.MAX_VALUE) : DecorationHandler {
+    private class Given(
+        locale: Locale,
+        initialValue: String,
+        maxFractionalDigits: Int = Int.MAX_VALUE,
+    ) : DecorationHandler {
 
         private val decoration = MoneyDecoration(locale, this)
         private var text: StringBuilder = StringBuilder(cleanText(initialValue))
@@ -213,8 +215,8 @@ class MoneyDecorationTest {
 
         fun cleanText(dslText: String): String {
             return dslText.replace("|", "")
-                    .replace("_", decoration.groupingSeparator + "")
-                    .replace(".", decoration.decimalSeparator + "")
+                .replace("_", decoration.groupingSeparator + "")
+                .replace(".", decoration.decimalSeparator + "")
         }
 
         override fun setTextSize(unit: Int, size: Float) {

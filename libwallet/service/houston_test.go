@@ -60,14 +60,11 @@ func waitForHealthcheck() error {
 			return fmt.Errorf("healthcheck failed after %s", timeout)
 		}
 
-		houstonService := NewHoustonService(defaultProvider()).(*HoustonClient)
+		houstonService := NewHoustonService(defaultProvider())
 
-		r := request[any]{
-			Method: MethodGet,
-			Path:   "/admin/healthcheck",
-		}
-		_, err := r.do(&houstonService.client)
+		err := houstonService.HealthCheck()
 
+		log.Println("Healthcheck failed:", err)
 		if err == nil {
 			log.Println("Healthcheck successful.")
 			return nil

@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.fragments.settings
 import android.net.Uri
 import android.os.Bundle
 import io.muun.apollo.data.external.NotificationService
+import io.muun.apollo.domain.FeatureOverrideStore
 import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
@@ -24,10 +25,12 @@ import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
+import io.muun.apollo.presentation.biometrics.BiometricsController
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
+import io.muun.apollo.presentation.ui.settings.flags.DisableFeatureFlagsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
 import io.muun.common.Optional
 import io.muun.common.api.messages.EventCommunicationMessage.Event
@@ -49,6 +52,8 @@ class SettingsPresenter @Inject constructor(
     private val nightModeManager: NightModeManager,
     private val notificationService: NotificationService,
     private val featureSelector: FeatureSelector,
+    private val overrideStore: FeatureOverrideStore,
+    private val biometricsController: BiometricsController,
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
     class SettingsState(
@@ -57,6 +62,7 @@ class SettingsPresenter @Inject constructor(
         val exchangeRateWindow: ExchangeRateWindow,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
         val features: List<MuunFeature>,
+        val featureOverrides: List<MuunFeature>,
     )
 
     override fun setUp(arguments: Bundle) {
@@ -75,7 +81,8 @@ class SettingsPresenter @Inject constructor(
                 bitcoinUnitSel.watch(),
                 exchangeRateSelector.watchLatestWindow(),
                 userActivatedFeatureStatusSel.watchTaproot(),
-                featureSelector.fetch(),
+                featureSelector.fetchWithoutOverrides(),
+                Observable.just(overrideStore.getFeatureOverrides()),
                 ::SettingsState
             )
             .doOnNext { state ->
@@ -236,7 +243,13 @@ class SettingsPresenter @Inject constructor(
     }
 
     override fun getEntryEvent(): AnalyticsEvent {
-        return S_SETTINGS()
+        return biometricsController.getAuthenticationStatus()
+            .let { (canAuthenticate, cannotAuthenticateReason) ->
+                S_SETTINGS(
+                    biometricsCanAuthenticate = canAuthenticate,
+                    biometricsCannotAuthenticateReason = cannotAuthenticateReason?.takeUnless { canAuthenticate }
+                )
+            }
     }
 
     fun navigateToDiagnosticMode() {
@@ -249,6 +262,10 @@ class SettingsPresenter @Inject constructor(
 
     fun navigateToBitcoinSettings() {
         navigator.navigateToFragment(context, BitcoinSettingsFragment::class.java)
+    }
+
+    fun navigateToDisableFeatureFlags() {
+        navigator.navigateToFragment(context, DisableFeatureFlagsFragment::class.java)
     }
 
     fun showPreactivationNotification() {

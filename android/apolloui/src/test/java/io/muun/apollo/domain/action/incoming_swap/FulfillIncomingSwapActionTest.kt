@@ -14,7 +14,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
-import io.muun.apollo.domain.libwallet.LibwalletService
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
 import io.muun.apollo.domain.libwallet.errors.UnfulfillableIncomingSwapError
 import io.muun.apollo.domain.model.FulfillmentPushedResult
 import io.muun.apollo.domain.model.IncomingSwap
@@ -44,7 +44,7 @@ class FulfillIncomingSwapActionTest : BaseTest() {
 
     private val transactionSizeRepository = mockk<TransactionSizeRepository>(relaxed = true)
 
-    private val libwalletService = mockk<LibwalletService>(relaxed = true)
+    private val feeBumpFunctionsProvider = mockk<FeeBumpFunctionsProvider>(relaxed = true)
 
     private lateinit var action: FulfillIncomingSwapAction
 
@@ -79,7 +79,7 @@ class FulfillIncomingSwapActionTest : BaseTest() {
             params,
             incomingSwapDao,
             transactionSizeRepository,
-            libwalletService
+            feeBumpFunctionsProvider
         )
     }
 
@@ -167,7 +167,7 @@ class FulfillIncomingSwapActionTest : BaseTest() {
         verify(exactly = 0) { houstonClient.expireInvoice(swap.getPaymentHash()) }
         verify(exactly = 1) { houstonClient.pushFulfillmentTransaction(any(), any()) }
         verify(exactly = 1) { transactionSizeRepository.setTransactionSize(any())}
-        verify(exactly = 1) { libwalletService.persistFeeBumpFunctions(any(), any())}
+        verify(exactly = 1) { feeBumpFunctionsProvider.persistFeeBumpFunctions(any(), any())}
     }
 
     @Test

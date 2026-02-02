@@ -8,9 +8,8 @@ import io.muun.apollo.data.preferences.UserRepository;
 import io.muun.apollo.domain.action.ContactActions;
 import io.muun.apollo.domain.action.base.BaseAsyncAction1;
 import io.muun.apollo.domain.errors.newop.PushTransactionSlowError;
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider;
 import io.muun.apollo.domain.libwallet.LibwalletBridge;
-import io.muun.apollo.domain.libwallet.LibwalletService;
 import io.muun.apollo.domain.libwallet.model.SigningExpectations;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.domain.model.Operation;
@@ -19,6 +18,7 @@ import io.muun.apollo.domain.model.OperationWithMetadata;
 import io.muun.apollo.domain.model.PaymentRequest;
 import io.muun.apollo.domain.model.PreparedPayment;
 import io.muun.apollo.domain.model.SubmarineSwap;
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.crypto.hd.MuunAddress;
@@ -58,7 +58,7 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
     private final ContactActions contactActions;
     private final OperationMetadataMapper operationMapper;
 
-    private final LibwalletService libwalletService;
+    private final FeeBumpFunctionsProvider feeBumpFunctionsProvider;
 
     /**
      * Submit an outgoing payment to Houston, and update local data in response.
@@ -71,7 +71,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                                HoustonClient houstonClient,
                                ContactActions contactActions,
                                OperationMetadataMapper operationMetadataMapper,
-                               LibwalletService libwalletService) {
+                               FeeBumpFunctionsProvider feeBumpFunctionsProvider
+    ) {
 
         this.createOperation = createOperation;
         this.userRepository = userRepository;
@@ -80,7 +81,7 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
         this.houstonClient = houstonClient;
         this.contactActions = contactActions;
         this.operationMapper = operationMetadataMapper;
-        this.libwalletService = libwalletService;
+        this.feeBumpFunctionsProvider = feeBumpFunctionsProvider;
     }
 
     @Override
@@ -171,7 +172,7 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                         // Maybe Houston updated the operation status:
                         mergedOperation.status = txPushed.operation.getStatus();
 
-                        libwalletService.persistFeeBumpFunctions(
+                        feeBumpFunctionsProvider.persistFeeBumpFunctions(
                                 txPushed.feeBumpFunctions,
                                 FeeBumpRefreshPolicy.NTS_CHANGED
                         );

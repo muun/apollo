@@ -6,7 +6,7 @@ This is the source code repository for muun's android wallet. Muun is a non-cust
 
 ## Runtime requirements
 
-* Android version 4.4 (API level 19) or higher
+* Android version 5.0 (API level 21) or higher
 * Google Play services
 
 ## Structure

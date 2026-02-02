@@ -24,6 +24,7 @@ const (
 	WalletService_ResetSecurityCard_FullMethodName             = "/rpc.WalletService/ResetSecurityCard"
 	WalletService_SignMessageSecurityCard_FullMethodName       = "/rpc.WalletService/SignMessageSecurityCard"
 	WalletService_SetupSecurityCardV2_FullMethodName           = "/rpc.WalletService/SetupSecurityCardV2"
+	WalletService_SignMessageSecurityCardV2_FullMethodName     = "/rpc.WalletService/SignMessageSecurityCardV2"
 	WalletService_StartDiagnosticSession_FullMethodName        = "/rpc.WalletService/StartDiagnosticSession"
 	WalletService_PerformDiagnosticScanForUtxos_FullMethodName = "/rpc.WalletService/PerformDiagnosticScanForUtxos"
 	WalletService_SubmitDiagnosticLog_FullMethodName           = "/rpc.WalletService/SubmitDiagnosticLog"
@@ -37,6 +38,7 @@ const (
 	WalletService_Delete_FullMethodName                        = "/rpc.WalletService/Delete"
 	WalletService_SaveBatch_FullMethodName                     = "/rpc.WalletService/SaveBatch"
 	WalletService_GetBatch_FullMethodName                      = "/rpc.WalletService/GetBatch"
+	WalletService_GetByPrefix_FullMethodName                   = "/rpc.WalletService/GetByPrefix"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -48,6 +50,7 @@ type WalletServiceClient interface {
 	ResetSecurityCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SignMessageSecurityCard(ctx context.Context, in *SignMessageSecurityCardRequest, opts ...grpc.CallOption) (*SignMessageSecurityCardResponse, error)
 	SetupSecurityCardV2(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SetupSecurityCardResponse, error)
+	SignMessageSecurityCardV2(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Diagnostic Mode API
 	StartDiagnosticSession(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DiagnosticSessionDescriptor, error)
 	PerformDiagnosticScanForUtxos(ctx context.Context, in *DiagnosticSessionDescriptor, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ScanProgressUpdate], error)
@@ -63,6 +66,7 @@ type WalletServiceClient interface {
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SaveBatch(ctx context.Context, in *SaveBatchRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetBatch(ctx context.Context, in *GetBatchRequest, opts ...grpc.CallOption) (*GetBatchResponse, error)
+	GetByPrefix(ctx context.Context, in *GetByPrefixRequest, opts ...grpc.CallOption) (*GetBatchResponse, error)
 }
 
 type walletServiceClient struct {
@@ -107,6 +111,16 @@ func (c *walletServiceClient) SetupSecurityCardV2(ctx context.Context, in *empty
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SetupSecurityCardResponse)
 	err := c.cc.Invoke(ctx, WalletService_SetupSecurityCardV2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) SignMessageSecurityCardV2(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, WalletService_SignMessageSecurityCardV2_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -252,6 +266,16 @@ func (c *walletServiceClient) GetBatch(ctx context.Context, in *GetBatchRequest,
 	return out, nil
 }
 
+func (c *walletServiceClient) GetByPrefix(ctx context.Context, in *GetByPrefixRequest, opts ...grpc.CallOption) (*GetBatchResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBatchResponse)
+	err := c.cc.Invoke(ctx, WalletService_GetByPrefix_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -261,6 +285,7 @@ type WalletServiceServer interface {
 	ResetSecurityCard(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	SignMessageSecurityCard(context.Context, *SignMessageSecurityCardRequest) (*SignMessageSecurityCardResponse, error)
 	SetupSecurityCardV2(context.Context, *emptypb.Empty) (*SetupSecurityCardResponse, error)
+	SignMessageSecurityCardV2(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	// Diagnostic Mode API
 	StartDiagnosticSession(context.Context, *emptypb.Empty) (*DiagnosticSessionDescriptor, error)
 	PerformDiagnosticScanForUtxos(*DiagnosticSessionDescriptor, grpc.ServerStreamingServer[ScanProgressUpdate]) error
@@ -276,6 +301,7 @@ type WalletServiceServer interface {
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	SaveBatch(context.Context, *SaveBatchRequest) (*emptypb.Empty, error)
 	GetBatch(context.Context, *GetBatchRequest) (*GetBatchResponse, error)
+	GetByPrefix(context.Context, *GetByPrefixRequest) (*GetBatchResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -297,6 +323,9 @@ func (UnimplementedWalletServiceServer) SignMessageSecurityCard(context.Context,
 }
 func (UnimplementedWalletServiceServer) SetupSecurityCardV2(context.Context, *emptypb.Empty) (*SetupSecurityCardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetupSecurityCardV2 not implemented")
+}
+func (UnimplementedWalletServiceServer) SignMessageSecurityCardV2(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignMessageSecurityCardV2 not implemented")
 }
 func (UnimplementedWalletServiceServer) StartDiagnosticSession(context.Context, *emptypb.Empty) (*DiagnosticSessionDescriptor, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartDiagnosticSession not implemented")
@@ -336,6 +365,9 @@ func (UnimplementedWalletServiceServer) SaveBatch(context.Context, *SaveBatchReq
 }
 func (UnimplementedWalletServiceServer) GetBatch(context.Context, *GetBatchRequest) (*GetBatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBatch not implemented")
+}
+func (UnimplementedWalletServiceServer) GetByPrefix(context.Context, *GetByPrefixRequest) (*GetBatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByPrefix not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -426,6 +458,24 @@ func _WalletService_SetupSecurityCardV2_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WalletServiceServer).SetupSecurityCardV2(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_SignMessageSecurityCardV2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).SignMessageSecurityCardV2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_SignMessageSecurityCardV2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).SignMessageSecurityCardV2(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -657,6 +707,24 @@ func _WalletService_GetBatch_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_GetByPrefix_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByPrefixRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).GetByPrefix(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_GetByPrefix_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).GetByPrefix(ctx, req.(*GetByPrefixRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -679,6 +747,10 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetupSecurityCardV2",
 			Handler:    _WalletService_SetupSecurityCardV2_Handler,
+		},
+		{
+			MethodName: "SignMessageSecurityCardV2",
+			Handler:    _WalletService_SignMessageSecurityCardV2_Handler,
 		},
 		{
 			MethodName: "StartDiagnosticSession",
@@ -727,6 +799,10 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBatch",
 			Handler:    _WalletService_GetBatch_Handler,
+		},
+		{
+			MethodName: "GetByPrefix",
+			Handler:    _WalletService_GetByPrefix_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

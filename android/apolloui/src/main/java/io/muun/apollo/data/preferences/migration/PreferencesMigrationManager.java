@@ -13,7 +13,7 @@ import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
 import io.muun.apollo.domain.action.session.LegacyLogoutUserForMigrationAction;
-import io.muun.apollo.domain.libwallet.WalletClient;
+import io.muun.apollo.domain.libwallet.LibwalletClient;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.common.crypto.ChallengeType;
@@ -37,17 +37,26 @@ public class PreferencesMigrationManager {
     private final Context context;
 
     private final SignupDraftManager signupDraftManager;
+
     private final LegacyLogoutUserForMigrationAction legacyLogout;
+
     private final ClearRepositoriesAction clearRepositories;
 
     private final SchemaVersionRepository schemaVersionRepository;
+
     private final AuthRepository authRepository;
+
     private final UserRepository userRepository;
+
     private final FeeWindowRepository feeWindowRepository;
+
     private final TransactionSizeRepository transactionSizeRepository;
+
     private final FirebaseInstallationIdRepository firebaseInstallationIdRepository;
+
     private final KeysRepository keysRepository;
-    private final WalletClient walletClient;
+
+    private final LibwalletClient libwalletClient;
 
     /**
      * An array of migrations, in the order that they must be run.
@@ -133,7 +142,7 @@ public class PreferencesMigrationManager {
             TransactionSizeRepository transactionSizeRepository,
             FirebaseInstallationIdRepository firebaseInstallationIdRepository,
             KeysRepository keysRepository,
-            WalletClient walletClient
+            LibwalletClient libwalletClient
     ) {
 
         this.context = context;
@@ -149,7 +158,7 @@ public class PreferencesMigrationManager {
         this.transactionSizeRepository = transactionSizeRepository;
         this.firebaseInstallationIdRepository = firebaseInstallationIdRepository;
         this.keysRepository = keysRepository;
-        this.walletClient = walletClient;
+        this.libwalletClient = libwalletClient;
     }
 
     /**
@@ -355,9 +364,9 @@ public class PreferencesMigrationManager {
 
         try {
             final NightMode nightMode = NightMode.valueOf(currentNightMode);
-            walletClient.saveEnum("nightMode", nightMode);
+            libwalletClient.saveEnum("nightMode", nightMode);
         } catch (IllegalArgumentException e) {
-            walletClient.saveEnum("nightMode", NightMode.FOLLOW_SYSTEM);
+            libwalletClient.saveEnum("nightMode", NightMode.FOLLOW_SYSTEM);
         }
 
         prefs.edit().remove("current_night_mode").apply();

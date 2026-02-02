@@ -30,7 +30,7 @@ var cfg *app_provided_data.Config
 var keyValueStorage *storage.KeyValueStorage
 var network *libwallet.Network
 var houstonService service.HoustonService
-var mockHoustonService *service.MockHoustonService
+var mockHoustonService service.HoustonService
 var keyProvider keys.KeyProvider
 var startChallengeSetupAction *challenge_keys.StartChallengeSetupAction
 var finishChallengeSetupAction *challenge_keys.FinishChallengeSetupAction
@@ -44,6 +44,7 @@ var pairSecurityCardAction *nfcActions.PairSecurityCardAction
 var resetSecurityCardAction *nfcActions.ResetSecurityCardAction
 var signMessageSecurityCardAction *nfcActions.SignMessageSecurityCardAction
 var pairSecurityCardActionV2 *nfcActions.PairSecurityCardActionV2
+var signMessageSecurityCardActionV2 *nfcActions.SignMessageSecurityCardActionV2
 
 // Init configures libwallet
 func Init(c *app_provided_data.Config) {
@@ -61,10 +62,11 @@ func Init(c *app_provided_data.Config) {
 	if cfg.HttpClientSessionProvider != nil {
 		houstonService = service.NewHoustonService(cfg.HttpClientSessionProvider)
 	}
-	mockHoustonService = service.NewMockHoustonService()
 
 	var storageSchema = storage.BuildStorageSchema()
 	keyValueStorage = storage.NewKeyValueStorage(path.Join(cfg.DataDir, "wallet.db"), storageSchema)
+
+	mockHoustonService = service.NewMockHoustonService(keyValueStorage)
 
 	switch c.Network {
 	case libwallet.Mainnet().Name():
@@ -80,7 +82,8 @@ func Init(c *app_provided_data.Config) {
 
 	// TODO do this only for debug builds and while making use of FakeNfcSession or equivalent
 	// Enables security cards testing in emulators and ui tests.
-	//cfg.NfcBridge = nfc.NewMockNfcBridge(network)
+	//mockMuunCardV2, _ := nfc.NewMockMuunCardV2()
+	//cfg.NfcBridge = nfc.NewMockJavaCard(mockMuunCardV2)
 
 	muuncard := nfc.NewCard(cfg.NfcBridge)
 	muuncardV2 := nfc.NewCardV2(cfg.NfcBridge)
@@ -113,6 +116,12 @@ func Init(c *app_provided_data.Config) {
 		network,
 	)
 	pairSecurityCardActionV2 = nfcActions.NewPairSecurityCardActionV2(keyValueStorage, muuncardV2, mockHoustonService)
+	signMessageSecurityCardActionV2 = nfcActions.NewSignMessageSecurityCardActionV2(
+		muuncardV2,
+		mockHoustonService,
+		keyValueStorage,
+		pairSecurityCardActionV2,
+	)
 }
 
 func StartServer() error {
@@ -152,6 +161,7 @@ func StartServer() error {
 		resetSecurityCardAction,
 		signMessageSecurityCardAction,
 		pairSecurityCardActionV2,
+		signMessageSecurityCardActionV2,
 	))
 
 	listener, err := net.Listen("unix", cfg.SocketPath)

@@ -3,9 +3,23 @@ apply plugin: 'java-library'
 apply from: "${project.rootDir}/linters/checkstyle/check.gradle"
 apply from: "${project.rootDir}/linters/findbugs/check.gradle"
 apply from: "${project.rootDir}/linters/pmd/check.gradle"
+apply plugin: 'ru.vyarus.animalsniffer'
 
-targetCompatibility = '1.8'
-sourceCompatibility = '1.8'
+buildscript {
+    dependencies {
+        // Fixed version, don't change without asking the android team.
+        // As this gradle plugin is too specific and it isn't a standard in the android ecosystem
+        // we inspected & analyzed it's source code and it's dependencies in order to be
+        // sure that this wouldn't be creating a security breach.
+        // TODO Remove as soon as android/apolloui doesn't depend on :common anymore.
+        classpath 'ru.vyarus.animalsniffer:ru.vyarus.animalsniffer.gradle.plugin:2.0.1'
+    }
+}
+
+java {
+    targetCompatibility = '1.8'
+    sourceCompatibility = '1.8'
+}
 
 jar {
     // Bitcoinj native libraries
@@ -62,10 +76,19 @@ dependencies {
 
     // to silence bitcoinj's slf4j
     testImplementation "org.mockito:mockito-core:$global_version_mockito"
+
+    // Apply signature that matches :android:apolloui minSdk
+    signature 'net.sf.androidscents.signature:android-api-level-19:4.4.2_r4@signature'
 }
 
 // This forces our builds to be reproducible
 tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
+}
+
+// Workaround to fix false positive in java.nio.ByteBuffer#rewind, a best effort could be to create
+// a fully signature based on Android api level 19.
+animalsniffer {
+    ignore 'java.nio.ByteBuffer'
 }

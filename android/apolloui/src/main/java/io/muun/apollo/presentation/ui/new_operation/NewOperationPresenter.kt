@@ -34,12 +34,10 @@ import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException
 import io.muun.apollo.domain.errors.newop.SwapFailedException
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.libwallet.Invoice.parseInvoice
 import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.Contact
-import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentContext
@@ -47,6 +45,7 @@ import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.PaymentRequest.Type
 import io.muun.apollo.domain.model.PreparedPayment
 import io.muun.apollo.domain.model.SubmarineSwap
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.FeatureSelector
@@ -58,7 +57,6 @@ import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorPa
 import io.muun.apollo.presentation.ui.fragments.new_op_error.NewOperationErrorParentPresenter.ErrorMetadata
 import io.muun.apollo.presentation.ui.fragments.recommended_fee.RecommendedFeeParentPresenter
 import io.muun.apollo.presentation.ui.new_operation.NewOperationView.Receiver
-import io.muun.apollo.presentation.ui.nfc.NfcReaderActivity
 import io.muun.common.Rules
 import io.muun.common.utils.Preconditions
 import newop.AbortState
@@ -134,8 +132,12 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private val has2fa by lazy {
-        featureSel.get(MuunFeature.NFC_CARD)
+        featureSel.hasSecurityCardEnabled()
     }
+
+    // Ugly AF. But also easy and quick, best effort to store data for rich error reporting.
+    // TODO do this the RIGHT way
+    private lateinit var confirmStateViewModel: ConfirmStateViewModel
 
     fun startForBitcoinUri(uri: String, operationUri: OperationUri, origin: NewOperationOrigin) {
 
@@ -236,11 +238,11 @@ class NewOperationPresenter @Inject constructor(
 
         if (submarineSwap == null) {
             val state = stateMachine.value()!! as ConfirmState
-            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmState(state, has2fa))
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmState(state))
 
         } else {
             val state = stateMachine.value()!! as ConfirmLightningState
-            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmLightningState(state, has2fa))
+            reportFinished(op.id!!, ConfirmStateViewModel.fromConfirmLightningState(state))
         }
 
         navigator.navigateToHome(context, op)
@@ -289,51 +291,52 @@ class NewOperationPresenter @Inject constructor(
     override fun handleNonFatalError(error: Throwable): Boolean {
         when (error) {
             is UnreachableNodeException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_UNREACHABLE_NODE)
+                handleNewOpError(NewOperationErrorType.INVOICE_UNREACHABLE_NODE, error)
 
             is NoPaymentRouteException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_NO_ROUTE)
+                handleNewOpError(NewOperationErrorType.INVOICE_NO_ROUTE, error)
 
             // SwapFailed is currently thrown due to abnormal mempool situation where outgoing swaps
             // can't be performed correctly. We choose to handle it like a no route payment.
             is SwapFailedException ->
-                handleNewOpError(NewOperationErrorType.SWAP_FAILED)
+                handleNewOpError(NewOperationErrorType.SWAP_FAILED, error)
 
             is InvoiceExpiresTooSoonException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_WILL_EXPIRE_SOON)
+                handleNewOpError(NewOperationErrorType.INVOICE_WILL_EXPIRE_SOON, error)
 
             is InvoiceExpiredException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_EXPIRED)
+                handleNewOpError(NewOperationErrorType.INVOICE_EXPIRED, error)
 
             is InvoiceAlreadyUsedException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_ALREADY_USED)
+                handleNewOpError(NewOperationErrorType.INVOICE_ALREADY_USED, error)
 
             is InvoiceMissingAmountException ->
-                handleNewOpError(NewOperationErrorType.INVOICE_MISSING_AMOUNT)
+                handleNewOpError(NewOperationErrorType.INVOICE_MISSING_AMOUNT, error)
 
             is InvalidInvoiceException ->
-                handleNewOpError(NewOperationErrorType.INVALID_INVOICE)
+                handleNewOpError(NewOperationErrorType.INVALID_INVOICE, error)
 
             is InvalidSwapException ->
-                handleNewOpError(NewOperationErrorType.INVALID_SWAP)
+                handleNewOpError(NewOperationErrorType.INVALID_SWAP, error)
 
             is InsufficientFundsError ->
-                handleNewOpError(NewOperationErrorType.INSUFFICIENT_FUNDS)
+                handleNewOpError(NewOperationErrorType.INSUFFICIENT_FUNDS, error)
 
             is ExchangeRateWindowTooOldError ->
-                handleNewOpError(NewOperationErrorType.EXCHANGE_RATE_WINDOW_TOO_OLD)
+                handleNewOpError(NewOperationErrorType.EXCHANGE_RATE_WINDOW_TOO_OLD, error)
 
             is CyclicalSwapError ->
-                handleNewOpError(NewOperationErrorType.CYCLICAL_SWAP)
+                handleNewOpError(NewOperationErrorType.CYCLICAL_SWAP, error)
 
             // This error should only reach us if the user scanned a QR with an invalid amount (eg
             // DUST), and is not allowed to change it. There's nothing we can do.
             is AmountTooSmallError ->
-                handleNewOpError(NewOperationErrorType.AMOUNT_TOO_SMALL)
+                handleNewOpError(NewOperationErrorType.AMOUNT_TOO_SMALL, error)
 
             is UserFacingError -> {
                 unknownError = error
-                handleNewOpError(NewOperationErrorType.GENERIC)
+                Timber.e(error)
+                handleNewOpError(NewOperationErrorType.GENERIC, error)
             }
 
             else ->
@@ -344,7 +347,8 @@ class NewOperationPresenter @Inject constructor(
 
     override fun handleUnknownError(error: Throwable) {
         unknownError = error
-        handleNewOpError(NewOperationErrorType.GENERIC)
+        Timber.e(error)
+        handleNewOpError(NewOperationErrorType.GENERIC, error)
     }
 
     fun updateAmount(
@@ -399,11 +403,19 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
-    private fun securityCard2faSuccess() {
-        handleConfirmOperation()
+    fun handleConfirmClick(nfcReaderLauncher: ActivityResultLauncher<Intent>) {
+        if (featureSel.hasSecurityCardEnabled()) {
+            navigator.navigateToNfcReaderActivityForResult(context, nfcReaderLauncher)
+
+        } else {
+            handleConfirmOperation()
+        }
     }
 
-    fun handleConfirmOperation() {
+    /**
+     * Proceeds to finish the process either by sending an ON-CHAIN or OFF-CHAIN operation.
+     */
+    private fun handleConfirmOperation() {
         if (receiver.swap == null) {
             confirmOperation()
         } else {
@@ -411,41 +423,34 @@ class NewOperationPresenter @Inject constructor(
         }
     }
 
-    internal fun authenticateWithSecurityCard(activity: NewOperationActivity, activityLauncher: ActivityResultLauncher<Intent>) {
-        navigator.navigateToNfcReaderActivityForResult(
-            /* context = */ activity,
-            /* activityLauncher = */ activityLauncher,
-        )
-    }
-
-    internal fun handleConfirmOperation(result: ActivityResult?) {
+    internal fun handleSecurityCard2faResult(result: ActivityResult?) {
         if (result?.resultCode == Activity.RESULT_OK) {
-            securityCard2faSuccess()
+            handleConfirmOperation()
         }
     }
 
     /**
      * Finishes the process by sending the ON-CHAIN operation to Houston.
      */
-    fun confirmOperation() {
+    private fun confirmOperation() {
         confirmationInProgress = true
 
         reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_OPERATION)
         stateMachine.withState { state: ConfirmState ->
-            submitOperation(ConfirmStateViewModel.fromConfirmState(state, has2fa))
+            submitOperation(ConfirmStateViewModel.fromConfirmState(state))
         }
     }
 
     /**
      * Finishes the process by sending the SWAP operation to Houston.
      */
-    fun confirmSwapOperation() {
+    private fun confirmSwapOperation() {
         confirmationInProgress = true
 
         reportNewOpAction(E_NEW_OP_ACTION_TYPE.CONFIRM_SWAP_OPERATION)
         stateMachine.withState { state: ConfirmLightningState ->
             submitOperation(
-                ConfirmStateViewModel.fromConfirmLightningState(state, has2fa),
+                ConfirmStateViewModel.fromConfirmLightningState(state),
                 submarineSwap!!.withAmountLessInfo(state.validated.swapInfo)
             )
         }
@@ -500,22 +505,29 @@ class NewOperationPresenter @Inject constructor(
 
     }
 
-    fun handleNewOpError(errorType: NewOperationErrorType) {
-        reportNewOpError(errorType)
+    fun handleNewOpError(errorType: NewOperationErrorType, cause: Throwable? = null) {
+        reportNewOpError(errorType, cause)
         view.showErrorScreen(errorType)
     }
 
-    // TODO: this should probably be private
-    fun reportNewOpError(errorType: NewOperationErrorType) {
+    private fun reportNewOpError(errorType: NewOperationErrorType, cause: Throwable?) {
         var params: Array<Pair<String, Any>> = arrayOf()
         if (submarineSwap != null) {
             params += ("swap_uuid" to submarineSwap!!.houstonUuid)
+        }
+        if (has2fa) {
+            params += ("has_2fa" to has2fa.toString())
+        }
+
+        if (::confirmStateViewModel.isInitialized) {
+            params += opSubmittedMetadata(confirmStateViewModel)
         }
 
         analytics.report(
             AnalyticsEvent.S_NEW_OP_ERROR(
                 origin.toAnalyticsEvent(),
                 errorType.toAnalyticsEvent(),
+                cause,
                 *params
             )
         )
@@ -640,10 +652,11 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmState(state: ConfirmState) {
-        handleConfirmState(ConfirmStateViewModel.fromConfirmState(state, has2fa))
+        handleConfirmState(ConfirmStateViewModel.fromConfirmState(state))
     }
 
     private fun handleConfirmState(confirmStateViewModel: ConfirmStateViewModel) {
+        this.confirmStateViewModel = confirmStateViewModel
         analytics.report(
             AnalyticsEvent.S_NEW_OP_CONFIRMATION(
                 *uncheckedConvert(opSubmittedMetadata(confirmStateViewModel)),
@@ -655,7 +668,7 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun handleConfirmLightningState(state: ConfirmLightningState) {
-        handleConfirmState(ConfirmStateViewModel.fromConfirmLightningState(state, has2fa))
+        handleConfirmState(ConfirmStateViewModel.fromConfirmLightningState(state))
     }
 
     private fun handleEditFeeState() {
@@ -737,6 +750,17 @@ class NewOperationPresenter @Inject constructor(
         )
     }
 
+    /**
+     * Builds analytics metadata for successfully completed payment event.
+     *
+     * Combines the operation ID with all submission metadata to track the final completion
+     * of the operation. This metadata is used when the operation has been successfully
+     * submitted and confirmed by the backend.
+     *
+     * @param operationId The unique ID assigned to the completed operation
+     * @param confirmStateViewModel The confirm state view model containing transaction details
+     * @return Array of key-value pairs containing the completion analytics metadata
+     */
     private fun opFinishedMetadata(
         operationId: Long,
         confirmStateViewModel: ConfirmStateViewModel,
@@ -751,6 +775,18 @@ class NewOperationPresenter @Inject constructor(
         return uncheckedConvert(objects)
     }
 
+    /**
+     * Builds comprehensive analytics metadata for payment submission event and events afterwards
+     * (e.g payment success or payment error).
+     *
+     * Collects detailed transaction information including fee details, amounts, swap information,
+     * and fee bump data. This metadata is used for analytics events when the user confirms
+     * the operation and when it gets submitted to the network. Includes all data from
+     * opStartedMetadata plus transaction-specific details.
+     *
+     * @param stateVm The confirm state view model containing all transaction details
+     * @return ArrayList of key-value pairs containing the comprehensive analytics metadata
+     */
     private fun opSubmittedMetadata(stateVm: ConfirmStateViewModel): ArrayList<Pair<String, Any>> {
         val paymentType = stateVm.paymentIntent.getPaymentType()
         val payCtx = stateVm.paymentContext
@@ -775,7 +811,6 @@ class NewOperationPresenter @Inject constructor(
         val feeBumpAmountInSat = stateVm.validated.feeBumpInfo?.amountInSat
         val feeBumpPolicy = stateVm.validated.feeBumpInfo?.refreshPolicy
         val feeBumpSecondsSinceLastUpdate = stateVm.validated.feeBumpInfo?.secondsSinceLastUpdate
-        val has2fa = stateVm.has2fa
 
         objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
         objects.add(("sats_per_virtual_byte" to feeRateInSatsPerVbyte))
@@ -797,7 +832,6 @@ class NewOperationPresenter @Inject constructor(
         objects.add(
             "fee_bump_seconds_since_last_update" to feeBumpSecondsSinceLastUpdate.toString()
         )
-        objects.add("has_2fa" to has2fa.toString())
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))
@@ -808,7 +842,6 @@ class NewOperationPresenter @Inject constructor(
         selectedFeeRate: Double,
         payCtx: newop.PaymentContext,
     ): AnalyticsEvent.E_FEE_OPTION_TYPE {
-
 
         // TODO: expose minFeeRateForTarget for newop.PaymentContext (or live with this monstrosity)
         val editFeeState = EditFeeState()
@@ -841,6 +874,18 @@ class NewOperationPresenter @Inject constructor(
         return pairs.toArray(a) as Array<Pair<String, Any>>
     }
 
+    /**
+     * Builds analytics metadata for payment flow started event and events afterwards (e.g
+     * intermediate steps like amount selectiong screen, fee selection, payment submission, etc...).
+     *
+     * Collects basic operation information including payment type, origin, and 2FA status.
+     * For Lightning operations (submarine swaps), includes additional debt type and swap UUID.
+     * This metadata is used across multiple analytics events during the early stages of
+     * the new operation flow (loading, amount entry, description entry).
+     *
+     * @param paymentType The type of payment being processed (TO_ADDRESS, TO_LN_INVOICE, etc.)
+     * @return ArrayList of key-value pairs containing the analytics metadata
+     */
     private fun opStartedMetadata(paymentType: Type): ArrayList<Pair<String, Any>> {
         val objects = ArrayList<Pair<String, Any>>()
         objects.add(("type" to getEventType(paymentType)))
@@ -850,6 +895,8 @@ class NewOperationPresenter @Inject constructor(
             objects.add(("debt_type" to submarineSwap!!.fundingOutput.debtType!!))
             objects.add(("swap_uuid" to submarineSwap!!.houstonUuid))
         }
+
+        objects.add("has_2fa" to has2fa.toString())
 
         return objects
     }

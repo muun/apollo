@@ -1,7 +1,10 @@
 package io.muun.apollo.data.async.tasks;
 
+import io.muun.apollo.data.os.OS;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.action.UserActions;
+import io.muun.apollo.domain.analytics.Analytics;
+import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.NoStackTraceException;
 import io.muun.apollo.domain.errors.PeriodicTaskError;
 import io.muun.common.utils.Preconditions;
@@ -23,19 +26,27 @@ public class PeriodicTaskWorker extends Worker {
 
     private final ExecutionTransformerFactory transformerFactory;
 
+    private final Analytics analytics;
+
+    private Long startMs = null;
+
     /**
      * Constructor. This is now called from background (WorkManager handles it) so dependency
      * injection is handled by a WorkFactory. See MuunWorkerFactory.
      */
-    public PeriodicTaskWorker(@NonNull Context context,
-                              @NonNull WorkerParameters workerParams,
-                              TaskDispatcher taskDispatcher,
-                              UserActions userActions,
-                              ExecutionTransformerFactory transformerFactory) {
+    public PeriodicTaskWorker(
+            @NonNull Context context,
+            @NonNull WorkerParameters workerParams,
+            TaskDispatcher taskDispatcher,
+            UserActions userActions,
+            ExecutionTransformerFactory transformerFactory,
+            Analytics analytics
+    ) {
         super(context, workerParams);
         this.taskDispatcher = taskDispatcher;
         this.userActions = userActions;
         this.transformerFactory = transformerFactory;
+        this.analytics = analytics;
 
         Timber.d("Starting PeriodicTaskService");
     }
@@ -56,7 +67,9 @@ public class PeriodicTaskWorker extends Worker {
 
         Timber.d("Running periodic task of type %s", type);
 
-        final long startMs = SystemClock.elapsedRealtime();
+        startMs = SystemClock.elapsedRealtime();
+
+        analytics.report(new AnalyticsEvent.E_WORKMANAGER_TASK_STARTED(type, startMs));
 
         try {
 
@@ -87,11 +100,14 @@ public class PeriodicTaskWorker extends Worker {
                     .subscribe();
 
         } catch (RuntimeException error) {
-            Timber.e(new PeriodicTaskError(type, secondsSince(startMs), error));
+            Timber.e(new PeriodicTaskError(type, millisSince(startMs), error));
             return Result.retry();
         }
 
-        Timber.d("Success after " + secondsSince(startMs) + "s on periodic %s", type);
+        final long durationInMillis = millisSince(startMs);
+        Timber.d("Success after " + durationInMillis + "s on periodic %s", type);
+        analytics.report(new AnalyticsEvent.E_WORKMANAGER_TASK_SUCCESS(type, durationInMillis));
+
         return Result.success();
     }
 
@@ -103,10 +119,27 @@ public class PeriodicTaskWorker extends Worker {
     @Override
     public void onStopped() {
         super.onStopped();
-        Timber.d("Stopping PeriodicTaskWorker");
+
+        final String type = Preconditions.checkNotNull(getInputData().getString(TASK_TYPE_KEY));
+        Integer stopReason = null;
+
+        if (OS.INSTANCE.supportsWorkManagerStopReason()) {
+            stopReason = getStopReason();
+        }
+
+        Long durationInMillis = null;
+        if (startMs != null) {
+            durationInMillis = millisSince(startMs);
+        }
+
+        analytics.report(new AnalyticsEvent.E_WORKMANAGER_TASK_STOPPED(
+                type,
+                StopReasonsExtensionsKt.mapStopReason(stopReason),
+                durationInMillis
+        ));
     }
 
-    private long secondsSince(long startingRealtime) {
-        return (SystemClock.elapsedRealtime() - startingRealtime) / 1000;
+    private long millisSince(long startingRealtime) {
+        return (SystemClock.elapsedRealtime() - startingRealtime);
     }
 }

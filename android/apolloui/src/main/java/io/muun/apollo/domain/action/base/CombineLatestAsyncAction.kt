@@ -11,11 +11,11 @@ class CombineLatestAsyncAction<T, R>(
      * Get the observable state of the action.
      */
     fun getState(): Observable<ActionState<Pair<T?, R?>>> =
-            Observable.zip(
-                actionStateObservableA,
-                actionStateObservableB,
-                this::merge
-            )
+        Observable.zip(
+            actionStateObservableA,
+            actionStateObservableB,
+            this::merge
+        )
 
     /**
      * Merge the ActionStates from 2 AsyncActions. Rules are:
@@ -29,7 +29,7 @@ class CombineLatestAsyncAction<T, R>(
      */
     private fun merge(
         a: ActionState<T>,
-        b: ActionState<R>
+        b: ActionState<R>,
     ): ActionState<Pair<T?, R?>> {
 
         return when {
