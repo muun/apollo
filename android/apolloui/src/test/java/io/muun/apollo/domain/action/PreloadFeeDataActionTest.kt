@@ -7,22 +7,22 @@ import io.muun.apollo.BaseTest
 import io.muun.apollo.TestUtils
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
 import io.muun.apollo.domain.action.realtime.SyncRealTimeFees
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
-import io.muun.apollo.domain.libwallet.LibwalletService
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
 import org.junit.Before
 import org.junit.Test
 import rx.Observable
 
 class PreloadFeeDataActionTest: BaseTest() {
 
-    private val libwalletService = mockk<LibwalletService>(relaxed = true)
+    private val feeBumpFunctionsProvider = mockk<FeeBumpFunctionsProvider>(relaxed = true)
     private val syncRealTimeFees = mockk<SyncRealTimeFees>(relaxed = true)
 
     private lateinit var preloadFeeData: PreloadFeeDataAction
 
     @Before
     fun setUp() {
-        preloadFeeData = PreloadFeeDataAction(syncRealTimeFees, libwalletService)
+        preloadFeeData = PreloadFeeDataAction(syncRealTimeFees, feeBumpFunctionsProvider)
     }
 
     @Test

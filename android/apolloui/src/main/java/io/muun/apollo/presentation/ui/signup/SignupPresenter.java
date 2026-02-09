@@ -332,6 +332,7 @@ public class SignupPresenter extends BasePresenter<SignupView> implements
 
     @Override
     public void handleError(Throwable error) {
+        //noinspection StatementWithEmptyBody
         if (error instanceof InvalidChallengeSignatureError
                 || error instanceof EmailNotRegisteredError) {
             // This error is caught by child presenters. By checking, we avoid double-handling it.

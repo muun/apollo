@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"github.com/btcsuite/btcd/btcutil"
 	"log/slog"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/google/uuid"
 	"github.com/muun/libwallet"
@@ -30,22 +31,23 @@ import (
 
 type WalletServer struct {
 	api.UnsafeWalletServiceServer
-	nfcBridge                app_provided_data.NfcBridge
-	keyProvider              keys.KeyProvider
-	network                  *libwallet.Network
-	houstonService           service.HoustonService
-	keyValueStorage          *storage.KeyValueStorage
-	startChallengeSetup      *challenge_keys.StartChallengeSetupAction
-	finishChallengeSetup     *challenge_keys.FinishChallengeSetupAction
-	populateEncryptedMuunKey *recovery.PopulateEncryptedMuunKeyAction
-	scanForFunds             *recovery.ScanForFundsAction
-	submitDiagnostic         *diagnostic_mode_reports.SubmitDiagnosticAction
-	buildSweepTx             *recovery.BuildSweepTxAction
-	signSweepTx              *recovery.SignSweepTxAction
-	pairSecurityCard         *nfc.PairSecurityCardAction
-	resetSecurityCard        *nfc.ResetSecurityCardAction
-	signMessageSecurityCard  *nfc.SignMessageSecurityCardAction
-	pairSecurityCardV2       *nfc.PairSecurityCardActionV2
+	nfcBridge                 app_provided_data.NfcBridge
+	keyProvider               keys.KeyProvider
+	network                   *libwallet.Network
+	houstonService            service.HoustonService
+	keyValueStorage           *storage.KeyValueStorage
+	startChallengeSetup       *challenge_keys.StartChallengeSetupAction
+	finishChallengeSetup      *challenge_keys.FinishChallengeSetupAction
+	populateEncryptedMuunKey  *recovery.PopulateEncryptedMuunKeyAction
+	scanForFunds              *recovery.ScanForFundsAction
+	submitDiagnostic          *diagnostic_mode_reports.SubmitDiagnosticAction
+	buildSweepTx              *recovery.BuildSweepTxAction
+	signSweepTx               *recovery.SignSweepTxAction
+	pairSecurityCard          *nfc.PairSecurityCardAction
+	resetSecurityCard         *nfc.ResetSecurityCardAction
+	signMessageSecurityCard   *nfc.SignMessageSecurityCardAction
+	pairSecurityCardV2        *nfc.PairSecurityCardActionV2
+	signMessageSecurityCardV2 *nfc.SignMessageSecurityCardActionV2
 }
 
 func NewWalletServer(
@@ -65,25 +67,27 @@ func NewWalletServer(
 	resetSecurityCard *nfc.ResetSecurityCardAction,
 	signMessageSecurityCard *nfc.SignMessageSecurityCardAction,
 	pairSecurityCardV2 *nfc.PairSecurityCardActionV2,
+	signMessageSecurityCardV2 *nfc.SignMessageSecurityCardActionV2,
 ) *WalletServer {
 
 	return &WalletServer{
-		nfcBridge:                nfcBridge,
-		keyProvider:              keyProvider,
-		network:                  network,
-		houstonService:           houstonService,
-		keyValueStorage:          keyValueStorage,
-		startChallengeSetup:      startChallengeSetup,
-		finishChallengeSetup:     finishChallengeSetup,
-		populateEncryptedMuunKey: obtainVerifiedEncryptedMuunKeyIfAbsent,
-		scanForFunds:             scanForFunds,
-		submitDiagnostic:         submitDiagnostic,
-		buildSweepTx:             buildSweepTx,
-		signSweepTx:              signSweepTxAction,
-		pairSecurityCard:         pairSecurityCard,
-		resetSecurityCard:        resetSecurityCard,
-		signMessageSecurityCard:  signMessageSecurityCard,
-		pairSecurityCardV2:       pairSecurityCardV2,
+		nfcBridge:                 nfcBridge,
+		keyProvider:               keyProvider,
+		network:                   network,
+		houstonService:            houstonService,
+		keyValueStorage:           keyValueStorage,
+		startChallengeSetup:       startChallengeSetup,
+		finishChallengeSetup:      finishChallengeSetup,
+		populateEncryptedMuunKey:  obtainVerifiedEncryptedMuunKeyIfAbsent,
+		scanForFunds:              scanForFunds,
+		submitDiagnostic:          submitDiagnostic,
+		buildSweepTx:              buildSweepTx,
+		signSweepTx:               signSweepTxAction,
+		pairSecurityCard:          pairSecurityCard,
+		resetSecurityCard:         resetSecurityCard,
+		signMessageSecurityCard:   signMessageSecurityCard,
+		pairSecurityCardV2:        pairSecurityCardV2,
+		signMessageSecurityCardV2: signMessageSecurityCardV2,
 	}
 }
 
@@ -112,10 +116,20 @@ func (ws WalletServer) SetupSecurityCardV2(
 ) (*api.SetupSecurityCardResponse, error) {
 	response, err := ws.pairSecurityCardV2.Run()
 	if err != nil {
-		return nil, fmt.Errorf("error pairing security card: %w", err)
+		var invalidMacErr *nfc.InvalidMacError
+		var challengeExpiredErr *nfc.ChallengeExpiredError
+
+		switch {
+		case errors.As(err, &invalidMacErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrSignMacValidation, err)
+		case errors.As(err, &challengeExpiredErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrChallengeExpired, err)
+		default:
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrPairInternalError, err)
+		}
 	}
 
-	slog.Debug("card paired succesfully")
+	slog.Debug("card paired successfully")
 	slog.Debug("MetadaCard", "metadata", response.Metadata)
 
 	return api.SetupSecurityCardResponse_builder{
@@ -152,6 +166,36 @@ func (ws WalletServer) SignMessageSecurityCard(
 		SignedMessageHex: base58SignedMessage,
 		IsValidated:      true,
 	}.Build(), nil
+}
+
+func (ws WalletServer) SignMessageSecurityCardV2(
+	ctx context.Context,
+	message *emptypb.Empty,
+) (*emptypb.Empty, error) {
+	err := ws.signMessageSecurityCardV2.Run()
+	if err != nil {
+		var invalidMacErr *nfc.InvalidMacError
+		var challengeExpiredErr *nfc.ChallengeExpiredError
+		var pairInternalErr *nfc.PairInternalError
+		var noSlotsAvailableErr *nfc.NoSlotsAvailableError
+		var muunAppletNotFoundErr *nfc.MuunAppletNotFoundError
+
+		switch {
+		case errors.As(err, &invalidMacErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrSignMacValidation, err)
+		case errors.As(err, &challengeExpiredErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrChallengeExpired, err)
+		case errors.As(err, &pairInternalErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrPairInternalError, err)
+		case errors.As(err, &noSlotsAvailableErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrNoSlotsAvailable, err)
+		case errors.As(err, &muunAppletNotFoundErr):
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrAppletNotFound, err)
+		default:
+			return nil, NewGrpcErrorFromCodeAndErr(apierrors.ErrorCodes.ErrSignInternalError, err)
+		}
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (ws WalletServer) StartDiagnosticSession(
@@ -447,6 +491,27 @@ func (ws WalletServer) GetBatch(_ context.Context, req *api.GetBatchRequest) (*a
 
 	if len(items) == 0 {
 		return nil, NewGrpcError(fmt.Errorf("failed to found values for keys: %v", keys))
+	}
+
+	protoItems, err := toProtoValueMap(items)
+	if err != nil {
+		return nil, NewGrpcError(fmt.Errorf("failed to convert data to proto Struct: %w", err))
+	}
+
+	return api.GetBatchResponse_builder{
+		Items: protoItems,
+	}.Build(), nil
+}
+
+func (ws WalletServer) GetByPrefix(_ context.Context, req *api.GetByPrefixRequest) (*api.GetBatchResponse, error) {
+	prefix := req.GetPrefix()
+	if prefix == "" {
+		return nil, NewGrpcErrorFromCode(apierrors.ErrorCodes.ErrKeyEmpty)
+	}
+
+	items, err := ws.keyValueStorage.GetByPrefix(prefix)
+	if err != nil {
+		return nil, NewGrpcError(fmt.Errorf("failed to get by prefix with given prefix: %w", err))
 	}
 
 	protoItems, err := toProtoValueMap(items)

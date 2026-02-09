@@ -265,6 +265,10 @@
         avisarles.
     </string>
 
+    <string name="error_desc_styled_string_fallback_to_arg">
+        <annotation arg="0">content</annotation>
+    </string>
+
     <string name="error_op_action">Volver al inicio</string>
     <string name="error_op_action_back">Volver</string>
 
@@ -749,6 +753,7 @@
     <!--Settings-->
     <string name="settings_title_profile_hidden">Configuración</string>
     <string name="settings_header_recovery">Recuperación</string>
+    <string name="settings_header_security">Seguridad</string>
     <string name="settings_header_wallet_details">Detalles del monedero</string>
     <string name="settings_header_general">General</string>
     <string name="settings_item_email">Email</string>
@@ -756,6 +761,7 @@
     <string name="settings_item_primary_currency">Moneda</string>
     <string name="settings_item_bitcoin_unit">Unidad de bitcoin</string>
     <string name="settings_password">Cambiar contraseña</string>
+    <string name="settings_biometrics">Desbloqueo por huella</string>
     <string name="settings_item_export_keys">Respaldo de Claves Privadas</string>
     <string name="settings_setup_recovery_code">Configurar Código de Recuperación</string>
     <string name="settings_recovery_tool">Herramienta de Recuperación</string>
@@ -792,6 +798,13 @@
     </string>
     <string name="settings_delete_wallet_alert_yes">Eliminar</string>
     <string name="settings_delete_wallet_alert_no">Cancelar</string>
+    <string name="settings_disable_feature_flags">Desactivar feature flags</string>
+    <string name="disable_feature_flags_security_card">Security Card</string>
+    <string name="disable_feature_flags_info">
+        Algunas de nuestras feature flags pueden activarse o desactivarse según sea necesario.
+        Estas son las que pueden modificarse actualmente. Desactiva la opción para deshabilitar la
+        función seleccionada.
+    </string>
 
     <string name="delete_wallet_success_message">Eliminaste tu monedero</string>
     <string name="delete_wallet_success_description">
@@ -1765,6 +1778,24 @@
     <string name="nfc_reader_screen_go_to_configs_title">NFC desactivado</string>
     <string name="nfc_reader_screen_enable_nfc">Tu NFC está apagado. Activá NFC desde Configuración para continuar.</string>
     <string name="nfc_reader_screen_go_to_configs">Ir a configuración</string>
-    <string name="nfc_reader_screen_unknown_coordinates">Ubicación desconocida: por favor, contactá a Franco</string>
+    <string name="nfc_reader_screen_unknown_coordinates">Ubicación desconocida: por favor, contactá al equipo de wallet</string>
+
+    <string name="nfc_reader_screen_disable_ff_title">¿Desactivar el flag de security card?</string>
+    <string name="nfc_reader_screen_disable_ff_desc">
+        ¿Quieres desactivar el flag de security card para completar el pago?
+    </string>
+    <string name="nfc_reader_screen_disable_ff_yes">Si, desactivar</string>
+
+    <!-- Biometrics -->
+    <string name="biometrics_setup_title">Configurar la autenticación con huella</string>
+    <string name="biometrics_setup_subtitle">Desbloquea tu billetera de forma rápida y segura.</string>
+    <string name="biometrics_unlock_title">Autenticación con huella</string>
+    <string name="biometrics_unlock_subtitle">Utiliza tu huella para desbloquear.</string>
+    <string name="biometrics_cancel">Cancelar</string>
+    <string name="biometrics_setup_error_lockout_desc">Demasiados intentos fallidos, autenticación con huella deshabilitada temporalmente.</string>
+    <string name="biometrics_setup_error_lockout_permanent_desc">Demasiados intentos fallidos, autenticación con huella deshabilitada hasta desbloquear el dispositivo.</string>
+    <string name="biometrics_setup_error_generic_desc">Falló la detección de la huella dactilar, intente nuevamente más tarde.</string>
+    <string name="biometrics_unlock_error_lockout_desc">La autenticación con huella digital ha sido deshabilitada temporalmente debido a muchos intentos fallidos. Por favor espere un momento e intente de nuevo.</string>
+    <string name="biometrics_unlock_error_lockout_permanent_desc">La autenticación con huella digital ha sido deshabilitada temporalmente debido a muchos intentos fallidos. Para habilitarla, por favor desbloquee su celular nuevamente.</string>
 
 </resources>

@@ -11,7 +11,7 @@ import io.muun.apollo.domain.action.debug.ForceErrorReportAction
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.errors.debug.DebugExecutableError
-import io.muun.apollo.domain.libwallet.WalletClient
+import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.common.crypto.hd.MuunAddress
 import rx.Observable
@@ -32,7 +32,7 @@ class DebugExecutable @Inject constructor(
     private val houstonClient: HoustonClient,
     private val transformerFactory: ExecutionTransformerFactory,
     private val nfcBridgerFactory: NfcBridgerFactory,
-    private val libwalletClient: WalletClient,
+    private val libwalletClient: LibwalletClient,
 ) {
 
     private val lapp = LappClient()

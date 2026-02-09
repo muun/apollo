@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"golang.org/x/crypto/scrypt"
@@ -29,7 +30,7 @@ const CurrentVersion = 2
 // look alike.
 const Alphabet = "ABCDEFHJKLMNPQRSTUVWXYZ2345789"
 
-// AlphabetLegacy constains the letters that pre version 2 recovery codes can
+// AlphabetLegacy constrains the letters that pre version 2 recovery codes can
 // contain.
 const AlphabetLegacy = "ABCDEFHJKMNPQRSTUVWXYZ2345789"
 
@@ -55,25 +56,18 @@ func Generate() string {
 }
 
 // randChar returns a random character from the given string
-//
-// The algorithm was inspired by BSD arc4random_uniform function to avoid
-// modulo bias and ensure a uniform distribution
-// http://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/lib/libc/crypt/arc4random_uniform.c
 func randChar(chars string) byte {
 	clen := len(chars)
-	min := -clen % clen
-	for {
-		var b [1]byte
-		_, err := rand.Read(b[:])
-		if err != nil {
-			panic("could not read enough random bytes for recovery code")
-		}
-		r := int(b[0])
-		if r < min {
-			continue
-		}
-		return chars[r%clen]
+	return chars[randInt(clen)]
+}
+
+// randInt returns a uniformly random value in [0, n). It panics if n <= 0.
+func randInt(n int) int {
+	r, err := rand.Int(rand.Reader, big.NewInt(int64(n)))
+	if err != nil {
+		panic("could not generate random number: " + err.Error())
 	}
+	return int(r.Int64())
 }
 
 // ConvertToKey generates a private key using the recovery code as a seed.

@@ -102,47 +102,11 @@ object OS {
         isAndroidNOrNewer()
 
     /**
-     * Whether this OS supports elevation view attribute, which was added in L-5-21.
+     * Whether we should use `resources.configuration.locales` instead of deprecated
+     * `resources.configuration.locale` N-7-24.
      */
-    @JvmStatic
-    fun supportsElevation(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS has letter spacing support, which was added in L-5-21.
-     */
-    @JvmStatic
-    fun supportsLetterSpacing(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS has translateZ support, which was added in L-5-21.
-     */
-    @JvmStatic
-    fun supportsTranslateZ(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS has setBackgroundTintList support, which was added in L-5-21.
-     */
-    @JvmStatic
-    fun supportsBackgroundTintList(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS has new PhoneNumberFormattingTextWatcher constructor support, which was
-     * added in L-5-21.
-     */
-    @JvmStatic
-    fun supportsNewPhoneNumberFormattingTextWatcher(): Boolean =
-        isAndroidLOrNewer()
-
-    /**
-     * Whether this OS has Activity Transitions support, which was added in L-5-21.
-     */
-    @JvmStatic
-    fun supportsActivityTransitions(): Boolean =
-        isAndroidLOrNewer()
+    fun supportsLocales(): Boolean =
+        isAndroidNOrNewer()
 
     /**
      * Whether this OS has edge-to-edge support (insets), which was added in R-11-30.
@@ -150,6 +114,22 @@ object OS {
     @JvmStatic
     fun supportsEdgeToEdge(): Boolean =
         isAndroidROrNewer()
+
+    /**
+     * Whether this OS supports Process's elapsed realtime
+     */
+    fun supportsProcessStartTimestamps(): Boolean =
+        isAndroidNOrNewer()
+
+    /**
+     * Whether this OS is affected by a bug in floating ViewTreeObserver not being merged into
+     * real ViewTreeObserver.
+     *
+     * @see https://android.googlesource.com/platform/frameworks/base/+/9f8ec54244a5e0343b9748db3329733f259604f3
+     * @see https://github.com/firebase/firebase-android-sdk/blob/main/firebase-perf/src/main/java/com/google/firebase/perf/util/FirstDrawDoneListener.java#L42
+     */
+    fun affectedByFloatingViewTreeObserverNotMergedBug(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.O
 
     // PRIVATE STUFF:
 
@@ -164,12 +144,7 @@ object OS {
         return isAndroidQOrNewer()
     }
 
-    /**
-     * Whether this OS version is P-9-28 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
-    private fun isAndroidPOrNewer() =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+    // PRIVATE STUFF:
 
     /**
      * Whether this OS version is M-6-23 or newer.
@@ -179,11 +154,26 @@ object OS {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
 
     /**
+     * Whether this OS version is N-7-24 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
+    private fun isAndroidNOrNewer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    /**
      * Whether this OS version is O-8-26 or newer.
      */
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
     private fun isAndroidOOrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+    /**
+     * Whether this OS version is P-9-28 or newer.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.P)
+    private fun isAndroidPOrNewer() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+
 
     /**
      * Whether this OS version is Q-10-29 or newer.
@@ -198,20 +188,6 @@ object OS {
     @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
     private fun isAndroidROrNewer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-
-    /**
-     * Whether this OS version is N-7-24 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.N)
-    private fun isAndroidNOrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-
-    /**
-     * Whether this OS version is L-5-21 or newer.
-     */
-    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-    private fun isAndroidLOrNewer(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
 
     /**
      * Whether this OS version is S-12-31 or newer.

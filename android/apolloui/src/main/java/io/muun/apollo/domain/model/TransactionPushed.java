@@ -1,6 +1,8 @@
 package io.muun.apollo.domain.model;
 
 
+import io.muun.apollo.domain.model.feebump.FeeBumpFunctions;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 

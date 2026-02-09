@@ -263,6 +263,11 @@
         to let them know.
     </string>
 
+
+    <string name="error_desc_styled_string_fallback_to_arg">
+        <annotation arg="0">content</annotation>
+    </string>
+
     <string name="error_op_action">Go to home</string>
     <string name="error_op_action_back">Go back</string>
 
@@ -719,6 +724,7 @@
     <!--Settings-->
     <string name="settings_title_profile_hidden">Settings</string>
     <string name="settings_header_recovery">Recovery</string>
+    <string name="settings_header_security">Security</string>
     <string name="settings_header_wallet_details">Wallet details</string>
     <string name="settings_header_general">General</string>
     <string name="settings_item_email">Email</string>
@@ -726,6 +732,7 @@
     <string name="settings_item_primary_currency">Main currency</string>
     <string name="settings_item_bitcoin_unit">Bitcoin unit</string>
     <string name="settings_password">Change password</string>
+    <string name="settings_biometrics">Fingerprint unlock</string>
     <string name="settings_item_export_keys">Private keys backup</string> <!-- unused -->
     <string name="settings_setup_recovery_code">Set up a Recovery Code</string>
     <string name="settings_recovery_tool">Recovery Tool</string>
@@ -762,6 +769,12 @@
     </string>
     <string name="settings_delete_wallet_alert_yes">Delete</string>
     <string name="settings_delete_wallet_alert_no">Cancel</string>
+    <string name="settings_disable_feature_flags">Disable feature flags</string>
+    <string name="disable_feature_flags_security_card">Security Card</string>
+    <string name="disable_feature_flags_info">
+        Some of our feature flags can be turned off and on again at your request. These are the
+        ones you can currently modify. Turn the toggles off to disable the selected feature.
+    </string>
 
     <string name="delete_wallet_success_message">You deleted your wallet</string>
     <string name="delete_wallet_success_description">
@@ -1711,6 +1724,25 @@
     <string name="nfc_reader_screen_go_to_configs_title">NFC deactivated</string>
     <string name="nfc_reader_screen_enable_nfc">Your NFC is turned off. Activate NFC from configurations to continue.</string>
     <string name="nfc_reader_screen_go_to_configs">Go to configurations</string>
-    <string name="nfc_reader_screen_unknown_coordinates">Unknown location: please contact Franco</string>
+    <string name="nfc_reader_screen_unknown_coordinates">Unknown location: please contact Wallet team</string>
+
+    <string name="nfc_reader_screen_disable_ff_title">Disable security card flag?</string>
+    <string name="nfc_reader_screen_disable_ff_desc">
+        Do you want to deactivate security card flag to complete payment?
+    </string>
+    <string name="nfc_reader_screen_disable_ff_yes">Yes, disable</string>
+
+
+    <!-- Biometrics -->
+    <string name="biometrics_setup_title">Setup Fingerprint Authentication</string>
+    <string name="biometrics_setup_subtitle">Unlock your wallet quickly and securely.</string>
+    <string name="biometrics_unlock_title">Authenticate with Fingerprint</string>
+    <string name="biometrics_unlock_subtitle">Use your fingerprint to unlock.</string>
+    <string name="biometrics_cancel">Cancel</string>
+    <string name="biometrics_setup_error_lockout_desc">Too many failed attempts, fingerprint disabled temporarily.</string>
+    <string name="biometrics_setup_error_lockout_permanent_desc">Too many failed attempts, fingerprint disabled until device gets unlocked.</string>
+    <string name="biometrics_setup_error_generic_desc">Fingerprint detection failed, try again later.</string>
+    <string name="biometrics_unlock_error_lockout_desc">Fingerprint authentication has been disabled temporarily due to too many failed attempts. Please wait and try again.</string>
+    <string name="biometrics_unlock_error_lockout_permanent_desc">Fingerprint authentication has been disabled due to too many failed attempts. To enable it again, please unlock your phone again.</string>
 
 </resources>

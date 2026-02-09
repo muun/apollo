@@ -4,9 +4,9 @@ import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.data.preferences.TransactionSizeRepository
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
-import io.muun.apollo.domain.libwallet.LibwalletService
-import io.muun.apollo.domain.model.FeeBumpFunctions
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
+import io.muun.apollo.domain.model.feebump.FeeBumpFunctions
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeFees
 import io.muun.apollo.domain.selector.FeatureSelector
@@ -25,7 +25,7 @@ class SyncRealTimeFees @Inject constructor(
     private val minFeeRateRepository: MinFeeRateRepository,
     private val transactionSizeRepository: TransactionSizeRepository,
     private val featureSelector: FeatureSelector,
-    private val libwalletService: LibwalletService,
+    private val feeBumpFunctionsProvider: FeeBumpFunctionsProvider,
 ) {
 
     companion object {
@@ -46,14 +46,14 @@ class SyncRealTimeFees @Inject constructor(
                 // If there are no unconfirmed UTXOs, it means there are no fee bump functions.
                 // Remove the fee bump functions by storing an empty list.
                 val emptyFeeBumpFunctions = FeeBumpFunctions("", emptyList())
-                libwalletService.persistFeeBumpFunctions(emptyFeeBumpFunctions, refreshPolicy)
+                feeBumpFunctionsProvider.persistFeeBumpFunctions(emptyFeeBumpFunctions, refreshPolicy)
             }
             return houstonClient.fetchRealTimeFees(nts.unconfirmedUtxos, refreshPolicy)
                 .doOnNext { realTimeFees: RealTimeFees ->
 
                     Timber.i("[Sync] Saving updated realTime fees: ${refreshPolicy.value}")
                     storeFeeData(realTimeFees)
-                    libwalletService.persistFeeBumpFunctions(
+                    feeBumpFunctionsProvider.persistFeeBumpFunctions(
                         realTimeFees.feeBumpFunctions,
                         refreshPolicy
                     )

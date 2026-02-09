@@ -12,6 +12,7 @@ import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
 import rpc.WalletServiceGrpc
 import rpc.WalletServiceGrpc.WalletServiceBlockingStub
 import rpc.WalletServiceGrpc.WalletServiceStub
+import rpc.WalletServiceOuterClass.DeleteRequest
 import rpc.WalletServiceOuterClass.DiagnosticSessionDescriptor
 import rpc.WalletServiceOuterClass.GetRequest
 import rpc.WalletServiceOuterClass.NullValue
@@ -22,7 +23,7 @@ import rx.Emitter
 import rx.Observable
 import timber.log.Timber
 
-class WalletClient(private val channel: ManagedChannel) {
+class LibwalletClient(private val channel: ManagedChannel) {
     private val asyncStub = WalletServiceGrpc.newStub(channel)
     private val blockingStub = WalletServiceGrpc.newBlockingStub(channel)
 
@@ -64,6 +65,15 @@ class WalletClient(private val channel: ManagedChannel) {
         nfcBridger.tearDownBridge()
 
         return signMessageNfcCardResponse.signedMessageHex.toByteArray()
+    }
+
+    fun securityCardV2SignMessage(nfcBridger: NfcBridger) {
+
+        nfcBridger.setupBridge()
+        blockingStub.performSyncRequest {
+            signMessageSecurityCardV2(emptyMessage)
+        }
+        nfcBridger.tearDownBridge()
     }
 
     fun startDiagnosticSession(): Observable<String> {
@@ -145,7 +155,7 @@ class WalletClient(private val channel: ManagedChannel) {
         val rpcValue = get(key)
 
         if (rpcValue.hasStringValue()) {
-            return rpcValue.getStringValue()
+            return rpcValue.stringValue
         } else {
             if (rpcValue.hasNullValue()) {
                 return null
@@ -157,6 +167,33 @@ class WalletClient(private val channel: ManagedChannel) {
     fun getString(key: String, defaultValue: String): String =
         getString(key) ?: defaultValue
 
+    fun saveBoolean(key: String, value: Boolean?) {
+        val rpcValue: Value =
+            if (value != null) {
+                Value.newBuilder().setBoolValue(value).build()
+            } else {
+                Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build()
+            }
+
+        save(key, rpcValue)
+    }
+
+    fun getBoolean(key: String): Boolean? {
+        val rpcValue = get(key)
+
+        if (rpcValue.hasBoolValue()) {
+            return rpcValue.boolValue
+        } else {
+            if (rpcValue.hasNullValue()) {
+                return null
+            }
+            throw Exception("Value for key " + key + "is not of type Boolean")
+        }
+    }
+
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean =
+        getBoolean(key) ?: defaultValue
+
     fun <T : Enum<T>> saveEnum(key: String, value: T?) {
         saveString(key, value?.name)
     }
@@ -166,6 +203,43 @@ class WalletClient(private val channel: ManagedChannel) {
 
     inline fun <reified T : Enum<T>> getEnum(key: String, defaultValue: T): T =
         getEnum<T>(key) ?: defaultValue
+
+    fun saveInt(key: String, value: Int?) {
+        val rpcValue: Value =
+            if (value != null) {
+                Value.newBuilder().setIntValue(value).build()
+            } else {
+                Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build()
+            }
+
+        save(key, rpcValue)
+    }
+
+    fun getInt(key: String): Int? {
+        val rpcValue = get(key)
+
+        if (rpcValue.hasIntValue()) {
+            return rpcValue.intValue
+        } else {
+            if (rpcValue.hasNullValue()) {
+                return null
+            }
+            throw Exception("Value for key " + key + "is not of type Int")
+        }
+    }
+
+    fun getInt(key: String, defaultValue: Int): Int =
+        getInt(key) ?: defaultValue
+
+    fun delete(key: String) {
+        val deleteRequest = DeleteRequest.newBuilder()
+            .setKey(key)
+            .build()
+
+        blockingStub.performSyncRequest {
+            delete(deleteRequest)
+        }
+    }
 
     private inline fun <T> WalletServiceBlockingStub.performSyncRequest(
         crossinline rpcCall: WalletServiceBlockingStub.() -> T,

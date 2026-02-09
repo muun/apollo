@@ -2,6 +2,8 @@ package storage
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/muun/libwallet/walletdb"
 )
 
@@ -159,6 +161,22 @@ func (s *KeyValueStorage) GetBatch(keys []string) (map[string]any, error) {
 	return parsedItems, nil
 }
 
+// GetByPrefix returns a map of key-values where keys match the given prefix
+func (s *KeyValueStorage) GetByPrefix(prefix string) (map[string]any, error) {
+	var matchingKeys []string
+	for key := range s.keyClassificationMap {
+		if strings.HasPrefix(key, prefix) {
+			matchingKeys = append(matchingKeys, key)
+		}
+	}
+
+	if len(matchingKeys) == 0 {
+		return make(map[string]any), nil
+	}
+
+	return s.GetBatch(matchingKeys)
+}
+
 // Transform an 'any' map into a string map using predefined key classifications to determine how to convert each value
 func transformToStringMap(items map[string]any, keyClassificationMap map[string]Classification) (map[string]*string, error) {
 	stringItems := make(map[string]*string)
@@ -189,7 +207,7 @@ func parseMap(stringMap map[string]*string, keyClassificationMap map[string]Clas
 
 		classification, exists := keyClassificationMap[key]
 		if !exists {
-			return nil, fmt.Errorf("classification not found for key: %s", key)
+			continue
 		}
 
 		if ptrStrValue == nil {

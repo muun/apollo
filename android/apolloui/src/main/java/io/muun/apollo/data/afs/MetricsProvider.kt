@@ -163,14 +163,14 @@ class MetricsProvider @Inject constructor(
     val vpnState: Int
         get() = connectivityInfoProvider.vpnState
 
-    val proxyHttp: String
-        get() = connectivityInfoProvider.proxyHttp
+    val proxyHttpType: Int
+        get() = connectivityInfoProvider.proxyHttpType
 
-    val proxyHttps: String
-        get() = connectivityInfoProvider.proxyHttps
+    val proxyHttpsType: Int
+        get() = connectivityInfoProvider.proxyHttpsType
 
-    val proxySocks: String
-        get() = connectivityInfoProvider.proxySocks
+    val proxySocksType: Int
+        get() = connectivityInfoProvider.proxySocksType
 
     val networkLink: ConnectivityInfoProvider.NetworkLink?
         get() = connectivityInfoProvider.networkLink
@@ -240,4 +240,19 @@ class MetricsProvider @Inject constructor(
 
     val applicationId: String
         get() = packageManagerInfoProvider.applicationId
+
+    val defaultFsDate: Long
+        get() = fileInfoProvider.defaultDate
+
+    val androidFsDate: Long
+        get() = fileInfoProvider.androidDate
+
+    val hasUniqueBaseDateInExternalStorage: Int
+        get() = fileInfoProvider.hasUniqueBaseDateInExternalStorage
+
+    val externalStorageMinDate: Long
+        get() = fileInfoProvider.externalMinDate
+
+    val hasNewEntriesInAppExternalStorage: Int
+        get() = fileInfoProvider.hasNewEntriesInAppExternalStorage
 }

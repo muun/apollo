@@ -18,7 +18,7 @@ import io.muun.apollo.domain.action.session.rc_only.FinishLoginWithRcAction
 import io.muun.apollo.domain.errors.InitialSyncError
 import io.muun.apollo.domain.errors.InitialSyncNetworkError
 import io.muun.apollo.domain.errors.fcm.GooglePlayServicesNotAvailableError
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.model.LoginWithRc
 import io.muun.apollo.domain.utils.isInstanceOrIsCausedByNetworkError
 import io.muun.apollo.domain.utils.toVoid

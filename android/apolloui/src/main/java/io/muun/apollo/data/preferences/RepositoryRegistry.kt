@@ -1,6 +1,7 @@
 package io.muun.apollo.data.preferences
 
 import io.muun.apollo.data.preferences.permission.NotificationPermissionStateRepository
+import io.muun.apollo.data.preferences.BiometricsRepository
 import timber.log.Timber
 
 /**
@@ -48,12 +49,13 @@ class RepositoryRegistry {
         NotificationPermissionStateRepository::class.java,
         NotificationPermissionDeniedRepository::class.java,
         NotificationPermissionSkippedRepository::class.java,
-        BackgroundTimesRepository::class.java
+        BackgroundTimesRepository::class.java,
+        NfcFeasibleZoneRepository::class.java,
+        BiometricsRepository::class.java,
     )
 
     // Notable exceptions:
     // - FirebaseInstallationIdRepository
-    // - NightModeRepository
     // - SchemaVersionRepository
     // - NotificationPermissionDeniedRepository
     // - NotificationPermissionSkippedRepository

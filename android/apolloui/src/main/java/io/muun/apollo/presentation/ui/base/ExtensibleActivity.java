@@ -1,12 +1,9 @@
 package io.muun.apollo.presentation.ui.base;
 
 import io.muun.apollo.data.nfc.api.NfcSession;
-import io.muun.apollo.presentation.ui.activity.extension.OverflowMenuExtension;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,7 +49,7 @@ public abstract class ExtensibleActivity extends AppCompatActivity {
 
     @Override
     @CallSuper
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         forEachExtension(extension -> extension.onSaveInstanceState(outState));
     }
@@ -115,22 +112,6 @@ public abstract class ExtensibleActivity extends AppCompatActivity {
         forEachExtension(extension ->
                 extension.onRequestPermissionsResult(requestCode, permissions, grantResults)
         );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        getExtension(OverflowMenuExtension.class).onPrepareOptionsMenu(menu);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (getExtension(OverflowMenuExtension.class).onOptionsItemSelected(item)) {
-            return true;
-
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     protected void forEachExtension(Action1<ActivityExtension> action) {

@@ -24,8 +24,8 @@ public class User {
     public Optional<String> email;
     public boolean isEmailVerified;
 
-    public Optional<UserPhoneNumber> phoneNumber;
-    public Optional<UserProfile> profile;
+    public final Optional<UserPhoneNumber> phoneNumber;
+    public final Optional<UserProfile> profile;
 
     private final CurrencyUnit primaryCurrency;
 
@@ -40,13 +40,13 @@ public class User {
     public Optional<EmergencyKit> emergencyKit;
 
     @NotNull // Not backed by Houston, cached locally
-    public StoredEkVerificationCodes emergencyKitVerificationCodes;
+    public final StoredEkVerificationCodes emergencyKitVerificationCodes;
 
     @NotNull
-    public SortedSet<Integer> emergencyKitVersions;
+    public final SortedSet<Integer> emergencyKitVersions;
 
     @Since(apolloVersion = 46)
-    public Optional<ZonedDateTime> createdAt;
+    public final Optional<ZonedDateTime> createdAt;
 
     /**
      * Factory method to construct a User from Houston's data.

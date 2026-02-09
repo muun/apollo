@@ -9,9 +9,11 @@ import android.hardware.TriggerEventListener
 import android.view.MotionEvent
 import io.muun.apollo.presentation.ui.nfc.events.Acceleration
 import io.muun.apollo.presentation.ui.nfc.events.AccelerometerEvent
+import io.muun.apollo.presentation.ui.nfc.events.AppEvent
 import io.muun.apollo.presentation.ui.nfc.events.GestureEvent
 import io.muun.apollo.presentation.ui.nfc.events.ISensorEvent
 import io.muun.apollo.presentation.ui.nfc.events.MagneticEvent
+import io.muun.apollo.presentation.ui.nfc.events.MagneticField
 import io.muun.apollo.presentation.ui.nfc.events.PressureEvent
 import io.muun.apollo.presentation.ui.nfc.events.Rotation
 import io.muun.apollo.presentation.ui.nfc.events.RotationEvent
@@ -23,8 +25,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlin.math.abs
+import kotlin.math.sqrt
 
-private const val SAMPLING_PERIOD_MS = 10_000
+private const val SAMPLING_PERIOD_US = 10_000 // 10 milliseconds
 
 internal object SensorUtils {
 
@@ -50,7 +53,7 @@ internal object SensorUtils {
             subscribeToMagneticSensor(sensorManager).map {
                 MagneticEvent(
                     id = nextEventId(),
-                    magnetic = it,
+                    magneticFieldUt = it,
                 )
             },
             subscribeToSignificantMotionSensor(sensorManager).map {
@@ -139,7 +142,7 @@ internal object SensorUtils {
         sensorManager.registerListener(
             /* listener = */ listener,
             /* sensor = */ sensor,
-            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_US,
         )
 
         awaitClose {
@@ -155,13 +158,13 @@ internal object SensorUtils {
      * unregistered when the flow collection is cancelled.
      *
      * @param sensorManager The [SensorManager] used to access the magnetic field sensor.
-     * @param minMagneticFieldChange The minimum change in field strength required to trigger an emission. Defaults to 1.0f.
+     * @param minMagneticFieldChange The minimum change in field strength required to trigger an emission. Defaults to 1.5f.
      * @return A cold [Flow] emitting [Float] values representing changes in magnetic field strength.
      */
     private fun subscribeToMagneticSensor(
         sensorManager: SensorManager,
-        minMagneticFieldChange: Float = 1.0f,
-    ): Flow<Float> = callbackFlow {
+        minMagneticFieldChange: Float = 1.5f,
+    ): Flow<MagneticField> = callbackFlow {
         val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
         if (sensor == null) {
@@ -169,15 +172,26 @@ internal object SensorUtils {
             return@callbackFlow
         }
 
-        var lastMagneticField = 0f
+        var lastMagnitude = 0f
 
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                val magnetic = event.values[0]
+                val magneticFieldX = event.values[0]
+                val magneticFieldY = event.values[1]
+                val magneticFieldZ = event.values[2]
+                val magnitude = sqrt(
+                    magneticFieldX*magneticFieldX + magneticFieldY*magneticFieldY + magneticFieldZ*magneticFieldZ
+                )
 
-                if (abs(magnetic - lastMagneticField) >= minMagneticFieldChange) {
-                    lastMagneticField = magnetic
-                    trySend(magnetic)
+                if (abs(magnitude - lastMagnitude) >= minMagneticFieldChange) {
+                    lastMagnitude = magnitude
+                    trySend(
+                        MagneticField(
+                            magneticFieldX,
+                            magneticFieldY,
+                            magneticFieldZ,
+                        )
+                    )
                 }
             }
 
@@ -187,7 +201,7 @@ internal object SensorUtils {
         sensorManager.registerListener(
             /* listener = */ listener,
             /* sensor = */ sensor,
-            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_US,
         )
 
         awaitClose {
@@ -284,7 +298,7 @@ internal object SensorUtils {
         sensorManager.registerListener(
             /* listener = */ listener,
             /* sensor = */ sensor,
-            /* samplingPeriodUs = */ SAMPLING_PERIOD_MS,
+            /* samplingPeriodUs = */ SAMPLING_PERIOD_US,
         )
 
         awaitClose {
@@ -342,6 +356,17 @@ internal object SensorUtils {
         x = event.x,
         y = event.y,
         pointerCount = event.pointerCount,
+    )
+
+    /**
+     * Generate an [AppEvent] with a unique ID and the given event action.
+     *
+     * @param event A string describing the app event.
+     * @return A new AppEvent instance with the specified action.
+     */
+    internal fun generateAppEvent(event: String) = AppEvent(
+        id = nextEventId(),
+        action = event,
     )
 
     /**

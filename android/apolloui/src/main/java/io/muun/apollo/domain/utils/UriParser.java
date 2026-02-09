@@ -10,7 +10,7 @@ public class UriParser {
     private String scheme = "";
     private String host = "";
     private String path = "";
-    private List<NameValuePair> queryValues = new LinkedList<>();
+    private final List<NameValuePair> queryValues = new LinkedList<>();
 
     /**
      * Construct a parser from a URI.

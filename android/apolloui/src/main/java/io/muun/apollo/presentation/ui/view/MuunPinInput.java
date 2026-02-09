@@ -1,16 +1,16 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunPinInputBinding;
 import io.muun.apollo.presentation.ui.view.MuunPinIndicator.PinIndicatorState;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.TextView;
 import androidx.annotation.StringRes;
-import butterknife.BindString;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import icepick.State;
+import kotlin.jvm.functions.Function1;
 import rx.functions.Action0;
 
 import javax.annotation.Nullable;
@@ -21,41 +21,28 @@ public class MuunPinInput extends MuunView {
         void onPinEntered(String pin);
     }
 
+    public interface OnBiometricsRequestedListener {
+        void onBiometricsRequested();
+    }
+
     static final ViewProps<MuunPinInput> viewProps = new ViewProps.Builder<MuunPinInput>()
             .addRefJava(R.attr.title, MuunPinInput::setTitle)
             .addRefJava(R.attr.description, MuunPinInput::setDescription)
+            .addInt(R.attr.pinLength, MuunPinInput::setPinLength)
             .build();
 
-    public static final int PIN_LENGTH = 4; // NOTE: hard-coded in MuunPinIndicator XML as well
+    private MuunPinInputBinding binding;
 
-    @BindView(R.id.pin_input_indicator)
-    MuunPinIndicator indicator;
-
-    @BindView(R.id.set_up_pin_title)
-    TextView title;
-
-    @BindView(R.id.set_up_pin_description)
-    TextView description;
-
-    @BindView(R.id.error_message)
-    TextView errorMessage;
-
-    @BindView(R.id.pin_input_keyboard)
-    MuunNumericKeyboard keyboard;
-
-    @BindString(R.string.pin_attempts_left_zero)
-    String attemptsLeftZero;
-
-    @BindString(R.string.pin_attempts_left_one)
-    String attemptsLeftOne;
-
-    @BindString(R.string.pin_attempts_left_many)
-    String attemptsLeftMany;
+    @Override
+    public Function1<View, ViewBinding> viewBinder() {
+        return MuunPinInputBinding::bind;
+    }
 
     @State
     String content = "";
 
     private OnPinEnteredListener listener;
+    private OnBiometricsRequestedListener biometricsRequestedListener;
 
     public MuunPinInput(Context context) {
         super(context);
@@ -78,14 +65,19 @@ public class MuunPinInput extends MuunView {
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
 
+        binding = (MuunPinInputBinding) getBinding();
         viewProps.transfer(attrs, this);
 
-        keyboard.setListener(new KeyboardListener());
-        keyboard.setDeleteEnabled(false);
+        binding.pinInputKeyboard.setListener(new KeyboardListener());
+        binding.pinInputKeyboard.setDeleteEnabled(false);
     }
 
     public void setListener(OnPinEnteredListener listener) {
         this.listener = listener;
+    }
+
+    public void setBiometricsRequestedListener(OnBiometricsRequestedListener listener) {
+        this.biometricsRequestedListener = listener;
     }
 
     /**
@@ -93,7 +85,7 @@ public class MuunPinInput extends MuunView {
      */
     public void clear() {
         content = "";
-        errorMessage.setVisibility(View.INVISIBLE);
+        binding.errorMessage.setVisibility(View.INVISIBLE);
         updateAfterChange();
     }
 
@@ -101,19 +93,22 @@ public class MuunPinInput extends MuunView {
      * Set the remaining PIN attempts.
      */
     public void setRemainingAttempts(int attempts) {
-        errorMessage.setVisibility(View.VISIBLE);
+        binding.errorMessage.setVisibility(View.VISIBLE);
 
         if (attempts > 1) {
-            errorMessage.setText(String.format(attemptsLeftMany, attempts));
+            binding.errorMessage.setText(getContext().getString(
+                    R.string.pin_attempts_left_many,
+                    attempts
+            ));
         } else if (attempts == 1) {
-            errorMessage.setText(attemptsLeftOne);
+            binding.errorMessage.setText(R.string.pin_attempts_left_one);
         } else {
-            errorMessage.setText(attemptsLeftZero);
+            binding.errorMessage.setText(R.string.pin_attempts_left_zero);
         }
     }
 
     public void setRemainingAttemptsVisible(boolean isVisible) {
-        errorMessage.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        binding.errorMessage.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**
@@ -121,8 +116,8 @@ public class MuunPinInput extends MuunView {
      * @param text error message resource
      */
     public void setErrorMessage(@StringRes int text) {
-        errorMessage.setVisibility(View.VISIBLE);
-        errorMessage.setText(text);
+        binding.errorMessage.setVisibility(View.VISIBLE);
+        binding.errorMessage.setText(text);
     }
 
     /**
@@ -130,7 +125,7 @@ public class MuunPinInput extends MuunView {
      * @param resId title resource.
      */
     public void setTitle(@StringRes int resId) {
-        title.setText(resId);
+        binding.setUpPinTitle.setText(resId);
     }
 
     /**
@@ -138,22 +133,22 @@ public class MuunPinInput extends MuunView {
      * @param resId title resource.
      */
     public void setDescription(@StringRes int resId) {
-        description.setVisibility(VISIBLE);
-        description.setText(resId);
+        binding.setUpPinDescription.setVisibility(VISIBLE);
+        binding.setUpPinDescription.setText(resId);
     }
 
     /**
      * Hides the description (subtitle).
      */
     public void hideDescription() {
-        description.setVisibility(GONE);
+        binding.setUpPinDescription.setVisibility(GONE);
     }
 
     /**
      * Briefly indicate error, disabling and clearing the input, invoking a callback when done.
      */
     public void flashError(@Nullable Action0 callback) {
-        indicator.flashState(PinIndicatorState.ERROR, () -> {
+        binding.pinInputIndicator.flashState(PinIndicatorState.ERROR, () -> {
             clear();
 
             if (callback != null) {
@@ -162,22 +157,27 @@ public class MuunPinInput extends MuunView {
         });
     }
 
+    public void setPinLength(int length) {
+        binding.pinInputIndicator.setLength(length);
+    }
+
     /**
      * Indicate success, disabling further input.
      */
     public void setSuccess() {
-        indicator.setState(PinIndicatorState.SUCCESS);
+        binding.pinInputIndicator.setState(PinIndicatorState.SUCCESS);
     }
 
     private void updateAfterChange() {
         final int inputLength = content.length();
 
-        indicator.setProgress(inputLength);
+        binding.pinInputIndicator.setProgress(inputLength);
 
-        keyboard.setEnabled(inputLength < PIN_LENGTH); // allow typing when incomplete
-        keyboard.setDeleteEnabled(inputLength > 0); // allow deletion when empty
+        binding.pinInputKeyboard.setEnabled(inputLength
+                < binding.pinInputIndicator.getLength()); // allow typing when incomplete
+        binding.pinInputKeyboard.setDeleteEnabled(inputLength > 0); // allow deletion when empty
 
-        if (inputLength == PIN_LENGTH && listener != null) {
+        if (inputLength == binding.pinInputIndicator.getLength() && listener != null) {
             listener.onPinEntered(content);
         }
     }
@@ -185,7 +185,7 @@ public class MuunPinInput extends MuunView {
     private class KeyboardListener implements MuunNumericKeyboard.OnKeyListener {
         @Override
         public void onNumberKey(int number) {
-            if (content.length() < PIN_LENGTH) {
+            if (content.length() < binding.pinInputIndicator.getLength()) {
                 content += number;
                 updateAfterChange();
             }
@@ -193,10 +193,15 @@ public class MuunPinInput extends MuunView {
 
         @Override
         public void onDeleteKey() {
-            if (content.length() > 0) {
+            if (!content.isEmpty()) {
                 content = content.substring(0, content.length() - 1);
                 updateAfterChange();
             }
+        }
+
+        @Override
+        public void onBiometricsKey() {
+            biometricsRequestedListener.onBiometricsRequested();
         }
     }
 }

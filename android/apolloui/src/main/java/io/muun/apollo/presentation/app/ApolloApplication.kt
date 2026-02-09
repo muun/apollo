@@ -9,11 +9,9 @@ import android.provider.Settings
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.emoji2.text.EmojiCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.multidex.MultiDex
 import androidx.work.Configuration
 import app_provided_data.Config
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -40,15 +38,16 @@ import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_APP_WILL_TERMINATE
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.NightMode.DARK
 import io.muun.apollo.domain.model.NightMode.FOLLOW_SYSTEM
 import io.muun.apollo.domain.model.NightMode.LIGHT
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.sync.FeeDataSyncer
 import io.muun.apollo.presentation.app.di.ApplicationComponent
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent
+import io.muun.apollo.presentation.app.startup.AppStartupInitializer
 import io.muun.apollo.presentation.ui.utils.UserFacingErrorMessagesImpl
 import rx.plugins.RxJavaHooks
 import timber.log.Timber
@@ -57,7 +56,8 @@ import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.money.spi.CurrencyProviderSpi
 
-open class ApolloApplication : Application(), DataComponentProvider, Configuration.Provider, DefaultLifecycleObserver {
+open class ApolloApplication : Application(), DataComponentProvider, Configuration.Provider,
+    DefaultLifecycleObserver {
 
     private var applicationComponent: ApplicationComponent? = null
 
@@ -96,10 +96,8 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
     @Inject
     lateinit var userActions: UserActions
 
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
-    }
+    @Inject
+    lateinit var appStartupInitializer: AppStartupInitializer
 
     override fun onCreate() {
         // The order of the calls in this method is intentional.
@@ -122,11 +120,11 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
             FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(false)
         }
 
+        setupDebugTools()
         initializeDagger()
+        appStartupInitializer.init().await()
 
         detectAppUpdate.run()
-
-        setupDebugTools()
 
         initializeLibwallet()
 
@@ -147,8 +145,6 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         registerReceiver(lockWhenDisplayIsOff, IntentFilter(Intent.ACTION_SCREEN_OFF))
 
         RxJavaHooks.enableAssemblyTracking()
-
-        EmojiCompat.init(BundledEmojiCompatConfig(this))
 
         if (lockManager.isLockConfigured()) {
             lockManager.setLock()
@@ -330,7 +326,7 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
     }
 
     override fun onDestroy(owner: LifecycleOwner) { // app will terminate
-        getDataComponent().walletClient().shutdown()
+        getDataComponent().libwalletClient().shutdown()
         LibwalletBridge.stopServer()
         analytics.report(E_APP_WILL_TERMINATE())
     }

@@ -21,7 +21,7 @@ import java.util.Locale;
  */
 public class MoneyDecoration implements DecorationTransformation {
 
-    public static Character THIN_SPACE = '\u200A';
+    public static final Character THIN_SPACE = '\u200A';
 
     private final char decimalSeparator;
     private final char groupingSeparator;

@@ -4,14 +4,12 @@ import io.muun.apollo.data.afs.BuildInfo;
 import io.muun.apollo.data.afs.PackageManagerAppInfo;
 import io.muun.apollo.data.afs.PackageManagerDeviceFeatures;
 import io.muun.apollo.data.external.Globals;
-import io.muun.apollo.data.os.GooglePlayHelper;
-import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.data.serialization.dates.ApolloZonedDateTime;
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.BackgroundEvent;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.EmergencyKitExport;
+import io.muun.apollo.domain.model.FeasibleZone;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.InstallSourceInfo;
 import io.muun.apollo.domain.model.OperationWithMetadata;
@@ -20,9 +18,9 @@ import io.muun.apollo.domain.model.SensorEvent;
 import io.muun.apollo.domain.model.SensorEventBatch;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.common.api.AndroidAppInfoJson;
-import io.muun.common.api.AndroidBuildInfoJson;
 import io.muun.common.api.AndroidDeviceFeaturesJson;
 import io.muun.common.api.BackgroundEventJson;
 import io.muun.common.api.BitcoinAmountJson;
@@ -37,6 +35,7 @@ import io.muun.common.api.CreateLoginSessionJson;
 import io.muun.common.api.CreateRcLoginSessionJson;
 import io.muun.common.api.ExportEmergencyKitJson;
 import io.muun.common.api.ExternalAddressesRecord;
+import io.muun.common.api.FeasibleAreaJson;
 import io.muun.common.api.FeedbackJson;
 import io.muun.common.api.IncomingSwapFulfillmentDataJson;
 import io.muun.common.api.LoginJson;
@@ -227,9 +226,7 @@ public class ApiObjectsMapper {
             @NonNull final InstallSourceInfo installSourceInfo,
             final int bootCount,
             @NonNull final String glEsVersion,
-            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo,
-            final BuildInfo buildInfo,
+            final String bootLoader,
             final PackageManagerAppInfo appInfo,
             final PackageManagerDeviceFeatures deviceFeatures,
             final String signatureHash,
@@ -265,15 +262,9 @@ public class ApiObjectsMapper {
                 elapsedRealtime,
                 installSourceInfo.getInstallingPackageName(),
                 installSourceInfo.getInitiatingPackageName(),
-                buildInfo.getBootloader(),
+                bootLoader,
                 bootCount,
                 glEsVersion,
-                playServicesInfo.getVersionCode(),
-                playServicesInfo.getVersionName(),
-                playServicesInfo.getClientVersionCode(),
-                playInfo.getVersionCode(),
-                playInfo.getVersionName(),
-                mapBuildInfo(buildInfo),
                 mapAppInfo(appInfo),
                 mapDeviceFeatures(deviceFeatures),
                 signatureHash,
@@ -286,23 +277,6 @@ public class ApiObjectsMapper {
                 isLowRamDevice,
                 firstInstallTimeInMs,
                 applicationId
-        );
-    }
-
-    private AndroidBuildInfoJson mapBuildInfo(BuildInfo buildInfo) {
-        return new AndroidBuildInfoJson(
-                buildInfo.getAbis(),
-                null,
-                buildInfo.getBootloader(),
-                buildInfo.getManufacturer(),
-                buildInfo.getBrand(),
-                buildInfo.getHost(),
-                buildInfo.getType(),
-                buildInfo.getRadioVersion(),
-                buildInfo.getSecurityPatch(),
-                buildInfo.getModel(),
-                buildInfo.getProduct(),
-                buildInfo.getRelease()
         );
     }
 
@@ -370,8 +344,6 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
             final PackageManagerAppInfo appInfo,
             final PackageManagerDeviceFeatures deviceFeatures,
@@ -401,9 +373,7 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        playServicesInfo,
-                        playInfo,
-                        buildInfo,
+                        buildInfo.getBootloader(),
                         appInfo,
                         deviceFeatures,
                         signatureHash,
@@ -442,8 +412,6 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
             final PackageManagerAppInfo appInfo,
             final PackageManagerDeviceFeatures deviceFeatures,
@@ -473,9 +441,7 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        playServicesInfo,
-                        playInfo,
-                        buildInfo,
+                        buildInfo.getBootloader(),
                         appInfo,
                         deviceFeatures,
                         signatureHash,
@@ -512,8 +478,6 @@ public class ApiObjectsMapper {
             @NonNull InstallSourceInfo installSourceInfo,
             int bootCount,
             @NonNull String glEsVersion,
-            @NonNull GooglePlayServicesHelper.PlayServicesInfo playServicesInfo,
-            @NonNull GooglePlayHelper.PlayInfo playInfo,
             final BuildInfo buildInfo,
             final PackageManagerAppInfo appInfo,
             final PackageManagerDeviceFeatures deviceFeatures,
@@ -543,9 +507,7 @@ public class ApiObjectsMapper {
                         installSourceInfo,
                         bootCount,
                         glEsVersion,
-                        playServicesInfo,
-                        playInfo,
-                        buildInfo,
+                        buildInfo.getBootloader(),
                         appInfo,
                         deviceFeatures,
                         signatureHash,
@@ -765,7 +727,7 @@ public class ApiObjectsMapper {
     }
 
     /**
-     *  Creates a RealTimeFeesRequestJson.
+     * Creates a RealTimeFeesRequestJson.
      */
     @NotNull
     public RealTimeFeesRequestJson mapRealTimeFeesRequestJson(
@@ -779,7 +741,7 @@ public class ApiObjectsMapper {
                 unconfirmedUtxos.add(sizeForAmount.outpoint);
             }
         }
-        ;
+
         return new RealTimeFeesRequestJson(
                 unconfirmedUtxos,
                 mapFeeBumpRefreshPolicy(feeBumpRefreshPolicy)
@@ -843,6 +805,16 @@ public class ApiObjectsMapper {
                 ApolloZonedDateTime.of(event.getEventTimestamp()),
                 event.getEventType(),
                 event.getEventData()
+        );
+    }
+
+    /**
+     * Map the feasible area.
+     */
+    public FeasibleZone mapFeasibleArea(FeasibleAreaJson feasibleAreaJson) {
+        return new FeasibleZone(
+                feasibleAreaJson.boundary,
+                feasibleAreaJson.totalTimeQuantiles
         );
     }
 }

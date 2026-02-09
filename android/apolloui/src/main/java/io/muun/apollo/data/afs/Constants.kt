@@ -10,4 +10,7 @@ object Constants {
     const val INT_UNKNOWN = -1
     const val INT_ABSENT = 0
     const val INT_PRESENT = 1
+
+    // LONG constants
+    const val LONG_UNKNOWN = -1L
 }

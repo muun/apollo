@@ -1,6 +1,7 @@
 package io.muun.apollo.data.external;
 
 import io.muun.apollo.domain.errors.EmptyFieldError;
+import io.muun.apollo.domain.model.BiometricAuthenticationErrorReason;
 
 @SuppressWarnings("checkstyle:MissingJavadocMethod")
 public abstract class UserFacingErrorMessages {
@@ -76,4 +77,8 @@ public abstract class UserFacingErrorMessages {
     public abstract String invalidRcV2();
 
     public abstract String saveEkToDisk();
+
+    public abstract String biometricsAuthenticationError(
+            BiometricAuthenticationErrorReason reason
+    );
 }

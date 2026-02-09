@@ -243,12 +243,6 @@ public class ClientJson {
             @Nullable final String systemBootloaderVersion,
             final int bootCount,
             @Nullable final String glEsVersion,
-            @Nullable final Long googlePlayServicesVersionCode,
-            @Nullable final String googlePlayServicesVersionName,
-            @Nullable final Integer googlePlayServicesClientVersionCode,
-            @Nullable final Long googlePlayVersionCode,
-            @Nullable final String googlePlayVersionName,
-            @Nullable final AndroidBuildInfoJson androidBuildInfo,
             @Nullable final AndroidAppInfoJson androidAppInfo,
             @Nullable final AndroidDeviceFeaturesJson androidDeviceFeatures,
             @Nullable final String androidSignatureHash,
@@ -283,12 +277,12 @@ public class ClientJson {
         this.systemBootloaderVersion = systemBootloaderVersion;
         this.bootCount = bootCount;
         this.glEsVersion = glEsVersion;
-        this.googlePlayServicesVersionCode = googlePlayServicesVersionCode;
-        this.googlePlayServicesVersionName = googlePlayServicesVersionName;
-        this.googlePlayServicesClientVersionCode = googlePlayServicesClientVersionCode;
-        this.googlePlayVersionCode = googlePlayVersionCode;
-        this.googlePlayVersionName = googlePlayVersionName;
-        this.androidBuildInfo = androidBuildInfo;
+        this.googlePlayServicesVersionCode = null;
+        this.googlePlayServicesVersionName = null;
+        this.googlePlayServicesClientVersionCode = null;
+        this.googlePlayVersionCode = null;
+        this.googlePlayVersionName = null;
+        this.androidBuildInfo = null;
         this.androidAppInfo = androidAppInfo;
         this.androidDeviceFeatures = androidDeviceFeatures;
         this.androidSignatureHash = androidSignatureHash;

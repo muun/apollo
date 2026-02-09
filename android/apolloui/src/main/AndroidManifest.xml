@@ -3,6 +3,8 @@
         xmlns:tools="http://schemas.android.com/tools"
 >
 
+    <uses-sdk tools:overrideLibrary="androidx.biometric, androidx.biometric.ktx" />
+
     <!-- Permissions -->
 
     <uses-feature android:name="android.hardware.camera"/>
@@ -418,6 +420,12 @@
         />
 
         <!-- Providers -->
+        <provider
+                android:name=".presentation.app.trace.StartupTraceProvider"
+                android:authorities="${applicationId}.muun-tracer"
+                android:exported="false">
+        </provider>
+
         <provider
                 android:name="androidx.core.content.FileProvider"
                 android:authorities="${applicationId}.cache.fileprovider"

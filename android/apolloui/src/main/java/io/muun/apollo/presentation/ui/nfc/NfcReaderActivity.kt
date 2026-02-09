@@ -14,12 +14,16 @@ import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.databinding.NfcReaderActivityBinding
-import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
+import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.model.FeasibleZone
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.activity.extension.NfcReaderModeExtension
-import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.BaseView
+import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
+import io.muun.apollo.presentation.ui.fragments.error.ErrorFragmentDelegate
+import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel
+import io.muun.apollo.presentation.ui.nfc.NfcReaderViewModel.ViewCommand
 import io.muun.apollo.presentation.ui.utils.attachChildAtMm
 import io.muun.apollo.presentation.ui.utils.vibrateShort
 import io.muun.apollo.presentation.ui.view.MuunHeader
@@ -28,7 +32,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
+class NfcReaderActivity : SingleFragmentActivity<BasePresenter<BaseView>>(), ErrorFragmentDelegate {
 
     companion object {
         fun getStartActivityIntent(context: Context) =
@@ -63,19 +67,45 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
         super.onCreate(savedInstanceState)
 
         initializeUi()
+        generateAppEvent("s_nfc_reader")
+        // TODO: this fetch is going to be moved outside the screen and should be removed from here
+        loadBoundaryData()
 
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.nfcReadState.collectLatest { state ->
-                    when (state) {
-                        is NfcReaderViewModel.NfcReadState.Success -> {
-                            vibrateShort()
-                            disableReaderMode()
-                            viewModel.securityCard2faSuccess(this@NfcReaderActivity)
-                        }
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.viewCommand.collect { viewCommand ->
+                        when (viewCommand) {
+                            is ViewCommand.Success -> {
+                                generateAppEvent("nfc_reading_success")
+                                vibrateShort()
+                                disableReaderMode()
+                                viewModel.securityCard2faSuccess(this@NfcReaderActivity)
+                            }
 
-                        is NfcReaderViewModel.NfcReadState.Error -> {
-                            handleNfcError(state)
+                            is ViewCommand.Error -> {
+                                handleNfcError(viewCommand)
+                            }
+
+                            is ViewCommand.DisableSecurityCardFlag -> {
+                                handleDisableSecurityCardFlag()
+                            }
+                        }
+                    }
+                }
+                launch {
+                    viewModel.viewState.collectLatest { viewState ->
+                        when (viewState) {
+                            is NfcReaderViewModel.ViewState.Reading -> {
+                                Timber.i("Reading nfc card")
+                            }
+
+                            is NfcReaderViewModel.ViewState.Scanning -> {
+                                viewState.feasibleZone?.let {
+                                    setBoundaryData(it)
+                                }
+                                Timber.i("Scanning for card")
+                            }
                         }
                     }
                 }
@@ -83,26 +113,34 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
         }
     }
 
-    private fun handleNfcError(state: NfcReaderViewModel.NfcReadState.Error) {
-        var message = "Error! See Debug logs or dismiss and try again\n\n${state.cause.message}"
+    private fun handleNfcError(error: ViewCommand.Error) {
+        generateAppEvent("nfc_reading_error")
 
-        if (state.cause is LibwalletGrpcError) {
-            val errorDetail = state.cause.errorDetail
+        Timber.e("NFC Error: ${error.message}")
 
-            if (errorDetail?.developerMessage?.contains("invalid signature:") == true) {
-                message = "Invalid Signature Verification! You're probably tapping with another " +
-                    "(incorrect) security card"
+        showError(
+            ErrorViewModel.Builder()
+                .loggingName(AnalyticsEvent.ERROR_TYPE.NFC_2FA_FAILED)
+                .kind(ErrorViewModel.ErrorViewKind.REPORTABLE)
+                // TODO get proper texts
+                .title("Error Reading Security Card")
+                .description(error.message)
+                .canGoBack(true)
+                .build()
+        )
+    }
 
-            } else if (errorDetail?.developerMessage?.isNotEmpty() == true) {
-                message = errorDetail.developerMessage
-            }
-        }
-
-        Timber.e("NFC Error: ${state.cause.message}")
-        viewModel.reportNfcError(state)
+    private fun handleDisableSecurityCardFlag() {
         MuunDialog.Builder()
-            .title("Security Card Auth Required")
-            .message(message)
+            .title(R.string.nfc_reader_screen_disable_ff_title)
+            .message(R.string.nfc_reader_screen_disable_ff_desc)
+            .positiveButton(R.string.nfc_reader_screen_disable_ff_yes) {
+                viewModel.disableSecurityCardFF()
+                finishActivity()
+            }
+            .negativeButton(R.string.no) {
+                viewModel.cancelDisableSecurityCardFF()
+            }
             .build()
             .let(::showDialog)
     }
@@ -113,6 +151,7 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
         viewModel.subscribeToAllSensors(this, this)
 
         if (!isNfcEnabled()) {
+            generateAppEvent("nfc_disabled_dialog")
             MuunDialog.Builder()
                 .title(R.string.nfc_reader_screen_title)
                 .message(R.string.nfc_reader_screen_enable_nfc)
@@ -154,7 +193,7 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
                 originXmm = it.first,
                 originYmm = it.second,
                 modifications = { pxPos ->
-                    pxPos * 0.9f // -10% shift for positioning
+                    pxPos * 0.5f // -50% shift for positioning in the middle
                 },
             )
         } ?: run {
@@ -165,6 +204,20 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
             container.attachChildAtMm(
                 childView = textView,
             )
+        }
+    }
+
+    override fun getHeader(): MuunHeader {
+        return binding.header
+    }
+
+    private fun loadBoundaryData() {
+        viewModel.fetchFeasibleZoneBoundary()
+    }
+
+    private fun setBoundaryData(feasibleZone: FeasibleZone) {
+        binding.nfcFeasibleAreaView.apply {
+            setData(feasibleZone)
         }
     }
 
@@ -188,5 +241,19 @@ class NfcReaderActivity : BaseActivity<BasePresenter<BaseView>>() {
 
     private fun disableReaderMode() {
         nfcReaderModeExtension.disableReaderMode()
+    }
+
+    private fun generateAppEvent(eventName: String) {
+        viewModel.generateAppEvent(eventName)
+    }
+
+    override fun handleBack(errorType: AnalyticsEvent.ERROR_TYPE) {
+        finishActivity()
+    }
+
+    override fun handleSendReport() {
+        if (viewModel.latestError != null) {
+            presenter.sendErrorReport(viewModel.latestError)
+        }
     }
 }

@@ -9,7 +9,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/muun/libwallet/cryptography"
+	"github.com/muun/libwallet/domain/nfc"
 	"github.com/muun/libwallet/service/model"
+	"github.com/muun/libwallet/storage"
 	"log/slog"
 	"math/big"
 	"reflect"
@@ -22,18 +25,31 @@ type RandomPrivateKeyMetadata struct {
 }
 
 type MockHoustonService struct {
+	keyValueStorage              *storage.KeyValueStorage
 	lastRandomPrivateKeyMetadata *RandomPrivateKeyMetadata
-	securityCardPaired           *model.SecurityCardMetadataJson
 	secretCardBytes              [32]byte
-	pairingSlot                  int
+	securityCardUsageCount       uint16
+	pairingSlot                  uint16
 }
 
 var _ HoustonService = (*MockHoustonService)(nil)
 
 const challengeTimeoutInSeconds = 90
 
-func NewMockHoustonService() *MockHoustonService {
-	return &MockHoustonService{}
+const (
+	ErrChallengeExpired = 2090
+	ErrInvalidSignature = 2091
+	ErrInvalidMac       = 2092
+	ErrUnknown          = 100_000
+)
+
+const (
+	StatusClientFailure = 400
+	StatusServerFailure = 500
+)
+
+func NewMockHoustonService(storage *storage.KeyValueStorage) *MockHoustonService {
+	return &MockHoustonService{keyValueStorage: storage}
 }
 
 func (m *MockHoustonService) HealthCheck() error {
@@ -77,10 +93,16 @@ func (m *MockHoustonService) SubmitDiagnosticsScanData(req model.DiagnosticScanD
 }
 
 func (m *MockHoustonService) ChallengeSecurityCardPair() (model.ChallengeSecurityCardPairJson, error) {
+	err := m.loadCardData()
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error loading houston data", err)
+		return model.ChallengeSecurityCardPairJson{}, houstonError
+	}
 
 	randomPrivateKey, err := ecdh.P256().GenerateKey(rand.Reader)
 	if err != nil {
-		return model.ChallengeSecurityCardPairJson{}, fmt.Errorf("error generating private key: %w", err)
+		houstonError := mapToInternalServerHoustonError("error generating private key", err)
+		return model.ChallengeSecurityCardPairJson{}, houstonError
 	}
 
 	m.lastRandomPrivateKeyMetadata = &RandomPrivateKeyMetadata{
@@ -100,22 +122,35 @@ func (m *MockHoustonService) RegisterSecurityCard(
 ) (model.RegisterSecurityCardOkJson, error) {
 	timeSinceLastChallenge := time.Since(m.lastRandomPrivateKeyMetadata.timeStamp).Seconds()
 	if timeSinceLastChallenge > challengeTimeoutInSeconds {
-		return model.RegisterSecurityCardOkJson{}, errors.New("challenge was already invalidated")
+		houstonError := &HoustonResponseError{
+			DeveloperMessage: "challenge has expired",
+			ErrorCode:        ErrChallengeExpired,
+			Message:          "challenge has expired",
+			RequestId:        0,
+			Status:           StatusClientFailure,
+		}
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	cardPublicKeyBytes, err := hex.DecodeString(req.CardPublicKeyInHex)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding card pub key: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding card pub key", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	clientPublicKeyBytes, err := hex.DecodeString(req.ClientPublicKeyInHex)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding client pub key: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding client pub key", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
-	sharedPoint, err := performECDH(m.lastRandomPrivateKeyMetadata.privateKey.Bytes(), cardPublicKeyBytes)
+	sharedPoint, err := cryptography.ECDH(
+		m.lastRandomPrivateKeyMetadata.privateKey.Bytes(),
+		cardPublicKeyBytes,
+	)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("ECDH error: %w", err)
+		houstonError := mapToInternalServerHoustonError("ecdh error", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	// Compute secret_card = sha256(shared_point)
@@ -128,18 +163,20 @@ func (m *MockHoustonService) RegisterSecurityCard(
 
 	metadataBytes, err := SecurityCardMetadataToBytes(req.Metadata)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding card metadata: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding card metadata", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	receivedMacBytes, err := hex.DecodeString(req.MacInHex)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding mac: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding mac", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	// Verify MAC: mac = hmac(mac_secret_card, C || P || index || metadata || pub_client)
 	err = verifyPairingMAC(
 		cardPublicKeyBytes,
-		IntTo2Bytes(req.PairingSlot),
+		nfc.IntTo2Bytes(req.PairingSlot),
 		metadataBytes,
 		m.lastRandomPrivateKeyMetadata.privateKey.PublicKey().Bytes(),
 		clientPublicKeyBytes,
@@ -147,33 +184,55 @@ func (m *MockHoustonService) RegisterSecurityCard(
 		receivedMacBytes,
 	)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("mac verify error: %w", err)
+		return model.RegisterSecurityCardOkJson{}, &HoustonResponseError{
+			DeveloperMessage: err.Error(),
+			ErrorCode:        ErrInvalidMac,
+			Message:          "mac verification failed: the message data has been tampered with or corrupted.",
+			RequestId:        0,
+			Status:           StatusClientFailure,
+		}
 	}
 
 	globalSignCardBytes, err := hex.DecodeString(req.GlobalSignCardInHex)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding global sign card: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding global sign card", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	globalPublicKeyBytes, err := hex.DecodeString(req.Metadata.GlobalPublicKeyInHex)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error decoding global public card: %w", err)
+		houstonError := mapToInternalServerHoustonError("error decoding global public card", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	// Verify signed MAC with global public key
-	isValidated, err := m.VerifySignature(globalPublicKeyBytes, receivedMacBytes, globalSignCardBytes)
+	isValidated, err := m.verifySignature(globalPublicKeyBytes, receivedMacBytes, globalSignCardBytes)
 	if err != nil {
-		return model.RegisterSecurityCardOkJson{}, fmt.Errorf("error with mac sig verification: %w", err)
+		houstonError := mapToInternalServerHoustonError("error with mac sig verification", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	if !isValidated {
-		return model.RegisterSecurityCardOkJson{}, errors.New("mac signature is wrong")
+		houstonError := &HoustonResponseError{
+			DeveloperMessage: "signature could not be verified. Signed content was altered or signed with invalid/incorrect key",
+			ErrorCode:        ErrInvalidSignature,
+			Message:          "invalid signature",
+			RequestId:        0,
+			Status:           StatusClientFailure,
+		}
+		return model.RegisterSecurityCardOkJson{}, houstonError
 	}
 
 	// Store card and secret data
-	m.securityCardPaired = &req.Metadata
+	m.securityCardUsageCount = req.Metadata.UsageCount
 	m.secretCardBytes = secretCard
 	m.pairingSlot = req.PairingSlot
+
+	err = m.persistCardData()
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error persisting houston data", err)
+		return model.RegisterSecurityCardOkJson{}, houstonError
+	}
 
 	// TODO: Check if something should change on metadata returned
 	enrichedMetadata := req.Metadata
@@ -185,10 +244,19 @@ func (m *MockHoustonService) RegisterSecurityCard(
 	}, nil
 }
 
-func (m *MockHoustonService) ChallengeSecurityCardSign() (model.ChallengeSecurityCardSignJson, error) {
+func (m *MockHoustonService) ChallengeSecurityCardSign(
+	req model.ChallengeSecurityCardSignJson,
+) (model.ChallengeSecurityCardSignResponseJson, error) {
+	err := m.loadCardData()
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error loading houston data", err)
+		return model.ChallengeSecurityCardSignResponseJson{}, houstonError
+	}
+
 	randomPrivateKey, err := ecdh.P256().GenerateKey(rand.Reader)
 	if err != nil {
-		return model.ChallengeSecurityCardSignJson{}, fmt.Errorf("error generating private key: %w", err)
+		houstonError := mapToInternalServerHoustonError("error generating private key", err)
+		return model.ChallengeSecurityCardSignResponseJson{}, houstonError
 	}
 
 	m.lastRandomPrivateKeyMetadata = &RandomPrivateKeyMetadata{
@@ -196,49 +264,87 @@ func (m *MockHoustonService) ChallengeSecurityCardSign() (model.ChallengeSecurit
 		timeStamp:  time.Now(),
 	}
 
-	m.securityCardPaired.UsageCount += 1
+	m.securityCardUsageCount += 1
 
 	randomPublicKey := randomPrivateKey.PublicKey().Bytes()
 
-	challengeMac := m.makeChallengeSignMac(randomPublicKey)
+	reasonBytes, err := hex.DecodeString(req.ReasonInHex)
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error decoding reason", err)
+		return model.ChallengeSecurityCardSignResponseJson{}, houstonError
+	}
 
-	return model.ChallengeSecurityCardSignJson{
+	challengeMac := nfc.MakeChallengeSignMac(
+		m.secretCardBytes[:16],
+		randomPublicKey,
+		reasonBytes,
+		m.securityCardUsageCount,
+		m.pairingSlot,
+	)
+
+	return model.ChallengeSecurityCardSignResponseJson{
 		ServerPublicKeyInHex: hex.EncodeToString(randomPublicKey),
-		CardUsageCount:       m.securityCardPaired.UsageCount,
+		CardUsageCount:       m.securityCardUsageCount,
 		MacInHex:             hex.EncodeToString(challengeMac),
+		PairingSlot:          m.pairingSlot,
 	}, nil
 }
 
 func (m *MockHoustonService) SolveSecurityCardChallenge(req model.SolveSecurityCardChallengeJson) error {
 	timeSinceLastChallenge := time.Since(m.lastRandomPrivateKeyMetadata.timeStamp).Seconds()
 	if timeSinceLastChallenge > challengeTimeoutInSeconds {
-		return errors.New("challenge was already invalidated")
+		return &HoustonResponseError{
+			DeveloperMessage: "challenge has expired",
+			ErrorCode:        ErrChallengeExpired,
+			Message:          "challenge has expired",
+			RequestId:        0,
+			Status:           StatusClientFailure,
+		}
 	}
 
 	serverPublicKeyBytes := m.lastRandomPrivateKeyMetadata.privateKey.PublicKey().Bytes()
 	cardPublicKeyBytes, err := hex.DecodeString(req.PublicKeyInHex)
 	if err != nil {
-		return errors.New("error decoding card pub key")
+		houstonError := mapToInternalServerHoustonError("error decoding card pub key", err)
+		return houstonError
 	}
 
 	receivedMac, err := hex.DecodeString(req.MacInHex)
 	if err != nil {
-		return errors.New("error decoding received mac")
+		houstonError := mapToInternalServerHoustonError("error decoding received mac", err)
+		return houstonError
 	}
 
 	err = m.verifySolveChallengeMac(receivedMac, serverPublicKeyBytes, cardPublicKeyBytes)
 	if err != nil {
-		return fmt.Errorf("mac verification error:%w", err)
+		return &HoustonResponseError{
+			DeveloperMessage: err.Error(),
+			ErrorCode:        ErrInvalidMac,
+			Message:          "mac verification failed: the message data has been tampered with or corrupted.",
+			RequestId:        0,
+			Status:           StatusClientFailure,
+		}
 	}
 
 	// Calculate and store new secret card
-	sharedPoint, err := performECDH(m.lastRandomPrivateKeyMetadata.privateKey.Bytes(), cardPublicKeyBytes)
+	sharedPoint, err := cryptography.ECDH(
+		m.lastRandomPrivateKeyMetadata.privateKey.Bytes(),
+		cardPublicKeyBytes,
+	)
 	if err != nil {
-		return fmt.Errorf("ECDH error: %w", err)
+		houstonError := mapToInternalServerHoustonError("ecdh error", err)
+		return houstonError
 	}
 
-	// Compute new_secret_card = sha256(shared_point)
-	m.secretCardBytes = sha256.Sum256(sharedPoint)
+	// Update secret for forward secrecy: new_secret = HMAC(currentSecretCardBytes, sharedPoint)
+	newSecretCardBytes := nfc.ComputeHMACSHA256(m.secretCardBytes[:], sharedPoint)
+	copy(m.secretCardBytes[:], newSecretCardBytes)
+
+	err = m.persistCardData()
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error persisting houston data", err)
+		return houstonError
+	}
 
 	return nil
 }
@@ -248,106 +354,19 @@ func (m *MockHoustonService) verifySolveChallengeMac(
 	serverPublicKeyBytes,
 	cardPublicKeyBytes []byte,
 ) error {
-	// Construct MAC input with: secret_card || C || P
-	macInput := make([]byte, 0, 162)
-	macInput = append(macInput, m.secretCardBytes[:]...) // secret_card (32 bytes)
+	// Construct MAC input with: C || P
+	macInput := make([]byte, 0, 130)
 	macInput = append(macInput, serverPublicKeyBytes...) // C (server ephemeral pub key 65 bytes)
 	macInput = append(macInput, cardPublicKeyBytes...)   // P (card ephemeral pub key 65 bytes)
 
-	// Compute expected MAC using mac_secret_card (secret_card[16:])
-	expectedMAC := computeHMACSHA256(m.secretCardBytes[16:], macInput)
-
-	fmt.Printf("Expected MAC: %x", expectedMAC)
-	fmt.Printf("Received MAC: %x", receivedMac)
+	// Compute expected MAC using mac_secret_card (secret_card[:16])
+	expectedMAC := nfc.ComputeHMACSHA256(m.secretCardBytes[:16], macInput)
 
 	// Compare MACs
 	if !reflect.DeepEqual(receivedMac, expectedMAC) {
 		return fmt.Errorf("MAC mismatch - expected: %x, got: %x", expectedMAC, receivedMac)
 	}
 	return nil
-}
-
-func (m *MockHoustonService) makeChallengeSignMac(randomPublicKey []byte) []byte {
-	// Construct MAC input with: secretCard || C || UsageCount || PairingSlot
-	macInput := make([]byte, 0, 101)
-	macInput = append(macInput, m.secretCardBytes[:]...)                         // last secret card, 32 bytes
-	macInput = append(macInput, randomPublicKey...)                              // P (card public key, 65 bytes)
-	macInput = append(macInput, IntTo2Bytes(m.securityCardPaired.UsageCount)...) // usage count (2 bytes)
-	macInput = append(macInput, IntTo2Bytes(m.pairingSlot)...)                   // pairing slot (2 bytes)
-
-	// Compute expected MAC using mac_secret_card (secret_card[16:])
-	challengeMac := computeHMACSHA256(m.secretCardBytes[16:], macInput)
-	return challengeMac
-}
-
-// performECDH performs ECDH key agreement
-func performECDH(privateKeyBytes, publicKeyBytes []byte) ([]byte, error) {
-	curve := elliptic.P256()
-
-	// Parse public key
-	if len(publicKeyBytes) != 65 || publicKeyBytes[0] != 0x04 {
-		return nil, errors.New("invalid public key format")
-	}
-
-	x := new(big.Int).SetBytes(publicKeyBytes[1:33])
-	y := new(big.Int).SetBytes(publicKeyBytes[33:65])
-
-	// Verify the public key is on the curve
-	if !curve.IsOnCurve(x, y) {
-		return nil, errors.New("public key not on curve")
-	}
-
-	// Perform scalar multiplication
-	sharedX, sharedY := curve.ScalarMult(x, y, privateKeyBytes)
-
-	// Convert shared point to uncompressed format
-	sharedSecret := make([]byte, 65)
-	sharedSecret[0] = 0x04
-
-	xBytes := sharedX.Bytes()
-	yBytes := sharedY.Bytes()
-
-	copy(sharedSecret[1+32-len(xBytes):33], xBytes)
-	copy(sharedSecret[33+32-len(yBytes):65], yBytes)
-
-	return sharedSecret, nil
-}
-
-// computeHMACSHA256 computes HMAC-SHA256
-func computeHMACSHA256(key, data []byte) []byte {
-	const blockSize = 64 // SHA-256 block size
-
-	// Key preprocessing
-	if len(key) > blockSize {
-		hash := sha256.Sum256(key)
-		key = hash[:]
-	}
-
-	// Pad key to block size
-	paddedKey := make([]byte, blockSize)
-	copy(paddedKey, key)
-
-	// Create inner and outer padding
-	innerPad := make([]byte, blockSize)
-	outerPad := make([]byte, blockSize)
-
-	for i := 0; i < blockSize; i++ {
-		innerPad[i] = paddedKey[i] ^ 0x36
-		outerPad[i] = paddedKey[i] ^ 0x5c
-	}
-
-	// Inner hash
-	innerHash := sha256.New()
-	innerHash.Write(innerPad)
-	innerHash.Write(data)
-	innerResult := innerHash.Sum(nil)
-
-	// Outer hash
-	outerHash := sha256.New()
-	outerHash.Write(outerPad)
-	outerHash.Write(innerResult)
-
-	return outerHash.Sum(nil)
 }
 
 func verifyPairingMAC(cardPublicKey,
@@ -367,14 +386,11 @@ func verifyPairingMAC(cardPublicKey,
 	macInput = append(macInput, clientPubKey...)       // pub_client (65 bytes)
 
 	// Compute expected MAC using mac_secret_card (secret_card[16:])
-	expectedMAC := computeHMACSHA256(macSecretCard, macInput)
-
-	fmt.Printf("Expected MAC: %x", expectedMAC)
-	fmt.Printf("Received MAC: %x", receivedMac)
+	expectedMAC := nfc.ComputeHMACSHA256(macSecretCard, macInput)
 
 	// Compare MACs
 	if !reflect.DeepEqual(receivedMac, expectedMAC) {
-		return fmt.Errorf("MAC mismatch - expected: %x, got: %x", expectedMAC, receivedMac)
+		return fmt.Errorf("mac mismatch - expected: %x, got: %x", expectedMAC, receivedMac)
 	}
 
 	return nil
@@ -409,10 +425,10 @@ func SecurityCardMetadataToBytes(m model.SecurityCardMetadataJson) ([]byte, erro
 	buf = append(buf, cardModelBytes...)
 
 	// Firmware version (2 bytes)
-	buf = append(buf, IntTo2Bytes(m.FirmwareVersion)...)
+	buf = append(buf, nfc.IntTo2Bytes(m.FirmwareVersion)...)
 
 	// Usage count (2 bytes, big-endian)
-	buf = append(buf, IntTo2Bytes(m.UsageCount)...)
+	buf = append(buf, nfc.IntTo2Bytes(m.UsageCount)...)
 
 	// Language code (2 bytes)
 	languageCodeBytes, err := hex.DecodeString(m.LanguageCodeInHex)
@@ -424,14 +440,8 @@ func SecurityCardMetadataToBytes(m model.SecurityCardMetadataJson) ([]byte, erro
 	return buf, nil
 }
 
-func IntTo2Bytes(n int) []byte {
-	hi := byte(n >> 8)
-	lo := byte(n & 0xFF)
-	return []byte{hi, lo}
-}
-
-// VerifySignature verifies a signature from a muuncard.
-func (m *MockHoustonService) VerifySignature(publicKeyBytes, messageBytes, signedMessageBytes []byte) (bool, error) {
+// verifySignature verifies a signature from a muuncard.
+func (m *MockHoustonService) verifySignature(publicKeyBytes, messageBytes, signedMessageBytes []byte) (bool, error) {
 
 	// verify expected public key
 	if len(publicKeyBytes) != 65 || publicKeyBytes[0] != 0x04 {
@@ -471,4 +481,96 @@ func ecdhToECDSAPublicKey(key *ecdh.PublicKey) (*ecdsa.PublicKey, error) {
 		X: big.NewInt(0).SetBytes(rawKey[1:33]),
 		Y: big.NewInt(0).SetBytes(rawKey[33:]),
 	}, nil
+}
+
+func mapToInternalServerHoustonError(message string, errCause error) *HoustonResponseError {
+	return &HoustonResponseError{
+		DeveloperMessage: errCause.Error(),
+		ErrorCode:        ErrUnknown,
+		Message:          message,
+		RequestId:        0,
+		Status:           StatusServerFailure,
+	}
+}
+
+func (m *MockHoustonService) persistCardData() error {
+	var items = make(map[string]any)
+
+	if m.lastRandomPrivateKeyMetadata != nil {
+		privKeyInHex := hex.EncodeToString(m.lastRandomPrivateKeyMetadata.privateKey.Bytes())
+		items[storage.KeyLastRandomPrivKeyInHex] = privKeyInHex
+
+		items[storage.KeyTimeSinceLastChallengeUnixMillis] = m.lastRandomPrivateKeyMetadata.timeStamp.Unix()
+	}
+
+	// Note: LibwalletStorage IntType maps to int32, so we cast to int32
+	items[storage.KeySecurityCardUsageCount] = int32(m.securityCardUsageCount)
+	items[storage.KeySecurityCardPairingSlot] = int32(m.pairingSlot)
+
+	secretCardInHex := hex.EncodeToString(m.secretCardBytes[:])
+	items[storage.KeySecretCardBytesInHex] = secretCardInHex
+
+	slog.Debug("mockHouston - stored data", "data", items)
+
+	err := m.keyValueStorage.SaveBatch(items)
+	if err != nil {
+		return fmt.Errorf("error saving mock houston data: %w", err)
+	}
+
+	return nil
+}
+
+func (m *MockHoustonService) loadCardData() error {
+	var keys = []string{
+		storage.KeyLastRandomPrivKeyInHex,
+		storage.KeySecurityCardUsageCount,
+		storage.KeySecurityCardPairingSlot,
+		storage.KeySecretCardBytesInHex,
+		storage.KeyTimeSinceLastChallengeUnixMillis,
+	}
+
+	keyValues, err := m.keyValueStorage.GetBatch(keys)
+	if err != nil {
+		return fmt.Errorf("error loading mock houston data: %w", err)
+	}
+
+	slog.Debug("mock houston - loaded data", "data", keyValues)
+
+	if keyValues[storage.KeyLastRandomPrivKeyInHex] != nil {
+		privKeyBytes, err := hex.DecodeString(keyValues[storage.KeyLastRandomPrivKeyInHex].(string))
+		if err != nil {
+			return fmt.Errorf("error decoding server private key: %w", err)
+		}
+
+		privKey, err := ecdh.P256().NewPrivateKey(privKeyBytes)
+		if err != nil {
+			return fmt.Errorf("error initializing server private key: %w", err)
+		}
+
+		timeStamp := time.Unix(keyValues[storage.KeyTimeSinceLastChallengeUnixMillis].(int64), 0)
+
+		m.lastRandomPrivateKeyMetadata = &RandomPrivateKeyMetadata{
+			privateKey: privKey,
+			timeStamp:  timeStamp,
+		}
+	}
+
+	// Note: LibwalletStorage IntType maps to int32, so we cast to int32
+	if keyValues[storage.KeySecurityCardPairingSlot] != nil {
+		m.pairingSlot = uint16(keyValues[storage.KeySecurityCardPairingSlot].(int32))
+	}
+
+	if keyValues[storage.KeySecurityCardUsageCount] != nil {
+		m.securityCardUsageCount = uint16(keyValues[storage.KeySecurityCardUsageCount].(int32))
+	}
+
+	if keyValues[storage.KeySecretCardBytesInHex] != nil {
+		secretCard, err := hex.DecodeString(keyValues[storage.KeySecretCardBytesInHex].(string))
+		if err != nil {
+			return fmt.Errorf("error decoding secret card in hex: %w", err)
+		}
+		copy(m.secretCardBytes[:], secretCard)
+	}
+
+	return nil
 }

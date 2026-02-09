@@ -4,7 +4,7 @@ import io.muun.apollo.data.preferences.stored.StoredEkVerificationCodes
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.Contact
 import io.muun.apollo.domain.model.ExchangeRateWindow
-import io.muun.apollo.domain.model.FeeBumpFunctions
+import io.muun.apollo.domain.model.feebump.FeeBumpFunctions
 import io.muun.apollo.domain.model.FeeWindow
 import io.muun.apollo.domain.model.ForwardingPolicy
 import io.muun.apollo.domain.model.IncomingSwap

@@ -79,7 +79,7 @@ public class UriBuilder {
             sb.append(path);
         }
 
-        if (queryValues.size() > 0) {
+        if (!queryValues.isEmpty()) {
             sb.append("?");
 
             for (NameValuePair queryValue : queryValues) {

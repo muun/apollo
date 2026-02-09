@@ -6,7 +6,7 @@ import io.muun.apollo.data.preferences.TransactionSizeRepository
 import io.muun.apollo.domain.action.NotificationActions
 import io.muun.apollo.domain.action.NotificationProcessingState
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.NextTransactionSize
 import io.muun.apollo.domain.selector.FeatureSelector

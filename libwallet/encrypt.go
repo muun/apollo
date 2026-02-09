@@ -76,7 +76,7 @@ func randomBytes(count int) []byte {
 	return buf
 }
 
-// What follows are work arounds for https://github.com/golang/go/issues/46893
+// What follows are workarounds for https://github.com/golang/go/issues/46893
 
 type DecryptOperation struct {
 	d       Decrypter

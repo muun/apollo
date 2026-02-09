@@ -51,10 +51,11 @@ import io.muun.apollo.data.preferences.FeaturesRepository
 import io.muun.apollo.data.preferences.RepositoryRegistry
 import io.muun.apollo.domain.action.NotificationActions
 import io.muun.apollo.domain.action.NotificationPoller
-import io.muun.apollo.domain.libwallet.GoLibwalletService
+import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
+import io.muun.apollo.domain.libwallet.LibwalletClient
+import io.muun.apollo.domain.libwallet.LibwalletFeeBumpFunctionsProvider
 import io.muun.apollo.domain.libwallet.LibwalletLogAdapter
-import io.muun.apollo.domain.libwallet.LibwalletService
-import io.muun.apollo.domain.libwallet.WalletClient
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.presentation.app.AppStandbyBucketProviderImpl
 import io.muun.apollo.presentation.app.NotificationServiceImpl
@@ -117,10 +118,12 @@ class DataModule(
         context: Context,
         executionTransformerFactory: ExecutionTransformerFactory,
         bitcoinUnitSelector: BitcoinUnitSelector,
+        analytics: Analytics,
     ): NotificationService = NotificationServiceImpl(
         context,
         executionTransformerFactory,
-        bitcoinUnitSelector
+        bitcoinUnitSelector,
+        analytics
     )
 
     @Provides
@@ -223,14 +226,15 @@ class DataModule(
 
     @Provides
     @Singleton
-    fun provideWalletClient(channel: ManagedChannel): WalletClient = WalletClient(channel)
+    fun provideLibwalletClient(channel: ManagedChannel): LibwalletClient = LibwalletClient(channel)
 
     @Provides
     @Singleton
     fun provideNfcBridge(): AndroidNfcBridge = AndroidNfcBridge()
 
     @Provides
-    fun provideLibwalletService(): LibwalletService = GoLibwalletService()
+    fun provideFeeBumpFunctionsProvider(): FeeBumpFunctionsProvider =
+        LibwalletFeeBumpFunctionsProvider()
 
     @Provides
     @Singleton

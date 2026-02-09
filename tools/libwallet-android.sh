@@ -60,7 +60,5 @@ go run golang.org/x/mobile/cmd/gomobile bind \
     . ./newop ./app_provided_data ./libwallet_init
 
 st=$?
-
-echo ""
 echo "rebuilt gomobile with status $? to $libwallet"
 exit $st

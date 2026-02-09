@@ -1,31 +1,36 @@
 package io.muun.apollo.presentation.ui.activity.extension;
 
+import io.muun.apollo.R;
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
+import io.muun.apollo.domain.model.BiometricAuthenticationErrorReason;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.Navigator;
+import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.apollo.presentation.ui.base.ActivityExtension;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import io.muun.apollo.presentation.ui.view.MuunLockOverlay;
+import io.muun.common.exception.MissingCaseError;
 
 import android.content.Context;
 import android.os.Handler;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import androidx.annotation.StringRes;
 import icepick.State;
+import kotlin.Unit;
 import rx.Single;
 import rx.exceptions.OnErrorNotImplementedException;
 import timber.log.Timber;
 
+import java.util.Set;
 import javax.inject.Inject;
-
-import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN;
 
 @PerActivity
 public class ApplicationLockExtension extends ActivityExtension {
@@ -35,7 +40,8 @@ public class ApplicationLockExtension extends ActivityExtension {
     private static final int CUSTOM_SOFT_INPUT_DISABLED = (
             // NOTE: always keep ADJUST_RESIZE, or it will never work again, even if re-set later.
             // Only remove if willing to experiment for hours and then `reset --hard`.
-            SOFT_INPUT_STATE_ALWAYS_HIDDEN | SOFT_INPUT_ADJUST_RESIZE
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                    | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
     );
 
     private final Navigator navigator;
@@ -43,6 +49,8 @@ public class ApplicationLockExtension extends ActivityExtension {
     private final ExecutionTransformerFactory executionTransformerFactory;
 
     private final Analytics analytics;
+
+    private final BiometricsController biometricsController;
 
     private MuunLockOverlay lockOverlay;
 
@@ -59,11 +67,13 @@ public class ApplicationLockExtension extends ActivityExtension {
     public ApplicationLockExtension(Navigator navigator,
                                     ApplicationLockManager lockManager,
                                     ExecutionTransformerFactory executionTransformerFactory,
-                                    Analytics analytics) {
+                                    Analytics analytics,
+                                    BiometricsController biometricsController) {
         this.navigator = navigator;
         this.lockManager = lockManager;
         this.executionTransformerFactory = executionTransformerFactory;
         this.analytics = analytics;
+        this.biometricsController = biometricsController;
     }
 
     @Override
@@ -91,6 +101,7 @@ public class ApplicationLockExtension extends ActivityExtension {
         if (lockOverlay == null) {
             lockOverlay = new MuunLockOverlay(getActivity());
 
+            lockOverlay.setPinLength(lockManager.getPinLength());
             lockOverlay.setListener(new BoundLockOverlayListener());
 
             lockOverlay.attachToRoot();
@@ -217,6 +228,43 @@ public class ApplicationLockExtension extends ActivityExtension {
                             throw new OnErrorNotImplementedException(throwable);
                         }
                     });
+        }
+
+        @Override
+        public void onUnlockUsingBiometrics() {
+            Timber.i("ApplicationLockExtension: onUnlockUsingBiometrics. " + this);
+
+            biometricsController.authenticate(getActivity(),
+                    getActivity().getString(R.string.biometrics_unlock_title),
+                    getActivity().getString(R.string.biometrics_unlock_subtitle),
+                    () -> {
+                        biometricsController.setUserOptInBiometrics(true);
+                        lockManager.unlockWithBiometrics();
+                        onUnlockAttemptSuccess();
+                        return Unit.INSTANCE;
+                    },
+                    (error) -> {
+                        // BiometricAuthenticationErrorReason.GENERAL wraps a lot of OS errors that
+                        // doesn't have a clear reason to show to the user, so in this case we
+                        // decided to fail silently.
+                        if (!Set.of(
+                                BiometricAuthenticationErrorReason.LOCKOUT,
+                                BiometricAuthenticationErrorReason.LOCKOUT_PERMANENT
+                        ).contains(error.getReason())) {
+                            return Unit.INSTANCE;
+                        }
+
+                        final @StringRes int errorStringRes = switch (error.getReason()) {
+                            case LOCKOUT -> R.string.biometrics_unlock_error_lockout_desc;
+                            case LOCKOUT_PERMANENT ->
+                                    R.string.biometrics_unlock_error_lockout_permanent_desc;
+                            default -> throw new MissingCaseError(error.getReason());
+                        };
+
+                        ((BaseActivity) getActivity()).showErrorDialog(errorStringRes);
+                        return Unit.INSTANCE;
+                    }
+            );
         }
     }
 }

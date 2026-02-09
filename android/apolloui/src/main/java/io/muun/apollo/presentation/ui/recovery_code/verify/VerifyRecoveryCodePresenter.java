@@ -62,8 +62,9 @@ public class VerifyRecoveryCodePresenter
             return;
         }
 
-        if (! (recoveryCode.equals(expectedRecoveryCode) || Globals.INSTANCE.isDebug())) {
-            // For Debug builds any code passes the verification check (easy testing)
+        final boolean debug = Globals.INSTANCE.isDebug() && !Globals.INSTANCE.isProduction();
+        if (! (recoveryCode.equals(expectedRecoveryCode) || debug)) {
+            // For Local Debug builds any code passes the verification check (easy testing)
             analytics.report(new AnalyticsEvent.E_RECOVERY_CODE(RC_ERROR.DID_NOT_MATCH));
             view.setVerificationError(new RecoveryCodeVerificationError());
             return;

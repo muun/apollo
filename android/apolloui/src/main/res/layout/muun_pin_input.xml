@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-              tools:viewBindingIgnore="true"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:gravity="center_horizontal">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
     <View style="@style/expander" />
 
@@ -36,14 +34,15 @@
             android:layout_margin="@dimen/muun_title_text_margin"
             android:padding="10dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            tools:length="6" />
 
     <TextView
             android:id="@+id/error_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_secondary_color"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp" />
 
     <View style="@style/expander" />
 
@@ -51,5 +50,5 @@
             android:id="@+id/pin_input_keyboard"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 </LinearLayout>

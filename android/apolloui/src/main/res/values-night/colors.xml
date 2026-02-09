@@ -89,8 +89,6 @@
     <color name="notice_banner_background_border">@color/yellow_dark</color>
     <color name="notice_banner_rbf_bkg">@color/orange_dark</color>
     <color name="notice_banner_rbf_bkg_border">@color/orange</color>
-    <color name="pre_lollipop_popup_background_border">@color/gray_light</color>
-    <color name="pre_lollipop_popup_background">@color/black</color>
     <color name="ripple_gray">@color/gray_light</color>
     <color name="slider_dot_active">@color/blue</color>
     <color name="slider_dot_inactive">@color/blue_dark</color>

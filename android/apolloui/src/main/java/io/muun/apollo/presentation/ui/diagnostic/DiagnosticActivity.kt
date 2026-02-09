@@ -9,7 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import io.muun.apollo.databinding.ActivityDiagnosticBinding
-import io.muun.apollo.domain.libwallet.WalletClient
+import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.presentation.app.ApolloApplication
 import io.muun.apollo.presentation.ui.base.di.ActivityComponent
 import rx.android.schedulers.AndroidSchedulers
@@ -29,10 +29,10 @@ class DiagnosticActivity : AppCompatActivity() {
         }
 
     @Inject
-    lateinit var walletClient: WalletClient
+    lateinit var libwalletClient: LibwalletClient
 
-    var savedSessionId: String? = null
-    var currentValue: Long = 0
+    private var savedSessionId: String? = null
+    private var currentValue: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +52,7 @@ class DiagnosticActivity : AppCompatActivity() {
 
         val looper = Looper.myLooper()
         binding.beginButton.setOnClickListener {
-            walletClient.startDiagnosticSession()
+            libwalletClient.startDiagnosticSession()
                 .observeOn(AndroidSchedulers.from(looper))
                 .map { sessionId ->
                     savedSessionId = sessionId
@@ -64,20 +64,26 @@ class DiagnosticActivity : AppCompatActivity() {
 
         binding.scanButton.setOnClickListener {
             savedSessionId?.let { sessionId ->
-                walletClient.scanForUtxos(sessionId)
+                libwalletClient.scanForUtxos(sessionId)
                     .observeOn(AndroidSchedulers.from(looper))
                     .doOnError { throwable ->
-                        Toast.makeText(baseContext, "ERROR: ${throwable.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            baseContext,
+                            "ERROR: ${throwable.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                    .doOnNext{ update ->
+                    .doOnNext { update ->
                         if (update.scanComplete) {
                             binding.statusText.text = "Completed Scan."
-                            binding.logTextBox.text = "${binding.logTextBox.text}\nPROCESS COMPLETE\n"
+                            binding.logTextBox.text =
+                                "${binding.logTextBox.text}\nPROCESS COMPLETE\n"
                             binding.sendButton.isEnabled = true
                         }
                         update.amount?.let { amount ->
                             currentValue += amount
-                            binding.logTextBox.text = "${binding.logTextBox.text}\nFOUND $amount SATS @ ${update?.address}"
+                            binding.logTextBox.text =
+                                "${binding.logTextBox.text}\nFOUND $amount SATS @ ${update?.address}"
                             binding.logScrollview.fullScroll(View.FOCUS_DOWN)
                         }
                     }
@@ -87,7 +93,7 @@ class DiagnosticActivity : AppCompatActivity() {
 
         binding.sendButton.setOnClickListener {
             savedSessionId?.let { sessionId ->
-                walletClient.submitDiagnosticLog(sessionId)
+                libwalletClient.submitDiagnosticLog(sessionId)
                     .observeOn(AndroidSchedulers.from(looper))
                     .doOnError { throwable ->
                         Toast.makeText(
@@ -96,7 +102,7 @@ class DiagnosticActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                    .doOnNext { statusCode ->
+                    .doOnNext {
                         binding.statusText.text = "Diagnostic sent. Thank you!"
                         binding.scanButton.isEnabled = false
                         binding.sendButton.isEnabled = false

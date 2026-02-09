@@ -9,7 +9,7 @@ public class StringUtils {
      * Return true if a String is null, empty or pure whitespace.
      */
     public static boolean isEmpty(String text) {
-        return (text == null || text.trim().length() == 0);
+        return (text == null || text.trim().isEmpty());
     }
 
     /**

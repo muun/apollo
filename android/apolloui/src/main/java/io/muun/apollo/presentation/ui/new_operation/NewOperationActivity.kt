@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.new_operation
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -15,10 +16,16 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentSanitizer
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ActivityNewOperationBinding
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_MANUALLY_ENTER_FEE
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_AMOUNT
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_CONFIRMATION
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_DESCRIPTION
+import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SELECT_FEE
 import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.libwallet.destinationPubKey
@@ -26,12 +33,10 @@ import io.muun.apollo.domain.libwallet.remainingMillis
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Contact
-import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.OperationUri
 import io.muun.apollo.domain.model.PaymentRequest
 import io.muun.apollo.domain.model.SubmarineSwap
 import io.muun.apollo.domain.model.SubmarineSwapReceiver
-import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity
@@ -56,7 +61,6 @@ import io.muun.apollo.presentation.ui.view.NoticeBanner
 import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.apollo.presentation.ui.view.StatusMessage
 import io.muun.apollo.presentation.ui.view.TextInputWithBackHandling
-import io.muun.common.exception.MissingCaseError
 import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
@@ -94,12 +98,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     @Inject
     lateinit var viewModel: NewOperationViewModel
 
-    @Inject
-    lateinit var featureSelector: FeatureSelector
-
     private val nfcReaderLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            presenter.handleConfirmOperation(result)
+            presenter.handleSecurityCard2faResult(result)
         }
 
     // Components:
@@ -230,7 +231,18 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             // an <intent-filter> defined in the manifest. Flags cannot be specified for these
             // Intents (pff), and we really need CLEAR_TOP, so... well, this:
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
+
+            // Sanitize the intent before restarting to prevent UnsafeIntentLaunch
+            val sanitizedIntent = IntentSanitizer.Builder()
+                .allowComponent(ComponentName(this, NewOperationActivity::class.java))
+                .allowData { uri -> uri.scheme in listOf("bitcoin", "lightning", "lnurl") }
+                .allowExtra(OPERATION_URI, String::class.java)
+                .allowExtra(ORIGIN, String::class.java)
+                .allowFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .build()
+                .sanitizeByFiltering(intent)
+
+            startActivity(sanitizedIntent)
             finishActivity()
         }
 
@@ -335,7 +347,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     override fun goToEnterAmountState(state: EnterAmountState, receiver: Receiver) {
-
+        generateAppEvent(S_NEW_OP_AMOUNT().eventId)
         updateReceiver(state.resolved.paymentIntent, receiver)
 
         val balance = BitcoinAmount.fromLibwallet(state.totalBalance)
@@ -388,6 +400,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     override fun setAmountInputError() {
+        generateAppEvent("amount_input_error")
         amountInput.setAmountError(true)
         actionButton.isEnabled = false
     }
@@ -397,6 +410,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         receiver: Receiver,
         btcUnit: BitcoinUnit,
     ) {
+        generateAppEvent(S_NEW_OP_DESCRIPTION().eventId)
 
         updateReceiver(state.resolved.paymentIntent, receiver)
 
@@ -456,6 +470,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         receiver: Receiver,
         btcUnit: BitcoinUnit,
     ) {
+        generateAppEvent(S_NEW_OP_CONFIRMATION().eventId)
 
         updateReceiver(state.paymentIntent, receiver)
 
@@ -507,15 +522,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
 
         actionButton.setText(R.string.new_operation_confirm)
         actionButton.setOnClickListener {
-
-            if (featureSelector.get(MuunFeature.NFC_CARD)) {
-                presenter.authenticateWithSecurityCard(
-                    activity = this@NewOperationActivity,
-                    activityLauncher = nfcReaderLauncher
-                )
-            } else {
-                presenter.handleConfirmOperation()
-            }
+            presenter.handleConfirmClick(nfcReaderLauncher)
         }
         actionButton.isEnabled = isValid
 
@@ -542,26 +549,36 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     override fun goToEditFeeState() {
+        generateAppEvent(S_MANUALLY_ENTER_FEE().eventId)
         showOverlayFragment(RecommendedFeeFragment(), true)
     }
 
     override fun goToEditFeeManually() {
+        generateAppEvent(S_SELECT_FEE().eventId)
         replaceFragment(ManualFeeFragment(), true)
     }
 
     override fun goToConfirmedFee() {
+        generateAppEvent("s_new_op_error")
         // Go back to confirm Step
         clearFragmentBackStack()
         hideFragmentOverlay()
     }
 
     override fun showAbortDialog() {
+        generateAppEvent("s_new_op_abort_dialog")
         MuunDialog.Builder()
             .title(R.string.new_operation_abort_alert_title)
             .message(R.string.new_operation_abort_alert_body)
-            .positiveButton(R.string.yes_cancel) { presenter.finishAndGoHome() }
+            .positiveButton(R.string.yes_cancel) {
+                generateAppEvent("s_new_op_abort_dialog_yes")
+                presenter.finishAndGoHome()
+            }
             .negativeButton(R.string.no)
-            .onDismiss { presenter.cancelAbort() }
+            .onDismiss {
+                generateAppEvent("s_new_op_abort_dialog_dismiss")
+                presenter.cancelAbort()
+            }
             .build()
             .let(this::showDialog)
     }
@@ -573,6 +590,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         finishActivity()
     }
 
+    @Deprecated("Deprecated in Java")
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
 
@@ -588,6 +606,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     override fun showErrorScreen(type: NewOperationErrorType) {
+        generateAppEvent("s_error_screen")
         showOverlayFragment(NewOperationErrorFragment.create(type), false)
         scrollableLayout.setUserInteractionEnabled(false)
     }
@@ -647,11 +666,10 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
 
     private fun updateReceiver(paymentIntent: PaymentIntent, receiver: Receiver) {
         val uri = paymentIntent.uri
-        when (val paymentRequestType = paymentIntent.getPaymentType()) {
+        when (paymentIntent.getPaymentType()) {
             PaymentRequest.Type.TO_ADDRESS -> setReceiver(uri.address)
             PaymentRequest.Type.TO_CONTACT -> setReceiver(receiver.contact!!)
             PaymentRequest.Type.TO_LN_INVOICE -> setReceiver(uri.invoice, receiver.swap!!)
-            else -> throw MissingCaseError(paymentRequestType)
         }
     }
 
@@ -778,6 +796,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
      * {@code fragment.popBackStack()}.
      */
     private fun handleBackByOverlayFragment(): Boolean {
+        generateAppEvent("back_pressed")
         val overlay: Fragment? = supportFragmentManager.findFragmentById(R.id.overlay_container)
         if (overlay != null) {
             super.onBackPressed()   // Aka fragment.popBackStack()
@@ -801,5 +820,9 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
 
         header.setNavigation(Navigation.BACK)
         overlayContainer.visibility = View.GONE
+    }
+
+    private fun generateAppEvent(eventName: String) {
+        viewModel.generateAppEvent(eventName)
     }
 }

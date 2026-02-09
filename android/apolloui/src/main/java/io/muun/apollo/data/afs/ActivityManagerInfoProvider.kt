@@ -64,7 +64,7 @@ class ActivityManagerInfoProvider(context: Context) {
 
     val exitReasons: List<ApplicationExitInfo>
         get() {
-            return if (OS.supportsgetHistoricalProcessExitReasons()) {
+            return if (OS.supportsGetHistoricalProcessExitReasons()) {
                 activityManager.getHistoricalProcessExitReasons(
                     Globals.INSTANCE.applicationId,
                     0,

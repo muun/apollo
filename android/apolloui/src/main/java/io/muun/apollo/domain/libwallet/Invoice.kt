@@ -102,7 +102,6 @@ object Invoice {
             if (invoice.sats != 0L) invoice.sats else null,
             invoice.description,
             ZonedDateTime.ofInstant(Instant.ofEpochSecond(invoice.expiry), ZoneId.of("Z")),
-            Encodings.bytesToHex(invoice.destination),
             Sha256Hash.fromBytes(invoice.paymentHash),
             params
         )

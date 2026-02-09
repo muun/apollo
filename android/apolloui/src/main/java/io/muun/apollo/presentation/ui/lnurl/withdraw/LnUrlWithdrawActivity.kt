@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ActivityLnurlWithdrawBinding
-import io.muun.apollo.databinding.FragmentRecoveryToolBinding
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.model.LnUrlWithdraw
 import io.muun.apollo.domain.model.lnurl.LnUrlError
@@ -42,8 +41,6 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
                 .putExtra(LnUrlWithdrawView.ARG_LNURL, withdraw.lnUrl)
                 .putExtra(LnUrlWithdrawView.ARG_LNURL_WITHDRAW, withdraw.serialize())
                 .putExtra(LnUrlWithdrawView.ARG_LN_PAYMENT_FAILED, fail)
-
-        val zebedeeCountryLink = "https://zebedee.io/countries/"
     }
 
     private val binding: ActivityLnurlWithdrawBinding

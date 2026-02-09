@@ -1,5 +1,6 @@
 package io.muun.apollo.data.net.base
 
+import android.net.TrafficStats
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.HoustonConfig
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor
@@ -9,6 +10,8 @@ import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor
 import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor
 import io.muun.apollo.data.os.Configuration
 import io.muun.apollo.data.serialization.SerializationUtils
+import okhttp3.Call
+import okhttp3.EventListener
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -88,8 +91,11 @@ open class BaseClient<ServiceT> protected constructor(
                 .build()
              */
 
+            val threadTaggingListener = getThreadTaggingListener()
+
             val builder = OkHttpClient.Builder()
                 //.certificatePinner(certificatePinner)
+                .eventListener(threadTaggingListener)
                 .readTimeout(config.getLong("net.timeoutInSec"), TimeUnit.SECONDS)
                 .addInterceptor(versionHeaderInterceptor)
                 .addInterceptor(languageHeaderInterceptor)
@@ -104,4 +110,17 @@ open class BaseClient<ServiceT> protected constructor(
             }
             return builder.build()
         }
+
+    /**
+     * Since android O sockets should be tagged for the OS to track network usage.
+     */
+    private fun getThreadTaggingListener(): EventListener = object : EventListener() {
+        override fun callStart(call: Call) {
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+        }
+
+        override fun callEnd(call: Call) {
+            TrafficStats.clearThreadStatsTag()
+        }
+    }
 }

@@ -6,6 +6,22 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.4] - 2026-01-29
+
+### CHANGED
+
+- Bump `minSdk` to 21
+- 6-digit pin for new users
+- Replace ButterKnife with ViewBinding in various screens
+
+### ADDED
+
+- Biometrics support for app unlocking
+
+### FIXED
+
+- Input fee bug not recognizing decimal separator in Spanish
+
 ## [55.3] - 2025-10-08
 
 ### CHANGED

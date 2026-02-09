@@ -1,19 +1,19 @@
 package io.muun.apollo.presentation.ui.fragments.manual_fee
 
 import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindString
-import butterknife.BindView
-import butterknife.OnClick
-import icepick.State
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ManualFeeSelectionFragmentBinding
 import io.muun.apollo.domain.model.BitcoinAmount
-import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.new_operation.estimateTimeInMs
 import io.muun.apollo.presentation.ui.utils.UiUtils
-import io.muun.apollo.presentation.ui.view.*
+import io.muun.apollo.presentation.ui.view.MuunHeader
+import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.common.Rules
 import newop.EditFeeState
 import kotlin.math.max
@@ -25,26 +25,12 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
         private val maxFeeRateInVBytes = Rules.toSatsPerVbyte(Rules.OP_MAXIMUM_FEE_RATE)
     }
 
-    @BindView(R.id.fee_options_message)
-    lateinit var message: HtmlTextView
+    private val binding: ManualFeeSelectionFragmentBinding
+        get() = getBinding() as ManualFeeSelectionFragmentBinding
 
-    @BindView(R.id.fee_manual_input)
-    lateinit var feeInput: FeeManualInput
-
-    @BindView(R.id.status_message)
-    lateinit var statusMessage: StatusMessage
-
-    @BindView(R.id.confirm_fee)
-    lateinit var confirmButton: MuunButton
-
-    @BindString(R.string.manual_fee_message)
-    lateinit var messageText: String
-
-    @BindString(R.string.manual_fee_how_this_works)
-    lateinit var howThisWorksText: String
-
-    @State
-    lateinit var mBitcoinUnit: BitcoinUnit
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return ManualFeeSelectionFragmentBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
@@ -56,14 +42,15 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
 
     override fun initializeUi(view: View) {
         val content = TextUtils.concat(
-            messageText,
+            resources.getString(R.string.manual_fee_message),
             ". ",
-            RichText(howThisWorksText).setLink { onHowThisWorksClick() }
+            RichText(resources.getString(R.string.manual_fee_how_this_works))
+                .setLink { onHowThisWorksClick() }
         )
 
-        message.text = content
+        binding.feeOptionsMessage.text = content
+        val feeInput = binding.feeManualInput
         feeInput.requestFocusInput()
-        confirmButton.isEnabled = feeInput.feeRateInVBytes != null
     }
 
     override fun setUpHeader() {
@@ -71,62 +58,58 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
         parentActivity.header.showTitle(R.string.edit_fee_title)
     }
 
-    override fun setBitcoinUnit(bitcoinUnit: BitcoinUnit) {
-        this.mBitcoinUnit = bitcoinUnit
-    }
-
     override fun setState(state: EditFeeState) {
-        feeInput.setOnChangeListener { feeRateInSatsPerVByte: Double? ->
+        val feeInput = binding.feeManualInput
+        feeInput.setOnChangeListener { feeRateInSatsPerVbyte ->
 
             // 1. "Reset" views to initial state, if later analysis decides it, it will change them
-            confirmButton.isEnabled = false
-            statusMessage.visibility = View.GONE
+            binding.confirmFee.isEnabled = false
+            binding.statusMessage.visibility = View.GONE
             feeInput.resetVisibility()
 
             // 1.5 If feeRate is null, we're back at initial state (empty input), nothing else to do
-            if (feeRateInSatsPerVByte == null) {
-                return@setOnChangeListener
-            }
+            feeRateInSatsPerVbyte?.let {
+                val minMempoolFeeRateInVBytes =
+                    state.resolved.paymentContext.minFeeRateInSatsPerVByte
+                val minFeeRateInVBytes = max(minMempoolFeeRateInVBytes, minProtocolFeeRateInVBytes)
 
-            val minMempoolFeeRateInVBytes = state.resolved.paymentContext.minFeeRateInSatsPerVByte
-            val minFeeRateInVBytes = max(minMempoolFeeRateInVBytes, minProtocolFeeRateInVBytes)
+                // TODO currently forgets input currency, which is important for amount display
+                val feeData = state.calculateFee(feeRateInSatsPerVbyte)
 
-            // TODO currently forgets input currency, which is important for amount display
-            val feeData = state.calculateFee(feeRateInSatsPerVByte)
+                // 2. Always show analysis data
+                feeInput.setFee(
+                    BitcoinAmount.fromLibwallet(feeData.amount),
+                    presenter.getBitcoinUnit(),
+                )
+                feeInput.setMaxTimeMs(estimateTimeInMs(feeData.targetBlocks.toInt()))
 
-            // 2. Always show analysis data
-            feeInput.setBitcoinUnit(mBitcoinUnit)
-            feeInput.setFee(BitcoinAmount.fromLibwallet(feeData.amount))
-            feeInput.setMaxTimeMs(estimateTimeInMs(feeData.targetBlocks.toInt()))
+                // 3. Warning/Error analysis
+                val feeWindow = state.resolved.paymentContext.feeWindow
 
-            // 3. Warning/Error analysis
-            val feeWindow = state.resolved.paymentContext.feeWindow
+                when {
 
-            when {
+                    feeRateInSatsPerVbyte < minFeeRateInVBytes ->
+                        handleFeeRateTooLow(minMempoolFeeRateInVBytes)
 
-                feeRateInSatsPerVByte < minFeeRateInVBytes ->
-                    handleFeeRateTooLow(minMempoolFeeRateInVBytes)
+                    !feeData.isFinal -> // aka can't pay for fee
+                        handleFeeRateInsufficientFunds()
 
-                !feeData.isFinal -> // aka can't pay for fee
-                    handleFeeRateInsufficientFunds()
+                    feeRateInSatsPerVbyte > maxFeeRateInVBytes ->
+                        handleFeeRateTooHigh()
 
-                feeRateInSatsPerVByte > maxFeeRateInVBytes ->
-                    handleFeeRateTooHigh()
+                    feeRateInSatsPerVbyte < state.minFeeRateForTarget(feeWindow.slowConfTarget) ->
+                        handleWarningFeeRateLow()
 
-                feeRateInSatsPerVByte < state.minFeeRateForTarget(feeWindow.slowConfTarget) ->
-                    handleWarningFeeRateLow()
-
-                else -> {
-                    // All good!
-                    confirmButton.isEnabled = true
+                    else -> {
+                        // All good!
+                        binding.confirmFee.isEnabled = true
+                        binding.confirmFee.setOnClickListener {
+                            presenter.confirmFee(feeRateInSatsPerVbyte)
+                        }
+                    }
                 }
             }
         }
-    }
-
-    @OnClick(R.id.confirm_fee)
-    fun onConfirmFeeClick() {
-        presenter!!.confirmFee(feeInput.feeRateInVBytes)
     }
 
     private fun handleFeeRateTooLow(minMempoolFeeRateInVBytes: Double) {
@@ -145,11 +128,11 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
 
         val minFeeRateInVBytes = max(minMempoolFeeRateInVBytes, minProtocolFeeRateInVBytes)
         val errorArg = UiUtils.formatFeeRate(minFeeRateInVBytes)
-        statusMessage.setError(getString(errorTitle), getString(errorDesc, errorArg))
+        binding.statusMessage.setError(getString(errorTitle), getString(errorDesc, errorArg))
     }
 
     private fun handleFeeRateInsufficientFunds() {
-        statusMessage.setError(
+        binding.statusMessage.setError(
             R.string.manual_fee_insufficient_funds_message,
             R.string.manual_fee_insufficient_funds_desc
         )
@@ -157,18 +140,18 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
 
     private fun handleFeeRateTooHigh() {
         val formattedMaxFeeRate = UiUtils.formatFeeRate(maxFeeRateInVBytes)
-        statusMessage.setError(
+        binding.statusMessage.setError(
             getString(R.string.manual_fee_too_high_message),
             getString(R.string.manual_fee_too_high_desc, formattedMaxFeeRate)
         )
     }
 
     private fun handleWarningFeeRateLow() {
-        statusMessage.setWarning(
+        binding.statusMessage.setWarning(
             R.string.manual_fee_low_warning_message,
             R.string.manual_fee_low_warning_desc
         )
-        confirmButton.isEnabled = true // just a warning
+        binding.confirmFee.isEnabled = true // just a warning
     }
 
     private fun onHowThisWorksClick() {

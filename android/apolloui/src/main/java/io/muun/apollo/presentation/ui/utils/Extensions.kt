@@ -12,7 +12,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -28,7 +27,9 @@ import io.muun.apollo.R
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.base.ExtensibleActivity
 import timber.log.Timber
-import java.util.*
+import androidx.core.view.isNotEmpty
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 val ViewGroup.children: List<View>
     get() =
@@ -121,12 +122,14 @@ fun View.positionInMillimeters(
  * @return The converted value in pixels.
  */
 fun Float.mmToPx(offsetMm: Float = 0f, resources: Resources): Float {
-    val displayMetrics = resources.displayMetrics
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_MM,
-        (this + offsetMm),
-        displayMetrics,
-    )
+    val scale = calculatePixelsPerMm(resources)
+
+    return (scale * this) + (scale * offsetMm)
+}
+
+fun calculatePixelsPerMm(resources: Resources): Float {
+    val metrics = resources.displayMetrics
+    return ((metrics.xdpi + metrics.ydpi) / 2f) / 25.4f
 }
 
 /**
@@ -139,7 +142,7 @@ internal fun Context.vibrateShort() {
 
 fun View.setUserInteractionEnabled(enabled: Boolean) {
     isEnabled = enabled
-    if (this is ViewGroup && this.childCount > 0) {
+    if (this is ViewGroup && this.isNotEmpty()) {
         this.children.iterator().forEach {
             it.setUserInteractionEnabled(enabled)
         }
@@ -163,6 +166,26 @@ fun Activity.getStyledString(@StringRes resId: Int, vararg args: String) =
 
 fun View.getStyledString(@StringRes resId: Int, vararg args: String) =
     StyledStringRes(context, resId).toCharSequence(*args)
+
+/**
+ * Normalizes decimal input by converting dots to commas when the locale uses comma as
+ * decimal separator.
+ *
+ * This function ensures user input matches the locale's expected decimal separator format:
+ * - For comma-decimal locales (Spanish, German, French): "1.5" -> "1,5"
+ * - For dot-decimal locales (English, US): "1.5" -> "1.5" (unchanged)
+ */
+fun normalizeDecimalInput(input: String, locale: Locale): String {
+    val symbols = DecimalFormatSymbols(locale)
+    val comma = ','
+    val dot = '.'
+
+    return if (symbols.decimalSeparator == comma) {
+        input.replace(dot, comma)
+    } else {
+        input
+    }
+}
 
 /**
  * Returns whether the device supports night mode or not.

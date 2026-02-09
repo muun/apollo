@@ -10,6 +10,7 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.UserActions
+import io.muun.apollo.domain.analytics.Analytics
 import io.muun.common.utils.Preconditions
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,6 +37,9 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
 
     @Inject
     lateinit var notificationService: NotificationService
+
+    @Inject
+    lateinit var analytics: Analytics
 
     init {
         Timber.d("[MuunWorkerFactory] Execute Dependency Injection")
@@ -64,16 +68,17 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
                     workerParameters,
                     taskDispatcher,
                     userActions,
-                    transformerFactory
+                    transformerFactory,
+                    analytics
                 )
-
             }
 
             LnPaymentFailedNotificationWorker::class.java -> {
                 return LnPaymentFailedNotificationWorker(
                     appContext,
                     workerParameters,
-                    notificationService
+                    notificationService,
+                    analytics
                 )
             }
 

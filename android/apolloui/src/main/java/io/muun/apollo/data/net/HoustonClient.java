@@ -3,8 +3,6 @@ package io.muun.apollo.data.net;
 import io.muun.apollo.data.afs.MetricsProvider;
 import io.muun.apollo.data.net.base.BaseClient;
 import io.muun.apollo.data.net.okio.ContentUriRequestBody;
-import io.muun.apollo.data.os.GooglePlayHelper;
-import io.muun.apollo.data.os.GooglePlayServicesHelper;
 import io.muun.apollo.domain.errors.delete_wallet.NonEmptyWalletDeleteException;
 import io.muun.apollo.domain.errors.delete_wallet.UnsettledOperationsWalletDeleteException;
 import io.muun.apollo.domain.errors.newop.CyclicalSwapError;
@@ -16,7 +14,6 @@ import io.muun.apollo.domain.errors.newop.InvoiceMissingAmountException;
 import io.muun.apollo.domain.errors.newop.NoPaymentRouteException;
 import io.muun.apollo.domain.errors.newop.SwapFailedException;
 import io.muun.apollo.domain.errors.newop.UnreachableNodeException;
-import io.muun.apollo.domain.libwallet.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.libwallet.Invoice;
 import io.muun.apollo.domain.model.ChallengeKeyUpdateMigration;
 import io.muun.apollo.domain.model.Contact;
@@ -24,6 +21,7 @@ import io.muun.apollo.domain.model.CreateFirstSessionOk;
 import io.muun.apollo.domain.model.CreateSessionOk;
 import io.muun.apollo.domain.model.CreateSessionRcOk;
 import io.muun.apollo.domain.model.EmergencyKitExport;
+import io.muun.apollo.domain.model.FeasibleZone;
 import io.muun.apollo.domain.model.FulfillmentPushedResult;
 import io.muun.apollo.domain.model.IncomingSwapFulfillmentData;
 import io.muun.apollo.domain.model.NextTransactionSize;
@@ -40,6 +38,7 @@ import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.apollo.domain.model.SubmarineSwap;
 import io.muun.apollo.domain.model.SubmarineSwapRequest;
 import io.muun.apollo.domain.model.TransactionPushed;
+import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserPhoneNumber;
 import io.muun.apollo.domain.model.user.UserPreferences;
@@ -113,10 +112,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
 
     private final Context context;
 
-    private final GooglePlayServicesHelper googlePlayServicesHelper;
-
-    private final GooglePlayHelper googlePlayHelper;
-
     private final MetricsProvider metricsProvider;
 
     /**
@@ -127,8 +122,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
             ModelObjectsMapper modelMapper,
             ApiObjectsMapper apiMapper,
             Context context,
-            GooglePlayServicesHelper googlePlayServicesHelper,
-            GooglePlayHelper googlePlayHelper,
             MetricsProvider metricsProvider
     ) {
 
@@ -137,8 +130,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
         this.modelMapper = modelMapper;
         this.apiMapper = apiMapper;
         this.context = context;
-        this.googlePlayServicesHelper = googlePlayServicesHelper;
-        this.googlePlayHelper = googlePlayHelper;
         this.metricsProvider = metricsProvider;
     }
 
@@ -164,8 +155,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
                 metricsProvider.getAppInfo(),
                 metricsProvider.getDeviceFeatures(),
@@ -210,8 +199,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
                 metricsProvider.getAppInfo(),
                 metricsProvider.getDeviceFeatures(),
@@ -256,8 +243,6 @@ public class HoustonClient extends BaseClient<HoustonService> {
                 metricsProvider.getInstallSourceInfo(),
                 metricsProvider.getBootCount(),
                 metricsProvider.getGlEsVersion(),
-                googlePlayServicesHelper.getPlayServicesInfo(),
-                googlePlayHelper.getPlayInfo(),
                 metricsProvider.getBuildInfo(),
                 metricsProvider.getAppInfo(),
                 metricsProvider.getDeviceFeatures(),
@@ -920,5 +905,13 @@ public class HoustonClient extends BaseClient<HoustonService> {
         final SensorEventBatchJson mappedBatch = apiMapper.mapSensorEventBatch(sensorEventBatch);
 
         return getService().saveSensorEventBatch(mappedBatch);
+    }
+
+    /**
+     * Fetch the nfc card feasible area.
+     */
+    public Single<FeasibleZone> fetchFeasibleArea(String modelName) {
+        return getService().fetchFeasibleArea(modelName)
+                .map(apiMapper::mapFeasibleArea);
     }
 }

@@ -10,14 +10,12 @@ import (
 
 func TestMuunCardSetupAndResetCard_Integration(t *testing.T) {
 
-	mockNfcBridge := &MockNfcBridge{
-		mockCard: &MockMuunCard{
-			network:         libwallet.Mainnet(),
-			privateKeySlots: make([]*libwallet.HDPrivateKey, 1),
-		},
-	}
+	mockJavaCard := NewMockJavaCard(&MockMuunCard{
+		network:         libwallet.Mainnet(),
+		privateKeySlots: make([]*libwallet.HDPrivateKey, 1),
+	})
 
-	muuncard := NewCard(mockNfcBridge)
+	muuncard := NewCard(mockJavaCard)
 
 	// 1. Set up Card (e.g. generate xpub)
 
@@ -99,14 +97,12 @@ func TestMuunCardSetupAndResetCard_Integration(t *testing.T) {
 
 func TestMuunCardSignMessage_Integration(t *testing.T) {
 
-	mockNfcBridge := &MockNfcBridge{
-		mockCard: &MockMuunCard{
-			network:         libwallet.Mainnet(),
-			privateKeySlots: make([]*libwallet.HDPrivateKey, 1),
-		},
-	}
+	mockJavaCard := NewMockJavaCard(&MockMuunCard{
+		network:         libwallet.Mainnet(),
+		privateKeySlots: make([]*libwallet.HDPrivateKey, 1),
+	})
 
-	muuncard := NewCard(mockNfcBridge)
+	muuncard := NewCard(mockJavaCard)
 
 	// 1. Set up Card (e.g. generate xpub)
 

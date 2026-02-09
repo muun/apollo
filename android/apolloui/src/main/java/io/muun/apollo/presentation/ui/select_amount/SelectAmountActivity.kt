@@ -30,9 +30,10 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         private const val PRE_SELECTED_AMOUNT = "SELECTED_AMOUNT"
         private const val SAT_SELECTED_AS_CURRENCY = "sat_selected_as_currency"
 
-        fun getSelectAddressAmountIntent(context: Context,
-                                         amount: MonetaryAmount? = null,
-                                         satSelectedAsCurrency: Boolean
+        fun getSelectAddressAmountIntent(
+            context: Context,
+            amount: MonetaryAmount? = null,
+            satSelectedAsCurrency: Boolean,
         ): Intent {
             return Intent(context, SelectAmountActivity::class.java)
                 .putExtra(IS_BTC_ON_CHAIN, true)
@@ -40,9 +41,10 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
                 .putExtra(SAT_SELECTED_AS_CURRENCY, satSelectedAsCurrency)
         }
 
-        fun getSelectInvoiceAmountIntent(context: Context,
-                                         amount: MonetaryAmount? = null,
-                                         satSelectedAsCurrency: Boolean
+        fun getSelectInvoiceAmountIntent(
+            context: Context,
+            amount: MonetaryAmount? = null,
+            satSelectedAsCurrency: Boolean,
         ): Intent {
             return Intent(context, SelectAmountActivity::class.java)
                 .putExtra(IS_BTC_ON_CHAIN, false)

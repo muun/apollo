@@ -12,10 +12,10 @@ public class PublicKeySet {
     private final PublicKeyTriple basePublicKeyTriple;
 
     @NotNull
-    public Integer externalMaxUsedIndex;
+    public final Integer externalMaxUsedIndex;
 
     @Nullable
-    public Integer externalMaxWatchingIndex;
+    public final Integer externalMaxWatchingIndex;
 
     /**
      * Constructor.

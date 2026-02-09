@@ -512,6 +512,74 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 }
 
+func TestGetByPrefix(t *testing.T) {
+	t.Run("returns all feature flags", func(t *testing.T) {
+		// Setup
+		dataDir := path.Join(t.TempDir(), "test.db")
+		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+
+		// Save some feature flags
+		items := make(map[string]any)
+		items["featureFlag:useDiagnosticMode"] = true
+		items["featureFlag:isDogfood"] = false
+		items["featureFlag:supportsNfc"] = true
+		// Add a key that doesn't match the prefix
+		items["email"] = "some@email.com"
+
+		err := keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving values into db: %v", err)
+		}
+
+		// Get by prefix
+		got, err := keyValueStorage.GetByPrefix("featureFlag:")
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+
+		// Expected items
+		expectedItems := make(map[string]any)
+		expectedItems["featureFlag:useDiagnosticMode"] = true
+		expectedItems["featureFlag:isDogfood"] = false
+		expectedItems["featureFlag:supportsNfc"] = true
+
+		// Check that the number of items returned is expected
+		if len(got) != len(expectedItems) {
+			t.Fatalf("GetByPrefix() = %#v, want %v", len(got), len(expectedItems))
+		}
+
+		// Ensure the values are the same that we saved
+		if !reflect.DeepEqual(got, expectedItems) {
+			t.Fatalf("GetByPrefix() = %#v, want %#v", got, expectedItems)
+		}
+	})
+
+	t.Run("returns empty map if no keys match prefix", func(t *testing.T) {
+		// Setup
+		dataDir := path.Join(t.TempDir(), "test.db")
+		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+
+		// Save some data
+		items := make(map[string]any)
+		items["email"] = "some@email.com"
+		err := keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving values into db: %v", err)
+		}
+
+		// Get by prefix
+		got, err := keyValueStorage.GetByPrefix("nonExistentPrefix:")
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+
+		// Ensure the result is an empty map
+		if len(got) != 0 {
+			t.Fatalf("GetByPrefix() = %#v, want empty map", got)
+		}
+	})
+}
+
 func buildStorageSchemaForTests() map[string]Classification {
 	return map[string]Classification{
 		"email": {
@@ -528,6 +596,15 @@ func buildStorageSchemaForTests() map[string]Classification {
 		},
 		"primaryCurrency": {
 			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
+		},
+		"featureFlag:useDiagnosticMode": {
+			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
+		},
+		"featureFlag:isDogfood": {
+			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
+		},
+		"featureFlag:supportsNfc": {
+			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
 		},
 	}
 }

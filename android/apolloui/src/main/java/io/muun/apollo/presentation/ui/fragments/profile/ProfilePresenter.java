@@ -57,10 +57,10 @@ public class ProfilePresenter extends SingleFragmentPresenter<ProfileView, Profi
         view.setFirstNameError(null);
         view.setLastNameError(null);
 
-        if (firstName.trim().length() == 0) {
+        if (firstName.trim().isEmpty()) {
             view.setFirstNameError(new EmptyFieldError(EmptyFieldError.Field.FIRST_NAME));
 
-        } else if (lastName.trim().length() == 0) {
+        } else if (lastName.trim().isEmpty()) {
             view.setLastNameError(new EmptyFieldError(EmptyFieldError.Field.LAST_NAME));
 
         } else {

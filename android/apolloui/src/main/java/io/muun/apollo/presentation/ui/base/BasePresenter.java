@@ -283,12 +283,9 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      * @param error the caught error
      */
     protected void reportError(Throwable error) {
-        final ErrorReport errorReport = ErrorReportBuilder.INSTANCE.build(error);
-
         analytics.report(new AnalyticsEvent.E_ERROR(
                 AnalyticsEvent.ERROR_TYPE.GENERIC,
-                error,
-                errorReport
+                error
         ));
     }
 
@@ -517,9 +514,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
      */
     private void showErrorReportDialog(Throwable error, boolean standalone) {
 
-        final ErrorReport errorReport = ErrorReportBuilder.INSTANCE.build(error);
-
-        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(error, errorReport));
+        analytics.report(new AnalyticsEvent.E_ERROR_REPORT_DIALOG(error));
 
         final MuunDialog.Builder builder = new MuunDialog.Builder()
                 .layout(R.layout.dialog_custom_layout)

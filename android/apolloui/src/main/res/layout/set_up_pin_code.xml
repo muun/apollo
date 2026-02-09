@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
 
-    <FrameLayout android:layout_width="match_parent"
-                 android:layout_height="wrap_content">
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <ImageView
                 android:id="@+id/back_arrow"
@@ -26,7 +26,8 @@
                 android:id="@+id/set_up_pin_input"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:title="@string/choose_your_pin"/>
+                app:title="@string/choose_your_pin"
+                tools:pinLength="6" />
 
     </FrameLayout>
 

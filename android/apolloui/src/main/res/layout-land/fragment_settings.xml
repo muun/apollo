@@ -171,6 +171,29 @@
         <View style="@style/settings_item_separator"/>
 
         <LinearLayout
+                android:id="@+id/security_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="@string/settings_header_security"
+                    style="@style/settings_section_header" />
+
+            <io.muun.apollo.presentation.ui.view.MuunSwitchSettingItem
+                    android:id="@+id/settings_biometrics"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    muun:label="@string/settings_biometrics"
+                    tools:checked="false"
+                    android:paddingVertical="0dp"
+                    style="@style/settings_item" />
+
+            <View style="@style/settings_item_separator" />
+
+        </LinearLayout>
+
+        <LinearLayout
                 android:id="@+id/settings_logout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -222,6 +245,19 @@
                 android:layout_marginTop="24dp"
                 android:textSize="14sp"
                 tools:text="Version 53.3" />
+
+        <TextView
+                android:id="@+id/settings_disable_feature_flags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:textColor="@color/red"
+                android:textSize="14sp"
+                android:lineSpacingExtra="8sp"
+                android:text="@string/settings_disable_feature_flags"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
         <TextView
                 android:id="@+id/settings_feature_flag"

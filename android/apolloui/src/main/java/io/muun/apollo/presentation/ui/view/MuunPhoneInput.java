@@ -2,7 +2,6 @@ package io.muun.apollo.presentation.ui.view;
 
 
 import io.muun.apollo.R;
-import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.model.PhoneNumber;
 
 import android.content.Context;
@@ -80,16 +79,10 @@ public class MuunPhoneInput extends MuunTextInput {
 
         editText.removeTextChangedListener(formatter);
 
-        if (OS.supportsNewPhoneNumberFormattingTextWatcher()) {
-            if (countryCode == null) {
-                countryCode = getContext().getString(R.string.default_country_code);
-            }
-            formatter = new PhoneNumberFormattingTextWatcher(countryCode);
-
-        } else {
-            formatter = new PhoneNumberFormattingTextWatcher();
+        if (countryCode == null) {
+            countryCode = getContext().getString(R.string.default_country_code);
         }
-
+        formatter = new PhoneNumberFormattingTextWatcher(countryCode);
         editText.addTextChangedListener(formatter);
 
         final String textWithoutFormat = editText.getText().toString().replaceAll("[^\\d]", "");

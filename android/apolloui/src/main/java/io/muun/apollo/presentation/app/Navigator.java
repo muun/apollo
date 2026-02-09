@@ -49,7 +49,6 @@ import io.muun.apollo.presentation.ui.single_action.SingleActionActivity;
 import io.muun.apollo.presentation.ui.single_action.V2SingleActionActivity;
 import io.muun.apollo.presentation.ui.taproot_setup.TaprootSetupActivity;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
-import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.common.Optional;
 
 import android.app.Activity;
@@ -152,9 +151,11 @@ public class Navigator {
         navigateToSingleAction(context, SingleActionActivity.ActionType.REQUEST_RESTART, true);
     }
 
-    private void navigateToSingleAction(@NotNull Context context,
-                                        @NotNull SingleActionActivity.ActionType actionType,
-                                        boolean clearBackStack) {
+    private void navigateToSingleAction(
+            @NotNull Context context,
+            @NotNull SingleActionActivity.ActionType actionType,
+            boolean clearBackStack
+    ) {
 
         final Intent intent = SingleActionActivity.getIntent(context, actionType);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -211,9 +212,11 @@ public class Navigator {
      * @param context an {Activity} context.
      * @param uri     an {OperationUri} instance.
      */
-    public void navigateToNewOperation(@NotNull Context context,
-                                       @NotNull NewOperationOrigin origin,
-                                       @NotNull OperationUri uri) {
+    public void navigateToNewOperation(
+            @NotNull Context context,
+            @NotNull NewOperationOrigin origin,
+            @NotNull OperationUri uri
+    ) {
 
         final Intent intent = NewOperationActivity.Companion.getIntent(context, origin, uri);
         context.startActivity(intent);
@@ -264,8 +267,10 @@ public class Navigator {
     /**
      * Takes the user to the Show Qr screen.
      */
-    public void navigateToShowQr(@NotNull Context context,
-                                 AnalyticsEvent.RECEIVE_ORIGIN origin) {
+    public void navigateToShowQr(
+            @NotNull Context context,
+            AnalyticsEvent.RECEIVE_ORIGIN origin
+    ) {
 
         final Intent intent = ShowQrActivity.getStartActivityIntent(context, origin);
 
@@ -346,8 +351,10 @@ public class Navigator {
     /**
      * Takes the user to the Feedback screen, using the provided SupportID.
      */
-    public void navigateToSendGenericFeedback(@NotNull Context context,
-                                              Optional<String> maybeSupportId) {
+    public void navigateToSendGenericFeedback(
+            @NotNull Context context,
+            Optional<String> maybeSupportId
+    ) {
 
         navigateToSendFeedback(
                 context,
@@ -371,10 +378,12 @@ public class Navigator {
         );
     }
 
-    private void navigateToSendFeedback(@NotNull Context ctx,
-                                        @NotNull FeedbackCategory category,
-                                        @NotNull String explanation,
-                                        Optional<String> maybeSupportId) {
+    private void navigateToSendFeedback(
+            @NotNull Context ctx,
+            @NotNull FeedbackCategory category,
+            @NotNull String explanation,
+            Optional<String> maybeSupportId
+    ) {
 
         // Go to the anonymous feedback screen if not logged in or email and password not set up:
         final boolean goToAnonFeedback = userSel.getOptional()
@@ -621,20 +630,17 @@ public class Navigator {
     public void navigateToOperations(@NotNull Activity activity) {
         final Intent intent = OperationsActivity.Companion.getStartActivityIntent(activity);
 
-        if (OS.supportsActivityTransitions()) {
-            final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(activity);
-            activity.startActivity(intent, options.toBundle());
-
-        } else {
-            activity.startActivity(intent);
-        }
+        final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(activity);
+        activity.startActivity(intent, options.toBundle());
     }
 
     /**
      * Takes the user to the specified Fragment.
      */
-    public void navigateToFragment(final Context context,
-                                   final Class<? extends SingleFragment<?>> fragment) {
+    public void navigateToFragment(
+            final Context context,
+            final Class<? extends SingleFragment<?>> fragment
+    ) {
         context.startActivity(
                 SingleFragmentActivityImpl.Companion.getStartActivityIntent(context, fragment)
         );
@@ -655,7 +661,7 @@ public class Navigator {
     /**
      * Navigates to NFC Reader activity ready to read a tag.
      *
-     * @param context the caller context from which animate this.
+     * @param context          the caller context from which animate this.
      * @param activityLauncher the launcher for result that's going to
      *                         retrieve the status
      */

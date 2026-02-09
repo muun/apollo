@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 public class HoustonUuidModel extends PersistentModel {
 
     @NotNull
-    public String houstonUuid;
+    public final String houstonUuid;
 
     protected HoustonUuidModel(@Nullable Long id, @NotNull String houstonUuid) {
         super(id);

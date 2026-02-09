@@ -3,13 +3,12 @@ package nfc
 import (
 	"crypto/ecdh"
 	"crypto/rand"
-	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/muun/libwallet/domain/model/security_card"
 	"github.com/muun/libwallet/domain/nfc"
 	"github.com/muun/libwallet/service"
-	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
 )
 
@@ -47,57 +46,57 @@ func (ac *PairSecurityCardActionV2) Run() (*security_card.SecurityCardPaired, er
 
 	pairingResponse, err := ac.muunCard.Pair(serverPublicKey, clientPublicKey)
 	if err != nil {
+		var cardError *nfc.CardError
+		if errors.As(err, &cardError) {
+			switch {
+			case cardError.Code == nfc.ErrSlotOccupied:
+				return nil, &NoSlotsAvailableError{
+					Message: "error during pairing with card",
+					Cause:   err,
+				}
+			case cardError.Code == nfc.ErrAppletIdNotFound:
+				return nil, &MuunAppletNotFoundError{
+					Message: "muun applet not found",
+					Cause:   err,
+				}
+			}
+		}
 		return nil, fmt.Errorf("error during pairing with card: %w", err)
 	}
 
-	cardPublicKeyInHex := hex.EncodeToString(pairingResponse.CardPublicKey)
-	clientPublicKeyInHex := hex.EncodeToString(clientPublicKey)
-	macInHex := hex.EncodeToString(pairingResponse.MAC)
-	globalSignCardInHex := hex.EncodeToString(pairingResponse.GlobalSignature)
-	pairingSlot := int(binary.BigEndian.Uint16(pairingResponse.PairingSlot))
+	registerSecurityCardJson, err := service.MapRegisterSecurityCardJson(
+		pairingResponse,
+		clientPublicKey,
+	)
 
-	if pairingResponse.Metadata == nil {
-		return nil, fmt.Errorf("missing card metadata in pairing response")
-	}
-	metadata := mapToSecurityCardMetadataJson(pairingResponse.Metadata)
-
-	registerSecurityCardJson := model.RegisterSecurityCardJson{
-		CardPublicKeyInHex:   cardPublicKeyInHex,
-		ClientPublicKeyInHex: clientPublicKeyInHex,
-		PairingSlot:          pairingSlot,
-		Metadata:             metadata,
-		MacInHex:             macInHex,
-		GlobalSignCardInHex:  globalSignCardInHex,
-	}
-
-	registerSecurityResponse, err := ac.houstonService.RegisterSecurityCard(registerSecurityCardJson)
 	if err != nil {
+		return nil, err
+	}
+
+	registerSecurityResponse, err := ac.houstonService.RegisterSecurityCard(*registerSecurityCardJson)
+	if err != nil {
+		var houstonError *service.HoustonResponseError
+		if errors.As(err, &houstonError) {
+			switch {
+			case houstonError.ErrorCode == service.ErrInvalidMac:
+				return nil, &InvalidMacError{
+					Message: "mac verification failed",
+					Cause:   houstonError,
+				}
+			case houstonError.ErrorCode == service.ErrInvalidSignature:
+				return nil, &InvalidMacError{
+					Message: "error validating signature",
+					Cause:   houstonError,
+				}
+			case houstonError.ErrorCode == service.ErrChallengeExpired:
+				return nil, &ChallengeExpiredError{
+					Message: "challenge has expired",
+					Cause:   houstonError,
+				}
+			}
+		}
 		return nil, fmt.Errorf("server error registering security card: %w", err)
 	}
 
-	err = ac.keyValueStorage.Save(storage.KeySecurityCardPaired, true)
-	if err != nil {
-		return nil, fmt.Errorf("error storing paired status: %w", err)
-	}
-
 	return service.MapSecurityCardPaired(registerSecurityResponse), nil
-}
-
-func mapToSecurityCardMetadataJson(metadata *nfc.CardMetadata) model.SecurityCardMetadataJson {
-	globalPubCardInHex := hex.EncodeToString(metadata.GlobalPubCard[:])
-	cardVendorInHex := hex.EncodeToString(metadata.CardVendor[:])
-	cardModelInHex := hex.EncodeToString(metadata.CardModel[:])
-	firmwareVersion := int(binary.BigEndian.Uint16(metadata.FirmwareVersion[:]))
-	languageCodeInHex := hex.EncodeToString(metadata.LanguageCode[:])
-
-	metadataJson := model.SecurityCardMetadataJson{
-		GlobalPublicKeyInHex: globalPubCardInHex,
-		CardVendorInHex:      cardVendorInHex,
-		CardModelInHex:       cardModelInHex,
-		FirmwareVersion:      firmwareVersion,
-		UsageCount:           int(metadata.UsageCount),
-		LanguageCodeInHex:    languageCodeInHex,
-	}
-
-	return metadataJson
 }

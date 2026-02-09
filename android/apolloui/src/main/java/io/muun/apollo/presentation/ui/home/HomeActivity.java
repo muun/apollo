@@ -56,9 +56,9 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         return new Intent(context, HomeActivity.class);
     }
 
-    static String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
+    static final String SHOW_WELCOME_TO_MUUN = "SHOW_WELCOME_TO_MUUN";
 
-    public static String NEW_OP_ID = "NEW_OP_ID";
+    public static final String NEW_OP_ID = "NEW_OP_ID";
 
     private NavController navController;
 
