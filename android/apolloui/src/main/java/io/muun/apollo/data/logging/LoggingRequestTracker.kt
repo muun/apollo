@@ -48,7 +48,7 @@ object LoggingRequestTracker {
 
     fun getRecentRequests(): List<Entry> =
         synchronized(lock) {
-            lastEndpoints.values.toList().reversed() // most recent first
+            lastEndpoints.values.toList().asReversed() // most recent first
         }
 
     fun reportRecentRequest(key: IdempotencyKey, url: String) {
