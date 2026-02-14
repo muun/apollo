@@ -201,7 +201,9 @@ public class MuunPinInput extends MuunView {
 
         @Override
         public void onBiometricsKey() {
-            biometricsRequestedListener.onBiometricsRequested();
+            if (biometricsRequestedListener != null) {
+                biometricsRequestedListener.onBiometricsRequested();
+            }
         }
     }
 }

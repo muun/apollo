@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent
+import io.muun.apollo.domain.errors.ReportAnalyticError
 import io.muun.apollo.domain.model.report.ErrorReport
 import io.muun.apollo.domain.model.user.User
 import rx.Single
@@ -59,9 +61,15 @@ class AnalyticsProvider @Inject constructor(context: Context) {
             }
 
         } catch (t: Throwable) {
-
-            val bundle = Bundle().apply { putString("event", event.eventId) }
-            fba.logEvent("e_tracking_error", bundle)
+            try {
+                // FIXME: Desperate times require desperate solutions, currently Crashlytics object
+                // doesn't expose a plain log, it records an analytics event too, we will address this later.
+                FirebaseCrashlytics.getInstance().log("AnalyticsProvider: Failed processing analytics event ${event.eventId}, cause: ${t.message}")
+                val bundle = Bundle().apply { putString("event", event.eventId) }
+                fba.logEvent("e_tracking_error", bundle)
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(ReportAnalyticError("AnalyticsProvider: Failed processing analytics event e_tracking_error, cause: ${e.message}"))
+            }
         }
     }
 
