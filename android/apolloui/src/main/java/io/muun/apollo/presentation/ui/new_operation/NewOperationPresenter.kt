@@ -282,6 +282,15 @@ class NewOperationPresenter @Inject constructor(
             .filter { it is BalanceErrorState }
             .map { it as BalanceErrorState }
 
+    // Special Error handling for error PRIOR to handleStart() (e.g in Activity#onCreate)
+    // TODO: this should probably be handled better
+    fun handleError(error: Throwable, newOpOrigin: NewOperationOrigin) {
+        if (!::origin.isInitialized) {
+            origin = newOpOrigin
+        }
+        handleError(error)
+    }
+
     override fun handleError(error: Throwable) {
         confirmationInProgress = false
         view.setLoading(false)

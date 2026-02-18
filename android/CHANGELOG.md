@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.6] - 2026-02-18
+
+### FIXED
+
+- Crash due to IntentSanitizer misconfiguration in Android > 10
+- Errors in NewOperationActivity onCreate crashing the app
+
 ## [55.5] - 2026-02-12
 
 ### FIXED

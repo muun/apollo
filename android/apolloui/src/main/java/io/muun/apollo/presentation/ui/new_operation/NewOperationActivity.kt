@@ -64,6 +64,7 @@ import io.muun.apollo.presentation.ui.view.TextInputWithBackHandling
 import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
+import timber.log.Timber
 import javax.inject.Inject
 import javax.money.MonetaryAmount
 
@@ -225,6 +226,8 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // TODO: add timber.i() for intent.getAction() and intent.getData().getScheme() iff not null
+
         if (intent.flags and Intent.FLAG_ACTIVITY_CLEAR_TOP == 0) {
             // HACK ALERT
             // This Activity was not launched with the CLEAR_TOP flag, because it started from
@@ -232,29 +235,43 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             // Intents (pff), and we really need CLEAR_TOP, so... well, this:
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
+            // We log penalties but don't throw and exception for it because it could happen that
+            // there are non supported args but the uri can still be usable
+            val penalties = mutableListOf<String>()
+
             // Sanitize the intent before restarting to prevent UnsafeIntentLaunch
             val sanitizedIntent = IntentSanitizer.Builder()
                 .allowComponent(ComponentName(this, NewOperationActivity::class.java))
-                .allowData { uri -> uri.scheme in listOf("bitcoin", "lightning", "lnurl") }
+                .allowData { uri -> uri.scheme in listOf("bitcoin", "lightning", "muun") }
                 .allowExtra(OPERATION_URI, String::class.java)
                 .allowExtra(ORIGIN, String::class.java)
                 .allowFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .build()
-                .sanitizeByFiltering(intent)
+                .sanitize(intent) { error ->
+                    penalties.add(error)
+                }
+
+            if (penalties.isNotEmpty()) {
+                Timber.e("Invalid NewOp Intent uri: %s", penalties.toString())
+
+                // Add 1 breadcrumb per penalty, strings are long and will be cutoff otherwise
+                penalties.forEach { penalty ->
+                    Timber.i("NewOp Intent Penalty: %s", penalty)
+                }
+            }
 
             startActivity(sanitizedIntent)
             finishActivity()
+            return
         }
 
         val newOpOrigin = getOrigin(intent)
-        val uri = getValidIntentUri(intent)
-        val operationUri = try {
-            OperationUri.fromString(uri)
-        } catch (e: Exception) {
-            null
-        }
+        Timber.i("NewOp Origin: %s", newOpOrigin)
 
-        if (operationUri != null) {
+        try {
+            val uri = getValidIntentUri(intent)
+
+            val operationUri: OperationUri = OperationUri.fromString(uri)
             when {
                 operationUri.isLn ->
                     presenter.startForInvoice(operationUri.lnInvoice.get(), newOpOrigin)
@@ -269,9 +286,12 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
                     presenter.startForBitcoinUri(uri, operationUri, newOpOrigin)
             }
 
-        } else {
+        } catch (e: Exception) {
+
+            Timber.e(e)
+
             showTextToast(getString(R.string.error_no_valid_payment_details_provided))
-            finishActivity()
+            presenter.handleError(e, newOpOrigin)
         }
     }
 
@@ -328,9 +348,11 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     private fun getValidIntentUri(intent: Intent): String {
-        return intent.getStringExtra(OPERATION_URI)    // from startActivity
-            ?: intent.dataString                                            // deeplink
-            ?: throw IllegalStateException("Invalid New Op Intent")         // should not happen
+        return intent.getStringExtra(OPERATION_URI)     // from startActivity
+            ?: intent.dataString                          // deeplink
+            ?: throw InvalidOperationUriException(
+                "Invalid NewOp Intent uri"
+            )                                                   // uri is not valid for our scheme
     }
 
     override fun setLoading(isLoading: Boolean) {
