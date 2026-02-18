@@ -6,6 +6,13 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.5] - 2026-02-12
+
+### FIXED
+
+- Missing method after bumping `compileSdk` crash
+- Crashlytics obfuscating crash names
+
 ## [55.4] - 2026-01-29
 
 ### CHANGED
