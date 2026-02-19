@@ -29,3 +29,8 @@ venv
 *.apk
 mapping.txt
 output.json
+
+# Libwallet librs
+*.bin
+*.a
+libwallet/librs/libs/
