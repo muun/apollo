@@ -82,6 +82,11 @@ rm -rf "$tmp/baseline"/*
 unzip -q -o "$baseline_apk_dir" -d "$tmp/baseline"
 rm -r "$tmp"/baseline/{META-INF,resources.arsc}
 
+echo "Stripping DWARF debug sections from .so files..."
+# Go's compiler generates non-deterministic DWARF string tables that don't affect
+# compiled code but cause binary diffs. Zero out .debug_* ELF sections before comparing.
+python3 "$(dirname "$0")/strip-elf-debug.py" "$tmp/to_verify" "$tmp/baseline"
+
 echo "Comparing files..."
 
 diff_non_lib=$(diff -r "$tmp/to_verify" "$tmp/baseline" || true)

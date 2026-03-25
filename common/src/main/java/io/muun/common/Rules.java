@@ -38,8 +38,15 @@ public class Rules {
     /** Useful to keep track of conversions. **/
     public static final int VBYTE_TO_WEIGHT_UNIT_RATIO = 4;  // 1 vbyte == 4 WU
 
+    /** The minimum fee value for an operation. **/
+    public static final double OP_MINIMUM_FEE_VALUE = 0.1d;
+
+    /** The minimum fee value for an operation for legacy clients. **/
+    public static final double OP_MINIMUM_FEE_VALUE_LEGACY = 1d;
+
     /** The minimum fee rate for an operation, in satoshis per weight unit. */
-    public static final double OP_MINIMUM_FEE_RATE = 1d / VBYTE_TO_WEIGHT_UNIT_RATIO;
+    public static final double OP_MINIMUM_FEE_RATE =
+            OP_MINIMUM_FEE_VALUE / VBYTE_TO_WEIGHT_UNIT_RATIO;
 
     /** The maximum fee rate for an operation, in satoshis per weight unit. */
     public static final double OP_MAXIMUM_FEE_RATE = 999d / VBYTE_TO_WEIGHT_UNIT_RATIO;

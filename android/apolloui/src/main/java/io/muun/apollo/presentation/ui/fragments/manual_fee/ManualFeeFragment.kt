@@ -98,7 +98,7 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
                         handleFeeRateTooHigh()
 
                     feeRateInSatsPerVbyte < state.minFeeRateForTarget(feeWindow.slowConfTarget) ->
-                        handleWarningFeeRateLow()
+                        handleWarningFeeRateLow(feeRateInSatsPerVbyte)
 
                     else -> {
                         // All good!
@@ -146,12 +146,15 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
         )
     }
 
-    private fun handleWarningFeeRateLow() {
+    private fun handleWarningFeeRateLow(feeRateInSatsPerVbyte: Double) {
         binding.statusMessage.setWarning(
             R.string.manual_fee_low_warning_message,
             R.string.manual_fee_low_warning_desc
         )
         binding.confirmFee.isEnabled = true // just a warning
+        binding.confirmFee.setOnClickListener {
+            presenter.confirmFee(feeRateInSatsPerVbyte)
+        }
     }
 
     private fun onHowThisWorksClick() {

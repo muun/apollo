@@ -799,11 +799,9 @@ class NewOperationPresenter @Inject constructor(
     private fun opSubmittedMetadata(stateVm: ConfirmStateViewModel): ArrayList<Pair<String, Any>> {
         val paymentType = stateVm.paymentIntent.getPaymentType()
         val payCtx = stateVm.paymentContext
-        val selectedFeeRate = Preconditions.checkNotNull(stateVm.feeRateInSatsPerWeight)
-
-        val objects = ArrayList<Pair<String, Any>>()
+        val selectedFeeRate = Preconditions.checkNotNull(stateVm.amountInfo.feeRateInSatsPerVByte)
         val type: AnalyticsEvent.E_FEE_OPTION_TYPE = getFeeOptionTypeParam(selectedFeeRate, payCtx)
-        val feeRateInSatsPerVbyte = Rules.toSatsPerVbyte(selectedFeeRate)
+
         val amount = BitcoinAmount.fromLibwallet(stateVm.amountInfo.amount)
         val fee = BitcoinAmount.fromLibwallet(stateVm.validated.fee)
         val total = BitcoinAmount.fromLibwallet(stateVm.validated.total)
@@ -821,8 +819,9 @@ class NewOperationPresenter @Inject constructor(
         val feeBumpPolicy = stateVm.validated.feeBumpInfo?.refreshPolicy
         val feeBumpSecondsSinceLastUpdate = stateVm.validated.feeBumpInfo?.secondsSinceLastUpdate
 
+        val objects = ArrayList<Pair<String, Any>>()
         objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
-        objects.add(("sats_per_virtual_byte" to feeRateInSatsPerVbyte))
+        objects.add(("sats_per_virtual_byte" to selectedFeeRate))
         objects.add(("amount" to SerializationUtils.serializeBitcoinAmount(amount)))
         objects.add(("fee" to SerializationUtils.serializeBitcoinAmount(fee)))
         objects.add(("total" to SerializationUtils.serializeBitcoinAmount(total)))
@@ -848,7 +847,7 @@ class NewOperationPresenter @Inject constructor(
     }
 
     private fun getFeeOptionTypeParam(
-        selectedFeeRate: Double,
+        selectedFeeRateInSatsPerVByte: Double,
         payCtx: newop.PaymentContext,
     ): AnalyticsEvent.E_FEE_OPTION_TYPE {
 
@@ -856,19 +855,20 @@ class NewOperationPresenter @Inject constructor(
         val editFeeState = EditFeeState()
         editFeeState.resolved = Resolved().apply { this.paymentContext = payCtx }
 
+        // These are in satsPerVByte, that's the unit of feeWindow, targettedFees. Avoid long names.
         val fastFeeRate = editFeeState.minFeeRateForTarget(payCtx.feeWindow.fastConfTarget)
         val mediumFeeRate = editFeeState.minFeeRateForTarget(payCtx.feeWindow.mediumConfTarget)
         val slowFeeRate = editFeeState.minFeeRateForTarget(payCtx.feeWindow.slowConfTarget)
 
         val type: AnalyticsEvent.E_FEE_OPTION_TYPE = when {
 
-            Rules.feeRateEquals(selectedFeeRate, fastFeeRate) ->
+            Rules.feeRateEquals(selectedFeeRateInSatsPerVByte, fastFeeRate) ->
                 AnalyticsEvent.E_FEE_OPTION_TYPE.FAST
 
-            Rules.feeRateEquals(selectedFeeRate, mediumFeeRate) ->
+            Rules.feeRateEquals(selectedFeeRateInSatsPerVByte, mediumFeeRate) ->
                 AnalyticsEvent.E_FEE_OPTION_TYPE.MEDIUM
 
-            Rules.feeRateEquals(selectedFeeRate, slowFeeRate) ->
+            Rules.feeRateEquals(selectedFeeRateInSatsPerVByte, slowFeeRate) ->
                 AnalyticsEvent.E_FEE_OPTION_TYPE.SLOW
 
             else ->

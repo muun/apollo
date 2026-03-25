@@ -3,6 +3,7 @@ package io.muun.apollo.data.preferences
 import android.content.Context
 import io.muun.apollo.data.preferences.adapter.DoublePreferenceAdapter
 import io.muun.apollo.data.preferences.rx.Preference
+import io.muun.common.Rules.OP_MINIMUM_FEE_VALUE
 import javax.inject.Inject
 
 // Open for mockito to mock/spy
@@ -18,7 +19,7 @@ open class MinFeeRateRepository @Inject constructor(
     private val preference: Preference<Double>
         get() = rxSharedPreferences.getObject(
             KEY,
-            1.0, // Default (lowest limit) just to avoid NPE problems before RTD is pulled
+            OP_MINIMUM_FEE_VALUE, // Default (lowest limit) just to avoid NPE problems before RTD is pulled
             DoublePreferenceAdapter.INSTANCE
         )
 

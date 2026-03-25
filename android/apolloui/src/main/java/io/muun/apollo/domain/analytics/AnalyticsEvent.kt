@@ -157,7 +157,18 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class S_PASSWORD_CHANGE_START : AnalyticsEvent()
     class S_PASSWORD_CHANGE_END : AnalyticsEvent()
     class S_SEND : AnalyticsEvent()
-    class S_SELECT_FEE : AnalyticsEvent()
+    class S_SELECT_FEE(
+        feeRateFastInVBytes: Double,
+        feeRateMidInVBytes: Double,
+        feeRateSlowInVBytes: Double,
+    ) : AnalyticsEvent(
+        listOf(
+            "fast" to feeRateFastInVBytes,
+            "mid" to feeRateMidInVBytes,
+            "slow" to feeRateSlowInVBytes
+        )
+    )
+
     class S_MANUALLY_ENTER_FEE : AnalyticsEvent()
     class S_EMERGENCY_KIT_SLIDES(step: Int) : AnalyticsEvent(listOf("step" to step))
     class S_EMERGENCY_KIT_SAVE : AnalyticsEvent()

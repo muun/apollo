@@ -6,6 +6,16 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.7] - 2026-03-25
+
+### ADDED
+
+- Subsat support
+
+### FIXED
+
+- Repro builds
+
 ## [55.6] - 2026-02-18
 
 ### FIXED

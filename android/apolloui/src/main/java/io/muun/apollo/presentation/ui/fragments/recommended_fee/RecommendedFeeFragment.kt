@@ -51,7 +51,7 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     @BindString(R.string.fee_options_whats_this)
     lateinit var whatsThisText: String
 
-    private var selectedFeeRateInVBytes: Double? = null // Starts with null if no rate zpre-selected
+    private var selectedFeeRateInVBytes: Double? = null // Starts with null if no rate pre-selected
 
     @State
     lateinit var mBitcoinUnit: BitcoinUnit
