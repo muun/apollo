@@ -25,7 +25,6 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.S_MANUALLY_ENTER_FEE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_AMOUNT
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_CONFIRMATION
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_DESCRIPTION
-import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SELECT_FEE
 import io.muun.apollo.domain.analytics.NewOperationOrigin
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.libwallet.destinationPubKey
@@ -576,7 +575,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
     }
 
     override fun goToEditFeeManually() {
-        generateAppEvent(S_SELECT_FEE().eventId)
+        generateAppEvent("s_select_fee")
         replaceFragment(ManualFeeFragment(), true)
     }
 

@@ -47,13 +47,6 @@ class ConfirmStateViewModel private constructor(
         get() =
             resolved.paymentContext
 
-    // Yes, the impl calls a property that states fee rate is in SatsPerVByte but that is a very
-    // long legacy naming error, that property's unit are satoshis per weight unit. Trust me, I'm
-    // an engineer.
-    val feeRateInSatsPerWeight: Double
-        get() =
-            amountInfo.feeRateInSatsPerVByte
-
     val onchainFee: BitcoinAmount
         get() =
             if (validated.swapInfo == null) {
