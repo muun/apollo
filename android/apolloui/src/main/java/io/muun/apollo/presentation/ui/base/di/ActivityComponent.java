@@ -20,6 +20,10 @@ import io.muun.apollo.presentation.ui.operation_detail.OperationDetailActivity;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
+import io.muun.apollo.presentation.ui.security_cards_card_detail.CardDetailActivity;
+import io.muun.apollo.presentation.ui.security_cards_country_picker.CountryPickerActivity;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.SecurityCardsMarketplaceActivity;
+import io.muun.apollo.presentation.ui.security_cards_onboarding.SecurityCardsOnboardingActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
@@ -121,4 +125,12 @@ public interface ActivityComponent {
     void inject(DiagnosticActivity diagnosticActivity);
 
     void inject(NfcReaderActivity nfcReaderActivity);
+
+    void inject(SecurityCardsMarketplaceActivity securityCardsMarketplaceActivity);
+
+    void inject(CountryPickerActivity countryPickerActivity);
+
+    void inject(SecurityCardsOnboardingActivity securityCardsOnboardingActivity);
+
+    void inject(CardDetailActivity cardDetailActivity);
 }

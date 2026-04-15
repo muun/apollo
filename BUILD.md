@@ -33,7 +33,7 @@
     mkdir -p apk
     DOCKER_BUILDKIT=1 docker build -f android/Dockerfile -o apk .
     ```
-
+Note: This might take a while (from 20min up to 45-50min).
 
 # Verify an existing APK
 
@@ -53,4 +53,3 @@
     ```shell
     tools/verify-apollo.sh <path-to-verify.apk>
     ```
-

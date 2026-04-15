@@ -6,7 +6,9 @@ import android.content.Context
 import android.media.MediaDrm
 import android.os.Environment
 import android.provider.Settings
+import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.os.OS
+import io.muun.apollo.data.os.TorHelper
 import io.muun.apollo.domain.errors.DrmProviderError
 import io.muun.apollo.domain.errors.HardwareCapabilityError
 import io.muun.common.utils.Encodings
@@ -14,6 +16,7 @@ import io.muun.common.utils.Hashes
 import timber.log.Timber
 import java.io.File
 import java.util.*
+import kotlin.math.abs
 
 private const val UNKNOWN = "UNKNOWN"
 
@@ -107,18 +110,13 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
         }
 
-    val bootCount: Int
+    val bootCountDiscrete: Int
         get() {
-            if (!OS.supportsBootCountSetting()) {
-                return BOOT_COUNT_UNSUPPORTED
-            }
-
-            return try {
-                val bc = Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
-                return discreteBootcount(bc)
-            } catch (e: Exception) {
-                Timber.e(HardwareCapabilityError("bootCount", e))
-                BOOT_COUNT_ERROR
+            val bc = bootCount()
+            return if (bc > 0) {
+                bucketWithLowRangeDetail(bc)
+            } else {
+                bc
             }
         }
 
@@ -131,6 +129,32 @@ class HardwareCapabilitiesProvider(private val context: Context) {
                 UNKNOWN
             }
         }
+
+    val bootOffset: Int
+        get() {
+            val bCount = bootCount()
+            val bCycles = getBootCycles()
+
+            if (bCount <= 0 || bCycles <= 0) {
+                return Constants.INT_UNKNOWN
+            }
+
+            return bucketWithLowRangeDetail(abs(bCount - bCycles))
+        }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun bootCount(): Int {
+        if (!OS.supportsBootCountSetting()) {
+            return BOOT_COUNT_UNSUPPORTED
+        }
+
+        return try {
+            return Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
+        } catch (e: Exception) {
+            Timber.e(HardwareCapabilityError("bootCount", e))
+            BOOT_COUNT_ERROR
+        }
+    }
 
     private fun File?.getTotalSpaceSafe() = try {
         this?.totalSpace ?: UNKNOWN_BYTES_AMOUNT
@@ -197,7 +221,8 @@ class HardwareCapabilitiesProvider(private val context: Context) {
         }
     }
 
-    private fun discreteBootcount(value: Int): Int {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun bucketWithLowRangeDetail(value: Int): Int {
         val step = 20
         val buckets = listOf(1, 2, 3, 6, 10, 15)
         return when {
@@ -205,5 +230,28 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             value < 20 -> buckets.firstOrNull { it >= value } ?: 20
             else -> ((value + (step - 1)) / step) * step
         }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun getBootCycles(): Int {
+        val bundle = try {
+            context.contentResolver.call(
+                Settings.Global.CONTENT_URI,
+                TorHelper.process("TRG_tybony"),
+                TorHelper.process("obbg_pbhag"),
+                null
+            )
+                ?.takeIf { it.size() == 1 }
+                ?: return Constants.INT_UNKNOWN
+        } catch (e: Exception) {
+            return Constants.INT_EXCEPTION
+        }
+
+        val key = bundle.keySet().first()
+        bundle.getString(key)?.toIntOrNull()?.takeIf { it > 0 }?.let { return it }
+        bundle.getInt(key).takeIf { it > 0 }?.let { return it }
+        bundle.getLong(key).takeIf { it > 0 }?.toInt()?.let { return it }
+
+        return Constants.INT_UNKNOWN
     }
 }

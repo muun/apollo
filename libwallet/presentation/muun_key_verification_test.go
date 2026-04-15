@@ -6,6 +6,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/domain/action/challenge_keys"
@@ -16,15 +21,11 @@ import (
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
 	"github.com/test-go/testify/assert"
-	"io"
-	"net/http"
-	"testing"
-	"time"
 )
 
 func TestEncryptedMuunKeyAfterFinishSetupRecoveryCode_Integration(t *testing.T) {
 
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -111,7 +112,7 @@ func TestEncryptedMuunKeyAfterFinishSetupRecoveryCode_Integration(t *testing.T) 
 
 func TestPollForVerifiedEncryptedMuunKey_Integration(t *testing.T) {
 
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -246,7 +247,7 @@ func TestPollForVerifiedEncryptedMuunKey_Integration(t *testing.T) {
 
 func TestPollForVerifiedEncryptedMuunKeyWithDelay_Integration(t *testing.T) {
 
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -364,7 +365,7 @@ func TestPollForVerifiedEncryptedMuunKeyWithDelay_Integration(t *testing.T) {
 
 func TestVerifiedMuunKeyForExistingUsers_Integration(t *testing.T) {
 
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -486,7 +487,7 @@ func TestVerifiedMuunKeyForExistingUsers_Integration(t *testing.T) {
 
 func TestUnverifiedEncryptedMuunKeyForExistingUsers_Integration(t *testing.T) {
 
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")

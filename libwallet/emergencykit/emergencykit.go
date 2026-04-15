@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"github.com/muun/libwallet/data/emergency_kit/resources"
 	"strconv"
 	"text/template"
 	"time"
@@ -24,24 +25,9 @@ type Output struct {
 	VerificationCode string
 }
 
-var spanishMonthNames = []string{
-	"Enero",
-	"Febrero",
-	"Marzo",
-	"Abril",
-	"Mayo",
-	"Junio",
-	"Julio",
-	"Agosto",
-	"Septiembre",
-	"Octubre",
-	"Noviembre",
-	"Diciembre",
-}
-
 // GenerateHTML returns the translated emergency kit html as a string along with the verification code.
 func GenerateHTML(params *Input, lang string) (*Output, error) {
-	verificationCode := generateDeterministicCode(params)
+	verificationCode := GenerateDeterministicCode(params)
 
 	// Render output descriptors:
 	var descriptors string
@@ -61,7 +47,7 @@ func GenerateHTML(params *Input, lang string) (*Output, error) {
 
 		// Computed by us:
 		VerificationCode: verificationCode,
-		CurrentDate:      formatDate(time.Now(), lang),
+		CurrentDate:      resources.FormatDate(time.Now(), lang),
 		Descriptors:      descriptors,
 
 		// Template pieces separated for reuse:
@@ -87,20 +73,8 @@ func GenerateHTML(params *Input, lang string) (*Output, error) {
 	}, nil
 }
 
-func formatDate(t time.Time, lang string) string {
-	if lang == "en" {
-		return t.Format("January 2, 2006")
 
-	} else {
-		// Golang has no i18n facilities, so we do our own formatting.
-		year, month, day := t.Date()
-		monthName := spanishMonthNames[month-1]
-
-		return fmt.Sprintf("%d de %s, %d", day, monthName, year)
-	}
-}
-
-func generateDeterministicCode(params *Input) string {
+func GenerateDeterministicCode(params *Input) string {
 	// NOTE:
 	// This function creates a stable verification code given the inputs to render the Emergency Kit. For now, the
 	// implementation relies exclusively on the SecondEncryptedKey, which is the Muun key. This is obviously not ideal,

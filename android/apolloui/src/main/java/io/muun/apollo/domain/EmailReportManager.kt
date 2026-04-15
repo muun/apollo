@@ -5,7 +5,6 @@ import io.muun.apollo.data.afs.MetricsProvider
 import io.muun.apollo.data.os.GooglePlayHelper
 import io.muun.apollo.data.os.GooglePlayServicesHelper
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
-import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.apollo.domain.model.report.ErrorReport
 import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.domain.model.user.User
@@ -20,7 +19,6 @@ class EmailReportManager @Inject constructor(
     private val userSel: UserSelector,
     private val googlePlayServicesHelper: GooglePlayServicesHelper,
     private val googlePlayHelper: GooglePlayHelper,
-    private val isRootedDeviceAction: IsRootedDeviceAction,
     private val firebaseInstallationIdRepo: FirebaseInstallationIdRepository,
     private val context: Context,
     private val metricsProvider: MetricsProvider,
@@ -53,7 +51,7 @@ class EmailReportManager @Inject constructor(
             .googlePlayVersionCode(googlePlayHelper.versionCode)
             .googlePlayVersionName(googlePlayHelper.versionName)
             .defaultRegion(metricsProvider.telephonyNetworkRegion.orElse("null"))
-            .rootHint(isRootedDeviceAction.actionNow())
+            .rootHint(metricsProvider.isRootHint)
             .locale(context.locale())
             .isLowRamDevice(metricsProvider.isLowRamDevice)
             .isBackgroundRestricted(metricsProvider.isBackgroundRestricted)

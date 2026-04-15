@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class BackgroundExecutionMetricsProvider @Inject constructor(
     private val metricsProvider: MetricsProvider,
-    private val googlePlayServicesHelper: GooglePlayServicesHelper,
+    googlePlayServicesHelper: GooglePlayServicesHelper,
     private val googlePlayHelper: GooglePlayHelper,
 ) {
 
@@ -72,7 +72,12 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             playServicesInfo.clientVersionCode,
             googlePlayHelper.versionCode,
             googlePlayHelper.versionName,
-            metricsProvider.buildInfo
+            metricsProvider.buildInfo,
+            metricsProvider.bootOffset,
+            metricsProvider.bootId,
+            metricsProvider.vbMeta,
+            metricsProvider.bridgeRootService,
+            metricsProvider.appSize,
         )
 
     @Suppress("ArrayInDataClass")
@@ -134,6 +139,11 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private var googlePlayServicesClientVersionCode: Int,
         private var googlePlayVersionCode: Long,
         private var googlePlayVersionName: String,
-        private var buildInfo: BuildInfo
+        private var buildInfo: BuildInfo,
+        private var bootOffset: Int,
+        private var bootId: String,
+        private val vbMeta: String,
+        private val bridgeRootService: String,
+        private val appSize: Long
     )
 }

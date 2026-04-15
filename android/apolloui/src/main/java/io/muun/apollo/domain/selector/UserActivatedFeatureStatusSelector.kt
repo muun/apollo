@@ -3,7 +3,6 @@ package io.muun.apollo.domain.selector
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.preferences.BlockchainHeightRepository
 import io.muun.apollo.data.preferences.UserRepository
-import io.muun.apollo.domain.libwallet.isEqualTo
 import io.muun.apollo.domain.libwallet.toLibwallet
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
@@ -18,11 +17,10 @@ import javax.inject.Inject
 class UserActivatedFeatureStatusSelector @Inject constructor(
     private val userRepository: UserRepository,
     private val blockchainHeightRepository: BlockchainHeightRepository,
-    private val featureSelector: FeatureSelector
+    private val featureSelector: FeatureSelector,
 ) {
 
     companion object {
-        var DEBUG_TAPROOT_STATUS: UserActivatedFeatureStatus? = null
         val UAF_TAPROOT: UserActivatedFeature = Libwallet.getUserActivatedFeatureTaproot()
     }
 
@@ -44,12 +42,8 @@ class UserActivatedFeatureStatusSelector @Inject constructor(
         user: User,
         blockHeight: Int,
         backendFeatures: List<MuunFeature>,
-        wantedFeature: UserActivatedFeature
+        wantedFeature: UserActivatedFeature,
     ): UserActivatedFeatureStatus {
-
-        if (wantedFeature.isEqualTo(UAF_TAPROOT) && DEBUG_TAPROOT_STATUS != null) {
-            return DEBUG_TAPROOT_STATUS!!
-        }
 
         val uafStatus = Libwallet.determineUserActivatedFeatureStatus(
             wantedFeature,

@@ -96,7 +96,7 @@ func TestGenerateDeterministicCode(t *testing.T) {
 	// Do the thing:
 	for _, testCase := range versionExpectedCodes {
 		input.Version = testCase.version
-		code := generateDeterministicCode(input)
+		code := GenerateDeterministicCode(input)
 
 		if code != testCase.expectedCode {
 			t.Fatalf("expected code from %+v to be %s, not %s", input, testCase.expectedCode, code)

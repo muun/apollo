@@ -6,7 +6,7 @@ import io.muun.apollo.data.fs.LocalFile
 import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.model.EmergencyKitExport
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
 import io.muun.apollo.domain.model.user.User
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Hashes
@@ -19,7 +19,7 @@ class UploadToDriveAction @Inject constructor(
     private val userRepository: UserRepository,
     private val driveUploader: DriveUploader,
     private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
-): BaseAsyncAction2<LocalFile, GeneratedEmergencyKit, DriveFile>() {
+): BaseAsyncAction2<LocalFile, GeneratedEmergencyKitInfo, DriveFile>() {
 
     companion object {
         val PROP_USER = "muun_user"
@@ -29,7 +29,7 @@ class UploadToDriveAction @Inject constructor(
     /**
      * Upload a file to Google Drive, assuming an account is signed in.
      */
-    override fun action(localFile: LocalFile, ek: GeneratedEmergencyKit): Observable<DriveFile> =
+    override fun action(localFile: LocalFile, ek: GeneratedEmergencyKitInfo): Observable<DriveFile> =
         Observable
             .defer { userRepository.fetch() }
             .first()
@@ -43,7 +43,11 @@ class UploadToDriveAction @Inject constructor(
             }
             .flatMap { driveFile ->
                 reportEmergencyKitExported.actionNow(
-                    EmergencyKitExport(ek, true, EmergencyKitExport.Method.DRIVE)
+                    EmergencyKitExport(
+                        ek,
+                        true,
+                        EmergencyKitExport.Method.DRIVE
+                    )
                 )
 
                 Observable.just(driveFile)
@@ -59,7 +63,7 @@ class UploadToDriveAction @Inject constructor(
     }
 
     /** Get the PROP_EK_VERSION value, which is the stringified version number */
-    private fun getEkVersionValue(ek: GeneratedEmergencyKit): String {
+    private fun getEkVersionValue(ek: GeneratedEmergencyKitInfo): String {
         return ek.version.toString()
     }
 }

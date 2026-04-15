@@ -4,6 +4,7 @@ package io.muun.apollo.data.afs
 import android.app.ApplicationExitInfo
 import io.muun.apollo.data.net.NetworkInfoProvider
 import io.muun.apollo.data.os.OS
+import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.apollo.domain.model.BackgroundEvent
 import io.muun.apollo.domain.model.InstallSourceInfo
 import io.muun.common.Optional
@@ -29,7 +30,11 @@ class MetricsProvider @Inject constructor(
     private val batteryInfoProvider: BatteryInfoProvider,
     private val systemInfoProvider: SystemInfoProvider,
     private val networkInfoProvider: NetworkInfoProvider,
+    private val isRootedDeviceAction: IsRootedDeviceAction,
 ) {
+
+    val isRootHint: Boolean by lazy { isRootedDeviceAction.isRooted() }
+
     val isLowRamDevice: Boolean
         get() = activityManagerInfoProvider.isLowRamDevice
 
@@ -70,7 +75,7 @@ class MetricsProvider @Inject constructor(
         get() = hardwareCapabilitiesProvider.getDrmClientIds()
 
     val bootCount: Int
-        get() = hardwareCapabilitiesProvider.bootCount
+        get() = hardwareCapabilitiesProvider.bootCountDiscrete
 
     val glEsVersion: String
         get() = hardwareCapabilitiesProvider.glEsVersion
@@ -255,4 +260,10 @@ class MetricsProvider @Inject constructor(
 
     val hasNewEntriesInAppExternalStorage: Int
         get() = fileInfoProvider.hasNewEntriesInAppExternalStorage
+
+    val bootOffset: Int
+        get() = hardwareCapabilitiesProvider.bootOffset
+
+    val bootId: String
+        get() = fileInfoProvider.bootId
 }

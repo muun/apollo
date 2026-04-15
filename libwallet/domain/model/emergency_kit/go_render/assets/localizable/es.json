@@ -1,0 +1,35 @@
+{
+  "header": {
+    "title": "Kit de Emergencia",
+    "verification_prefix": "VERIFICACIÓN #"
+  },
+  "keys": {
+    "encrypted_backup_title": "Respaldo encriptado",
+    "encrypted_backup_desc1": "Sólo puede ser desencriptado con tu",
+    "encrypted_backup_desc2": "Código de Recuperación.",
+    "first_key_label": "PRIMERA CLAVE",
+    "second_key_label": "SEGUNDA CLAVE",
+    "created_on_prefix": "CREADO EL "
+  },
+  "instructions": {
+    "title": "Instrucciones",
+    "intro": "Este procedimiento de emergencia te ayudará a recuperar tus fondos si no puedes usar Muun en tu teléfono.",
+    "step1_title": "Encuentra tu Código de Recuperación",
+    "step1_desc": "Lo escribiste en papel antes de crear tu Kit de Emergencia. Lo necesitarás después.",
+    "step2_title": "Descarga la Herramienta de Recuperación",
+    "step2_desc": "Ingresa en github.com/muun/recovery y descarga la herramienta en tu computadora.",
+    "step3_title": "Recupera tus fondos",
+    "step3_desc": "Ejecuta la Herramienta de Recuperación y sigue los pasos. Transferirá tus fondos a una dirección de Bitcoin que elijas."
+  },
+  "help": {
+    "title": "¿Necesitas ayuda?",
+    "description": "Contáctanos en support@muun.com. Siempre estamos disponibles para ayudar."
+  },
+  "advanced": {
+    "title": "Información Avanzada",
+    "subtitle": "Output descriptors",
+    "intro": "Estos descriptors, combinados con tus claves, indican cómo encontrar los fondos de tu billetera en la blockchain de Bitcoin.",
+    "closing1": "Los output descriptors son parte de un estándar de recuperación actualmente en desarrollo. Muun tiene la intención de soportar este estándar y apoyar su crecimiento. Dado que se encuentra en una etapa muy temprana, la siguiente lista incluye algunos elementos que aún no están estandarizados.",
+    "closing2": "Cuando los descriptors lleguen a una etapa más madura, podrás llevar tus fondos de una billetera a la otra con completa independencia. Muun cree que esta libertad es central a la promesa de Bitcoin, y está trabajando para que eso suceda."
+  }
+}

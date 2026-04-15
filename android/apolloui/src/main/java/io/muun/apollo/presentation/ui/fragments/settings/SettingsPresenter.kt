@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.fragments.settings
 import android.net.Uri
 import android.os.Bundle
 import io.muun.apollo.data.external.NotificationService
-import io.muun.apollo.domain.FeatureOverrideStore
 import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
@@ -33,7 +32,6 @@ import io.muun.apollo.presentation.ui.settings.bitcoin.BitcoinSettingsFragment
 import io.muun.apollo.presentation.ui.settings.flags.DisableFeatureFlagsFragment
 import io.muun.apollo.presentation.ui.settings.lightning.LightningSettingsFragment
 import io.muun.common.Optional
-import io.muun.common.api.messages.EventCommunicationMessage.Event
 import io.muun.common.utils.Preconditions
 import rx.Observable
 import timber.log.Timber
@@ -52,7 +50,6 @@ class SettingsPresenter @Inject constructor(
     private val nightModeManager: NightModeManager,
     private val notificationService: NotificationService,
     private val featureSelector: FeatureSelector,
-    private val overrideStore: FeatureOverrideStore,
     private val biometricsController: BiometricsController,
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
@@ -62,7 +59,7 @@ class SettingsPresenter @Inject constructor(
         val exchangeRateWindow: ExchangeRateWindow,
         val taprootFeatureStatus: UserActivatedFeatureStatus,
         val features: List<MuunFeature>,
-        val featureOverrides: List<MuunFeature>,
+        val overridableFeatures: List<MuunFeature.OverridableFeature.Overridable>,
     )
 
     override fun setUp(arguments: Bundle) {
@@ -81,8 +78,8 @@ class SettingsPresenter @Inject constructor(
                 bitcoinUnitSel.watch(),
                 exchangeRateSelector.watchLatestWindow(),
                 userActivatedFeatureStatusSel.watchTaproot(),
-                featureSelector.fetchWithoutOverrides(),
-                Observable.just(overrideStore.getFeatureOverrides()),
+                featureSelector.fetch(),
+                featureSelector.fetchOverridableFlags(),
                 ::SettingsState
             )
             .doOnNext { state ->
@@ -266,14 +263,6 @@ class SettingsPresenter @Inject constructor(
 
     fun navigateToDisableFeatureFlags() {
         navigator.navigateToFragment(context, DisableFeatureFlagsFragment::class.java)
-    }
-
-    fun showPreactivationNotification() {
-        notificationService.showEventCommunication(Event.TAPROOT_PREACTIVATION)
-    }
-
-    fun showActivatedNotification() {
-        notificationService.showEventCommunication(Event.TAPROOT_ACTIVATED)
     }
 
     fun openDebugPanel() {

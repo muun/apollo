@@ -15,21 +15,36 @@ import android.os.Vibrator
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.*
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.annotation.StyleRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isNotEmpty
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import io.muun.apollo.R
 import io.muun.apollo.domain.utils.locale
+import io.muun.apollo.presentation.app.ApolloApplication
 import io.muun.apollo.presentation.ui.base.ExtensibleActivity
+import io.muun.apollo.presentation.ui.base.di.ActivityComponent
+import io.muun.apollo.presentation.ui.base.di.FragmentComponent
+import io.muun.apollo.presentation.ui.utils.OS.supportsEdgeToEdge
 import timber.log.Timber
-import androidx.core.view.isNotEmpty
 import java.text.DecimalFormatSymbols
 import java.util.Locale
+import kotlin.math.max
 
 val ViewGroup.children: List<View>
     get() =
@@ -379,4 +394,56 @@ fun FragmentTransaction.safelyCommitNow(activity: ExtensibleActivity) {
             commitNow()
         }
     }
+}
+
+/**
+ * Configures window insets to allow drawing behind system bars and dynamically applies padding
+ * to the root view based on system UI elements like the status bar, navigation bar, and IME.
+ * This ensures proper layout behavior when system UI visibility changes (e.g., keyboard shown).
+ */
+fun AppCompatActivity.setWindowInsetsCompat() {
+    enableEdgeToEdge()
+    if (!supportsEdgeToEdge()) {
+        @Suppress("DEPRECATION")
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+    }
+
+    val rootView = window.decorView.rootView
+
+    setStatusBarIconsColor()
+
+    ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
+        val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+        val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+        val topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+        val bottomInset = max(imeInsets.bottom, navInsets.bottom)
+
+        view.setPadding(navInsets.left, topInset, navInsets.right, bottomInset)
+        WindowInsetsCompat.CONSUMED
+    }
+}
+
+/**
+ * Sets the status bar icon color based on the current UI mode.
+ * Displays the status bar and adjusts icon appearance for visibility
+ * in light or dark themes.
+ */
+private fun AppCompatActivity.setStatusBarIconsColor() {
+    val nightModeFlags: Int =
+        getResources().configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    val isDarkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+
+    val controller =
+        WindowCompat.getInsetsController(window, window.decorView)
+
+    controller.show(WindowInsetsCompat.Type.statusBars())
+    controller.isAppearanceLightStatusBars = !isDarkMode
+}
+
+fun AppCompatActivity.getComponent(): ActivityComponent {
+    return (application as ApolloApplication).getApplicationComponent().activityComponent()
+}
+
+fun Fragment.getComponent(): FragmentComponent {
+    return (requireActivity().application as ApolloApplication).getApplicationComponent().fragmentComponent()
 }

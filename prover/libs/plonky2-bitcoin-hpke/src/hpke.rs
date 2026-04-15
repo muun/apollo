@@ -424,7 +424,7 @@ mod test {
             let receiver_public_key_precomputation = builder
                 .add_const_precomputed_windowed_mul_target(from_uncompressed_public_key(
                     receiver_public_key.try_into().unwrap(),
-                ));
+                )?);
 
             let (ciphertext, enc) = single_shot(
                 &mut builder,

@@ -598,13 +598,13 @@ func buildStorageSchemaForTests() map[string]Classification {
 			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
 		},
 		"featureFlag:useDiagnosticMode": {
-			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
 		},
 		"featureFlag:isDogfood": {
-			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
 		},
 		"featureFlag:supportsNfc": {
-			BackupType: AsyncAutoBackup, BackupSecurity: Plain, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
 		},
 	}
 }

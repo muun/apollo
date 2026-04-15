@@ -21,5 +21,6 @@ public enum MuunFeatureJson {
     NFC_SENSORS,
     DIAGNOSTIC_MODE,
     SECURITY_CARDS_MARKETPLACE,
-    EXAMPLE_FLAG;
+    EXAMPLE_FLAG,
+    EK_GO_RENDERING;
 }

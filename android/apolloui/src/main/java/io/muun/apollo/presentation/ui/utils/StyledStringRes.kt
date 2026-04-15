@@ -35,6 +35,7 @@ class StyledStringRes(
         private const val FONT_COLOR = "fontColor"
         private const val FONT_COLOR_BLUE = "muunBlue"
         private const val FONT_COLOR_BLACK = "muunBlack"
+        private const val FONT_COLOR_TEXT_SECONDARY = "muunTextSecondaryColor"
 
         private const val FONT_STYLE = "fontStyle"
         private const val FONT_STYLE_NORMAL = "normal"
@@ -130,6 +131,7 @@ class StyledStringRes(
         val colorRes = when (a.value) {
             FONT_COLOR_BLUE -> R.color.blue
             FONT_COLOR_BLACK -> R.color.text_primary_color
+            FONT_COLOR_TEXT_SECONDARY -> R.color.text_secondary_color
 
             else ->
                 throw IllegalArgumentException("Color ${a.value} not supported")

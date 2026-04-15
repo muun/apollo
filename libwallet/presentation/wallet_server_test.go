@@ -129,7 +129,7 @@ func waitForHealthcheck() error {
 func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("success when saving, reading and deleting a key-value pair", func(t *testing.T) {
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -192,7 +192,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("return error when SaveRequest does not have a key defined", func(t *testing.T) {
 
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -241,7 +241,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("return error when SaveRequest has an invalid key", func(t *testing.T) {
 
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -294,7 +294,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 
 	t.Run("success when saving a key with NullValue", func(t *testing.T) {
 
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -337,7 +337,7 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 func TestSaveBatchAndGetBatch(t *testing.T) {
 
 	t.Run("success when saving and reading key-value pairs in batches", func(t *testing.T) {
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -416,7 +416,7 @@ func TestSaveBatchAndGetBatch(t *testing.T) {
 
 func TestGetByPrefix(t *testing.T) {
 	t.Run("success when getting key-value pairs by prefix", func(t *testing.T) {
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -500,7 +500,7 @@ func TestGetByPrefix(t *testing.T) {
 	})
 
 	t.Run("success when no keys match prefix", func(t *testing.T) {
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -529,7 +529,7 @@ func TestGetByPrefix(t *testing.T) {
 func TestErrorInterceptors(t *testing.T) {
 
 	t.Run("return internal error when rpc execution raises a panic", func(t *testing.T) {
-		setupKeyValueStorage(t, buildStorageSchemaForTests())
+		setupKeyValueStorage(t, buildTestMigrationPlan())
 
 		// Initialize grpc client of WalletService with bufconn
 		conn, ctx := newGrpcClient(t)
@@ -655,7 +655,7 @@ func TestErrorInterceptors(t *testing.T) {
 }
 
 func TestFinishRecoveryCodeSetupEndpoint_Integration(t *testing.T) {
-	setupKeyValueStorage(t, storage.BuildStorageSchema())
+	setupKeyValueStorage(t, storage.BuildKVMigrationPlan())
 
 	recoveryCode := recoverycode.Generate()
 	recoveryCodePrivateKey, err := recoverycode.ConvertToKey(recoveryCode, "")
@@ -753,13 +753,16 @@ func createFirstSession(t *testing.T, key *libwallet.HDPublicKey) model.CreateFi
 	return sessionOkJson
 }
 
-func setupKeyValueStorage(t *testing.T, schema map[string]storage.Classification) {
+func setupKeyValueStorage(t *testing.T, migrationPlan []storage.Migration) {
 	// Create a new empty DB providing a new dataFilePath
 	dataFilePath := path.Join(t.TempDir(), "test.db")
-	keyValueStorage := storage.NewKeyValueStorage(dataFilePath, schema)
-
-	// For testing purpose, change reference to this new keyValueStorage in order to have a new empty DB
-	walletServer.keyValueStorage = keyValueStorage
+	schema, err := storage.RunKeyValueMigrations(dataFilePath, migrationPlan)
+	if err != nil {
+		t.Fatalf("failed to run KV migrations: %v", err)
+	}
+	// For testing purpose, change reference to this new keyValueStorage
+	// in order to have a new empty DB
+	walletServer.keyValueStorage = storage.NewKeyValueStorage(dataFilePath, schema)
 }
 
 func newGrpcClient(t *testing.T) (*grpc.ClientConn, context.Context) {
@@ -811,62 +814,19 @@ func failWithGrpcErrorDetails(t testing.TB, err error) {
 	}
 }
 
-func buildStorageSchemaForTests() map[string]storage.Classification {
-	return map[string]storage.Classification{
-		"email": {
-			BackupType:       storage.NoAutoBackup,
-			BackupSecurity:   storage.NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &storage.StringType{},
-		},
-		"emergencyKitVersion": {
-			BackupType:       storage.NoAutoBackup,
-			BackupSecurity:   storage.NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &storage.IntType{},
-		},
-		"gcmToken": {
-			BackupType:       storage.NoAutoBackup,
-			BackupSecurity:   storage.NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &storage.StringType{},
-		},
-		"isEmailVerified": {
-			BackupType:       storage.NoAutoBackup,
-			BackupSecurity:   storage.NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &storage.BoolType{},
-		},
-		"primaryCurrency": {
-			BackupType:       storage.NoAutoBackup,
-			BackupSecurity:   storage.NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &storage.StringType{},
-		},
-		"featureFlag:useDiagnosticMode": {
-			BackupType:       storage.AsyncAutoBackup,
-			BackupSecurity:   storage.Plain,
-			SecurityCritical: false,
-			ValueType:        &storage.BoolType{},
-		},
-		"featureFlag:isDogfood": {
-			BackupType:       storage.AsyncAutoBackup,
-			BackupSecurity:   storage.Plain,
-			SecurityCritical: false,
-			ValueType:        &storage.BoolType{},
-		},
-		"featureFlag:supportsNfc": {
-			BackupType:       storage.AsyncAutoBackup,
-			BackupSecurity:   storage.Plain,
-			SecurityCritical: false,
-			ValueType:        &storage.BoolType{},
-		},
-		"featureFlag:utxoSelectionStrategy": {
-			BackupType:       storage.AsyncAutoBackup,
-			BackupSecurity:   storage.Plain,
-			SecurityCritical: false,
-			ValueType:        &storage.StringType{},
-		},
+func buildTestMigrationPlan() []storage.Migration {
+	return []storage.Migration{
+		{Description: "Schema for testing purpose", Changes: []storage.Change{
+			storage.Define("email", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+			storage.Define("emergencyKitVersion", storage.NoAutoBackup, storage.NotApplicable, false, &storage.IntType{}),
+			storage.Define("gcmToken", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+			storage.Define("isEmailVerified", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
+			storage.Define("primaryCurrency", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+			storage.Define("featureFlag:useDiagnosticMode", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
+			storage.Define("featureFlag:isDogfood", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
+			storage.Define("featureFlag:supportsNfc", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
+			storage.Define("featureFlag:utxoSelectionStrategy", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+		}},
 	}
 }
 

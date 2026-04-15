@@ -1,3 +1,5 @@
+import com.android.build.api.variant.FilterConfiguration
+
 import java.util.regex.Pattern
 
 buildscript {
@@ -23,6 +25,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'com.squareup.sqldelight'
+apply plugin: 'kotlin-parcelize'
 
 apply from: 'houston.gradle'
 apply from: "${project.rootDir}/linters/checkstyle/check-android.gradle"
@@ -101,8 +104,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 21
         targetSdk 35
-        versionCode 1507
-        versionName "55.7"
+        versionCode 1508
+        versionName "55.8"
 
         // Use default Proguard file, bundled with Android Gradle Plugin
         // See: https://issuetracker.google.com/issues/126772206
@@ -257,6 +260,7 @@ android {
 
         dogfood {
             // naming
+            // Note: if we ever change smth about this suffix our CI/CD needs to patched
             versionNameSuffix "-" + commitTag()
             applicationIdSuffix ".internal.beta"
             resValue "string", "app_name", "Muun (Dogfood)"
@@ -416,9 +420,9 @@ dependencies {
     implementation 'org.javamoney:moneta-bp:1.0'
     implementation 'org.zalando:jackson-datatype-money:0.12.0'
 
-    // Firebase:
-    // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:32.6.0')
+    // Firebase: Import the Firebase BoM
+    // Note this is the max BOM while using minSdk 21. Next verison requires minSdk 23
+    implementation platform('com.google.firebase:firebase-bom:33.16.0')
     // When using the BoM, you don't specify versions in Firebase library dependencies
 
     // Push Notifications:
@@ -598,35 +602,43 @@ androidComponents {
     onVariants(selector().withName(Pattern.compile(".*dogfoodRelease.*"))) { variant ->
         variant.signingConfig?.setConfig(android.signingConfigs.dogfood)
     }
-}
 
-android.applicationVariants.configureEach { variant ->
-    variant.outputs.configureEach { output ->
-        def baseVersionCode = versionCode as int
+    onVariants(selector().all()) { variant ->
+        def baseVersionCode = android.defaultConfig.versionCode as int
         def buildVersionSuffix = project.hasProperty('buildSuffix') ? project.buildSuffix : "000"
+
+        println "baseVersionCode: $baseVersionCode"
+        println "buildVersionSuffix: $buildVersionSuffix"
 
         if (!buildVersionSuffix.matches("\\d{3}")) {
             throw new GradleException("buildSuffix must be a number with 3 digits: '$buildVersionSuffix'")
         }
 
         def abiVersionCodeMap = ["dogfood": 1, "x86": 2, "x86_64": 3, "armeabi-v7a": 4, "arm64-v8a": 5]
-        def abi = output.getFilter(com.android.build.OutputFile.ABI)
-        def abiCode = 0
 
-        if (variant.name.containsIgnoreCase('dogfood')) {
-            abiCode = 1
-        } else if (abi != null) {
-            abiCode = abiVersionCodeMap.get(abi) ?: 0
-        }
+        variant.outputs.each { output ->
+            def abiCode = 0
+            def abiIdentifier = 'universal'
 
-        println "baseVersionCode: $baseVersionCode"
-        println "buildVersionSuffix: $buildVersionSuffix"
-        println "abiCode: $abiCode"
+            if (variant.name.containsIgnoreCase('dogfood')) {
+                abiCode = 1
+            } else {
+                def abiFilter = output.filters.find {
+                    it.filterType == FilterConfiguration.FilterType.ABI
+                }
+                if (abiFilter != null) {
+                    abiCode = abiVersionCodeMap.get(abiFilter.identifier) ?: 0
+                    abiIdentifier = abiFilter.identifier
+                }
+            }
+            println "abiCode: $abiCode"
 
-        output.versionCodeOverride = (baseVersionCode.toString() + buildVersionSuffix + abiCode.toString()) as int
+            def finalVersionCode = (baseVersionCode.toString() + buildVersionSuffix + abiCode.toString()) as int
+            output.versionCode.set(finalVersionCode)
 
-        if (System.getenv("CI")) {
-            println "ABI: ${abi ?: 'universal'}, Final versionCode: ${output.versionCodeOverride}"
+            if (System.getenv("CI")) {
+                println "ABI: ${abiIdentifier}, Final versionCode: ${finalVersionCode}"
+            }
         }
     }
 }

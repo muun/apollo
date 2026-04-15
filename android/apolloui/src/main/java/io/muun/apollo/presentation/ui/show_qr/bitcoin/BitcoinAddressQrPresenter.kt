@@ -16,6 +16,7 @@ import io.muun.apollo.presentation.ui.bundler.BitcoinAmountBundler
 import io.muun.apollo.presentation.ui.show_qr.QrPresenter
 import io.muun.common.bitcoinj.BitcoinUri
 import rx.Observable
+import java.util.Locale
 import javax.inject.Inject
 
 open class BitcoinAddressQrPresenter @Inject constructor(
@@ -134,7 +135,7 @@ open class BitcoinAddressQrPresenter @Inject constructor(
     @SuppressLint("DefaultLocale")
     private fun getDefaultAddressType() =
         try {
-            AddressType.valueOf(userPreferencesSel.get().defaultAddressType.toUpperCase())
+            AddressType.valueOf(userPreferencesSel.get().defaultAddressType.uppercase(Locale.getDefault()))
         } catch (e: Throwable) {
             AddressType.SEGWIT
         }

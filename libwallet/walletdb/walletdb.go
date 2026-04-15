@@ -36,7 +36,11 @@ type DB struct {
 }
 
 func Open(path string) (*DB, error) {
-	db, err := gorm.Open("sqlite3", path)
+	// _busy_timeout: retry for up to 1s before returning "database is locked" on concurrent writes.
+	// Without it, SQLite fails immediately when two concurrent writes overlap.
+	// _journal_mode=WAL: improves read/write concurrency.
+	// Readers can proceed concurrently with a writer, though SQLite still allows only one writer at a time.
+	db, err := gorm.Open("sqlite3", path+"?_busy_timeout=1000&_journal_mode=WAL")
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +51,32 @@ func Open(path string) (*DB, error) {
 	return &DB{db}, nil
 }
 
+func (d *DB) Gorm() *gorm.DB {
+	return d.db
+}
+
 func (d *DB) NewFeeBumpRepository() FeeBumpRepository {
 	return &GORMFeeBumpRepository{db: d.db}
 }
 
 func (d *DB) NewKeyValueRepository() KeyValueRepository {
 	return &GORMKeyValueRepository{db: d.db}
+}
+
+func NewKeyValueRepository(db *gorm.DB) KeyValueRepository {
+	// This constructor is useful to build a new repository for key-value operations bound
+	// to a specific GORM instance (which can be a DB connection or a transaction).
+	return &GORMKeyValueRepository{db: db}
+}
+
+func (d *DB) NewKVSchemaStateRepository() KVSchemaStateRepository {
+	return &GORMKVSchemaStateRepository{db: d.db}
+}
+
+func NewKVSchemaStateRepository(db *gorm.DB) KVSchemaStateRepository {
+	// This constructor is useful to build a new repository for schema state operations bound
+	// to a specific GORM instance (which can be a DB connection or a transaction).
+	return &GORMKVSchemaStateRepository{db: db}
 }
 
 func migrate(db *gorm.DB) error {
@@ -199,6 +223,32 @@ func migrate(db *gorm.DB) error {
 			},
 			Rollback: func(tx *gorm.DB) error {
 				return tx.DropTable("key_values").Error
+			},
+		},
+		{
+			ID: "create table kv_schema_state for key-value migrations",
+			Migrate: func(tx *gorm.DB) error {
+				// Note: this table was created with plain SQL instead of a struct like other
+				// migrations. If a future migration needs to add columns via AutoMigrate,
+				// consider that its equivalent struct representation is:
+				//
+				//   type KVSchemaState struct {
+				//       SchemaVersion int       `gorm:"primaryKey"`
+				//       AppliedAt     time.Time `gorm:"not null"`
+				//   }
+				//
+				// GORM will diff the struct against the real table regardless of how it was created.
+				return tx.Exec(`
+					CREATE TABLE IF NOT EXISTS kv_schema_state (
+						schema_version INTEGER PRIMARY KEY,
+						applied_at TIMESTAMP NOT NULL
+					);
+				`).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.Exec(`
+					DROP TABLE IF EXISTS kv_schema_state;
+				`).Error
 			},
 		},
 	})

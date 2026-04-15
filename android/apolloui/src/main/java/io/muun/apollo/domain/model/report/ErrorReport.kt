@@ -3,6 +3,7 @@ package io.muun.apollo.domain.model.report
 import android.util.Log
 import java.io.Serializable
 import java.util.UUID
+import java.util.WeakHashMap
 import kotlin.math.min
 
 /**
@@ -20,7 +21,19 @@ data class ErrorReport(
     val metadata: MutableMap<String, Serializable>,
 ) {
 
-    val uniqueId = UUID.randomUUID().toString()
+    val uniqueId = getOrCreateId(originalError ?: error)
+
+    companion object {
+        private val idCache = WeakHashMap<Throwable, String>()
+
+        /**
+         * Return a stable UUID for the given Throwable instance so that every ErrorReport
+         * built from the same Throwable shares the same ID across reporting channels.
+         */
+        @Synchronized
+        private fun getOrCreateId(error: Throwable): String =
+            idCache.getOrPut(error) { UUID.randomUUID().toString() }
+    }
 
     fun print(abridged: Boolean): String {
         val error = printError(abridged)

@@ -9,6 +9,7 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
+import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,7 +17,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +31,9 @@ public class ApplicationLockTest extends BaseTest {
     @Mock
     private ChallengePublicKeySelector challengePublicKeySel;
 
+    @Mock
+    private LogoutOptionsSelector logoutOptionsSelector;
+
     private ApplicationLockManager lockManager;
 
     @Before
@@ -43,13 +46,14 @@ public class ApplicationLockTest extends BaseTest {
         lockManager = new ApplicationLockManager(
                 pinManager,
                 secureStorageProvider,
-                challengePublicKeySel
+                challengePublicKeySel,
+                logoutOptionsSelector
         );
 
         when(pinManager.verifyPin(CORRECT_PIN)).thenReturn(true);
         when(pinManager.verifyPin(INCORRECT_PIN)).thenReturn(false);
 
-        doReturn(false).when(challengePublicKeySel).exists(any());
+        doReturn(false).when(logoutOptionsSelector).isRecoverable();
     }
 
     @Test
@@ -86,7 +90,7 @@ public class ApplicationLockTest extends BaseTest {
 
     @Test
     public void decrementsRemainingAttemptsWhenRecoverable() {
-        doReturn(true).when(challengePublicKeySel).exists(any());
+        doReturn(true).when(logoutOptionsSelector).isRecoverable();
 
         final int maxAttempts = lockManager.getMaxAttempts();
         assertThat(lockManager.getRemainingAttempts()).isEqualTo(maxAttempts);
@@ -99,15 +103,13 @@ public class ApplicationLockTest extends BaseTest {
 
     @Test(expected = WeirdIncorrectAttemptsBugError.class)
     public void errorOnZeroRemainingAttemptsWhenRecoverable() {
-        doReturn(true).when(challengePublicKeySel).exists(any());
+        doReturn(true).when(logoutOptionsSelector).isRecoverable();
 
         burnRemainingAttempts(lockManager.getMaxAttempts() + 1);
     }
 
     @Test
     public void doesNotDecrementAttemptsWhenUnrecoverable() {
-        doReturn(false).when(challengePublicKeySel).exists(any());
-
         final int maxAttempts = lockManager.getMaxAttempts();
 
         assertThat(lockManager.getRemainingAttempts()).isEqualTo(maxAttempts);

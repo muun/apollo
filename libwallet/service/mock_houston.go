@@ -274,6 +274,12 @@ func (m *MockHoustonService) ChallengeSecurityCardSign(
 		return model.ChallengeSecurityCardSignResponseJson{}, houstonError
 	}
 
+	err = m.persistCardData()
+	if err != nil {
+		houstonError := mapToInternalServerHoustonError("error persisting houston data", err)
+		return model.ChallengeSecurityCardSignResponseJson{}, houstonError
+	}
+
 	challengeMac := nfc.MakeChallengeSignMac(
 		m.secretCardBytes[:16],
 		randomPublicKey,

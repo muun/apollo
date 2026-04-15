@@ -10,12 +10,10 @@ import javax.inject.Inject
 import kotlin.math.max
 
 class BlockchainHeightSelector @Inject constructor(
-    private val blockchainHeightRepository: BlockchainHeightRepository
+    private val blockchainHeightRepository: BlockchainHeightRepository,
 ) {
 
     companion object {
-        var DEBUG_BLOCKS_TO_TAPROOT: Int? = null
-
         fun getBlocksInHours(blocks: Int) =
             if (blocks == 0) {
                 0 // separate case, because estimations are rounded up to 1
@@ -34,10 +32,6 @@ class BlockchainHeightSelector @Inject constructor(
         watch().toBlocking().first()
 
     private fun calcBlocksToTaproot(blockchainHeight: Int): Int {
-        if (DEBUG_BLOCKS_TO_TAPROOT != null) {
-            return DEBUG_BLOCKS_TO_TAPROOT!!
-        }
-
         val taprootHeight = Libwallet.getUserActivatedFeatureTaproot()
             .blockheight(Globals.INSTANCE.network.toLibwallet())
 

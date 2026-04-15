@@ -121,7 +121,6 @@ object Crashlytics {
             crashlytics?.setCustomKey(entry.key, entry.value.toString())
         }
 
-
         analyticsProvider?.report(
             AnalyticsEvent.E_CRASHLYTICS_ERROR(report)
         )

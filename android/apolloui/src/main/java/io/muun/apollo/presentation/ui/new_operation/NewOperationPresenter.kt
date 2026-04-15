@@ -568,14 +568,21 @@ class NewOperationPresenter @Inject constructor(
         // If the data is fresh: simply returns null to complete loading on this screen.
         preloadFeeData.runIfDataIsInvalidated(FeeBumpRefreshPolicy.NEW_OP_BLOCKINGLY)
 
-        // This is still needed because we need to:
-        // - resolveLnInvoice for submarine swaps TODO mv this to libwallet
-        // - resolveMuunUri for P2P/Contacts legacy feature TODO refactor this?
-        resolveOperationUri.run(OperationUri.fromString(uri), origin)
+        val isActivityRecreation = stateMachine.value() as? StartState == null
+
+        // Only resolve on first run — resolving creates swaps server-side, and on Activity
+        // recreation the previous resolve already completed, so re-running would create a
+        // duplicate swap (the isRunning() guard won't help since the first one finished).
+        if (!isActivityRecreation) {
+            // This is still needed because we need to:
+            // - resolveLnInvoice for submarine swaps TODO mv this to libwallet
+            // - resolveMuunUri for P2P/Contacts legacy feature TODO refactor this?
+            resolveOperationUri.run(OperationUri.fromString(uri), origin)
+        }
 
         view.setInitialBitcoinUnit(bitcoinUnitSel.get())
 
-        return stateMachine.value() as? StartState == null
+        return isActivityRecreation
     }
 
     private fun onPaymentContextChanged(newPayCtx: PaymentContext, payReq: PaymentRequest?) {

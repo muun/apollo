@@ -733,6 +733,7 @@
     <string name="settings_item_bitcoin_unit">Bitcoin unit</string>
     <string name="settings_password">Change password</string>
     <string name="settings_biometrics">Fingerprint unlock</string>
+    <string name="settings_internal_debugging">Internal debug settings</string>
     <string name="settings_item_export_keys">Private keys backup</string> <!-- unused -->
     <string name="settings_setup_recovery_code">Set up a Recovery Code</string>
     <string name="settings_recovery_tool">Recovery Tool</string>
@@ -769,12 +770,8 @@
     </string>
     <string name="settings_delete_wallet_alert_yes">Delete</string>
     <string name="settings_delete_wallet_alert_no">Cancel</string>
-    <string name="settings_disable_feature_flags">Disable feature flags</string>
+    <string name="settings_disable_feature_flags">Your feature flags</string>
     <string name="disable_feature_flags_security_card">Security Card</string>
-    <string name="disable_feature_flags_info">
-        Some of our feature flags can be turned off and on again at your request. These are the
-        ones you can currently modify. Turn the toggles off to disable the selected feature.
-    </string>
 
     <string name="delete_wallet_success_message">You deleted your wallet</string>
     <string name="delete_wallet_success_description">
@@ -1744,5 +1741,38 @@
     <string name="biometrics_setup_error_generic_desc">Fingerprint detection failed, try again later.</string>
     <string name="biometrics_unlock_error_lockout_desc">Fingerprint authentication has been disabled temporarily due to too many failed attempts. Please wait and try again.</string>
     <string name="biometrics_unlock_error_lockout_permanent_desc">Fingerprint authentication has been disabled due to too many failed attempts. To enable it again, please unlock your phone again.</string>
+
+    <!-- SecurityCards - Marketplace -->
+    <string name="security_cards_marketplace_card_cost">%s</string>
+    <string name="security_cards_marketplace_shipping_and_taxes_cost">%s shipping &amp; taxes</string>
+    <string name="security_cards_marketplace_no_data_description">
+        <annotation role="p">Unfortunately, no provider currently ships to <annotation arg="0">COUNTRY</annotation>.</annotation>
+        <annotation role="p"><annotation link="support"><annotation fontColor="muunTextSecondaryColor">Add your voice</annotation></annotation> to help us prioritize which country we should add next.</annotation>
+    </string>
+    <string name="security_cards_marketplace_no_data_button">CHOOSE A DIFFERENT COUNTRY</string>
+
+    <!-- SecurityCards - CountryPicker -->
+    <string name="security_cards_country_picker_title">Country</string>
+    <string name="security_cards_country_picker_search_hint">Search</string>
+    <string name="security_cards_country_picker_section_label">Ordered alphabetically</string>
+    <string name="security_cards_country_picker_no_results">No countries found for \"%s\"</string>
+
+    <!-- SecurityCards - Onboarding -->
+    <string name="security_cards_onboarding_title">Security cards</string>
+    <string name="security_cards_onboarding_slide_1_title">Physical protection</string>
+    <string name="security_cards_onboarding_slide_1_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_slide_2_title">Tap to unlock</string>
+    <string name="security_cards_onboarding_slide_2_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_slide_3_title">Curated for you</string>
+    <string name="security_cards_onboarding_slide_3_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_location_title">Choose your location</string>
+    <string name="security_cards_onboarding_location_description">Providers will depend on where you want to receive your card.</string>
+    <string name="security_cards_onboarding_select_country">Select a country</string>
+    <string name="security_cards_onboarding_swipe_to_continue">Swipe to continue</string>
+    <string name="security_cards_onboarding_start_exploring">Start exploring</string>
+
+    <!-- SecurityCards - CardDetail -->
+    <string name="security_cards_card_detail_see_full_specs">See full specs</string>
+    <string name="security_cards_card_detail_go_to_provider">GO TO %s</string>
 
 </resources>

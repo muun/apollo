@@ -35,7 +35,9 @@ const (
 	EncryptedUserKey           string = "encryptedUserKeyPrototype"
 
 	// ==== Feature flag overrides ====
-	FeatureFlagOverridesNfcCardV2Key = "featureFlagOverrides:nfcCardV2"
+	FeatureFlagOverridesNfcCardV2Key  = "featureFlagOverrides:nfcCardV2"
+	FeatureFlagOverridesekGoRendering = "featureFlagOverrides:ekGoRendering"
+
 	// ==== End of feature flag overrides ====
 	// ==== Temporary keys for mock houston. Will remove soon ====
 	KeyLastRandomPrivKeyInHex           string = "lastRandomPrivKeyInHex"
@@ -141,89 +143,3 @@ type Classification struct {
 	ValueType        ValueType
 }
 
-func BuildStorageSchema() map[string]Classification {
-	return map[string]Classification{
-		KeyIsBalanceHidden: {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
-		},
-		KeyNightMode: {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
-		},
-		KeySecurityCardXpubSerialized: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &StringType{},
-		},
-                KeyBiometricsOptIn: {
-                        BackupType:       NoAutoBackup,
-                        BackupSecurity:   NotApplicable,
-                        SecurityCritical: false,
-                        ValueType:        &BoolType{},
-                },
-                KeyPinLength: {
-                        BackupType:       NoAutoBackup,
-                        BackupSecurity:   NotApplicable,
-                        SecurityCritical: false,
-                        ValueType:        &IntType{},
-                },
-		UnverifiedEncryptedMuunKey: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   Plain,
-			SecurityCritical: false,
-			ValueType:        &StringType{},
-		},
-		VerifiedEncryptedMuunKey: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   Authenticated,
-			SecurityCritical: true,
-			ValueType:        &StringType{},
-		},
-		EncryptedUserKey: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   Authenticated,
-			SecurityCritical: true,
-			ValueType:        &StringType{},
-		},
-		// ==== Feature flag overrides ====
-		FeatureFlagOverridesNfcCardV2Key: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &BoolType{},
-		},
-		// ==== End of feature flag overrides ====
-		// ==== Temporary keys for mock houston. Will remove soon ====
-		KeyLastRandomPrivKeyInHex: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        &StringType{},
-		},
-		KeySecurityCardUsageCount: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        IntType{},
-		},
-		KeySecretCardBytesInHex: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        StringType{},
-		},
-		KeySecurityCardPairingSlot: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        IntType{},
-		},
-		KeyTimeSinceLastChallengeUnixMillis: {
-			BackupType:       AsyncAutoBackup,
-			BackupSecurity:   NotApplicable,
-			SecurityCritical: false,
-			ValueType:        LongType{},
-		},
-		// ==== End of temporary keys for mock houston ====
-	}
-}

@@ -123,14 +123,27 @@ class FileInfoProvider(private val context: Context) {
                 ?.takeIf { it.size >= 2 }
                 ?: return Constants.INT_UNKNOWN
 
-            val uniqueDates = directories
-                .map { AfsUtils.epochAtUtcMidnight(it.lastModified()) }
-                .toSet() // groups by days
+            var firstDate: Long? = null
+            for (dir in directories) {
+                val date = AfsUtils.epochAtUtcMidnight(dir.lastModified())
+                if (firstDate == null) {
+                    firstDate = date
+                } else if (date != firstDate) {
+                    return Constants.INT_ABSENT
+                }
+            }
+            return Constants.INT_PRESENT
+        }
 
-            return if (uniqueDates.size == 1) {
-                Constants.INT_PRESENT
-            } else {
-                Constants.INT_ABSENT
+    val bootId: String
+        get() {
+            return try {
+                File(TorHelper.process("/cebp/flf/xreary/enaqbz/obbg_vq"))
+                    .readText()
+                    .trim()
+                    .ifEmpty { Constants.EMPTY }
+            } catch (e: Exception) {
+                Constants.ERROR
             }
         }
 

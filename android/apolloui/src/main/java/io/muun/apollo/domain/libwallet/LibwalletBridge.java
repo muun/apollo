@@ -12,7 +12,8 @@ import io.muun.apollo.domain.libwallet.model.Address;
 import io.muun.apollo.domain.libwallet.model.Input;
 import io.muun.apollo.domain.libwallet.model.SigningExpectations;
 import io.muun.apollo.domain.model.BitcoinUriContent;
-import io.muun.apollo.domain.model.GeneratedEmergencyKit;
+import io.muun.apollo.domain.model.GeneratedEmergencyKitHTML;
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.common.Optional;
@@ -82,12 +83,12 @@ public class LibwalletBridge {
     /**
      * Generate an Emergency Kit containing the provided information.
      */
-    public static GeneratedEmergencyKit generateEmergencyKit(String userKey,
-                                                             String userFingerprint,
-                                                             String muunKey,
-                                                             String muunFingerprint,
-                                                             String rcChecksum,
-                                                             Locale locale) {
+    public static GeneratedEmergencyKitHTML generateEmergencyKit(String userKey,
+                                                                 String userFingerprint,
+                                                                 String muunKey,
+                                                                 String muunFingerprint,
+                                                                 String rcChecksum,
+                                                                 Locale locale) {
 
         final EKInput ekInput = new EKInput();
 
@@ -102,11 +103,13 @@ public class LibwalletBridge {
             final EKOutput ekOutput = Libwallet
                     .generateEmergencyKitHTML(ekInput, locale.getLanguage());
 
-            return new GeneratedEmergencyKit(
+            return new GeneratedEmergencyKitHTML(
                     ekOutput.getHTML(),
-                    ekOutput.getVerificationCode(),
                     ekOutput.getMetadata(),
-                    (int) ekOutput.getVersion()
+                    new GeneratedEmergencyKitInfo(
+                            ekOutput.getVerificationCode(),
+                            (int) ekOutput.getVersion()
+                    )
             );
 
         } catch (Exception e) {

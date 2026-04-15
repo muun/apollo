@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            app:elevation="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+        <io.muun.apollo.presentation.ui.view.MuunHeader
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                muun:elevated="false" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="0dp"
+            app:tabMode="fixed"
+            android:background="@color/background"
+            tools:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_height="wrap_content" />
+
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/tabLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/viewGroup_no_data"
+            android:background="@color/background"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            tools:alpha="0.2"
+            app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imageView_no_data"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:srcCompat="@drawable/ic_circle_off_outline_24"
+                app:tint="@color/icon_color"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintBottom_toTopOf="@id/textView_no_data_description"
+                android:layout_width="120dp"
+                android:layout_height="120dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textView_no_data_description"
+                app:layout_constraintTop_toBottomOf="@id/imageView_no_data"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="32dp"
+                app:layout_constrainedWidth="true"
+                android:textColor="@color/text_secondary_color"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                tools:text="@string/security_cards_marketplace_no_data_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginHorizontal="24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        <io.muun.apollo.presentation.ui.view.MuunButton
+                android:layout_width="wrap_content"
+                android:id="@+id/button_no_data_select_country"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="24dp"
+                android:text="@string/security_cards_marketplace_no_data_button"
+                android:textColor="@color/blue_buttons"
+                android:layout_height="wrap_content" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

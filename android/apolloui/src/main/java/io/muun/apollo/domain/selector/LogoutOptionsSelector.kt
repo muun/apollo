@@ -5,7 +5,8 @@ import io.muun.common.utils.Preconditions
 import rx.Observable
 import javax.inject.Inject
 
-class LogoutOptionsSelector @Inject constructor(
+// open so mockito can mock/spy
+open class LogoutOptionsSelector @Inject constructor(
     private val userSel: UserSelector,
     private val paymentContextSel: PaymentContextSelector,
     private val operationSel: OperationSelector,
@@ -54,7 +55,8 @@ class LogoutOptionsSelector @Inject constructor(
     fun get(): LogoutOptions =
         watch().toBlocking().first()
 
-    fun isRecoverable(): Boolean {
+    // open so mockito can mock/spy
+    open fun isRecoverable(): Boolean {
         if (userSel.getOptional().isPresent) {
             try {
                 return get().isRecoverable()

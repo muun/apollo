@@ -50,12 +50,12 @@ rm -rf "$GOCACHE"/src-android-* 2>/dev/null \
 export CGO_LDFLAGS="-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
 
 # Finally run gomobile bind using the version pinned by the go.mod file.
-# We need -androidapi 19 to set the min api targeted by the NDK.
+# We need -androidapi 21 to set the min api targeted by the NDK.
 # The -trimpath and -ldflags are passed on to go build and are part of keeping the build reproducible.
 # Note that we bind & build two packages top-level libwallet and newop.
 go run golang.org/x/mobile/cmd/gomobile bind \
     -target="android" -o "$libwallet" \
-    -androidapi 19 \
+    -androidapi 21 \
     -trimpath -ldflags="-buildid=. -v" \
     . ./newop ./app_provided_data ./libwallet_init
 

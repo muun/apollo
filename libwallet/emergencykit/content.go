@@ -181,7 +181,7 @@ const contentES = `
 
 <section class="instructions">
 <h1>Instrucciones</h1>
-<p>Éste procedimiento de emergencia te ayudará a recuperar tus fondos si no puedes usar Muun en tu teléfono.</p>
+<p>Este procedimiento de emergencia te ayudará a recuperar tus fondos si no puedes usar Muun en tu teléfono.</p>
 
 <div class="item">
   <div class="number-box">
@@ -199,7 +199,7 @@ const contentES = `
   </div>
   <div class="text-box">
     <h3>Descarga la Herramienta de Recuperación</h3>
-    <p>Ingresa en <a href="github.com/muun/recovery">github.com/muun/recovery</a> y descarga la herramienta en tu computadora..</p>
+    <p>Ingresa en <a href="github.com/muun/recovery">github.com/muun/recovery</a> y descarga la herramienta en tu computadora.</p>
   </div>
 </div>
 
@@ -252,7 +252,7 @@ incluye algunos elementos que aún no están estandarizados.
 
 <p>
 Cuando los descriptors lleguen a una etapa más madura, podrás llevar tus fondos de una billetera a la otra con completa 
-independencia. Muun cree que ésta libertad es central a la promesa de Bitcoin, y está trabajando para que eso suceda.
+independencia. Muun cree que esta libertad es central a la promesa de Bitcoin, y está trabajando para que eso suceda.
 </p>
 </section>
 `

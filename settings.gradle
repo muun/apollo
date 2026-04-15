@@ -6,7 +6,7 @@ pluginManagement {
 
     plugins {
         // Must match global_kotlin_version in top level build.gradle!
-        id 'org.jetbrains.kotlin.android' version "1.8.20"
+        id 'org.jetbrains.kotlin.android' version "2.1.0"
     }
 }
 

@@ -5,7 +5,7 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction2
 import io.muun.apollo.domain.errors.ek.EmergencyKitInvalidCodeError
 import io.muun.apollo.domain.errors.ek.EmergencyKitOldCodeError
 import io.muun.apollo.domain.model.EmergencyKitExport
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
 import rx.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,12 +14,12 @@ import javax.inject.Singleton
 class VerifyEmergencyKitAction @Inject constructor(
     private val userRepository: UserRepository,
     private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
-) : BaseAsyncAction2<String, GeneratedEmergencyKit, Void>() {
+) : BaseAsyncAction2<String, GeneratedEmergencyKitInfo, Void>() {
 
     /**
      * Verify a given EK verification code matches expectations.
      */
-    override fun action(providedCode: String, kitGen: GeneratedEmergencyKit): Observable<Void> =
+    override fun action(providedCode: String, kitGen: GeneratedEmergencyKitInfo): Observable<Void> =
         Observable.fromCallable {
 
             val storedCodes = userRepository.fetchOne().emergencyKitVerificationCodes

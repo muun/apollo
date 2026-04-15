@@ -12,6 +12,7 @@ import io.muun.apollo.databinding.ActivityDiagnosticBinding
 import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.presentation.app.ApolloApplication
 import io.muun.apollo.presentation.ui.base.di.ActivityComponent
+import io.muun.apollo.presentation.ui.utils.setWindowInsetsCompat
 import rx.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 
@@ -35,6 +36,7 @@ class DiagnosticActivity : AppCompatActivity() {
     private var currentValue: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setWindowInsetsCompat()
         super.onCreate(savedInstanceState)
 
         component.inject(this)

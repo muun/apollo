@@ -25,7 +25,7 @@ trap 'rm -rf "$tmp"' EXIT
 # Prepare paths to extract APKs
 mkdir -p "$tmp/to_verify" "$tmp/baseline"
 
-echo "Building the APKs from source. This might take a while (10-20 minutes)..."
+echo "Building the APKs from source. This might take a while (from 20min up to 45-50min)..."
 mkdir -p apk
 DOCKER_BUILDKIT=1 docker build -f android/Dockerfile -o apk .
 

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <View
+            android:id="@+id/view_placeholder"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="88dp"
+            android:background="@drawable/bg_security_cards_onboarding_placeholder"
+            app:layout_constraintBottom_toTopOf="@id/guideline_vertical_center"
+            app:layout_constraintDimensionRatio="H,0.632"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_view_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="@color/text_primary_color"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_placeholder"
+            tools:text="Choose your location" />
+
+    <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_view_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:textColor="@color/text_secondary_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_view_title"
+            tools:text="Providers will depend on where you want to receive your card." />
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:id="@+id/text_input_layout_country"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_description"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/chevron_down"
+            app:hintEnabled="false"
+            android:layout_marginHorizontal="24dp"
+            android:clickable="false"
+            android:focusable="false"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/text_input_edit_text_country"
+                android:layout_width="match_parent"
+                android:hint="@string/security_cards_onboarding_select_country"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:cursorVisible="false"
+                android:clickable="false"
+                android:inputType="none"
+                android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <View
+            android:id="@+id/view_text_input_layout_country_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintTop_toTopOf="@id/text_input_layout_country"
+            app:layout_constraintBottom_toBottomOf="@id/text_input_layout_country"
+            app:layout_constraintStart_toStartOf="@id/text_input_layout_country"
+            app:layout_constraintEnd_toEndOf="@id/text_input_layout_country" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_vertical_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".5" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

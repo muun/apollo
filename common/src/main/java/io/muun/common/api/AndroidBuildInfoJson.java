@@ -6,6 +6,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import javax.annotation.Nullable;
 
+/**
+ * Android Build Information JSON for `device` (a.k.a static pipeline)
+ *
+ * <p>This class represents the first version of Android Build Information JSON.
+ * It reflects the previous reporting strategy, where this signal was emitted only
+ * at specific session creation points.
+ *
+ * <p>The newer reporting strategy {@code houston/presentation/models/AndroidBuildInfoJson.java}
+ * uses a dynamic counterpart, which reports repeatedly a conceptually equivalent signal
+ * (with minor field-level differences) as part of the BackgroundExecutionMetrics flow.
+ *
+ * <p>This JSON model is retained for backward compatibility with older Apollo versions.
+ */
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AndroidBuildInfoJson {
@@ -58,9 +72,6 @@ public class AndroidBuildInfoJson {
     @Nullable
     public String release;
 
-    @Nullable
-    public Long date;
-
     /**
      * Json constructor.
      */
@@ -68,38 +79,5 @@ public class AndroidBuildInfoJson {
     public AndroidBuildInfoJson() {
     }
 
-    /**
-     * Code constructor.
-     */
-    public AndroidBuildInfoJson(
-            @Nullable List<String> abis,
-            @Nullable String fingerprint,
-            @Nullable String bootloader,
-            @Nullable String manufacturer,
-            @Nullable String brand,
-            @Nullable String display,
-            @Nullable String host,
-            @Nullable String type,
-            @Nullable String radioVersion,
-            @Nullable String securityPatch,
-            @Nullable String model,
-            @Nullable String product,
-            @Nullable String release,
-            @Nullable Long date
-    ) {
-        this.abis = abis;
-        this.fingerprint = fingerprint;
-        this.bootloader = bootloader;
-        this.manufacturer = manufacturer;
-        this.brand = brand;
-        this.display = display;
-        this.host = host;
-        this.type = type;
-        this.radioVersion = radioVersion;
-        this.securityPatch = securityPatch;
-        this.model = model;
-        this.product = product;
-        this.release = release;
-        this.date = date;
-    }
+    // Constructor removed: Apollo moved this flow to the dynamic pipeline.
 }

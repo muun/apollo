@@ -51,6 +51,7 @@ import io.muun.apollo.data.preferences.FeaturesRepository
 import io.muun.apollo.data.preferences.RepositoryRegistry
 import io.muun.apollo.domain.action.NotificationActions
 import io.muun.apollo.domain.action.NotificationPoller
+import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
 import io.muun.apollo.domain.libwallet.LibwalletClient
@@ -257,6 +258,7 @@ class DataModule(
         val batteryInfoProvider = BatteryInfoProvider(context)
         val systemInfoProvider = SystemInfoProvider()
         val networkInfoProvider = NetworkInfoProvider(context)
+        val isRootedDeviceAction = IsRootedDeviceAction(context)
 
         return MetricsProvider(
             activityManagerInfoProvider,
@@ -274,7 +276,8 @@ class DataModule(
             nfcProvider,
             batteryInfoProvider,
             systemInfoProvider,
-            networkInfoProvider
+            networkInfoProvider,
+            isRootedDeviceAction
         )
     }
 }
