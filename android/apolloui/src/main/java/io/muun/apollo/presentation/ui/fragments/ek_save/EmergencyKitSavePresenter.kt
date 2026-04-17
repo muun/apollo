@@ -73,24 +73,26 @@ class EmergencyKitSavePresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        renderEmergencyKit.state
-            .compose(handleStates(null, this::handleError))
-            .doOnNext(this::onRenderResult)
-            .let(this::subscribeTo)
+        if (featureSelector.get(MuunFeature.EK_GO_RENDERING)) {
+            generateEmergencyKitPdf.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext(this::onPDFGenerationFinished)
+                .let(this::subscribeTo)
+        } else {
+            renderEmergencyKit.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext(this::onRenderResult)
+                .let(this::subscribeTo)
 
-        addEmergencyKitMetadata.state
-            .compose(handleStates(null, this::handleError))
-            .doOnNext { onMetadataAdded() }
-            .let(this::subscribeTo)
+            addEmergencyKitMetadata.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext { onMetadataAdded() }
+                .let(this::subscribeTo)
+        }
 
         uploadToDrive.state
             .compose(handleStates(view::setDriveUploading, this::handleError))
             .doOnNext(this::onUploadResult)
-            .let(this::subscribeTo)
-
-        generateEmergencyKitPdf.state
-            .compose(handleStates(view::setDriveUploading, this::handleError))
-            .doOnNext(this::onPDFGenerationFinished)
             .let(this::subscribeTo)
     }
 
