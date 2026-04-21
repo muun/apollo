@@ -7,6 +7,9 @@ lto = true
 
 [workspace.dependencies]
 plonky2-cosigning-key-validation = { path = "../../prover/libs/plonky2-cosigning-key-validation" }
+# Force ahash to use runtime RNG, instead of compile time RNG to avoid breaking reproducible builds
+# More info: https://github.com/muun/muun/pull/15939
+ahash = { version = "0.8.11", features = ["runtime-rng"] }
 
 [patch.crates-io]
 # Include https://github.com/eira-fransham/crunchy/pull/17 so cross compilation to windows works

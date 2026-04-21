@@ -7,6 +7,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 plonky2-cosigning-key-validation = { workspace = true }
+ahash = { workspace = true }
 libc = "0.2"
 anyhow = "1"
 

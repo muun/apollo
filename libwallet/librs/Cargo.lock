@@ -10,6 +10,7 @@ checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
 dependencies = [
  "cfg-if",
  "const-random",
+ "getrandom",
  "once_cell",
  "version_check",
  "zerocopy 0.7.35",
@@ -43,6 +44,7 @@ checksum = "89e25b6adfb930f02d1981565a6e5d9c547ac15a96606256d3b59040e5cd4ca3"
 name = "bindings"
 version = "0.0.0"
 dependencies = [
+ "ahash",
  "anyhow",
  "libc",
  "plonky2-cosigning-key-validation",
@@ -246,6 +248,7 @@ dependencies = [
 name = "generate"
 version = "0.0.0"
 dependencies = [
+ "ahash",
  "hex",
  "plonky2-cosigning-key-validation",
 ]
