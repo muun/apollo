@@ -1,0 +1,35 @@
+{
+  "header": {
+    "title": "Emergency Kit",
+    "verification_prefix": "VERIFICATION #"
+  },
+  "keys": {
+    "encrypted_backup_title": "Encrypted backup",
+    "encrypted_backup_desc1": "It can only be decrypted using your",
+    "encrypted_backup_desc2": "Recovery Code.",
+    "first_key_label": "FIRST KEY",
+    "second_key_label": "SECOND KEY",
+    "created_on_prefix": "CREATED ON "
+  },
+  "instructions": {
+    "title": "Instructions",
+    "intro": "This emergency procedure will help you recover your funds if you are unable to use Muun on your phone.",
+    "step1_title": "Find your Recovery Code",
+    "step1_desc": "You wrote this code on paper before creating your Emergency Kit. You'll need it later.",
+    "step2_title": "Download the Recovery Tool",
+    "step2_desc": "Go to github.com/muun/recovery and download the tool on your computer.",
+    "step3_title": "Recover your funds",
+    "step3_desc": "Run the Recovery Tool and follow the steps. It will safely transfer your funds to a Bitcoin address that you choose."
+  },
+  "help": {
+    "title": "Need help?",
+    "description": "Contact us at support@muun.com. We're always there to help."
+  },
+  "advanced": {
+    "title": "Advanced information",
+    "subtitle": "Output descriptors",
+    "intro": "These descriptors, combined with your keys, specify how to locate your wallet's funds on the Bitcoin blockchain.",
+    "closing1": "Output descriptors are part of a developing standard for Recovery that Muun intends to support and is helping grow. Since the standard is in a very early stage, the list above includes some non-standard elements.",
+    "closing2": "When descriptors reach a more mature stage, you'll be able to take your funds from one wallet to another with complete independence. Muun believes this freedom is at the core of Bitcoin's promise, and is working towards that goal."
+  }
+}

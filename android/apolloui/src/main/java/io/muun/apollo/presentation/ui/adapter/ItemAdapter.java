@@ -63,7 +63,10 @@ public class ItemAdapter extends RecyclerView.Adapter<BaseViewHolder<ItemViewMod
         final ItemViewModel item = items.get(position);
 
         holder.bind(item);
-        holder.itemView.setOnClickListener(view -> onItemClick(item));
+        holder.itemView.setOnClickListener(view -> {
+            onItemClick(item);
+            holder.onItemClick();
+        });
     }
 
     @Override

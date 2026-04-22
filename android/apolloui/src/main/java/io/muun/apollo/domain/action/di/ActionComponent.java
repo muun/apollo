@@ -16,6 +16,7 @@ import io.muun.apollo.domain.action.challenge_keys.password_setup.SetUpPasswordA
 import io.muun.apollo.domain.action.challenge_keys.password_setup.StartEmailSetupAction;
 import io.muun.apollo.domain.action.challenge_keys.recovery_code_setup.StartRecoveryCodeSetupAction;
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction;
+import io.muun.apollo.domain.action.ek.GenerateEmergencyKitPDF;
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction;
 import io.muun.apollo.domain.action.ek.ReportEmergencyKitExportedAction;
 import io.muun.apollo.domain.action.ek.UploadToDriveAction;
@@ -115,6 +116,8 @@ public interface ActionComponent {
     ReportEmergencyKitExportedAction reportKeysExportedAction();
 
     RenderEmergencyKitAction renderEmergencyKitAction();
+
+    GenerateEmergencyKitPDF generateEmergencyKitPdf();
 
     VerifyEmergencyKitAction verifyEmergencyKitAction();
 

@@ -34,6 +34,14 @@ import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
 import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
 import io.muun.apollo.presentation.ui.scan_qr.LnUrlFlow;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
+import io.muun.apollo.presentation.ui.security_cards_card_detail.CardDetailActivity;
+import io.muun.apollo.presentation.ui.security_cards_country_picker.CountryPickerActivity;
+import io.muun.apollo.presentation.ui.security_cards_country_picker.models.CountryInfo;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.SecurityCardsMarketplaceActivity;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.models.MarketplaceFooter;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCard;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider;
+import io.muun.apollo.presentation.ui.security_cards_onboarding.SecurityCardsOnboardingActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
 import io.muun.apollo.presentation.ui.select_night_mode.SelectNightModeActivity;
@@ -61,6 +69,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.Nullable;
 import timber.log.Timber;
 
 import javax.inject.Inject;
@@ -672,5 +681,48 @@ public class Navigator {
         activityLauncher.launch(
                 NfcReaderActivity.Companion.getStartActivityIntent(context)
         );
+    }
+
+    public void navigateToSecurityCardsMarketplace(
+            @NotNull Context context,
+            @NotNull CountryInfo countryInfo
+    ) {
+        final Intent intent =
+                SecurityCardsMarketplaceActivity.Companion.getIntent(context, countryInfo);
+        context.startActivity(intent);
+    }
+
+    public void navigateToCardDetail(
+            @NotNull Context context,
+            @NotNull SecurityCardProvider provider,
+            @NotNull SecurityCard card,
+            @NotNull MarketplaceFooter footer
+    ) {
+        final Intent intent =
+                CardDetailActivity.Companion.getIntent(context, provider, card, footer);
+        context.startActivity(intent);
+    }
+
+    /**
+     * Navigates to country picker activity.
+     */
+    public void navigateToCountryPickerForResult(
+            @NotNull Context context,
+            @Nullable String selectedCountryCode,
+            @NotNull ActivityResultLauncher<Intent> activityLauncher
+    ) {
+        activityLauncher.launch(CountryPickerActivity.Companion.getIntent(
+                context,
+                selectedCountryCode
+        ));
+    }
+
+    /**
+     * .
+     */
+    public void navigateToSecurityCardsMarketplaceOnboarding(
+            @NotNull Context context
+    ) {
+        context.startActivity(SecurityCardsOnboardingActivity.Companion.getIntent(context));
     }
 }

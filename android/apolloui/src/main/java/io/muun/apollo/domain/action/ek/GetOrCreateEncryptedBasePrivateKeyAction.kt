@@ -13,8 +13,8 @@ import javax.inject.Singleton
 
 @Singleton
 class GetOrCreateEncryptedBasePrivateKeyAction @Inject constructor(
-    private val keysRepository: KeysRepository
-): BaseAsyncAction0<String>() {
+    private val keysRepository: KeysRepository,
+) : BaseAsyncAction0<String>() {
     /**
      * Prepare the emergency kit for export, and render the HTML.
      */
@@ -43,9 +43,10 @@ class GetOrCreateEncryptedBasePrivateKeyAction @Inject constructor(
             .flatMap { encryptedKey: String ->
                 Preconditions.checkNotNull(encryptedKey)
                 Timber.d("Storing encrypted Apollo private key in secure storage.")
-                keysRepository.storeUserKeyFingerprint(Encodings.bytesToHex(
-                    basePrivateKey.fingerprint //TODO: why is this set coupled to the encryptedBasePrivateKey?
-                ))
+                //TODO: why is this set coupled to the encryptedBasePrivateKey?
+                keysRepository.storeUserKeyFingerprint(
+                    Encodings.bytesToHex(basePrivateKey.fingerprint)
+                )
 
                 keysRepository.storeEncryptedBasePrivateKey(encryptedKey)
 

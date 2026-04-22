@@ -4,7 +4,7 @@ import android.os.Bundle
 import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.apis.DriveUploader
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_TAPROOT_SLIDES_ABORTED
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveParentPresenter
@@ -30,7 +30,7 @@ class TaprootSetupPresenter @Inject constructor(
 
     var uploadedFile: DriveFile? = null
 
-    private var generatedEK: GeneratedEmergencyKit? = null
+    private var generatedEK: GeneratedEmergencyKitInfo? = null
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -50,11 +50,11 @@ class TaprootSetupPresenter @Inject constructor(
         view.finishActivity()
     }
 
-    override fun setGeneratedEmergencyKit(kitGen: GeneratedEmergencyKit) {
+    override fun setGeneratedEmergencyKit(kitGen: GeneratedEmergencyKitInfo) {
         generatedEK = kitGen
     }
 
-    override fun getGeneratedEmergencyKit(): GeneratedEmergencyKit =
+    override fun getGeneratedEmergencyKit(): GeneratedEmergencyKitInfo =
         generatedEK!!
 
     override fun confirmEmergencyKitUploaded(driveFile: DriveFile) {

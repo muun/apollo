@@ -6,5 +6,3 @@
 
 # Fastlane
 fastlane/report.xml
-
-src/local/google-services.json

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "migrations": [
+    {
+      "description": "Initial schema",
+      "hash": "sha256:982988c032425b8b441863777ad963d5e0bd72d8788b48f844ba29bb39f044b7",
+      "change_hashes": [
+        "sha256:792e3f6b6027fcaebfcbda91930ec56207f46c1d1ae2a91262c40fa3e48b24ec",
+        "sha256:759216331673c4b6d26950b4ec91874f30f04dd8fa1758ed12cb57e22fc04d0a",
+        "sha256:1b77e83dec913f8555ac24ded8f5476a2b3e9785a4378df94b8f308d0e787ac1",
+        "sha256:d526b42ae621da77a3779dbbb0b9e95bd997498f76c67addebfc8f2a4211999f",
+        "sha256:0428e08b72212717b19dfe8f8b7301c97b6731352d4b019bd926d85ca4e2d5ea",
+        "sha256:cb04ecdd7ff32fcc5898d2a578dd2b3e90fd09d78735966b464827d9071359e4",
+        "sha256:1f790f58002c3e65074a505970da066cf81f67fc1ff68acd5be6109efe7c2879",
+        "sha256:a0e875c71907caa28a025bec23b60af73252762b22642e83eddb20246fd9d17b",
+        "sha256:1f5bb41c9e6a7ca1174108f07a0d25fcb5bfb07c7b7bf864226d4b3e295ce0bd",
+        "sha256:d5e40b9a92b8de56335e77432c30841c5a1dfe804483722feba21798af63493f"
+      ]
+    },
+    {
+      "description": "Mock Houston server state",
+      "hash": "sha256:cc96dbb056871f10ccafc254c3c5a794c13fc1d6e6dbeace3704a65911d1d368",
+      "change_hashes": [
+        "sha256:399b54977ef2f4284bef10a96db978f082cd2bd7a76156c278260f4eddcd4ee8",
+        "sha256:293e64f4fab474361dd5a9faac554f94ab4a7358f60764c7418ecdf1346d4f35",
+        "sha256:d774f647919cdafd0cc17f413ba04239eed7bece3668b08cc78bc00d9c3cec30",
+        "sha256:689fea473d3b8fa6a35c9793abea4b2b70249def662ed11d7e2f88897523c753",
+        "sha256:6749b6f1376eb169e7e87429f7cf8e2e63882b33ed93b0836c3c9b97ad0b5a57"
+      ]
+    }
+  ]
+}

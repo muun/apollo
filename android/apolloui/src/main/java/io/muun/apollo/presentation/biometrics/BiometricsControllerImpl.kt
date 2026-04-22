@@ -6,6 +6,8 @@ import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import io.muun.apollo.R
 import io.muun.apollo.data.preferences.BiometricsRepository
 import io.muun.apollo.domain.analytics.Analytics
@@ -72,9 +74,17 @@ class BiometricsControllerImpl @Inject constructor(
         }
 
         val executor = ContextCompat.getMainExecutor(applicationContext)
-        val biometricPrompt = BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback()  {
+        var biometricPrompt: BiometricPrompt? = null
+        val lifecycleObserver = object : DefaultLifecycleObserver {
+            override fun onStop(owner: LifecycleOwner) {
+                biometricPrompt?.cancelAuthentication()
+                owner.lifecycle.removeObserver(this)
+            }
+        }
+        biometricPrompt = BiometricPrompt(activity, executor, object : BiometricPrompt.AuthenticationCallback()  {
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                activity.lifecycle.removeObserver(lifecycleObserver)
                 repository.setUserOptInBiometrics(true)
                 onSuccess()
                 analytics.report(E_BIOMETRICS_AUTH_SUCCESS())
@@ -82,6 +92,7 @@ class BiometricsControllerImpl @Inject constructor(
 
             override fun onAuthenticationError(errorCode: Int, errorString: CharSequence) {
                 super.onAuthenticationError(errorCode, errorString)
+                activity.lifecycle.removeObserver(lifecycleObserver)
                 if (shouldReportFailure(errorCode)) {
                     onFailure(BiometricAuthenticationError(errorCode.toAuthenticationFailedReason()))
                     analytics.report(E_BIOMETRICS_AUTH_ERROR(errorCode.toString(), errorString.toString()))
@@ -96,6 +107,7 @@ class BiometricsControllerImpl @Inject constructor(
             .build()
         biometricPrompt.authenticate(promptInfo)
         analytics.report(S_BIOMETRICS_AUTH())
+        activity.lifecycle.addObserver(lifecycleObserver)
     }
 
     /**

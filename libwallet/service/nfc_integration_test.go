@@ -4,12 +4,13 @@ import (
 	"crypto/ecdh"
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/muun/libwallet/domain/nfc"
-	"github.com/muun/libwallet/service/model"
-	"github.com/muun/libwallet/storage"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/muun/libwallet/domain/nfc"
+	"github.com/muun/libwallet/service/model"
+	"github.com/muun/libwallet/storage"
 )
 
 func TestMockCardPairCardSuccess(t *testing.T) {
@@ -118,6 +119,7 @@ func TestMockCardSignChallenge(t *testing.T) {
 	testSignChallengeInvalidSlot(t, mockHouston, card, reason)
 	testSignChallengeInvalidMac(t, mockHouston, card, reason)
 	testSignChallengeSecretUpdates(t, mockHouston, card, reason)
+	testSignChallengeCounterAdvancesEvenIfSolveChallengeFails(t, mockHouston, card, reason)
 }
 
 // testSignChallengeSuccess performs a complete sign challenge flow
@@ -189,6 +191,70 @@ func testSignChallengeInvalidCounter(
 
 	signChallengeResponse, err := card.SignChallenge(challenge, reason)
 
+	if err != nil {
+		t.Fatalf("should succeed with correct card counter, got: %v", err)
+	}
+
+	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
+	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+		PublicKeyInHex: cardPublicKeyInHex,
+		MacInHex:       macInHex,
+	}
+
+	err = mockHouston.SolveSecurityCardChallenge(securityCardChallengeJson)
+	if err != nil {
+		t.Fatalf("error solving challenge: %v", err)
+	}
+}
+
+func testSignChallengeCounterAdvancesEvenIfSolveChallengeFails(
+	t *testing.T,
+	mockHouston *MockHoustonService,
+	card *nfc.MuunCardV2,
+	reason []byte,
+) {
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
+		ReasonInHex: hex.EncodeToString(reason),
+	})
+	if err != nil {
+		t.Fatalf("error requesting a challenge from houston: %v", err)
+	}
+	// Usage card counter should be updated in houston local storage. securityCardUsageCount += 1
+
+	challenge, err := MapSecurityCardSignChallengeResponse(challengeResponse)
+	if err != nil {
+		t.Fatalf("fail to parse sign challenge response from houston: %v", err)
+	}
+
+	_, err = card.SignChallenge(challenge, reason)
+
+	if err != nil {
+		t.Fatalf("should succeed with correct card counter, got: %v", err)
+	}
+
+	// The card has now consumed `CardUsageCount` for this slot.
+	// We intentionally skip SolveChallenge here to simulate a failure between "sign" and "solve".
+	// The next challenge must use a strictly higher counter (server must not re-issue the same counter),
+	// otherwise the card would reject it with InvalidCounter.
+
+	// Simulate failure: SolveSecurityCardChallenge` is not called for the first signed challenge.
+	challengeResponse2, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
+		ReasonInHex: hex.EncodeToString(reason),
+	})
+	if err != nil {
+		t.Fatalf("error requesting a challenge from houston: %v", err)
+	}
+
+	challenge2, err := MapSecurityCardSignChallengeResponse(challengeResponse2)
+	if err != nil {
+		t.Fatalf("fail to parse sign challenge response from houston: %v", err)
+	}
+
+	signChallengeResponse, err := card.SignChallenge(challenge2, reason)
+
+	// Requesting a second challenge after a missed solve must still allow signing
+	// (no counter desync between server and card).
 	if err != nil {
 		t.Fatalf("should succeed with correct card counter, got: %v", err)
 	}
@@ -321,31 +387,31 @@ func testSignChallengeSecretUpdates(
 func buildStorageSchemaForTests() map[string]storage.Classification {
 	return map[string]storage.Classification{
 		storage.KeyLastRandomPrivKeyInHex: {
-			BackupType:       storage.AsyncAutoBackup,
+			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &storage.StringType{},
 		},
 		storage.KeySecurityCardUsageCount: {
-			BackupType:       storage.AsyncAutoBackup,
+			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &storage.IntType{},
 		},
 		storage.KeySecretCardBytesInHex: {
-			BackupType:       storage.AsyncAutoBackup,
+			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &storage.StringType{},
 		},
 		storage.KeySecurityCardPairingSlot: {
-			BackupType:       storage.AsyncAutoBackup,
+			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &storage.IntType{},
 		},
 		storage.KeyTimeSinceLastChallengeUnixMillis: {
-			BackupType:       storage.AsyncAutoBackup,
+			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,
 			ValueType:        &storage.LongType{},

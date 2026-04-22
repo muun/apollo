@@ -21,6 +21,7 @@ import io.muun.apollo.presentation.ui.activity.extension.ScreenshotBlockExtensio
 import io.muun.apollo.presentation.ui.activity.extension.ShakeToDebugExtension;
 import io.muun.apollo.presentation.ui.activity.extension.SnackBarExtension;
 import io.muun.apollo.presentation.ui.base.di.ActivityComponent;
+import io.muun.apollo.presentation.ui.utils.BundleSizeLogger;
 import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
@@ -29,17 +30,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Toast;
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.CallSuper;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
@@ -47,11 +44,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewbinding.ViewBinding;
 import butterknife.ButterKnife;
@@ -174,7 +166,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
             // setWindowInsets() should be called before setContentView() (inside setUpLayout()) to
             // prevent redrawing
-            setWindowInsets();
+            io.muun.apollo.presentation.ui.utils.ExtensionsKt.setWindowInsetsCompat(this);
             setUpLayout();
             initializePresenter(savedInstanceState);
             initializeUi();
@@ -200,63 +192,6 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         tearDownUi();
         _binding = null;
         super.onDestroy();
-    }
-
-    /**
-     * Configures window insets to allow drawing behind system bars and dynamically applies padding
-     * to the root view based on system UI elements like the status bar, navigation bar, and IME.
-     * This ensures proper layout behavior when system UI visibility changes (e.g., keyboard shown).
-     */
-    protected void setWindowInsets() {
-        if (OS.supportsEdgeToEdge()) {
-            EdgeToEdge.enable(this);
-        } else {
-            WindowCompat.setDecorFitsSystemWindows(this.getWindow(), false);
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
-
-        final View rootView = getWindow().getDecorView().getRootView();
-
-        setStatusBarIconsColor();
-
-        ViewCompat.setOnApplyWindowInsetsListener(
-                rootView,
-                (view, insets) -> {
-                    final Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-                    final Insets navInsets = insets.getInsets(
-                            WindowInsetsCompat.Type.navigationBars()
-                    );
-                    final int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-
-                    final int bottomInset = Math.max(imeInsets.bottom, navInsets.bottom);
-
-                    view.setPadding(
-                            navInsets.left,
-                            topInset,
-                            navInsets.right,
-                            bottomInset
-                    );
-
-                    return WindowInsetsCompat.CONSUMED;
-                }
-        );
-    }
-
-    /**
-     * Sets the status bar icon color based on the current UI mode.
-     * Displays the status bar and adjusts icon appearance for visibility
-     * in light or dark themes.
-     */
-    private void setStatusBarIconsColor() {
-        final int nightModeFlags =
-                getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        final boolean isDarkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
-
-        final WindowInsetsControllerCompat controller =
-                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-
-        controller.show(WindowInsetsCompat.Type.statusBars());
-        controller.setAppearanceLightStatusBars(!isDarkMode);
     }
 
     /**
@@ -299,6 +234,7 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         super.onSaveInstanceState(outState);
         Icepick.saveInstanceState(this, outState);
         presenter.saveState(outState);
+        BundleSizeLogger.INSTANCE.logBundleBreakdown(getClass().getSimpleName(), outState);
     }
 
     @Override

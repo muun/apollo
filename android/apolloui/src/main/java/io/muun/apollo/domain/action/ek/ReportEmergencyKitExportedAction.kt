@@ -27,7 +27,7 @@ class ReportEmergencyKitExportedAction @Inject constructor(
                 // Store locally for immediate feedback:
                 val emergencyKit = EmergencyKit(
                     export.exportedAt,
-                    export.generatedKit.version,
+                    export.getKitVersion(),
                     export.method
                 )
 

@@ -8,6 +8,7 @@ import io.muun.apollo.domain.errors.InitialSyncNetworkError;
 import io.muun.apollo.domain.model.LoginWithRc;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.model.SignupStep;
+import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.base.di.PerFragment;
 import io.muun.apollo.presentation.ui.signup.SignupPresenter;
@@ -134,6 +135,10 @@ public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPrese
     }
 
     private void reportSyncComplete(boolean isExistingUser) {
+        final User user = userSel.get();
+
+        analytics.setUserProperties(user);
+
         if (isExistingUser) {
             analytics.report(new AnalyticsEvent.E_SIGN_IN_SUCCESSFUL(getLoginType()));
         } else {

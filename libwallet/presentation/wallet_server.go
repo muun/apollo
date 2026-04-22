@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/muun/libwallet/domain/action/emergency_kit"
 	"log/slog"
 
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -19,6 +20,7 @@ import (
 	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
 	"github.com/muun/libwallet/domain/action/nfc"
 	"github.com/muun/libwallet/domain/action/recovery"
+	"github.com/muun/libwallet/domain/action/security_cards_marketplace"
 	"github.com/muun/libwallet/domain/diagnostic_mode"
 	apierrors "github.com/muun/libwallet/errors"
 	"github.com/muun/libwallet/presentation/api"
@@ -31,23 +33,25 @@ import (
 
 type WalletServer struct {
 	api.UnsafeWalletServiceServer
-	nfcBridge                 app_provided_data.NfcBridge
-	keyProvider               keys.KeyProvider
-	network                   *libwallet.Network
-	houstonService            service.HoustonService
-	keyValueStorage           *storage.KeyValueStorage
-	startChallengeSetup       *challenge_keys.StartChallengeSetupAction
-	finishChallengeSetup      *challenge_keys.FinishChallengeSetupAction
-	populateEncryptedMuunKey  *recovery.PopulateEncryptedMuunKeyAction
-	scanForFunds              *recovery.ScanForFundsAction
-	submitDiagnostic          *diagnostic_mode_reports.SubmitDiagnosticAction
-	buildSweepTx              *recovery.BuildSweepTxAction
-	signSweepTx               *recovery.SignSweepTxAction
-	pairSecurityCard          *nfc.PairSecurityCardAction
-	resetSecurityCard         *nfc.ResetSecurityCardAction
-	signMessageSecurityCard   *nfc.SignMessageSecurityCardAction
-	pairSecurityCardV2        *nfc.PairSecurityCardActionV2
-	signMessageSecurityCardV2 *nfc.SignMessageSecurityCardActionV2
+	nfcBridge                   app_provided_data.NfcBridge
+	keyProvider                 keys.KeyProvider
+	network                     *libwallet.Network
+	houstonService              service.HoustonService
+	keyValueStorage             *storage.KeyValueStorage
+	startChallengeSetup         *challenge_keys.StartChallengeSetupAction
+	finishChallengeSetup        *challenge_keys.FinishChallengeSetupAction
+	populateEncryptedMuunKey    *recovery.PopulateEncryptedMuunKeyAction
+	scanForFunds                *recovery.ScanForFundsAction
+	submitDiagnostic            *diagnostic_mode_reports.SubmitDiagnosticAction
+	buildSweepTx                *recovery.BuildSweepTxAction
+	signSweepTx                 *recovery.SignSweepTxAction
+	pairSecurityCard            *nfc.PairSecurityCardAction
+	resetSecurityCard           *nfc.ResetSecurityCardAction
+	signMessageSecurityCard     *nfc.SignMessageSecurityCardAction
+	pairSecurityCardV2          *nfc.PairSecurityCardActionV2
+	signMessageSecurityCardV2   *nfc.SignMessageSecurityCardActionV2
+	getSecurityCardsMarketplace *security_cards_marketplace.GetSecurityCardsMarketplaceAction
+	generateEmergencyKitPDF     *emergency_kit.GenerateEmergencyKitPDFAction
 }
 
 func NewWalletServer(
@@ -68,26 +72,30 @@ func NewWalletServer(
 	signMessageSecurityCard *nfc.SignMessageSecurityCardAction,
 	pairSecurityCardV2 *nfc.PairSecurityCardActionV2,
 	signMessageSecurityCardV2 *nfc.SignMessageSecurityCardActionV2,
+	getSecurityCardsMarketplace *security_cards_marketplace.GetSecurityCardsMarketplaceAction,
+	generateEmergencyKitPDF *emergency_kit.GenerateEmergencyKitPDFAction,
 ) *WalletServer {
 
 	return &WalletServer{
-		nfcBridge:                 nfcBridge,
-		keyProvider:               keyProvider,
-		network:                   network,
-		houstonService:            houstonService,
-		keyValueStorage:           keyValueStorage,
-		startChallengeSetup:       startChallengeSetup,
-		finishChallengeSetup:      finishChallengeSetup,
-		populateEncryptedMuunKey:  obtainVerifiedEncryptedMuunKeyIfAbsent,
-		scanForFunds:              scanForFunds,
-		submitDiagnostic:          submitDiagnostic,
-		buildSweepTx:              buildSweepTx,
-		signSweepTx:               signSweepTxAction,
-		pairSecurityCard:          pairSecurityCard,
-		resetSecurityCard:         resetSecurityCard,
-		signMessageSecurityCard:   signMessageSecurityCard,
-		pairSecurityCardV2:        pairSecurityCardV2,
-		signMessageSecurityCardV2: signMessageSecurityCardV2,
+		nfcBridge:                   nfcBridge,
+		keyProvider:                 keyProvider,
+		network:                     network,
+		houstonService:              houstonService,
+		keyValueStorage:             keyValueStorage,
+		startChallengeSetup:         startChallengeSetup,
+		finishChallengeSetup:        finishChallengeSetup,
+		populateEncryptedMuunKey:    obtainVerifiedEncryptedMuunKeyIfAbsent,
+		scanForFunds:                scanForFunds,
+		submitDiagnostic:            submitDiagnostic,
+		buildSweepTx:                buildSweepTx,
+		signSweepTx:                 signSweepTxAction,
+		pairSecurityCard:            pairSecurityCard,
+		resetSecurityCard:           resetSecurityCard,
+		signMessageSecurityCard:     signMessageSecurityCard,
+		pairSecurityCardV2:          pairSecurityCardV2,
+		signMessageSecurityCardV2:   signMessageSecurityCardV2,
+		getSecurityCardsMarketplace: getSecurityCardsMarketplace,
+		generateEmergencyKitPDF:     generateEmergencyKitPDF,
 	}
 }
 
@@ -524,6 +532,43 @@ func (ws WalletServer) GetByPrefix(_ context.Context, req *api.GetByPrefixReques
 	}.Build(), nil
 }
 
+func (ws WalletServer) GetSecurityCardsMarketplace(
+	ctx context.Context, req *emptypb.Empty,
+) (*api.GetSecurityCardsMarketplaceResponse, error) {
+
+	marketplace, err := ws.getSecurityCardsMarketplace.Run()
+	if err != nil {
+		return nil, NewGrpcError(fmt.Errorf("failed to get security cards marketplace data: %w", err))
+	}
+
+	providers := make([]*api.SecurityCardsProvider, 0, len(marketplace.Providers))
+	for _, provider := range marketplace.Providers {
+
+		securityCards := make([]*api.SecurityCard, 0, len(provider.SecurityCards))
+		for _, securityCard := range provider.SecurityCards {
+
+			securityCards = append(securityCards, api.SecurityCard_builder{
+				Image: securityCard.Image,
+				Stock: securityCard.Stock,
+			}.Build())
+		}
+
+		providers = append(providers, api.SecurityCardsProvider_builder{
+			Name:          provider.Name,
+			SecurityCards: securityCards,
+			Currency:      provider.CurrencyCode,
+			ColorHex:      provider.ColorHex,
+			Material:      provider.Material,
+			Price:         provider.Price,
+			ShippingCost:  provider.ShippingCost,
+		}.Build())
+	}
+
+	return api.GetSecurityCardsMarketplaceResponse_builder{
+		Providers: providers,
+	}.Build(), nil
+}
+
 func toAny(protoValue *api.Value) (any, error) {
 	switch protoValue.WhichKind() {
 	case api.Value_NullValue_case:
@@ -598,4 +643,35 @@ func toProtoValueMap(items map[string]any) (*api.Struct, error) {
 		protoItems[key] = protoItem
 	}
 	return api.Struct_builder{Fields: protoItems}.Build(), nil
+}
+
+// GenerateEmergencyKitPDF outputPath must be the full path where the PDF should be saved (including filename).
+// Example: "/path/to/documents/expected_kit_name.pdf"
+// The directory will be created if it doesn't exist.
+func (ws WalletServer) GenerateEmergencyKitPDF(
+	ctx context.Context,
+	request *api.GenerateEmergencyKitPDFRequest,
+) (*api.GenerateEmergencyKitPDFResponse, error) {
+	ekInput := request.GetEkInput()
+	ekParams := &libwallet.EKInput{
+		FirstEncryptedKey:  ekInput.GetFirstEncryptedKey(),
+		FirstFingerprint:   ekInput.GetFirstFingerprint(),
+		SecondEncryptedKey: ekInput.GetSecondEncryptedKey(),
+		SecondFingerprint:  ekInput.GetSecondFingerprint(),
+		RcChecksum:         ekInput.GetRcChecksum(),
+	}
+
+	result, err := ws.generateEmergencyKitPDF.Run(
+		ekParams,
+		request.GetOutputPath(),
+		request.GetLanguage(),
+	)
+	if err != nil {
+		return nil, NewGrpcError(fmt.Errorf("failed to generate emergency kit PDF: %w", err))
+	}
+
+	return api.GenerateEmergencyKitPDFResponse_builder{
+		VerificationCode: result.VerificationCode,
+		Version:          int32(result.Version),
+	}.Build(), nil
 }

@@ -8,6 +8,7 @@ import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension;
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension.PermissionRequester;
 import io.muun.apollo.presentation.ui.base.di.FragmentComponent;
+import io.muun.apollo.presentation.ui.utils.BundleSizeLogger;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.common.Optional;
 
@@ -249,6 +250,7 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
         super.onSaveInstanceState(outState);
         Icepick.saveInstanceState(this, outState);
         presenter.saveState(outState);
+        BundleSizeLogger.INSTANCE.logBundleBreakdown(getClass().getSimpleName(), outState);
     }
 
     @Override

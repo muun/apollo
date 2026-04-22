@@ -377,7 +377,10 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 	} else {
 		actualFee := actualTotal - expectedAmount
 		if actualFee >= expectedFee+dustThreshold {
-			return errors.New("change output is too big to be burned as fee")
+			return fmt.Errorf(
+				"change output is too big to be burned as fee. actual fee: %v, expected: %v",
+				actualFee, expectedFee,
+			)
 		}
 	}
 

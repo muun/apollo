@@ -399,6 +399,22 @@
                 android:name=".presentation.ui.high_fees.HighFeesExplanationActivity"
                 />
 
+        <activity
+                android:name=".presentation.ui.security_cards_marketplace.SecurityCardsMarketplaceActivity"
+                />
+
+        <activity
+                android:name=".presentation.ui.security_cards_country_picker.CountryPickerActivity"
+                />
+
+        <activity
+                android:name=".presentation.ui.security_cards_onboarding.SecurityCardsOnboardingActivity"
+                />
+
+        <activity
+                android:name=".presentation.ui.security_cards_card_detail.CardDetailActivity"
+                />
+
 
         <!-- GcmMessageListenerService -->
 

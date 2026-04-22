@@ -7,7 +7,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import butterknife.BindView
 import io.muun.apollo.R
@@ -19,15 +18,10 @@ import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.ACTIVE
-import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_ACTIVATE
-import io.muun.apollo.domain.model.UserActivatedFeatureStatus.CAN_PREACTIVATE
-import io.muun.apollo.domain.model.UserActivatedFeatureStatus.OFF
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.PREACTIVATED
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus.SCHEDULED_ACTIVATION
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
-import io.muun.apollo.domain.selector.BlockchainHeightSelector
-import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
 import io.muun.apollo.presentation.biometrics.BiometricsController
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -41,7 +35,6 @@ import io.muun.apollo.presentation.ui.view.MuunIconButton
 import io.muun.apollo.presentation.ui.view.MuunPictureInput
 import io.muun.apollo.presentation.ui.view.MuunSettingItem
 import io.muun.apollo.presentation.ui.view.MuunSwitchSettingItem
-import io.muun.apollo.presentation.ui.view.RichText
 import io.muun.common.model.Currency
 import javax.inject.Inject
 
@@ -97,6 +90,13 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_biometrics)
     lateinit var biometricsSettingsItem: MuunSwitchSettingItem
 
+
+    @BindView(R.id.internal_debugging_section)
+    lateinit var featureFlagsSection: View
+
+    @BindView(R.id.settings_disable_feature_flags)
+    lateinit var featureFlagsSettingsItem: MuunSettingItem
+
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
 
@@ -111,12 +111,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     @BindView(R.id.settings_version_code)
     lateinit var versionCode: TextView
-
-    @BindView(R.id.settings_disable_feature_flags)
-    lateinit var disableFeatureFlags: TextView
-
-    @BindView(R.id.settings_feature_flag)
-    lateinit var featureFlagLabel: TextView
 
     /** Whether the loading dialog is currently on screen. Required due to limitations of
      * AlertDialogExtensions. It can't handle multiple dismissDialogs() calls prompted by
@@ -149,8 +143,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         diagnosticSettingsItem.setOnClickListener { goToDiagnosticMode() }
 
         if (Globals.INSTANCE.isDebug) {
-            // TEMP: code for Taproot QA:
-//            versionCode.setOnClickListener { rotateDebugTaprootStatusForQa() }
             versionCode.setOnClickListener { presenter.openDebugPanel() }
 
         } else if (Globals.INSTANCE.isDogfood) {
@@ -197,43 +189,13 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         // Helper code for internal builds
         if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
 
-            if (state.features.contains(MuunFeature.NFC_CARD_V2)) {
-                disableFeatureFlags.visibility = View.VISIBLE
-                disableFeatureFlags.setOnClickListener {
+            if (state.overridableFeatures.isNotEmpty()) {
+                featureFlagsSection.visibility = View.VISIBLE
+                featureFlagsSettingsItem.visibility = View.VISIBLE
+                featureFlagsSettingsItem.setOnClickListener {
                     presenter.navigateToDisableFeatureFlags()
                 }
-
-            } else {
-                disableFeatureFlags.visibility = View.GONE
             }
-
-            var textForDisplay = RichText()
-            val featureFlagsForDisplay = state.features
-                .filter { it != MuunFeature.TAPROOT }
-                .filter { it != MuunFeature.TAPROOT_PREACTIVATION }
-                .filter { it != MuunFeature.EFFECTIVE_FEES_CALCULATION }
-
-            featureFlagsForDisplay.forEach { feature ->
-                val isDisabled = state.featureOverrides.contains(feature)
-                val status = if (isDisabled) {
-                    "DISABLED"
-                } else {
-                    "ENABLED"
-                }
-
-                val textColor = if (isDisabled) {
-                    ContextCompat.getColor(requireContext(), R.color.gray_light)
-                } else {
-                    ContextCompat.getColor(requireContext(), R.color.red)
-                }
-
-                textForDisplay = textForDisplay.concat(
-                    RichText("$feature: $status\n")
-                        .setForegroundColor(textColor)
-                )
-            }
-            featureFlagLabel.visibility = View.VISIBLE
-            featureFlagLabel.text = textForDisplay
         }
     }
 
@@ -559,45 +521,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             val flavor = Globals.INSTANCE.flavor
             val buildType = Globals.INSTANCE.buildType
             "$versionName ($flavor-$buildType-$commit-$branchName)"
-        }
-    }
-
-    private fun rotateDebugTaprootStatusForQa() {
-        val nextStatus = when (UserActivatedFeatureStatusSelector.DEBUG_TAPROOT_STATUS) {
-            null -> OFF
-            OFF -> CAN_PREACTIVATE
-            CAN_PREACTIVATE -> CAN_ACTIVATE
-            CAN_ACTIVATE -> PREACTIVATED
-            PREACTIVATED -> SCHEDULED_ACTIVATION
-            SCHEDULED_ACTIVATION -> ACTIVE
-            ACTIVE -> null
-        }
-
-        val nextBlocksToTaproot = when (nextStatus) {
-            null -> null
-            OFF -> 1111
-            CAN_PREACTIVATE -> 1112
-            CAN_ACTIVATE -> 1113
-            PREACTIVATED -> 1114
-            SCHEDULED_ACTIVATION -> 1115
-            ACTIVE -> 0
-        }
-
-        val nextToast = if (nextStatus != null) {
-            "Taproot: ${nextStatus.name} / $nextBlocksToTaproot blocks"
-        } else {
-            "Taproot debug disabled"
-        }
-
-        UserActivatedFeatureStatusSelector.DEBUG_TAPROOT_STATUS = nextStatus
-        BlockchainHeightSelector.DEBUG_BLOCKS_TO_TAPROOT = nextBlocksToTaproot
-
-        showTextToast(nextToast)
-
-        when (nextStatus) {
-            CAN_PREACTIVATE -> presenter.showPreactivationNotification()
-            ACTIVE -> presenter.showActivatedNotification()
-            else -> {}
         }
     }
 }

@@ -4,6 +4,7 @@ import io.muun.apollo.R;
 import io.muun.apollo.domain.model.Contact;
 import io.muun.apollo.presentation.model.CurrencyItem;
 import io.muun.apollo.presentation.model.UiOperation;
+import io.muun.apollo.presentation.ui.adapter.viewmodel.FeatureFlagViewModel;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.SectionHeaderViewModel.SectionHeader;
 
 import android.view.View;
@@ -26,6 +27,10 @@ public class ViewHolderFactory {
         return R.layout.home_operations_item;
     }
 
+    public int getLayoutRes(FeatureFlagViewModel featureFlag) {
+        return R.layout.item_feature_flag;
+    }
+
     /**
      * Maps viewType to ViewHolder type. This way all the information about adapter's viewTypes
      * is encapsulated in this class. (Using layout ids as recommended by Google).
@@ -43,6 +48,9 @@ public class ViewHolderFactory {
 
             case R.layout.home_operations_item:
                 return new OperationViewHolder(view);
+
+            case R.layout.item_feature_flag:
+                return new FeatureFlagViewHolder(view);
 
             default:
                 throw new RuntimeException("Illegal view type");

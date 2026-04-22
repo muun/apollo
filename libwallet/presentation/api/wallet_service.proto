@@ -32,6 +32,12 @@ service WalletService {
   rpc SaveBatch(SaveBatchRequest) returns (google.protobuf.Empty);
   rpc GetBatch(GetBatchRequest) returns (GetBatchResponse);
   rpc GetByPrefix(GetByPrefixRequest) returns (GetBatchResponse);
+
+  // Marketplace
+  rpc GetSecurityCardsMarketplace(google.protobuf.Empty) returns (GetSecurityCardsMarketplaceResponse);
+
+  // Emergency Kit PDF Generation
+  rpc GenerateEmergencyKitPDF(GenerateEmergencyKitPDFRequest) returns (GenerateEmergencyKitPDFResponse);
 }
 
 enum ErrorType {
@@ -185,4 +191,42 @@ message GetBatchResponse {
 
 message GetByPrefixRequest {
   string prefix = 1;
+}
+
+message SecurityCardsProvider {
+  string name = 1;
+  repeated SecurityCard security_cards = 2;
+  string currency = 3;
+  string color_hex = 4;
+  string material = 5;
+  double price = 6;
+  double shipping_cost = 7;
+}
+
+message SecurityCard {
+  string image = 1;
+  int32 stock = 2;
+}
+
+message GetSecurityCardsMarketplaceResponse {
+  repeated SecurityCardsProvider providers = 1;
+}
+
+message EKInputRequest {
+  string first_encrypted_key = 1;
+  string first_fingerprint = 2;
+  string second_encrypted_key = 3;
+  string second_fingerprint = 4;
+  string rc_checksum = 5;
+}
+
+message GenerateEmergencyKitPDFRequest {
+  EKInputRequest ek_input = 1;
+  string output_path = 2;
+  string language = 3;
+}
+
+message GenerateEmergencyKitPDFResponse {
+  string verification_code = 1;
+  int32 version = 2;
 }

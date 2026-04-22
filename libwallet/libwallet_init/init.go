@@ -2,19 +2,23 @@ package libwallet_init
 
 import (
 	"errors"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/muun/libwallet/data/keys"
-	"github.com/muun/libwallet/domain/action/challenge_keys"
-	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
-	nfcActions "github.com/muun/libwallet/domain/action/nfc"
-	"github.com/muun/libwallet/domain/action/recovery"
-	"github.com/muun/libwallet/domain/nfc"
-	"github.com/muun/libwallet/electrum"
-	"github.com/muun/libwallet/storage"
+	"fmt"
 	"log/slog"
 	"net"
 	"path"
 	"runtime/debug"
+
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/muun/libwallet/data/keys"
+	"github.com/muun/libwallet/domain/action/challenge_keys"
+	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
+	"github.com/muun/libwallet/domain/action/emergency_kit"
+	nfcActions "github.com/muun/libwallet/domain/action/nfc"
+	"github.com/muun/libwallet/domain/action/recovery"
+	"github.com/muun/libwallet/domain/action/security_cards_marketplace"
+	"github.com/muun/libwallet/domain/nfc"
+	"github.com/muun/libwallet/electrum"
+	"github.com/muun/libwallet/storage"
 
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/app_provided_data"
@@ -45,6 +49,8 @@ var resetSecurityCardAction *nfcActions.ResetSecurityCardAction
 var signMessageSecurityCardAction *nfcActions.SignMessageSecurityCardAction
 var pairSecurityCardActionV2 *nfcActions.PairSecurityCardActionV2
 var signMessageSecurityCardActionV2 *nfcActions.SignMessageSecurityCardActionV2
+var securityCardsMarketplaceAction *security_cards_marketplace.GetSecurityCardsMarketplaceAction
+var generateEmergencyKitPDFAction *emergency_kit.GenerateEmergencyKitPDFAction
 
 // Init configures libwallet
 func Init(c *app_provided_data.Config) {
@@ -63,8 +69,13 @@ func Init(c *app_provided_data.Config) {
 		houstonService = service.NewHoustonService(cfg.HttpClientSessionProvider)
 	}
 
-	var storageSchema = storage.BuildStorageSchema()
-	keyValueStorage = storage.NewKeyValueStorage(path.Join(cfg.DataDir, "wallet.db"), storageSchema)
+	dbPath := path.Join(cfg.DataDir, "wallet.db")
+	storageSchema, err := storage.RunKeyValueMigrations(dbPath, storage.BuildKVMigrationPlan())
+	if err != nil {
+		slog.Error("failed to run key-value migrations", "error", err)
+		panic(fmt.Sprintf("failed to run key-value migrations: %v", err))
+	}
+	keyValueStorage = storage.NewKeyValueStorage(dbPath, storageSchema)
 
 	mockHoustonService = service.NewMockHoustonService(keyValueStorage)
 
@@ -122,6 +133,8 @@ func Init(c *app_provided_data.Config) {
 		keyValueStorage,
 		pairSecurityCardActionV2,
 	)
+	securityCardsMarketplaceAction = security_cards_marketplace.NewGetSecurityCardsMarketplaceAction()
+	generateEmergencyKitPDFAction = emergency_kit.NewGenerateEmergencyKitPDFAction()
 }
 
 func StartServer() error {
@@ -162,6 +175,8 @@ func StartServer() error {
 		signMessageSecurityCardAction,
 		pairSecurityCardActionV2,
 		signMessageSecurityCardActionV2,
+		securityCardsMarketplaceAction,
+		generateEmergencyKitPDFAction,
 	))
 
 	listener, err := net.Listen("unix", cfg.SocketPath)

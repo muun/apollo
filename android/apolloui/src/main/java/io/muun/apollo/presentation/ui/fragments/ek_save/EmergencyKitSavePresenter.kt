@@ -13,8 +13,10 @@ import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.fs.FileCache
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.ek.AddEmergencyKitMetadataAction
+import io.muun.apollo.domain.action.ek.GenerateEmergencyKitPDF
 import io.muun.apollo.domain.action.ek.RenderEmergencyKitAction
 import io.muun.apollo.domain.action.ek.UploadToDriveAction
+import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_DRIVE_TYPE
@@ -31,7 +33,13 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.S_EMERGENCY_KIT_MANUAL_ADV
 import io.muun.apollo.domain.analytics.PdfFontIssueTracker
 import io.muun.apollo.domain.errors.ek.SaveEkToDiskError
 import io.muun.apollo.domain.model.FeedbackCategory
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitHTML
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
+import io.muun.apollo.domain.model.MuunFeature
+import io.muun.apollo.domain.selector.FeatureSelector
+import io.muun.apollo.domain.utils.Trace
+import io.muun.apollo.domain.utils.TraceLabel
+import io.muun.apollo.domain.utils.TimeTracker
 import io.muun.apollo.presentation.export.PdfExportError
 import io.muun.apollo.presentation.export.PdfExporter
 import io.muun.apollo.presentation.export.SaveToDiskExporter
@@ -43,27 +51,44 @@ import javax.inject.Inject
 @PerFragment
 class EmergencyKitSavePresenter @Inject constructor(
     private val fileCache: FileCache,
+    // New EKit Generation
+    private val generateEmergencyKitPdf: GenerateEmergencyKitPDF,
+    // Legacy EKit generation ==>>
     private val renderEmergencyKit: RenderEmergencyKitAction,
     private val addEmergencyKitMetadata: AddEmergencyKitMetadataAction,
+    // <<==
     private val uploadToDrive: UploadToDriveAction,
     private val driveAuthenticator: DriveAuthenticator,
     private val userActions: UserActions,
+    private val featureSelector: FeatureSelector,
+    private val analytics: Analytics,
+    private val timeTracker: TimeTracker,
 ) : SingleFragmentPresenter<EmergencyKitSaveView, EmergencyKitSaveParentPresenter>() {
 
-    var isExportingPdf = false
+    private var isExportingPdf = false
+
+    private var e2eLegacyKitGenerationTrace: Trace? = null
+    private var legacyKitGenerationTrace: Trace? = null
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        renderEmergencyKit.state
-            .compose(handleStates(null, this::handleError))
-            .doOnNext(this::onRenderResult)
-            .let(this::subscribeTo)
+        if (featureSelector.get(MuunFeature.EK_GO_RENDERING)) {
+            generateEmergencyKitPdf.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext(this::onPDFGenerationFinished)
+                .let(this::subscribeTo)
+        } else {
+            renderEmergencyKit.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext(this::onRenderResult)
+                .let(this::subscribeTo)
 
-        addEmergencyKitMetadata.state
-            .compose(handleStates(null, this::handleError))
-            .doOnNext { onMetadataAdded() }
-            .let(this::subscribeTo)
+            addEmergencyKitMetadata.state
+                .compose(handleStates(null, this::handleError))
+                .doOnNext { onMetadataAdded() }
+                .let(this::subscribeTo)
+        }
 
         uploadToDrive.state
             .compose(handleStates(view::setDriveUploading, this::handleError))
@@ -82,8 +107,20 @@ class EmergencyKitSavePresenter @Inject constructor(
         }
         isExportingPdf = true
 
-        // Cool, proceed:
-        renderEmergencyKit.run()
+        if (featureSelector.get(MuunFeature.EK_GO_RENDERING)) {
+            try {
+                generateEmergencyKitPdf.run()
+            } catch (e: Exception) {
+                Timber.e(e, "EK_GO_RENDERING failed, falling back to legacy flow")
+                e2eLegacyKitGenerationTrace = timeTracker.start(TraceLabel.EK_E2E_LEGACY_KIT_GENERATION)
+                renderEmergencyKit.onDataFetched = { legacyKitGenerationTrace = timeTracker.start(TraceLabel.EK_LEGACY_PDF_GENERATION) }
+                renderEmergencyKit.run()
+            }
+        } else {
+            e2eLegacyKitGenerationTrace = timeTracker.start(TraceLabel.EK_E2E_LEGACY_KIT_GENERATION)
+            renderEmergencyKit.onDataFetched = { legacyKitGenerationTrace = timeTracker.start(TraceLabel.EK_LEGACY_PDF_GENERATION) }
+            renderEmergencyKit.run()
+        }
     }
 
     fun goBack() {
@@ -148,7 +185,7 @@ class EmergencyKitSavePresenter @Inject constructor(
         userActions.submitFeedbackAction.run(FeedbackCategory.CLOUD_REQUEST, cloudName)
     }
 
-    private fun onRenderResult(kitGen: GeneratedEmergencyKit) {
+    private fun onRenderResult(kitGen: GeneratedEmergencyKitHTML) {
         // Clear previously saved files:
         fileCache.delete(FileCache.Entry.EMERGENCY_KIT_NO_META)
         fileCache.delete(FileCache.Entry.EMERGENCY_KIT)
@@ -178,7 +215,7 @@ class EmergencyKitSavePresenter @Inject constructor(
         parentPresenter.confirmEmergencyKitUploaded(driveFile)
     }
 
-    private fun onPdfExportFinished(kitGen: GeneratedEmergencyKit, error: PdfExportError?) {
+    private fun onPdfExportFinished(kitGen: GeneratedEmergencyKitHTML, error: PdfExportError?) {
         isExportingPdf = false
 
         if (error != null) {
@@ -186,7 +223,7 @@ class EmergencyKitSavePresenter @Inject constructor(
             return
         }
 
-        parentPresenter.setGeneratedEmergencyKit(kitGen)
+        parentPresenter.setGeneratedEmergencyKit(kitGen.info)
 
         addEmergencyKitMetadata.run(kitGen.metadata)
 
@@ -194,7 +231,17 @@ class EmergencyKitSavePresenter @Inject constructor(
             .track(AnalyticsEvent.PDF_FONT_ISSUE_TYPE.PDF_EXPORTED)
     }
 
+    private fun onPDFGenerationFinished(kitGen: GeneratedEmergencyKitInfo) {
+        isExportingPdf = false
+        parentPresenter.setGeneratedEmergencyKit(kitGen)
+
+        val localFile = fileCache.get(FileCache.Entry.EMERGENCY_KIT)
+        view.onEmergencyKitExported(localFile)
+    }
+
     private fun onMetadataAdded() {
+        legacyKitGenerationTrace?.finish()
+        e2eLegacyKitGenerationTrace?.finish()
         val localFile = fileCache.get(FileCache.Entry.EMERGENCY_KIT)
         view.onEmergencyKitExported(localFile)
     }

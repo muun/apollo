@@ -4,6 +4,7 @@ import io.muun.apollo.data.preferences.FeaturesRepository
 import io.muun.apollo.domain.FeatureOverrideStore
 import io.muun.apollo.domain.model.MuunFeature
 import rx.Observable
+import timber.log.Timber
 import javax.inject.Inject
 
 class FeatureSelector @Inject constructor(
@@ -15,7 +16,11 @@ class FeatureSelector @Inject constructor(
         return fetchWithoutOverrides()
             .map { list ->
                 val newList = list.toMutableList()
-                newList.removeAll(featureOverrideStore.getFeatureOverrides())
+                val overrides = featureOverrideStore.getFeatureOverrides()
+                    .map { overridableFeature ->
+                        overridableFeature.feature
+                    }
+                newList.removeAll(overrides)
                 newList
             }
     }
@@ -36,15 +41,24 @@ class FeatureSelector @Inject constructor(
      * Avoid using unless you REALLY know what you're doing. You probably just want to use the
      * fetch with overrides.
      */
-    fun fetchWithoutOverrides(): Observable<List<MuunFeature>> {
+    private fun fetchWithoutOverrides(): Observable<List<MuunFeature>> {
         return featuresRepository.fetch()
+            .doOnNext { features ->
+                Timber.d("ALL Feature Flags: ${features.joinToString { it.name }}")
+            }
     }
 
-    /**
-     * Avoid using unless you REALLY know what you're doing. You probably just want to use the
-     * fetch with overrides.
-     */
-    fun getWithoutOverrides(feature: MuunFeature): Boolean {
-        return fetchWithoutOverrides().toBlocking().first().contains(feature)
+    fun fetchOverridableFlags(): Observable<List<MuunFeature.OverridableFeature.Overridable>> {
+        return fetchWithoutOverrides()
+            .map { list ->
+                list.filter { feature -> feature.isOverridable() }
+                    .map { feature ->
+                        feature.toOverridableFeature() as MuunFeature.OverridableFeature.Overridable
+                    }
+            }
+            .doOnNext { features ->
+                Timber.d("Overridable Feature Flags: ${features.joinToString { it.feature.name }}")
+            }
     }
+
 }

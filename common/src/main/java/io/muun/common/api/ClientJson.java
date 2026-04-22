@@ -249,9 +249,6 @@ public class ClientJson {
             @Nullable final Boolean androidQuickEmuProps,
             @Nullable final Integer androidEmachineArchitecture,
             @Nullable final Boolean androidSecurityEnhancedBuild,
-            @Nullable final Boolean androidBridgeRootService,
-            @Nullable final Long androidAppSize,
-            @Nullable final String androidVbMeta,
             @Nullable final Boolean androidIsLowRamDevice,
             @Nullable final Long androidFirstInstallTimeInMs,
             @Nullable final String applicationId
@@ -289,9 +286,9 @@ public class ClientJson {
         this.androidQuickEmuProps = androidQuickEmuProps;
         this.androidEmArchitecture = androidEmachineArchitecture;
         this.androidSecurityEnhancedBuild = androidSecurityEnhancedBuild;
-        this.androidBridgeRootService = androidBridgeRootService;
-        this.androidAppSize = androidAppSize;
-        this.androidVbMeta = androidVbMeta;
+        this.androidBridgeRootService = null;
+        this.androidAppSize = null;
+        this.androidVbMeta = null;
         this.androidIsLowRamDevice = androidIsLowRamDevice;
         this.androidFirstInstallTimeInMs = androidFirstInstallTimeInMs;
         this.androidApplicationId = applicationId;

@@ -214,11 +214,13 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         INVOICE_EXPIRES_TOO_SOON,
         INVOICE_ALREADY_USED,
         INVOICE_MISSING_AMOUNT,
+        UNREACHABLE_NODE,
         NO_PAYMENT_ROUTE,
         INSUFFICIENT_FUNDS,
         AMOUNT_BELOW_DUST,
         EXCHANGE_RATE_WINDOW_TOO_OLD,
         INVALID_SWAP,
+        CYCLICAL_SWAP,
         SWAP_FAILED,
         OTHER
     }
@@ -684,5 +686,23 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
             "code" to code,
             "desc" to description
         )
+    )
+
+    class E_TIME_TRACKER(
+        label: String,
+        elapsedMs: Long,
+        // Children are stored as flat params (e.g. "child_user_key": 210) instead of a nested JSON
+        // string to keep compatibility with Firebase Analytics' flat key-value model, which makes
+        // BigQuery queries straightforward without needing JSON_VALUE() parsing.
+        // The value is a String (not Long) so that unfinished children can be reported as
+        // "UNFINISHED". This is safe since AnalyticsProvider calls .toString() on all values
+        // anyway before sending to Firebase, so there is no actual type difference in BigQuery.
+        children: Map<String, String> = emptyMap(),
+    ) : AnalyticsEvent(
+        buildList {
+            add("label" to label)
+            add("elapsed_ms" to elapsedMs)
+            children.forEach { (k, v) -> add("child_$k" to v) }
+        }
     )
 }

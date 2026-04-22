@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.session.rc_only
 
+import io.muun.apollo.data.afs.MetricsProvider
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.preferences.FirebaseInstallationIdRepository
 import io.muun.apollo.data.preferences.PlayIntegrityNonceRepository
@@ -7,7 +8,6 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction1
 import io.muun.apollo.domain.action.challenge_keys.SignChallengeAction
 import io.muun.apollo.domain.action.fcm.GetFcmTokenAction
 import io.muun.apollo.domain.action.keys.DecryptAndStoreKeySetAction
-import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.apollo.domain.model.CreateSessionRcOk
 import io.muun.common.api.KeySet
 import io.muun.common.model.challenge.Challenge
@@ -23,7 +23,7 @@ class LogInWithRcAction @Inject constructor(
     private val getFcmToken: GetFcmTokenAction,
     private val signChallenge: SignChallengeAction,
     private val decryptAndStoreKeySet: DecryptAndStoreKeySetAction,
-    private val isRootedDeviceAction: IsRootedDeviceAction,
+    private val metricsProvider: MetricsProvider,
     private val firebaseInstallationIdRepo: FirebaseInstallationIdRepository,
     private val playIntegrityNonceRepo: PlayIntegrityNonceRepository,
 ) : BaseAsyncAction1<String, CreateSessionRcOk>() {
@@ -63,7 +63,7 @@ class LogInWithRcAction @Inject constructor(
                     fcmToken,
                     pubKeyHex,
                     bigQueryPseudoId,
-                    isRootedDeviceAction.actionNow()
+                    metricsProvider.isRootHint
                 )
             }
     }

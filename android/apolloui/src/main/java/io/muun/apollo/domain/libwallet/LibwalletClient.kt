@@ -19,6 +19,10 @@ import rpc.WalletServiceOuterClass.NullValue
 import rpc.WalletServiceOuterClass.SaveRequest
 import rpc.WalletServiceOuterClass.SignMessageSecurityCardRequest
 import rpc.WalletServiceOuterClass.Value
+import rpc.WalletServiceOuterClass.GenerateEmergencyKitPDFRequest
+import rpc.WalletServiceOuterClass.GenerateEmergencyKitPDFResponse
+import rpc.WalletServiceOuterClass.EKInputRequest
+import io.muun.apollo.domain.action.ek.GenerateEmergencyKitPDF
 import rx.Emitter
 import rx.Observable
 import timber.log.Timber
@@ -74,6 +78,30 @@ class LibwalletClient(private val channel: ManagedChannel) {
             signMessageSecurityCardV2(emptyMessage)
         }
         nfcBridger.tearDownBridge()
+    }
+
+    fun generateEmergencyKitPDF(
+        data: GenerateEmergencyKitPDF.RequiredData,
+        outputPath: String,
+        language: String
+    ): GenerateEmergencyKitPDFResponse {
+        val ekInput = EKInputRequest.newBuilder()
+            .setFirstEncryptedKey(data.userKey)
+            .setFirstFingerprint(data.userFingerprint)
+            .setSecondEncryptedKey(data.muunKey)
+            .setSecondFingerprint(data.muunFingerprint)
+            .setRcChecksum(data.rcChecksum)
+            .build()
+
+        val request = GenerateEmergencyKitPDFRequest.newBuilder()
+            .setEkInput(ekInput)
+            .setOutputPath(outputPath)
+            .setLanguage(language)
+            .build()
+
+        return blockingStub.performSyncRequest {
+            generateEmergencyKitPDF(request)
+        }
     }
 
     fun startDiagnosticSession(): Observable<String> {

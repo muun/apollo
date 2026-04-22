@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:muun="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:elevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        <io.muun.apollo.presentation.ui.view.MuunHeader
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                muun:elevated="false" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/app_bar_layout" />
+
+    <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="80dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@color/background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tabBackground="@drawable/slider_dot"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0px"
+            app:tabPaddingEnd="8dp"
+            app:tabPaddingStart="8dp"
+            tools:tabCount="4" />
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_continue"
+            style="@style/muun_button_primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/security_cards_onboarding_start_exploring"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_view_footnote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/button_continue"
+            app:layout_constraintEnd_toEndOf="@id/button_continue"
+            android:gravity="center"
+            android:fontFamily="sans-serif"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/tab_layout"
+            android:text="@string/security_cards_onboarding_swipe_to_continue"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:textColor="@color/text_secondary_color" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,7 +5,7 @@ import io.muun.apollo.data.apis.DriveFile
 import io.muun.apollo.data.apis.DriveUploader
 import io.muun.apollo.domain.analytics.AnalyticsEvent
 import io.muun.apollo.domain.errors.ChallengeKeyMigrationError
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import io.muun.apollo.presentation.ui.fragments.ek_save.EmergencyKitSaveParentPresenter
@@ -29,7 +29,7 @@ class EmergencyKitPresenter @Inject constructor(
 
     var uploadedFile: DriveFile? = null
 
-    private var generatedEK: GeneratedEmergencyKit? = null
+    private var generatedEK: GeneratedEmergencyKitInfo? = null
 
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
@@ -51,11 +51,11 @@ class EmergencyKitPresenter @Inject constructor(
         view.refreshToolbar()
     }
 
-    override fun setGeneratedEmergencyKit(kitGen: GeneratedEmergencyKit) {
+    override fun setGeneratedEmergencyKit(kitGen: GeneratedEmergencyKitInfo) {
         generatedEK = kitGen
     }
 
-    override fun getGeneratedEmergencyKit(): GeneratedEmergencyKit =
+    override fun getGeneratedEmergencyKit(): GeneratedEmergencyKitInfo =
         generatedEK!!
 
     override fun confirmEmergencyKitUploaded(driveFile: DriveFile) {

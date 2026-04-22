@@ -6,6 +6,7 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
 import io.muun.apollo.domain.selector.ChallengePublicKeySelector;
+import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.common.utils.Encodings;
 import io.muun.common.utils.Preconditions;
@@ -40,6 +41,7 @@ public class ApplicationLockManager {
     private final PinManager pinManager;
     private final SecureStorageProvider secureStorageProvider;
     private final ChallengePublicKeySelector challengePublicKeySel;
+    private final LogoutOptionsSelector logoutOptionsSelector;
 
     /**
      * Constructor.
@@ -48,12 +50,14 @@ public class ApplicationLockManager {
     public ApplicationLockManager(
             PinManager pinManager,
             SecureStorageProvider secureStorageProvider,
-            ChallengePublicKeySelector challengePublicKeySel
+            ChallengePublicKeySelector challengePublicKeySel,
+            LogoutOptionsSelector logoutOptionsSelector
     ) {
 
         this.pinManager = pinManager;
         this.secureStorageProvider = secureStorageProvider;
         this.challengePublicKeySel = challengePublicKeySel;
+        this.logoutOptionsSelector = logoutOptionsSelector;
     }
 
     public synchronized boolean isLockConfigured() {
@@ -87,12 +91,12 @@ public class ApplicationLockManager {
             unsetLock();
             resetRemainingAttempts();
 
-        } else if (challengePublicKeySel.existsAnyType()) {
+        } else if (logoutOptionsSelector.isRecoverable()) {
             // NOTE: this won't count failures for unrecoverable users.
             decrementRemainingAttempts();
         }
 
-        Timber.i("ApplicationLockManager#verified: " + verified);
+        Timber.i("ApplicationLockManager#verified: %s", verified);
 
         return verified;
     }
@@ -176,9 +180,7 @@ public class ApplicationLockManager {
                 getMaxAttempts()
         );
 
-        Timber.i(
-                "ApplicationLockManager#storeIncorrectAttempts: " + incorrectAttempts
-        );
+        Timber.i("ApplicationLockManager#storeIncorrectAttempts: %s", incorrectAttempts);
         storeIncorrectAttempts(incorrectAttempts);
     }
 
@@ -236,7 +238,9 @@ public class ApplicationLockManager {
                 // If this error is caused by a BadPadding Exception coming from the Android
                 // Keystore, we try continue execution hoping this is the only piece of data
                 // affected by this data corruption.
-                error.addMetadata("hasBackup", challengePublicKeySel.existsAnyType());
+                error.addMetadata("hasChallengePublicKeys", challengePublicKeySel.existsAnyType());
+                error.addMetadata("userIsRecoverable", logoutOptionsSelector.isRecoverable());
+
                 Timber.i("bad_padding_exception_workaround");
                 Timber.e(error, "WORKAROUND for BadPaddingException in fetchIncorrectAttempts");
                 return 0;

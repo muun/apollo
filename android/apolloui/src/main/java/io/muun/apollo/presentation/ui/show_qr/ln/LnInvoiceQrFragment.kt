@@ -20,6 +20,7 @@ import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
 import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
 import io.muun.apollo.presentation.ui.view.HiddenSection
 import io.muun.apollo.presentation.ui.view.LoadingView
+import java.util.Locale
 import javax.money.MonetaryAmount
 
 
@@ -120,7 +121,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     override fun setInvoice(invoice: DecodedInvoice, amount: MonetaryAmount?) {
 
         // Enable extra QR compression mode. Uppercase bech32 strings are more efficiently encoded
-        super.setQrContent(invoice.original, invoice.original.toUpperCase())
+        super.setQrContent(invoice.original, invoice.original.uppercase(Locale.getDefault()))
 
         stopTimer()
         countdownTimer = MuunCountdownTimer(invoice.remainingMillis(), this)

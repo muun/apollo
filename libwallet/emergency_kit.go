@@ -14,8 +14,10 @@ const (
 	// EKVersionDescriptors is the first PDF including the descriptors
 	EKVersionDescriptors = 2
 	// EKVersionMusig add the musig descriptors
-	EKVersionMusig   = 3
-	ekVersionCurrent = EKVersionMusig
+	EKVersionMusig = 3
+	// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+	// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
+	EkVersionCurrent = EKVersionMusig
 )
 
 // EKInput input struct to fill the PDF
@@ -46,7 +48,9 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 		FirstFingerprint:   ekParams.FirstFingerprint,
 		SecondEncryptedKey: ekParams.SecondEncryptedKey,
 		SecondFingerprint:  ekParams.SecondFingerprint,
-		Version:            ekVersionCurrent,
+		// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+		// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
+		Version: EkVersionCurrent,
 	}
 
 	// Create the HTML and the verification code:
@@ -56,7 +60,7 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 	}
 
 	// Create and serialize the metadata:
-	metadata, err := createEmergencyKitMetadata(ekParams)
+	metadata, err := CreateEmergencyKitMetadata(ekParams)
 	if err != nil {
 		return nil, fmt.Errorf("GenerateEkHtml failed to create metadata: %w", err)
 	}
@@ -79,6 +83,8 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 // AddEmergencyKitMetadata produces a copy of the PDF file at `srcFile` with embedded metadata,
 // writing it into `dstFile`. The provided metadata must be the same opaque string produced by
 // `GenerateEmergencyKitHTML`.
+// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
 func AddEmergencyKitMetadata(metadataText string, srcFile string, dstFile string) error {
 	// Initialize the MetadataWriter:
 	metadataWriter := &emergencykit.MetadataWriter{
@@ -102,7 +108,9 @@ func AddEmergencyKitMetadata(metadataText string, srcFile string, dstFile string
 	return nil
 }
 
-func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, error) {
+// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
+func CreateEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, error) {
 	// NOTE:
 	// This method would be more naturally placed in the `emergencykit` module, but given the current
 	// project structure (heavily determined by `gomobile` and the need for top-level bindings) and
@@ -133,7 +141,7 @@ func createEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, erro
 	}
 
 	metadata := &emergencykit.Metadata{
-		Version:           ekVersionCurrent,
+		Version:           EkVersionCurrent,
 		BirthdayBlock:     secondKey.Birthday,
 		EncryptedKeys:     keys,
 		OutputDescriptors: descriptors,

@@ -101,4 +101,15 @@ public final class SingleFn {
             }
         });
     }
+
+    /**
+     * Like onHttpExceptionResumeNext, but specialized to return Optional#empty.
+     * Useful for 404 not found style errors.
+     */
+    public static <T> Single.Transformer<Optional<T>, Optional<T>> onHttpExceptionResumeEmpty(
+            final BaseErrorCode code
+    ) {
+        return onHttpExceptionResumeNext(code, error -> Single.just(Optional.empty()));
+
+    }
 }

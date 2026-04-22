@@ -22,6 +22,7 @@ import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension
 import io.muun.apollo.presentation.ui.activity.extension.PermissionManagerExtension
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.di.ViewComponent
+import io.muun.apollo.presentation.ui.utils.BundleSizeLogger
 import io.muun.apollo.presentation.ui.utils.locale
 import timber.log.Timber
 import java.util.LinkedList
@@ -186,9 +187,11 @@ abstract class MuunView : FrameLayout,
         for (i in 0 until childCount) {
             getChildAt(i).saveHierarchyState(childState)
         }
-
         state.putParcelable(OWN_STATE, ownState)
         state.putSparseParcelableArray(CHILD_STATE, childState)
+
+        BundleSizeLogger.logBundleBreakdown(javaClass.simpleName, state)
+
         return state
     }
 

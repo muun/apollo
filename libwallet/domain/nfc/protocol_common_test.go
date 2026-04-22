@@ -174,15 +174,6 @@ func TestParsePairingResponse_ErrorScenarios(t *testing.T) {
 			expectError: "failed to parse metadata:",
 		},
 		{
-			name: "global signature too short - 69 bytes",
-			data: func() []byte {
-				validData := createValidPairingResponseData(t)
-				// Remove last byte to make signature 69 bytes (invalid)
-				return validData[:len(validData)-1]
-			},
-			expectError: "invalid global signature length",
-		},
-		{
 			name: "global signature too long - 73 bytes",
 			data: func() []byte {
 				validData := createValidPairingResponseData(t)

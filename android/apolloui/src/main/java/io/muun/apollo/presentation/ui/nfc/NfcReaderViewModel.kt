@@ -273,7 +273,7 @@ class NfcReaderViewModel @Inject constructor(
     }
 
     internal fun disableSecurityCardFF() {
-        featureOverrideStore.storeOverride(MuunFeature.NFC_CARD_V2, true)
+        featureOverrideStore.disableFeatureFlag(MuunFeature.NFC_CARD_V2)
         analytics.report(AnalyticsEvent.E_NEW_OP_ACTION(E_NEW_OP_ACTION_TYPE.DISABLE_FLAG))
     }
 

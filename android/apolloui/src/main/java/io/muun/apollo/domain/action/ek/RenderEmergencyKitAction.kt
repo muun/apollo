@@ -6,7 +6,15 @@ import io.muun.apollo.data.preferences.UserRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.libwallet.LibwalletBridge
 import io.muun.apollo.domain.model.EmergencyKitExport
-import io.muun.apollo.domain.model.GeneratedEmergencyKit
+import io.muun.apollo.domain.model.GeneratedEmergencyKitHTML
+import io.muun.apollo.domain.utils.Trace
+import io.muun.apollo.domain.utils.EK_CHILD_MUUN_FINGERPRINT
+import io.muun.apollo.domain.utils.EK_CHILD_MUUN_KEY
+import io.muun.apollo.domain.utils.EK_CHILD_RC_CHECKSUM
+import io.muun.apollo.domain.utils.EK_CHILD_USER_FINGERPRINT
+import io.muun.apollo.domain.utils.EK_CHILD_USER_KEY
+import io.muun.apollo.domain.utils.TraceLabel
+import io.muun.apollo.domain.utils.TimeTracker
 import io.muun.common.crypto.ChallengeType
 import rx.Observable
 import timber.log.Timber
@@ -20,26 +28,40 @@ class RenderEmergencyKitAction @Inject constructor(
     private val keysRepository: KeysRepository,
     private val reportEmergencyKitExported: ReportEmergencyKitExportedAction,
     private val transformerFactory: ExecutionTransformerFactory,
-    private val getOrCreateEncryptedBasePrivateKeyAction: GetOrCreateEncryptedBasePrivateKeyAction
-) : BaseAsyncAction0<GeneratedEmergencyKit>() {
+    private val getOrCreateEncryptedBasePrivateKeyAction: GetOrCreateEncryptedBasePrivateKeyAction,
+    private val timeTracker: TimeTracker,
+) : BaseAsyncAction0<GeneratedEmergencyKitHTML>() {
 
     inner class RequiredData(
         val userKey: String,
         val userFingerprint: String,
         val muunKey: String,
         val muunFingerprint: String,
-        val rcChecksum: String
+        val rcChecksum: String,
     )
+
+    var onDataFetched: (() -> Unit)? = null
 
     /**
      * Prepare the emergency kit for export, and render the HTML.
      */
-    override fun action(): Observable<GeneratedEmergencyKit> =
+    override fun action(): Observable<GeneratedEmergencyKitHTML> =
         Observable.defer {
-            watchData().first()
+            val requiredDataFetchingTrace = timeTracker.start(TraceLabel.EK_LEGACY_DATA_FETCHING)
+
+            watchData(requiredDataFetchingTrace).first()
+                .doOnNext {
+                    requiredDataFetchingTrace.finish()
+                    onDataFetched?.invoke()
+                    onDataFetched = null
+                }
                 .map { renderSave(it) }
                 .doOnNext { ek ->
-                    val export = EmergencyKitExport(ek, false, EmergencyKitExport.Method.UNKNOWN)
+                    val export = EmergencyKitExport(
+                        ek.info,
+                        false,
+                        EmergencyKitExport.Method.UNKNOWN
+                    )
 
                     // NOTE:
                     // Rather than use `run()`, we subscribe to this action() in background to avoid
@@ -54,7 +76,7 @@ class RenderEmergencyKitAction @Inject constructor(
                 }
         }
 
-    private fun renderSave(data: RequiredData): GeneratedEmergencyKit {
+    private fun renderSave(data: RequiredData): GeneratedEmergencyKitHTML {
         val kitGen = LibwalletBridge.generateEmergencyKit(
             data.userKey,
             data.userFingerprint,
@@ -64,25 +86,31 @@ class RenderEmergencyKitAction @Inject constructor(
             Locale.getDefault()
         )
 
-        userRepository.storeEmergencyKitVerificationCode(kitGen.verificationCode)
+        userRepository.storeEmergencyKitVerificationCode(kitGen.info.verificationCode)
 
         return kitGen
     }
 
-    private fun watchData(): Observable<RequiredData> {
+    private fun watchData(requiredDataFetchingTrace: Trace): Observable<RequiredData> {
+        val tUserKey = requiredDataFetchingTrace.child(EK_CHILD_USER_KEY)
+        val tUserFp = requiredDataFetchingTrace.child(EK_CHILD_USER_FINGERPRINT)
+        val tMuunKey = requiredDataFetchingTrace.child(EK_CHILD_MUUN_KEY)
+        val tMuunFp = requiredDataFetchingTrace.child(EK_CHILD_MUUN_FINGERPRINT)
+        val tRcChecksum = requiredDataFetchingTrace.child(EK_CHILD_RC_CHECKSUM)
+
         val challengePublicKey = keysRepository.getChallengePublicKey(ChallengeType.RECOVERY_CODE)
 
         return Observable.zip(
-            getEncryptedBasePrivateKey(),
-            keysRepository.userKeyFingerprint,
-            keysRepository.encryptedMuunPrivateKey,
-            keysRepository.muunKeyFingerprint,
-            challengePublicKey.map { it.checksum },
+            getEncryptedBasePrivateKey().doOnNext { tUserKey.finish() },
+            keysRepository.userKeyFingerprint.doOnNext { tUserFp.finish() },
+            keysRepository.encryptedMuunPrivateKey.doOnNext { tMuunKey.finish() },
+            keysRepository.muunKeyFingerprint.doOnNext { tMuunFp.finish() },
+            challengePublicKey.map { it.checksum }.doOnNext { tRcChecksum.finish() },
             ::RequiredData
         )
     }
 
-    private fun getEncryptedBasePrivateKey(): Observable<String>  {
+    private fun getEncryptedBasePrivateKey(): Observable<String> {
         return getOrCreateEncryptedBasePrivateKeyAction.action()
     }
 }

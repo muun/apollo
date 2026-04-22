@@ -16,7 +16,7 @@ buildscript {
     }
 
     ext {
-        global_kotlin_version = '1.8.20'
+        global_kotlin_version = '2.1.0'
     }
 }
 

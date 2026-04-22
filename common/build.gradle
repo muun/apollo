@@ -78,7 +78,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$global_version_mockito"
 
     // Apply signature that matches :android:apolloui minSdk
-    signature 'net.sf.androidscents.signature:android-api-level-19:4.4.2_r4@signature'
+    signature 'net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature'
 }
 
 // This forces our builds to be reproducible
@@ -88,7 +88,7 @@ tasks.withType(AbstractArchiveTask) {
 }
 
 // Workaround to fix false positive in java.nio.ByteBuffer#rewind, a best effort could be to create
-// a fully signature based on Android api level 19.
+// a fully signature based on Android api level 21.
 animalsniffer {
     ignore 'java.nio.ByteBuffer'
 }

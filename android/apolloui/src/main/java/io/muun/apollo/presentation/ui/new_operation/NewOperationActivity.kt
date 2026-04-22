@@ -64,6 +64,7 @@ import newop.EnterAmountState
 import newop.EnterDescriptionState
 import newop.PaymentIntent
 import timber.log.Timber
+import java.util.Locale
 import javax.inject.Inject
 import javax.money.MonetaryAmount
 
@@ -765,7 +766,7 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             )
         }
 
-        val linkText = getString(R.string.see_in_node_explorer).toUpperCase()
+        val linkText = getString(R.string.see_in_node_explorer).uppercase(Locale.getDefault())
 
         return TextUtils.concat(
             publicKeyText,

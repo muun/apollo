@@ -6,6 +6,17 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.8] - 2026-04-15
+
+### FIXED
+
+- Edge to edge support on certain screens
+- Emergency kit key rotation when adding a new recovery code
+- Biometrics support for Android < 9
+- Submarine swap being created twice on activity reconstruction
+- Reproducible builds
+- Various crash fixes
+
 ## [55.7] - 2026-03-25
 
 ### ADDED

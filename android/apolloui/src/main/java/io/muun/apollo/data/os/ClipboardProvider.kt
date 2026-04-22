@@ -80,8 +80,15 @@ class ClipboardProvider @Inject constructor(context: Context) {
             .distinctUntilChanged()
     }
 
+    /**
+     * Checks whether theres READABLE plain text data available in the clipboard.
+     *
+     * getPrimaryClipDescription() can return null if data is from a restricted profile or app lost
+     * focus.
+     *
+     */
     private fun hasPlainText(): Boolean {
         return clipboard.hasPrimaryClip()
-            && clipboard.primaryClipDescription!!.hasMimeType(MIMETYPE_TEXT_PLAIN)
+            && clipboard.primaryClipDescription?.hasMimeType(MIMETYPE_TEXT_PLAIN) == true
     }
 }

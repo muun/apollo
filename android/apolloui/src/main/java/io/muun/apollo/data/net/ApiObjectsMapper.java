@@ -271,9 +271,6 @@ public class ApiObjectsMapper {
                 mapQemuProps(quickEmProps),
                 emArchitecture,
                 mapSeLinux(securityEnhancedBuild),
-                mapAdbRootService(bridgeRootService),
-                appSize,
-                vbMeta,
                 isLowRamDevice,
                 firstInstallTimeInMs,
                 applicationId
@@ -303,14 +300,6 @@ public class ApiObjectsMapper {
                 deviceFeatures.getPc(),
                 deviceFeatures.getPip()
         );
-    }
-
-    @Nullable
-    private Boolean mapAdbRootService(String signalValue) {
-        if (signalValue == null) {
-            return null;
-        }
-        return signalValue.equals("1");
     }
 
     @Nullable
@@ -701,8 +690,8 @@ public class ApiObjectsMapper {
         return new ExportEmergencyKitJson(
                 ApolloZonedDateTime.of(export.getExportedAt()),
                 export.isVerified(),
-                export.getGeneratedKit().getVerificationCode(),
-                export.getGeneratedKit().getVersion(),
+                export.getVerificationCode(),
+                export.getKitVersion(),
                 mapExportMethod(export.getMethod())
         );
     }

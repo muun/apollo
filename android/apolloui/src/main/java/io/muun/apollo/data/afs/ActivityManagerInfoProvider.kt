@@ -56,7 +56,11 @@ class ActivityManagerInfoProvider(context: Context) {
     val isLowMemoryKillReportSupported: Boolean
         get() {
             return if (OS.supportsLowMemoryKillReport()) {
-                ActivityManager.isLowMemoryKillReportSupported()
+                try {
+                    ActivityManager.isLowMemoryKillReportSupported()
+                } catch (e: Exception) {
+                    false
+                }
             } else {
                 false
             }

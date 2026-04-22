@@ -45,6 +45,7 @@ import io.muun.apollo.presentation.ui.recovery_code.priming.PrimingRecoveryCodeF
 import io.muun.apollo.presentation.ui.recovery_code.show.ShowRecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.recovery_code.success.SuccessRecoveryCodeFragment;
 import io.muun.apollo.presentation.ui.recovery_code.verify.VerifyRecoveryCodeFragment;
+import io.muun.apollo.presentation.ui.security_cards_marketplace.SecurityCardProviderFragment;
 import io.muun.apollo.presentation.ui.settings.EmailWaitFragment;
 import io.muun.apollo.presentation.ui.settings.OldPasswordFragment;
 import io.muun.apollo.presentation.ui.settings.RecoveryCodeFragment;
@@ -180,4 +181,6 @@ public interface FragmentComponent {
     void inject(TaprootIntroFragment taprootIntroFragment);
 
     void inject(ShowUnifiedQrFragment showUnifiedQrFragment);
+
+    void inject(SecurityCardProviderFragment securityCardProviderFragment);
 }

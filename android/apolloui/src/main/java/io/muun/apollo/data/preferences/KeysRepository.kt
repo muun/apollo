@@ -10,7 +10,6 @@ import io.muun.apollo.domain.errors.MissingMigrationError
 import io.muun.apollo.domain.utils.toVoid
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.ChallengeType
-import io.muun.common.crypto.MuunEncryptedPrivateKey
 import io.muun.common.crypto.hd.PrivateKey
 import io.muun.common.crypto.hd.PublicKey
 import io.muun.common.crypto.hd.PublicKeyPair
@@ -51,14 +50,22 @@ open class KeysRepository @Inject constructor(
             "key_max_watching_external_address_index"
     }
 
-
     // Reactive preferences:
     private val basePrivateKeyPathPreference: Preference<String>
         get() = rxSharedPreferences.getString(KEY_BASE_PRIVATE_KEY_PATH)
+
     private val basePublicKeyPreference: Preference<PublicKey>
-        get() = rxSharedPreferences.getObject(KEY_BASE_PUBLIC_KEY, PublicKeyPreferenceAdapter.INSTANCE)
+        get() = rxSharedPreferences.getObject(
+            KEY_BASE_PUBLIC_KEY,
+            PublicKeyPreferenceAdapter.INSTANCE
+        )
+
     private val baseMuunPublicKeyPreference: Preference<PublicKey>
-        get() = rxSharedPreferences.getObject(KEY_BASE_MUUN_PUBLIC_KEY, PublicKeyPreferenceAdapter.INSTANCE)
+        get() = rxSharedPreferences.getObject(
+            KEY_BASE_MUUN_PUBLIC_KEY,
+            PublicKeyPreferenceAdapter.INSTANCE
+        )
+
     private val baseSwapServerPublicKeyPreference: Preference<PublicKey>
         get() = rxSharedPreferences.getObject(
             KEY_BASE_SWAP_SERVER_PUBLIC_KEY,
@@ -66,10 +73,13 @@ open class KeysRepository @Inject constructor(
         )
     private val muunKeyFingerprintPreference: Preference<String>
         get() = rxSharedPreferences.getString(KEY_MUUN_KEY_FINGERPRINT)
+
     private val userKeyFingerprintPreference: Preference<String>
         get() = rxSharedPreferences.getString(KEY_USER_KEY_FINGERPRINT)
+
     private val maxUsedExternalAddressIndexPreference: Preference<Int>
         get() = rxSharedPreferences.getInteger(KEY_MAX_USED_EXTERNAL_ADDRESS_INDEX)
+
     private val maxWatchingExternalAddressIndexPreference: Preference<Int>
         get() = rxSharedPreferences.getInteger(KEY_MAX_WATCHING_EXTERNAL_ADDRESS_INDEX)
 
@@ -189,12 +199,16 @@ open class KeysRepository @Inject constructor(
      *
      * @param encryptedBasePrivateKey the encrypted key plus metadata.
      */
-    fun storeEncryptedBasePrivateKey(encryptedBasePrivateKey: String): Observable<Void> {
+    fun storeEncryptedBasePrivateKey(encryptedBasePrivateKey: String) {
         Timber.d("Stored encrypted base key on secure storage.")
-        return secureStorageProvider.putAsync(
+        secureStorageProvider.put(
             KEY_ENCRYPTED_PRIVATE_USER_KEY,
             encryptedBasePrivateKey.toByteArray()
         )
+    }
+
+    fun wipeEncryptedBasePrivateKey() {
+        secureStorageProvider.delete(KEY_ENCRYPTED_PRIVATE_USER_KEY)
     }
 
     /**
@@ -308,6 +322,23 @@ open class KeysRepository @Inject constructor(
             KEY_CHALLENGE_PUBLIC_KEY + type,
             publicKey.serialize()
         )
+
+        // The encrypted base private key is encrypted with the RECOVERY_CODE challenge public key.
+        // If that key rotates, the cached encrypted base private key becomes stale (it was encrypted
+        // with the old key and can no longer be decrypted correctly). We wipe it here so that
+        // GetOrCreateEncryptedBasePrivateKeyAction re-encrypts it with the new key on the next
+        // emergency kit export.
+        //
+        // A RECOVERY_CODE challenge key can rotate when:
+        //   - The user sets up a recovery code for the first time (not a problem).
+        //   - Legacy migrations run (seasonPublicChallengeKey,
+        //     addChallengePublicKeyVersionMigration)
+        //
+        // We only do this if the base private key exists, since there is nothing to wipe for
+        // users who haven't completed wallet setup yet.
+        if (type == ChallengeType.RECOVERY_CODE && secureStorageProvider.has(KEY_BASE_58_PRIVATE_KEY)) {
+            wipeEncryptedBasePrivateKey()
+        }
     }
 
     /**

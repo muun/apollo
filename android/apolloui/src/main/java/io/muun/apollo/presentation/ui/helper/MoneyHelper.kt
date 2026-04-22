@@ -13,7 +13,7 @@ import org.javamoney.moneta.Money
 import org.javamoney.moneta.format.AmountFormatParams
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.Locale
 import javax.money.CurrencyUnit
 import javax.money.Monetary
 import javax.money.MonetaryAmount
@@ -182,7 +182,7 @@ object MoneyHelper {
         return if (currencyCode == "BTC" && bitcoinUnit == BitcoinUnit.SATS) {
             "SAT"
         } else {
-            currencyCode.toUpperCase()
+            currencyCode.uppercase(Locale.getDefault())
         }
     }
 
