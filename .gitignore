@@ -34,3 +34,7 @@ output.json
 *.bin
 *.a
 libwallet/librs/libs/
+
+# ai-rules
+android/ai-rules/
+android/CLAUDE.md
