@@ -34,7 +34,7 @@ func TestHDPublicKey_DerivedAt(t *testing.T) {
 
 func TestHDPublicKey_Fingerprint(t *testing.T) {
 	pubKey, _ := NewHDPublicKeyFromString(
-		"xpub661MyMwAqRbcF3YgLe8xTTTrDHf5bmEQuj5XfQP3bvwHqBpYvt99tcMSXXzroWJoQM4eMDNZNzNYZEJfTqxq5S82J644buASmW4Y7VnwUeJ",
+		"xpub661MyMwAqRbcF3YgLe8xTTTrDHf5bmEQuj5XfQP3bvwHqBpYvt99tcMSXXzroWJoQM4eMDNZNzNYZEJfTqxq5S82J644buASmW4Y7VnwUeJ", //nolint:lll
 		"m/schema:1'/recovery:1'",
 		Mainnet(),
 	)

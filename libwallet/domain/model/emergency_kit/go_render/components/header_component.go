@@ -12,7 +12,11 @@ type HeaderComponent struct {
 	VerificationText string
 }
 
-func NewHeaderComponent(pdf *emergency_kit.PdfExtensions, verificationCode string, translations *assets.Translations) *HeaderComponent {
+func NewHeaderComponent(
+	pdf *emergency_kit.PdfExtensions,
+	verificationCode string,
+	translations *assets.Translations,
+) *HeaderComponent {
 	return &HeaderComponent{
 		pdf:              pdf,
 		TitleText:        translations.Header.Title,
@@ -39,13 +43,33 @@ func (r *HeaderComponent) Render() {
 	assets.SetSectionTitleFont(r.pdf.Fpdf)
 	assets.SetTitleColor(r.pdf.Fpdf)
 	r.pdf.SetXY(innerStartX, startY)
-	r.pdf.CellFormat(innerWidth, componentHeight, r.TitleText, "", 2, "LM", false, 0, "") // LM = Left, Middle
+	r.pdf.CellFormat(
+		innerWidth,
+		componentHeight,
+		r.TitleText,
+		"",
+		2,
+		"LM",
+		false,
+		0,
+		"",
+	) // LM = Left, Middle
 
 	// Render verification code on the right side
 	assets.SetVerificationCodeFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
 	r.pdf.SetXY(innerStartX, startY)
-	r.pdf.CellFormat(innerWidth, componentHeight, r.VerificationText, "", 2, "RM", false, 0, "") // RM = Right, Middle
+	r.pdf.CellFormat(
+		innerWidth,
+		componentHeight,
+		r.VerificationText,
+		"",
+		2,
+		"RM",
+		false,
+		0,
+		"",
+	) // RM = Right, Middle
 
 	// Move cursor to end of header
 	r.pdf.SetXY(0, startY+componentHeight)

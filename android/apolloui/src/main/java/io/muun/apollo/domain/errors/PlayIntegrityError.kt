@@ -4,6 +4,8 @@ const val UNKNOWN_ERROR = "UNKNOWN_ERROR"
 
 open class PlayIntegrityError : MuunError {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     constructor() : super("Google Play Integrity Error") {
         metadata["name"] = "CANCELLED"
         metadata["text"] = "Task was canceled"

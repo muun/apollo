@@ -3,17 +3,18 @@ package verifiable_muun_key
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
-	"github.com/muun/libwallet/librs"
 	"log/slog"
 	"math/big"
 	"testing"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/cryptography/bitcoin_hpke"
 	"github.com/muun/libwallet/domain/model/encrypted_key_v3"
 	"github.com/muun/libwallet/encryption"
+	"github.com/muun/libwallet/librs"
 	"github.com/muun/libwallet/service/model"
 )
 
@@ -23,41 +24,75 @@ type VerifiableMuunKey struct {
 	Proof                                *string
 }
 
-func VerifiableMuunKeyFromJson(verifiableMuunKeyJson *model.VerifiableMuunKeyJson) (*VerifiableMuunKey, error) {
-
-	firstHalfKeyEncryptedToClientBytes, err := hex.DecodeString(verifiableMuunKeyJson.FirstHalfKeyEncryptedToClient)
-	if err != nil {
-		return nil, err
-	}
-
-	firstHalfKeyEncryptedToClient, err := bitcoin_hpke.ParseEncryptedMessage(firstHalfKeyEncryptedToClientBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	secondHalfKeyEncryptedToRecoveryCodeBytes, err := hex.DecodeString(verifiableMuunKeyJson.SecondHalfKeyEncryptedToRecoveryCode)
-	if err != nil {
-		return nil, err
-	}
-
-	secondHalfKeyEncryptedToRecoveryCode, err := bitcoin_hpke.ParseEncryptedMessage(secondHalfKeyEncryptedToRecoveryCodeBytes)
-	if err != nil {
-		return nil, err
-	}
-
+func NewVerifiableMuunKey(
+	firstHalf *bitcoin_hpke.EncryptedMessage,
+	secondHalf *bitcoin_hpke.EncryptedMessage,
+	proof *string,
+) *VerifiableMuunKey {
 	return &VerifiableMuunKey{
-		FirstHalfKeyEncryptedToClient:        firstHalfKeyEncryptedToClient,
-		SecondHalfKeyEncryptedToRecoveryCode: secondHalfKeyEncryptedToRecoveryCode,
-		Proof:                                verifiableMuunKeyJson.Proof,
-	}, nil
+		FirstHalfKeyEncryptedToClient:        firstHalf,
+		SecondHalfKeyEncryptedToRecoveryCode: secondHalf,
+		Proof:                                proof,
+	}
+}
+
+func VerifiableMuunKeyFromJson( //nolint:staticcheck // TODO: func VerifiableMuunKeyFromJson should be VerifiableMuunKeyFromJSON
+	verifiableMuunKeyJson *model.VerifiableMuunKeyJson, //nolint:staticcheck // TODO: func parameter verifiableMuunKeyJson should be verifiableMuunKeyJSON
+) (*VerifiableMuunKey, error) {
+
+	firstHalfKeyEncryptedToClientBytes, err := hex.DecodeString(
+		verifiableMuunKeyJson.FirstHalfKeyEncryptedToClient,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	firstHalfKeyEncryptedToClient, err := bitcoin_hpke.ParseEncryptedMessage(
+		firstHalfKeyEncryptedToClientBytes,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	secondHalfKeyEncryptedToRecoveryCodeBytes, err := hex.DecodeString(
+		verifiableMuunKeyJson.SecondHalfKeyEncryptedToRecoveryCode,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	secondHalfKeyEncryptedToRecoveryCode, err := bitcoin_hpke.ParseEncryptedMessage(
+		secondHalfKeyEncryptedToRecoveryCodeBytes,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewVerifiableMuunKey(
+		firstHalfKeyEncryptedToClient,
+		secondHalfKeyEncryptedToRecoveryCode,
+		verifiableMuunKeyJson.Proof,
+	), nil
 
 }
 
 type EncryptedMuunKeyWithVerificationFlag struct {
-	// The base64 encoded encrypted muun key that can be decrypted with the recovery code private key.
+	// The base64 encoded encrypted muun key that can be decrypted with the recovery code private
+	// key.
 	EncryptedMuunKey string
-	// A boolean value indicating if the encryption was proven to be correct with a zero-knowledge proof.
+	// A boolean value indicating if the encryption was proven to be correct with a zero-knowledge
+	// proof.
 	Verified bool
+}
+
+func NewEncryptedMuunKeyWithVerificationFlag(
+	encryptedMuunKey string,
+	verified bool,
+) *EncryptedMuunKeyWithVerificationFlag {
+	return &EncryptedMuunKeyWithVerificationFlag{
+		EncryptedMuunKey: encryptedMuunKey,
+		Verified:         verified,
+	}
 }
 
 // Verify returning an EncryptedMuunKeyWithVerificationFlag.
@@ -81,7 +116,7 @@ func (vk *VerifiableMuunKey) Verify(
 		return nil, err
 	}
 	if len(firstHalfKeyBytes) != 32 {
-		return nil, fmt.Errorf("firstHalfKeyBytes should be 32 bytes")
+		return nil, errors.Errorf("firstHalfKeyBytes should be 32 bytes")
 	}
 
 	firstHalfKey, firstHalfPubKey := btcec.PrivKeyFromBytes(firstHalfKeyBytes)
@@ -114,7 +149,7 @@ func (vk *VerifiableMuunKey) Verify(
 		return nil, err
 	}
 
-	return &EncryptedMuunKeyWithVerificationFlag{EncryptedMuunKey: encryptedMuunKey, Verified: verified}, nil
+	return NewEncryptedMuunKeyWithVerificationFlag(encryptedMuunKey, verified), nil
 }
 
 func verifyZeroKnowledgeProof(
@@ -164,8 +199,9 @@ func verifyZeroKnowledgeProof(
 
 // Compute the subtraction A - B
 func subtractPublicKeys(A, B *btcec.PublicKey) *btcec.PublicKey {
-	// Recall that -B is given by (B.X, -B.Y). Note also that since B is on the curve, B.Y cannot be zero and therefore
-	// P-B.Y is already reduced modulo P. Thus there is no need to reduce modulo P in the line below.
+	// Recall that -B is given by (B.X, -B.Y). Note also that since B is on the curve, B.Y cannot be
+	// zero and therefore P-B.Y is already reduced modulo P. Thus there is no need to reduce modulo
+	// P in the line below.
 	rX, rY := btcec.S256().Add(A.X(), A.Y(), B.X(), new(big.Int).Sub(btcec.S256().P, B.Y()))
 	var X, Y btcec.FieldVal
 	X.SetByteSlice(encryption.PaddedSerializeBigInt(32, rX))

@@ -2,6 +2,7 @@ package addresses
 
 import (
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+
 	"github.com/muun/libwallet/hdpath"
 )
 

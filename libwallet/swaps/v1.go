@@ -4,33 +4,41 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
-
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/muun/libwallet/btcsuitew/btcutilw"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/txscript"
+	"github.com/go-errors/errors"
 	"github.com/lightningnetwork/lnd/zpay32"
+
 	"github.com/muun/libwallet/addresses"
+	"github.com/muun/libwallet/btcsuitew/btcutilw"
 )
 
-func (swap *SubmarineSwap) validateV1(rawInvoice string, userPublicKey, muunPublicKey *KeyDescriptor, network *chaincfg.Params) error {
+func (swap *SubmarineSwap) validateV1(
+	rawInvoice string,
+	userPublicKey, muunPublicKey *KeyDescriptor,
+	network *chaincfg.Params,
+) error {
 
 	invoice, err := zpay32.Decode(rawInvoice, network)
 	if err != nil {
-		return fmt.Errorf("failed to decode invoice: %w", err)
+		return errors.Errorf("failed to decode invoice: %w", err)
 	}
 
 	// Check the payment hash matches
 
 	serverPaymentHash, err := hex.DecodeString(swap.FundingOutput.ServerPaymentHashInHex)
 	if err != nil {
-		return fmt.Errorf("server payment hash is not valid hex: %w", err)
+		return errors.Errorf("server payment hash is not valid hex: %w", err)
 	}
 
 	if !bytes.Equal(invoice.PaymentHash[:], serverPaymentHash) {
-		return fmt.Errorf("payment hash doesn't match %v != %v", hex.EncodeToString(invoice.PaymentHash[:]), swap.FundingOutput.ServerPaymentHashInHex)
+		return errors.Errorf(
+			"payment hash doesn't match %v != %v",
+			hex.EncodeToString(invoice.PaymentHash[:]),
+			swap.FundingOutput.ServerPaymentHashInHex,
+		)
 	}
 
 	// TODO: check that timelock is acceptable
@@ -40,11 +48,11 @@ func (swap *SubmarineSwap) validateV1(rawInvoice string, userPublicKey, muunPubl
 	swapRefundAddress := swap.FundingOutput.UserRefundAddress
 	derivedUserKey, err := userPublicKey.DeriveTo(swapRefundAddress.DerivationPath())
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 	derivedMuunKey, err := muunPublicKey.DeriveTo(swapRefundAddress.DerivationPath())
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
 	refundAddress, err := addresses.Create(
@@ -55,18 +63,22 @@ func (swap *SubmarineSwap) validateV1(rawInvoice string, userPublicKey, muunPubl
 		network,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to generate refund address: %w", err)
+		return errors.Errorf("failed to generate refund address: %w", err)
 	}
 
 	if refundAddress.Address() != swapRefundAddress.Address() {
-		return fmt.Errorf("refund address doesn't match generated (%v != %v)", swapRefundAddress.Address(), refundAddress.Address())
+		return errors.Errorf(
+			"refund address doesn't match generated (%v != %v)",
+			swapRefundAddress.Address(),
+			refundAddress.Address(),
+		)
 	}
 
 	// Check the swap's witness script is a valid swap script
 
 	serverPubKey, err := hex.DecodeString(swap.FundingOutput.ServerPublicKeyInHex)
 	if err != nil {
-		return fmt.Errorf("server pub key is not hex: %w", err)
+		return errors.Errorf("server pub key is not hex: %w", err)
 	}
 
 	witnessScript, err := CreateWitnessScriptSubmarineSwapV1(
@@ -76,47 +88,60 @@ func (swap *SubmarineSwap) validateV1(rawInvoice string, userPublicKey, muunPubl
 		swap.FundingOutput.UserLockTime,
 		network)
 	if err != nil {
-		return fmt.Errorf("failed to compute witness script: %w", err)
+		return errors.Errorf("failed to compute witness script: %w", err)
 	}
 
 	redeemScript, err := createNonNativeSegwitRedeemScript(witnessScript)
 	if err != nil {
-		return fmt.Errorf("failed to build redeem script: %w", err)
+		return errors.Errorf("failed to build redeem script: %w", err)
 	}
 
 	address, err := btcutil.NewAddressScriptHash(redeemScript, network)
 	if err != nil {
-		return fmt.Errorf("failed to build address for swap script: %w", err)
+		return errors.Errorf("failed to build address for swap script: %w", err)
 	}
 
 	if address.EncodeAddress() != swap.FundingOutput.OutputAddress {
-		return fmt.Errorf("address for swap script mismatch (%v != %v)", address.EncodeAddress(), swap.FundingOutput.OutputAddress)
+		return errors.Errorf(
+			"address for swap script mismatch (%v != %v)",
+			address.EncodeAddress(),
+			swap.FundingOutput.OutputAddress,
+		)
 	}
 
 	if len(swap.PreimageInHex) > 0 {
 		preimage, err := hex.DecodeString(swap.PreimageInHex)
 		if err != nil {
-			return fmt.Errorf("preimagehex is not actually hex: %w", err)
+			return errors.Errorf("preimagehex is not actually hex: %w", err)
 		}
 
 		calculatedPaymentHash := sha256.Sum256(preimage)
 		if !bytes.Equal(invoice.PaymentHash[:], calculatedPaymentHash[:]) {
-			return fmt.Errorf("payment hash doesn't match preimage (%v != hash(%v)", invoice.PaymentHash, swap.PreimageInHex)
+			return errors.Errorf(
+				"payment hash doesn't match preimage (%v != hash(%v)",
+				invoice.PaymentHash,
+				swap.PreimageInHex,
+			)
 		}
 	}
 
 	return nil
 }
 
-func CreateWitnessScriptSubmarineSwapV1(refundAddress string, paymentHash []byte, swapServerPubKey []byte, lockTime int64, network *chaincfg.Params) ([]byte, error) {
+func CreateWitnessScriptSubmarineSwapV1(
+	refundAddress string,
+	paymentHash []byte,
+	swapServerPubKey []byte,
+	lockTime int64,
+	network *chaincfg.Params,
+) ([]byte, error) {
 
-	// It turns out that the payment hash present in an invoice is just the SHA256 of the
-	// payment preimage, so we still have to do a pass of RIPEMD160 before pushing it to the
-	// script
+	// It turns out that the payment hash present in an invoice is just the SHA256 of the payment
+	// preimage, so we still have to do a pass of RIPEMD160 before pushing it to the script
 	paymentHash160 := ripemd160(paymentHash)
 	decodedRefundAddress, err := btcutilw.DecodeAddress(refundAddress, network)
 	if err != nil {
-		return nil, fmt.Errorf("refund address is invalid: %w", err)
+		return nil, errors.Errorf("refund address is invalid: %w", err)
 	}
 
 	refundAddressHash := decodedRefundAddress.ScriptAddress()

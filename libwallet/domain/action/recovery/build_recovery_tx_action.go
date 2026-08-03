@@ -3,14 +3,16 @@ package recovery
 import (
 	"encoding/hex"
 	"fmt"
+	"math"
+
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
 	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/scanner"
-	"math"
 )
 
 const dustThreshold = 546
@@ -20,14 +22,21 @@ type BuildSweepTxAction struct {
 	network     *libwallet.Network
 }
 
-func NewBuildSweepTxAction(keyProvider keys.KeyProvider, network *libwallet.Network) *BuildSweepTxAction {
+func NewBuildSweepTxAction(
+	keyProvider keys.KeyProvider,
+	network *libwallet.Network,
+) *BuildSweepTxAction {
 	return &BuildSweepTxAction{
 		keyProvider: keyProvider,
 		network:     network,
 	}
 }
 
-func (action *BuildSweepTxAction) Run(utxos []*scanner.Utxo, sweepAddress btcutil.Address, feeRateInSatsPerVByte float64) (*wire.MsgTx, error) {
+func (action *BuildSweepTxAction) Run(
+	utxos []*scanner.Utxo,
+	sweepAddress btcutil.Address,
+	feeRateInSatsPerVByte float64,
+) (*wire.MsgTx, error) {
 	value := int64(0)
 
 	tx := wire.NewMsgTx(2)
@@ -64,14 +73,22 @@ func (action *BuildSweepTxAction) Run(utxos []*scanner.Utxo, sweepAddress btcuti
 	}
 
 	if tx.TxOut[0].Value < finalFee {
-		return nil, fmt.Errorf("fees (%d sats) exceed total funds (%d sats)", finalFee, tx.TxOut[0].Value)
+		return nil, fmt.Errorf(
+			"fees (%d sats) exceed total funds (%d sats)",
+			finalFee,
+			tx.TxOut[0].Value,
+		)
 	}
 
 	// Reduce value by calculated fee.
 	tx.TxOut[0].Value -= finalFee
 
 	if tx.TxOut[0].Value < dustThreshold {
-		return nil, fmt.Errorf("output is sub-dust (%d sats) after deducting fees (%d sats)", tx.TxOut[0].Value, finalFee)
+		return nil, fmt.Errorf(
+			"output is sub-dust (%d sats) after deducting fees (%d sats)",
+			tx.TxOut[0].Value,
+			finalFee,
+		)
 	}
 
 	return tx, nil
@@ -121,7 +138,7 @@ type outpoint struct {
 	utxo *scanner.Utxo
 }
 
-func (o *outpoint) TxId() []byte {
+func (o *outpoint) TxId() []byte { //nolint:staticcheck // should be TxID, but it's part of the gomobile contract with the apps
 	raw, err := hex.DecodeString(o.utxo.TxID)
 	if err != nil {
 		panic(err) // we wrote this hex value ourselves, no input from anywhere else

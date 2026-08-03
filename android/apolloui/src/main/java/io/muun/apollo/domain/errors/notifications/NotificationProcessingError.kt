@@ -1,11 +1,14 @@
 package io.muun.apollo.domain.errors.notifications
 
 
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.api.beam.notification.NotificationJson
 import io.muun.common.exception.PotentialBug
 
 class NotificationProcessingError : MuunError, PotentialBug {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     companion object {
 

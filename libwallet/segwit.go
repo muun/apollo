@@ -2,25 +2,39 @@ package libwallet
 
 import (
 	"crypto/sha256"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
 	lndinput "github.com/lightningnetwork/lnd/input"
 )
 
-func signNativeSegwitInputV0(index int, tx *wire.MsgTx, privateKey *HDPrivateKey, witnessScript []byte, amount btcutil.Amount) ([]byte, error) {
+func signNativeSegwitInputV0(
+	index int,
+	tx *wire.MsgTx,
+	privateKey *HDPrivateKey,
+	witnessScript []byte,
+	amount btcutil.Amount,
+) ([]byte, error) {
 
 	privKey, err := privateKey.key.ECPrivKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
+		return nil, errors.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
 	sigHashes := lndinput.NewTxSigHashesV0Only(tx)
-	sig, err := txscript.RawTxInWitnessSignature(tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
+	sig, err := txscript.RawTxInWitnessSignature(
+		tx,
+		sigHashes,
+		index,
+		int64(amount),
+		witnessScript,
+		txscript.SigHashAll,
+		privKey,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign V4 input: %w", err)
+		return nil, errors.Errorf("failed to sign V4 input: %w", err)
 	}
 
 	return sig, nil
@@ -45,20 +59,22 @@ func signNonNativeSegwitInputV0(index int, tx *wire.MsgTx, privateKey *HDPrivate
 	builder.AddData(redeemScript)
 	script, err := builder.Script()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate signing script: %w", err)
+		return nil, errors.Errorf("failed to generate signing script: %w", err)
 	}
 	txInput.SignatureScript = script
 
 	privKey, err := privateKey.key.ECPrivKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
+		return nil, errors.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
-	sigHashes := lndinput.NewTxSigHashesV0Only(tx) // TODO: validate that segwit V0 is enough for this input
+	sigHashes := lndinput.NewTxSigHashesV0Only(
+		tx,
+	) // TODO: validate that segwit V0 is enough for this input
 	sig, err := txscript.RawTxInWitnessSignature(
 		tx, sigHashes, index, int64(amount), witnessScript, txscript.SigHashAll, privKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign V3 input: %w", err)
+		return nil, errors.Errorf("failed to sign V3 input: %w", err)
 	}
 
 	return sig, nil

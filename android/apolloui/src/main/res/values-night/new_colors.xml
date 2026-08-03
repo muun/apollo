@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface_background">#060C13</color>
+    <color name="text_field_background">#1B2026</color>
+    <color name="text_field_placeholder">@color/text_secondary_color</color>
+
+    <!-- SecurityCards -->
+    <color name="provider_pill_border">#CBCED2</color>
+    <color name="provider_pill_text">#FFFFFF</color>
+</resources>

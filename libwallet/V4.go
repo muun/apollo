@@ -1,18 +1,23 @@
 package libwallet
 
 import (
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil"
-	"github.com/muun/libwallet/addresses"
-
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/addresses"
 )
 
-// CreateAddressV4 returns a P2WSH MuunAddress from a user HD-pubkey and a Muun co-signing HD-pubkey.
+// CreateAddressV4 returns a P2WSH MuunAddress from a user HD-pubkey and a Muun co-signing
+// HD-pubkey.
 func CreateAddressV4(userKey, muunKey *HDPublicKey) (MuunAddress, error) {
-	return addresses.CreateAddressV4(&userKey.key, &muunKey.key, userKey.Path, userKey.Network.network)
+	return addresses.CreateAddressV4(
+		&userKey.key,
+		&muunKey.key,
+		userKey.Path,
+		userKey.Network.network,
+	)
 }
 
 type coinV4 struct {
@@ -23,20 +28,25 @@ type coinV4 struct {
 	MuunSignature []byte
 }
 
-func (c *coinV4) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
+func (c *coinV4) SignInput(
+	index int,
+	tx *wire.MsgTx,
+	userKey *HDPrivateKey,
+	muunKey *HDPublicKey,
+) error {
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	muunKey, err = muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
 	if len(c.MuunSignature) == 0 {
-		return fmt.Errorf("muun signature must be present: %w", err)
+		return errors.Errorf("muun signature must be present: %w", err)
 	}
 
 	witnessScript, err := createWitnessScriptV4(userKey.PublicKey(), muunKey)
@@ -61,15 +71,21 @@ func (c *coinV4) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 
 	derivedUserKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	derivedMuunKey, err := muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
-	muunSignature, err := c.signature(index, tx, derivedUserKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)
+	muunSignature, err := c.signature(
+		index,
+		tx,
+		derivedUserKey.PublicKey(),
+		derivedMuunKey.PublicKey(),
+		derivedMuunKey,
+	)
 	if err != nil {
 		return err
 	}

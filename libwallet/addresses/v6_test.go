@@ -10,8 +10,8 @@ func TestCreateAddressV6(t *testing.T) {
 		addressPath = "m/schema:1'/recovery:1'/external:1/17"
 
 		v6Address       = "bcrt1pn6w5h4pysxfuusld4xg8ppquewfk7mg9uzvaxjv625dq7ac6z3ys4amxtf"
-		basePK          = "tpubDBf5wCeqg3KrLJiXaveDzD5JtFJ1ss9NVvFMx4RYS73SjwPEEawcAQ7V1B5DGM4gunWDeYNrnkc49sUaf7mS1wUKiJJQD6WEctExUQoLvrg"
-		baseCosigningPK = "tpubDB22PFkUaHoB7sgxh7exCivV5rAevVSzbB8WkFCCdbHq39r8xnYexiot4NGbi8PM6E1ySVeaHsoDeMYb6EMndpFrzVmuX8iQNExzwNpU61B"
+		basePK          = "tpubDBf5wCeqg3KrLJiXaveDzD5JtFJ1ss9NVvFMx4RYS73SjwPEEawcAQ7V1B5DGM4gunWDeYNrnkc49sUaf7mS1wUKiJJQD6WEctExUQoLvrg" //nolint:lll
+		baseCosigningPK = "tpubDB22PFkUaHoB7sgxh7exCivV5rAevVSzbB8WkFCCdbHq39r8xnYexiot4NGbi8PM6E1ySVeaHsoDeMYb6EMndpFrzVmuX8iQNExzwNpU61B" //nolint:lll
 		basePath        = "m/schema:1'/recovery:1'"
 	)
 

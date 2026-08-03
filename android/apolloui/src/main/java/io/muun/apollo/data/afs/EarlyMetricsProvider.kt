@@ -31,6 +31,8 @@ class EarlyMetricsProvider(context: Context) {
 
     val isRunningInUserTestHarness: Boolean = activityManagerInfoProvider.isRunningInUserTestHarness
 
+    val isUserAMonkey: Boolean = activityManagerInfoProvider.isUserAMonkey
+
     val isLowMemoryKillReportSupported: Boolean =
         activityManagerInfoProvider.isLowMemoryKillReportSupported
 

@@ -12,23 +12,47 @@ import (
 
 var planV1 = []storage.Migration{
 	{Description: "Migration 1", Changes: []storage.Change{
-		storage.Define("key1", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+		storage.Define(
+			"key1",
+			storage.NoAutoBackup,
+			storage.NotApplicable,
+			false,
+			&storage.StringType{},
+		),
 	}},
 }
 
 var planV2 = []storage.Migration{
 	{Description: "Migration 1", Changes: []storage.Change{
-		storage.Define("key1", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+		storage.Define(
+			"key1",
+			storage.NoAutoBackup,
+			storage.NotApplicable,
+			false,
+			&storage.StringType{},
+		),
 	}},
 	{Description: "Migration 2", Changes: []storage.Change{
-		storage.Define("key2", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+		storage.Define(
+			"key2",
+			storage.NoAutoBackup,
+			storage.NotApplicable,
+			false,
+			&storage.StringType{},
+		),
 	}},
 }
 
 // planV1Modified has the same description as planV1 but different content, so its hash differs.
 var planV1Modified = []storage.Migration{
 	{Description: "Migration 1", Changes: []storage.Change{
-		storage.Define("key1_modified", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+		storage.Define(
+			"key1_modified",
+			storage.NoAutoBackup,
+			storage.NotApplicable,
+			false,
+			&storage.StringType{},
+		),
 	}},
 }
 

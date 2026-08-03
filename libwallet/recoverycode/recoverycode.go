@@ -5,14 +5,12 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 
-	"golang.org/x/crypto/scrypt"
-
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+	"golang.org/x/crypto/scrypt"
 )
 
 const (
@@ -44,7 +42,7 @@ func Generate() string {
 	sb.WriteByte(Alphabet[CurrentVersion-2])
 
 	codeLen := 30
-	for i := 0; i < codeLen; i++ {
+	for i := 0; i < codeLen; i++ { //nolint:modernize // TODO: use range over int
 		sb.WriteByte(randChar(Alphabet))
 		j := i + 3 // we count the two bytes we wrote before the loop
 		if j != 0 && i != codeLen-1 && j%4 == 0 {
@@ -86,7 +84,7 @@ func ConvertToKey(code, salt string) (*btcec.PrivateKey, error) {
 	case 1:
 		saltBytes, err := hex.DecodeString(salt)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode salt: %w", err)
+			return nil, errors.Errorf("failed to decode salt: %w", err)
 		}
 
 		input, err = scrypt.Key(
@@ -120,7 +118,7 @@ func Validate(code string) error {
 // Version returns the version that this recovery code corresponds to.
 func Version(code string) (int, error) {
 	if len(code) != 39 { // code contains 32 RC chars + 7 separator chars
-		return 0, fmt.Errorf("invalid recovery code length %v", len(code))
+		return 0, errors.Errorf("invalid recovery code length %v", len(code))
 	}
 	if code[0] == 'L' { // version 2+ codes always start with L
 		idx := strings.IndexByte(Alphabet, code[1])
@@ -128,17 +126,17 @@ func Version(code string) (int, error) {
 			return 0, errors.New("invalid recovery code version")
 		}
 		if !validateAlphabet(code, Alphabet) {
-			return 0, fmt.Errorf("invalid recovery code characters")
+			return 0, errors.Errorf("invalid recovery code characters")
 		}
 		// we add 2 to the idx because the first letter corresponds to code version 2
 		version := idx + 2
 		if version > CurrentVersion {
-			return 0, fmt.Errorf("unrecognized recovery code version: %d", version)
+			return 0, errors.Errorf("unrecognized recovery code version: %d", version)
 		}
 		return version, nil
 	}
 	if !validateAlphabet(code, AlphabetLegacy) {
-		return 0, fmt.Errorf("invalid recovery code characters")
+		return 0, errors.Errorf("invalid recovery code characters")
 	}
 	return 1, nil
 }

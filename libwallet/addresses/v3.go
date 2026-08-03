@@ -2,16 +2,19 @@ package addresses
 
 import (
 	"crypto/sha256"
-	"fmt"
-
-	"github.com/btcsuite/btcd/chaincfg"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/go-errors/errors"
 )
 
-func CreateAddressV3(userKey, muunKey *hdkeychain.ExtendedKey, path string, network *chaincfg.Params) (*WalletAddress, error) {
+func CreateAddressV3(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	path string,
+	network *chaincfg.Params,
+) (*WalletAddress, error) {
 
 	redeemScript, err := CreateRedeemScriptV3(userKey, muunKey, network)
 	if err != nil {
@@ -30,16 +33,22 @@ func CreateAddressV3(userKey, muunKey *hdkeychain.ExtendedKey, path string, netw
 	}, nil
 }
 
-func CreateRedeemScriptV3(userKey, muunKey *hdkeychain.ExtendedKey, network *chaincfg.Params) ([]byte, error) {
+func CreateRedeemScriptV3(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	network *chaincfg.Params,
+) ([]byte, error) {
 	witnessScript, err := CreateWitnessScriptV3(userKey, muunKey, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate redeem script v3: %w", err)
+		return nil, errors.Errorf("failed to generate redeem script v3: %w", err)
 	}
 
 	return createNonNativeSegwitRedeemScript(witnessScript)
 }
 
-func CreateWitnessScriptV3(userKey, muunKey *hdkeychain.ExtendedKey, network *chaincfg.Params) ([]byte, error) {
+func CreateWitnessScriptV3(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	network *chaincfg.Params,
+) ([]byte, error) {
 	// createMultisigRedeemScript creates a valid script for both V2 and V3 schemes
 	return createMultisigRedeemScript(userKey, muunKey, network)
 }

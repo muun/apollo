@@ -1,8 +1,10 @@
 package nfc
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/app_provided_data"
 	"github.com/muun/libwallet/cryptography"
 	"github.com/muun/libwallet/domain/model/security_card"
@@ -10,7 +12,7 @@ import (
 
 // Implementation to interact with our reference security card firmware v2.
 
-const MuuncardV2AppletId = "A00000015100133900"
+const MuuncardV2AppletId = "A00000015100133900" //nolint:staticcheck // TODO: const MuuncardV2AppletId should be MuuncardV2AppletID
 
 // Muuncard V2 specific APDU bytes.
 const insMuuncardV2Setup = 0x10
@@ -30,14 +32,15 @@ const swMuuncardV2InvalidCounter = 0x6B18
 const swMuuncardV2SlotNotPaired = 0x6B19
 
 const (
-	Secp256R1PointSize        = 65
-	PairingSlotSize           = 2
-	MetadataSize              = 75
-	MacSize                   = 32
-	TotalPairInputSize        = Secp256R1PointSize * 2                                        // C + pub_client = 130 bytes
-	PairResponseSize          = Secp256R1PointSize + PairingSlotSize + MetadataSize + MacSize // 174 bytes
-	SignChallengeResponseSize = Secp256R1PointSize + MacSize                                  // 97 bytes
-	MaxApduSize               = 255
+	PairingSlotSize = 2
+	MetadataSize    = 75
+	// C + pub_client = 130 bytes
+	TotalPairInputSize = Secp256R1PointSize * 2
+	// 174 bytes
+	PairResponseSize = Secp256R1PointSize +
+		PairingSlotSize +
+		MetadataSize +
+		MacSize
 )
 
 type MuunCardV2 struct {
@@ -51,11 +54,13 @@ type AppletVersion struct {
 }
 
 type PairingResponse struct {
-	CardPublicKey   []byte        // 65 bytes - Card's ephemeral public key
-	PairingSlot     []byte        // 2 bytes - Random pairing identifier
-	Metadata        *CardMetadata // 75 bytes - Metadata including global_pub_card
-	MAC             []byte        // 32 bytes - HMAC-SHA256 authentication
-	GlobalSignature []byte        // 70-72 bytes - DER-Encoded ECDSA signature with global private key
+	CardPublicKey []byte        // 65 bytes - Card's ephemeral public key
+	PairingSlot   []byte        // 2 bytes - Random pairing identifier
+	Metadata      *CardMetadata // 75 bytes - Metadata including global_pub_card
+	MAC           []byte        // 32 bytes - HMAC-SHA256 authentication
+	// 70-72 bytes - DER-Encoded ECDSA signature
+	// with global private key
+	GlobalSignature []byte
 }
 
 type CardMetadata struct {
@@ -77,14 +82,26 @@ func NewCardV2(nfcBridge app_provided_data.NfcBridge) *MuunCardV2 {
 }
 
 var cardV2StatusToError = map[uint16]*CardError{
-	swMuuncardV2WrongLength:      {Message: "card rejected input: wrong length", Code: ErrInternal},
-	swMuuncardV2InvalidPubKey:    {Message: "card rejected public key: invalid format", Code: ErrInternal},
-	swMuuncardV2ResponseTooLarge: {Message: "response too large, exceeds APDU limit of 255 bytes", Code: ErrInternal},
-	swMuuncardV2CryptoError:      {Message: "cryptographic error during pairing", Code: ErrInternal},
-	swMuuncardV2NoSlotsAvailable: {Message: "no pairing slots available on card", Code: ErrSlotOccupied},
-	swMuuncardV2InvalidMac:       {Message: "invalid MAC", Code: ErrInternal},
-	swMuuncardV2InvalidCounter:   {Message: "invalid counter", Code: ErrInternal},
-	swMuuncardV2SlotNotPaired:    {Message: "slot not paired", Code: ErrSlotNotInitialized},
+	swMuuncardV2WrongLength: {Message: "card rejected input: wrong length", Code: ErrInternal},
+	swMuuncardV2InvalidPubKey: {
+		Message: "card rejected public key: invalid format",
+		Code:    ErrInternal,
+	},
+	swMuuncardV2ResponseTooLarge: {
+		Message: "response too large, exceeds APDU limit of 255 bytes",
+		Code:    ErrInternal,
+	},
+	swMuuncardV2CryptoError: {
+		Message: "cryptographic error during pairing",
+		Code:    ErrInternal,
+	},
+	swMuuncardV2NoSlotsAvailable: {
+		Message: "no pairing slots available on card",
+		Code:    ErrSlotOccupied,
+	},
+	swMuuncardV2InvalidMac:     {Message: "invalid MAC", Code: ErrInternal},
+	swMuuncardV2InvalidCounter: {Message: "invalid counter", Code: ErrInternal},
+	swMuuncardV2SlotNotPaired:  {Message: "slot not paired", Code: ErrSlotNotInitialized},
 }
 
 func (c *MuunCardV2) GetVersion() (*AppletVersion, error) {
@@ -97,13 +114,16 @@ func (c *MuunCardV2) GetVersion() (*AppletVersion, error) {
 		[]byte{},
 	)
 
-	response, err := c.rawCard.transmit(apdu.serialize())
+	response, err := c.rawCard.transmit(apdu.serializeShort())
 	if err != nil {
-		return nil, fmt.Errorf("failed to transmit insMuuncardV2GetVersion: %v", err)
+		return nil, errors.Errorf(
+			"failed to transmit insMuuncardV2GetVersion: %w",
+			err,
+		)
 	}
 
 	if response.StatusCode != responseOk {
-		return nil, fmt.Errorf("failed with status: %04X", response.StatusCode)
+		return nil, errors.Errorf("failed with status: %04X", response.StatusCode)
 	}
 
 	if len(response.Response) < 8 {
@@ -131,18 +151,21 @@ func (c *MuunCardV2) GetMetadata() (*CardMetadata, error) {
 		[]byte{},
 	)
 
-	response, err := c.rawCard.transmit(apdu.serialize())
+	response, err := c.rawCard.transmit(apdu.serializeShort())
 	if err != nil {
-		return nil, fmt.Errorf("failed to transmit insMuuncardV2GetMetadata: %v", err)
+		return nil, errors.Errorf(
+			"failed to transmit insMuuncardV2GetMetadata: %w",
+			err,
+		)
 	}
 
 	if response.StatusCode != responseOk {
-		return nil, fmt.Errorf("failed with status: %04X", response.StatusCode)
+		return nil, errors.Errorf("failed with status: %04X", response.StatusCode)
 	}
 
 	metadata, err := parseMetadata(response.Response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse metadata: %v", response.Response)
+		return nil, errors.Errorf("failed to parse metadata: %v", response.Response)
 	}
 
 	return metadata, nil
@@ -152,13 +175,13 @@ func (c *MuunCardV2) Pair(serverRandomPublicKey, clientPublicKey []byte) (*Pairi
 	// Validate server random public key format (C)
 	err := cryptography.ValidateSecp256r1PublicKey(serverRandomPublicKey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid server random public key: %w", err)
+		return nil, errors.Errorf("invalid server random public key: %w", err)
 	}
 
 	// Validate client public key format (pub_client)
 	err = cryptography.ValidateSecp256r1PublicKey(clientPublicKey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid client public key: %w", err)
+		return nil, errors.Errorf("invalid client public key: %w", err)
 	}
 
 	// Send C || pub_client to card (130 bytes total)
@@ -174,9 +197,9 @@ func (c *MuunCardV2) Pair(serverRandomPublicKey, clientPublicKey []byte) (*Pairi
 		input,
 	)
 
-	response, err := c.transmit(apdu.serialize())
+	response, err := c.transmit(apdu.serializeShort())
 	if err != nil {
-		return nil, fmt.Errorf("failed to transmit insMuuncardV2Setup: %w", err)
+		return nil, errors.Errorf("failed to transmit insMuuncardV2Setup: %w", err)
 	}
 
 	return parsePairingResponse(response.Response)
@@ -190,7 +213,7 @@ func (c *MuunCardV2) SignChallenge(
 	// Calculate maximum reason size for single chunk
 	// Format: C(65) + count(2) + index(2) + has_more_chunks(1) + reason + mac(32) = 102 + reason
 	// Max APDU = 255, so max single reason = 255 - 102 = 153 bytes
-	maxSingleReasonSize := MaxApduSize - 65 - 2 - 2 - 1 - 32 // 153 bytes
+	maxSingleReasonSize := MaxShortApduDataSize - 65 - 2 - 2 - 1 - 32 // 153 bytes
 
 	if len(reason) <= maxSingleReasonSize {
 		return c.signChallengeSingle(challenge, reason)
@@ -214,9 +237,9 @@ func (c *MuunCardV2) signChallengeSingle(
 	)
 	apdu := buildSignChallengeAPDU(data)
 
-	response, err := c.transmit(apdu.serialize())
+	response, err := c.transmit(apdu.serializeShort())
 	if err != nil {
-		return nil, fmt.Errorf("failed to transmit Sign Challenge: %w", err)
+		return nil, errors.Errorf("failed to transmit Sign Challenge: %w", err)
 	}
 
 	return parseSignChallengeResponse(response)
@@ -231,7 +254,7 @@ func (c *MuunCardV2) transmit(apdu []byte) (*CardResponse, error) {
 
 	resp, err := c.rawCard.transmit(apdu)
 	if err != nil {
-		return nil, fmt.Errorf("error transmitting APDU: %w", err)
+		return nil, errors.Errorf("error transmitting APDU: %w", err)
 	}
 
 	if resp.StatusCode != responseOk {

@@ -1,9 +1,12 @@
 package io.muun.apollo.domain.errors.lnurl
 
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.model.lnurl.LnUrlEvent
 
 class UnknownLnUrlError(event: LnUrlEvent) : MuunError() {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     init {
         metadata["code"] = event.code

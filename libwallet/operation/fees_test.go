@@ -74,19 +74,19 @@ var singleNegativeUtxoNts = &NextTransactionSize{
 }
 
 var firstFeeBumpFunction = []*PartialLinearFunction{
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 0,
 		RightOpenEndpoint:  50,
 		Slope:              2,
 		Intercept:          100,
 	},
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 50,
 		RightOpenEndpoint:  100,
 		Slope:              3,
 		Intercept:          200,
 	},
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 100,
 		RightOpenEndpoint:  math.Inf(1),
 		Slope:              4,
@@ -95,19 +95,19 @@ var firstFeeBumpFunction = []*PartialLinearFunction{
 }
 
 var secondFeeBumpFunction = []*PartialLinearFunction{
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 100,
 		RightOpenEndpoint:  math.Inf(1),
 		Slope:              7,
 		Intercept:          300,
 	},
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 50,
 		RightOpenEndpoint:  100,
 		Slope:              6,
 		Intercept:          200,
 	},
-	&PartialLinearFunction{
+	{
 		LeftClosedEndpoint: 0,
 		RightOpenEndpoint:  50,
 		Slope:              5,
@@ -152,19 +152,31 @@ func TestFeeCalculatorForAmountZero(t *testing.T) {
 
 			for _, nts := range allNts {
 				calculator := feeCalculator{&nts, nil}
-				feeInSat, feeBumpInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+				feeInSat, feeBumpInSat := calculator.Fee(
+					0,
+					tC.feeRateInSatsPerVbyte,
+					tC.takeFeeFromAmount,
+				)
 
 				if feeInSat != tC.expectedFeeInSat {
 					t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
 				}
 
 				if feeBumpInSat != tC.expectedFeeBumpInSat {
-					t.Fatalf("expected fee bump = %v, got %v", tC.expectedFeeBumpInSat, feeBumpInSat)
+					t.Fatalf(
+						"expected fee bump = %v, got %v",
+						tC.expectedFeeBumpInSat,
+						feeBumpInSat,
+					)
 				}
 			}
 
 			calculator := feeCalculator{}
-			feeInSat, feeBumpInSat := calculator.Fee(0, tC.feeRateInSatsPerVbyte, tC.takeFeeFromAmount)
+			feeInSat, feeBumpInSat := calculator.Fee(
+				0,
+				tC.feeRateInSatsPerVbyte,
+				tC.takeFeeFromAmount,
+			)
 
 			if feeInSat != tC.expectedFeeInSat {
 				t.Fatalf("expected fee = %v, got %v", tC.expectedFeeInSat, feeInSat)
@@ -280,8 +292,9 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  0,
 		},
 		{
-			// This case can't really happen since our PaymentAnalyzer enforces amount ==  totalBalance for TFFA
-			// We don't handle that precondition in FeeCalculator to keep its API simple (no error handling)
+			// This case can't really happen since our PaymentAnalyzer enforces amount ==
+			// totalBalance for TFFA. We don't handle that precondition in FeeCalculator
+			// to keep its API simple (no error handling)
 			desc:                  "calculates when no amount is left after TFFA",
 			amountInSat:           10,
 			feeCalculator:         &feeCalculator{defaultNts, nil},
@@ -300,7 +313,8 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  0,
 		},
 		{
-			desc:                  "calculates when paying fee does not require an additional UTXO (1)",
+			desc: "calculates when paying fee does not " +
+				"require an additional UTXO (1)",
 			amountInSat:           defaultNts.SizeProgression[0].AmountInSat / 2,
 			feeCalculator:         &feeCalculator{defaultNts, nil},
 			feeRateInSatsPerVbyte: 10,
@@ -309,7 +323,8 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  0,
 		},
 		{
-			desc:                  "calculates when paying fee does not require an additional UTXO (2)",
+			desc: "calculates when paying fee does not " +
+				"require an additional UTXO (2)",
 			amountInSat:           defaultNts.SizeProgression[1].AmountInSat / 2,
 			feeCalculator:         &feeCalculator{defaultNts, nil},
 			feeRateInSatsPerVbyte: 10,
@@ -318,7 +333,8 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  0,
 		},
 		{
-			desc:                  "calculates when paying fee does not require an additional UTXO (3)",
+			desc: "calculates when paying fee does not " +
+				"require an additional UTXO (3)",
 			amountInSat:           defaultNts.SizeProgression[2].AmountInSat / 2,
 			feeCalculator:         &feeCalculator{defaultNts, nil},
 			feeRateInSatsPerVbyte: 10,
@@ -327,7 +343,8 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  0,
 		},
 		{
-			desc:                  "calculates when paying fee does not require an additional UTXO (4)",
+			desc: "calculates when paying fee does not " +
+				"require an additional UTXO (4)",
 			amountInSat:           defaultNts.SizeProgression[3].AmountInSat / 2,
 			feeCalculator:         &feeCalculator{defaultNts, nil},
 			feeRateInSatsPerVbyte: 10,
@@ -377,8 +394,8 @@ func TestFeeCalculator(t *testing.T) {
 			feeCalculator: &feeCalculator{
 				NextTransactionSize: defaultNts,
 				feeBumpFunctions: []*FeeBumpFunction{
-					&FeeBumpFunction{PartialLinearFunctions: firstFeeBumpFunction},
-					&FeeBumpFunction{PartialLinearFunctions: secondFeeBumpFunction},
+					{PartialLinearFunctions: firstFeeBumpFunction},
+					{PartialLinearFunctions: secondFeeBumpFunction},
 				},
 			},
 			feeRateInSatsPerVbyte: 10,
@@ -392,8 +409,8 @@ func TestFeeCalculator(t *testing.T) {
 			feeCalculator: &feeCalculator{
 				NextTransactionSize: defaultNts,
 				feeBumpFunctions: []*FeeBumpFunction{
-					&FeeBumpFunction{PartialLinearFunctions: firstFeeBumpFunction},
-					&FeeBumpFunction{PartialLinearFunctions: secondFeeBumpFunction},
+					{PartialLinearFunctions: firstFeeBumpFunction},
+					{PartialLinearFunctions: secondFeeBumpFunction},
 				},
 			},
 			feeRateInSatsPerVbyte: 10,
@@ -402,12 +419,14 @@ func TestFeeCalculator(t *testing.T) {
 			expectedFeeBumpInSat:  150,
 		},
 		{
-			desc:        "calculates when we have less feeBumpFunctions than unconfirmed utxos (use the last function)",
+			desc: "calculates when we have less " +
+				"feeBumpFunctions than unconfirmed " +
+				"utxos (use the last function)",
 			amountInSat: defaultNts.SizeProgression[2].AmountInSat,
 			feeCalculator: &feeCalculator{
 				NextTransactionSize: defaultNts,
 				feeBumpFunctions: []*FeeBumpFunction{
-					&FeeBumpFunction{PartialLinearFunctions: firstFeeBumpFunction},
+					{PartialLinearFunctions: firstFeeBumpFunction},
 				},
 			},
 			feeRateInSatsPerVbyte: 10,
@@ -421,8 +440,8 @@ func TestFeeCalculator(t *testing.T) {
 			feeCalculator: &feeCalculator{
 				NextTransactionSize: singleNts,
 				feeBumpFunctions: []*FeeBumpFunction{
-					&FeeBumpFunction{PartialLinearFunctions: firstFeeBumpFunction},
-					&FeeBumpFunction{PartialLinearFunctions: secondFeeBumpFunction},
+					{PartialLinearFunctions: firstFeeBumpFunction},
+					{PartialLinearFunctions: secondFeeBumpFunction},
 				},
 			},
 			feeRateInSatsPerVbyte: 10,
@@ -436,8 +455,8 @@ func TestFeeCalculator(t *testing.T) {
 			feeCalculator: &feeCalculator{
 				NextTransactionSize: defaultNts,
 				feeBumpFunctions: []*FeeBumpFunction{
-					&FeeBumpFunction{PartialLinearFunctions: firstFeeBumpFunction},
-					&FeeBumpFunction{PartialLinearFunctions: secondFeeBumpFunction},
+					{PartialLinearFunctions: firstFeeBumpFunction},
+					{PartialLinearFunctions: secondFeeBumpFunction},
 				},
 			},
 			feeRateInSatsPerVbyte: 100,

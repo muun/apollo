@@ -4,13 +4,13 @@ package musig2v040
 
 import (
 	"bytes"
-	"fmt"
 	"sort"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	secp "github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/go-errors/errors"
 )
 
 var (
@@ -24,11 +24,11 @@ var (
 
 	// ErrTweakedKeyIsInfinity is returned if while tweaking a key, we end
 	// up with the point at infinity.
-	ErrTweakedKeyIsInfinity = fmt.Errorf("tweaked key is infinity point")
+	ErrTweakedKeyIsInfinity = errors.Errorf("tweaked key is infinity point")
 
 	// ErrTweakedKeyOverflows is returned if a tweaking key is larger than
 	// 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141.
-	ErrTweakedKeyOverflows = fmt.Errorf("tweaked key is to large")
+	ErrTweakedKeyOverflows = errors.Errorf("tweaked key is to large")
 )
 
 // sortableKeys defines a type of slice of public keys that implements the sort

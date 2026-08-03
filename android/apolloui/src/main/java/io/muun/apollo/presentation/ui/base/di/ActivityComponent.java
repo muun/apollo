@@ -3,6 +3,7 @@ package io.muun.apollo.presentation.ui.base.di;
 import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
+import io.muun.apollo.presentation.ui.debug.securekv.DebugSecureKeyValueStorageActivity;
 import io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
@@ -22,8 +23,10 @@ import io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity;
 import io.muun.apollo.presentation.ui.scan_qr.ScanQrActivity;
 import io.muun.apollo.presentation.ui.security_cards_card_detail.CardDetailActivity;
 import io.muun.apollo.presentation.ui.security_cards_country_picker.CountryPickerActivity;
+import io.muun.apollo.presentation.ui.security_cards_full_specs.SecurityCardsFullSpecsActivity;
 import io.muun.apollo.presentation.ui.security_cards_marketplace.SecurityCardsMarketplaceActivity;
 import io.muun.apollo.presentation.ui.security_cards_onboarding.SecurityCardsOnboardingActivity;
+import io.muun.apollo.presentation.ui.security_cards_shipping_address.ShippingAddressActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity;
 import io.muun.apollo.presentation.ui.select_bitcoin_unit.SelectBitcoinUnitActivity;
@@ -61,6 +64,8 @@ public interface ActivityComponent {
     void inject(OperationDetailActivity operationDetailActivity);
 
     void inject(DebugPanelActivity debugPanelActivity);
+
+    void inject(DebugSecureKeyValueStorageActivity debugSecureKeyValueStorageActivity);
 
     void inject(ShowQrActivity showQrActivity);
 
@@ -131,6 +136,10 @@ public interface ActivityComponent {
     void inject(CountryPickerActivity countryPickerActivity);
 
     void inject(SecurityCardsOnboardingActivity securityCardsOnboardingActivity);
-
+    
     void inject(CardDetailActivity cardDetailActivity);
+
+    void inject(SecurityCardsFullSpecsActivity securityCardsFullSpecsActivity);
+
+    void inject(ShippingAddressActivity shippingAddressActivity);
 }

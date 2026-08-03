@@ -2,13 +2,15 @@ package btcutilw
 
 import (
 	"bytes"
-	"fmt"
+
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet/btcsuitew/bech32m"
 )
 
 // -------------------------------------------------------------------------------------------------
-// Methods below copied from btcd (address.go), but using our bech32m module instead of their bech32.
+// Methods below copied from btcd (address.go), but using our bech32m module
+// instead of their bech32.
 // Only that change was made. Some comments inside this code are not correct.
 
 func encodeSegWitAddressV1(hrp string, witnessVersion byte, witnessProgram []byte) (string, error) {
@@ -32,11 +34,11 @@ func encodeSegWitAddressV1(hrp string, witnessVersion byte, witnessProgram []byt
 	// Check validity by decoding the created address.
 	version, program, err := decodeSegWitAddressV1(bech)
 	if err != nil {
-		return "", fmt.Errorf("invalid taproot address: %v", err)
+		return "", errors.Errorf("invalid taproot address: %w", err)
 	}
 
 	if version != witnessVersion || !bytes.Equal(program, witnessProgram) {
-		return "", fmt.Errorf("invalid taproot address")
+		return "", errors.Errorf("invalid taproot address")
 	}
 
 	return bech, nil
@@ -52,13 +54,13 @@ func decodeSegWitAddressV1(address string) (byte, []byte, error) {
 	// The first byte of the decoded address is the witness version, it must
 	// exist.
 	if len(data) < 1 {
-		return 0, nil, fmt.Errorf("no witness version")
+		return 0, nil, errors.Errorf("no witness version")
 	}
 
 	// ...and be <= 16.
 	version := data[0]
 	if version > 16 {
-		return 0, nil, fmt.Errorf("invalid witness version for taproot: %v", version)
+		return 0, nil, errors.Errorf("invalid witness version for taproot: %v", version)
 	}
 
 	// The remaining characters of the address returned are grouped into
@@ -71,12 +73,12 @@ func decodeSegWitAddressV1(address string) (byte, []byte, error) {
 
 	// The regrouped data must be between 2 and 40 bytes.
 	if len(regrouped) < 2 || len(regrouped) > 40 {
-		return 0, nil, fmt.Errorf("invalid data length")
+		return 0, nil, errors.Errorf("invalid data length")
 	}
 
 	// For witness version 0, address MUST be exactly 20 or 32 bytes.
 	if version == 0 && len(regrouped) != 20 && len(regrouped) != 32 {
-		return 0, nil, fmt.Errorf("invalid data length for witness "+
+		return 0, nil, errors.Errorf("invalid data length for witness "+
 			"version 0: %v", len(regrouped))
 	}
 

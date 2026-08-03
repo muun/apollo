@@ -55,16 +55,13 @@ func secNonceToPubNonce(secNonce [musig2.SecNonceSize]byte) [musig2.PubNonceSize
 	return pubNonce
 }
 
-// NonceGenOption is a function option that allows callers to modify how nonce
-// generation happens.
+// NonceGenOption is a function option that allows callers to modify how nonce generation happens.
 type NonceGenOption func(*nonceGenOpts)
 
-// nonceGenOpts is the set of options that control how nonce generation
-// happens.
+// nonceGenOpts is the set of options that control how nonce generation happens.
 type nonceGenOpts struct {
-	// randReader is what we'll use to generate a set of random bytes. If
-	// unspecified, then the normal crypto/rand rand.Read method will be
-	// used in place.
+	// randReader is what we'll use to generate a set of random bytes. If unspecified, then the
+	// normal crypto/rand rand.Read method will be used in place.
 	randReader io.Reader
 
 	// secretKey is an optional argument that's used to further augment the
@@ -75,18 +72,15 @@ type nonceGenOpts struct {
 	// combined along with the nonce generation.
 	combinedKey []byte
 
-	// msg is an optional argument that will be mixed into the nonce
-	// derivation algorithm.
+	// msg is an optional argument that will be mixed into the nonce derivation algorithm.
 	msg []byte
 
-	// auxInput is an optional argument that will be mixed into the nonce
-	// derivation algorithm.
+	// auxInput is an optional argument that will be mixed into the nonce derivation algorithm.
 	auxInput []byte
 }
 
-// cryptoRandAdapter is an adapter struct that allows us to pass in the package
-// level Read function from crypto/rand into a context that accepts an
-// io.Reader.
+// cryptoRandAdapter is an adapter struct that allows us to pass in the package level Read function
+// from crypto/rand into a context that accepts an io.Reader.
 type cryptoRandAdapter struct {
 }
 
@@ -104,9 +98,8 @@ func defaultNonceGenOpts() *nonceGenOpts {
 	}
 }
 
-// WithCustomRand allows a caller to use a custom random number generator in
-// place for crypto/rand. This should only really be used to generate
-// determinstic tests.
+// WithCustomRand allows a caller to use a custom random number generator in place for crypto/rand.
+// This should only really be used to generate determinstic tests.
 func WithCustomRand(r io.Reader) NonceGenOption {
 	return func(o *nonceGenOpts) {
 		o.randReader = r
@@ -121,9 +114,8 @@ func WithNonceSecretKeyAux(secKey *btcec.PrivateKey) NonceGenOption {
 	}
 }
 
-// WithNonceCombinedKeyAux allows a caller to optionally specify the combined
-// key used in this signing session to further augment the randomness used to
-// generate nonces.
+// WithNonceCombinedKeyAux allows a caller to optionally specify the combined key used in this
+// signing session to further augment the randomness used to generate nonces.
 func WithNonceCombinedKeyAux(combinedKey *btcec.PublicKey) NonceGenOption {
 	return func(o *nonceGenOpts) {
 		o.combinedKey = schnorr.SerializePubKey(combinedKey)
@@ -156,8 +148,8 @@ func WithNonceAuxInput(aux []byte) NonceGenOption {
 //   - return sha256(seed || i)
 //
 // where i is the ith secret nonce being generated.
-//
-// Muun only provides the rand parameter as sessionId. All other parameters are encoded as if they were len=0
+// Muun only provides the rand parameter as sessionID. All other parameters are encoded as if they
+// were len=0
 func genNonceAuxBytes(rand []byte, i int) ([]byte, error) {
 	var w bytes.Buffer
 
@@ -194,9 +186,8 @@ func genNonceAuxBytes(rand []byte, i int) ([]byte, error) {
 		return nil, err
 	}
 
-	// Next we'll write out the interaction/index number which will
-	// uniquely generate two nonces given the rest of the possibly static
-	// parameters.
+	// Next we'll write out the interaction/index number which will uniquely generate two nonces
+	// given the rest of the possibly static parameters.
 	ith := make([]byte, 1)
 	ith[0] = uint8(i)
 
@@ -212,7 +203,7 @@ func genNonceAuxBytes(rand []byte, i int) ([]byte, error) {
 //
 // Pseudo algorithm (|| means byte concat)
 //
-//	let seed = TaggedHash("MuSig/nonce", sessionId || 0 || 0 || 0 || 0)
+//	let seed = TaggedHash("MuSig/nonce", sessionID || 0 || 0 || 0 || 0)
 //	let k = [sha256(seed || 0), sha256(seed || 1)]
 //	let r = k*G
 //	return toPublicKeyFormat(r)
@@ -250,9 +241,8 @@ func GenNonces(options ...NonceGenOption) (*musig2.Nonces, error) {
 	k1Mod.PutBytesUnchecked(nonces.SecNonce[:])
 	k2Mod.PutBytesUnchecked(nonces.SecNonce[btcec.PrivKeyBytesLen:])
 
-	// Next, we'll generate R_1 = k_1*G and R_2 = k_2*G. Along the way we
-	// need to map our nonce values into mod n scalars so we can work with
-	// the btcec API.
+	// Next, we'll generate R_1 = k_1*G and R_2 = k_2*G. Along the way we need to map our nonce
+	// values into mod n scalars so we can work with the btcec API.
 	nonces.PubNonce = secNonceToPubNonce(nonces.SecNonce)
 
 	return &nonces, nil
@@ -261,18 +251,16 @@ func GenNonces(options ...NonceGenOption) (*musig2.Nonces, error) {
 // AggregateNonces aggregates the set of a pair of public nonces for each party
 // into a single aggregated nonces to be used for multi-signing.
 func AggregateNonces(pubNonces [][musig2.PubNonceSize]byte) ([musig2.PubNonceSize]byte, error) {
-	// combineNonces is a helper function that aggregates (adds) up a
-	// series of nonces encoded in compressed format. It uses a slicing
-	// function to extra 33 bytes at a time from the packed 2x public
-	// nonces.
+	// combineNonces is a helper function that aggregates (adds) up a series of nonces encoded in
+	// compressed format. It uses a slicing function to extra 33 bytes at a time from the packed 2x
+	// public nonces.
 	type nonceSlicer func([musig2.PubNonceSize]byte) []byte
 	combineNonces := func(slicer nonceSlicer) (btcec.JacobianPoint, error) {
 		// Convert the set of nonces into jacobian coordinates we can
 		// use to accumulate them all into each other.
 		pubNonceJs := make([]*btcec.JacobianPoint, len(pubNonces))
 		for i, pubNonceBytes := range pubNonces {
-			// Using the slicer, extract just the bytes we need to
-			// decode.
+			// Using the slicer, extract just the bytes we need to decode.
 			var nonceJ btcec.JacobianPoint
 
 			nonceJ, err := btcec.ParseJacobian(slicer(pubNonceBytes))

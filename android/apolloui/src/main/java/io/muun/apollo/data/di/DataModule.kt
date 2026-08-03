@@ -16,8 +16,10 @@ import io.muun.apollo.data.afs.FileInfoProvider
 import io.muun.apollo.data.afs.HardwareCapabilitiesProvider
 import io.muun.apollo.data.afs.LocaleInfoProvider
 import io.muun.apollo.data.afs.MetricsProvider
+import io.muun.apollo.data.afs.NfcExtendedApduProbe
 import io.muun.apollo.data.afs.NfcProvider
 import io.muun.apollo.data.afs.PackageManagerInfoProvider
+import io.muun.apollo.data.afs.RuntimeInfoProvider
 import io.muun.apollo.data.afs.SystemCapabilitiesProvider
 import io.muun.apollo.data.afs.SystemInfoProvider
 import io.muun.apollo.data.afs.TelephonyInfoProvider
@@ -40,9 +42,11 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.fs.LibwalletDataDirectory
 import io.muun.apollo.data.libwallet.HttpClientSessionProvider
 import io.muun.apollo.data.libwallet.KeyProvider
+import io.muun.apollo.data.libwallet.LibwalletSecureKeyValueStorage
 import io.muun.apollo.data.libwallet.grpc.GrpcChannelFactory
 import io.muun.apollo.data.net.NetworkInfoProvider
 import io.muun.apollo.data.nfc.AndroidNfcBridge
+import io.muun.apollo.data.nfc.NfcEmpiricalCache
 import io.muun.apollo.data.os.Configuration
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.os.execution.JobExecutor
@@ -191,6 +195,7 @@ class DataModule(
         httpClientSessionProvider: HttpClientSessionProvider,
         nfcBridge: AndroidNfcBridge,
         keyProvider: KeyProvider,
+        secureKeyValueStorage: LibwalletSecureKeyValueStorage,
     ): Config {
         libwalletDataDirectory.ensureExists()
         val dataDir = libwalletDataDirectory.path.absolutePath
@@ -204,6 +209,7 @@ class DataModule(
         config.httpClientSessionProvider = httpClientSessionProvider
         config.nfcBridge = nfcBridge
         config.keyProvider = keyProvider
+        config.secureKeyValueStorage = secureKeyValueStorage
 
         val network = when (Globals.INSTANCE.network.getId()) {
             NetworkParameters.ID_MAINNET -> "mainnet"
@@ -239,7 +245,10 @@ class DataModule(
 
     @Provides
     @Singleton
-    fun provideMetricsProvider(context: Context): MetricsProvider {
+    fun provideMetricsProvider(
+        context: Context,
+        nfcEmpiricalCache: NfcEmpiricalCache,
+    ): MetricsProvider {
         val activityManagerInfoProvider = ActivityManagerInfoProvider(context)
         val telephonyInfoProvider = TelephonyInfoProvider(context)
         val hardwareCapabilitiesProvider = HardwareCapabilitiesProvider(context)
@@ -254,11 +263,13 @@ class DataModule(
         val dateTimeZoneProvider = DateTimeZoneProvider(context)
         val localeInfoProvider = LocaleInfoProvider()
         val trafficStatsInfoProvider = TrafficStatsInfoProvider()
-        val nfcProvider = NfcProvider(context)
+        val nfcExtendedApduProbe = NfcExtendedApduProbe(context)
+        val nfcProvider = NfcProvider(context, nfcExtendedApduProbe, nfcEmpiricalCache)
         val batteryInfoProvider = BatteryInfoProvider(context)
         val systemInfoProvider = SystemInfoProvider()
         val networkInfoProvider = NetworkInfoProvider(context)
         val isRootedDeviceAction = IsRootedDeviceAction(context)
+        val runtimeInfoProvider = RuntimeInfoProvider(context)
 
         return MetricsProvider(
             activityManagerInfoProvider,
@@ -277,7 +288,8 @@ class DataModule(
             batteryInfoProvider,
             systemInfoProvider,
             networkInfoProvider,
-            isRootedDeviceAction
+            isRootedDeviceAction,
+            runtimeInfoProvider
         )
     }
 }

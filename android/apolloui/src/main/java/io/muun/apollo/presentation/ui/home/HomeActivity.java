@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.home;
 
 import io.muun.apollo.R;
+import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.databinding.HomeActivityBinding;
 import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN;
 import io.muun.apollo.domain.model.Operation;
@@ -12,7 +13,7 @@ import io.muun.apollo.presentation.ui.view.BlockClock;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,14 +23,20 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import kotlin.jvm.functions.Function1;
+import timber.log.Timber;
 
 import java.util.Objects;
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 public class HomeActivity extends SingleFragmentActivity<HomePresenter>
@@ -61,6 +68,20 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     public static final String NEW_OP_ID = "NEW_OP_ID";
 
     private NavController navController;
+
+    @Inject
+    InAppUpdateManager.Factory inAppUpdateManagerFactory;
+
+    private final ActivityResultLauncher<IntentSenderRequest> updateLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartIntentSenderForResult(),
+                    result -> {
+                        final int resultCode = result.getResultCode();
+                        if (resultCode != Activity.RESULT_OK) {
+                            Timber.i("InAppUpdate: update flow failed (code=%s)", resultCode);
+                        }
+                    }
+            );
 
     private HomeActivityBinding binding() {
         return (HomeActivityBinding) getBinding();
@@ -109,25 +130,23 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         navController.setGraph(R.navigation.home_nav_graph, initialBundle);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
+        // Override the listener installed by setupWithNavController so we can disable the
+        // default fragment animations on tab swaps.
+        final NavOptions navOptions = new NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setPopUpTo(R.id.home_fragment, false, true)
+                .setEnterAnim(0)
+                .build();
+
         bottomNav.setOnItemSelectedListener(item -> {
-
-                    final Bundle bundle = new Bundle();
-
-                    if (item.getItemId() == R.id.security_center_fragment) {
-                        final SecurityCenterFragmentArgs args = new SecurityCenterFragmentArgs
-                                .Builder(SECURITY_CENTER_ORIGIN.SHIELD_BUTTON)
-                                .build();
-
-                        bundle.putAll(args.toBundle());
-                    }
-
-                    navigateToItem(item.getItemId(), bundle);
-                    return true;
-                }
-        );
-        bottomNav.setOnItemReselectedListener(item -> {
-            // do nothing here, it will prevent recreating same fragment
+            navController.navigate(item.getItemId(), null, navOptions);
+            return true;
         });
+
+        if (Globals.INSTANCE.isDogfood()) {
+            inAppUpdateManagerFactory.create(this, updateLauncher).checkForUpdate();
+        }
     }
 
     @Override
@@ -144,20 +163,15 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         return showMenu;
     }
 
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onBackPressed() {
-        superOnBackPressed();
-    }
-
     @Override
     public void navigateToSecurityCenter() {
 
         final SecurityCenterFragmentArgs args = new SecurityCenterFragmentArgs
-                .Builder(SECURITY_CENTER_ORIGIN.EMPTY_HOME_ANON_USER)
+                .Builder()
+                .setOrigin(SECURITY_CENTER_ORIGIN.EMPTY_HOME_ANON_USER)
                 .build();
 
-        navigateToItem(R.id.security_center_fragment, args.toBundle());
+        navController.navigate(R.id.security_center_fragment, args.toBundle());
     }
 
     @Override
@@ -198,10 +212,5 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
                 })
                 .build()
                 .show(this);
-    }
-
-    private void navigateToItem(int itemId, Bundle bundle) {
-        // TODO: define transition animation See NavigationUI.onNavDestinationSelected()
-        navController.navigate(itemId, bundle, null);
     }
 }

@@ -3,11 +3,12 @@ package newop
 import (
 	"fmt"
 	"log/slog"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/btcsuite/btcd/btcutil"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/operation"
 	"github.com/muun/libwallet/walletdb"
@@ -97,7 +98,11 @@ func (r Resolved) emitError(error string) error {
 	return nil
 }
 
-func (r Resolved) emitBalanceError(error string, analysis *operation.PaymentAnalysis, inputCurrency string) error {
+func (r Resolved) emitBalanceError(
+	error string,
+	analysis *operation.PaymentAnalysis,
+	inputCurrency string,
+) error {
 
 	toMonetaryAmount := func(sats int64) *MonetaryAmount {
 		window := r.PaymentContext.ExchangeRateWindow
@@ -137,7 +142,10 @@ type FeeBumpInfo struct {
 	SecondsSinceLastUpdate int64
 }
 
-func NewFeeBumpInfo(feeBumpFunctionSet *operation.FeeBumpFunctionSet, bumpAmount int64) *FeeBumpInfo {
+func NewFeeBumpInfo(
+	feeBumpFunctionSet *operation.FeeBumpFunctionSet,
+	bumpAmount int64,
+) *FeeBumpInfo {
 	if feeBumpFunctionSet == nil {
 		return nil
 	}
@@ -248,7 +256,10 @@ func (s *StartState) resolveBip70(uri *libwallet.MuunPaymentURI, network *libwal
 	}
 }
 
-func (s *StartState) ResolveInvoice(invoice *libwallet.Invoice, network *libwallet.Network) error {
+func (s *StartState) ResolveInvoice(
+	invoice *libwallet.Invoice,
+	network *libwallet.Network, //nolint:revive // TODO: use or remove network
+) error {
 	next := &ResolveState{
 		BaseState: s.BaseState,
 		PaymentIntent: &PaymentIntent{
@@ -289,27 +300,28 @@ func (s *ResolveState) SetContext(initialContext *InitialPaymentContext) error {
 }
 
 func loadFeeBumpFunctions() (*operation.FeeBumpFunctionSet, error) {
-	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
-	if err != nil {
+	var feeBumpFunctionSet *operation.FeeBumpFunctionSet
+	if err := libwallet.Pool.WithDB(func(db *walletdb.DB) error {
+		var err error
+		feeBumpFunctionSet, err = db.NewFeeBumpRepository().GetAll()
+		return err
+	}); err != nil {
 		return nil, err
 	}
-	defer db.Close()
-
-	repository := db.NewFeeBumpRepository()
-	feeBumpFunctionSet, err := repository.GetAll()
-
-	if err != nil {
-		return nil, err
-	}
-
 	return feeBumpFunctionSet, nil
 }
 
-// setContextWithTime is meant only for testing, allows caller to use a fixed time to check invoice expiration
-func (s *ResolveState) setContextWithTime(initialContext *InitialPaymentContext, now time.Time) error {
+// setContextWithTime is meant only for testing, allows caller to use a fixed time to check invoice
+// expiration
+func (s *ResolveState) setContextWithTime(
+	initialContext *InitialPaymentContext,
+	now time.Time,
+) error {
 
 	var feeBumpFunctionSet *operation.FeeBumpFunctionSet
-	if libwallet.DetermineBackendActivatedFeatureStatus(libwallet.BackendFeatureEffectiveFeesCalculation) {
+	if libwallet.DetermineBackendActivatedFeatureStatus(
+		libwallet.BackendFeatureEffectiveFeesCalculation,
+	) {
 		// Load fee bump functions from local DB
 		var err error
 		feeBumpFunctionSet, err = loadFeeBumpFunctions()
@@ -380,7 +392,11 @@ func (s *ResolveState) emitAmount(context *PaymentContext, totalBalance *Bitcoin
 	return nil
 }
 
-func (s *ResolveState) emitValidateLightning(context *PaymentContext, invoice *libwallet.Invoice, totalBalance *BitcoinAmount) error {
+func (s *ResolveState) emitValidateLightning(
+	context *PaymentContext,
+	invoice *libwallet.Invoice,
+	totalBalance *BitcoinAmount,
+) error {
 	presetAmount := context.toBitcoinAmount(invoice.Sats, "BTC")
 	presetNote := s.PaymentIntent.URI.Invoice.Description
 	nextState := &ValidateLightningState{
@@ -403,7 +419,11 @@ func (s *ResolveState) emitValidateLightning(context *PaymentContext, invoice *l
 	return nil
 }
 
-func (s *ResolveState) emitValidate(resolved *Resolved, amount *BitcoinAmount, context *PaymentContext) error {
+func (s *ResolveState) emitValidate(
+	resolved *Resolved,
+	amount *BitcoinAmount,
+	context *PaymentContext,
+) error {
 
 	nextState := &ValidateState{
 		Resolved: resolved,
@@ -464,7 +484,7 @@ func (s *EnterAmountState) EnterAmount(amount *MonetaryAmount, takeFeeFromAmount
 		FeeRateInSatsPerVByte: feeWindow.FastestFeeRate(),
 	}
 
-	if s.Resolved.PaymentIntent.URI.Invoice != nil {
+	if s.Resolved.PaymentIntent.URI.Invoice != nil { //nolint:staticcheck // TODO: could remove embedded field "Resolved" from selector
 
 		nextState := &ValidateLightningState{
 			Resolved:   s.Resolved,
@@ -478,7 +498,7 @@ func (s *EnterAmountState) EnterAmount(amount *MonetaryAmount, takeFeeFromAmount
 		nextState := &ValidateState{
 			Resolved:   s.Resolved,
 			AmountInfo: amountInfo,
-			Note:       s.Resolved.PaymentIntent.URI.Message,
+			Note:       s.Resolved.PaymentIntent.URI.Message, //nolint:staticcheck // TODO: could remove embedded field "Resolved" from selector
 		}
 		nextState.emit()
 	}
@@ -508,11 +528,14 @@ func (s *EnterAmountState) ChangeCurrency(currency string) error {
 	return s.ChangeCurrencyWithAmount(currency, s.Amount.InInputCurrency)
 }
 
-// ChangeCurrencyWithAmount respond to the user action of changing the current input currency to a new one,
-// while also updating the input amount, needed for performing the necessary conversion.
-// Note: this state machine doesn't receive partial updates for the input amount each time the
-// user types or deletes a digit, so ChangeCurrencyWithAmount needs to receive the updates input amount.
-func (s *EnterAmountState) ChangeCurrencyWithAmount(currency string, inputAmount *MonetaryAmount) error {
+// ChangeCurrencyWithAmount respond to the user action of changing the current input currency to a
+// new one, while also updating the input amount, needed for performing the necessary conversion.
+// Note: this state machine doesn't receive partial updates for the input amount each time the user
+// types or deletes a digit, so ChangeCurrencyWithAmount needs to receive the updates input amount.
+func (s *EnterAmountState) ChangeCurrencyWithAmount(
+	currency string,
+	inputAmount *MonetaryAmount,
+) error {
 	exchangeRateWindow := s.PaymentContext.ExchangeRateWindow
 
 	newTotalBalance := s.PaymentContext.toBitcoinAmount(
@@ -527,9 +550,11 @@ func (s *EnterAmountState) ChangeCurrencyWithAmount(currency string, inputAmount
 		amount = newTotalBalance
 	} else {
 		amount = &BitcoinAmount{
-			InSat:             int64(inputAmount.toBtc(exchangeRateWindow)),
-			InInputCurrency:   exchangeRateWindow.convert(inputAmount, currency),
-			InPrimaryCurrency: exchangeRateWindow.convert(inputAmount, s.PaymentContext.PrimaryCurrency),
+			InSat:           int64(inputAmount.toBtc(exchangeRateWindow)),
+			InInputCurrency: exchangeRateWindow.convert(inputAmount, currency),
+			InPrimaryCurrency: exchangeRateWindow.convert(
+				inputAmount, s.PaymentContext.PrimaryCurrency,
+			),
 		}
 	}
 
@@ -716,20 +741,27 @@ func (s *ValidateState) Continue() error {
 			return s.emitBalanceError(OperationErrorUnpayable, analysis, inputCurrency)
 
 		case operation.AnalysisStatusAmountGreaterThanBalance:
-			return s.emitBalanceError(OperationErrorAmountGreaterThanBalance, analysis, inputCurrency)
+			return s.emitBalanceError(
+				OperationErrorAmountGreaterThanBalance,
+				analysis,
+				inputCurrency,
+			)
 
 		case operation.AnalysisStatusAmountTooSmall:
 			return s.emitError(OperationErrorAmountTooSmall)
 		}
 
 	default:
-		return fmt.Errorf("unrecognized analysis status: %v", analysis.Status)
+		return errors.Errorf("unrecognized analysis status: %v", analysis.Status)
 	}
 
 	return nil
 }
 
-func (s *ValidateState) emitAnalysisOk(analysis *operation.PaymentAnalysis, feeNeedsChange bool) error {
+func (s *ValidateState) emitAnalysisOk(
+	analysis *operation.PaymentAnalysis,
+	feeNeedsChange bool,
+) error {
 
 	amount := s.Amount
 	if s.TakeFeeFromAmount {
@@ -753,9 +785,11 @@ func (s *ValidateState) emitAnalysisOk(analysis *operation.PaymentAnalysis, feeN
 		FeeBumpInfo:    feeBumpInfo,
 	}
 
-	amountInfo := s.AmountInfo.mutating(func(info *AmountInfo) {
-		info.Amount = amount
-	})
+	amountInfo := s.AmountInfo.mutating( //nolint:staticcheck // TODO: could remove embedded field "AmountInfo" from selector
+		func(info *AmountInfo) {
+			info.Amount = amount
+		},
+	)
 
 	if s.PaymentIntent.URI.Message != "" || s.Note != "" {
 
@@ -842,7 +876,7 @@ func (s *ValidateLightningState) Continue() error {
 		return s.emitError(OperationErrorAmountTooSmall)
 
 	default:
-		return fmt.Errorf("unrecognized analysis status: %v", analysis.Status)
+		return errors.Errorf("unrecognized analysis status: %v", analysis.Status)
 	}
 
 	return nil
@@ -901,9 +935,11 @@ func (s *ValidateLightningState) emitAnalysisOk(analysis *operation.PaymentAnaly
 		FeeBumpInfo: feeBumpInfo,
 	}
 
-	amountInfo := s.AmountInfo.mutating(func(info *AmountInfo) {
-		info.Amount = amount
-	})
+	amountInfo := s.AmountInfo.mutating( //nolint:staticcheck // TODO: could remove embedded field "AmountInfo" from selector
+		func(info *AmountInfo) {
+			info.Amount = amount
+		},
+	)
 
 	if note != "" {
 
@@ -1071,15 +1107,17 @@ func (s *EditFeeState) CalculateFee(rateInSatsPerVByte float64) (*FeeState, erro
 			FeeBumpInfo:        feeBumpInfo,
 		}, nil
 	default:
-		return nil, fmt.Errorf("unrecognized analysis status: %v", analysis.Status)
+		return nil, errors.Errorf("unrecognized analysis status: %v", analysis.Status)
 	}
 }
 
 func (s *EditFeeState) SetFeeRate(rateInSatsPerVByte float64) error {
 	// We deref to copy before mutating
-	amountInfo := s.AmountInfo.mutating(func(info *AmountInfo) {
-		info.FeeRateInSatsPerVByte = rateInSatsPerVByte
-	})
+	amountInfo := s.AmountInfo.mutating( //nolint:staticcheck // TODO: could remove embedded field "AmountInfo" from selector
+		func(info *AmountInfo) {
+			info.FeeRateInSatsPerVByte = rateInSatsPerVByte
+		},
+	)
 
 	nextState := &ValidateState{
 		Resolved:   s.Resolved,

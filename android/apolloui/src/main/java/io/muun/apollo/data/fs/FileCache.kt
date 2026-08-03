@@ -21,7 +21,8 @@ class FileCache @Inject constructor(val context: Context) {
     enum class Entry(val fileName: String) {
         EMERGENCY_KIT_NO_META("tmp_ek_no_meta.pdf"),
         EMERGENCY_KIT("Muun-Emergency-Kit.pdf"),
-        LOGCAT("logcat.txt")
+        LOGCAT("logcat.txt"),
+        LIBWALLET_DATA("libwallet-data.zip"),
     }
 
     fun get(entry: Entry): LocalFile =

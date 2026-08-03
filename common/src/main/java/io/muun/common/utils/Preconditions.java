@@ -14,7 +14,8 @@
 
 package io.muun.common.utils;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.Contract;
+
 import javax.annotation.Nullable;
 
 /**
@@ -161,7 +162,8 @@ public final class Preconditions {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
-    @Nonnull
+    // NullAway only honors the "null -> fail" clause; "!null -> param1" is for IntelliJ.
+    @Contract(value = "null -> fail; !null -> param1", pure = true)
     public static <T> T checkNotNull(@Nullable T reference) {
         if (reference == null) {
             throw new NullPointerException();
@@ -178,7 +180,9 @@ public final class Preconditions {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
-    public static <T> T checkNotNull(T reference, @Nullable Object errorMessage) {
+    // NullAway only honors the "null, _ -> fail" clause; "!null, _ -> param1" is for IntelliJ.
+    @Contract(value = "null, _ -> fail; !null, _ -> param1")
+    public static <T> T checkNotNull(@Nullable T reference, @Nullable Object errorMessage) {
         if (reference == null) {
             throw new NullPointerException(String.valueOf(errorMessage));
         }
@@ -192,7 +196,6 @@ public final class Preconditions {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
-    @Nonnull
     public static String checkNotNullOrEmpty(@Nullable String reference) {
         if (reference == null || reference.isEmpty()) {
             throw new IllegalArgumentException();
@@ -207,7 +210,6 @@ public final class Preconditions {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
-    @Nonnull
     public static String checkNotNullOrEmpty(@Nullable String reference, String errorMessage) {
         if (reference == null || reference.isEmpty()) {
             throw new IllegalArgumentException(errorMessage);
@@ -237,7 +239,7 @@ public final class Preconditions {
      * @return the null reference that was validated
      * @throws IllegalArgumentException if {@code reference} is not null
      */
-    public static <T> T checkNull(T reference) {
+    public static <T> T checkNull(@Nullable T reference) {
         if (reference != null) {
             throw new IllegalArgumentException("Expected " + reference + " to be null");
         }
@@ -253,7 +255,7 @@ public final class Preconditions {
      * @return the null reference that was validated
      * @throws IllegalArgumentException if {@code reference} is not null
      */
-    public static <T> T checkNull(T reference, @Nullable Object errorMessage) {
+    public static <T> T checkNull(@Nullable T reference, @Nullable Object errorMessage) {
         if (reference != null) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
         }

@@ -1,35 +1,42 @@
 package libwallet_init
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"net"
 	"path"
 	"runtime/debug"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/go-errors/errors"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"google.golang.org/grpc"
+
+	"github.com/muun/libwallet"
+	"github.com/muun/libwallet/app_provided_data"
 	"github.com/muun/libwallet/data/keys"
+	"github.com/muun/libwallet/data/securekv"
+	"github.com/muun/libwallet/data/security_cards"
 	"github.com/muun/libwallet/domain/action/challenge_keys"
+	debugAction "github.com/muun/libwallet/domain/action/debug"
 	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
 	"github.com/muun/libwallet/domain/action/emergency_kit"
 	nfcActions "github.com/muun/libwallet/domain/action/nfc"
 	"github.com/muun/libwallet/domain/action/recovery"
+	"github.com/muun/libwallet/domain/action/reset"
 	"github.com/muun/libwallet/domain/action/security_cards_marketplace"
 	"github.com/muun/libwallet/domain/nfc"
 	"github.com/muun/libwallet/electrum"
 	"github.com/muun/libwallet/storage"
+	"github.com/muun/libwallet/walletdb"
 
-	"github.com/muun/libwallet"
-	"github.com/muun/libwallet/app_provided_data"
 	"github.com/muun/libwallet/log"
 	"github.com/muun/libwallet/presentation"
 	"github.com/muun/libwallet/presentation/api"
 	"github.com/muun/libwallet/service"
-	"google.golang.org/grpc"
 )
 
 var server *grpc.Server
+var pool *walletdb.Pool
 var cfg *app_provided_data.Config
 var keyValueStorage *storage.KeyValueStorage
 var network *libwallet.Network
@@ -44,13 +51,19 @@ var scanForFundsAction *recovery.ScanForFundsAction
 var submitDiagnosticAction *diagnostic_mode_reports.SubmitDiagnosticAction
 var buildSweepTxAction *recovery.BuildSweepTxAction
 var signSweepTxAction *recovery.SignSweepTxAction
-var pairSecurityCardAction *nfcActions.PairSecurityCardAction
-var resetSecurityCardAction *nfcActions.ResetSecurityCardAction
-var signMessageSecurityCardAction *nfcActions.SignMessageSecurityCardAction
 var pairSecurityCardActionV2 *nfcActions.PairSecurityCardActionV2
 var signMessageSecurityCardActionV2 *nfcActions.SignMessageSecurityCardActionV2
+var pairRequestChallengeAction *nfcActions.PairRequestChallengeAction
+var pairLoadPersistedChallengeAction *nfcActions.PairLoadPersistedChallengeAction
+var pairSignChallengeAction *nfcActions.PairSignChallengeAction
+var pairSubmitSolvedChallengeAction *nfcActions.PairSubmitSolvedChallengeAction
+var pairSignAndSubmitChallengeAction *nfcActions.PairSignAndSubmitChallengeAction
+var securityCardsProtocolRepository *security_cards.ProtocolRepository
 var securityCardsMarketplaceAction *security_cards_marketplace.GetSecurityCardsMarketplaceAction
 var generateEmergencyKitPDFAction *emergency_kit.GenerateEmergencyKitPDFAction
+var secureKeyValueStorage securekv.SecureKeyValueStorage
+var zipDataDirAction *debugAction.ZipDataDirAction
+var resetDataAction reset.ResetDataAction
 
 // Init configures libwallet
 func Init(c *app_provided_data.Config) {
@@ -70,12 +83,22 @@ func Init(c *app_provided_data.Config) {
 	}
 
 	dbPath := path.Join(cfg.DataDir, "wallet.db")
-	storageSchema, err := storage.RunKeyValueMigrations(dbPath, storage.BuildKVMigrationPlan())
+	var storageSchema map[string]storage.Classification
+	var err error
+	pool, err = walletdb.NewPool(dbPath, func(db *walletdb.DB) error {
+		var migErr error
+		storageSchema, migErr = storage.RunKeyValueMigrations(db, storage.BuildKVMigrationPlan())
+		return migErr
+	})
 	if err != nil {
-		slog.Error("failed to run key-value migrations", "error", err)
-		panic(fmt.Sprintf("failed to run key-value migrations: %v", err))
+		slog.Error("failed to initialize database", "error", err)
+		panic(fmt.Sprintf("failed to initialize database: %v", err))
 	}
-	keyValueStorage = storage.NewKeyValueStorage(dbPath, storageSchema)
+	libwallet.Pool = pool
+	keyValueStorage = storage.NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		storageSchema,
+	)
 
 	mockHoustonService = service.NewMockHoustonService(keyValueStorage)
 
@@ -96,7 +119,6 @@ func Init(c *app_provided_data.Config) {
 	//mockMuunCardV2, _ := nfc.NewMockMuunCardV2()
 	//cfg.NfcBridge = nfc.NewMockJavaCard(mockMuunCardV2)
 
-	muuncard := nfc.NewCard(cfg.NfcBridge)
 	muuncardV2 := nfc.NewCardV2(cfg.NfcBridge)
 	// Actions
 	computeAndStoreEncryptedMuunKeyAction = recovery.NewComputeAndStoreEncryptedMuunKeyAction(
@@ -119,22 +141,45 @@ func Init(c *app_provided_data.Config) {
 	submitDiagnosticAction = diagnostic_mode_reports.NewSubmitDiagnosticAction(houstonService)
 	buildSweepTxAction = recovery.NewBuildSweepTxAction(keyProvider, network)
 	signSweepTxAction = recovery.NewSignSweepTxAction(keyProvider, network)
-	pairSecurityCardAction = nfcActions.NewPairSecurityCardAction(keyValueStorage, muuncard)
-	resetSecurityCardAction = nfcActions.NewResetSecurityCardAction(keyValueStorage, muuncard)
-	signMessageSecurityCardAction = nfcActions.NewSignMessageSecurityCardAction(
+	pairSecurityCardActionV2 = nfcActions.NewPairSecurityCardActionV2(
 		keyValueStorage,
-		muuncard,
-		network,
+		muuncardV2,
+		mockHoustonService,
 	)
-	pairSecurityCardActionV2 = nfcActions.NewPairSecurityCardActionV2(keyValueStorage, muuncardV2, mockHoustonService)
 	signMessageSecurityCardActionV2 = nfcActions.NewSignMessageSecurityCardActionV2(
 		muuncardV2,
 		mockHoustonService,
 		keyValueStorage,
 		pairSecurityCardActionV2,
 	)
-	securityCardsMarketplaceAction = security_cards_marketplace.NewGetSecurityCardsMarketplaceAction()
+	securityCardsProtocolRepository = security_cards.NewProtocolRepository(keyValueStorage)
+	pairRequestChallengeAction = nfcActions.NewPairRequestChallengeAction(
+		securityCardsProtocolRepository,
+		mockHoustonService,
+	)
+	pairLoadPersistedChallengeAction = nfcActions.NewPairLoadPersistedChallengeAction(
+		securityCardsProtocolRepository,
+	)
+	pairSignChallengeAction = nfcActions.NewPairSignChallengeAction(muuncardV2)
+	pairSubmitSolvedChallengeAction = nfcActions.NewPairSubmitSolvedChallengeAction(
+		securityCardsProtocolRepository,
+		mockHoustonService,
+	)
+	pairSignAndSubmitChallengeAction = nfcActions.NewPairSignAndSubmitChallengeAction(
+		pairLoadPersistedChallengeAction,
+		pairRequestChallengeAction,
+		pairSignChallengeAction,
+		pairSubmitSolvedChallengeAction,
+	)
+	securityCardsMarketplaceAction = security_cards_marketplace.
+		NewGetSecurityCardsMarketplaceAction(mockHoustonService)
 	generateEmergencyKitPDFAction = emergency_kit.NewGenerateEmergencyKitPDFAction()
+
+	if cfg.SecureKeyValueStorage != nil {
+		secureKeyValueStorage = securekv.NewSecureKeyValueStorage(cfg.SecureKeyValueStorage)
+	}
+	zipDataDirAction = debugAction.NewZipDataDirAction(cfg.DataDir)
+	resetDataAction = reset.NewResetDataAction(dbPath, pool, storage.BuildKVMigrationPlan())
 }
 
 func StartServer() error {
@@ -149,9 +194,17 @@ func StartServer() error {
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				// Order is important.
-				presentation.LoggingInterceptor(), // First interceptor
-				presentation.RecoverUnknownErrorInterceptor(),
-				presentation.RecoverPanicInterceptor(), // Last interceptor
+				presentation.LoggingUnaryInterceptor(), // First interceptor
+				presentation.RecoverUnknownErrorUnaryInterceptor(),
+				presentation.RecoverPanicUnaryInterceptor(), // Last interceptor
+			),
+		),
+		grpc.StreamInterceptor(
+			grpc_middleware.ChainStreamServer(
+				// Order is important.
+				presentation.LoggingStreamInterceptor(), // First interceptor
+				presentation.RecoverUnknownErrorStreamInterceptor(),
+				presentation.RecoverPanicStreamInterceptor(), // Last interceptor
 			),
 		),
 	}
@@ -163,6 +216,7 @@ func StartServer() error {
 		network,
 		houstonService,
 		keyValueStorage,
+		resetDataAction,
 		startChallengeSetupAction,
 		finishChallengeSetupAction,
 		populateEncryptedMuunKeyAction,
@@ -170,16 +224,17 @@ func StartServer() error {
 		submitDiagnosticAction,
 		buildSweepTxAction,
 		signSweepTxAction,
-		pairSecurityCardAction,
-		resetSecurityCardAction,
-		signMessageSecurityCardAction,
 		pairSecurityCardActionV2,
 		signMessageSecurityCardActionV2,
+		pairRequestChallengeAction,
+		pairSignAndSubmitChallengeAction,
 		securityCardsMarketplaceAction,
 		generateEmergencyKitPDFAction,
+		zipDataDirAction,
+		secureKeyValueStorage,
 	))
 
-	listener, err := net.Listen("unix", cfg.SocketPath)
+	listener, err := net.Listen("unix", cfg.SocketPath) //nolint:noctx // TODO: use (*net.ListenConfig).Listen
 	if err != nil {
 		slog.Error("socket creation failure", "error", err)
 		return err
@@ -200,4 +255,9 @@ func StopServer() {
 		return
 	}
 	server.Stop()
+	if pool != nil {
+		pool.Close()
+		pool = nil
+		libwallet.Pool = nil
+	}
 }

@@ -3,7 +3,6 @@ package io.muun.apollo.data.afs
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import io.muun.apollo.domain.action.session.IsRootedDeviceAction
 import io.muun.apollo.presentation.app.ApolloApplication
 import org.junit.Before
 import org.junit.Test
@@ -17,14 +16,12 @@ class MetricsProviderTimingTest {
     }
 
     private lateinit var metricsProvider: MetricsProvider
-    private lateinit var isRootedDeviceAction: IsRootedDeviceAction
 
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val app = context.applicationContext as ApolloApplication
         metricsProvider = app.dataComponent.metricsProvider()
-        isRootedDeviceAction = IsRootedDeviceAction(context)
     }
 
     private fun <T> measure(
@@ -82,6 +79,14 @@ class MetricsProviderTimingTest {
         ) { metricsProvider.totalExternalStorageInBytes }
         measure("totalRamInBytes", timingsInMicroSeconds) { metricsProvider.totalRamInBytes }
         measure("initOffset", timingsInMicroSeconds) { metricsProvider.bootOffset }
+        measure(
+            "widevineSecurityLevel",
+            timingsInMicroSeconds
+        ) { metricsProvider.widevineSecurityLevel }
+        measure(
+            "widevineMajorVersion",
+            timingsInMicroSeconds
+        ) { metricsProvider.widevineMajorVersion }
 
         // PackageManagerInfoProvider
         measure(
@@ -198,6 +203,44 @@ class MetricsProviderTimingTest {
             "isDeviceFoldable",
             timingsInMicroSeconds
         ) { metricsProvider.isDeviceFoldable }
+        measure(
+            "hasNfcHostCardEmulation",
+            timingsInMicroSeconds
+        ) { metricsProvider.hasNfcHostCardEmulation }
+        measure(
+            "hasNfcOffHostCardEmulationUicc",
+            timingsInMicroSeconds
+        ) { metricsProvider.hasNfcOffHostCardEmulationUicc }
+        measure(
+            "hasNfcOffHostCardEmulationEse",
+            timingsInMicroSeconds
+        ) { metricsProvider.hasNfcOffHostCardEmulationEse }
+        measure(
+            "nfcExtendedApduSupportedEmpirical",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcExtendedApduSupportedEmpirical }
+        measure(
+            "nfcMaxTransceiveLengthEmpirical",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcMaxTransceiveLengthEmpirical }
+        measure(
+            "nfcConfigFilesPresent",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcConfigFilesPresent }
+        measure("nfcChipIdentifier", timingsInMicroSeconds) { metricsProvider.nfcChipIdentifier }
+        measure("nfcConfigFileHash", timingsInMicroSeconds) { metricsProvider.nfcConfigFileHash }
+        measure(
+            "nfcExtendedApduSupportedReflected",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcExtendedApduSupportedReflected }
+        measure(
+            "nfcMaxTransceiveLengthReflected",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcMaxTransceiveLengthReflected }
+        measure(
+            "nfcReflectionFailureReason",
+            timingsInMicroSeconds
+        ) { metricsProvider.nfcReflectionFailureReason }
 
         // BatteryInfoProvider
         measure("batteryLevel", timingsInMicroSeconds) { metricsProvider.batteryLevel }
@@ -217,7 +260,42 @@ class MetricsProviderTimingTest {
         measure("elapsedRealtime", timingsInMicroSeconds) { metricsProvider.elapsedRealtime }
 
         // RootHint
-        measure("RootHint", timingsInMicroSeconds) { isRootedDeviceAction.isRooted() }
+        measure("rootHint", timingsInMicroSeconds) { metricsProvider.isRootHint }
+
+        // RuntimeInfoProvider
+        measure(
+            "extraStackElements", timingsInMicroSeconds
+        ) { metricsProvider.extraStackElements }
+        measure(
+            "uidSharedStatus", timingsInMicroSeconds
+        ) { metricsProvider.uidSharedStatus }
+        measure(
+            "runtimeExternalPackages", timingsInMicroSeconds
+        ) { metricsProvider.runtimeExternalPackages }
+        measure(
+            "appOpsPackageName", timingsInMicroSeconds
+        ) { metricsProvider.appOpsPackageName }
+        measure(
+            "restrictiveSdkStatus", timingsInMicroSeconds
+        ) { metricsProvider.restrictiveSdkStatus }
+        measure(
+            "allSignatureHashes", timingsInMicroSeconds
+        ) { metricsProvider.allSignatureHashes }
+        measure(
+            "archiveSignatureHashes", timingsInMicroSeconds
+        ) { metricsProvider.archiveSignatureHashes }
+        measure(
+            "appBasePackageName", timingsInMicroSeconds
+        ) { metricsProvider.appBasePackageName }
+        measure(
+            "isPlainTextDrmId", timingsInMicroSeconds
+        ) { metricsProvider.isPlainTextDrmId }
+        measure(
+            "contextSwapDrmId", timingsInMicroSeconds
+        ) { metricsProvider.contextSwapDrmId }
+        measure(
+            "drmIdNativeHook", timingsInMicroSeconds
+        ) { metricsProvider.drmIdNativeHook }
 
         // Print summary sorted by elapsed time (slowest first)
         val totalUs = timingsInMicroSeconds.sumOf { it.second }

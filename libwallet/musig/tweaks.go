@@ -3,6 +3,7 @@ package musig
 import (
 	"github.com/btcsuite/btcd/btcec/v2"
 	musig2v100 "github.com/btcsuite/btcd/btcec/v2/schnorr/musig2"
+
 	"github.com/muun/libwallet/musig2v040"
 )
 
@@ -16,20 +17,21 @@ type MuSig2Tweaks struct {
 	// TaprootBIP0086Tweak indicates that the final key should use the
 	// taproot tweak as defined in BIP 341, with the BIP 86 modification:
 	//     outputKey = internalKey + h_tapTweak(internalKey)*G.
-	// In this case, the aggregated key before the tweak will be used as the
-	// internal key. If this is set to true then TaprootTweak will be
+	// In this case, the aggregated key before the tweak will be used as
+	// the internal key. If this is set to true then TaprootTweak will be
 	// ignored.
 	TaprootBIP0086Tweak bool
 
-	// TaprootTweak specifies that the final key should use the taproot
-	// tweak as defined in BIP 341:
+	// TaprootTweak specifies that the final key should use the
+	// taproot tweak as defined in BIP 341:
 	//     outputKey = internalKey + h_tapTweak(internalKey || scriptRoot).
-	// In this case, the aggregated key before the tweak will be used as the
-	// internal key. Will be ignored if TaprootBIP0086Tweak is set to true.
+	// In this case, the aggregated key before the tweak will be used as
+	// the internal key. Will be ignored if TaprootBIP0086Tweak is set to
+	// true.
 	TaprootTweak []byte
 
 	// Unhardened derivation path specifies the unhardened path to follow in
-	// order to derivate the final key based on BIP32 + BIP328. This property
+	// order to derive the final key based on BIP32 + BIP328. This property
 	// produces a list of GenericTweaks to be processed AFTER the provided
 	// GenericTweaks
 	UnhardenedDerivationPath []uint32
@@ -42,7 +44,9 @@ func (t *MuSig2Tweaks) HasTaprootTweak() bool {
 }
 
 // ToContextOptions converts the tweak descriptor to context options.
-func (t *MuSig2Tweaks) ToContextOptions(allSignerPubKeys []*btcec.PublicKey) ([]musig2v100.ContextOption, error) {
+func (t *MuSig2Tweaks) ToContextOptions(
+	allSignerPubKeys []*btcec.PublicKey,
+) ([]musig2v100.ContextOption, error) {
 	var tweakOpts []musig2v100.ContextOption
 
 	if len(t.GenericTweaks) > 0 {
@@ -63,8 +67,7 @@ func (t *MuSig2Tweaks) ToContextOptions(allSignerPubKeys []*btcec.PublicKey) ([]
 		))
 	}
 
-	// The BIP0086 tweak and the taproot script tweak are mutually
-	// exclusive.
+	// The BIP0086 tweak and the taproot script tweak are mutually exclusive.
 	if t.TaprootBIP0086Tweak {
 		tweakOpts = append(tweakOpts, musig2v100.WithBip86TweakCtx())
 	} else if len(t.TaprootTweak) > 0 {
@@ -95,8 +98,7 @@ func (t *MuSig2Tweaks) ToV040ContextOptions() []musig2v040.ContextOption {
 		))
 	}
 
-	// The BIP0086 tweak and the taproot script tweak are mutually
-	// exclusive.
+	// The BIP0086 tweak and the taproot script tweak are mutually exclusive.
 	if t.TaprootBIP0086Tweak {
 		tweakOpts = append(tweakOpts, musig2v040.WithBip86TweakCtx())
 	} else if len(t.TaprootTweak) > 0 {

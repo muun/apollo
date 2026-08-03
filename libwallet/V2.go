@@ -1,19 +1,22 @@
 package libwallet
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
-	"github.com/muun/libwallet/addresses"
-
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/addresses"
 )
 
 func CreateAddressV2(userKey, muunKey *HDPublicKey) (MuunAddress, error) {
 	// TODO: check both paths match?
-	return addresses.CreateAddressV2(&userKey.key, &muunKey.key, userKey.Path, userKey.Network.network)
+	return addresses.CreateAddressV2(
+		&userKey.key,
+		&muunKey.key,
+		userKey.Path,
+		userKey.Network.network,
+	)
 }
 
 type coinV2 struct {
@@ -23,15 +26,20 @@ type coinV2 struct {
 	MuunSignature []byte
 }
 
-func (c *coinV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
+func (c *coinV2) SignInput(
+	index int,
+	tx *wire.MsgTx,
+	userKey *HDPrivateKey,
+	muunKey *HDPublicKey,
+) error {
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	muunKey, err = muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
 	if len(c.MuunSignature) == 0 {
@@ -42,7 +50,7 @@ func (c *coinV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muu
 
 	redeemScript, err := createRedeemScriptV2(userKey.PublicKey(), muunKey)
 	if err != nil {
-		return fmt.Errorf("failed to build reedem script for signing: %w", err)
+		return errors.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	sig, err := c.signature(index, tx, userKey.PublicKey(), muunKey, userKey)
@@ -61,7 +69,7 @@ func (c *coinV2) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muu
 	builder.AddData(redeemScript)
 	script, err := builder.Script()
 	if err != nil {
-		return fmt.Errorf("failed to generate signing script: %w", err)
+		return errors.Errorf("failed to generate signing script: %w", err)
 	}
 
 	txInput.SignatureScript = script
@@ -73,15 +81,21 @@ func (c *coinV2) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 
 	derivedUserKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	derivedMuunKey, err := muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
-	muunSignature, err := c.signature(index, tx, derivedUserKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)
+	muunSignature, err := c.signature(
+		index,
+		tx,
+		derivedUserKey.PublicKey(),
+		derivedMuunKey.PublicKey(),
+		derivedMuunKey,
+	)
 	if err != nil {
 		return err
 	}
@@ -94,17 +108,17 @@ func (c *coinV2) signature(index int, tx *wire.MsgTx, userKey, muunKey *HDPublic
 
 	redeemScript, err := createRedeemScriptV2(userKey, muunKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build reedem script for signing: %w", err)
+		return nil, errors.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	privKey, err := signingKey.key.ECPrivKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
+		return nil, errors.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
 	sig, err := txscript.RawTxInSignature(tx, index, redeemScript, txscript.SigHashAll, privKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign V2 output: %w", err)
+		return nil, errors.Errorf("failed to sign V2 output: %w", err)
 	}
 
 	return sig, nil

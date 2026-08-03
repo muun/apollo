@@ -6,6 +6,14 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.9] - 2026-07-31
+
+### FIXED
+
+- Lightning payment preimage not displaying correctly
+- Crash when opening navigation tabs with large transaction data
+- Various crash fixes
+
 ## [55.8] - 2026-04-15
 
 ### FIXED

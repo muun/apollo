@@ -16,8 +16,4 @@ class LibwalletDataDirectory @Inject constructor (context: Context) {
         path.mkdirs()
     }
 
-    fun reset() {
-        path.deleteRecursively()
-        ensureExists()
-    }
 }

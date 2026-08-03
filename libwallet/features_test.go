@@ -205,7 +205,13 @@ func Test_DetermineUserActivatedFeatureStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DetermineUserActivatedFeatureStatus(tt.args.feature, tt.args.height, tt.args.kitVersion, tt.args.backendFeatures, tt.args.network); got != tt.want {
+			got := DetermineUserActivatedFeatureStatus(
+				tt.args.feature, tt.args.height,
+				tt.args.kitVersion,
+				tt.args.backendFeatures,
+				tt.args.network,
+			)
+			if got != tt.want {
 				t.Errorf("DetermineUserActivatedFeatureStatus() = %v, want %v", got, tt.want)
 			}
 		})
@@ -226,16 +232,30 @@ func Test_DetermineBackendActivatedFeatureStatus(t *testing.T) {
 
 	var status = DetermineBackendActivatedFeatureStatus(BackendFeatureEffectiveFeesCalculation)
 	if !status {
-		t.Errorf("DetermineBackendActivatedFeatureStatus(BackendFeatureEffectiveFeesCalculation) = %v, want %v", status, true)
+		t.Errorf(
+			"DetermineBackendActivatedFeatureStatus"+
+				"(BackendFeatureEffectiveFeesCalculation) = %v, want %v",
+			status,
+			true,
+		)
 	}
 
 	status = DetermineBackendActivatedFeatureStatus(BackendFeatureHighFeesHomeBanner)
 	if status {
-		t.Errorf("DetermineBackendActivatedFeatureStatus(BackendFeatureHighFeesHomeBanner) = %v, want %v", status, false)
+		t.Errorf(
+			"DetermineBackendActivatedFeatureStatus"+
+				"(BackendFeatureHighFeesHomeBanner) = %v, want %v",
+			status,
+			false,
+		)
 	}
 
 	status = DetermineBackendActivatedFeatureStatus("UnknownFlag")
 	if status {
-		t.Errorf("DetermineBackendActivatedFeatureStatus(\"UnknownFlag\") = %v, want %v", status, false)
+		t.Errorf(
+			"DetermineBackendActivatedFeatureStatus(\"UnknownFlag\") = %v, want %v",
+			status,
+			false,
+		)
 	}
 }

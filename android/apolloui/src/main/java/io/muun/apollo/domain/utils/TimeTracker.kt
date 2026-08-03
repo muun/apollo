@@ -33,6 +33,17 @@ const val EK_CHILD_MUUN_KEY = "muun_key"
 const val EK_CHILD_MUUN_FINGERPRINT = "muun_fp"
 const val EK_CHILD_RC_CHECKSUM = "rc_checksum"
 
+// Child labels for the Go render profiling forwarded from libwallet.
+const val EK_CHILD_GO_LOAD_TRANSLATIONS = "go_load_translations_ms"
+const val EK_CHILD_GO_REGISTER_FONTS = "go_register_fonts_ms"
+const val EK_CHILD_GO_REGISTER_IMAGES = "go_register_images_ms"
+const val EK_CHILD_GO_COMPONENTS_RENDERING = "go_components_rendering_ms"
+const val EK_CHILD_GO_CREATE_AND_SAVE_ON_DISK = "go_create_and_save_on_disk_ms"
+const val EK_CHILD_GO_TOTAL_HEAP_ALLOCATED = "go_total_heap_allocated_bytes"
+const val EK_CHILD_GO_TOTAL_OBJECTS_ALLOCATED = "go_total_objects_allocated"
+const val EK_CHILD_GO_EMBED_METADATA = "go_embed_metadata_ms"
+const val EK_CHILD_GO_TOTAL_INSIDE_GO = "go_total_inside_go_ms"
+
 /** Factory for timing traces. Inject this and call [start] to begin measuring. */
 class TimeTracker @Inject constructor(private val analytics: Analytics) {
 

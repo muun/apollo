@@ -1,9 +1,12 @@
 package io.muun.apollo.domain.errors.data
 
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.exception.PotentialBug
 
 class MuunDeserializationError(cause: Exception, json: String?) : MuunError(cause), PotentialBug {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     constructor(json: String) : this(IllegalArgumentException(), json)
 

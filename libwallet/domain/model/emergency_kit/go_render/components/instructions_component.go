@@ -26,27 +26,32 @@ type InstructionItem struct {
 	Description string
 }
 
-func NewInstructionsComponent(pdf *emergency_kit.PdfExtensions, translations *assets.Translations) *InstructionsComponent {
+func NewInstructionItem(number, title, description string) InstructionItem {
+	return InstructionItem{
+		Number:      number,
+		Title:       title,
+		Description: description,
+	}
+}
+
+func NewInstructionsComponent(
+	pdf *emergency_kit.PdfExtensions,
+	translations *assets.Translations,
+) *InstructionsComponent {
 	return &InstructionsComponent{
 		pdf:   pdf,
 		Title: translations.Instructions.Title,
 		Intro: translations.Instructions.Intro,
 		Items: []InstructionItem{
-			{
-				Number:      "1",
-				Title:       translations.Instructions.Step1Title,
-				Description: translations.Instructions.Step1Desc,
-			},
-			{
-				Number:      "2",
-				Title:       translations.Instructions.Step2Title,
-				Description: translations.Instructions.Step2Desc,
-			},
-			{
-				Number:      "3",
-				Title:       translations.Instructions.Step3Title,
-				Description: translations.Instructions.Step3Desc,
-			},
+			NewInstructionItem(
+				"1", translations.Instructions.Step1Title, translations.Instructions.Step1Desc,
+			),
+			NewInstructionItem(
+				"2", translations.Instructions.Step2Title, translations.Instructions.Step2Desc,
+			),
+			NewInstructionItem(
+				"3", translations.Instructions.Step3Title, translations.Instructions.Step3Desc,
+			),
 		},
 	}
 }
@@ -81,11 +86,20 @@ func (r *InstructionsComponent) calculateAllItemsHeight(contentWidth float64) fl
 	return totalHeight
 }
 
-func (r *InstructionsComponent) calculateItemHeight(textWidth float64, item InstructionItem) float64 {
+func (r *InstructionsComponent) calculateItemHeight(
+	textWidth float64,
+	item InstructionItem,
+) float64 {
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
-	descriptionLines := r.pdf.LineCountWithLetterSpacing(textWidth, item.Description, assets.BodyLetterSpacing)
+	descriptionLines := r.pdf.LineCountWithLetterSpacing(
+		textWidth,
+		item.Description,
+		assets.BodyLetterSpacing,
+	)
 
-	return assets.SubtitleLineHeight + assets.IntraComponentSpacing + descriptionLines*assets.BodyParagraphLineHeight
+	return assets.SubtitleLineHeight +
+		assets.IntraComponentSpacing +
+		descriptionLines*assets.BodyParagraphLineHeight
 }
 
 func (r *InstructionsComponent) Render() {
@@ -107,7 +121,12 @@ func (r *InstructionsComponent) renderIntro() {
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
 	r.pdf.SetXY(assets.StandardHorizontalMargin, r.pdf.GetY())
-	r.pdf.MultiCellWithLetterSpacing(r.pdf.GetDrawablePageWidth(), assets.BodyParagraphLineHeight, r.Intro, assets.BodyLetterSpacing)
+	r.pdf.MultiCellWithLetterSpacing(
+		r.pdf.GetDrawablePageWidth(),
+		assets.BodyParagraphLineHeight,
+		r.Intro,
+		assets.BodyLetterSpacing,
+	)
 }
 
 func (r *InstructionsComponent) renderItems() {
@@ -150,16 +169,34 @@ func (r *InstructionsComponent) renderNumberCircle(itemY float64, number string)
 	r.pdf.CellFormat(numberCircleSize, numberCircleSize, number, "", 0, "C", false, 0, "")
 }
 
-func (r *InstructionsComponent) renderItemTitle(textX float64, itemY float64, textWidth float64, title string) {
+func (r *InstructionsComponent) renderItemTitle(
+	textX float64,
+	itemY float64,
+	textWidth float64,
+	title string,
+) {
 	assets.SetSubtitleFont(r.pdf.Fpdf)
 	assets.SetTitleColor(r.pdf.Fpdf)
 	r.pdf.SetXY(textX, itemY+titleVerticalAdjust)
 	r.pdf.CellFormat(textWidth, assets.SubtitleLineHeight, title, "", 0, "L", false, 0, "")
 }
 
-func (r *InstructionsComponent) renderItemDescription(textX float64, itemY float64, textWidth float64, description string) {
+func (r *InstructionsComponent) renderItemDescription(
+	textX float64,
+	itemY float64,
+	textWidth float64,
+	description string,
+) {
 	descriptionY := itemY + assets.SubtitleLineHeight + assets.IntraComponentSpacing
 
 	parts := r.pdf.ParseTextWithLinks(description, []string{"github.com/muun/recovery"})
-	r.pdf.RenderMultiStyledText(textX, descriptionY, textWidth, assets.BodyParagraphLineHeight, parts, assets.BodyLetterSpacing, 0)
+	r.pdf.RenderMultiStyledText(
+		textX,
+		descriptionY,
+		textWidth,
+		assets.BodyParagraphLineHeight,
+		parts,
+		assets.BodyLetterSpacing,
+		0,
+	)
 }

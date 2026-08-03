@@ -8,19 +8,19 @@ import (
 var (
 	rootPath  = make([]PathIndex, 0)
 	shortPath = []PathIndex{
-		PathIndex{Index: 0, Hardened: true},
+		{Index: 0, Hardened: true},
 	}
 	longPath = []PathIndex{
-		PathIndex{Index: 44, Hardened: true},
-		PathIndex{Index: 1, Hardened: true},
-		PathIndex{Index: 2, Hardened: false},
+		{Index: 44, Hardened: true},
+		{Index: 1, Hardened: true},
+		{Index: 2, Hardened: false},
 	}
 	shortMuunPath = []PathIndex{
-		PathIndex{Index: 1, Hardened: true, Name: "schema"},
+		{Index: 1, Hardened: true, Name: "schema"},
 	}
 	longMuunPath = []PathIndex{
-		PathIndex{Index: 1, Hardened: true, Name: "schema"},
-		PathIndex{Index: 1, Hardened: true, Name: "recovery"},
+		{Index: 1, Hardened: true, Name: "schema"},
+		{Index: 1, Hardened: true, Name: "recovery"},
 	}
 )
 
@@ -93,14 +93,46 @@ func TestPrefixRecognition(t *testing.T) {
 	}{
 		{name: "empty prefix on empty path", args: args{path: "", prefix: ""}, want: true},
 		{name: "empty prefix on non-empty path", args: args{path: "m", prefix: ""}, want: true},
-		{name: "long prefix on empty path", args: args{path: "", prefix: "m/schema:1'/recovery:1'"}, want: false},
-		{name: "long prefix on short path", args: args{path: "m/schema:1'", prefix: "m/schema:1'/recovery:1'"}, want: false},
-		{name: "same prefix and path", args: args{path: "m/0'/1'/4", prefix: "m/0'/1'/4"}, want: true},
-		{name: "mismatched prefix at start", args: args{path: "m/44'/1'/2", prefix: "m/45'/1'/2"}, want: false},
-		{name: "mismatched prefix at end", args: args{path: "m/44'/1'/2", prefix: "m/44'/1'/5"}, want: false},
-		{name: "comments in path and prefix", args: args{path: "m/schema:1'/recovery:1'", prefix: "m/schema:1'"}, want: true},
-		{name: "comments in path, not in prefix", args: args{path: "m/schema:1'/recovery:1'", prefix: "m/1'"}, want: true},
-		{name: "comments in prefix, not in path", args: args{path: "m/1'/1'", prefix: "m/schema:1'"}, want: true},
+		{
+			name: "long prefix on empty path",
+			args: args{path: "", prefix: "m/schema:1'/recovery:1'"},
+			want: false,
+		},
+		{
+			name: "long prefix on short path",
+			args: args{path: "m/schema:1'", prefix: "m/schema:1'/recovery:1'"},
+			want: false,
+		},
+		{
+			name: "same prefix and path",
+			args: args{path: "m/0'/1'/4", prefix: "m/0'/1'/4"},
+			want: true,
+		},
+		{
+			name: "mismatched prefix at start",
+			args: args{path: "m/44'/1'/2", prefix: "m/45'/1'/2"},
+			want: false,
+		},
+		{
+			name: "mismatched prefix at end",
+			args: args{path: "m/44'/1'/2", prefix: "m/44'/1'/5"},
+			want: false,
+		},
+		{
+			name: "comments in path and prefix",
+			args: args{path: "m/schema:1'/recovery:1'", prefix: "m/schema:1'"},
+			want: true,
+		},
+		{
+			name: "comments in path, not in prefix",
+			args: args{path: "m/schema:1'/recovery:1'", prefix: "m/1'"},
+			want: true,
+		},
+		{
+			name: "comments in prefix, not in path",
+			args: args{path: "m/1'/1'", prefix: "m/schema:1'"},
+			want: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -115,7 +147,12 @@ func TestPrefixRecognition(t *testing.T) {
 			}
 
 			if path.HasPrefix(prefix) != tt.want {
-				t.Errorf("path.HasPrefix() = %v, with path=%v, prefix=%v", !tt.want, tt.args.path, tt.args.prefix)
+				t.Errorf(
+					"path.HasPrefix() = %v, with path=%v, prefix=%v",
+					!tt.want,
+					tt.args.path,
+					tt.args.prefix,
+				)
 			}
 		})
 	}

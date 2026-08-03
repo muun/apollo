@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lightningnetwork/lnd/zpay32"
+
 	"github.com/muun/libwallet/errors"
 )
 

@@ -9,11 +9,15 @@ type Pool struct {
 }
 
 // NewPool creates an initialized Pool with a `size` number of clients.
-func NewPool(size int, requireTls bool, logger *slog.Logger) *Pool {
+func NewPool(
+	size int,
+	requireTls bool, //nolint:staticcheck // TODO: func parameter requireTls should be requireTLS
+	logger *slog.Logger,
+) *Pool {
 	nextClient := make(chan *Client, size)
 	logger = logger.With(slog.String("source", defaultLoggerTag))
 
-	for i := 0; i < size; i++ {
+	for i := 0; i < size; i++ { //nolint:modernize // TODO: use range over int
 		nextClient <- NewClient(requireTls, logger)
 	}
 

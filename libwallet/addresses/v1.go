@@ -7,7 +7,11 @@ import (
 )
 
 // CreateAddressV1 returns a P2PKH WalletAddress from a publicKey for use in TransactionSchemeV1
-func CreateAddressV1(userKey *hdkeychain.ExtendedKey, path string, network *chaincfg.Params) (*WalletAddress, error) {
+func CreateAddressV1(
+	userKey *hdkeychain.ExtendedKey,
+	path string,
+	network *chaincfg.Params,
+) (*WalletAddress, error) {
 	pubKey, err := userKey.ECPubKey()
 	if err != nil {
 		return nil, err

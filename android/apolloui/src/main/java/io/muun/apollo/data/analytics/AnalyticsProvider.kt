@@ -63,12 +63,21 @@ class AnalyticsProvider @Inject constructor(context: Context) {
         } catch (t: Throwable) {
             try {
                 // FIXME: Desperate times require desperate solutions, currently Crashlytics object
-                // doesn't expose a plain log, it records an analytics event too, we will address this later.
-                FirebaseCrashlytics.getInstance().log("AnalyticsProvider: Failed processing analytics event ${event.eventId}, cause: ${t.message}")
+                // doesn't expose a plain log, it records an analytics event too, we will address
+                // this later.
+                FirebaseCrashlytics.getInstance()
+                    .log(
+                        "AnalyticsProvider: Error processing ${event.eventId}, cause: ${t.message}"
+                    )
                 val bundle = Bundle().apply { putString("event", event.eventId) }
                 fba.logEvent("e_tracking_error", bundle)
+
             } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(ReportAnalyticError("AnalyticsProvider: Failed processing analytics event e_tracking_error, cause: ${e.message}"))
+                FirebaseCrashlytics.getInstance().recordException(
+                    ReportAnalyticError(
+                        "AnalyticsProvider: Error processing e_tracking_error, cause: ${e.message}"
+                    )
+                )
             }
         }
     }
@@ -84,7 +93,12 @@ class AnalyticsProvider @Inject constructor(context: Context) {
         val bundle = Bundle().apply {
             putString("eventName", event.eventId)
             event.metadata.forEach {
-                putString(it.key, AnalyticsEvent.safelyTrimParamValue(it.value.toString()))
+                if (it.value is Boolean) {
+                    // Simplify queries, match Falcon behavior
+                    putBoolean(it.key, it.value as Boolean)
+                } else {
+                    putString(it.key, AnalyticsEvent.safelyTrimParamValue(it.value.toString()))
+                }
             }
         }
 

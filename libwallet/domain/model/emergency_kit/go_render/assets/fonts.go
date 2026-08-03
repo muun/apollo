@@ -2,9 +2,10 @@ package assets
 
 import (
 	_ "embed"
-	"github.com/muun/libwallet/data/emergency_kit/resources"
 
 	"github.com/phpdave11/gofpdf"
+
+	"github.com/muun/libwallet/data/emergency_kit/resources"
 )
 
 const (

@@ -8,9 +8,10 @@ import (
 	"encoding/asn1"
 	"encoding/hex"
 	"fmt"
+	"math/big"
+
 	"github.com/muun/libwallet/app_provided_data"
 	"github.com/muun/libwallet/cryptography"
-	"math/big"
 )
 
 type MockMuunCardV2 struct {
@@ -522,7 +523,9 @@ func buildChallengeMacInput(challengeC []byte, counter, index uint16, payload []
 	macInput = append(macInput, challengeC...)                        // C (65 bytes)
 	macInput = append(macInput, byte(counter>>8), byte(counter&0xFF)) // counter (2 bytes)
 	macInput = append(macInput, byte(index>>8), byte(index&0xFF))     // index (2 bytes)
-	macInput = append(macInput, payload...)                           // payload (reason or reason_hash)
+	macInput = append(
+		macInput,
+		payload...) // payload (reason or reason_hash)
 	return macInput
 }
 
@@ -549,7 +552,8 @@ func constantTimeCompare(a, b []byte) bool {
 	return result == 0
 }
 
-// generateChallengeResponse generates unified challenge response for both single and streaming modes
+// generateChallengeResponse generates unified challenge response for both single and streaming
+// modes
 func (c *MockMuunCardV2) generateChallengeResponse(slot uint16, challengeC []byte) (
 	*app_provided_data.NfcBridgeResponse,
 	error,
@@ -562,7 +566,7 @@ func (c *MockMuunCardV2) generateChallengeResponse(slot uint16, challengeC []byt
 	}
 	ephemeralPublic, err := cryptography.GenerateSecp256r1PublicKey(ephemeralPrivate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate ephemeral public key: %v", err)
+		return nil, fmt.Errorf("failed to generate ephemeral public key: %w", err)
 	}
 
 	// Perform ECDH: shared_point = p * C

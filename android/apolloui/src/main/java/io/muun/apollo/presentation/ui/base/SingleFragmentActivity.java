@@ -150,14 +150,6 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         }
     }
 
-    /**
-     * Horrible. I know. Quick hack to avoid dealing with ramifications of changing onBackPressed
-     * (popBackStack) logic.
-     */
-    protected void superOnBackPressed() {
-        super.onBackPressed();
-    }
-
     private void pushToBackStack(FragmentTransaction transaction, boolean canGoBackToCurrent) {
         String transactionTag = Boolean.toString(canGoBackToCurrent);
 
@@ -240,7 +232,7 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         if (hadPreviousFragment) {
             backStackTags.remove(backStackTags.size() - 1);
         } else {
-            finishActivity(); // TODO we probably want to super.onBackPressed()
+            super.onBackPressed();
         }
     }
 

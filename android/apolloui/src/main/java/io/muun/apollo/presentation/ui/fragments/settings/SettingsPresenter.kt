@@ -1,11 +1,13 @@
 package io.muun.apollo.presentation.ui.fragments.settings
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import io.muun.apollo.data.external.NotificationService
+import io.muun.apollo.R
 import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.base.ActionState
+import io.muun.apollo.domain.action.debug.BuildDebugDataEmailReportAction
 import io.muun.apollo.domain.action.session.LogoutAction
 import io.muun.apollo.domain.action.user.DeleteWalletAction
 import io.muun.apollo.domain.action.user.UpdateProfilePictureAction
@@ -18,13 +20,16 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.ExchangeRateWindow
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
+import io.muun.apollo.domain.model.report.EmailReport
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.domain.model.user.UserProfile
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.domain.selector.UserActivatedFeatureStatusSelector
+import io.muun.apollo.presentation.app.Email
 import io.muun.apollo.presentation.biometrics.BiometricsController
+import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.ParentPresenter
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter
 import io.muun.apollo.presentation.ui.base.di.PerFragment
@@ -48,9 +53,9 @@ class SettingsPresenter @Inject constructor(
     private val exchangeRateSelector: ExchangeRateSelector,
     private val userActivatedFeatureStatusSel: UserActivatedFeatureStatusSelector,
     private val nightModeManager: NightModeManager,
-    private val notificationService: NotificationService,
     private val featureSelector: FeatureSelector,
     private val biometricsController: BiometricsController,
+    private val buildDebugDataEmailReportAction: BuildDebugDataEmailReportAction,
 ) : SingleFragmentPresenter<SettingsView, ParentPresenter>() {
 
     class SettingsState(
@@ -68,6 +73,7 @@ class SettingsPresenter @Inject constructor(
         setUpUpdateProfilePictureAction()
         setUpUpdatePrimaryCurrencyAction()
         setUpDeleteWalletAction()
+        setUpBuildDebugDataAction()
         setUpNightMode()
     }
 
@@ -132,6 +138,15 @@ class SettingsPresenter @Inject constructor(
             .compose(handleStates(view::setLoading, this::handleWalletDeleteError))
             .doOnNext { maybeSupportId: Optional<String> ->
                 onWalletDeleted(maybeSupportId)
+            }
+        subscribeTo(observable)
+    }
+
+    private fun setUpBuildDebugDataAction() {
+        val observable = buildDebugDataEmailReportAction.state
+            .compose(handleStates(view::setLoading, this::handleError))
+            .doOnNext { emailReport ->
+                onDebugDataReady(emailReport)
             }
         subscribeTo(observable)
     }
@@ -267,6 +282,39 @@ class SettingsPresenter @Inject constructor(
 
     fun openDebugPanel() {
         navigator.navigateToDebugPanel(context)
+    }
+
+    fun sendDebugData() {
+        buildDebugDataEmailReportAction.run()
+    }
+
+    private fun onDebugDataReady(emailReport: EmailReport) {
+        val emailIntent = Email.buildDebugDataEmailIntent(context, emailReport)
+
+        // Grant URI permissions to all email apps
+        val resInfoList = context.packageManager.queryIntentActivities(emailIntent, 0)
+        for (resolveInfo in resInfoList) {
+            for (uri in emailReport.attachmentUris) {
+                try {
+                    context.grantUriPermission(
+                        resolveInfo.activityInfo.packageName,
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    )
+                } catch (t: Throwable) {
+                    Timber.i("Error granting URI permission: %s", t.message)
+                }
+            }
+        }
+
+        if (Email.hasEmailAppInstalled(context)) {
+            context.startActivity(emailIntent)
+        } else {
+            val dialog = MuunDialog.Builder()
+                .message(R.string.error_copy_report_dialog_title)
+                .build()
+            view.showDialog(dialog)
+        }
     }
 
     private fun handleWalletDeleteError(error: Throwable?) {

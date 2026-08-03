@@ -53,6 +53,15 @@ class ActivityManagerInfoProvider(context: Context) {
             }
         }
 
+    val isUserAMonkey: Boolean
+        get() {
+            return try {
+                ActivityManager.isUserAMonkey()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
     val isLowMemoryKillReportSupported: Boolean
         get() {
             return if (OS.supportsLowMemoryKillReport()) {

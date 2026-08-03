@@ -9,4 +9,5 @@ data class CardSpec(
     @DrawableRes val iconRes: Int,
     val label: String,
     val value: String,
+    val additionalData: String? = null,
 ) : Parcelable

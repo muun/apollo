@@ -1,7 +1,7 @@
 package libwallet
 
 import (
-	"fmt"
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet/keycrypt"
 )
@@ -17,7 +17,7 @@ type DecryptedKey struct {
 func KeyEncrypt(privKey *HDPrivateKey, passphrase string) (string, error) {
 	ciphertext, err := keycrypt.Encrypt(&privKey.key, privKey.Path, passphrase)
 	if err != nil {
-		return "", fmt.Errorf("KeyEncrypt: failed to encrypt: %w", err)
+		return "", errors.Errorf("KeyEncrypt: failed to encrypt: %w", err)
 	}
 	return ciphertext, nil
 }
@@ -26,7 +26,7 @@ func KeyEncrypt(privKey *HDPrivateKey, passphrase string) (string, error) {
 func KeyDecrypt(value, passphrase string, network *Network) (*DecryptedKey, error) {
 	key, path, err := keycrypt.Decrypt(value, passphrase)
 	if err != nil {
-		return nil, fmt.Errorf("KeyDecrypt: failed to decrypt: %w", err)
+		return nil, errors.Errorf("KeyDecrypt: failed to decrypt: %w", err)
 	}
 	privateKey := &HDPrivateKey{key: *key, Network: network, Path: path}
 

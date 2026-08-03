@@ -92,7 +92,12 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
 
     private void onItemClicked(ItemViewModel viewModel) {
         if (viewModel instanceof OperationViewModel) {
-            presenter.onOperationClicked(((OperationViewModel) viewModel).operation.getId());
+            // TODO we should use operation.Hid() here. Involves killing/replacing deprecated
+            // OperationActions#fetchOperationById()
+            final Long operationId = ((OperationViewModel) viewModel).operation.getId();
+            if (operationId != null) {
+                presenter.onOperationClicked(operationId);
+            }
         }
     }
 }

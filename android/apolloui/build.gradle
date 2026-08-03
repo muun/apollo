@@ -104,8 +104,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 21
         targetSdk 35
-        versionCode 1508
-        versionName "55.8"
+        versionCode 1509
+        versionName "55.9"
 
         // Use default Proguard file, bundled with Android Gradle Plugin
         // See: https://issuetracker.google.com/issues/126772206
@@ -344,6 +344,14 @@ android {
 
     lint {
         abortOnError true
+        warningsAsErrors true
+        // Fires only on a third-party lint.jar (androidx.lifecycle) built against a newer Lint API
+        // than our AGP runs, never our own code, so it's not actionable. Removable on AGP >= 8.8.0
+        // (Lint API >= 16): lifecycle 2.9.0 needs API 16, our AGP 8.6.1 runs API 14.
+        disable 'ObsoleteLintCustomCheck'
+        // Fires only on a third-party jar (google-http-client), never our own code, so it's not
+        // actionable; warningsAsErrors would otherwise turn this tolerated warning into a fatal error.
+        disable 'TrustAllX509TrustManager'
         htmlReport true
         textReport true
         lintConfig file("$rootDir/linters/android-lint/config.xml")
@@ -397,7 +405,7 @@ ext {
     version_workmanager = '2.9.0'   // Next version upgrade requires bump minSdk to 21
     version_butterknife = '10.1.0'
     version_mockk = '1.13.7'    // Latest version targeting kotlin 1.8.20
-    version_lifecycle = '2.6.2' // Upcoming versions require AGP 8.3.1
+    version_lifecycle = '2.9.0'
     version_grpc = "1.57.2"         // This is ancient, but we're stuck until we bump minSdk to 21
 }
 
@@ -460,6 +468,9 @@ dependencies {
     // Google Play Integrity
     implementation 'com.google.android.play:integrity:1.1.0'
 
+    // Google Play In-App Updates (dogfood only)
+    dogfoodImplementation 'com.google.android.play:app-update-ktx:2.1.0'
+
     // dev tools
     debugImplementation 'com.github.markzhai:blockcanary-android:1.5.0'
     minifiedImplementation 'com.github.markzhai:blockcanary-no-op:1.5.0'
@@ -502,6 +513,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime:$version_lifecycle"
     // ProcessLifecycleOwner provides a lifecycle for the whole application process
     implementation "androidx.lifecycle:lifecycle-process:$version_lifecycle"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$version_lifecycle"
 
     // for WebView
     implementation 'androidx.webkit:webkit:1.1.0'
@@ -607,8 +619,10 @@ androidComponents {
         def baseVersionCode = android.defaultConfig.versionCode as int
         def buildVersionSuffix = project.hasProperty('buildSuffix') ? project.buildSuffix : "000"
 
-        println "baseVersionCode: $baseVersionCode"
-        println "buildVersionSuffix: $buildVersionSuffix"
+        if (System.getenv("CI")) {
+            println "baseVersionCode: $baseVersionCode"
+            println "buildVersionSuffix: $buildVersionSuffix"
+        }
 
         if (!buildVersionSuffix.matches("\\d{3}")) {
             throw new GradleException("buildSuffix must be a number with 3 digits: '$buildVersionSuffix'")
@@ -631,7 +645,9 @@ androidComponents {
                     abiIdentifier = abiFilter.identifier
                 }
             }
-            println "abiCode: $abiCode"
+            if (System.getenv("CI")) {
+                println "abiCode: $abiCode"
+            }
 
             def finalVersionCode = (baseVersionCode.toString() + buildVersionSuffix + abiCode.toString()) as int
             output.versionCode.set(finalVersionCode)

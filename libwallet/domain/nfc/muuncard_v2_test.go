@@ -2,10 +2,11 @@ package nfc
 
 import (
 	"crypto/sha256"
-	"github.com/muun/libwallet/cryptography"
-	"github.com/muun/libwallet/domain/model/security_card"
 	"strings"
 	"testing"
+
+	"github.com/muun/libwallet/cryptography"
+	"github.com/muun/libwallet/domain/model/security_card"
 )
 
 type SignChallenge = security_card.SecurityCardSignChallenge
@@ -277,7 +278,11 @@ func TestSignChallenge_ErrorScenarios(t *testing.T) {
 			}
 
 			if !strings.Contains(err.Error(), tt.expectedError) {
-				t.Errorf("expected error containing '%s' but got '%s'", tt.expectedError, err.Error())
+				t.Errorf(
+					"expected error containing '%s' but got '%s'",
+					tt.expectedError,
+					err.Error(),
+				)
 			}
 		})
 	}
@@ -338,7 +343,8 @@ func TestSignChallenge_Success(t *testing.T) {
 	}
 
 	// Sign challenge mac response validation is tested in a full integration test with a mock
-	// client that  performs the full protocol. See nfc_integration_test.go.
+	// client that performs the full protocol.
+	// See nfc_integration_test.go.
 }
 
 func TestSignChallenge_SecretValidForRetries(t *testing.T) {

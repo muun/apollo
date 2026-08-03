@@ -8,14 +8,25 @@ import io.muun.apollo.domain.action.base.BaseAsyncAction0
 import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
+import io.muun.apollo.domain.utils.EK_CHILD_GO_COMPONENTS_RENDERING
+import io.muun.apollo.domain.utils.EK_CHILD_GO_CREATE_AND_SAVE_ON_DISK
+import io.muun.apollo.domain.utils.EK_CHILD_GO_EMBED_METADATA
+import io.muun.apollo.domain.utils.EK_CHILD_GO_LOAD_TRANSLATIONS
+import io.muun.apollo.domain.utils.EK_CHILD_GO_REGISTER_FONTS
+import io.muun.apollo.domain.utils.EK_CHILD_GO_REGISTER_IMAGES
+import io.muun.apollo.domain.utils.EK_CHILD_GO_TOTAL_HEAP_ALLOCATED
+import io.muun.apollo.domain.utils.EK_CHILD_GO_TOTAL_INSIDE_GO
+import io.muun.apollo.domain.utils.EK_CHILD_GO_TOTAL_OBJECTS_ALLOCATED
 import io.muun.apollo.domain.utils.EK_CHILD_MUUN_FINGERPRINT
 import io.muun.apollo.domain.utils.EK_CHILD_MUUN_KEY
 import io.muun.apollo.domain.utils.EK_CHILD_RC_CHECKSUM
 import io.muun.apollo.domain.utils.EK_CHILD_USER_FINGERPRINT
 import io.muun.apollo.domain.utils.EK_CHILD_USER_KEY
-import io.muun.apollo.domain.utils.TraceLabel
 import io.muun.apollo.domain.utils.TimeTracker
+import io.muun.apollo.domain.utils.Trace
+import io.muun.apollo.domain.utils.TraceLabel
 import io.muun.common.crypto.ChallengeType
+import rpc.WalletServiceOuterClass.GenerateEmergencyKitPDFResponse
 import rx.Observable
 import timber.log.Timber
 import java.util.Locale
@@ -47,8 +58,11 @@ class GenerateEmergencyKitPDF @Inject constructor(
 
         watchData().first()
             .map { data ->
-                timeTracker.start(TraceLabel.EK_NEW_PDF_GENERATION).use {
-                    generatePDF(data)
+                val trace = timeTracker.start(TraceLabel.EK_NEW_PDF_GENERATION)
+                try {
+                    generatePDF(data, trace)
+                } finally {
+                    trace.finish()
                 }
             }
             .doOnNext { ek ->
@@ -72,7 +86,7 @@ class GenerateEmergencyKitPDF @Inject constructor(
             }
     }
 
-    private fun generatePDF(data: RequiredData): GeneratedEmergencyKitInfo {
+    private fun generatePDF(data: RequiredData, trace: Trace): GeneratedEmergencyKitInfo {
         // Clear previously saved files:
         fileCache.delete(FileCache.Entry.EMERGENCY_KIT_NO_META)
         fileCache.delete(FileCache.Entry.EMERGENCY_KIT)
@@ -85,12 +99,31 @@ class GenerateEmergencyKitPDF @Inject constructor(
             language = Locale.getDefault().language
         )
 
+        addRenderProfiling(trace, result)
+
         userRepository.storeEmergencyKitVerificationCode(result.verificationCode)
 
         return GeneratedEmergencyKitInfo(
             result.verificationCode,
             result.version
         )
+    }
+
+    /**
+     * Forward libwallet's per-stage render profiling as children of the PDF-generation trace, so
+     * prod telemetry can validate the offline profiling against real devices.
+     */
+    private fun addRenderProfiling(trace: Trace, result: GenerateEmergencyKitPDFResponse) {
+        val profiling = result.profiling
+        trace.addChild(EK_CHILD_GO_LOAD_TRANSLATIONS, profiling.loadTranslationsMs)
+        trace.addChild(EK_CHILD_GO_REGISTER_FONTS, profiling.registerFontsMs)
+        trace.addChild(EK_CHILD_GO_REGISTER_IMAGES, profiling.registerImagesMs)
+        trace.addChild(EK_CHILD_GO_COMPONENTS_RENDERING, profiling.componentsRenderingMs)
+        trace.addChild(EK_CHILD_GO_CREATE_AND_SAVE_ON_DISK, profiling.createAndSaveOnDiskMs)
+        trace.addChild(EK_CHILD_GO_TOTAL_HEAP_ALLOCATED, profiling.totalHeapAllocatedBytes)
+        trace.addChild(EK_CHILD_GO_TOTAL_OBJECTS_ALLOCATED, profiling.totalObjectsAllocated)
+        trace.addChild(EK_CHILD_GO_EMBED_METADATA, profiling.embedMetadataMs)
+        trace.addChild(EK_CHILD_GO_TOTAL_INSIDE_GO, profiling.totalInsideGoMs)
     }
 
     private fun watchData(): Observable<RequiredData> {

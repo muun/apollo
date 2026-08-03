@@ -4,8 +4,6 @@ import io.muun.apollo.presentation.ui.base.ParentPresenter
 
 interface EmergencyKitVerifyHelpParentPresenter: ParentPresenter {
 
-    fun saveEmergencyKitAgain()
-
     fun cancelEmergencyKitVerifyHelp()
 
 }

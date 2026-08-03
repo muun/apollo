@@ -2,6 +2,7 @@ package recovery
 
 import (
 	"github.com/btcsuite/btcd/btcec/v2"
+
 	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/domain/model/encrypted_key_v3"
 	"github.com/muun/libwallet/storage"
@@ -22,8 +23,8 @@ func NewGetEncryptedUserKeyAction(
 	}
 }
 
-// Compute the user encrypted key. If we already computed it, it is retrieved from storage so that the contents of the
-// emergency kit do not change every time.
+// Compute the user encrypted key. If we already computed it, it is retrieved from storage so
+// that the contents of the emergency kit do not change every time.
 func (a *GetEncryptedUserKeyAction) Run(recoveryCodePublicKey *btcec.PublicKey) (string, error) {
 
 	userExtendedPrivateKey, err := a.keyProvider.UserPrivateKey()
@@ -40,7 +41,10 @@ func (a *GetEncryptedUserKeyAction) Run(recoveryCodePublicKey *btcec.PublicKey) 
 		return rawEncryptedKey.(string), nil
 	}
 
-	encryptedKey, err := encrypted_key_v3.EncryptUserKey(userExtendedPrivateKey, recoveryCodePublicKey)
+	encryptedKey, err := encrypted_key_v3.EncryptUserKey(
+		userExtendedPrivateKey,
+		recoveryCodePublicKey,
+	)
 	if err != nil {
 		return "", err
 	}

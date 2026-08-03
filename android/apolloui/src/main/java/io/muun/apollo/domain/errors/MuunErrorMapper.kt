@@ -4,6 +4,7 @@ import io.muun.apollo.domain.errors.newop.AmountTooSmallError
 import io.muun.apollo.domain.errors.newop.ExchangeRateWindowTooOldError
 import io.muun.apollo.domain.errors.newop.InsufficientFundsError
 import io.muun.apollo.domain.errors.newop.InvalidAddressError
+import io.muun.apollo.domain.errors.nfc.NoFeasibleZoneForModelError
 import io.muun.apollo.domain.errors.p2p.CountryNotSupportedError
 import io.muun.apollo.domain.errors.p2p.ExpiredVerificationCodeError
 import io.muun.apollo.domain.errors.p2p.InvalidPhoneNumberError
@@ -45,6 +46,7 @@ object MuunErrorMapper {
         ErrorCode.HTTP_TOO_MANY_REQUESTS to { TooManyRequestsError() },
         ErrorCode.STALE_CHALLENGE_KEY to { StaleChallengeKeyError() },
         ErrorCode.CREDENTIALS_DONT_MATCH to { CredentialsDontMatchError() },
+        ErrorCode.NFC_FEASIBLE_AREA_NOT_FOUND to { NoFeasibleZoneForModelError() },
     )
 
     // TODO: values() should be changed when updated kotlin to 1.9.0 or superior

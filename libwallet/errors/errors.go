@@ -1,8 +1,7 @@
 package errors
 
 import (
-	"errors"
-	"fmt"
+	"github.com/go-errors/errors"
 )
 
 type Error struct {
@@ -22,7 +21,11 @@ func New(code int64, msg string) error {
 	return &Error{errors.New(msg), code}
 }
 
-func Errorf(code int64, format string, a ...interface{}) error {
-	err := fmt.Errorf(format, a...)
+func Errorf(
+	code int64,
+	format string,
+	a ...interface{}, //nolint:modernize // TODO: use any instead of interface{}
+) error {
+	err := errors.Errorf(format, a...)
 	return &Error{err, code}
 }

@@ -12,7 +12,7 @@ type Session struct {
 	DeviceToken                string
 }
 
-type HttpClientSessionProvider interface {
+type HttpClientSessionProvider interface { //nolint:staticcheck // should be HTTPClientSessionProvider, but it's part of the gomobile contract with the apps
 	Session() (*Session, error)
 	SetSessionStatus(status string)
 	SetMinClientVersion(minClientVersion string)

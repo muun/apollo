@@ -16,22 +16,24 @@ import (
 
 type FakeWithdrawClient struct {
 	WithdrawClient WithdrawClient
-	ServerUrl      string
+	ServerURL      string
 }
 
 func (fwc *FakeWithdrawClient) Get(urlString string) (resp *http.Response, err error) {
 
-	URL := parseUrl(urlString)
+	URL := parseURL(urlString)
 
 	if URL.Host == "test.com" {
-		host := parseUrl(fwc.ServerUrl).Host
+		host := parseURL(fwc.ServerURL).Host
 		return fwc.WithdrawClient.Get(strings.Replace(urlString, "test.com", host, 1))
 	} else {
 		return fwc.WithdrawClient.Get(urlString)
 	}
 }
 
-func parseUrl(urlString string) *url.URL {
+func parseURL(
+	urlString string,
+) *url.URL {
 	URL, err := url.Parse(urlString)
 
 	if err != nil {
@@ -54,11 +56,14 @@ func TestWithdraw(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -100,11 +105,14 @@ func TestWithdrawWithCompatibilityTag(t *testing.T) {
 			Tag:                "withdraw",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -137,21 +145,28 @@ func TestWithdrawWithCompatibilityTag(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult,HttpUrlsUsage
 func TestWithdrawWithDifferentDomainHosts(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&WithdrawResponse{
-			K1:                 "foobar",
-			Callback:           "http://test.com/withdraw/complete", // Callback url has a different host than localhost
-			MaxWithdrawable:    1_000_000,
-			DefaultDescription: "Withdraw from Lapp",
-			Tag:                "withdraw",
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&WithdrawResponse{
+				K1: "foobar",
+				// Callback url has a different host than localhost
+				Callback:           "http://test.com/withdraw/complete",
+				MaxWithdrawable:    1_000_000,
+				DefaultDescription: "Withdraw from Lapp",
+				Tag:                "withdraw",
+			})
+		},
+	)
 
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -170,7 +185,8 @@ func TestWithdrawWithDifferentDomainHosts(t *testing.T) {
 		return "12345", nil
 	}
 
-	// We "inject" FakeWithdrawClient to simulate test.com responds correctly (by redirecting to localhost)
+	// We "inject" FakeWithdrawClient to simulate test.com responds correctly (by redirecting to
+	// localhost)
 	originalClient := withdrawClient
 	withdrawClient = &FakeWithdrawClient{originalClient, server.URL}
 	t.Cleanup(func() {
@@ -192,7 +208,7 @@ func TestWithdrawWithDifferentDomainHosts(t *testing.T) {
 func TestDecodeError(t *testing.T) {
 	qr := "lightning:abcde"
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -209,17 +225,20 @@ func TestDecodeError(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestWrongTagError(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/channelRequest", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&WithdrawResponse{
-			Tag: "channelRequest",
-		})
-	})
+	mux.HandleFunc(
+		"/channelRequest",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&WithdrawResponse{
+				Tag: "channelRequest",
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/channelRequest", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -242,9 +261,9 @@ func TestUnreachableError(t *testing.T) {
 	}()
 
 	// LNURL QR pointing to a non-responding domain
-	qr := "LIGHTNING:LNURL1DP68GURN8GHJ7ARGD9EJUER0D4SKJM3WV3HK2UEWDEHHGTN90P5HXAPWV4UXZMTSD3JJUCM0D5LHXETRWFJHG0F3XGENGDGQ8EH52"
+	qr := "LIGHTNING:LNURL1DP68GURN8GHJ7ARGD9EJUER0D4SKJM3WV3HK2UEWDEHHGTN90P5HXAPWV4UXZMTSD3JJUCM0D5LHXETRWFJHG0F3XGENGDGQ8EH52" //nolint:lll
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -271,12 +290,15 @@ func TestServiceError(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusError,
-			Reason: "something something",
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusError,
+				Reason: "something something",
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -308,15 +330,18 @@ func TestServiceError(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestInvalidResponseError(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("foobar"))
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			w.Write([]byte("foobar"))
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -333,7 +358,7 @@ func TestInvalidResponseError(t *testing.T) {
 func TestUnsafeURLError(t *testing.T) {
 	qr, _ := encode("http://localhost/withdraw")
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -346,9 +371,9 @@ func TestUnsafeURLError(t *testing.T) {
 
 func TestWrongTagInQR(t *testing.T) {
 	// LNURL QR with a `login` tag value in its query params
-	qr := "lightning:lnurl1dp68gurn8ghj7mrww4exctt5dahkccn00qhxget8wfjk2um0veax2un09e3k7mf0w5lhgct884kx7emfdcnxkvfa8qexxc35vymnxcf5xumkxvfsv4snxwph8qunzv3hxesnyv3jvv6nyv3e8yuxzvnpv4skvepnxg6rwv34xqck2c3sxcerzdpnv56r2dss2vt96"
+	qr := "lightning:lnurl1dp68gurn8ghj7mrww4exctt5dahkccn00qhxget8wfjk2um0veax2un09e3k7mf0w5lhgct884kx7emfdcnxkvfa8qexxc35vymnxcf5xumkxvfsv4snxwph8qunzv3hxesnyv3jvv6nyv3e8yuxzvnpv4skvepnxg6rwv34xqck2c3sxcerzdpnv56r2dss2vt96" //nolint:lll
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -365,7 +390,7 @@ func TestWrongTagInQR(t *testing.T) {
 func TestOnionLinkNotSupported(t *testing.T) {
 	qr := "LNURL1DP68GUP69UHKVMM0VFSHYTN0DE5K7MSHXU8YD"
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -382,23 +407,29 @@ func TestOnionLinkNotSupported(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestExpiredCheck(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: "ERROR",
-			Reason: "something something Expired blabla",
-		})
-	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: "ERROR",
+				Reason: "something something Expired blabla",
+			})
+		},
+	)
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -430,7 +461,7 @@ func TestNoAvailableBalance(t *testing.T) {
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -456,18 +487,21 @@ func TestNoRouteCheck(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusError,
-			Reason: "Unable to pay LN Invoice: FAILURE_REASON_NO_ROUTE",
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusError,
+				Reason: "Unable to pay LN Invoice: FAILURE_REASON_NO_ROUTE",
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		return "12345", nil
 	}
 
@@ -548,11 +582,14 @@ func TestStringlyTypedNumberFields(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&Response{
-			Status: StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&Response{
+				Status: StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -585,16 +622,19 @@ func TestStringlyTypedNumberFields(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestErrorContainsResponseBody(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(400)
-		w.Write([]byte("this is a custom error response"))
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			w.WriteHeader(400)
+			w.Write([]byte("this is a custom error response"))
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -625,16 +665,19 @@ func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(400)
-		w.Write([]byte("this is a custom error response"))
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			w.WriteHeader(400)
+			w.Write([]byte("this is a custom error response"))
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		return "12345", nil
 	}
 
@@ -656,16 +699,19 @@ func TestErrorContainsResponseBodyForFinishRequest(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestForbidden(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(403)
-		w.Write([]byte("Forbidden"))
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			w.WriteHeader(403)
+			w.Write([]byte("Forbidden"))
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -684,10 +730,13 @@ func TestForbidden(t *testing.T) {
 //goland:noinspection GoUnhandledErrorResult
 func TestZebedee403MapsToCountryNotSupported(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/withdraw/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(403)
-		w.Write([]byte("Forbidden"))
-	})
+	mux.HandleFunc(
+		"/withdraw/",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			w.WriteHeader(403)
+			w.Write([]byte("Forbidden"))
+		},
+	)
 	server := httptest.NewServer(mux)
 	t.Cleanup(func() { server.Close() })
 
@@ -699,7 +748,7 @@ func TestZebedee403MapsToCountryNotSupported(t *testing.T) {
 
 	qr, _ := encode(fmt.Sprintf("%s/withdraw", server.URL))
 
-	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) {
+	createInvoiceFunc := func(amt lnwire.MilliSatoshi, desc string, host string) (string, error) { //nolint:revive // TODO: use or remove amt
 		panic("should not reach here")
 	}
 
@@ -821,42 +870,58 @@ func TestValidate(t *testing.T) {
 	}{
 		{
 			name: "plain",
-			args: args{"LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "lightning scheme",
-			args: args{"lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "HTTP fallback scheme",
-			args: args{"https://example.com/?lightning=LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"https://example.com/?lightning=LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "muun scheme",
-			args: args{"muun:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"muun:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "muun scheme with double slashes",
-			args: args{"muun://LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"muun://LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "lightning scheme with double slashes",
-			args: args{"lightning://LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"lightning://LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "muun + lightning schemes",
-			args: args{"muun:lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"muun:lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 		{
 			name: "muun + lightning schemes with double slashes",
-			args: args{"muun://lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV"},
+			args: args{
+				"muun://lightning:LNURL1DP68GUP69UHKCMMRV9KXSMMNWSARWVPCXQHKCMN4WFKZ7AMFW35XGUNPWULHXETRWFJHG0F3XGENGDGK59DKV", //nolint:lll
+			},
 			want: true,
 		},
 	}

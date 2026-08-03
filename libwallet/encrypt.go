@@ -3,9 +3,10 @@ package libwallet
 import (
 	"crypto/aes"
 	"crypto/rand"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/aescbc"
 	"github.com/muun/libwallet/encryption"
 )
@@ -13,7 +14,7 @@ import (
 const serializedPublicKeyLength = btcec.PubKeyBytesLenCompressed
 
 type Encrypter interface {
-	// Encrypt the payload and return a string with the necesary information for decryption
+	// Encrypt the payload and return a string with the necessary information for decryption
 	Encrypt(payload []byte) (string, error)
 }
 
@@ -30,7 +31,10 @@ var _ Decrypter = (*encryption.HdPrivKeyDecrypter)(nil)
 
 // encryptWithPubKey encrypts a message using a pubKey
 // It uses ECDHE/AES/CBC leaving padding up to the caller.
-func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.PublicKey, []byte, error) {
+func encryptWithPubKey(
+	pubKey *btcec.PublicKey,
+	plaintext []byte,
+) (*btcec.PublicKey, []byte, error) {
 	// Use deprecated ECDH for compat
 	pubEph, sharedSecret, err := encryption.GenerateSharedEncryptionSecret(pubKey)
 	if err != nil {
@@ -41,7 +45,7 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 
 	ciphertext, err := aescbc.EncryptNoPadding(sharedSecret, iv, plaintext)
 	if err != nil {
-		return nil, nil, fmt.Errorf("encryptWithPubKey: encrypt failed: %w", err)
+		return nil, nil, errors.Errorf("encryptWithPubKey: encrypt failed: %w", err)
 	}
 
 	return pubEph, ciphertext, nil
@@ -49,7 +53,11 @@ func encryptWithPubKey(pubKey *btcec.PublicKey, plaintext []byte) (*btcec.Public
 
 // decryptWithPrivKey decrypts a message encrypted to a pubKey using the corresponding privKey
 // It uses ECDHE/AES/CBC leaving padding up to the caller.
-func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext []byte) ([]byte, error) {
+func decryptWithPrivKey(
+	privKey *btcec.PrivateKey,
+	rawPubEph []byte,
+	ciphertext []byte,
+) ([]byte, error) {
 	// Use deprecated ECDH for compat
 	sharedSecret, err := encryption.RecoverSharedEncryptionSecret(privKey, rawPubEph)
 	if err != nil {
@@ -60,7 +68,7 @@ func decryptWithPrivKey(privKey *btcec.PrivateKey, rawPubEph []byte, ciphertext 
 
 	plaintext, err := aescbc.DecryptNoPadding(sharedSecret, iv, ciphertext)
 	if err != nil {
-		return nil, fmt.Errorf("decryptWithPrivKey: failed to decrypt: %w", err)
+		return nil, errors.Errorf("decryptWithPrivKey: failed to decrypt: %w", err)
 	}
 
 	return plaintext, nil
@@ -86,7 +94,12 @@ type DecryptOperation struct {
 func NewDecryptOperation(key *HDPrivateKey, payload string) *DecryptOperation {
 	return &DecryptOperation{key.Decrypter(), payload}
 }
-func NewDecryptOperationFrom(sender *PublicKey, key *HDPrivateKey, payload string) *DecryptOperation {
+
+func NewDecryptOperationFrom(
+	sender *PublicKey,
+	key *HDPrivateKey,
+	payload string,
+) *DecryptOperation {
 	return &DecryptOperation{key.DecrypterFrom(sender), payload}
 }
 

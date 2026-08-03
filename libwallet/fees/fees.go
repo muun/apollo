@@ -4,20 +4,30 @@ import "github.com/btcsuite/btcd/btcutil"
 
 const dustThreshold = 546
 
-// BestRouteFees represents a possible route for a lightning payment. In particular, it encodes the fee
-// policy of such route (e.g how the route charges fees) and how a big a payment it can handle/route (e.g what is
-// the maximum amount that is routable/payable via this route).
+// BestRouteFees represents a possible route for a lightning payment. In particular, it encodes the
+// fee policy of such route (e.g how the route charges fees) and how a big a payment it can
+// handle/route (e.g what is the maximum amount that is routable/payable via this route).
 type BestRouteFees struct {
-	MaxCapacity              btcutil.Amount // maximum amount that is routable/payable via this route
-	FeeProportionalMillionth uint64         // fee proportion of the routed amount, divided by a million
-	FeeBase                  btcutil.Amount // fixed fee component. For a specific route: TotalFee=(FeeProportionalMillionth*amount)/1000000 + FeeBase
+	// maximum amount that is routable/payable via this route
+	MaxCapacity btcutil.Amount
+	// fee proportion of the routed amount, divided by a million
+	FeeProportionalMillionth uint64
+	// fixed fee component. For a specific route:
+	// TotalFee=(FeeProportionalMillionth*amount)/1000000 + FeeBase
+	FeeBase btcutil.Amount
 }
 
 // FundingOutputPolicies represents the conditions that decide how the funding output is created.
 type FundingOutputPolicies struct {
-	MaximumDebt       btcutil.Amount // maximum amount of debt that we're ok with lending this user, according swap provider risk tolerance
-	PotentialCollect  btcutil.Amount // amount of debt we can effectively collect for a specific swap.
-	MaxAmountFor0Conf btcutil.Amount // maximum amount allowed for a 0-conf swap. Greater amounts will require 1-conf (higher fees, worse UX). Depends on swap provider risk tolerance.
+	// maximum amount of debt that we're ok with lending this
+	// user, according swap provider risk tolerance
+	MaximumDebt btcutil.Amount
+	// amount of debt we can effectively collect for a specific swap.
+	PotentialCollect btcutil.Amount
+	// maximum amount allowed for a 0-conf swap. Greater
+	// amounts will require 1-conf (higher fees, worse UX).
+	// Depends on swap provider risk tolerance.
+	MaxAmountFor0Conf btcutil.Amount
 }
 
 type DebtType string
@@ -37,7 +47,9 @@ type SwapFees struct {
 	ConfirmationsNeeded uint
 }
 
-func (p *FundingOutputPolicies) FundingConfirmations(paymentAmount, lightningFee btcutil.Amount) uint {
+func (p *FundingOutputPolicies) FundingConfirmations(
+	paymentAmount, lightningFee btcutil.Amount,
+) uint {
 	totalAmount := paymentAmount + lightningFee
 	if totalAmount <= p.MaxAmountFor0Conf {
 		return 0
@@ -57,7 +69,9 @@ func (p *FundingOutputPolicies) DebtType(paymentAmount, lightningFee btcutil.Amo
 	return DebtTypeNone
 }
 
-func (p *FundingOutputPolicies) DebtAmount(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
+func (p *FundingOutputPolicies) DebtAmount(
+	paymentAmount, lightningFee btcutil.Amount,
+) btcutil.Amount {
 	switch p.DebtType(paymentAmount, lightningFee) {
 	case DebtTypeLend:
 		return paymentAmount + lightningFee
@@ -70,7 +84,9 @@ func (p *FundingOutputPolicies) DebtAmount(paymentAmount, lightningFee btcutil.A
 	}
 }
 
-func (p *FundingOutputPolicies) MinFundingAmount(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
+func (p *FundingOutputPolicies) MinFundingAmount(
+	paymentAmount, lightningFee btcutil.Amount,
+) btcutil.Amount {
 	inputAmount := paymentAmount + lightningFee
 	if p.DebtType(paymentAmount, lightningFee) == DebtTypeCollect {
 		inputAmount += p.DebtAmount(paymentAmount, lightningFee)
@@ -78,7 +94,9 @@ func (p *FundingOutputPolicies) MinFundingAmount(paymentAmount, lightningFee btc
 	return inputAmount
 }
 
-func (p *FundingOutputPolicies) FundingOutputAmount(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
+func (p *FundingOutputPolicies) FundingOutputAmount(
+	paymentAmount, lightningFee btcutil.Amount,
+) btcutil.Amount {
 	minAmount := p.MinFundingAmount(paymentAmount, lightningFee)
 	if minAmount < dustThreshold {
 		return dustThreshold
@@ -86,13 +104,20 @@ func (p *FundingOutputPolicies) FundingOutputAmount(paymentAmount, lightningFee 
 	return minAmount
 }
 
-func (p *FundingOutputPolicies) FundingOutputPadding(paymentAmount, lightningFee btcutil.Amount) btcutil.Amount {
+func (p *FundingOutputPolicies) FundingOutputPadding(
+	paymentAmount, lightningFee btcutil.Amount,
+) btcutil.Amount {
 	minAmount := p.MinFundingAmount(paymentAmount, lightningFee)
 	outputAmount := p.FundingOutputAmount(paymentAmount, lightningFee)
 	return outputAmount - minAmount
 }
 
-func ComputeSwapFees(amount btcutil.Amount, bestRouteFees []BestRouteFees, policies *FundingOutputPolicies, takeFeeFromAmount bool) *SwapFees {
+func ComputeSwapFees(
+	amount btcutil.Amount,
+	bestRouteFees []BestRouteFees,
+	policies *FundingOutputPolicies,
+	takeFeeFromAmount bool,
+) *SwapFees {
 	if takeFeeFromAmount {
 		// Handle edge cases for TFFA swaps. We don't allow lend for TFFA. This impacts sub-dust
 		// swaps because we don't allow debt for output padding. Except, the very special case of

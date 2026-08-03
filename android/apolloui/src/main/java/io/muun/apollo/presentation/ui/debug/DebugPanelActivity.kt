@@ -37,7 +37,6 @@ class DebugPanelActivity : BaseActivity<DebugPanelPresenter>(), BaseView {
         private enum class NfcPairingState {
             NONE,
             PAIRING,
-            UNPAIRING
         }
     }
 
@@ -106,25 +105,12 @@ class DebugPanelActivity : BaseActivity<DebugPanelPresenter>(), BaseView {
                     .let(this@DebugPanelActivity::showDialog)
             }
 
-            debugButtonUnpairSecurityCard.setOnClickListener {
-                pairingState = NfcPairingState.UNPAIRING
-                // Turn on NFC reader Mode
-                enableReaderMode()
-
-                // Show Simple Message Dialog - prompt card tap
-                MuunDialog.Builder()
-                    .title("Unpair Security Card")
-                    .message("Please tap your device with the security card to confirm Unpairing.")
-                    .onDismiss {
-                        disableReaderMode()
-                        pairingState = NfcPairingState.NONE
-                    }
-                    .build()
-                    .let(this@DebugPanelActivity::showDialog)
-            }
-
             debugButtonEnterDiagnosticMode.setOnClickListener {
                 presenter.enterDiagnosticMode()
+            }
+
+            debugButtonSecureKeyValueStorageDebug.setOnClickListener {
+                presenter.enterSecureKeyValueStorageDebug()
             }
 
             debugButtonForceErrorReport.setOnClickListener {
@@ -231,45 +217,9 @@ class DebugPanelActivity : BaseActivity<DebugPanelPresenter>(), BaseView {
                 }
             }
 
-            NfcPairingState.UNPAIRING -> {
-
-                // TODO do proper error handling
-                val success = try {
-                    presenter.resetSecurityCard(nfcSession)
-                    true
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    false
-                }
-
-                dismissDialog()
-
-                if (success) {
-                    runOnUiThread {
-                        binding.nfcCardPaired.text = RichText("FALSE")
-                            .setForegroundColor(ContextCompat.getColor(this, R.color.red))
-                            .setBold()
-
-                        MuunDialog.Builder()
-                            .title("Unpair Security Card")
-                            .message("Success!")
-                            .build()
-                            .let(this::showDialog)
-                    }
-                } else {
-                    runOnUiThread {
-                        MuunDialog.Builder()
-                            .title("Unpair Security Card")
-                            .message("Error! See Debug logs or dismiss and try again")
-                            .build()
-                            .let(this::showDialog)
-                    }
-                }
-            }
-
             else -> {
                 // Ignore
-                Timber.d("NFC: onTagDiscovered when neither pairing nor unpairing")
+                Timber.d("NFC: onTagDiscovered when not pairing")
             }
         }
     }

@@ -39,7 +39,11 @@ func (m *MonetaryAmount) ValueAsString() string {
 }
 
 func (m *MonetaryAmount) String() string {
-	return fmt.Sprintf("%v %v", m.Value, m.Currency) // TODO(newop): this is just a stub implementation
+	return fmt.Sprintf(
+		"%v %v",
+		m.Value,
+		m.Currency,
+	) // TODO(newop): this is just a stub implementation
 }
 
 func (m *MonetaryAmount) toBtc(window *ExchangeRateWindow) btcutil.Amount {
@@ -59,7 +63,10 @@ func (m *MonetaryAmount) add(n *MonetaryAmount) *MonetaryAmount {
 	}
 }
 
-func (m *MonetaryAmount) toBitcoinAmount(window *ExchangeRateWindow, primaryCurrency string) *BitcoinAmount {
+func (m *MonetaryAmount) toBitcoinAmount(
+	window *ExchangeRateWindow,
+	primaryCurrency string,
+) *BitcoinAmount {
 	return &BitcoinAmount{
 		InSat:             int64(m.toBtc(window)),
 		InInputCurrency:   m,

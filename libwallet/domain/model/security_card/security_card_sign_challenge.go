@@ -7,3 +7,17 @@ type SecurityCardSignChallenge struct {
 	CardUsageCount  uint16
 	PairingSlot     uint16
 }
+
+func NewSecurityCardSignChallenge(
+	serverPublicKey []byte,
+	mac []byte,
+	cardUsageCount uint16,
+	pairingSlot uint16,
+) *SecurityCardSignChallenge {
+	return &SecurityCardSignChallenge{
+		ServerPublicKey: serverPublicKey,
+		Mac:             mac,
+		CardUsageCount:  cardUsageCount,
+		PairingSlot:     pairingSlot,
+	}
+}

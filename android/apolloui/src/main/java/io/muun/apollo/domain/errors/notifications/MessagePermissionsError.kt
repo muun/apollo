@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.errors.notifications
 
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.api.messages.MessageSpec
 import io.muun.common.model.SessionStatus
@@ -10,6 +11,8 @@ class MessagePermissionsError(
     currentStatus: SessionStatus?,
     spec: MessageSpec,
 ) : MuunError("Received a message without the right permissions") {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     init {
         metadata["sessionUuid"] = sessionUuid

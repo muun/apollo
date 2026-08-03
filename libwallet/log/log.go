@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-// NewBridgeLogHandler returns a [slog.JSONHandler]] that forwards logs to the provided
-// sink.
+// NewBridgeLogHandler returns a [slog.JSONHandler]] that forwards logs to the provided sink.
 func NewBridgeLogHandler(sink io.Writer, level slog.Level) *slog.JSONHandler {
 	opts := &slog.HandlerOptions{
 		AddSource:   true,
@@ -19,7 +18,10 @@ func NewBridgeLogHandler(sink io.Writer, level slog.Level) *slog.JSONHandler {
 	return slog.NewJSONHandler(sink, opts)
 }
 
-func replaceAttrs(groups []string, a slog.Attr) slog.Attr {
+func replaceAttrs(
+	groups []string, //nolint:revive // TODO: use or remove groups
+	a slog.Attr,
+) slog.Attr {
 	// Trim the values in the source key.
 	if a.Key == slog.SourceKey {
 		source := a.Value.Any().(*slog.Source)

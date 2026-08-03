@@ -1,8 +1,9 @@
 package operation
 
 import (
-	"errors"
 	"time"
+
+	"github.com/go-errors/errors"
 )
 
 type FeeBumpFunctionSet struct {
@@ -29,7 +30,8 @@ type PartialLinearFunction struct {
 }
 
 func (pf *PartialLinearFunction) evaluate(feeRateInSatsPerVByte float64) (float64, error) {
-	if feeRateInSatsPerVByte >= pf.LeftClosedEndpoint && feeRateInSatsPerVByte < pf.RightOpenEndpoint {
+	if feeRateInSatsPerVByte >= pf.LeftClosedEndpoint &&
+		feeRateInSatsPerVByte < pf.RightOpenEndpoint {
 		return pf.Slope*feeRateInSatsPerVByte + pf.Intercept, nil
 	}
 	return 0, errors.New("fee rate does not belong to this interval")
@@ -39,7 +41,8 @@ func (fb *FeeBumpFunction) getPartialLinearFunctionForFeeRate(
 	feeRateInSatsPerVByte float64,
 ) (*PartialLinearFunction, error) {
 	for _, partialLinearFunction := range fb.PartialLinearFunctions {
-		if feeRateInSatsPerVByte >= partialLinearFunction.LeftClosedEndpoint && feeRateInSatsPerVByte < partialLinearFunction.RightOpenEndpoint {
+		if feeRateInSatsPerVByte >= partialLinearFunction.LeftClosedEndpoint &&
+			feeRateInSatsPerVByte < partialLinearFunction.RightOpenEndpoint {
 			return partialLinearFunction, nil
 		}
 	}
@@ -47,7 +50,9 @@ func (fb *FeeBumpFunction) getPartialLinearFunctionForFeeRate(
 }
 
 // GetBumpAmountForFeeRate assumes that there is no overlap between the intervals.
-func (f *FeeBumpFunction) GetBumpAmountForFeeRate(feeRateInSatsPerVByte float64) (int64, error) {
+func (f *FeeBumpFunction) GetBumpAmountForFeeRate( //nolint:staticcheck // TODO: methods on the same type should have the same receiver name (seen 1x "f", 1x "fb")
+	feeRateInSatsPerVByte float64,
+) (int64, error) {
 	if f.PartialLinearFunctions == nil {
 		return 0, errors.New("fee bump function does not exist")
 	}

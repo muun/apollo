@@ -3,11 +3,13 @@ package libwallet
 import (
 	"encoding/json"
 	"fmt"
-	goLnurl "github.com/fiatjaf/go-lnurl"
-	"github.com/muun/libwallet/lnurl"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	goLnurl "github.com/fiatjaf/go-lnurl"
+
+	"github.com/muun/libwallet/lnurl"
 )
 
 func encode(url string) (string, error) {
@@ -27,21 +29,30 @@ func (listener *testLNURLListener) OnUpdate(event *LNURLEvent) {
 		switch event.Code {
 		case lnurl.StatusContacting:
 			if listener.status != 0 {
-				listener.ch <- fmt.Sprintf("expected withdraw status to be %v, got: %v", lnurl.StatusContacting, event.Code)
+				listener.ch <- fmt.Sprintf(
+					"expected withdraw status to be %v, got: %v",
+					lnurl.StatusContacting, event.Code,
+				)
 			} else {
 				listener.status = 1
 			}
 
 		case lnurl.StatusInvoiceCreated:
 			if listener.status != 1 {
-				listener.ch <- fmt.Sprintf("expected withdraw status to be %v, got: %v", lnurl.StatusInvoiceCreated, event.Code)
+				listener.ch <- fmt.Sprintf(
+					"expected withdraw status to be %v, got: %v",
+					lnurl.StatusInvoiceCreated, event.Code,
+				)
 			} else {
 				listener.status = 2
 			}
 
 		case lnurl.StatusReceiving:
 			if listener.status != 2 {
-				listener.ch <- fmt.Sprintf("expected withdraw status to be %v, got: %v", lnurl.StatusReceiving, event.Code)
+				listener.ch <- fmt.Sprintf(
+					"expected withdraw status to be %v, got: %v",
+					lnurl.StatusReceiving, event.Code,
+				)
 			} else {
 				listener.status = 3
 				listener.ch <- "DONE"
@@ -76,11 +87,14 @@ func TestLNURLWithdrawAllowUnsafe(t *testing.T) {
 			Tag:                "withdrawRequest",
 		})
 	})
-	mux.HandleFunc("/withdraw/complete", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(&lnurl.Response{
-			Status: lnurl.StatusOK,
-		})
-	})
+	mux.HandleFunc(
+		"/withdraw/complete",
+		func(w http.ResponseWriter, r *http.Request) { //nolint:revive // TODO: use or remove r
+			json.NewEncoder(w).Encode(&lnurl.Response{
+				Status: lnurl.StatusOK,
+			})
+		},
+	)
 	server := httptest.NewServer(mux)
 	defer server.Close()
 
@@ -93,7 +107,7 @@ func TestLNURLWithdrawAllowUnsafe(t *testing.T) {
 	invoiceBuilder.Network(network)
 	invoiceBuilder.UserKey(userKey)
 	invoiceBuilder.AddRouteHints(&RouteHints{
-		Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869fd",
+		Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869fd", //nolint:lll
 		FeeBaseMsat:               1000,
 		FeeProportionalMillionths: 1000,
 		CltvExpiryDelta:           8,

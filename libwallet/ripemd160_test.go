@@ -16,7 +16,28 @@ func Test_ripemd160(t *testing.T) {
 	}{
 		{name: "simple",
 			args: args{data: []byte{1, 2, 3}},
-			want: []byte{121, 249, 1, 218, 38, 9, 240, 32, 173, 173, 191, 46, 95, 104, 161, 108, 140, 63, 125, 87}},
+			want: []byte{
+				121,
+				249,
+				1,
+				218,
+				38,
+				9,
+				240,
+				32,
+				173,
+				173,
+				191,
+				46,
+				95,
+				104,
+				161,
+				108,
+				140,
+				63,
+				125,
+				87,
+			}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

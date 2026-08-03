@@ -3,17 +3,21 @@ package recovery
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
-	"github.com/btcsuite/btcd/wire"
-	"github.com/muun/libwallet/electrum"
 	"log/slog"
+
+	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/electrum"
 )
 
 type BroadcastRecoveryTxAction struct {
 	electrumProvider *electrum.ServerProvider
 }
 
-func NewBroadcastRecoveryTxAction(electrumProvider *electrum.ServerProvider) *BroadcastRecoveryTxAction {
+func NewBroadcastRecoveryTxAction(
+	electrumProvider *electrum.ServerProvider,
+) *BroadcastRecoveryTxAction {
 	return &BroadcastRecoveryTxAction{
 		electrumProvider: electrumProvider,
 	}
@@ -34,7 +38,7 @@ func (s *BroadcastRecoveryTxAction) Run(tx *wire.MsgTx, log *slog.Logger) (strin
 
 	err := tx.BtcEncode(txBytes, wire.ProtocolVersion, wire.WitnessEncoding)
 	if err != nil {
-		return "", fmt.Errorf("error while encoding tx: %w", err)
+		return "", errors.Errorf("error while encoding tx: %w", err)
 	}
 
 	txHex := hex.EncodeToString(txBytes.Bytes())

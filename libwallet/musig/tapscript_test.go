@@ -375,7 +375,8 @@ func TestSpendTapscriptMusig(t *testing.T) {
 			//         userKey, <-------------------- redeem
 			//      }
 			//    )
-			description: "key-only(user) spend tapscript. redeeming from random keyspend+tapscript(user)",
+			description: "key-only(user) spend tapscript. " +
+				"redeeming from random keyspend+tapscript(user)",
 			internalKey: randomPub,
 
 			rootScript:    tapScriptTree,
@@ -592,8 +593,10 @@ func testTapscriptSpend(t *testing.T, tc tapscriptTestCase) {
 }
 
 // signs a message using the globally configured keys
-func muunSignMusig(t *testing.T, musigVersion MusigVersion, msg []byte, tweak *MuSig2Tweaks) []byte {
-	// generate musig sessionId
+func muunSignMusig(
+	t *testing.T, musigVersion MusigVersion, msg []byte, tweak *MuSig2Tweaks,
+) []byte {
+	// generate musig sessionID
 	userSession, err := secp256k1.GeneratePrivateKey()
 	require.NoError(t, err)
 	muunSession, err := secp256k1.GeneratePrivateKey()

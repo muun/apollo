@@ -27,6 +27,29 @@
         "sha256:689fea473d3b8fa6a35c9793abea4b2b70249def662ed11d7e2f88897523c753",
         "sha256:6749b6f1376eb169e7e87429f7cf8e2e63882b33ed93b0836c3c9b97ad0b5a57"
       ]
+    },
+    {
+      "description": "Pending pair challenge",
+      "hash": "sha256:5e092f5fdc53e9740f25a5b00ac3d7a0b3d7e91bf22ed1f9f8c29cb0995a976f",
+      "change_hashes": [
+        "sha256:2b88612144adbdfcc661b1c499b357b6ab6bfdf7be69586351ceab6c5feca255",
+        "sha256:c293f2b646faca606959ea04da8ad77b22dd992682acdcf864e2b70182c21cbe"
+      ]
+    },
+    {
+      "description": "Mock Houston V3 replay counter",
+      "hash": "sha256:faf2c1dfab791ce409c62c996402a7ba6862ca3fe9cc8cdc76465c0e86ad872b",
+      "change_hashes": [
+        "sha256:0b93676ffe8eaa69bb67cae329ed896935ae0507215bf02fc926a02dde7369fe"
+      ]
+    },
+    {
+      "description": "NFC empirical Extended APDU signals",
+      "hash": "sha256:93dc4e8e1b23f32ced540fb53d570faad480cee6703808da851c2d9c2ec29d42",
+      "change_hashes": [
+        "sha256:12230437d604544f6f68fc81456a823fc9566c6e8ba0b2c243823a7d919bf3b8",
+        "sha256:5cf2a221e7747483a636767f21148750ebbdadba7767647468141b0e7536468e"
+      ]
     }
   ]
 }

@@ -16,7 +16,9 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.selector.ExchangeRateSelector
 import io.muun.apollo.domain.selector.UserSelector
 import io.muun.apollo.presentation.app.ApolloApplication
+import io.muun.apollo.presentation.app.Navigator
 import io.muun.apollo.presentation.ui.new_operation.toRichText
+import io.muun.apollo.presentation.ui.security_cards_country_picker.models.CountryInfo
 import io.muun.apollo.presentation.ui.security_cards_marketplace.CurrencySelectionSharedViewModel
 import io.muun.apollo.presentation.ui.security_cards_marketplace.CurrencySelectionSharedViewModelFactory
 import io.muun.apollo.presentation.ui.security_cards_marketplace.inBtc
@@ -34,16 +36,19 @@ import javax.inject.Inject
 class CardDetailActivity : AppCompatActivity() {
 
     companion object {
+        private const val EXTRA_COUNTRY_INFO = "countryInfo"
         private const val EXTRA_PROVIDER = "provider"
         private const val EXTRA_CARD = "card"
         private const val EXTRA_FOOTER = "footer"
 
         fun getIntent(
             context: Context,
+            countryInfo: CountryInfo,
             provider: SecurityCardProvider,
             card: SecurityCard,
             footer: MarketplaceFooter,
         ) = Intent(context, CardDetailActivity::class.java).apply {
+            putExtra(EXTRA_COUNTRY_INFO, countryInfo)
             putExtra(EXTRA_PROVIDER, provider)
             putExtra(EXTRA_CARD, card)
             putExtra(EXTRA_FOOTER, footer)
@@ -56,6 +61,9 @@ class CardDetailActivity : AppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: CardDetailViewModel.Factory
+
+    @Inject
+    lateinit var navigator: Navigator
     
     private val viewModel: CardDetailViewModel by viewModels {
         CardDetailViewModelFactory(
@@ -130,7 +138,7 @@ class CardDetailActivity : AppCompatActivity() {
         binding.viewFooter.setOnClickListener {
             currencySelectionSharedViewModel.rotateCurrencySelection()
         }
-        binding.buttonContinue.setOnClickListener { navigateToProviderWebsite() }
+        binding.buttonContinue.setOnClickListener { navigateToShippingAddress() }
     }
 
     private fun handleViewState(viewState: CardDetailViewModel.ViewState) {
@@ -139,7 +147,7 @@ class CardDetailActivity : AppCompatActivity() {
         binding.imageViewCard.setImageResource(viewState.card.imageRes)
 
         binding.specsContainer.removeAllViews()
-        viewState.card.primarySpecs.forEach { spec ->
+        viewState.card.specs.getValue("primary").forEach { spec ->
             val specBinding = ItemCardSpecBinding.inflate(layoutInflater, binding.specsContainer, false)
             specBinding.imageViewIcon.setImageResource(spec.iconRes)
             specBinding.textViewLabel.text = spec.label
@@ -189,10 +197,14 @@ class CardDetailActivity : AppCompatActivity() {
     }
 
     private fun navigateToFullSpecs() {
-        // TODO: Navigate to full specs activity
+        navigator.navigateToSecurityCardsFullSpecs(this, requireNotNull(intent.getParcelableExtra(EXTRA_CARD)))
     }
 
-    private fun navigateToProviderWebsite() {
-        // TODO: Navigate to provider website
+    private fun navigateToShippingAddress() {
+        navigator.navigateToShippingAddress(
+            this,
+            requireNotNull(intent.getParcelableExtra(EXTRA_COUNTRY_INFO)),
+            requireNotNull(intent.getParcelableExtra(EXTRA_PROVIDER)),
+        )
     }
 }

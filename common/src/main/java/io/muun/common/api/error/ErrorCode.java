@@ -409,6 +409,11 @@ public enum ErrorCode implements BaseErrorCode {
     ),
     INVALID_DERIVATION_PATH(
             2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
+    ),
+
+    // nfc errors
+    NFC_FEASIBLE_AREA_NOT_FOUND(
+            8126, StatusCode.CLIENT_FAILURE, "No NFC feasible area found for device model"
     );
 
     static {

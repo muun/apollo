@@ -3,8 +3,6 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -13,7 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/google/uuid"
+
 	"github.com/muun/libwallet/app_provided_data"
 )
 
@@ -34,13 +34,15 @@ type HoustonResponseError struct {
 	DeveloperMessage string
 	ErrorCode        int
 	Message          string
-	RequestId        int
+	RequestId        int //nolint:staticcheck // TODO: struct field RequestId should be RequestID
 	Status           int
 }
 
 // Satisfy "error" interface for HoustonResponseError
 func (e *HoustonResponseError) Error() string {
-	errorJson, err := json.Marshal(e)
+	errorJson, err := json.Marshal( //nolint:staticcheck // TODO: var errorJson should be errorJSON
+		e,
+	)
 	if err != nil {
 		// This should never happen since the error response should be unmarshalled previously
 		slog.Error("failed to parse HoustonResponseError", slog.Any("error", err))
@@ -70,12 +72,12 @@ func (r request[T]) do(c *client) (T, error) {
 	var result T
 
 	if c.configurator == nil {
-		return zero, fmt.Errorf("client.Do: CurrentRequestConfigurator not set")
+		return zero, errors.Errorf("client.Do: CurrentRequestConfigurator not set")
 	}
 
 	session, err := c.configurator.Session()
 	if err != nil {
-		return zero, fmt.Errorf("client.Do: failed getting global headers: %w", err)
+		return zero, errors.Errorf("client.Do: failed getting global headers: %w", err)
 	}
 
 	var body []byte
@@ -83,29 +85,33 @@ func (r request[T]) do(c *client) (T, error) {
 		// FIXME: make sure we serialize things same as houston, mainly dates
 		body, err = json.Marshal(r.Body)
 		if err != nil {
-			return zero, fmt.Errorf("client.Do: failed to marshall json: %w", err)
+			return zero, errors.Errorf("client.Do: failed to marshall json: %w", err)
 		}
 	}
 
 	idempotencyKey := uuid.New().String()
 
-	baseUrl, err := url.Parse(session.BaseURL)
+	baseUrl, err := url.Parse( //nolint:staticcheck // TODO: var baseUrl should be baseURL
+		session.BaseURL,
+	)
 	if err != nil {
-		return zero, fmt.Errorf("client.Do: failed to parse session BaseUrl: %w", err)
+		return zero, errors.Errorf("client.Do: failed to parse session BaseUrl: %w", err)
 	}
 	relativePath, err := url.Parse(r.Path)
 	if err != nil {
-		return zero, fmt.Errorf("client.Do: failed to parse request Path: %w", err)
+		return zero, errors.Errorf("client.Do: failed to parse request Path: %w", err)
 	}
-	httpUrl := baseUrl.ResolveReference(relativePath)
+	httpUrl := baseUrl.ResolveReference( //nolint:staticcheck // TODO: var httpUrl should be httpURL
+		relativePath,
+	)
 
-	httpRequest, err := http.NewRequest(
+	httpRequest, err := http.NewRequest( //nolint:noctx // TODO: use http.NewRequestWithContext
 		r.Method,
 		httpUrl.String(),
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return zero, fmt.Errorf("client.Do: failed to build request: %w", err)
+		return zero, errors.Errorf("client.Do: failed to build request: %w", err)
 	}
 
 	header := httpRequest.Header
@@ -147,11 +153,14 @@ func (r request[T]) do(c *client) (T, error) {
 		client := http.Client{
 			Timeout: timeout,
 		}
-		response, err := client.Do(httpRequest)
+		response, err := client.Do(httpRequest) //nolint:bodyclose // TODO: close response body
 		if err != nil {
 			var urlError *url.Error
-			lastError := fmt.Errorf("client.Do: request failed: %w", err)
-			isUrlError := errors.As(err, &urlError)
+			lastError := errors.Errorf("client.Do: request failed: %w", err)
+			isUrlError := errors.As( //nolint:staticcheck // TODO: var isUrlError should be isURLError
+				err,
+				&urlError,
+			)
 			if isUrlError && (urlError.Timeout() || urlError.Temporary()) {
 				// Retries are in order
 				continue
@@ -162,7 +171,7 @@ func (r request[T]) do(c *client) (T, error) {
 
 		responseBody, err := io.ReadAll(response.Body)
 		if err != nil {
-			return zero, fmt.Errorf("client.Do: failed to parse error response: %w", err)
+			return zero, errors.Errorf("client.Do: failed to parse error response: %w", err)
 		}
 
 		if response.StatusCode >= 400 {
@@ -171,7 +180,7 @@ func (r request[T]) do(c *client) (T, error) {
 			houstonError := &HoustonResponseError{}
 			err = json.Unmarshal(responseBody, houstonError)
 			if err != nil {
-				return zero, fmt.Errorf("client.Do: failed to parse error response: %w", err)
+				return zero, errors.Errorf("client.Do: failed to parse error response: %w", err)
 			}
 
 			if response.StatusCode >= 500 {

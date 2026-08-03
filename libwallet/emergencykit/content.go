@@ -1,7 +1,7 @@
 package emergencykit
 
 type pageData struct {
-	Css     string
+	Css     string //nolint:staticcheck // TODO: struct field Css should be CSS
 	Content string
 }
 

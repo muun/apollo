@@ -1,11 +1,12 @@
 package walletdb
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+
 	"github.com/muun/libwallet/operation"
 )
 
@@ -26,10 +27,11 @@ type FeeBumpFunctionSet struct {
 type FeeBumpFunction struct {
 	gorm.Model
 	Position uint
-	// PartialLinearFunctions establishes a foreign key relationship with the PartialLinearFunction table,
-	// where 'FunctionPosition' in PartialLinearFunction references 'Position' in FeeBumpFunction.
-	PartialLinearFunctions []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`
-	SetID                  uint                    `sql:"not null"`
+	// PartialLinearFunctions establishes a foreign key relationship with the PartialLinearFunction
+	// table, where 'FunctionPosition' in PartialLinearFunction references 'Position' in
+	// FeeBumpFunction.
+	PartialLinearFunctions []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`                //nolint:lll
+	SetID                  uint                    `                                                        sql:"not null"` //nolint:lll
 }
 
 type PartialLinearFunction struct {
@@ -41,65 +43,68 @@ type PartialLinearFunction struct {
 	FunctionPosition   uint
 }
 
-type GORMFeeBumpRepository struct {
-	db *gorm.DB
+type feeBumpRepository struct {
+	withDB gormProvider
 }
 
-func (r *GORMFeeBumpRepository) Store(feeBumpFunctionSet *operation.FeeBumpFunctionSet) error {
+func (r *feeBumpRepository) gorm(fn gormOperation) error {
+	return r.withDB(fn)
+}
+
+func (r *feeBumpRepository) Store(feeBumpFunctionSet *operation.FeeBumpFunctionSet) error {
 	dbFeeBumpFunctionSet := mapToDBFeeBumpFunctions(feeBumpFunctionSet)
-
-	tx := r.db.Begin()
-
-	// Remove old data before store updated functions
-	err := removeAllInTransaction(tx)
-	if err != nil {
-		return fmt.Errorf("error when trying to remove old fee bump functions: %w", err)
-	}
-
-	if err := tx.Create(&dbFeeBumpFunctionSet).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("failed to save fee bump functions: %w", err)
-	}
-	return nil
+	return r.gorm(func(db *gorm.DB) error {
+		tx := db.Begin()
+		if err := removeAllInTransaction(tx); err != nil {
+			return errors.Errorf("error when trying to remove old fee bump functions: %w", err)
+		}
+		if err := tx.Create(&dbFeeBumpFunctionSet).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		if err := tx.Commit().Error; err != nil {
+			return errors.Errorf("failed to save fee bump functions: %w", err)
+		}
+		return nil
+	})
 }
 
-func (r *GORMFeeBumpRepository) GetAll() (*operation.FeeBumpFunctionSet, error) {
-	var dbFeeBumpFunctionSet FeeBumpFunctionSet
-
-	result := r.db.Preload("FeeBumpFunctions.PartialLinearFunctions").Find(&dbFeeBumpFunctionSet)
-
-	if result.Error != nil && !gorm.IsRecordNotFoundError(result.Error) {
-		return nil, result.Error
-	}
-
-	feeBumpFunctionSet := mapToOperationFeeBumpFunctions(dbFeeBumpFunctionSet)
-
-	return feeBumpFunctionSet, nil
+func (r *feeBumpRepository) GetAll() (*operation.FeeBumpFunctionSet, error) {
+	var result *operation.FeeBumpFunctionSet
+	err := r.gorm(func(db *gorm.DB) error {
+		var dbFeeBumpFunctionSet FeeBumpFunctionSet
+		res := db.Preload("FeeBumpFunctions.PartialLinearFunctions").Find(&dbFeeBumpFunctionSet)
+		if res.Error != nil && !gorm.IsRecordNotFoundError(res.Error) {
+			return res.Error
+		}
+		result = mapToOperationFeeBumpFunctions(dbFeeBumpFunctionSet)
+		return nil
+	})
+	return result, err
 }
 
-func (r *GORMFeeBumpRepository) GetCreationDate() (*time.Time, error) {
-	var dbFeeBumpFunctionSet FeeBumpFunctionSet
-	result := r.db.First(&dbFeeBumpFunctionSet)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &dbFeeBumpFunctionSet.CreatedAt, nil
+func (r *feeBumpRepository) GetCreationDate() (*time.Time, error) {
+	var result *time.Time
+	err := r.gorm(func(db *gorm.DB) error {
+		var dbFeeBumpFunctionSet FeeBumpFunctionSet
+		res := db.First(&dbFeeBumpFunctionSet)
+		if res.Error != nil {
+			return res.Error
+		}
+		result = &dbFeeBumpFunctionSet.CreatedAt
+		return nil
+	})
+	return result, err
 }
 
-func (r *GORMFeeBumpRepository) RemoveAll() error {
-	tx := r.db.Begin()
-	err := removeAllInTransaction(tx)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit().Error
+func (r *feeBumpRepository) RemoveAll() error {
+	return r.gorm(func(db *gorm.DB) error {
+		tx := db.Begin()
+		if err := removeAllInTransaction(tx); err != nil {
+			return err
+		}
+		return tx.Commit().Error
+	})
 }
 
 func removeAllInTransaction(tx *gorm.DB) error {
@@ -149,18 +154,23 @@ func mapToDBFeeBumpFunctions(feeBumpFunctionSet *operation.FeeBumpFunctionSet) F
 	}
 }
 
-func mapToOperationFeeBumpFunctions(dbFeeBumpFunctionSet FeeBumpFunctionSet) *operation.FeeBumpFunctionSet {
+func mapToOperationFeeBumpFunctions(
+	dbFeeBumpFunctionSet FeeBumpFunctionSet,
+) *operation.FeeBumpFunctionSet {
 	dbFeeBumpFunctions := dbFeeBumpFunctionSet.FeeBumpFunctions
 	var feeBumpFunctions []*operation.FeeBumpFunction
 	for _, dbFeeBumpFunction := range dbFeeBumpFunctions {
 		var partialLinearFunctions []*operation.PartialLinearFunction
 		for _, dbPartialLinearFunction := range dbFeeBumpFunction.PartialLinearFunctions {
-			partialLinearFunctions = append(partialLinearFunctions, &operation.PartialLinearFunction{
-				LeftClosedEndpoint: dbPartialLinearFunction.LeftClosedEndpoint,
-				RightOpenEndpoint:  dbPartialLinearFunction.RightOpenEndpoint,
-				Slope:              dbPartialLinearFunction.Slope,
-				Intercept:          dbPartialLinearFunction.Intercept,
-			})
+			partialLinearFunctions = append(
+				partialLinearFunctions,
+				&operation.PartialLinearFunction{
+					LeftClosedEndpoint: dbPartialLinearFunction.LeftClosedEndpoint,
+					RightOpenEndpoint:  dbPartialLinearFunction.RightOpenEndpoint,
+					Slope:              dbPartialLinearFunction.Slope,
+					Intercept:          dbPartialLinearFunction.Intercept,
+				},
+			)
 		}
 
 		feeBumpFunctions = append(

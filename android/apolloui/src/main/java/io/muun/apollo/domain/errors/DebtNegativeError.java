@@ -1,6 +1,14 @@
 package io.muun.apollo.domain.errors;
 
+import org.jetbrains.annotations.NotNull;
+
 public class DebtNegativeError extends MuunError {
+
+    @NotNull
+    @Override
+    public ErrorClassification getClassification() {
+        return ErrorClassification.UNEXPECTED;
+    }
 
     public DebtNegativeError(
             final Long ntsValidAtOperationHid,

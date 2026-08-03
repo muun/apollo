@@ -1,11 +1,11 @@
 package io.muun.common.model;
 
-import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.muun.common.model.BtcAmount.MSATS_PER_BTC;
@@ -48,7 +48,7 @@ public class BtcAmountTest {
      */
     @Parameters(name = "{index}: Amount {0,number,0.00000000000} btc")
     public static Iterable<Object> allOrdersOfMagnitude() {
-        final List<Object> values = Lists.newArrayList();
+        final List<Object> values = new ArrayList<>();
 
         for (int i = 1; i < DECIMAL_DIGITS; i++) {
             values.add(multipleOfOneMilliSatoshi(0, i));

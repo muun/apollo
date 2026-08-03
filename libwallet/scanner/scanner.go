@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/electrum"
 )
@@ -21,13 +22,11 @@ const batchSize = 100
 //
 // Servers are provided by a ServerProvider instance, and rotated when unreachable or faulty. We
 // trust ServerProvider to prioritize good targets.
-//
 // Batching is leveraged when supported by a particular server, falling back to sequential requests
 // for single addresses (which is much slower, but can get us out of trouble when better servers are
 // not available).
-//
-// Timeouts and cancellations are an internal affair, not configurable by callers. See taskTimeout
-// declared above.
+// Timeouts and cancellations are an internal affair, not configurable by callers.
+// See taskTimeout declared above.
 //
 // Concurrency control works by using an electrum.Pool, limiting access to clients, and not an
 // internal worker pool. This is the Go way (limiting access to resources rather than having a fixed
@@ -72,7 +71,11 @@ type scanContext struct {
 }
 
 // NewScanner creates an initialized Scanner.
-func NewScanner(connectionPool *electrum.Pool, electrumProvider *electrum.ServerProvider, chainParams *chaincfg.Params) *Scanner {
+func NewScanner(
+	connectionPool *electrum.Pool,
+	electrumProvider *electrum.ServerProvider,
+	chainParams *chaincfg.Params,
+) *Scanner {
 	return &Scanner{
 		pool:        connectionPool,
 		servers:     electrumProvider,
@@ -112,7 +115,11 @@ func (s *Scanner) startCollect(ctx *scanContext) {
 	for {
 		select {
 		case result := <-ctx.results:
-			s.log.Info(fmt.Sprintf("Scanned %d, found %d", len(result.Task.addresses), len(result.Utxos)), "error", result.Err)
+			s.log.Info(
+				fmt.Sprintf("Scanned %d, found %d", len(result.Task.addresses), len(result.Utxos)),
+				"error",
+				result.Err,
+			)
 
 			newReport := *ctx.reportCache // create a new private copy
 			ctx.reportCache = &newReport
@@ -122,8 +129,10 @@ func (s *Scanner) startCollect(ctx *scanContext) {
 				ctx.reportCache.Err = result.Err
 				ctx.reports <- ctx.reportCache
 
-				close(ctx.stopScan) // failed after several retries, we give up and terminate all tasks
-				close(ctx.reports)  // close the report channel to let callers know we're done
+				close(
+					ctx.stopScan,
+				) // failed after several retries, we give up and terminate all tasks
+				close(ctx.reports) // close the report channel to let callers know we're done
 				return
 			}
 
@@ -173,12 +182,15 @@ func (s *Scanner) startScan(ctx *scanContext) {
 	close(ctx.stopCollect)
 }
 
-func (s *Scanner) scanBatch(ctx *scanContext, client *electrum.Client, batch []libwallet.MuunAddress) {
-	// NOTE:
-	// We begin by building the task, passing our selected Client. Since we're choosing the instance,
-	// it's our job to control acquisition and release of Clients to prevent sharing (remember,
-	// clients are single-user). The task won't enforce this safety measure (it can't), it's fully
-	// up to us.
+func (s *Scanner) scanBatch(
+	ctx *scanContext,
+	client *electrum.Client,
+	batch []libwallet.MuunAddress,
+) {
+	// NOTE: we begin by building the task, passing our selected Client. Since we're choosing the
+	// instance, it's our job to control acquisition and release of Clients to prevent sharing
+	// (remember, clients are single-user). The task won't enforce this safety measure (it can't),
+	// it's fully up to us.
 	task := &scanTask{
 		servers:     s.servers,
 		client:      client,

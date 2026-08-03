@@ -55,8 +55,4 @@ abstract class QrPresenter<ViewT : QrView> : SingleFragmentPresenter<ViewT, QrPa
     fun handleNotificationPermissionPrompt() {
         parentPresenter.handleNotificationPermissionPrompt()
     }
-
-    fun reportNotificationPermissionAsked() {
-        parentPresenter.reportNotificationPermissionAsked()
-    }
 }

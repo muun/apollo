@@ -1,19 +1,24 @@
 package addresses
 
 import (
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/musig"
 )
 
-// CreateAddressV5 returns a P2TR WalletAddress using Musig2v040Muun with the signing and cosigning keys.
-func CreateAddressV5(userKey, muunKey *hdkeychain.ExtendedKey, path string, network *chaincfg.Params) (*WalletAddress, error) {
+// CreateAddressV5 returns a P2TR WalletAddress using Musig2v040Muun with the signing and cosigning
+// keys.
+func CreateAddressV5(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	path string,
+	network *chaincfg.Params,
+) (*WalletAddress, error) {
 	witnessProgram, err := CreateWitnessScriptV5(userKey, muunKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate witness script v5: %w", err)
+		return nil, errors.Errorf("failed to generate witness script v5: %w", err)
 	}
 
 	address, err := btcutilw.NewAddressTaprootKey(witnessProgram, network)
@@ -31,11 +36,11 @@ func CreateAddressV5(userKey, muunKey *hdkeychain.ExtendedKey, path string, netw
 func CreateWitnessScriptV5(userKey, muunKey *hdkeychain.ExtendedKey) ([]byte, error) {
 	userPublicKey, err := userKey.ECPubKey()
 	if err != nil {
-		return nil, fmt.Errorf("error getting pub key: %w", err)
+		return nil, errors.Errorf("error getting pub key: %w", err)
 	}
 	muunPublicKey, err := muunKey.ECPubKey()
 	if err != nil {
-		return nil, fmt.Errorf("error getting pub key: %w", err)
+		return nil, errors.Errorf("error getting pub key: %w", err)
 	}
 
 	pubKeys := [][]byte{
@@ -47,7 +52,7 @@ func CreateWitnessScriptV5(userKey, muunKey *hdkeychain.ExtendedKey) ([]byte, er
 
 	aggregateKey, err := musig.Musig2CombinePubKeysWithTweak(musig.Musig2v040Muun, pubKeys, tweak)
 	if err != nil {
-		return nil, fmt.Errorf("error combining keys: %w", err)
+		return nil, errors.Errorf("error combining keys: %w", err)
 	}
 
 	xOnlyCombined := aggregateKey.FinalKey.SerializeCompressed()[1:]

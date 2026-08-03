@@ -40,7 +40,7 @@ public final class Optional<ValueT> {
     /**
      * Optional with the given value if it's not null or empty optional otherwise.
      */
-    public static <ValueT> Optional<ValueT> ofNullable(ValueT value) {
+    public static <ValueT> Optional<ValueT> ofNullable(@Nullable ValueT value) {
         return value == null ? Optional.empty() : of(value);
     }
 
@@ -281,8 +281,10 @@ public final class Optional<ValueT> {
     public interface Mapper<SourceT, ResultT> {
 
         /**
-         * Transform an object to another.
+         * Transform an object to another. May return null: {@link Optional#map} turns it into
+         * an empty optional, while {@link Optional#flatMap} rejects it at runtime.
          */
+        @Nullable
         ResultT map(SourceT source);
     }
 }

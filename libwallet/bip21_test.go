@@ -42,15 +42,15 @@ func TestGenerateBip21Uri(t *testing.T) {
 		},
 		// We do not support description/message in our receive bitcoin uris, yet ;)
 		//{
-		//	name: "completeValidAddress",
-		//	args: args{&MuunPaymentURI{
-		//		Address: address,
-		//		Amount:  "1.2",
-		//		Label:   "hola",
-		//		Message: "mensaje con espacios",
-		//		Uri:     bitcoinScheme + completeURI,
-		//	}},
-		//	want: bitcoinScheme + completeURI,
+		//    name: "completeValidAddress",
+		//    args: args{&MuunPaymentURI{
+		//        Address: address,
+		//        Amount:  "1.2",
+		//        Label:   "hola",
+		//        Message: "mensaje con espacios",
+		//        Uri:     bitcoinScheme + completeURI,
+		//    }},
+		//    want: bitcoinScheme + completeURI,
 		//},
 		{
 			name: "BIP21 with lightning",
@@ -115,7 +115,11 @@ func TestGenerateBip21Uri(t *testing.T) {
 			args: args{&MuunPaymentURI{
 				Address: address,
 				Amount:  "0.00000019",
-				Uri:     bitcoinScheme + address + "?amount=0.00000019&" + lightningParam + invoice19Sat,
+				Uri: bitcoinScheme +
+					address +
+					"?amount=0.00000019&" +
+					lightningParam +
+					invoice19Sat,
 
 				Invoice: &Invoice{
 					RawInvoice:      invoice19Sat,
@@ -162,10 +166,19 @@ func TestGenerateBip21Uri(t *testing.T) {
 
 					var invoiceDiff = ""
 					if !reflect.DeepEqual(uri.Invoice, tt.args.uri.Invoice) {
-						invoiceDiff = fmt.Sprintf("Invoice = %+v, want %+v", uri.Invoice, tt.args.uri.Invoice)
+						invoiceDiff = fmt.Sprintf(
+							"Invoice = %+v, want %+v",
+							uri.Invoice,
+							tt.args.uri.Invoice,
+						)
 					}
 
-					t.Errorf("GenerateBip21Uri() gen + parse = %+v, want %+v. %v", uri, tt.args.uri, invoiceDiff)
+					t.Errorf(
+						"GenerateBip21Uri() gen + parse = %+v, want %+v. %v",
+						uri,
+						tt.args.uri,
+						invoiceDiff,
+					)
 
 				}
 			}

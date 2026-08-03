@@ -8,8 +8,8 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.data.preferences.AuthRepository;
 import io.muun.apollo.data.preferences.ClientVersionRepository;
 import io.muun.apollo.domain.ClipboardManager;
-import io.muun.apollo.domain.EmailReportManager;
 import io.muun.apollo.domain.action.base.ActionState;
+import io.muun.apollo.domain.action.debug.BuildErrorEmailReportAction;
 import io.muun.apollo.domain.action.session.LogoutAction;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
@@ -19,13 +19,10 @@ import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.errors.TooManyRequestsError;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.report.EmailReport;
-import io.muun.apollo.domain.model.report.ErrorReport;
-import io.muun.apollo.domain.model.report.ErrorReportBuilder;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.Email;
-import io.muun.apollo.presentation.app.Logcat;
 import io.muun.apollo.presentation.app.Navigator;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.common.Optional;
@@ -36,7 +33,9 @@ import io.muun.common.rx.RxHelper;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
@@ -50,6 +49,7 @@ import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
+import java.util.List;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
@@ -113,10 +113,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
     protected ClipboardManager clipboardManager;
 
     @Inject
-    protected EmailReportManager emailReportManager;
-
-    @Inject
-    protected Logcat logcat;
+    protected BuildErrorEmailReportAction buildErrorEmailReportAction;
 
     @Inject
     protected BasePresenter() {
@@ -162,6 +159,7 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         setUpNetworkInfo();
         setUpDeprecatedClientVersionCheck();
         setUpSessionExpiredCheck();
+        setUpBuildErrorEmailReportAction();
     }
 
     @Override
@@ -473,6 +471,31 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
         subscribeTo(observable);
     }
 
+    @VisibleForTesting
+    protected void setUpBuildErrorEmailReportAction() {
+        final Observable<ActionState<EmailReport>> observable =
+                buildErrorEmailReportAction.getState()
+                        // Can't handle loading state reliably since BaseView doens't enforce
+                        // setLoading()
+                        .doOnNext(state -> {
+                            switch (state.getKind()) {
+                                case VALUE:
+                                    onErrorEmailReportReady(state.getValue());
+                                    break;
+                                case ERROR:
+                                    Timber.e(
+                                            state.getError(),
+                                            "Failed to build error email report"
+                                    );
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+
+        subscribeTo(observable);
+    }
+
     private void checkClientVersion(int minClientVersion) {
         if (shouldCheckClientState() && Globals.INSTANCE.getVersionCode() < minClientVersion) {
             throw new DeprecatedClientVersionError();
@@ -540,27 +563,38 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
 
     @Override
     public void sendErrorReport(Throwable error) {
+        buildErrorEmailReportAction.run(error, this.getClass().getSimpleName());
+    }
 
-        final ErrorReport report = ErrorReportBuilder.INSTANCE.build(error);
-        analytics.attachAnalyticsMetadata(report);
-
-        final EmailReport emailReport = emailReportManager
-                .buildEmailReport(report, this.getClass().getSimpleName(), false);
-
+    private void onErrorEmailReportReady(EmailReport emailReport) {
         Intent emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), emailReport);
 
+        // Grant URI permissions to email apps for attachments
+        final List<ResolveInfo> resInfoList = getContext().getPackageManager()
+                .queryIntentActivities(emailIntent, 0);
+
         try {
-            logcat.addLogsAsAttachment(emailIntent);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                for (Uri uri : emailReport.getAttachmentUris()) {
+                    getContext().grantUriPermission(
+                            resolveInfo.activityInfo.packageName,
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    );
+                }
+            }
         } catch (Throwable t) {
             // Avoid crashing if ANYTHING goes wrong while trying to attach logs to email
-            Timber.i("Error while attaching logs: %s", t.getMessage());
+            Timber.i("Error granting URI permission: %s", t.getMessage());
 
-            // Build EmailReport with stacktrace "trimmed" to avoid crashing at startActivity
-            // Note: We may have to cut down on breadcrumbs or other metadata if this is still
-            // a problem.
-            final EmailReport abridgedEmailReport = emailReportManager
-                    .buildAbridgedEmailReport(report, this.getClass().getSimpleName());
-            emailIntent = Email.INSTANCE.buildEmailReportIntent(getContext(), abridgedEmailReport);
+            // Build EmailReport with stacktrace "trimmed" to avoid crashing.
+            // Note: We may have to cut down on breadcrumbs or other metadata if this is
+            // still a problem.
+            final EmailReport abridgedEmailReport = emailReport.abridge();
+            emailIntent = Email.INSTANCE.buildEmailReportIntent(
+                    getContext(),
+                    abridgedEmailReport
+            );
         }
 
         if (Email.INSTANCE.hasEmailAppInstalled(getContext())) {

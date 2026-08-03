@@ -89,10 +89,6 @@ class TaprootSetupPresenter @Inject constructor(
         driveUploader.open(context, uploadedFile!!)
     }
 
-    override fun saveEmergencyKitAgain() {
-        goToStep(TaprootSetupStep.SAVE)
-    }
-
     override fun showEmergencyKitVerifyHelp() {
         goToStep(TaprootSetupStep.VERIFY_HELP)
     }

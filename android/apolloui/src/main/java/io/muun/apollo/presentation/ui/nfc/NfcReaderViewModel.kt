@@ -24,6 +24,7 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.ERROR_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_ERROR
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CARD_TAP_PARAM
+import io.muun.apollo.domain.errors.nfc.NoFeasibleZoneForModelError
 import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.libwallet.errors.ErrorDetailCode
 import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
@@ -32,7 +33,6 @@ import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.selector.FeatureSelector
 import io.muun.apollo.presentation.ui.nfc.events.GestureEvent
 import io.muun.apollo.presentation.ui.nfc.events.ISensorEvent
-import io.muun.common.utils.Encodings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -146,18 +146,9 @@ class NfcReaderViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             nfcSession.connect()
             val nfcBridger = nfcBridgerFactory.forSession(nfcSession)
-            val challengeMessage = "testing NFC in Android"
 
-            if (featureSelector.get(MuunFeature.NFC_CARD)) {
-                val signedMessageHex = libwalletClient.securityCardSignMessage(
-                    nfcBridger,
-                    challengeMessage
-                )
-                Timber.d("NfcReaderViewModel: ${Encodings.bytesToHex(signedMessageHex)}")
-
-            } else if (featureSelector.get(MuunFeature.NFC_CARD_V2)) {
+            if (featureSelector.get(MuunFeature.NFC_CARD_V2)) {
                 libwalletClient.securityCardV2SignMessage(nfcBridger)
-
             } else {
                 // this shouldn't happen
                 Timber.e("No security card enabled in nfc reader activity")
@@ -267,7 +258,11 @@ class NfcReaderViewModel @Inject constructor(
                     _viewState.tryEmit(ViewState.Scanning(feasibleZone))
                 },
                 { error ->
-                    _viewCommand.tryEmit(ViewCommand.Error(error.message ?: ""))
+                    if (error is NoFeasibleZoneForModelError) {
+                        _viewState.tryEmit(ViewState.Scanning(null))
+                    } else {
+                        _viewCommand.tryEmit(ViewCommand.Error(error.message ?: ""))
+                    }
                 }
             )
     }

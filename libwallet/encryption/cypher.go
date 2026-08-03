@@ -7,13 +7,13 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
-	"errors"
-	"fmt"
 	"log/slog"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/btcutil/base58"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/hdpath"
 )
 
@@ -32,7 +32,8 @@ const maxDerivationPathLen = 1000
 // maxSignatureLen is a safety limit to avoid giant allocations
 const maxSignatureLen = 200
 
-// minNonceLen is the safe minimum we'll set for the nonce. This is the default for golang, but it's not exposed.
+// minNonceLen is the safe minimum we'll set for the nonce. This is the default for golang, but it's
+// not exposed.
 const minNonceLen = 12
 
 type HdPubKeyEncrypter struct {
@@ -42,7 +43,8 @@ type HdPubKeyEncrypter struct {
 }
 
 func (e *HdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
-	// Uses AES128-GCM with associated data. ECDHE is used for key exchange and ECDSA for authentication.
+	// Uses AES128-GCM with associated data. ECDHE is used for key exchange
+	// and ECDSA for authentication.
 	// The goal is to be able to send an arbitrary message to a 3rd party or our future selves via
 	// an intermediary which has knowledge of public keys for all parties involved.
 	//
@@ -55,13 +57,14 @@ func (e *HdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 	//   * The derivation path for his pub key
 	//   * The ephemeral key used for ECDH
 	//   * The version code of this scheme
-	// 5. HMAC the encrypted payload and the metadata so the receiver can check it hasn't been tampered
+	// 5. HMAC the encrypted payload and the metadata so the receiver can
+	// check it hasn't been tampered
 	// 6. Add the nonce to the payload so the receiver can actually decrypt the message.
 	// The nonce can't be covered by the HMAC since it's used to generate it.
 	// 7. Profit!
 	//
-	// The implementation actually use an AES128-GCM with is an AEAD, so the encryption and HMAC all happen
-	// at the same time.
+	// The implementation actually use an AES128-GCM with is an AEAD, so the encryption and HMAC all
+	// happen at the same time.
 
 	signingKey := e.SenderKey
 	encryptionKey := e.ReceiverKey
@@ -73,40 +76,40 @@ func (e *HdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 	hash := sha256.Sum256(signaturePayload)
 	senderSignature, err := ecdsa.SignCompact(signingKey, hash[:], false)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to sign payload: %w", err)
+		return "", errors.Errorf("Encrypt: failed to sign payload: %w", err)
 	}
 
 	// plaintext is "senderSignature || payload"
 	plaintext := bytes.NewBuffer(make([]byte, 0, 2+len(payload)+2+len(senderSignature)))
 	err = addVariableBytes(plaintext, senderSignature)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to add senderSignature: %w", err)
+		return "", errors.Errorf("Encrypt: failed to add senderSignature: %w", err)
 	}
 
 	err = addVariableBytes(plaintext, payload)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to add payload: %w", err)
+		return "", errors.Errorf("Encrypt: failed to add payload: %w", err)
 	}
 
 	pubEph, sharedSecret, err := GenerateSharedEncryptionSecretForAES(encryptionKey)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to generate shared encryption key: %w", err)
+		return "", errors.Errorf("Encrypt: failed to generate shared encryption key: %w", err)
 	}
 
 	blockCipher, err := aes.NewCipher(sharedSecret)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: new aes failed: %w", err)
+		return "", errors.Errorf("Encrypt: new aes failed: %w", err)
 	}
 
 	gcm, err := cipher.NewGCM(blockCipher)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: new gcm failed: %w", err)
+		return "", errors.Errorf("Encrypt: new gcm failed: %w", err)
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	_, err = rand.Read(nonce)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to generate nonce: %w", err)
+		return "", errors.Errorf("Encrypt: failed to generate nonce: %w", err)
 	}
 
 	// additionalData is "version || pubEph || ReceiverKeyPath || nonceLen"
@@ -117,13 +120,13 @@ func (e *HdPubKeyEncrypter) Encrypt(payload []byte) (string, error) {
 
 	err = addVariableBytes(result, []byte(e.ReceiverKeyPath))
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to add receiver path: %w", err)
+		return "", errors.Errorf("Encrypt: failed to add receiver path: %w", err)
 	}
 
 	nonceLen := uint16(len(nonce))
 	err = binary.Write(result, binary.BigEndian, &nonceLen)
 	if err != nil {
-		return "", fmt.Errorf("Encrypt: failed to add nonce len: %w", err)
+		return "", errors.Errorf("Encrypt: failed to add nonce len: %w", err)
 	}
 
 	ciphertext := gcm.Seal(nil, nonce, plaintext.Bytes(), result.Bytes())
@@ -154,7 +157,8 @@ type HdPrivKeyDecrypter struct {
 
 	// SenderKey optionally holds the pub key used by sender
 	// If the sender is the same as the receiver, set this to nil and set FromSelf to true.
-	// If the sender is unknown, set this to nil. If so, the authenticity of the message won't be validated.
+	// If the sender is unknown, set this to nil. If so, the authenticity of
+	// the message won't be validated.
 	SenderKey *btcec.PublicKey
 
 	// FromSelf is true if this message is from yourself
@@ -162,30 +166,33 @@ type HdPrivKeyDecrypter struct {
 }
 
 func (d *HdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
-	// Uses AES128-GCM with associated data. ECDHE is used for key exchange and ECDSA for authentication.
+	// Uses AES128-GCM with associated data. ECDHE is used for key exchange and ECDSA for
+	// authentication.
 	// See Encrypt further up for an in depth dive into the scheme used
 
 	slog.Info("Libwallet: Decrypting payload " + payload)
 
 	parsed, err := parseEncodedPayload(payload)
 	if err != nil {
-		return nil, fmt.Errorf("Decrypt: failed to parse payload: %w", err)
+		return nil, errors.Errorf("Decrypt: failed to parse payload: %w", err)
 	}
 
 	encryptionKey, verificationKey, err := d.computeKeys(parsed, false)
 	if err != nil {
-		return nil, fmt.Errorf("Decrypt: failed to compute keys: %w", err)
+		return nil, errors.Errorf("Decrypt: failed to compute keys: %w", err)
 	}
 
 	data, err := parsed.decryptAndVerify(encryptionKey, verificationKey)
 	if err != nil {
-		// Save the error why the first attempt failed so we can return it we
-		// shouldn't attempt again.
+		// Save the error why the first attempt failed so we can return it we shouldn't attempt
+		// again.
 		originalError := err
 
-		shouldTryDerivationWithBug, err := d.isPotentiallyAffectedByImplicitHardenedDerivationBug(parsed)
+		shouldTryDerivationWithBug, err := d.isPotentiallyAffectedByImplicitHardenedDerivationBug(
+			parsed,
+		)
 		if err != nil {
-			return nil, fmt.Errorf(
+			return nil, errors.Errorf(
 				"Decrypt: failed to check if affected by derivation bug: %w"+
 					" -- originally failed due to %w", err, originalError,
 			)
@@ -197,12 +204,17 @@ func (d *HdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 
 		encryptionKey, verificationKey, err = d.computeKeys(parsed, true)
 		if err != nil {
-			return nil, fmt.Errorf("Decrypt: failed to compute keys with derivation bug: %w", err)
+			return nil, errors.Errorf(
+				"Decrypt: failed to compute keys with derivation bug: %w", err,
+			)
 		}
 
 		data, err = parsed.decryptAndVerify(encryptionKey, verificationKey)
 		if err != nil {
-			return nil, fmt.Errorf("Decrypt: failed to decrypt payload with derivation bug: %w", err)
+			return nil, errors.Errorf(
+				"Decrypt: failed to decrypt payload with derivation bug: %w",
+				err,
+			)
 		}
 
 		return data, nil
@@ -211,7 +223,10 @@ func (d *HdPrivKeyDecrypter) Decrypt(payload string) ([]byte, error) {
 	return data, nil
 }
 
-func (d *HdPrivKeyDecrypter) computeKeys(parsed decodedPayload, useHardenedDerivationWithBug bool) (*btcec.PrivateKey, *btcec.PublicKey, error) {
+func (d *HdPrivKeyDecrypter) computeKeys(
+	parsed decodedPayload,
+	useHardenedDerivationWithBug bool,
+) (*btcec.PrivateKey, *btcec.PublicKey, error) {
 	var err error
 	var verificationKey *btcec.PublicKey
 
@@ -222,7 +237,11 @@ func (d *HdPrivKeyDecrypter) computeKeys(parsed decodedPayload, useHardenedDeriv
 		receiverKey, err = d.KeyProvider.WithPath(parsed.receiverPath)
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("computeKeys: failed to derive receiver key to path %v: %w", parsed.receiverPath, err)
+		return nil, nil, errors.Errorf(
+			"computeKeys: failed to derive receiver key to path %v: %w",
+			parsed.receiverPath,
+			err,
+		)
 	}
 
 	if d.FromSelf {
@@ -235,19 +254,28 @@ func (d *HdPrivKeyDecrypter) computeKeys(parsed decodedPayload, useHardenedDeriv
 	return receiverKey, verificationKey, nil
 }
 
-func (d *HdPrivKeyDecrypter) isPotentiallyAffectedByImplicitHardenedDerivationBug(parsed decodedPayload) (bool, error) {
+func (d *HdPrivKeyDecrypter) isPotentiallyAffectedByImplicitHardenedDerivationBug(
+	parsed decodedPayload,
+) (bool, error) {
 	if parsed.version != PKEncryptionVersionV1 {
 		return false, nil
 	}
 
 	receiverKeyPath, err := hdpath.Parse(d.KeyProvider.Path())
 	if err != nil {
-		return false, fmt.Errorf("isPotentiallyAffectedByImplicitHardenedDerivationBug: error parsing ReceiverKey path %w", err)
+		return false, errors.Errorf(
+			"isPotentiallyAffectedByImplicitHardenedDerivationBug: "+
+				"error parsing ReceiverKey path %w",
+			err,
+		)
 	}
 
 	pathToDeriveTo, err := hdpath.Parse(parsed.receiverPath)
 	if err != nil {
-		return false, fmt.Errorf("isPotentiallyAffectedByImplicitHardenedDerivationBug: error parsing receiverPath %w", err)
+		return false, errors.Errorf(
+			"isPotentiallyAffectedByImplicitHardenedDerivationBug: error parsing receiverPath %w",
+			err,
+		)
 	}
 
 	for _, index := range pathToDeriveTo.IndexesFrom(receiverKeyPath) {
@@ -273,10 +301,13 @@ func parseEncodedPayload(payload string) (decodedPayload, error) {
 	reader := bytes.NewReader(decoded)
 	version, err := reader.ReadByte()
 	if err != nil {
-		return decodedPayload{}, fmt.Errorf("parseEncodedPayload: failed to read version byte: %w", err)
+		return decodedPayload{}, errors.Errorf(
+			"parseEncodedPayload: failed to read version byte: %w",
+			err,
+		)
 	}
 	if version != PKEncryptionVersionV1 && version != PKEncryptionVersionV2 {
-		return decodedPayload{}, fmt.Errorf("parseEncodedPayload: found key version %v", version)
+		return decodedPayload{}, errors.Errorf("parseEncodedPayload: found key version %v", version)
 	}
 
 	rawPubEph := make([]byte, serializedPublicKeyLength)
@@ -287,7 +318,10 @@ func parseEncodedPayload(payload string) (decodedPayload, error) {
 
 	receiverPath, err := extractVariableString(reader, maxDerivationPathLen)
 	if err != nil {
-		return decodedPayload{}, fmt.Errorf("parseEncodedPayload: failed to extract receiver path: %w", err)
+		return decodedPayload{}, errors.Errorf(
+			"parseEncodedPayload: failed to extract receiver path: %w",
+			err,
+		)
 	}
 
 	// additionalDataSize is Whatever I've read so far plus two bytes for the nonce len
@@ -303,7 +337,10 @@ func parseEncodedPayload(payload string) (decodedPayload, error) {
 	ciphertext := make([]byte, reader.Len())
 	_, err = reader.Read(ciphertext)
 	if err != nil {
-		return decodedPayload{}, fmt.Errorf("parseEncodedPayload: failed to read ciphertext: %w", err)
+		return decodedPayload{}, errors.Errorf(
+			"parseEncodedPayload: failed to read ciphertext: %w",
+			err,
+		)
 	}
 
 	additionalData := decoded[:additionalDataSize]
@@ -318,37 +355,40 @@ func parseEncodedPayload(payload string) (decodedPayload, error) {
 	}, nil
 }
 
-func (p decodedPayload) decryptAndVerify(encryptionKey *btcec.PrivateKey, verificationKey *btcec.PublicKey) ([]byte, error) {
+func (p decodedPayload) decryptAndVerify(
+	encryptionKey *btcec.PrivateKey,
+	verificationKey *btcec.PublicKey,
+) ([]byte, error) {
 	sharedSecret, err := RecoverSharedEncryptionSecretForAES(encryptionKey, p.rawPubEph)
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: failed to recover shared secret: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: failed to recover shared secret: %w", err)
 	}
 
 	blockCipher, err := aes.NewCipher(sharedSecret)
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: new aes failed: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: new aes failed: %w", err)
 	}
 
 	gcm, err := cipher.NewGCMWithNonceSize(blockCipher, len(p.nonce))
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: new gcm failed: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: new gcm failed: %w", err)
 	}
 
 	plaintext, err := gcm.Open(nil, p.nonce, p.ciphertext, p.additionalData)
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: AEAD failed: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: AEAD failed: %w", err)
 	}
 
 	plaintextReader := bytes.NewReader(plaintext)
 
 	sig, err := extractVariableBytes(plaintextReader, maxSignatureLen)
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: failed to read sig: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: failed to read sig: %w", err)
 	}
 
 	data, err := extractVariableBytes(plaintextReader, plaintextReader.Len())
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: failed to extract user data: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: failed to extract user data: %w", err)
 	}
 
 	signatureData := make([]byte, 0, len(sig)+serializedPublicKeyLength)
@@ -357,7 +397,7 @@ func (p decodedPayload) decryptAndVerify(encryptionKey *btcec.PrivateKey, verifi
 	hash := sha256.Sum256(signatureData)
 	signatureKey, _, err := ecdsa.RecoverCompact(sig, hash[:])
 	if err != nil {
-		return nil, fmt.Errorf("decryptAndVerify: failed to verify signature: %w", err)
+		return nil, errors.Errorf("decryptAndVerify: failed to verify signature: %w", err)
 	}
 	if verificationKey != nil && !signatureKey.IsEqual(verificationKey) {
 		return nil, errors.New("decryptAndVerify: signing key mismatch")

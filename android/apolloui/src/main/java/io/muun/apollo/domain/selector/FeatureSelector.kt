@@ -34,7 +34,7 @@ class FeatureSelector @Inject constructor(
         fetch().toBlocking().first().contains(feature)
 
     fun hasSecurityCardEnabled(): Boolean {
-        return get(MuunFeature.NFC_CARD) || get(MuunFeature.NFC_CARD_V2)
+        return get(MuunFeature.NFC_CARD_V2)
     }
 
     /**

@@ -5,11 +5,11 @@ package btcutilw
 // so it's easy to swap out in the future.
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/go-errors/errors"
 )
 
 // DecodeAddress uses btcutil.DecodeAddress for all cases except SegWit version 1, which is handled
@@ -25,7 +25,12 @@ func DecodeAddress(addr string, defaultNet *chaincfg.Params) (btcutil.Address, e
 	// to know is to try:
 	witnessVer, witnessProg, err := decodeSegWitAddressV1(addr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode %s (%v after %w)", addr, err, libErr)
+		return nil, errors.Errorf(
+			"failed to decode %s (%w after %w)",
+			addr,
+			err,
+			libErr,
+		)
 	}
 
 	if witnessVer != 1 {
@@ -52,7 +57,10 @@ type AddressTaprootKey struct {
 // NewAddressTaprootKey returns a new AddressTaprootKey.
 func NewAddressTaprootKey(xOnlyPubKey []byte, net *chaincfg.Params) (*AddressTaprootKey, error) {
 	if len(xOnlyPubKey) != 32 {
-		return nil, fmt.Errorf("witness program must be 32 bytes for p2tr, not %d", len(xOnlyPubKey))
+		return nil, errors.Errorf(
+			"witness program must be 32 bytes for p2tr, not %d",
+			len(xOnlyPubKey),
+		)
 	}
 
 	addr := &AddressTaprootKey{
@@ -113,7 +121,7 @@ func (a *AddressTaprootKey) WitnessProgram() []byte {
 
 func newAddressTaprootKey(hrp string, witnessProg []byte) (*AddressTaprootKey, error) {
 	if len(witnessProg) != 32 {
-		return nil, fmt.Errorf("witness program must be 32 bytes for p2tr")
+		return nil, errors.Errorf("witness program must be 32 bytes for p2tr")
 	}
 
 	addr := &AddressTaprootKey{

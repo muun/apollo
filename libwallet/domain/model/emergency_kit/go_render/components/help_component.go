@@ -19,7 +19,10 @@ type HelpComponent struct {
 	Description string
 }
 
-func NewHelpComponent(pdf *emergency_kit.PdfExtensions, translations *assets.Translations) *HelpComponent {
+func NewHelpComponent(
+	pdf *emergency_kit.PdfExtensions,
+	translations *assets.Translations,
+) *HelpComponent {
 	return &HelpComponent{
 		pdf:         pdf,
 		Title:       translations.Help.Title,
@@ -29,12 +32,22 @@ func NewHelpComponent(pdf *emergency_kit.PdfExtensions, translations *assets.Tra
 
 func (r *HelpComponent) Height() float64 {
 	pageWidth, _ := r.pdf.GetPageSize()
-	textWidth := pageWidth - helpIconMarginLeft - assets.HelpIconSize - helpIconMarginRight - assets.StandardHorizontalMargin
+	textWidth := pageWidth -
+		helpIconMarginLeft -
+		assets.HelpIconSize -
+		helpIconMarginRight -
+		assets.StandardHorizontalMargin
 
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
-	descLines := r.pdf.LineCountWithLetterSpacing(textWidth, r.Description, assets.BodyLetterSpacing)
+	descLines := r.pdf.LineCountWithLetterSpacing(
+		textWidth,
+		r.Description,
+		assets.BodyLetterSpacing,
+	)
 
-	textContentHeight := assets.SubtitleLineHeight + assets.IntraComponentSpacing + descLines*assets.BodyParagraphLineHeight
+	textContentHeight := assets.SubtitleLineHeight +
+		assets.IntraComponentSpacing +
+		descLines*assets.BodyParagraphLineHeight
 
 	return helpSectionMarginTop + helpPaddingVertical + textContentHeight
 }
@@ -49,7 +62,17 @@ func (r *HelpComponent) Render() {
 
 	iconX := helpIconMarginLeft
 	iconY := startY + helpPaddingVertical
-	r.pdf.Image(assets.HelpImageName, iconX, iconY, assets.HelpIconSize, assets.HelpIconSize, false, "", 0, "")
+	r.pdf.Image(
+		assets.HelpImageName,
+		iconX,
+		iconY,
+		assets.HelpIconSize,
+		assets.HelpIconSize,
+		false,
+		"",
+		0,
+		"",
+	)
 
 	textX := helpIconMarginLeft + assets.HelpIconSize + helpIconMarginRight
 	textY := startY + helpPaddingVertical
@@ -63,7 +86,15 @@ func (r *HelpComponent) Render() {
 	descY := textY + assets.SubtitleLineHeight + assets.IntraComponentSpacing
 
 	parts := r.pdf.ParseTextWithLinks(r.Description, []string{"support@muun.com"})
-	r.pdf.RenderMultiStyledText(textX, descY, textWidth, assets.BodyParagraphLineHeight, parts, assets.BodyLetterSpacing, 0)
+	r.pdf.RenderMultiStyledText(
+		textX,
+		descY,
+		textWidth,
+		assets.BodyParagraphLineHeight,
+		parts,
+		assets.BodyLetterSpacing,
+		0,
+	)
 
 	r.pdf.SetY(startY + height)
 }

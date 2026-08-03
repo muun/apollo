@@ -1,7 +1,13 @@
 package io.muun.apollo.presentation.presenters
 
 import android.os.Bundle
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import io.muun.apollo.domain.action.base.ActionState
 import io.muun.apollo.presentation.BasePresentationTest
 import io.muun.apollo.presentation.ui.fragments.enter_email.CreateEmailParentPresenter
@@ -14,9 +20,9 @@ import rx.android.plugins.RxAndroidSchedulersHook
 import rx.schedulers.Schedulers
 import rx.subjects.BehaviorSubject
 
-class CreateEmailPresenterTest: BasePresentationTest() {
+class CreateEmailPresenterTest : BasePresentationTest() {
 
-    private class TestRxAndroidSchedulerHook: RxAndroidSchedulersHook() {
+    private class TestRxAndroidSchedulerHook : RxAndroidSchedulersHook() {
         override fun getMainThreadScheduler(): rx.Scheduler? {
             return Schedulers.trampoline()
         }
@@ -34,7 +40,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should subscribe to parent result`() {
-        val (presenter, parent, submitEmailResult) = sharedInit()
+        val (presenter, parent, _) = sharedInit()
 
         presenter.setUp(Bundle())
         verify(parent, times(1)).watchSubmitEmail()
@@ -42,7 +48,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should display loading while waiting`() {
-        val (presenter, parent, submitEmailResult) = sharedInit()
+        val (presenter, _, submitEmailResult) = sharedInit()
 
         presenter.setUp(Bundle())
         submitEmailResult.onNext(ActionState.createLoading())
@@ -52,7 +58,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should stop on error`() {
-        val (presenter, parent, submitEmailResult) = sharedInit()
+        val (presenter, _, submitEmailResult) = sharedInit()
         val error = Throwable()
 
         presenter.setUp(Bundle())
@@ -63,7 +69,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should not submit invalid emails`() {
-        val (presenter, parent, submitEmailResult) = sharedInit()
+        val (presenter, parent, _) = sharedInit()
 
         presenter.submitEmail("")
         presenter.submitEmail("xx")
@@ -75,7 +81,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
 
     @Test
     fun `should submit valid emails`() {
-        val (presenter, parent, submitEmailResult) = sharedInit()
+        val (presenter, parent, _) = sharedInit()
 
         presenter.submitEmail("a@b.c")
 
@@ -86,7 +92,7 @@ class CreateEmailPresenterTest: BasePresentationTest() {
     private data class SharedInit(
         val presenter: CreateEmailPresenter,
         val parent: CreateEmailParentPresenter,
-        val submitEmailResult: BehaviorSubject<ActionState<Void>>
+        val submitEmailResult: BehaviorSubject<ActionState<Void>>,
     )
 
     /**
@@ -96,12 +102,13 @@ class CreateEmailPresenterTest: BasePresentationTest() {
         val submitEmailResult = BehaviorSubject.create<ActionState<Void>>()
 
         val parent = mock<CreateEmailParentPresenter> {
-            on { watchSubmitEmail() } doReturn(submitEmailResult)
+            on { watchSubmitEmail() } doReturn (submitEmailResult)
         }
 
-        val presenter = object: CreateEmailPresenter() {
+        val presenter = object : CreateEmailPresenter() {
             override fun setUpDeprecatedClientVersionCheck() {}
             override fun setUpSessionExpiredCheck() {}
+            override fun setUpBuildErrorEmailReportAction() {}
             override fun setUpNetworkInfo() {}
             override fun handleError(error: Throwable) {}
         }

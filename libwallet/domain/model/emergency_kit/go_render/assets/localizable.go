@@ -3,8 +3,9 @@ package assets
 import (
 	_ "embed"
 	"encoding/json"
-	"github.com/muun/libwallet/data/emergency_kit/resources"
 	"time"
+
+	"github.com/muun/libwallet/data/emergency_kit/resources"
 )
 
 //go:embed localizable/en.json
@@ -49,7 +50,7 @@ const (
 //  7. Run tests to ensure the new language is complete:
 //     go test ./emergencykit/go_render/assets -v
 type Translations struct {
-	Lang Language
+	Lang   Language
 	Header struct {
 		Title              string `json:"title"`
 		VerificationPrefix string `json:"verification_prefix"`
@@ -85,6 +86,15 @@ type Translations struct {
 	} `json:"advanced"`
 }
 
+func NewTranslations(lang Language, data []byte) (*Translations, error) {
+	var t Translations
+	if err := json.Unmarshal(data, &t); err != nil {
+		return nil, err
+	}
+	t.Lang = lang
+	return &t, nil
+}
+
 func LoadTranslations(lang Language) (*Translations, error) {
 	var data []byte
 	if lang == Spanish {
@@ -92,15 +102,7 @@ func LoadTranslations(lang Language) (*Translations, error) {
 	} else {
 		data = englishJSON
 	}
-
-	var t Translations
-	err := json.Unmarshal(data, &t)
-	if err != nil {
-		return nil, err
-	}
-	t.Lang = lang
-
-	return &t, nil
+	return NewTranslations(lang, data)
 }
 
 func (t *Translations) LocalizedDate(date time.Time) string {

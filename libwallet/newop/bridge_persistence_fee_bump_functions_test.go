@@ -69,8 +69,10 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 		err                 bool
 	}{
 		{
-			desc:                "Persist single fee bump function",
-			encodedFunctionList: []string{"QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA"}, // [[100, 0, 0], [+Inf, 1, 2]]
+			desc: "Persist single fee bump function",
+			encodedFunctionList: []string{
+				"QsgAAAAAAAAAAAAAf4AAAD+AAABAAAAA",
+			}, // [[100, 0, 0], [+Inf, 1, 2]]
 			expectedFunctions: []*operation.FeeBumpFunction{
 				{
 					PartialLinearFunctions: []*operation.PartialLinearFunction{
@@ -132,11 +134,12 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 	// Set temporary file for testing
 	libwallet.Init(&app_provided_data.Config{DataDir: t.TempDir()})
 
-	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
-	if err != nil {
+	var poolErr error
+	libwallet.Pool, poolErr = walletdb.NewPool(path.Join(libwallet.Cfg.DataDir, "wallet.db"), nil)
+	if poolErr != nil {
 		t.Fatalf("error opening DB")
 	}
-	defer db.Close()
+	t.Cleanup(func() { libwallet.Pool.Close() })
 
 	uuid := "uuid"
 	refreshPolicy := "foreground"
@@ -149,9 +152,12 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		repository := db.NewFeeBumpRepository()
-
-		feeBumpFunctionSet, err := repository.GetAll()
+		var feeBumpFunctionSet *operation.FeeBumpFunctionSet
+		err = libwallet.Pool.WithDB(func(db *walletdb.DB) error {
+			var dbErr error
+			feeBumpFunctionSet, dbErr = db.NewFeeBumpRepository().GetAll()
+			return dbErr
+		})
 
 		if err != nil {
 			t.Fatalf("error getting bump functions")
@@ -164,7 +170,10 @@ func TestPersistFeeBumpFunctions(t *testing.T) {
 		}
 
 		for i, expectedFunction := range tC.expectedFunctions {
-			if !reflect.DeepEqual(expectedFunction.PartialLinearFunctions, feeBumpFunctionSet.FeeBumpFunctions[i].PartialLinearFunctions) {
+			if !reflect.DeepEqual(
+				expectedFunction.PartialLinearFunctions,
+				feeBumpFunctionSet.FeeBumpFunctions[i].PartialLinearFunctions,
+			) {
 				t.Fatalf("fee bump functions were not saved properly")
 			}
 		}

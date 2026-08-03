@@ -1,7 +1,8 @@
 FROM golang:1.24-bullseye
 
-ENV STATICCHECK_VERSION=2025.1.1
+ENV GOLANGCI_LINT_VERSION=v2.8.0
 
-# install staticcheck (linter for go projects)
-RUN go install "honnef.co/go/tools/cmd/staticcheck@${STATICCHECK_VERSION}" \
-    && cp /go/bin/staticcheck /usr/local/bin/staticcheck
+RUN go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}" \
+    && cp /go/bin/golangci-lint /usr/local/bin/golangci-lint \
+    && go install golang.org/x/tools/cmd/goimports@v0.40.0 \
+    && cp /go/bin/goimports /usr/local/bin/goimports

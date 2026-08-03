@@ -2,7 +2,11 @@ package io.muun.apollo.data.afs
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.content.pm.Signature
+import android.os.Build
+import androidx.annotation.RequiresApi
 import io.muun.apollo.data.os.OS
 import io.muun.apollo.domain.model.InstallSourceInfo
 import io.muun.common.utils.Encodings
@@ -75,23 +79,42 @@ class PackageManagerInfoProvider(private val context: Context) {
     val signatureHash: String
         get() {
             if (OS.supportsGetSigningCerts()) {
-                val packageInfo = context.packageManager.getPackageInfo(
-                    context.packageName,
-                    PackageManager.GET_SIGNING_CERTIFICATES
-                )
-                val signingInfo = packageInfo.signingInfo
-                val lastSignature = if (signingInfo?.hasMultipleSigners() == true) {
-                    signingInfo.apkContentsSigners.lastOrNull()
-                } else {
-                    signingInfo?.signingCertificateHistory?.lastOrNull()
-                }
+                val lastSignature = getModernSignatures().lastOrNull()
                 return if (lastSignature != null) {
-                    Encodings.bytesToHex(Hashes.sha256(lastSignature.toByteArray()))
+                    computeSignatureHash(lastSignature)
                 } else {
                     Constants.EMPTY
                 }
             }
             return Constants.UNKNOWN
+        }
+
+    val allSignatureHashes: List<String>
+        get() {
+            return try {
+                getSignatures()
+                    .map(::computeSignatureHash)
+                    .distinct()
+                    .sorted()
+            } catch (_: Exception) {
+                listOf(Constants.ERROR)
+            }
+        }
+
+    val archiveSignatureHashes: List<String>
+        get() {
+            return try {
+                val packageInfo = getArchivePackageInfo() ?: return listOf(Constants.UNKNOWN)
+
+                @Suppress("DEPRECATION")
+                packageInfo.signatures?.toList().orEmpty()
+                    .map(::computeSignatureHash)
+                    .distinct()
+                    .sorted()
+
+            } catch (_: Exception) {
+                listOf(Constants.ERROR)
+            }
         }
 
     val firstInstallTimeInMs: Long
@@ -123,4 +146,50 @@ class PackageManagerInfoProvider(private val context: Context) {
 
     val applicationId: String
         get() = context.packageName
+
+    private fun getSignatures(): List<Signature> {
+        return if (OS.supportsGetSigningCerts()) {
+            getModernSignatures()
+        } else {
+            getLegacySignatures()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun getModernSignatures(): List<Signature> {
+        val packageInfo = context.packageManager.getPackageInfo(
+            context.packageName,
+            PackageManager.GET_SIGNING_CERTIFICATES
+        )
+
+        val signingInfo = packageInfo.signingInfo ?: return emptyList()
+
+        return if (signingInfo.hasMultipleSigners()) {
+            signingInfo.apkContentsSigners?.toList().orEmpty()
+        } else {
+            signingInfo.signingCertificateHistory?.toList().orEmpty()
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun getLegacySignatures(): List<Signature> {
+        val packageInfo = context.packageManager.getPackageInfo(
+            context.packageName,
+            PackageManager.GET_SIGNATURES
+        )
+
+        return packageInfo.signatures?.toList().orEmpty()
+    }
+
+    private fun computeSignatureHash(signature: Signature): String {
+        return Encodings.bytesToHex(
+            Hashes.sha256(signature.toByteArray())
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun getArchivePackageInfo(): PackageInfo? {
+        val apkPath = context.applicationInfo.sourceDir
+        return context.packageManager.getPackageArchiveInfo(apkPath, PackageManager.GET_SIGNATURES)
+    }
 }

@@ -4,46 +4,63 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/go-errors/errors"
 	"github.com/lightningnetwork/lnd/zpay32"
 )
 
-func (swap *SubmarineSwap) validateV2(rawInvoice string, userPublicKey, muunPublicKey *KeyDescriptor, originalExpirationInBlocks int64, network *chaincfg.Params) error {
+func (swap *SubmarineSwap) validateV2(
+	rawInvoice string,
+	userPublicKey, muunPublicKey *KeyDescriptor,
+	originalExpirationInBlocks int64,
+	network *chaincfg.Params,
+) error {
 
 	fundingOutput := swap.FundingOutput
 
 	invoice, err := zpay32.Decode(rawInvoice, network)
 	if err != nil {
-		return fmt.Errorf("failed to decode invoice: %w", err)
+		return errors.Errorf("failed to decode invoice: %w", err)
 	}
 
 	// Check the payment hash matches
 
 	serverPaymentHash, err := hex.DecodeString(fundingOutput.ServerPaymentHashInHex)
 	if err != nil {
-		return fmt.Errorf("server payment hash is not valid hex: %w", err)
+		return errors.Errorf("server payment hash is not valid hex: %w", err)
 	}
 
 	if !bytes.Equal(invoice.PaymentHash[:], serverPaymentHash) {
-		return fmt.Errorf("payment hash doesn't match %v != %v", hex.EncodeToString(invoice.PaymentHash[:]), fundingOutput.ServerPaymentHashInHex)
+		return errors.Errorf(
+			"payment hash doesn't match %v != %v",
+			hex.EncodeToString(invoice.PaymentHash[:]),
+			fundingOutput.ServerPaymentHashInHex,
+		)
 	}
 
 	destination, err := hex.DecodeString(swap.Receiver.PublicKey)
 	if err != nil {
-		return fmt.Errorf("destination is not valid hex: %w", err)
+		return errors.Errorf("destination is not valid hex: %w", err)
 	}
 
 	if !bytes.Equal(invoice.Destination.SerializeCompressed(), destination) {
-		return fmt.Errorf("destination doesnt match %v != %v", invoice.Destination.SerializeCompressed(), swap.Receiver.PublicKey)
+		return errors.Errorf(
+			"destination doesnt match %v != %v",
+			invoice.Destination.SerializeCompressed(),
+			swap.Receiver.PublicKey,
+		)
 	}
 
 	if fundingOutput.ExpirationInBlocks != originalExpirationInBlocks {
-		return fmt.Errorf("expiration in blocks doesnt match %v != %v", originalExpirationInBlocks, fundingOutput.ExpirationInBlocks)
+		return errors.Errorf(
+			"expiration in blocks doesnt match %v != %v",
+			originalExpirationInBlocks,
+			fundingOutput.ExpirationInBlocks,
+		)
 	}
 
 	// Validate that we can derive the addresses involved
@@ -51,27 +68,35 @@ func (swap *SubmarineSwap) validateV2(rawInvoice string, userPublicKey, muunPubl
 
 	derivedUserKey, err := userPublicKey.DeriveTo(derivationPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	if derivedUserKey.String() != fundingOutput.UserPublicKey.String() {
-		return fmt.Errorf("user pub keys dont match %v != %v", derivedUserKey.String(), fundingOutput.UserPublicKey.String())
+		return errors.Errorf(
+			"user pub keys dont match %v != %v",
+			derivedUserKey.String(),
+			fundingOutput.UserPublicKey.String(),
+		)
 	}
 
 	derivedMuunKey, err := muunPublicKey.DeriveTo(derivationPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
 	if derivedMuunKey.String() != fundingOutput.MuunPublicKey.String() {
-		return fmt.Errorf("muun pub keys dont match %v != %v", derivedMuunKey.String(), fundingOutput.MuunPublicKey.String())
+		return errors.Errorf(
+			"muun pub keys dont match %v != %v",
+			derivedMuunKey.String(),
+			fundingOutput.MuunPublicKey.String(),
+		)
 	}
 
 	// Check the swap's witness script is a valid swap script
 
 	serverPubKey, err := hex.DecodeString(swap.FundingOutput.ServerPublicKeyInHex)
 	if err != nil {
-		return fmt.Errorf("server pub key is not hex: %w", err)
+		return errors.Errorf("server pub key is not hex: %w", err)
 	}
 
 	witnessScript, err := CreateWitnessScriptSubmarineSwapV2(
@@ -81,50 +106,55 @@ func (swap *SubmarineSwap) validateV2(rawInvoice string, userPublicKey, muunPubl
 		serverPubKey,
 		swap.FundingOutput.ExpirationInBlocks)
 	if err != nil {
-		return fmt.Errorf("failed to compute witness script: %w", err)
+		return errors.Errorf("failed to compute witness script: %w", err)
 	}
 
 	witnessScriptHash := sha256.Sum256(witnessScript)
 	address, err := btcutil.NewAddressWitnessScriptHash(witnessScriptHash[:], network)
 	if err != nil {
-		return fmt.Errorf("failed to build address for swap script: %w", err)
+		return errors.Errorf("failed to build address for swap script: %w", err)
 	}
 
 	if address.EncodeAddress() != swap.FundingOutput.OutputAddress {
-		return fmt.Errorf("address for swap script mismatch (%v != %v)", address.EncodeAddress(), swap.FundingOutput.OutputAddress)
+		return errors.Errorf(
+			"address for swap script mismatch (%v != %v)",
+			address.EncodeAddress(),
+			swap.FundingOutput.OutputAddress,
+		)
 	}
 
 	if len(swap.PreimageInHex) > 0 {
 		preimage, err := hex.DecodeString(swap.PreimageInHex)
 		if err != nil {
-			return fmt.Errorf("preimageInHex is not valid hex: %w", err)
+			return errors.Errorf("preimageInHex is not valid hex: %w", err)
 		}
 
 		calculatedPaymentHash := sha256.Sum256(preimage)
 		if !bytes.Equal(invoice.PaymentHash[:], calculatedPaymentHash[:]) {
-			return fmt.Errorf("payment hash doesn't match preimage (%v != hash(%v)", invoice.PaymentHash, swap.PreimageInHex)
+			return errors.Errorf(
+				"payment hash doesn't match preimage (%v != hash(%v)",
+				invoice.PaymentHash,
+				swap.PreimageInHex,
+			)
 		}
 	}
 
 	return nil
 }
 
-func CreateWitnessScriptSubmarineSwapV2(paymentHash, userPubKey, muunPubKey, swapServerPubKey []byte, blocksForExpiration int64) ([]byte, error) {
+func CreateWitnessScriptSubmarineSwapV2(
+	paymentHash, userPubKey, muunPubKey, swapServerPubKey []byte,
+	blocksForExpiration int64,
+) ([]byte, error) {
 
-	// It turns out that the payment hash present in an invoice is just the SHA256 of the
-	// payment preimage, so we still have to do a pass of RIPEMD160 before pushing it to the
-	// script
+	// It turns out that the payment hash present in an invoice is just the SHA256 of the payment
+	// preimage, so we still have to do a pass of RIPEMD160 before pushing it to the script
 	paymentHash160 := ripemd160(paymentHash)
 	muunPublicKeyHash160 := btcutil.Hash160(muunPubKey)
 
-	// Equivalent miniscript (http://bitcoin.sipa.be/miniscript/):
-	// or(
-	//   and(pk(userPublicKey), pk(swapServerPublicKey)),
-	//   or(
-	//     and(pk(swapServerPublicKey), hash160(swapPaymentHash160)),
-	//     and(pk(userPublicKey), and(pk(muunPublicKey), older(numBlocksForExpiration)))
-	//   )
-	// )
+	// Equivalent miniscript (http://bitcoin.sipa.be/miniscript/): or( and(pk(userPublicKey),
+	// pk(swapServerPublicKey)), or( and(pk(swapServerPublicKey), hash160(swapPaymentHash160)),
+	// and(pk(userPublicKey), and(pk(muunPublicKey), older(numBlocksForExpiration))) ) )
 	//
 	// However, we differ in that the size of the script was heavily optimized for spending the
 	// first two branches (the collaborative close and the unilateral close by swapper), which
@@ -151,8 +181,7 @@ func CreateWitnessScriptSubmarineSwapV2(paymentHash, userPubKey, muunPubKey, swa
 
 		// If the preimage was correct
 		AddOp(txscript.OP_IF).
-		// We are done, leave just one true-ish item in the stack (there're 2
-		// remaining items)
+		// We are done, leave just one true-ish item in the stack (there're 2 remaining items)
 		AddOp(txscript.OP_DROP).
 
 		// If the second stack item wasn't a valid payment preimage
@@ -179,10 +208,9 @@ func CreateWitnessScriptSubmarineSwapV2(paymentHash, userPubKey, muunPubKey, swa
 		AddData(muunPublicKeyHash160).
 		AddOp(txscript.OP_EQUALVERIFY).
 
-		// Notice that instead of directly pushing the public key here and checking the
-		// signature P2PK-style, we pushed the hash of the public key, and require an
-		// extra stack item with the actual public key, verifying the signature and
-		// public key P2PKH-style.
+		// Notice that instead of directly pushing the public key here and checking the signature
+		// P2PK-style, we pushed the hash of the public key, and require an extra stack item with
+		// the actual public key, verifying the signature and public key P2PKH-style.
 		//
 		// This trick reduces the on-chain footprint of the muun key from 33 bytes to
 		// 20 bytes for the collaborative, and swap server's non-collaborative branches,

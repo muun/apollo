@@ -1,11 +1,11 @@
 package libwallet
 
 import (
-	"errors"
-	"fmt"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/hdpath"
 )
 
@@ -42,10 +42,10 @@ func (p *HDPublicKey) String() string {
 func (p *HDPublicKey) DerivedAt(index int64) (*HDPublicKey, error) {
 
 	if index&hdkeychain.HardenedKeyStart != 0 {
-		return nil, fmt.Errorf("can't derive a hardened pub key (index %v)", index)
+		return nil, errors.Errorf("can't derive a hardened pub key (index %v)", index)
 	}
 	if index < 0 || index > int64(hdkeychain.HardenedKeyStart) {
-		return nil, fmt.Errorf("index is out of bounds (index %v)", index)
+		return nil, errors.Errorf("index is out of bounds (index %v)", index)
 	}
 
 	child, err := p.key.Derive(uint32(index))
@@ -66,28 +66,35 @@ func (p *HDPublicKey) DeriveTo(path string) (*HDPublicKey, error) {
 
 	firstPath, err := hdpath.Parse(p.Path)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
+		return nil, errors.Errorf("couldn't parse derivation path %v: %w", p.Path, err)
 	}
 
 	secondPath, err := hdpath.Parse(path)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't parse derivation path %v: %w", path, err)
+		return nil, errors.Errorf("couldn't parse derivation path %v: %w", path, err)
 	}
 
 	if !secondPath.HasPrefix(firstPath) {
-		return nil, fmt.Errorf("derivation path %v is not prefix of the keys path %v", path, p.Path)
+		return nil, errors.Errorf(
+			"derivation path %v is not prefix of the keys path %v", path, p.Path,
+		)
 	}
 
 	indexes := secondPath.IndexesFrom(firstPath)
 	derivedKey := p
 	for depth, index := range indexes {
 		if index.Hardened {
-			return nil, fmt.Errorf("can't derive a hardened pub key (path %v)", path)
+			return nil, errors.Errorf("can't derive a hardened pub key (path %v)", path)
 		}
 
 		derivedKey, err = derivedKey.DerivedAt(int64(index.Index))
 		if err != nil {
-			return nil, fmt.Errorf("failed to derive key at path %v on depth %v: %w", path, depth, err)
+			return nil, errors.Errorf(
+				"failed to derive key at path %v on depth %v: %w",
+				path,
+				depth,
+				err,
+			)
 		}
 	}
 	// The generated path has no names in it, so replace it

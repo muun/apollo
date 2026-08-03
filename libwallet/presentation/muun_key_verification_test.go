@@ -5,13 +5,15 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+	"github.com/test-go/testify/assert"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/domain/action/challenge_keys"
 	"github.com/muun/libwallet/domain/action/recovery"
@@ -20,7 +22,6 @@ import (
 	"github.com/muun/libwallet/recoverycode"
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
-	"github.com/test-go/testify/assert"
 )
 
 func TestEncryptedMuunKeyAfterFinishSetupRecoveryCode_Integration(t *testing.T) {
@@ -45,7 +46,10 @@ func TestEncryptedMuunKeyAfterFinishSetupRecoveryCode_Integration(t *testing.T) 
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -132,7 +136,10 @@ func TestPollForVerifiedEncryptedMuunKey_Integration(t *testing.T) {
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -233,7 +240,8 @@ func TestPollForVerifiedEncryptedMuunKey_Integration(t *testing.T) {
 	}
 
 	// Polling should not modify the encrypted muun key
-	if *encryptedMuunKeyWithStatus.EncryptedMuunKey != *encryptedMuunKeyWithStatusAgain.EncryptedMuunKey {
+	if *encryptedMuunKeyWithStatus.EncryptedMuunKey !=
+		*encryptedMuunKeyWithStatusAgain.EncryptedMuunKey {
 		t.Fatal("The verified muun key should not change when polling")
 	}
 
@@ -267,7 +275,10 @@ func TestPollForVerifiedEncryptedMuunKeyWithDelay_Integration(t *testing.T) {
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -319,7 +330,9 @@ func TestPollForVerifiedEncryptedMuunKeyWithDelay_Integration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mayRetrieveEncryptedMuunKey := recovery.NewMayRetrieveEncryptedMuunKeyAction(walletServer.keyValueStorage)
+	mayRetrieveEncryptedMuunKey := recovery.NewMayRetrieveEncryptedMuunKeyAction(
+		walletServer.keyValueStorage,
+	)
 	encryptedMuunKeyWithStatus, err := mayRetrieveEncryptedMuunKey.Run()
 	if err != nil {
 		t.Fatal(err)
@@ -351,7 +364,8 @@ func TestPollForVerifiedEncryptedMuunKeyWithDelay_Integration(t *testing.T) {
 	}
 
 	// Polling should not modify the encrypted muun key
-	if *encryptedMuunKeyWithStatus.EncryptedMuunKey != *encryptedMuunKeyWithStatusAgain.EncryptedMuunKey {
+	if *encryptedMuunKeyWithStatus.EncryptedMuunKey !=
+		*encryptedMuunKeyWithStatusAgain.EncryptedMuunKey {
 		t.Fatal("The unverified muun key should not change when polling")
 	}
 
@@ -385,7 +399,10 @@ func TestVerifiedMuunKeyForExistingUsers_Integration(t *testing.T) {
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -507,7 +524,10 @@ func TestUnverifiedEncryptedMuunKeyForExistingUsers_Integration(t *testing.T) {
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -661,26 +681,30 @@ func WaitForCondition(timeout time.Duration, condition func() (bool, error)) err
 	}
 
 	if err != nil {
-		return fmt.Errorf("timed out waiting for condition, failed with error %w", err)
+		return errors.Errorf("timed out waiting for condition, failed with error %w", err)
 	} else {
-		return fmt.Errorf("timed out waiting for condition")
+		return errors.Errorf("timed out waiting for condition")
 	}
 }
 
 // 127.0.0.1 instead of localhost to avoid problems with network interfaces in local env
-const proverUrl = "http://127.0.0.1:8130"
+const proverUrl = "http://127.0.0.1:8130" //nolint:staticcheck // TODO: const proverUrl should be proverURL
 
 func delayProverJob(t *testing.T, recoveryCodePublicKey *btcec.PublicKey) {
 	// This requests prevents the proof from completing, this exercising the unhappy path
-	requestUrl := proverUrl + "/testing/delay-job?pattern=" + hex.EncodeToString(
+	requestUrl := proverUrl + "/testing/delay-job?pattern=" + hex.EncodeToString( //nolint:staticcheck // TODO: var requestUrl should be requestURL
 		recoveryCodePublicKey.SerializeCompressed(),
 	)
-	req, err := http.NewRequest("POST", requestUrl, nil)
+	req, err := http.NewRequest( //nolint:noctx // TODO: use http.NewRequestWithContext
+		"POST",
+		requestUrl,
+		nil,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) //nolint:bodyclose // TODO: close response body
 	if err != nil {
 		t.Fatal(err)
 	}

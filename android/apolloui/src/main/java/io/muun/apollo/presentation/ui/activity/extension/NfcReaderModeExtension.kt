@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.data.nfc.NfcEmpiricalCache
 import io.muun.apollo.data.nfc.api.NfcSessionBuilder
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.di.PerActivity
@@ -15,8 +16,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @PerActivity
-class NfcReaderModeExtension @Inject constructor(context: Context) : ActivityExtension(),
-    NfcAdapter.ReaderCallback {
+class NfcReaderModeExtension @Inject constructor(
+    context: Context,
+    private val empiricalCache: NfcEmpiricalCache,
+) : ActivityExtension(), NfcAdapter.ReaderCallback {
 
     private val nfcAdapter: NfcAdapter? = NfcAdapter.getDefaultAdapter(context)
 
@@ -50,7 +53,7 @@ class NfcReaderModeExtension @Inject constructor(context: Context) : ActivityExt
 
     override fun onTagDiscovered(tag: Tag) {
         val nfcAtag = IsoDep.get(tag)
-        val nfcSession = NfcSessionBuilder.forTag(nfcAtag)
+        val nfcSession = NfcSessionBuilder.forTag(nfcAtag, empiricalCache)
         activity.onNewNfcSession(nfcSession)
     }
 }

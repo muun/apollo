@@ -2,12 +2,14 @@ package challenge_keys
 
 import (
 	"encoding/hex"
+	"log/slog"
+
 	"github.com/btcsuite/btcd/btcec/v2"
+
 	"github.com/muun/libwallet/domain/action/recovery"
 	"github.com/muun/libwallet/service"
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
-	"log/slog"
 )
 
 type FinishChallengeSetupAction struct {
@@ -30,12 +32,12 @@ func NewFinishChallengeSetupAction(
 
 func (action *FinishChallengeSetupAction) Run(recoveryCodePublicKey *btcec.PublicKey) error {
 
-	challengeSetupVerifyJson := model.ChallengeSetupVerifyJson{
+	challengeSetupVerifyJson := model.ChallengeSetupVerifyJson{ //nolint:staticcheck // TODO: var challengeSetupVerifyJson should be challengeSetupVerifyJSON
 		ChallengeType: "RECOVERY_CODE",
 		PublicKey:     hex.EncodeToString(recoveryCodePublicKey.SerializeCompressed()),
 	}
 
-	verifiableMuunKeyJson, err := action.houstonService.ChallengeSetupFinishWithVerifiableMuunKey(
+	verifiableMuunKeyJson, err := action.houstonService.ChallengeSetupFinishWithVerifiableMuunKey( //nolint:staticcheck // TODO: var verifiableMuunKeyJson should be verifiableMuunKeyJSON
 		challengeSetupVerifyJson,
 	)
 	if err != nil {

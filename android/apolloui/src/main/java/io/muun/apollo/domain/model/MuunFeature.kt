@@ -11,6 +11,7 @@ enum class MuunFeature {
     OS_VERSION_DEPRECATED_FLOW,
     HIGH_FEES_RECEIVE_FLOW,
     EFFECTIVE_FEES_CALCULATION,
+    @Deprecated("V1 card firmware removed, use NFC_CARD_V2")
     NFC_CARD,
     NFC_CARD_V2,
     NFC_SENSORS,

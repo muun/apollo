@@ -1,12 +1,11 @@
 package libwallet
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/swaps"
 )
 
@@ -26,7 +25,7 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	witnessScript, err := swaps.CreateWitnessScriptSubmarineSwapV1(
@@ -42,7 +41,7 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 
 	redeemScript, err := createNonNativeSegwitRedeemScript(witnessScript)
 	if err != nil {
-		return fmt.Errorf("failed to build reedem script for signing: %w", err)
+		return errors.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	sig, err := signNonNativeSegwitInputV0(
@@ -57,6 +56,10 @@ func (c *coinSubmarineSwapV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPr
 	return nil
 }
 
-func (c *coinSubmarineSwapV1) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error {
+func (c *coinSubmarineSwapV1) FullySignInput(
+	index int, //nolint:revive // TODO: use or remove index
+	tx *wire.MsgTx, //nolint:revive // TODO: use or remove tx
+	userKey, muunKey *HDPrivateKey, //nolint:revive // TODO: use or remove userKey
+) error {
 	return errors.New("cannot fully sign submarine swap transactions")
 }

@@ -7,6 +7,8 @@ class BiometricAuthenticationError(
     val reason: BiometricAuthenticationErrorReason,
 ) : UserFacingError(UserFacingErrorMessages.INSTANCE.biometricsAuthenticationError(reason)) {
 
+    override val classification = ErrorClassification.EXPECTED
+
     init {
         metadata["biometricAuthenticationErrorReason"] = reason
     }

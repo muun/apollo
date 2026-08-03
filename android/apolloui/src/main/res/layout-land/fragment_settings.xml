@@ -211,6 +211,10 @@
                     muun:label="@string/settings_disable_feature_flags"
                     style="@style/settings_item" />
 
+            <io.muun.apollo.presentation.ui.view.MuunSettingItem
+                    android:id="@+id/settings_send_debug_data"
+                    muun:label="@string/settings_send_debug_data"
+                    style="@style/settings_item" />
 
             <View style="@style/settings_item_separator" />
 

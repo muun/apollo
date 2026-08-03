@@ -9,14 +9,17 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.ResultReceiver
 import android.os.Vibrator
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.view.animation.Animation
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +30,7 @@ import androidx.annotation.StringRes
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -334,7 +338,15 @@ fun Context.openInBrowser(uriString: String) {
         val message: String = getString(R.string.error_no_web_client_installed)
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         // TODO avoid toast and show a proper dialog. We should use AlertDialogExtension but for
-        //  that we need and activity. We should move this extension to another place and refactor
+        //  that we need an activity. We should move this extension to another place and refactor
+        // LinkBuilder too. RabbitHole Alert!!!
+
+    } catch (e: SecurityException) {
+        Timber.e("Target activity not exported!", e)
+        val message: String = getString(R.string.error_no_web_client_installed)
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        // TODO avoid toast and show a proper dialog. We should use AlertDialogExtension but for
+        //  that we need an activity. We should move this extension to another place and refactor
         // LinkBuilder too. RabbitHole Alert!!!
     }
 }
@@ -446,4 +458,28 @@ fun AppCompatActivity.getComponent(): ActivityComponent {
 
 fun Fragment.getComponent(): FragmentComponent {
     return (requireActivity().application as ApolloApplication).getApplicationComponent().fragmentComponent()
+}
+
+fun Activity.hideSoftInputMethod(onImeHide: (() -> Unit)? = null) {
+    val rootView = findViewById<View>(android.R.id.content)
+    val insets = ViewCompat.getRootWindowInsets(rootView)
+    val isKeyboardVisible = insets?.isVisible(WindowInsetsCompat.Type.ime()) ?: false
+
+    if (isKeyboardVisible) {
+        val imm = requireNotNull(getSystemService<InputMethodManager>())
+        imm.hideSoftInputFromWindow(
+            rootView.windowToken,
+            0,
+            if (onImeHide != null) {
+                object : ResultReceiver(Handler(Looper.getMainLooper())) {
+                    override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                        onImeHide.invoke()
+                    }
+                }
+            } else null,
+        )
+    } else {
+        // Keyboard not being shown, calling onImeHide right away
+        onImeHide?.invoke()
+    }
 }

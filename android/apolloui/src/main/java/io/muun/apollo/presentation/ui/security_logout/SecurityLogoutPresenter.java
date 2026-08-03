@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.security_logout;
 
 import io.muun.apollo.domain.action.session.LogoutAction;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
-import io.muun.apollo.domain.errors.MuunError;
+import io.muun.apollo.domain.errors.UnclassifiedError;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.BaseView;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
@@ -52,7 +52,7 @@ public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
         final Optional<String> serverJwt = authRepository.getServerJwt();
         if (!serverJwt.isPresent()) {
             // Shouldn't happen but we wanna know 'cause probably a bug
-            Timber.e(new MuunError("Auth token expected to be present"));
+            Timber.e(new UnclassifiedError("Auth token expected to be present"));
             return "";
         }
 

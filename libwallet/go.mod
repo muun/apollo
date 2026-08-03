@@ -1,6 +1,6 @@
 module github.com/muun/libwallet
 
-go 1.22
+go 1.24
 
 require (
 	github.com/btcsuite/btcd v0.24.2-beta.rc1.0.20240403021926-ae5533602c46
@@ -10,6 +10,7 @@ require (
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0
 	github.com/fiatjaf/go-lnurl v1.13.1
+	github.com/go-errors/errors v1.5.1
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/jinzhu/gorm v1.9.16
@@ -23,6 +24,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/test-go/testify v1.1.4
 	golang.org/x/crypto v0.25.0
+	golang.org/x/sync v0.7.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.36.3
 	gopkg.in/gormigrate.v1 v1.6.0
@@ -59,7 +61,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fergusstrange/embedded-postgres v1.25.0 // indirect
-	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang-migrate/migrate/v4 v4.17.0 // indirect
@@ -163,7 +164,6 @@ require (
 	golang.org/x/mobile v0.0.0-20220414153400-ce6a79cf6a13 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
@@ -184,6 +184,10 @@ require (
 	modernc.org/token v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
+
+// gomobile is invoked as a CLI tool from tools/libwallet-android.sh and is not
+// imported by any Go source, so `go mod tidy` would otherwise drop it.
+tool golang.org/x/mobile/cmd/gomobile
 
 // Fork that includes the -cache flag for quicker builds
 replace golang.org/x/mobile => github.com/muun/mobile v0.0.0-20240709203120-049ae58602a0

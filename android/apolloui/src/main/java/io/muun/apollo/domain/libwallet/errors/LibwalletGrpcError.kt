@@ -4,12 +4,15 @@ import com.google.rpc.Status
 import io.grpc.Metadata
 import io.grpc.StatusRuntimeException
 import io.grpc.protobuf.lite.ProtoLiteUtils
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import rpc.WalletServiceOuterClass
 import rpc.WalletServiceOuterClass.ErrorType
 import timber.log.Timber
 
 class LibwalletGrpcError(cause: StatusRuntimeException) : MuunError(cause) {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     val errorDetail = mapToErrorDetail(parseErrorDetail(cause))
 

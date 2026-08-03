@@ -3,11 +3,11 @@ package encryption
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
-	"fmt"
 	"io"
 	"math"
 	"math/big"
+
+	"github.com/go-errors/errors"
 )
 
 func PaddedSerializeBigInt(size uint, x *big.Int) []byte {
@@ -23,13 +23,13 @@ func PaddedSerializeBigInt(size uint, x *big.Int) []byte {
 
 func addVariableBytes(writer io.Writer, data []byte) error {
 	if len(data) > math.MaxUint16 {
-		return fmt.Errorf("data length can't exceeed %v", math.MaxUint16)
+		return errors.Errorf("data length can't exceeed %v", math.MaxUint16)
 	}
 
 	dataLen := uint16(len(data))
 	err := binary.Write(writer, binary.BigEndian, &dataLen)
 	if err != nil {
-		return fmt.Errorf("failed to write var bytes len: %w", err)
+		return errors.Errorf("failed to write var bytes len: %w", err)
 	}
 
 	n, err := writer.Write(data)

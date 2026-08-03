@@ -9,6 +9,8 @@ import (
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/lightningnetwork/lnd/lnwire"
 	"github.com/lightningnetwork/lnd/zpay32"
+
+	"github.com/muun/libwallet/walletdb"
 )
 
 func TestInvoiceSecrets(t *testing.T) {
@@ -22,7 +24,7 @@ func TestInvoiceSecrets(t *testing.T) {
 	muunKey.Path = "m/schema:1'/recovery:1'"
 
 	routeHints := &RouteHints{
-		Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869fd",
+		Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869fd", //nolint:lll
 		FeeBaseMsat:               1000,
 		FeeProportionalMillionths: 1000,
 		CltvExpiryDelta:           8,
@@ -109,10 +111,16 @@ func TestInvoiceSecrets(t *testing.T) {
 			t.Fatalf("expected fee base to be 1000 msat, got %v instead", hopHints[0].FeeBaseMSat)
 		}
 		if hopHints[0].FeeProportionalMillionths != 1000 {
-			t.Fatalf("expected fee proportional millionths to be 1000, got %v instead", hopHints[0].FeeProportionalMillionths)
+			t.Fatalf(
+				"expected fee proportional millionths to be 1000, got %v instead",
+				hopHints[0].FeeProportionalMillionths,
+			)
 		}
 		if hopHints[0].CLTVExpiryDelta != 8 {
-			t.Fatalf("expected CLTV expiry delta to be 8, got %v instead", hopHints[0].CLTVExpiryDelta)
+			t.Fatalf(
+				"expected CLTV expiry delta to be 8, got %v instead",
+				hopHints[0].CLTVExpiryDelta,
+			)
 		}
 		metadata, err := GetInvoiceMetadata(payreq.PaymentHash[:])
 		if err != nil {
@@ -180,13 +188,12 @@ func TestInvoiceSecrets(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		db, err := openDB()
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer db.Close()
-		invoiceMetadata, err := db.FindByPaymentHash(payreq3.PaymentHash[:])
-		if err != nil {
+		var invoiceMetadata *walletdb.Invoice
+		if err := Pool.WithDB(func(db *walletdb.DB) error {
+			var err error
+			invoiceMetadata, err = db.FindByPaymentHash(payreq3.PaymentHash[:])
+			return err
+		}); err != nil {
 			t.Fatal(err)
 		}
 
@@ -203,7 +210,7 @@ func TestInvoiceSecrets(t *testing.T) {
 			UserKey(userKey).
 			AddRouteHints(routeHints).
 			AddRouteHints(&RouteHints{
-				Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff",
+				Pubkey:                    "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff", //nolint:lll
 				FeeBaseMsat:               123,
 				FeeProportionalMillionths: 1,
 				CltvExpiryDelta:           23,
@@ -238,7 +245,7 @@ func TestInvoiceSecrets(t *testing.T) {
 				// Second hint
 				expectedFeeBase = 123
 				expectedProportional = 1
-				expectedPubKey = "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff"
+				expectedPubKey = "03c48d1ff96fa32e2776f71bba02102ffc2a1b91e2136586418607d32e762869ff" //nolint:lll
 			} else if hint.CLTVExpiryDelta == uint16(routeHints.CltvExpiryDelta) {
 				// First hint
 				expectedFeeBase = uint32(routeHints.FeeBaseMsat)
@@ -252,7 +259,12 @@ func TestInvoiceSecrets(t *testing.T) {
 				t.Fatal("invalid short channel id in hophints")
 			}
 			if hint.FeeProportionalMillionths != expectedProportional {
-				t.Fatalf("Route hint %v proportional fee %v != %v", i, hint.FeeProportionalMillionths, expectedProportional)
+				t.Fatalf(
+					"Route hint %v proportional fee %v != %v",
+					i,
+					hint.FeeProportionalMillionths,
+					expectedProportional,
+				)
 			}
 			if hint.FeeBaseMSat != expectedFeeBase {
 				t.Fatalf("Route hint %v base fee %v != %v", i, hint.FeeBaseMSat, expectedFeeBase)

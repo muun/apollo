@@ -48,7 +48,7 @@ public class NextTransactionSize {
     /**
      * Get the UTXO-only balance (without considering debt).
      */
-    public long getUtxoBalance() {
+    private long getUtxoBalance() {
         return sizeProgression.isEmpty()
                 ? 0
                 : sizeProgression.get(sizeProgression.size() - 1).amountInSatoshis;
@@ -135,33 +135,6 @@ public class NextTransactionSize {
 
         return this;
     }
-
-    /**
-     * Extract complete list of outpoints, sorted as used in sizeProgression (aka as we use it for
-     * our fee computations).
-     */
-    public List<String> extractOutpoints() {
-        final ArrayList<String> outpoints = new ArrayList<>();
-
-        for (SizeForAmount sizeForAmount : sizeProgression) {
-
-            if ("uninitialized".equals(sizeForAmount.outpoint) || sizeForAmount.outpoint == null) {
-                continue;
-            }
-
-            outpoints.add(sizeForAmount.outpoint);
-        }
-
-        // outpoints will be empty for "uninitialized" nts
-        Preconditions.checkArgument(
-                outpoints.size() == sizeProgression.size() || outpoints.isEmpty()
-        );
-
-        // Houston expects the outpoint list (new clients) or null (old clients or "uninitialized"
-        // clients, aka NTS not yet re-fetched)
-        return outpoints.isEmpty() ? null : outpoints;
-    }
-
 
     /**
      * Filter and returns a complete list of unconfirmed utxos in current size progression.

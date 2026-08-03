@@ -1,18 +1,21 @@
 package libwallet
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil"
-	"github.com/muun/libwallet/addresses"
-
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/addresses"
 )
 
 func CreateAddressV3(userKey, muunKey *HDPublicKey) (MuunAddress, error) {
-	return addresses.CreateAddressV3(&userKey.key, &muunKey.key, userKey.Path, userKey.Network.network)
+	return addresses.CreateAddressV3(
+		&userKey.key,
+		&muunKey.key,
+		userKey.Path,
+		userKey.Network.network,
+	)
 }
 
 type coinV3 struct {
@@ -23,16 +26,21 @@ type coinV3 struct {
 	MuunSignature []byte
 }
 
-func (c *coinV3) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, muunKey *HDPublicKey) error {
+func (c *coinV3) SignInput(
+	index int,
+	tx *wire.MsgTx,
+	userKey *HDPrivateKey,
+	muunKey *HDPublicKey,
+) error {
 
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	muunKey, err = muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
 	if len(c.MuunSignature) == 0 {
@@ -61,15 +69,21 @@ func (c *coinV3) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDP
 
 	derivedUserKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	derivedMuunKey, err := muunKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive muun key: %w", err)
+		return errors.Errorf("failed to derive muun key: %w", err)
 	}
 
-	muunSignature, err := c.signature(index, tx, derivedUserKey.PublicKey(), derivedMuunKey.PublicKey(), derivedMuunKey)
+	muunSignature, err := c.signature(
+		index,
+		tx,
+		derivedUserKey.PublicKey(),
+		derivedMuunKey.PublicKey(),
+		derivedMuunKey,
+	)
 	if err != nil {
 		return err
 	}
@@ -95,7 +109,7 @@ func (c *coinV3) signature(index int, tx *wire.MsgTx, userKey *HDPublicKey, muun
 
 	redeemScript, err := createRedeemScriptV3(userKey, muunKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build reedem script for signing: %w", err)
+		return nil, errors.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	return signNonNativeSegwitInputV0(

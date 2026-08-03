@@ -135,4 +135,9 @@
 
     <!-- Temporary while fixing taproot -->
     <color name="picker_disabled_color">@color/gray_light</color>
+
+    <!-- SC Marketplace -->
+    <color name="sc_marketplace_full_specs_section_border">@color/gray_light</color>
+    <color name="sc_provider_satochip_primary">#614DFF</color>
+    <color name="sc_spec_table_background">#0D614DFF</color>
 </resources>

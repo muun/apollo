@@ -187,17 +187,17 @@ class DebugPanelPresenter @Inject constructor(
     }
 
     /**
-     * Reset a security card to enable re-use. Only to be used in local builds.
-     */
-    fun resetSecurityCard(nfcSession: NfcSession) {
-        debugExecutable.resetSecurityCard(nfcSession)
-    }
-
-    /**
      * Navigates to the 'diagnostic' activity
      */
     fun enterDiagnosticMode() {
         navigator.navigateToDiagnosticMode(context)
+    }
+
+    /**
+     * Navigates to the SecureKeyValueStorage debug screen.
+     */
+    fun enterSecureKeyValueStorageDebug() {
+        navigator.navigateToSecureKeyValueStorageDebug(context)
     }
 
     /**

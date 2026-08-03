@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/go-errors/errors"
 )
 
 type Path string
@@ -17,7 +18,7 @@ var re = regexp.MustCompile(`^(m?|\/|(([a-z]+:)?\d+'?))(\/([a-z]+:)?\d+'?)*$`)
 
 func Parse(s string) (Path, error) {
 	if !re.MatchString(s) {
-		return "", fmt.Errorf("path is not valid: `%s`", s)
+		return "", errors.Errorf("path is not valid: `%s`", s)
 	}
 	return Path(s), nil
 }
@@ -89,7 +90,7 @@ func (p Path) Indexes() []PathIndex {
 	path = strings.TrimPrefix(path, "m")
 	path = strings.TrimPrefix(path, "/")
 
-	for _, chunk := range strings.Split(path, "/") {
+	for _, chunk := range strings.Split(path, "/") { //nolint:modernize // TODO: use strings.SplitSeq
 		hardened := false
 		indexText := chunk
 		if strings.HasSuffix(indexText, HardenedSymbol) {
@@ -135,7 +136,8 @@ func (p Path) HasPrefix(prefix Path) bool {
 	}
 	for i, prefixPathIndex := range prefixPathIndexes {
 		pathIndex := indexes[i]
-		if pathIndex.Index != prefixPathIndex.Index || pathIndex.Hardened != prefixPathIndex.Hardened {
+		if pathIndex.Index != prefixPathIndex.Index ||
+			pathIndex.Hardened != prefixPathIndex.Hardened {
 			return false
 		}
 	}

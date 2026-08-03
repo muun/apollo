@@ -91,15 +91,6 @@ class DebugExecutable @Inject constructor(
         nfcSession.close()
     }
 
-    fun resetSecurityCard(nfcSession: NfcSession) {
-        nfcSession.connect()
-        val nfcBridger = nfcBridgerFactory.forSession(nfcSession)
-
-        libwalletClient.resetSecurityCard(nfcBridger)
-
-        nfcSession.close()
-    }
-
     /**
      * Enable/Disable "Multiple sessions" feature for this user.
      */

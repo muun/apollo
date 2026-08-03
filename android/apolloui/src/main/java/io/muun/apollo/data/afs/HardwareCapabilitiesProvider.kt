@@ -58,22 +58,40 @@ class HardwareCapabilitiesProvider(private val context: Context) {
     private val activityManager: ActivityManager =
         context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
+    private val widevineCache: WidevineCache by lazy { readWidevineCache() }
+
+    @Suppress("ArrayInDataClass")
+    private data class DrmIdResult(
+        val hashedId: String,
+        val rawBytes: ByteArray,
+    )
+
+    private data class WidevineCache(
+        val securityLevel: String,
+        val majorVersion: Int,
+        val drmIdResult: DrmIdResult?,
+    )
+
+    private val knownDrmUuids =
+        setOf(COMMON_PSSH_UUID, CLEARKEY_UUID, WIDEVINE_UUID, PLAYREADY_UUID)
+
     fun getDrmClientIds(): Map<String, String> {
 
         val drmProviderToClientId = HashMap<String, String>()
 
         saveClientIdForProviderIfExists(drmProviderToClientId, COMMON_PSSH_UUID)
         saveClientIdForProviderIfExists(drmProviderToClientId, CLEARKEY_UUID)
-        saveClientIdForProviderIfExists(drmProviderToClientId, WIDEVINE_UUID)
+        // Widevine from cache
+        widevineCache.drmIdResult?.let { result ->
+            drmProviderToClientId[WIDEVINE_UUID.toString()] = result.hashedId
+        }
         saveClientIdForProviderIfExists(drmProviderToClientId, PLAYREADY_UUID)
 
         if (OS.supportsGetSupportedCryptoSchemes()) {
-
-            val supportedCryptoSchemes = MediaDrm.getSupportedCryptoSchemes()
-
-            supportedCryptoSchemes.forEach { drmProviderUuid ->
-                saveClientIdForProviderIfExists(drmProviderToClientId, drmProviderUuid)
-            }
+            MediaDrm.getSupportedCryptoSchemes()
+                // Exclude known UUIDs already handled explicitly above.
+                .filter { it !in knownDrmUuids }
+                .forEach { saveClientIdForProviderIfExists(drmProviderToClientId, it) }
         }
 
         return drmProviderToClientId
@@ -156,6 +174,41 @@ class HardwareCapabilitiesProvider(private val context: Context) {
         }
     }
 
+    val widevineSecurityLevel: String
+        get() = widevineCache.securityLevel
+
+    val widevineMajorVersion: Int
+        get() = widevineCache.majorVersion
+
+    val isPlainTextDrmId: Int
+        get() {
+            val result = widevineCache.drmIdResult ?: return Constants.INT_UNKNOWN
+
+            return if (allBytesArePrintableAsciiOrNull(result.rawBytes)) {
+                Constants.INT_PRESENT
+            } else {
+                Constants.INT_ABSENT
+            }
+        }
+
+    val contextSwapDrmId: String
+        get() = ContextSwapDrmFetcher(context).getDrmId()
+
+    private fun hashDeviceId(bytes: ByteArray): String =
+        Encodings.bytesToHex(Hashes.sha256(bytes))
+
+    /**
+     * Raw keybox Device IDs are null-terminated C Language strings (32 bytes).
+     * HMAC-SHA256 outputs have uniform byte distribution — virtually impossible for all bytes
+     * to be printable ASCII or null.
+     */
+    private fun allBytesArePrintableAsciiOrNull(bytes: ByteArray): Boolean {
+        return bytes.all { b ->
+            val unsigned = b.toInt() and 0xFF
+            unsigned == 0x00 || unsigned in 0x20..0x7E
+        }
+    }
+
     private fun File?.getTotalSpaceSafe() = try {
         this?.totalSpace ?: UNKNOWN_BYTES_AMOUNT
     } catch (e: Exception) {
@@ -164,12 +217,12 @@ class HardwareCapabilitiesProvider(private val context: Context) {
     }
 
     private fun saveClientIdForProviderIfExists(map: HashMap<String, String>, providerUuid: UUID) {
-        getDrmIdForProvider(providerUuid)?.let { drmId ->
-            map[providerUuid.toString()] = drmId
+        getDrmIdForProvider(providerUuid)?.let { result ->
+            map[providerUuid.toString()] = result.hashedId
         }
     }
 
-    private fun getDrmIdForProvider(drmProviderUuid: UUID): String? {
+    private fun getDrmIdForProvider(drmProviderUuid: UUID): DrmIdResult? {
         try {
 
             if (!MediaDrm.isCryptoSchemeSupported(drmProviderUuid)) {
@@ -193,13 +246,16 @@ class HardwareCapabilitiesProvider(private val context: Context) {
      * TODO: once our minSdk > 28 (OS.supportsMediaDrmClose()) we could do this with kotlin's
      *  try-with-resources.
      */
-    private fun getDrmIdFromClosableMediaDrm(drmProviderUuid: UUID): String? {
+    private fun getDrmIdFromClosableMediaDrm(drmProviderUuid: UUID): DrmIdResult? {
         var mediaDrm: MediaDrm? = null
         try {
             mediaDrm = MediaDrm(drmProviderUuid)
             val deviceIdBytes = getSafeDeviceId(mediaDrm) ?: return null
 
-            return Encodings.bytesToHex(Hashes.sha256(deviceIdBytes))
+            return DrmIdResult(
+                hashDeviceId(deviceIdBytes),
+                deviceIdBytes,
+            )
         } finally {
             mediaDrm?.let(::releaseMediaDRM)
         }
@@ -253,5 +309,42 @@ class HardwareCapabilitiesProvider(private val context: Context) {
         bundle.getLong(key).takeIf { it > 0 }?.toInt()?.let { return it }
 
         return Constants.INT_UNKNOWN
+    }
+
+    private fun readWidevineCache(): WidevineCache {
+        var mediaDrm: MediaDrm? = null
+        return try {
+            mediaDrm = MediaDrm(WIDEVINE_UUID)
+
+            val securityLevel = try {
+                mediaDrm.getPropertyString("securityLevel")
+            } catch (_: Exception) {
+                Constants.ERROR
+            }
+            val majorVersion = try {
+                mediaDrm.getPropertyString("version")
+                    .substringBefore(".")
+                    .toIntOrNull() ?: Constants.INT_UNKNOWN
+            } catch (_: Exception) {
+                Constants.INT_EXCEPTION
+            }
+
+            val drmId = try {
+                getSafeDeviceId(mediaDrm)?.let { bytes ->
+                    DrmIdResult(
+                        hashDeviceId(bytes),
+                        bytes,
+                    )
+                }
+            } catch (_: Exception) {
+                null
+            }
+
+            WidevineCache(securityLevel, majorVersion, drmId)
+        } catch (_: Exception) {
+            WidevineCache(Constants.ERROR, Constants.INT_EXCEPTION, null)
+        } finally {
+            mediaDrm?.let(::releaseMediaDRM)
+        }
     }
 }

@@ -9,10 +9,14 @@ type StartChallengeSetupAction struct {
 	HoustonService service.HoustonService
 }
 
-func NewStartChallengeSetupAction(houstonService service.HoustonService) *StartChallengeSetupAction {
+func NewStartChallengeSetupAction(
+	houstonService service.HoustonService,
+) *StartChallengeSetupAction {
 	return &StartChallengeSetupAction{houstonService}
 }
 
-func (action *StartChallengeSetupAction) Run(challengeSetupJson model.ChallengeSetupJson) (model.SetupChallengeResponseJson, error) {
+func (action *StartChallengeSetupAction) Run(
+	challengeSetupJson model.ChallengeSetupJson, //nolint:staticcheck // TODO: method parameter challengeSetupJson should be challengeSetupJSON
+) (model.SetupChallengeResponseJson, error) {
 	return action.HoustonService.ChallengeKeySetupStart(challengeSetupJson)
 }

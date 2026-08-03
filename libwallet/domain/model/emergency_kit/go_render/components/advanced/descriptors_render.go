@@ -2,6 +2,7 @@ package advanced
 
 import (
 	"encoding/hex"
+
 	"github.com/muun/libwallet/domain/model/emergency_kit/go_render/assets"
 )
 
@@ -12,7 +13,7 @@ var (
 const fingerprintLength = 8
 
 func parseDescriptor(descriptor string) DescriptorLine {
-	line := DescriptorLine{}
+	line := NewDescriptorLine()
 	currentText := ""
 
 	for i := 0; i < len(descriptor); i++ {
@@ -73,10 +74,7 @@ func (line *DescriptorLine) addSegment(text string, segmentType SegmentType) {
 	if text == "" {
 		return
 	}
-	line.Segments = append(line.Segments, DescriptorSegment{
-		Text: text,
-		Type: segmentType,
-	})
+	line.Segments = append(line.Segments, NewDescriptorSegment(text, segmentType))
 }
 
 func (r *AdvancedComponent) renderDescriptors(startX float64, width float64) {
@@ -124,6 +122,14 @@ func (r *AdvancedComponent) renderDescriptorLine(line DescriptorLine, lineHeight
 		case SegmentChecksum:
 			assets.SetDescriptorChecksumColor(r.pdf.Fpdf)
 		}
-		currentX = r.pdf.RenderTextWithLetterSpacing(currentX, currentY, segment.Text, assets.BodyLetterSpacing, "L", "T", lineHeight)
+		currentX = r.pdf.RenderTextWithLetterSpacing(
+			currentX,
+			currentY,
+			segment.Text,
+			assets.BodyLetterSpacing,
+			"L",
+			"T",
+			lineHeight,
+		)
 	}
 }

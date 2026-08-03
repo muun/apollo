@@ -20,15 +20,20 @@ func TestTranslationStructMatchesJSON(t *testing.T) {
 	for _, lang := range languages {
 		t.Run(string(lang.name), func(t *testing.T) {
 			// Parse JSON into a generic map
-			var jsonMap map[string]interface{}
+			var jsonMap map[string]interface{} //nolint:modernize // TODO: use any instead of interface{}
 			err := json.Unmarshal(lang.data, &jsonMap)
 			if err != nil {
 				t.Fatalf("Failed to unmarshal %s JSON: %v", lang.name, err)
 			}
 
 			// Validate structure matches
-			translations := Translations{}
-			validateJSONStructMatch(t, string(lang.name), "", jsonMap, reflect.TypeOf(translations))
+			validateJSONStructMatch(
+				t,
+				string(lang.name),
+				"",
+				jsonMap,
+				reflect.TypeFor[Translations](),
+			)
 		})
 	}
 }
@@ -38,7 +43,7 @@ func validateJSONStructMatch(
 	t *testing.T,
 	lang string,
 	path string,
-	jsonMap map[string]interface{},
+	jsonMap map[string]interface{}, //nolint:modernize // TODO: use any instead of interface{}
 	structType reflect.Type,
 ) {
 	if structType.Kind() != reflect.Struct {
@@ -75,7 +80,7 @@ func validateJSONStructMatch(
 		}
 
 		// If it's a nested object, recurse
-		if nestedMap, ok := jsonValue.(map[string]interface{}); ok {
+		if nestedMap, ok := jsonValue.(map[string]interface{}); ok { //nolint:modernize // TODO: use any instead of interface{}
 			validateJSONStructMatch(t, lang, fullPath, nestedMap, field.Type)
 		}
 	}
