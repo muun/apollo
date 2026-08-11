@@ -61,7 +61,7 @@ RUN sdkmanager --install "ndk;${NDK_VERSION}"
 
 ENV ANDROID_NDK_HOME ${ANDROID_HOME}/ndk/${NDK_VERSION}
 
-FROM rust:1.84@sha256:738ae99a3d75623f41e6882566b4ef37e38a9840244a47efd4a0ca22e9628b88 AS rust_builder
+FROM --platform=linux/amd64 rust:1.84@sha256:738ae99a3d75623f41e6882566b4ef37e38a9840244a47efd4a0ca22e9628b88 AS rust_builder
 
 ARG RUSTUP_TOOLCHAIN=nightly-2024-12-16
 ARG TARGETS="aarch64-unknown-linux-musl x86_64-unknown-linux-musl aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android"
