@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.10] - 2026-08-11
+
+### FIXED
+
+- Reproducible builds
+
 ## [55.9] - 2026-07-31
 
 ### FIXED
