@@ -10,15 +10,22 @@ import java.io.IOException
  * Provides access to the Android NFC API, in particular to ISO-DEP (ISO 14443-4) properties and
  * I/ O operations on a Tag. Wraps and enhances Android's IsoDep class.
  */
-internal class NfcSessionImpl(private val nfcAtag: IsoDep) : NfcSession {
+internal class NfcSessionImpl(
+    private val nfcAtag: IsoDep,
+    private val empiricalCache: NfcEmpiricalCache,
+) : NfcSession {
 
     override fun connect() {
         nfcAtag.connect()
 
-        Timber.d("maxTransceiveLength: ${nfcAtag.maxTransceiveLength}")
-        Timber.d("isExtendedLengthApduSupported: ${nfcAtag.isExtendedLengthApduSupported}")
+        val maxLen = nfcAtag.maxTransceiveLength
+        val supportsExtended = nfcAtag.isExtendedLengthApduSupported
+        Timber.i("maxTransceiveLength: $maxLen")
+        Timber.i("isExtendedLengthApduSupported: $supportsExtended")
         Timber.d("historicalBytes: ${Encodings.bytesToHex(nfcAtag.historicalBytes)}")
         Timber.d("Timeout: ${nfcAtag.timeout}")
+
+        empiricalCache.update(supportsExtended, maxLen)
 
         nfcAtag.timeout *= 5
     }

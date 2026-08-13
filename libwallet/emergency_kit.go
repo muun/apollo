@@ -2,7 +2,8 @@ package libwallet
 
 import (
 	"encoding/json"
-	"fmt"
+
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet/emergencykit"
 )
@@ -15,7 +16,8 @@ const (
 	EKVersionDescriptors = 2
 	// EKVersionMusig add the musig descriptors
 	EKVersionMusig = 3
-	// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+	// This is public because this is being consumed by the new architecture inside
+	// emergency_kit packages.
 	// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
 	EkVersionCurrent = EKVersionMusig
 )
@@ -48,7 +50,8 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 		FirstFingerprint:   ekParams.FirstFingerprint,
 		SecondEncryptedKey: ekParams.SecondEncryptedKey,
 		SecondFingerprint:  ekParams.SecondFingerprint,
-		// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+		// This is public because this is being consumed by the new architecture inside
+		// emergency_kit packages.
 		// TODO: execute the non-trivial refactor to migrate this inside emergency kit package
 		Version: EkVersionCurrent,
 	}
@@ -56,18 +59,22 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 	// Create the HTML and the verification code:
 	htmlWithCode, err := emergencykit.GenerateHTML(moduleInput, language)
 	if err != nil {
-		return nil, fmt.Errorf("GenerateEkHtml failed to render: %w", err)
+		return nil, errors.Errorf("GenerateEkHtml failed to render: %w", err)
 	}
 
 	// Create and serialize the metadata:
 	metadata, err := CreateEmergencyKitMetadata(ekParams)
 	if err != nil {
-		return nil, fmt.Errorf("GenerateEkHtml failed to create metadata: %w", err)
+		return nil, errors.Errorf("GenerateEkHtml failed to create metadata: %w", err)
 	}
 
 	metadataBytes, err := json.Marshal(&metadata)
 	if err != nil {
-		return nil, fmt.Errorf("GenerateEkHtml failed to marshal %s: %w", string(metadataBytes), err)
+		return nil, errors.Errorf(
+			"GenerateEkHtml failed to marshal %s: %w",
+			string(metadataBytes),
+			err,
+		)
 	}
 
 	output := &EKOutput{
@@ -83,7 +90,8 @@ func GenerateEmergencyKitHTML(ekParams *EKInput, language string) (*EKOutput, er
 // AddEmergencyKitMetadata produces a copy of the PDF file at `srcFile` with embedded metadata,
 // writing it into `dstFile`. The provided metadata must be the same opaque string produced by
 // `GenerateEmergencyKitHTML`.
-// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+// This is public because this is being consumed by the new architecture inside
+// emergency_kit packages.
 // TODO: execute the non-trivial refactor to migrate this inside emergency kit package
 func AddEmergencyKitMetadata(metadataText string, srcFile string, dstFile string) error {
 	// Initialize the MetadataWriter:
@@ -97,35 +105,35 @@ func AddEmergencyKitMetadata(metadataText string, srcFile string, dstFile string
 
 	err := json.Unmarshal([]byte(metadataText), &metadata)
 	if err != nil {
-		return fmt.Errorf("AddEkMetadata failed to unmarshal: %w", err)
+		return errors.Errorf("AddEkMetadata failed to unmarshal: %w", err)
 	}
 
 	err = metadataWriter.WriteMetadata(&metadata)
 	if err != nil {
-		return fmt.Errorf("AddEkMetadata failed to write metadata: %w", err)
+		return errors.Errorf("AddEkMetadata failed to write metadata: %w", err)
 	}
 
 	return nil
 }
 
-// This is public because this is being consumed by the new architecture inside emergency_kit packages.
+// This is public because this is being consumed by the new architecture inside
+// emergency_kit packages.
 // TODO: execute the non-trivial refactor to migrate this inside emergency kit package
 func CreateEmergencyKitMetadata(ekParams *EKInput) (*emergencykit.Metadata, error) {
-	// NOTE:
-	// This method would be more naturally placed in the `emergencykit` module, but given the current
-	// project structure (heavily determined by `gomobile` and the need for top-level bindings) and
-	// the use of `decodeEncryptedPrivateKey` this isn't possible. Instead, we peek through the layer
-	// boundary to craft the object here.
+	// NOTE: this method would be more naturally placed in the `emergencykit` module, but given
+	// the current project structure (heavily determined by `gomobile` and the need for
+	// top-level bindings) and the use of `decodeEncryptedPrivateKey` this isn't possible.
+	// Instead, we peek through the layer boundary to craft the object here.
 
 	// Decode both keys, to extract their inner properties:
 	firstKey, err := DecodeEncryptedPrivateKey(ekParams.FirstEncryptedKey)
 	if err != nil {
-		return nil, fmt.Errorf("createEkMetadata failed to decode first key: %w", err)
+		return nil, errors.Errorf("createEkMetadata failed to decode first key: %w", err)
 	}
 
 	secondKey, err := DecodeEncryptedPrivateKey(ekParams.SecondEncryptedKey)
 	if err != nil {
-		return nil, fmt.Errorf("createEkMetadata failed to decode second key: %w", err)
+		return nil, errors.Errorf("createEkMetadata failed to decode second key: %w", err)
 	}
 
 	// Obtain the list of checksumed output descriptors:

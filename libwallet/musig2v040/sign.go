@@ -5,7 +5,6 @@ package musig2v040
 import (
 	"bytes"
 	"crypto/sha256"
-	"fmt"
 	"io"
 
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -13,6 +12,7 @@ import (
 	"github.com/btcsuite/btcd/btcec/v2/schnorr/musig2"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	secp "github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/go-errors/errors"
 )
 
 var (
@@ -21,20 +21,20 @@ var (
 
 	// ErrNoncePointAtInfinity is returned if during signing, the fully
 	// combined public nonce is the point at infinity.
-	ErrNoncePointAtInfinity = fmt.Errorf("signing nonce is the infinity " +
+	ErrNoncePointAtInfinity = errors.Errorf("signing nonce is the infinity " +
 		"point")
 
 	// ErrPrivKeyZero is returned when the private key for signing is
 	// actually zero.
-	ErrPrivKeyZero = fmt.Errorf("priv key is zero")
+	ErrPrivKeyZero = errors.Errorf("priv key is zero")
 
 	// ErrPartialSigInvalid is returned when a partial is found to be
 	// invalid.
-	ErrPartialSigInvalid = fmt.Errorf("partial signature is invalid")
+	ErrPartialSigInvalid = errors.Errorf("partial signature is invalid")
 
 	// ErrSecretNonceZero is returned when a secret nonce is passed in a
 	// zero.
-	ErrSecretNonceZero = fmt.Errorf("secret nonce is blank")
+	ErrSecretNonceZero = errors.Errorf("secret nonce is blank")
 )
 
 // infinityPoint is the jacobian representation of the point at infinity.
@@ -354,7 +354,7 @@ func Sign(secNonce [musig2.SecNonceSize]byte, privKey *btcec.PrivateKey,
 			signOpts...,
 		)
 		if !sigValid {
-			return nil, fmt.Errorf("sig is invalid")
+			return nil, errors.Errorf("sig is invalid")
 		}
 	}
 

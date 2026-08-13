@@ -11,6 +11,7 @@ import (
 	"github.com/muun/libwallet/domain/nfc"
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
+	"github.com/muun/libwallet/walletdb"
 )
 
 func TestMockCardPairCardSuccess(t *testing.T) {
@@ -22,9 +23,16 @@ func TestMockCardPairCardSuccess(t *testing.T) {
 	mockNfcBridge := nfc.NewMockJavaCard(mockCard)
 	card := nfc.NewCardV2(mockNfcBridge)
 
-	// Create a new empty DB providing a new dataFilePath
-	dataFilePath := path.Join(t.TempDir(), "test.db")
-	keyValueStorage := storage.NewKeyValueStorage(dataFilePath, buildStorageSchemaForTests())
+	// Create a new empty DB
+	pool, err := walletdb.NewPool(path.Join(t.TempDir(), "test.db"), nil)
+	if err != nil {
+		t.Fatalf("failed to open db: %v", err)
+	}
+	t.Cleanup(func() { pool.Close() })
+	keyValueStorage := storage.NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		buildStorageSchemaForTests(),
+	)
 	mockHouston := NewMockHoustonService(keyValueStorage)
 
 	pairCardWithHouston(t, mockHouston, card)
@@ -37,12 +45,12 @@ func pairCardWithHouston(
 	card *nfc.MuunCardV2,
 ) {
 
-	challengePair, err := mockHouston.ChallengeSecurityCardPair()
+	challengePair, err := mockHouston.PairRequestChallenge()
 	if err != nil {
 		t.Fatalf("error requesting challenge to server: %v", err)
 	}
 
-	serverPublicKey, err := hex.DecodeString(challengePair.ServerPublicKeyInHex)
+	serverPublicKey, err := hex.DecodeString(challengePair.ServerPubKeyInHex)
 	if err != nil {
 		t.Fatalf("error decoding server key: %v", err)
 	}
@@ -65,7 +73,10 @@ func pairCardWithHouston(
 	}
 
 	if pairingResp.CardPublicKey[0] != 0x04 {
-		t.Fatalf("Expected CardPublicKey to start with 0x04, got 0x%02x", pairingResp.CardPublicKey[0])
+		t.Fatalf(
+			"Expected CardPublicKey to start with 0x04, got 0x%02x",
+			pairingResp.CardPublicKey[0],
+		)
 	}
 
 	// Verify metadata in pairing response
@@ -84,7 +95,10 @@ func registerPairingOnHouston(
 	clientPubKey []byte,
 ) {
 
-	registerSecurityCardJson, err := MapRegisterSecurityCardJson(pairingResp, clientPubKey)
+	registerSecurityCardJson, err := MapRegisterSecurityCardJson( //nolint:staticcheck // TODO: var registerSecurityCardJson should be registerSecurityCardJSON
+		pairingResp,
+		clientPubKey,
+	)
 	if err != nil {
 		t.Fatalf("failed to map pairing response %v", err)
 	}
@@ -104,8 +118,15 @@ func TestMockCardSignChallenge(t *testing.T) {
 	mockNfcBridge := nfc.NewMockJavaCard(mockCard)
 	card := nfc.NewCardV2(mockNfcBridge)
 
-	dataFilePath := path.Join(t.TempDir(), "test.db")
-	keyValueStorage := storage.NewKeyValueStorage(dataFilePath, buildStorageSchemaForTests())
+	pool, err := walletdb.NewPool(path.Join(t.TempDir(), "test.db"), nil)
+	if err != nil {
+		t.Fatalf("failed to open db: %v", err)
+	}
+	t.Cleanup(func() { pool.Close() })
+	keyValueStorage := storage.NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		buildStorageSchemaForTests(),
+	)
 	mockHouston := NewMockHoustonService(keyValueStorage)
 
 	// Pair card with Houston to enable challenge signing
@@ -130,9 +151,11 @@ func testSignChallengeSuccess(
 	reason []byte,
 ) {
 
-	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -149,7 +172,7 @@ func testSignChallengeSuccess(
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -166,9 +189,11 @@ func testSignChallengeInvalidCounter(
 	card *nfc.MuunCardV2,
 	reason []byte,
 ) {
-	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -197,7 +222,7 @@ func testSignChallengeInvalidCounter(
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -214,9 +239,11 @@ func testSignChallengeCounterAdvancesEvenIfSolveChallengeFails(
 	card *nfc.MuunCardV2,
 	reason []byte,
 ) {
-	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -233,15 +260,17 @@ func testSignChallengeCounterAdvancesEvenIfSolveChallengeFails(
 		t.Fatalf("should succeed with correct card counter, got: %v", err)
 	}
 
-	// The card has now consumed `CardUsageCount` for this slot.
-	// We intentionally skip SolveChallenge here to simulate a failure between "sign" and "solve".
-	// The next challenge must use a strictly higher counter (server must not re-issue the same counter),
-	// otherwise the card would reject it with InvalidCounter.
+	// The card has now consumed `CardUsageCount` for this slot. We intentionally skip
+	// SolveChallenge here to simulate a failure between "sign" and "solve". The next challenge must
+	// use a strictly higher counter (server must not re-issue the same counter), otherwise the card
+	// would reject it with InvalidCounter.
 
 	// Simulate failure: SolveSecurityCardChallenge` is not called for the first signed challenge.
-	challengeResponse2, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse2, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -261,7 +290,7 @@ func testSignChallengeCounterAdvancesEvenIfSolveChallengeFails(
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -278,9 +307,11 @@ func testSignChallengeInvalidSlot(
 	card *nfc.MuunCardV2,
 	reason []byte,
 ) {
-	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -309,7 +340,7 @@ func testSignChallengeInvalidSlot(
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -326,9 +357,11 @@ func testSignChallengeInvalidMac(
 	card *nfc.MuunCardV2,
 	reason []byte,
 ) {
-	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(model.ChallengeSecurityCardSignJson{
-		ReasonInHex: hex.EncodeToString(reason),
-	})
+	challengeResponse, err := mockHouston.ChallengeSecurityCardSign(
+		model.ChallengeSecurityCardSignJson{
+			ReasonInHex: hex.EncodeToString(reason),
+		},
+	)
 	if err != nil {
 		t.Fatalf("error requesting a challenge from houston: %v", err)
 	}
@@ -356,7 +389,7 @@ func testSignChallengeInvalidMac(
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -368,10 +401,10 @@ func testSignChallengeInvalidMac(
 }
 
 func testSignChallengeSecretUpdates(
-	t *testing.T,
-	houston *MockHoustonService,
-	card *nfc.MuunCardV2,
-	reason1 []byte,
+	t *testing.T, //nolint:revive // TODO: use or remove t
+	houston *MockHoustonService, //nolint:revive // TODO: use or remove houston
+	card *nfc.MuunCardV2, //nolint:revive // TODO: use or remove card
+	reason1 []byte, //nolint:revive // TODO: use or remove reason1
 ) {
 
 	// challenge 1 should work with initial secret
@@ -393,6 +426,12 @@ func buildStorageSchemaForTests() map[string]storage.Classification {
 			ValueType:        &storage.StringType{},
 		},
 		storage.KeySecurityCardUsageCount: {
+			BackupType:       storage.NoAutoBackup,
+			BackupSecurity:   storage.NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &storage.IntType{},
+		},
+		storage.KeySecurityCardReplayCounter: {
 			BackupType:       storage.NoAutoBackup,
 			BackupSecurity:   storage.NotApplicable,
 			SecurityCritical: false,

@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.errors.data
 
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.common.exception.PotentialBug
 import okhttp3.Request
@@ -9,6 +10,8 @@ class MuunSerializationError(
     originalRequest: Request,
     cause: Throwable,
 ) : MuunError(cause), PotentialBug {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     init {
         metadata["supportId"] = supportId

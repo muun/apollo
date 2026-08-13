@@ -1,8 +1,9 @@
 package nfc
 
 import (
-	"github.com/muun/libwallet/cryptography"
 	"testing"
+
+	"github.com/muun/libwallet/cryptography"
 )
 
 // TODO another reason why "reason" (yes pun intended) should be part of SignChallenge
@@ -113,36 +114,6 @@ func TestMockCardSignChallengeSingle_ErrorScenarios(t *testing.T) {
 			},
 			expectedStatusCode: swInsNotSupported,
 		},
-		{
-			name: "MockCardSignChallengeIncorrectHasMoreChunks_2",
-			challengeMapper: func(challengeData *SignChallengeData) *SignChallengeData {
-
-				// hasMoreChunks is false but reason is greater than 1 chunk
-				challengeData.hasMoreChunks = byte(0)
-				// more than max apdu size, definitely should be split
-				challengeData.reason = make([]byte, 256)
-				return challengeData
-			},
-			// For reasons that doesn't fit in 1 chunk, we should use streaming apdus (and split in
-			// chunks). Apdus have a 1-byte length field which allows max 255 bytes data. When
-			// larger data array is passed, length gets truncated or encoded incorrectly, causing
-			// WrongLength error.
-			expectedStatusCode: swMuuncardV2WrongLength,
-		},
-		{
-			name: "MockCardSignChallengeHasMoreChunks",
-			challengeMapper: func(challengeData *SignChallengeData) *SignChallengeData {
-
-				challengeData.hasMoreChunks = byte(1)
-				// more than apdu size, definitely should be split
-				challengeData.reason = make([]byte, 256)
-				return challengeData
-			},
-			// For reasons that doesn't fit in 1 chunk, we should use streaming apdus (and split in
-			// chunks). Apdus have a 1-byte length field which allows max 255 bytes data. When
-			// larger data array is passed, length gets truncated or encoded incorrectly, causing
-			// WrongLength error.
-			expectedStatusCode: swMuuncardV2WrongLength},
 	}
 
 	for _, tt := range tests {
@@ -187,7 +158,7 @@ func TestMockCardSignChallengeSingle_ErrorScenarios(t *testing.T) {
 				t.Fatalf("invalid input for test. Either apduData or challengeMapper must be defined")
 			}
 
-			response, err := card.rawCard.transmit(buildSignChallengeAPDU(apduData).serialize())
+			response, err := card.rawCard.transmit(buildSignChallengeAPDU(apduData).serializeShort())
 
 			if err != nil {
 				t.Errorf("transmit failed: %v", err)
@@ -253,7 +224,7 @@ func TestMockCardSignChallengeSingle_Success(t *testing.T) {
 		challenge.Mac,             // mac (32 bytes)
 	)
 
-	response, err := card.rawCard.transmit(buildSignChallengeAPDU(apduData).serialize())
+	response, err := card.rawCard.transmit(buildSignChallengeAPDU(apduData).serializeShort())
 
 	if err != nil {
 		t.Errorf("transmit failed: %v", err)

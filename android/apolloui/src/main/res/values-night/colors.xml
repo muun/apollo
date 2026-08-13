@@ -106,4 +106,7 @@
 
     <!-- Temporary while fixing taproot -->
     <color name="picker_disabled_color">@color/gray_dark</color>
+
+    <!-- SC Marketplace -->
+    <color name="sc_marketplace_full_specs_section_border">@color/gray_darkest</color>
 </resources>

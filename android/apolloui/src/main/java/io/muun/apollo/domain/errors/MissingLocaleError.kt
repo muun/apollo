@@ -7,6 +7,8 @@ class MissingLocaleError(
     countryCode: String,
 ) : MuunError("No locales found for country:$countryCode"), PotentialBug {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     init {
 
         // Partitioning locales into several parts as they are many and crashlytics imposes a 1kb

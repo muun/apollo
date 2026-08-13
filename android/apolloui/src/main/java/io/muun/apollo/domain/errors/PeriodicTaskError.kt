@@ -2,6 +2,8 @@ package io.muun.apollo.domain.errors
 
 class PeriodicTaskError(taskName: String, duration: Long, cause: Throwable) : MuunError(cause) {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     init {
         metadata["task"] = taskName
         metadata["duration(secs)"] = duration
@@ -9,5 +11,4 @@ class PeriodicTaskError(taskName: String, duration: Long, cause: Throwable) : Mu
         metadata["cause"] = cause.javaClass.toString()
         metadata["causeStackTrace"] = cause.stackTraceToString()
     }
-
 }

@@ -800,6 +800,7 @@
     <string name="settings_delete_wallet_alert_yes">Eliminar</string>
     <string name="settings_delete_wallet_alert_no">Cancelar</string>
     <string name="settings_disable_feature_flags">Tus feature flags</string>
+    <string name="settings_send_debug_data">Enviar datos de debug vía email</string>
     <string name="disable_feature_flags_security_card">Security Card</string>
 
     <string name="delete_wallet_success_message">Eliminaste tu monedero</string>
@@ -1022,6 +1023,10 @@
     <string name="error_no_web_client_installed">
         Parece que no tienes un navegador instalado. Por favor, instala uno y prueba de nuevo.
     </string>
+    <string name="error_web_client_problem_opening">
+        No se pudo abrir el enlace. Intenta abrirlo con otro navegador.
+    </string>
+
     <string name="error_ln_invoice_not_supported">
         No puede realizarse este pago de lightning
     </string>
@@ -1830,5 +1835,34 @@
     <!-- FIXME Missing copies yet -->
     <string name="security_cards_card_detail_see_full_specs">See full specs</string>
     <string name="security_cards_card_detail_go_to_provider">GO TO %s</string>
+
+    <!-- In-App Updates (dogfood) -->
+    <string name="in_app_update_pending">La descarga comenzará pronto…</string>
+    <string name="in_app_update_downloading">Descargando actualización…</string>
+    <string name="in_app_update_downloaded">Actualización descargada. Reiniciá para instalar.</string>
+    <string name="in_app_update_restart">Reiniciar</string>
+
+  <!-- SecurityCards - FullSpecs -->
+    <!-- FIXME Missing copies yet -->
+    <string name="security_cards_full_specs_dim_height">54\nmm</string>
+    <string name="security_cards_full_specs_dim_width">86.6mm</string>
+
+    <!-- SecurityCards - Shipping Address -->
+    <!-- FIXME Missing copies yet -->
+    <string name="security_cards_shipping_address_title">Shipping</string>
+    <string name="security_cards_shipping_address_description">Information needed to deliver your card.</string>
+    <string name="security_cards_shipping_address_full_name">Full Name</string>
+    <string name="security_cards_shipping_address_email">Email</string>
+    <string name="security_cards_shipping_address_address">Shipping address</string>
+    <string name="security_cards_shipping_address_country">Country/Region</string>
+    <string name="security_cards_shipping_address_city">City</string>
+    <string name="security_cards_shipping_address_state">State</string>
+    <string name="security_cards_shipping_address_zip_code">ZIP Code</string>
+    <string name="security_cards_shipping_address_continue">GO TO CHECKOUT</string>
+
+    <!-- SecurityCards - Connected to website dialog -->
+    <!-- FIXME Missing copies yet -->
+    <string name="security_cards_connected_to_website_title">Connected to %s</string>
+    <string name="security_cards_connected_to_website_description">No personal information is associated with your Muun wallet.</string>
 
 </resources>

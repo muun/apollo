@@ -31,8 +31,10 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
     /**
      * Creates an intent to launch this activity.
      */
-    public static Intent getStartActivityIntent(@NotNull Context context,
-                                                @NotNull Long operationId) {
+    public static Intent getStartActivityIntent(
+            @NotNull Context context,
+            @NotNull Long operationId
+    ) {
         final Intent intent = new Intent(context, OperationDetailActivity.class);
         return intent.putExtra(OperationDetailPresenter.OPERATION_ID_KEY, operationId);
     }
@@ -292,9 +294,14 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
         swapPaymentHashItem.setOnIconClickListener(v -> onCopyPaymentHashToClipboard(paymentHash));
 
         final String preimage = operation.getPreimage();
-        swapPreimageItem.setDescription(preimage);
-        swapPreimageItem.setVisibility(!TextUtils.isEmpty(preimage) ? View.VISIBLE : View.GONE);
-        swapPreimageItem.setOnIconClickListener(view -> onCopyPreimageToClipboard(preimage));
+        if (operation.isCompleted() && !TextUtils.isEmpty(preimage)) {
+            swapPreimageItem.setDescription(preimage);
+            swapPreimageItem.setVisibility(View.VISIBLE);
+            swapPreimageItem.setOnIconClickListener(view -> onCopyPreimageToClipboard(preimage));
+
+        } else {
+            swapPreimageItem.setVisibility(View.GONE);
+        }
 
         if (!ExtensionsKt.isEmpty(operation.getInvoiceDescription())) {
             descriptionItem.setVisibility(View.VISIBLE);
@@ -356,8 +363,8 @@ public class OperationDetailActivity extends BaseActivity<OperationDetailPresent
     }
 
     private void onCopyPaymentHashToClipboard(final String paymentHash) {
-        presenter.copySwapPreimageToClipboard(paymentHash);
-        showTextToast(getString(R.string.operation_detail_preimage_copied));
+        presenter.copyPaymentHashToClipboard(paymentHash);
+        showTextToast(getString(R.string.operation_detail_payment_hash_copied));
     }
 
     private void onCopyTransactionIdToClipboard(final String transactionId) {

@@ -26,6 +26,7 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_AMOUNT
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_CONFIRMATION
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_NEW_OP_DESCRIPTION
 import io.muun.apollo.domain.analytics.NewOperationOrigin
+import io.muun.apollo.domain.errors.newop.InvalidOperationUriException
 import io.muun.apollo.domain.libwallet.adapt
 import io.muun.apollo.domain.libwallet.destinationPubKey
 import io.muun.apollo.domain.libwallet.remainingMillis

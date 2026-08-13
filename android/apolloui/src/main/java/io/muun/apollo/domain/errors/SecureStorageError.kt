@@ -4,6 +4,8 @@ import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 
 open class SecureStorageError : MuunError {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     constructor(debugSnapshot: SecureStorageProvider.DebugSnapshot) {
         attachDebugSnapshotMetadata(debugSnapshot)
     }

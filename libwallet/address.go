@@ -1,8 +1,6 @@
 package libwallet
 
 import (
-	"fmt"
-	"github.com/shopspring/decimal"
 	"io"
 	"math"
 	"net/http"
@@ -10,12 +8,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/btcsuite/btcd/txscript"
+	goerr "github.com/go-errors/errors"
+	"github.com/shopspring/decimal"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/errors"
-
-	"github.com/btcsuite/btcd/txscript"
-	"google.golang.org/protobuf/proto"
 )
 
 // These constants are here for clients usage.
@@ -35,7 +35,7 @@ type MuunPaymentURI struct {
 	Label        string
 	Message      string
 	Amount       string
-	Uri          string
+	Uri          string //nolint:staticcheck // TODO: struct field Uri should be URI
 	Bip70Url     string
 	CreationTime string
 	ExpiresTime  string
@@ -50,7 +50,10 @@ const (
 // GetPaymentURI builds a MuunPaymentURI from text (Bitcoin Uri, Muun Uri or address) and a network
 func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
-	bitcoinUri, components := buildUriFromString(rawInput, bitcoinScheme)
+	bitcoinUri, components := buildUriFromString( //nolint:staticcheck // TODO: var bitcoinUri should be bitcoinURI
+		rawInput,
+		bitcoinScheme,
+	)
 	if components == nil {
 		return nil, errors.Errorf(ErrInvalidURI, "failed to parse uri %v", rawInput)
 	}
@@ -88,15 +91,16 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 		if strings.ToLower(queryParam) == "amount" {
 			rawAmount := queryValues[queryParam][0]
 
-			// We're adding some extra flexibility in case on-chain amount comes in scientific notation
-			// (bip21 standard doesn't allow it, but we've seen it in the wild). So, we'll try to parse the amount
-			// string into a float and then convert it back to a string but using decimal notation (that's the 'f'
-			// format in FormatFloat).
+			// We're adding some extra flexibility in case on-chain amount comes in scientific
+			// notation (bip21 standard doesn't allow it, but we've seen it in the wild). So, we'll
+			// try to parse the amount string into a float and then convert it back to a string but
+			// using decimal notation (that's the 'f' format in FormatFloat).
 			numericAmount, err := strconv.ParseFloat(rawAmount, 64)
 			if err != nil || math.IsNaN(numericAmount) || math.IsInf(numericAmount, 0) {
 				amount = rawAmount
-				// TODO we should probably return an error here but that breaks current assumptions in newop state
-				// machine (see TestInvalidAmountEmitsInvalidAddress in state_test.go)
+				// TODO we should probably return an error here but that breaks current assumptions
+				// in newop state machine (see TestInvalidAmountEmitsInvalidAddress in
+				// state_test.go)
 			} else {
 				amount = strconv.FormatFloat(numericAmount, 'f', -1, 64)
 			}
@@ -125,7 +129,10 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	if len(queryValues["r"]) != 0 {
 
 		if invoice != nil && invoice.Sats != 0 {
-			return nil, errors.New(ErrInvalidURI, "Bip70 uris can't be used with lightning invoices with amount")
+			return nil, errors.New(
+				ErrInvalidURI,
+				"Bip70 uris can't be used with lightning invoices with amount",
+			)
 		}
 
 		if len(address) > 0 {
@@ -153,7 +160,7 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	// Bech32 check
 	decodedAddress, err := btcutilw.DecodeAddress(address, network.network)
 	if err != nil {
-		return nil, fmt.Errorf("invalid address: %w", err)
+		return nil, goerr.Errorf("invalid address: %w", err)
 	}
 
 	if !decodedAddress.IsForNet(network.network) {
@@ -164,10 +171,13 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 	if invoice != nil {
 
 		if invoice.Sats != 0 {
-			invoiceAmount := decimal.NewFromInt(invoice.Sats).Div(decimal.NewFromInt(100_000_000)).String()
+			invoiceAmount := decimal.NewFromInt(invoice.Sats).
+				Div(decimal.NewFromInt(100_000_000)).
+				String()
 
-			// We ONLY mark the uri as invalid (and return an error) if both amount exists and are different. Otherwise,
-			// we will allow a way to move forward with the payment by assuming the lightning part is the correct one.
+			// We ONLY mark the uri as invalid (and return an error) if both amount exists and are
+			// different. Otherwise, we will allow a way to move forward with the payment by
+			// assuming the lightning part is the correct one.
 			if amount != "" {
 				if invoiceAmount != amount {
 					return nil, errors.New(ErrInvalidURI, "Amount mismatch")
@@ -189,9 +199,13 @@ func GetPaymentURI(rawInput string, network *Network) (*MuunPaymentURI, error) {
 
 // DoPaymentRequestCall builds a MuunPaymentUri from a url and a network. Handling BIP70 to 72
 func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest( //nolint:noctx // TODO: use http.NewRequestWithContext
+		"GET",
+		url,
+		nil,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request to: %s", url)
+		return nil, goerr.Errorf("failed to create request to: %s", url)
 	}
 
 	req.Header.Set("Accept", "application/bitcoin-paymentrequest")
@@ -201,7 +215,7 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 	if err != nil {
 		return nil, errors.Errorf(ErrNetwork, "failed to make request to: %s", url)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // TODO: check error
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -211,23 +225,23 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 	payReq := &PaymentRequest{}
 	err = proto.Unmarshal(body, payReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal payment request: %w", err)
+		return nil, goerr.Errorf("failed to unmarshal payment request: %w", err)
 	}
 
 	payDetails := &PaymentDetails{}
 
 	err = proto.Unmarshal(payReq.SerializedPaymentDetails, payDetails)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshall payment details: %w", err)
+		return nil, goerr.Errorf("failed to unmarshall payment details: %w", err)
 	}
 
 	if len(payDetails.Outputs) == 0 {
-		return nil, fmt.Errorf("no outputs provided")
+		return nil, goerr.Errorf("no outputs provided")
 	}
 
 	address, err := getAddressFromScript(payDetails.Outputs[0].Script, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get address: %w", err)
+		return nil, goerr.Errorf("failed to get address: %w", err)
 	}
 
 	amount := float64(payDetails.Outputs[0].Amount) / 100_000_000
@@ -254,8 +268,16 @@ func getAddressFromScript(script []byte, network *Network) (string, error) {
 	return address.String(), nil
 }
 
-func buildUriFromString(rawInput string, targetScheme string) (string, *url.URL) {
-	newUri := strings.Replace(rawInput, muunScheme, targetScheme, 1)
+func buildUriFromString( //nolint:staticcheck // TODO: func buildUriFromString should be buildURIFromString
+	rawInput string,
+	targetScheme string,
+) (string, *url.URL) {
+	newUri := strings.Replace( //nolint:staticcheck // TODO: var newUri should be newURI
+		rawInput,
+		muunScheme,
+		targetScheme,
+		1,
+	)
 	if !strings.HasPrefix(strings.ToLower(newUri), targetScheme) {
 		newUri = targetScheme + rawInput
 	}

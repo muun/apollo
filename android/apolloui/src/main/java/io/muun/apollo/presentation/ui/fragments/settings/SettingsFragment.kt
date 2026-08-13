@@ -97,6 +97,9 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @BindView(R.id.settings_disable_feature_flags)
     lateinit var featureFlagsSettingsItem: MuunSettingItem
 
+    @BindView(R.id.settings_send_debug_data)
+    lateinit var sendDebugDataItem: MuunSettingItem
+
     @BindView(R.id.recovery_section)
     lateinit var recoverySection: View
 
@@ -188,14 +191,19 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
         // Helper code for internal builds
         if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
+            featureFlagsSection.visibility = View.VISIBLE
 
             if (state.overridableFeatures.isNotEmpty()) {
-                featureFlagsSection.visibility = View.VISIBLE
                 featureFlagsSettingsItem.visibility = View.VISIBLE
                 featureFlagsSettingsItem.setOnClickListener {
                     presenter.navigateToDisableFeatureFlags()
                 }
+            } else {
+                featureFlagsSettingsItem.visibility = View.GONE
             }
+
+            sendDebugDataItem.visibility = View.VISIBLE
+            sendDebugDataItem.setOnClickListener { presenter.sendDebugData() }
         }
     }
 

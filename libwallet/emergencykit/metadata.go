@@ -2,10 +2,10 @@ package emergencykit
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/go-errors/errors"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu"
 )
@@ -57,7 +57,7 @@ var pdfConfig = &pdfcpu.Configuration{
 func (mr *MetadataReader) HasMetadata() (bool, error) {
 	fs, err := api.ListAttachmentsFile(mr.SrcFile, pdfConfig)
 	if err != nil {
-		return false, fmt.Errorf("HasMetadata failed to list attachments: %w", err)
+		return false, errors.Errorf("HasMetadata failed to list attachments: %w", err)
 	}
 
 	return len(fs) == 1 && fs[0] == metadataName, nil
@@ -66,44 +66,52 @@ func (mr *MetadataReader) HasMetadata() (bool, error) {
 // ReadMetadata returns the deserialized metadata file embedded in the SrcFile PDF.
 func (mr *MetadataReader) ReadMetadata() (*Metadata, error) {
 	// NOTE:
-	// Due to library constraints, this makes use of a temporary directory in the default system temp
-	// location, which for the Recovery Tool will always be accessible. If we eventually want to read
-	// this metadata in mobile clients, we'll need the caller to provide a directory.
+	// Due to library constraints, this makes use of a temporary directory in the default
+	// system temp location, which for the Recovery Tool will always be accessible. If we
+	// eventually want to read this metadata in mobile clients, we'll need the caller to
+	// provide a directory.
 
 	// Before we begin, verify that the metadata file is embedded:
 	hasMetadata, err := mr.HasMetadata()
 	if err != nil {
-		return nil, fmt.Errorf("ReadMetadata failed to check for existence: %w", err)
+		return nil, errors.Errorf("ReadMetadata failed to check for existence: %w", err)
 	}
 	if !hasMetadata {
-		return nil, fmt.Errorf("ReadMetadata didn't find %s (or found more) in this PDF", metadataName)
+		return nil, errors.Errorf(
+			"ReadMetadata didn't find %s (or found more) in this PDF",
+			metadataName,
+		)
 	}
 
 	// Create the temporary directory, with a deferred call to clean up:
 	tmpDir, err := os.MkdirTemp("", "ek-metadata-*")
 	if err != nil {
-		return nil, fmt.Errorf("ReadMetadata failed to create a temporary directory")
+		return nil, errors.Errorf("ReadMetadata failed to create a temporary directory")
 	}
 
-	defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDir) //nolint:errcheck // TODO: check error
 
 	// Extract the embedded attachment from the PDF into that directory:
 	err = api.ExtractAttachmentsFile(mr.SrcFile, tmpDir, []string{metadataName}, pdfConfig)
 	if err != nil {
-		return nil, fmt.Errorf("ReadMetadata failed to extract attachment: %w", err)
+		return nil, errors.Errorf("ReadMetadata failed to extract attachment: %w", err)
 	}
 
 	// Read the contents of the file:
 	metadataBytes, err := os.ReadFile(filepath.Join(tmpDir, metadataName))
 	if err != nil {
-		return nil, fmt.Errorf("ReadMetadata failed to read the extracted file: %w", err)
+		return nil, errors.Errorf("ReadMetadata failed to read the extracted file: %w", err)
 	}
 
 	// Deserialize the metadata:
 	var metadata Metadata
 	err = json.Unmarshal(metadataBytes, &metadata)
 	if err != nil {
-		return nil, fmt.Errorf("ReadMetadata failed to unmarshal %s: %w", string(metadataBytes), err)
+		return nil, errors.Errorf(
+			"ReadMetadata failed to unmarshal %s: %w",
+			string(metadataBytes),
+			err,
+		)
 	}
 
 	// Done we are!
@@ -113,9 +121,9 @@ func (mr *MetadataReader) ReadMetadata() (*Metadata, error) {
 // WriteMetadata creates a copy of SrcFile with attached JSON metadata into DstFile.
 func (mw *MetadataWriter) WriteMetadata(metadata *Metadata) error {
 	// NOTE:
-	// Due to library constraints, this makes use of a temporary file placed in the same directory as
-	// `SrcFile`, which is assumed to be writable. This is a much safer bet than attempting to pick a
-	// location for temporary files ourselves.
+	// Due to library constraints, this makes use of a temporary file placed in the same
+	// directory as `SrcFile`, which is assumed to be writable. This is a much safer bet
+	// than attempting to pick a location for temporary files ourselves.
 
 	// Decide the location of the temporary file:
 	srcDir := filepath.Dir(mw.SrcFile)
@@ -124,21 +132,21 @@ func (mw *MetadataWriter) WriteMetadata(metadata *Metadata) error {
 	// Serialize the metadata:
 	metadataBytes, err := json.Marshal(metadata)
 	if err != nil {
-		return fmt.Errorf("WriteMetadata failed to marshal: %w", err)
+		return errors.Errorf("WriteMetadata failed to marshal: %w", err)
 	}
 
 	// Write to the temporary file, with a deferred call to clean up:
 	err = os.WriteFile(tmpFile, metadataBytes, os.FileMode(0600))
 	if err != nil {
-		return fmt.Errorf("WriteMetadata failed to write a temporary file: %w", err)
+		return errors.Errorf("WriteMetadata failed to write a temporary file: %w", err)
 	}
 
-	defer os.Remove(tmpFile)
+	defer os.Remove(tmpFile) //nolint:errcheck // TODO: check error
 
 	// Add the attachment, returning potential errors:
 	err = api.AddAttachmentsFile(mw.SrcFile, mw.DstFile, []string{tmpFile}, false, pdfConfig)
 	if err != nil {
-		return fmt.Errorf("WriteMetadata failed to add attachment file %s: %w", tmpFile, err)
+		return errors.Errorf("WriteMetadata failed to add attachment file %s: %w", tmpFile, err)
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package io.muun.apollo.domain.model.report
 
 import android.app.ApplicationExitInfo
+import android.net.Uri
 import android.os.Build
 import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.utils.getUnsupportedCurrencies
@@ -14,7 +15,13 @@ import timber.log.Timber
 import java.util.Locale
 import javax.annotation.CheckReturnValue
 
-class EmailReport private constructor(val body: String) {
+class EmailReport private constructor(
+    private val builder: Builder,
+    val body: String,
+    val attachmentUris: List<Uri> = emptyList(),
+) {
+
+    fun withAttachments(uris: List<Uri>): EmailReport = EmailReport(builder, body, uris)
 
     data class Builder(
         var report: ErrorReport? = null,
@@ -178,7 +185,7 @@ class EmailReport private constructor(val body: String) {
                    |${report!!.print(abridged)}""".trimMargin()
 
             Timber.d("EmailReport: \n$body")
-            return EmailReport(body)
+            return EmailReport(this, body)
         }
 
         private fun formatExitReasons(exitReasons: List<ApplicationExitInfo>): String {
@@ -199,4 +206,7 @@ class EmailReport private constructor(val body: String) {
 
     fun subject(subjectPrefix: String) =
         String.format("%s (#%s)", subjectPrefix, reportId().substring(0, 8))
+
+    fun abridge(): EmailReport =
+        builder.build(true)
 }

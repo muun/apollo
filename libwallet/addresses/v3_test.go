@@ -13,8 +13,8 @@ func TestCreateAddressV3(t *testing.T) {
 		addressPath = "m/schema:1'/recovery:1'/external:1/0"
 
 		v3Address       = "2MswEXmCLaHQq6pUTtnUVF8wVArfYSqUec5"
-		basePK          = "tpubDAN21T1DFREQQS4FvpUktKRBzXXsj5ddenAa5u198hLXvErFFR4Lj8bt8xMG3xnZr6u8mx1vrFW9RwCDXQwQuYRCLq1j9Nr2VJUrENzteQH"
-		baseCosigningPK = "tpubDAsVhzq6otpasovieofhiaY38bSFGyJaBGvrJjBv9whhSnftUXfMTMVrq4BbTXT5A9b78CqqbPuM2j1ZGWdiggd7JHUTZAHh8GXDTt4Pkj9"
+		basePK          = "tpubDAN21T1DFREQQS4FvpUktKRBzXXsj5ddenAa5u198hLXvErFFR4Lj8bt8xMG3xnZr6u8mx1vrFW9RwCDXQwQuYRCLq1j9Nr2VJUrENzteQH" //nolint:lll
+		baseCosigningPK = "tpubDAsVhzq6otpasovieofhiaY38bSFGyJaBGvrJjBv9whhSnftUXfMTMVrq4BbTXT5A9b78CqqbPuM2j1ZGWdiggd7JHUTZAHh8GXDTt4Pkj9" //nolint:lll
 		basePath        = "m/schema:1'/recovery:1'"
 		v3EncodedScript = "0020e1fbfbd395aff8b4087fee3e4488815ef659b559b3cd0d6800b5a591efd99f38"
 	)

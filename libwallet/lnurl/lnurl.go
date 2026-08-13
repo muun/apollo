@@ -114,11 +114,16 @@ func Validate(qr string) bool {
 
 // Withdraw will parse an LNURL withdraw QR and begin a withdraw process.
 // Caller must wait for the actual payment after this function has notified success.
-func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bool, notify func(e *Event)) {
+func Withdraw(
+	qr string,
+	createInvoiceFunc CreateInvoiceFunction,
+	allowUnsafe bool,
+	notify func(e *Event),
+) {
 	notifier := notifier{notify: notify}
 
 	// decode the qr
-	qrUrl, err := decode(qr)
+	qrUrl, err := decode(qr) //nolint:staticcheck // TODO: var qrUrl should be qrURL
 	if err != nil {
 		notifier.Error(ErrDecode, err)
 		return
@@ -143,15 +148,17 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	notifier.Status(StatusContacting)
 
 	// start withdraw with service
-	resp, err := httpClient.Get(qrUrl.String())
+	resp, err := httpClient.Get( //nolint:noctx // TODO: use (*http.Client).Do with http.NewRequestWithContext
+		qrUrl.String(),
+	)
 	if err != nil {
 		notifier.Error(ErrUnreachable, err)
 		return
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // TODO: check error
 
 	if code, reason := validateHttpResponse(resp); code != ErrNone {
-		notifier.Errorf(code, reason)
+		notifier.Errorf(code, "%s", reason)
 		return
 	}
 
@@ -163,7 +170,7 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	if code, reason := wr.Validate(); code != ErrNone {
-		notifier.Errorf(code, reason)
+		notifier.Errorf(code, "%s", reason)
 		return
 	}
 
@@ -177,7 +184,8 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		return
 	}
 	// We don't check for "callbackURL.Host == qrUrl.Host" since for withdraw it does not add
-	// any security. Note: for other lnurl action it will definitely be a requirement.
+	// any security.
+	// Note: for other lnurl action it will definitely be a requirement.
 
 	// generate invoice
 	amount := lnwire.MilliSatoshi(int64(wr.MaxWithdrawable))
@@ -202,10 +210,10 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 		notifier.Errorf(ErrUnreachable, "failed to get response from callback URL: %v", err)
 		return
 	}
-	defer fresp.Body.Close()
+	defer fresp.Body.Close() //nolint:errcheck // TODO: check error
 
 	if code, reason := validateHttpResponse(fresp); code != ErrNone {
-		notifier.Errorf(code, reason)
+		notifier.Errorf(code, "%s", reason)
 		return
 	}
 
@@ -218,14 +226,16 @@ func Withdraw(qr string, createInvoiceFunc CreateInvoiceFunction, allowUnsafe bo
 	}
 
 	if code, reason := fr.Validate(); code != ErrNone {
-		notifier.Errorf(code, reason)
+		notifier.Errorf(code, "%s", reason)
 		return
 	}
 
 	notifier.Status(StatusReceiving)
 }
 
-func validateHttpResponse(resp *http.Response) (int, string) {
+func validateHttpResponse( //nolint:staticcheck // TODO: func validateHttpResponse should be validateHTTPResponse
+	resp *http.Response,
+) (int, string) {
 
 	if resp.StatusCode >= 400 {
 		// try to obtain response body
@@ -239,12 +249,19 @@ func validateHttpResponse(resp *http.Response) (int, string) {
 				}
 			}
 
-			return code, fmt.Sprintf("unexpected status code in response: %v, body: %s", resp.StatusCode, string(bytesBody))
+			return code, fmt.Sprintf(
+				"unexpected status code in response: %v, body: %s",
+				resp.StatusCode,
+				string(bytesBody),
+			)
 		}
 	}
 
 	if resp.StatusCode >= 300 {
-		return ErrInvalidResponse, fmt.Sprintf("unexpected status code in response: %v", resp.StatusCode)
+		return ErrInvalidResponse, fmt.Sprintf(
+			"unexpected status code in response: %v",
+			resp.StatusCode,
+		)
 	}
 
 	return ErrNone, ""
@@ -377,7 +394,11 @@ func (n *notifier) Error(status int, err error) {
 	n.notify(&Event{Code: status, Message: err.Error(), Metadata: n.metadata})
 }
 
-func (n *notifier) Errorf(status int, format string, a ...interface{}) {
+func (n *notifier) Errorf(
+	status int,
+	format string,
+	a ...interface{}, //nolint:modernize // TODO: use any instead of interface{}
+) {
 	msg := fmt.Sprintf(format, a...)
 	n.notify(&Event{Code: status, Message: msg, Metadata: n.metadata})
 }

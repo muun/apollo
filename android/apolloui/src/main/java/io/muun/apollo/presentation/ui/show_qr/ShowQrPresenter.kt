@@ -91,7 +91,7 @@ class ShowQrPresenter @Inject constructor(
         setNotificationPermissionSkipped.run()
     }
 
-    override fun reportNotificationPermissionAsked() {
+    private fun reportNotificationPermissionAsked() {
         analytics.report(AnalyticsEvent.E_PUSH_NOTI_PERMISSION_ASKED())
     }
 

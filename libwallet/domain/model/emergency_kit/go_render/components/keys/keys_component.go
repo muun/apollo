@@ -1,11 +1,12 @@
 package keys
 
 import (
+	"strings"
+	"time"
+
 	"github.com/muun/libwallet/data/emergency_kit"
 	"github.com/muun/libwallet/data/emergency_kit/resources"
 	"github.com/muun/libwallet/domain/model/emergency_kit/go_render/assets"
-	"strings"
-	"time"
 )
 
 var (
@@ -46,7 +47,13 @@ func (r *KeysComponent) Render() {
 	startY := r.pdf.GetY()
 
 	assets.SetKeysBackgroundColor(r.pdf.Fpdf)
-	r.pdf.Rect(assets.StandardHorizontalMargin, startY, r.pdf.GetDrawablePageWidth(), r.Height(), "F")
+	r.pdf.Rect(
+		assets.StandardHorizontalMargin,
+		startY,
+		r.pdf.GetDrawablePageWidth(),
+		r.Height(),
+		"F",
+	)
 	r.pdf.SetY(startY)
 
 	header := NewKeysHeaderComponent(r.pdf, r.Translations)
@@ -67,7 +74,13 @@ func (r *KeysComponent) renderDate() {
 	startY := r.pdf.GetY()
 
 	assets.SetKeysBackgroundColor(r.pdf.Fpdf)
-	r.pdf.Rect(assets.StandardHorizontalMargin, startY, r.pdf.GetDrawablePageWidth(), dateBoxSize, "F")
+	r.pdf.Rect(
+		assets.StandardHorizontalMargin,
+		startY,
+		r.pdf.GetDrawablePageWidth(),
+		dateBoxSize,
+		"F",
+	)
 
 	prefix := r.Translations.Keys.CreatedOnPrefix + " "
 	date := strings.ToUpper(r.Translations.LocalizedDate(time.Now()))
@@ -76,7 +89,8 @@ func (r *KeysComponent) renderDate() {
 	assets.SetDateLabelFont(r.pdf.Fpdf)
 	prefixWidth := r.pdf.GetStringWidthWithLetterSpacing(prefix, letterSpacing)
 
-	// GetStringWidthWithLetterSpacing removes trailing spacing, but we need it between prefix and date
+	// GetStringWidthWithLetterSpacing removes trailing spacing, but we need it between prefix and
+	// date
 	fontSizePt, _ := r.pdf.GetFontSize()
 	fontSizeMm := resources.PtToMm(fontSizePt)
 	letterSpacingAmount := fontSizeMm * letterSpacing
@@ -94,12 +108,28 @@ func (r *KeysComponent) renderDate() {
 
 	assets.SetDateLabelFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
-	prefixEndX := r.pdf.RenderTextWithLetterSpacing(centeredX, startY, prefix, letterSpacing, "C", "M", dateBoxSize)
+	prefixEndX := r.pdf.RenderTextWithLetterSpacing(
+		centeredX,
+		startY,
+		prefix,
+		letterSpacing,
+		"C",
+		"M",
+		dateBoxSize,
+	)
 
 	assets.SetDateValueFont(r.pdf.Fpdf)
 	assets.SetTitleColor(r.pdf.Fpdf)
 	dateStartX := prefixEndX + letterSpacingAmount - firstDateCharWidth/2
-	r.pdf.RenderTextWithLetterSpacing(dateStartX, startY, date, letterSpacing, "C", "M", dateBoxSize)
+	r.pdf.RenderTextWithLetterSpacing(
+		dateStartX,
+		startY,
+		date,
+		letterSpacing,
+		"C",
+		"M",
+		dateBoxSize,
+	)
 
 	r.pdf.SetY(startY + dateBoxSize)
 }

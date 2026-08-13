@@ -5,16 +5,15 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"unicode/utf16"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/go-errors/errors"
+	"golang.org/x/crypto/scrypt"
 
 	"github.com/muun/libwallet/aescbc"
-	"golang.org/x/crypto/scrypt"
 )
 
 const (
@@ -45,14 +44,14 @@ func Encrypt(key *hdkeychain.ExtendedKey, keyPath, passphrase string) (string, e
 		scryptOutputLength,
 	)
 	if err != nil {
-		return "", fmt.Errorf("failed to compute scrypt key: %w", err)
+		return "", errors.Errorf("failed to compute scrypt key: %w", err)
 	}
 
 	privateKeyBytes := []byte(key.String())
 
 	encrypted, err := aescbc.EncryptPkcs7(inputSecret, iv, privateKeyBytes)
 	if err != nil {
-		return "", fmt.Errorf("failed to encrypt: %w", err)
+		return "", errors.Errorf("failed to encrypt: %w", err)
 	}
 
 	derivationPathBytes := []byte(keyPath)
@@ -83,41 +82,41 @@ func Decrypt(value, passphrase string) (*hdkeychain.ExtendedKey, string, error) 
 	version := elements[0]
 	iterations, err := strconv.Atoi(elements[1])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid iterations: %w", err)
+		return nil, "", errors.Errorf("invalid iterations: %w", err)
 	}
 
 	parallelizationFactor, err := strconv.Atoi(elements[2])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid p: %w", err)
+		return nil, "", errors.Errorf("invalid p: %w", err)
 	}
 
 	blockSize, err := strconv.Atoi(elements[3])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid blocksize: %w", err)
+		return nil, "", errors.Errorf("invalid blocksize: %w", err)
 	}
 
 	salt, err := hex.DecodeString(elements[4])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid salt: %w", err)
+		return nil, "", errors.Errorf("invalid salt: %w", err)
 	}
 
 	iv, err := hex.DecodeString(elements[5])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid iv: %w", err)
+		return nil, "", errors.Errorf("invalid iv: %w", err)
 	}
 
 	payload, err := hex.DecodeString(elements[6])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid payload: %w", err)
+		return nil, "", errors.Errorf("invalid payload: %w", err)
 	}
 
 	pathBytes, err := hex.DecodeString(elements[7])
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid path: %w", err)
+		return nil, "", errors.Errorf("invalid path: %w", err)
 	}
 
 	if version != "v1" {
-		return nil, "", fmt.Errorf("invalid version %s", version)
+		return nil, "", errors.Errorf("invalid version %s", version)
 	}
 
 	inputSecret, err := scrypt.Key(
@@ -129,17 +128,17 @@ func Decrypt(value, passphrase string) (*hdkeychain.ExtendedKey, string, error) 
 		scryptOutputLength,
 	)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to compute scrypt key: %w", err)
+		return nil, "", errors.Errorf("failed to compute scrypt key: %w", err)
 	}
 
 	decryptedBytes, err := aescbc.DecryptPkcs7(inputSecret, iv, payload)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to decrypt: %w", err)
+		return nil, "", errors.Errorf("failed to decrypt: %w", err)
 	}
 
 	key, err := hdkeychain.NewKeyFromString(string(decryptedBytes[:]))
 	if err != nil {
-		return nil, "", fmt.Errorf("could not decode private key: %w", err)
+		return nil, "", errors.Errorf("could not decode private key: %w", err)
 	}
 	if !key.IsPrivate() {
 		return nil, "", errors.New("expected extended key to be private, not public")
@@ -168,7 +167,7 @@ func encodeUTF16(s string) []byte {
 
 	var buf bytes.Buffer
 	for _, r := range utf16.Encode([]rune(s)) {
-		binary.Write(&buf, binary.BigEndian, r)
+		binary.Write(&buf, binary.BigEndian, r) //nolint:errcheck // TODO: check error
 	}
 	return buf.Bytes()
 }

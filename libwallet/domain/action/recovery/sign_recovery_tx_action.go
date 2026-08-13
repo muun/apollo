@@ -2,8 +2,10 @@ package recovery
 
 import (
 	"bytes"
-	"fmt"
+
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/scanner"
@@ -14,14 +16,21 @@ type SignSweepTxAction struct {
 	network     *libwallet.Network
 }
 
-func NewSignSweepTxAction(keyProvider keys.KeyProvider, network *libwallet.Network) *SignSweepTxAction {
+func NewSignSweepTxAction(
+	keyProvider keys.KeyProvider,
+	network *libwallet.Network,
+) *SignSweepTxAction {
 	return &SignSweepTxAction{
 		keyProvider: keyProvider,
 		network:     network,
 	}
 }
 
-func (action *SignSweepTxAction) Run(utxos []*scanner.Utxo, tx *wire.MsgTx, recoveryCode string) (*wire.MsgTx, error) {
+func (action *SignSweepTxAction) Run(
+	utxos []*scanner.Utxo,
+	tx *wire.MsgTx,
+	recoveryCode string,
+) (*wire.MsgTx, error) {
 	userPrivateKey, err := action.keyProvider.UserPrivateKey()
 	if err != nil {
 		return nil, err
@@ -35,7 +44,9 @@ func (action *SignSweepTxAction) Run(utxos []*scanner.Utxo, tx *wire.MsgTx, reco
 	return buildSignedSweepTx(utxos, tx, userPrivateKey, muunPrivateKey)
 }
 
-func (action *SignSweepTxAction) fetchMuunPrivateKey(recoveryCode string) (*libwallet.HDPrivateKey, error) {
+func (action *SignSweepTxAction) fetchMuunPrivateKey(
+	recoveryCode string,
+) (*libwallet.HDPrivateKey, error) {
 	encryptedKeyData, err := action.keyProvider.EncryptedMuunPrivateKey()
 	if err != nil {
 		return nil, err
@@ -49,22 +60,31 @@ func (action *SignSweepTxAction) fetchMuunPrivateKey(recoveryCode string) (*libw
 	return muunKeyData.Key, nil
 }
 
-func decryptKeys(encryptedKey *libwallet.EncryptedPrivateKeyInfo, recoveryCode string, network *libwallet.Network) (*libwallet.DecryptedPrivateKey, error) {
+func decryptKeys(
+	encryptedKey *libwallet.EncryptedPrivateKeyInfo,
+	recoveryCode string,
+	network *libwallet.Network,
+) (*libwallet.DecryptedPrivateKey, error) {
 	decryptionKey, err := libwallet.RecoveryCodeToKey(recoveryCode, encryptedKey.Salt)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to process recovery code: %w", err)
+		return nil, errors.Errorf("failed to process recovery code: %w", err)
 	}
 
 	decryptedKey, err := decryptionKey.DecryptKey(encryptedKey, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt key: %w", err)
+		return nil, errors.Errorf("failed to decrypt key: %w", err)
 	}
 
 	return decryptedKey, nil
 }
 
-func buildSignedSweepTx(utxos []*scanner.Utxo, unsignedSweepTx *wire.MsgTx, userKey *libwallet.HDPrivateKey, muunKey *libwallet.HDPrivateKey) (*wire.MsgTx, error) {
+func buildSignedSweepTx(
+	utxos []*scanner.Utxo,
+	unsignedSweepTx *wire.MsgTx,
+	userKey *libwallet.HDPrivateKey,
+	muunKey *libwallet.HDPrivateKey,
+) (*wire.MsgTx, error) {
 	inputList := &libwallet.InputList{}
 	userNonces := libwallet.EmptyMusigNonces()
 

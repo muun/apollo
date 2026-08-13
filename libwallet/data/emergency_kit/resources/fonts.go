@@ -2,6 +2,7 @@ package resources
 
 import (
 	_ "embed"
+
 	"github.com/phpdave11/gofpdf"
 )
 

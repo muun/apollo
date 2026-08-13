@@ -4,7 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // TODO: migrate off sha1
+
 	"github.com/btcsuite/btcd/btcec/v2"
 )
 
@@ -33,7 +34,7 @@ func (l *StringList) Add(s string) {
 }
 
 func (l *StringList) Contains(s string) bool {
-	for _, v := range l.elems {
+	for _, v := range l.elems { //nolint:modernize // TODO: use slices.Contains
 		if v == s {
 			return true
 		}
@@ -71,7 +72,7 @@ func (l *IntList) Add(number int) {
 }
 
 func (l *IntList) Contains(number int) bool {
-	for _, v := range l.elems {
+	for _, v := range l.elems { //nolint:modernize // TODO: use slices.Contains
 		if v == number {
 			return true
 		}

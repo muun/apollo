@@ -1,10 +1,10 @@
 package addresses
 
 import (
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/musig"
 )
 
@@ -15,6 +15,9 @@ const (
 	V4              = 4
 	V5              = 5
 	V6              = 6
+	V7              = 7
+	V8              = 8
+	V9              = 9
 	SubmarineSwapV1 = 101
 	SubmarineSwapV2 = 102
 	IncomingSwap    = 201
@@ -34,7 +37,12 @@ func New(version int, derivationPath string, address string) *WalletAddress {
 	}
 }
 
-func Create(version int, userKey, muunKey *hdkeychain.ExtendedKey, path string, network *chaincfg.Params) (*WalletAddress, error) {
+func Create(
+	version int,
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	path string,
+	network *chaincfg.Params,
+) (*WalletAddress, error) {
 	switch version {
 	case V1:
 		return CreateAddressV1(userKey, path, network)
@@ -49,7 +57,7 @@ func Create(version int, userKey, muunKey *hdkeychain.ExtendedKey, path string, 
 	case V6:
 		return CreateAddressV6(userKey, muunKey, path, network)
 	default:
-		return nil, fmt.Errorf("unknown or unsupported version %v", version)
+		return nil, errors.Errorf("unknown or unsupported version %v", version)
 	}
 }
 

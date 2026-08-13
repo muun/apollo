@@ -15,10 +15,19 @@ class Trace internal constructor(
     private var finished = false
 
     private val children = mutableListOf<ChildTrace>()
+    private val manualChildren = mutableListOf<Pair<String, String>>()
 
     /** Create a child trace. Call [ChildTrace.finish] when the child operation completes. */
     fun child(label: String): ChildTrace {
         return ChildTrace(label).also { children.add(it) }
+    }
+
+    /**
+     * Attach a child whose value was measured elsewhere (e.g. inside libwallet and returned over
+     * gRPC), rather than timed by this Trace.
+     */
+    fun addChild(label: String, value: Long) {
+        manualChildren.add(label to value.toString())
     }
 
     /** Report the elapsed time to analytics. */
@@ -33,7 +42,7 @@ class Trace internal constructor(
 
         finished = true
         val elapsed = System.currentTimeMillis() - startTime
-        val childMap = children.associate { it.result() }
+        val childMap = children.associate { it.result() } + manualChildren
         analytics.report(AnalyticsEvent.E_TIME_TRACKER(label, elapsed, childMap))
     }
 

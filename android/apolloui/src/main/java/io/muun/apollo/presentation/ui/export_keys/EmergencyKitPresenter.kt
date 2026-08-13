@@ -87,10 +87,6 @@ class EmergencyKitPresenter @Inject constructor(
         driveUploader.open(context, uploadedFile!!)
     }
 
-    override fun saveEmergencyKitAgain() {
-        goToStep(EmergencyKitStep.SAVE)
-    }
-
     override fun showEmergencyKitVerifyHelp() {
         goToStep(EmergencyKitStep.VERIFY_HELP)
     }

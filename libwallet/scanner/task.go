@@ -1,10 +1,11 @@
 package scanner
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
@@ -40,8 +41,8 @@ func (t *scanTask) Execute() *scanTaskResult {
 		// Attempt to run the task:
 		go t.tryExecuteAsync(results)
 
-		// Wait until a result is sent, the timeout is reached or the task canceled, capturing errors
-		// errors along the way:
+		// Wait until a result is sent, the timeout is reached or the task canceled, capturing
+		// errors errors along the way:
 		select {
 		case <-t.exit:
 			return t.exitResult() // stop retrying when we get the done signal
@@ -54,7 +55,9 @@ func (t *scanTask) Execute() *scanTaskResult {
 			lastError = result.Err // keep retrying when an attempt fails
 
 		case <-timeout:
-			return t.errorResult(fmt.Errorf("task timed out. Last error: %w", lastError)) // stop on timeout
+			return t.errorResult(
+				errors.Errorf("task timed out. Last error: %w", lastError),
+			) // stop on timeout
 		}
 	}
 }
@@ -66,7 +69,7 @@ func (t *scanTask) tryExecuteAsync(results chan *scanTaskResult) {
 	result := t.tryExecute()
 
 	if result.Err != nil {
-		t.client.Disconnect()
+		t.client.Disconnect() //nolint:errcheck // TODO: check error
 	}
 
 	results <- result
@@ -130,19 +133,21 @@ func (t *scanTask) tryExecute() *scanTaskResult {
 func (t *scanTask) listUnspentWithBatching(indexHashes []string) ([][]electrum.UnspentRef, error) {
 	unspentRefGroups, err := t.client.ListUnspentBatch(indexHashes)
 	if err != nil {
-		return nil, fmt.Errorf("listing with batching failed: %w", err)
+		return nil, errors.Errorf("listing with batching failed: %w", err)
 	}
 
 	return unspentRefGroups, nil
 }
 
-func (t *scanTask) listUnspentWithoutBatching(indexHashes []string) ([][]electrum.UnspentRef, error) {
+func (t *scanTask) listUnspentWithoutBatching(
+	indexHashes []string,
+) ([][]electrum.UnspentRef, error) {
 	var unspentRefGroups [][]electrum.UnspentRef
 
 	for _, indexHash := range indexHashes {
 		newGroup, err := t.client.ListUnspent(indexHash)
 		if err != nil {
-			return nil, fmt.Errorf("listing without batching failed: %w", err)
+			return nil, errors.Errorf("listing without batching failed: %w", err)
 		}
 
 		unspentRefGroups = append(unspentRefGroups, newGroup)
@@ -175,7 +180,10 @@ func getIndexHashes(outputScripts [][]byte) ([]string, error) {
 }
 
 // getOutputScripts creates all the scripts that send to an list of Bitcoin address.
-func getOutputScripts(addresses []libwallet.MuunAddress, chainParams *chaincfg.Params) ([][]byte, error) {
+func getOutputScripts(
+	addresses []libwallet.MuunAddress,
+	chainParams *chaincfg.Params,
+) ([][]byte, error) {
 	outputScripts := make([][]byte, len(addresses))
 
 	for i, address := range addresses {
@@ -183,12 +191,12 @@ func getOutputScripts(addresses []libwallet.MuunAddress, chainParams *chaincfg.P
 
 		decodedAddress, err := btcutilw.DecodeAddress(rawAddress, chainParams)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode address %s: %w", rawAddress, err)
+			return nil, errors.Errorf("failed to decode address %s: %w", rawAddress, err)
 		}
 
 		outputScript, err := txscriptw.PayToAddrScript(decodedAddress)
 		if err != nil {
-			return nil, fmt.Errorf("failed to craft script for %s: %w", rawAddress, err)
+			return nil, errors.Errorf("failed to craft script for %s: %w", rawAddress, err)
 		}
 
 		outputScripts[i] = outputScript

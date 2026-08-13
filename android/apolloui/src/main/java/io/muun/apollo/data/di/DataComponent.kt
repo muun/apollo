@@ -18,6 +18,7 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.net.HoustonClient
 import io.muun.apollo.data.net.NetworkInfoProvider
 import io.muun.apollo.data.nfc.NfcBridgerFactory
+import io.muun.apollo.data.nfc.NfcEmpiricalCache
 import io.muun.apollo.data.os.ClipboardProvider
 import io.muun.apollo.data.os.Configuration
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
@@ -121,6 +122,8 @@ interface DataComponent : ActionComponent {
     fun libwalletClient(): LibwalletClient
 
     fun nfcBridgerFactory(): NfcBridgerFactory
+
+    fun nfcEmpiricalCache(): NfcEmpiricalCache
 
     fun feeBumpFunctionsProvider(): FeeBumpFunctionsProvider
 

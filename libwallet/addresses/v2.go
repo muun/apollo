@@ -1,25 +1,28 @@
 package addresses
 
 import (
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
+	goerr "github.com/go-errors/errors"
 	"github.com/pkg/errors"
 )
 
-func CreateAddressV2(userKey, muunKey *hdkeychain.ExtendedKey, path string, network *chaincfg.Params) (*WalletAddress, error) {
+func CreateAddressV2(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	path string,
+	network *chaincfg.Params,
+) (*WalletAddress, error) {
 
 	script, err := CreateRedeemScriptV2(userKey, muunKey, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate redeem script v2: %w", err)
+		return nil, goerr.Errorf("failed to generate redeem script v2: %w", err)
 	}
 
 	address, err := btcutil.NewAddressScriptHash(script, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate multisig address: %w", err)
+		return nil, goerr.Errorf("failed to generate multisig address: %w", err)
 	}
 
 	return &WalletAddress{
@@ -29,11 +32,17 @@ func CreateAddressV2(userKey, muunKey *hdkeychain.ExtendedKey, path string, netw
 	}, nil
 }
 
-func CreateRedeemScriptV2(userKey, muunKey *hdkeychain.ExtendedKey, network *chaincfg.Params) ([]byte, error) {
+func CreateRedeemScriptV2(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	network *chaincfg.Params,
+) ([]byte, error) {
 	return createMultisigRedeemScript(userKey, muunKey, network)
 }
 
-func createMultisigRedeemScript(userKey, muunKey *hdkeychain.ExtendedKey, network *chaincfg.Params) ([]byte, error) {
+func createMultisigRedeemScript(
+	userKey, muunKey *hdkeychain.ExtendedKey,
+	network *chaincfg.Params,
+) ([]byte, error) {
 	userPublicKey, err := userKey.ECPubKey()
 	if err != nil {
 		return nil, err

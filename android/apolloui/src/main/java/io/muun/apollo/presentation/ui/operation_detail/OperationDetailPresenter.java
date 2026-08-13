@@ -15,8 +15,10 @@ import io.muun.apollo.presentation.ui.utils.LinkBuilder;
 import io.muun.common.Optional;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import icepick.State;
 import rx.Observable;
+import timber.log.Timber;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -63,12 +65,30 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
 
         final Optional<Long> maybeOperationId = takeLongArgument(arguments, OPERATION_ID_KEY);
 
-        final boolean precondition = checkArgument(maybeOperationId.isPresent(), "operationId");
+        if (maybeOperationId.isPresent()) {
+            operationId = maybeOperationId.get();
+        } else if (operationId > 0) {
+            // OPERATION_ID missing from arguments but @State restored it (e.g. process death).
+            // Log to understand how this happens — we couldn't reproduce it.
+            Timber.i(
+                    "operationId recovered from saved state. Bundle keys: %s, operationId: %d",
+                    TextUtils.join(", ", arguments.keySet()),
+                    operationId
+            );
+        } else {
+            // Neither arguments nor @State had a valid operationId. Log for diagnostics.
+            Timber.i(
+                    "operationId missing. Bundle keys: %s, @State operationId: %d",
+                    TextUtils.join(", ", arguments.keySet()),
+                    operationId
+            );
+        }
+
+        // operationId > 0 covers both: read from arguments, or restored from @State
+        final boolean precondition = checkArgument(operationId > 0, "operationId");
 
         if (precondition) {
             bitcoinUnit = bitcoinUnitSel.get();
-
-            operationId = maybeOperationId.get();
             bindOperation();
         }
     }
@@ -102,6 +122,13 @@ public class OperationDetailPresenter extends BasePresenter<OperationDetailView>
      */
     public void copySwapPreimageToClipboard(String preimage) {
         clipboardManager.copy("Swap preimage", preimage);
+    }
+
+    /**
+     * Copy payment hash to the clipboard.
+     */
+    public void copyPaymentHashToClipboard(String paymentHash) {
+        clipboardManager.copy("Payment Hash", paymentHash);
     }
 
     /**

@@ -13,7 +13,7 @@ func ErrorCode(err error) int64 {
 	type coder interface {
 		Code() int64
 	}
-	switch e := err.(type) {
+	switch e := err.(type) { //nolint:errorlint // TODO: use errors.As
 	case coder:
 		return e.Code()
 	default:

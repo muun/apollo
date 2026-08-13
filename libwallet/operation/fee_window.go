@@ -1,8 +1,9 @@
 package operation
 
 import (
-	"fmt"
 	"math"
+
+	"github.com/go-errors/errors"
 )
 
 const swapV2ConfTarget = 250 // Approx 2 days
@@ -29,7 +30,10 @@ func (f *FeeWindow) SwapFeeRate(confirmationsNeeded uint) (float64, error) {
 func (f *FeeWindow) MinimumFeeRate(confirmationTarget uint) (float64, error) {
 
 	if confirmationTarget <= 0 {
-		return 0, fmt.Errorf("can't get feeRate. Expected positive confirmation target, got %v", confirmationTarget)
+		return 0, errors.Errorf(
+			"can't get feeRate. Expected positive confirmation target, got %v",
+			confirmationTarget,
+		)
 	}
 
 	// Walk the available targets backwards, finding the highest target below the given one:

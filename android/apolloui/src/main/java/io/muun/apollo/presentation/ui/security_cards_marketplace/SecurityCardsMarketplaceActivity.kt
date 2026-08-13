@@ -185,6 +185,7 @@ class SecurityCardsMarketplaceActivity : AppCompatActivity(), SecurityCardProvid
         when (viewEvent) {
             is SecurityCardsMarketplaceViewModel.ViewEvent.NavigateToCardDetail -> navigator.navigateToCardDetail(
                 this,
+                viewEvent.countryInfo,
                 viewEvent.provider,
                 viewEvent.securityCard,
                 viewEvent.footer,

@@ -6,7 +6,7 @@ This package contains a modified copy of the MuSig2 code as found in
 those modifications, the patch in this directory may become handy.
 
 The nature of the modifications is to adapt the behavior to what
-`secp256k1-zkp` does. The nonces are generated only by providing a sessionId
+`secp256k1-zkp` does. The nonces are generated only by providing a sessionID
 as rand parameter. Leaving the rest null, the serialization of the preimage of
 the nonce also varies.
 

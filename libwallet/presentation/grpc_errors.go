@@ -2,12 +2,14 @@ package presentation
 
 import (
 	"errors"
+	"log/slog"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	apierrors "github.com/muun/libwallet/errors"
 	"github.com/muun/libwallet/presentation/api"
 	"github.com/muun/libwallet/service"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"log/slog"
 )
 
 func NewGrpcErrorFromCode(errorCode apierrors.ErrorCode) error {

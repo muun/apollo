@@ -5,12 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/btcutil/base58"
+	"github.com/go-errors/errors"
 )
 
 const (
@@ -38,7 +37,8 @@ type encryptedPrivateKey struct {
 	Salt         []byte // (optional) 8-byte salt
 }
 
-// EncryptedPrivateKeyInfo is a Gomobile-compatible version of EncryptedPrivateKey using hex-encoding.
+// EncryptedPrivateKeyInfo is a Gomobile-compatible version of EncryptedPrivateKey using
+// hex-encoding.
 type EncryptedPrivateKeyInfo struct {
 	Version      int
 	Birthday     int
@@ -80,7 +80,10 @@ func (k *ChallengePrivateKey) PubKey() *ChallengePublicKey {
 	return &ChallengePublicKey{pubKey: k.key.PubKey()}
 }
 
-func (k *ChallengePrivateKey) DecryptRawKey(encryptedKey string, network *Network) (*DecryptedPrivateKey, error) {
+func (k *ChallengePrivateKey) DecryptRawKey(
+	encryptedKey string,
+	network *Network,
+) (*DecryptedPrivateKey, error) {
 	decoded, err := DecodeEncryptedPrivateKey(encryptedKey)
 	if err != nil {
 		return nil, err
@@ -89,7 +92,10 @@ func (k *ChallengePrivateKey) DecryptRawKey(encryptedKey string, network *Networ
 	return k.DecryptKey(decoded, network)
 }
 
-func (k *ChallengePrivateKey) DecryptKey(decodedInfo *EncryptedPrivateKeyInfo, network *Network) (*DecryptedPrivateKey, error) {
+func (k *ChallengePrivateKey) DecryptKey(
+	decodedInfo *EncryptedPrivateKeyInfo,
+	network *Network,
+) (*DecryptedPrivateKey, error) {
 	decoded, err := unwrapEncryptedPrivateKey(decodedInfo)
 	if err != nil {
 		return nil, err
@@ -105,7 +111,7 @@ func (k *ChallengePrivateKey) DecryptKey(decodedInfo *EncryptedPrivateKeyInfo, n
 
 	privKey, err := NewMasterHDPrivateKeyFromBytes(rawPrivKey, rawChainCode, network)
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to parse key: %w", err)
+		return nil, errors.Errorf("decrypting key: failed to parse key: %w", err)
 	}
 
 	return &DecryptedPrivateKey{
@@ -119,7 +125,7 @@ func DecodeEncryptedPrivateKey(encodedKey string) (*EncryptedPrivateKeyInfo, err
 	version, err := reader.ReadByte()
 
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: %w", err)
+		return nil, errors.Errorf("decrypting key: %w", err)
 	}
 
 	if version == KeySerializationVersion2 {
@@ -130,7 +136,7 @@ func DecodeEncryptedPrivateKey(encodedKey string) (*EncryptedPrivateKeyInfo, err
 		return decodeEncryptedPrivateKeyV3(reader)
 	}
 
-	return nil, fmt.Errorf("unrecognized key version %v", version)
+	return nil, errors.Errorf("unrecognized key version %v", version)
 }
 
 func decodeEncryptedPrivateKeyV3(reader *bytes.Reader) (*EncryptedPrivateKeyInfo, error) {
@@ -166,7 +172,10 @@ func decodeEncryptedPrivateKeyV3(reader *bytes.Reader) (*EncryptedPrivateKeyInfo
 	return result, nil
 }
 
-func decodeEncryptedPrivateKeyV2(reader *bytes.Reader, encodedKey string) (*EncryptedPrivateKeyInfo, error) {
+func decodeEncryptedPrivateKeyV2(
+	reader *bytes.Reader,
+	encodedKey string,
+) (*EncryptedPrivateKeyInfo, error) {
 
 	birthdayBytes := make([]byte, 2)
 	rawPubEph := make([]byte, serializedPublicKeyLength)

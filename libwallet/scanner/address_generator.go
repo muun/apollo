@@ -2,8 +2,9 @@ package scanner
 
 import (
 	"fmt"
-	"github.com/muun/libwallet"
 	"log/slog"
+
+	"github.com/muun/libwallet"
 )
 
 type AddressGenerator struct {
@@ -13,7 +14,10 @@ type AddressGenerator struct {
 	generateContacts bool
 }
 
-func NewAddressGenerator(userKey, muunKey *libwallet.HDPublicKey, generateContacts bool) *AddressGenerator {
+func NewAddressGenerator(
+	userKey, muunKey *libwallet.HDPublicKey,
+	generateContacts bool,
+) *AddressGenerator {
 	return &AddressGenerator{
 		addressCount:     0,
 		userKey:          userKey,
@@ -34,7 +38,10 @@ func (g *AddressGenerator) Stream(countPerDerivationTree int64) chan libwallet.M
 	return ch
 }
 
-func (g *AddressGenerator) generate(consumer chan libwallet.MuunAddress, countPerDerivationTree int64) {
+func (g *AddressGenerator) generate(
+	consumer chan libwallet.MuunAddress,
+	countPerDerivationTree int64,
+) {
 	g.generateChangeAddrs(consumer, countPerDerivationTree)
 	g.generateExternalAddrs(consumer, countPerDerivationTree)
 	if g.generateContacts {
@@ -42,7 +49,10 @@ func (g *AddressGenerator) generate(consumer chan libwallet.MuunAddress, countPe
 	}
 }
 
-func (g *AddressGenerator) generateChangeAddrs(consumer chan libwallet.MuunAddress, countPerDerivationTree int64) {
+func (g *AddressGenerator) generateChangeAddrs(
+	consumer chan libwallet.MuunAddress,
+	countPerDerivationTree int64,
+) {
 	const changePath = "m/1'/1'/0"
 	changeUserKey, _ := g.userKey.DeriveTo(changePath)
 	changeMuunKey, _ := g.muunKey.DeriveTo(changePath)
@@ -50,7 +60,10 @@ func (g *AddressGenerator) generateChangeAddrs(consumer chan libwallet.MuunAddre
 	g.deriveTree(consumer, changeUserKey, changeMuunKey, countPerDerivationTree, "change")
 }
 
-func (g *AddressGenerator) generateExternalAddrs(consumer chan libwallet.MuunAddress, countPerDerivationTree int64) {
+func (g *AddressGenerator) generateExternalAddrs(
+	consumer chan libwallet.MuunAddress,
+	countPerDerivationTree int64,
+) {
 	const externalPath = "m/1'/1'/1"
 	externalUserKey, _ := g.userKey.DeriveTo(externalPath)
 	externalMuunKey, _ := g.muunKey.DeriveTo(externalPath)
@@ -58,7 +71,10 @@ func (g *AddressGenerator) generateExternalAddrs(consumer chan libwallet.MuunAdd
 	g.deriveTree(consumer, externalUserKey, externalMuunKey, countPerDerivationTree, "external")
 }
 
-func (g *AddressGenerator) generateContactAddrs(consumer chan libwallet.MuunAddress, numContacts int64) {
+func (g *AddressGenerator) generateContactAddrs(
+	consumer chan libwallet.MuunAddress,
+	numContacts int64,
+) {
 	const addressPath = "m/1'/1'/2"
 	contactUserKey, _ := g.userKey.DeriveTo(addressPath)
 	contactMuunKey, _ := g.muunKey.DeriveTo(addressPath)

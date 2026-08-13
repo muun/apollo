@@ -1,7 +1,7 @@
 package model
 
-type FeeWindowJson struct {
-	Id int64 `json:"id"`
+type FeeWindowJson struct { //nolint:staticcheck // TODO: type FeeWindowJson should be FeeWindowJSON
+	Id int64 `json:"id"` //nolint:staticcheck // TODO: struct field Id should be ID
 	// TODO: Using time.Time is ok when we unmarshal FetchDate,
 	//  but we need to test that the marshaling also works.
 	FetchDate string `json:"fetchDate"`

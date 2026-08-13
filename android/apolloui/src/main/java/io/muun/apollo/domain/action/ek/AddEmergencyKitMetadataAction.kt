@@ -10,8 +10,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AddEmergencyKitMetadataAction @Inject constructor(
-    private val fileCache: FileCache
-): BaseAsyncAction1<String, Void>() {
+    private val fileCache: FileCache,
+) : BaseAsyncAction1<String, Void>() {
 
     override fun action(metadata: String): Observable<Void> =
         Observable.defer { createFileWithMetadata(metadata) }
@@ -22,7 +22,7 @@ class AddEmergencyKitMetadataAction @Inject constructor(
             fileCache.get(Entry.EMERGENCY_KIT_NO_META).path, // source
             fileCache.get(Entry.EMERGENCY_KIT).path // destination
         )
-        
+
         return Observable.just(null)
     }
 

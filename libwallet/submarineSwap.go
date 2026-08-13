@@ -38,7 +38,14 @@ type SubmarineSwapFundingOutput interface {
 	MuunPublicKey() *HDPublicKey
 }
 
-func ValidateSubmarineSwap(rawInvoice string, userPublicKey *HDPublicKey, muunPublicKey *HDPublicKey, swap SubmarineSwap, originalExpirationInBlocks int64, network *Network) error {
+func ValidateSubmarineSwap(
+	rawInvoice string,
+	userPublicKey *HDPublicKey,
+	muunPublicKey *HDPublicKey,
+	swap SubmarineSwap,
+	originalExpirationInBlocks int64,
+	network *Network,
+) error {
 	data := swaps.SubmarineSwap{
 		Invoice: swap.Invoice(),
 		Receiver: swaps.SubmarineSwapReceiver{

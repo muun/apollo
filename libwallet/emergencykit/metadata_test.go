@@ -14,9 +14,9 @@ var someMetadata = Metadata{
 	BirthdayBlock: 12345,
 
 	EncryptedKeys: []*MetadataKey{
-		&MetadataKey{
+		{
 			DhPubKey:         "0338c52ecbb886ab45de31120c76888da73437e3d6e81510f56d3746399f0fef52",
-			EncryptedPrivKey: "d0a801c1923663295892e9a9a0bfc770abcb00c20e7cef28e2d743c96b441e677c875e8d6495afb8362aba886ae9ee346c62e82758f5b5ba9a70f61957529255",
+			EncryptedPrivKey: "d0a801c1923663295892e9a9a0bfc770abcb00c20e7cef28e2d743c96b441e677c875e8d6495afb8362aba886ae9ee346c62e82758f5b5ba9a70f61957529255", //nolint:lll
 			Salt:             "d579c14c61365bc0",
 		},
 	},

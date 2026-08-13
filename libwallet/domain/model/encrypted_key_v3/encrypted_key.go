@@ -3,12 +3,13 @@ package encrypted_key_v3
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
-	"fmt"
+	"slices"
+
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/cryptography/bitcoin_hpke"
-	"slices"
 )
 
 const (
@@ -36,29 +37,28 @@ func FinishMuunKeyEncryption(
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("encrypt extended key: failed for first encrypted message: %w", err)
+		return "", errors.Errorf(
+			"encrypt extended key: failed for first encrypted message: %w", err,
+		)
 	}
 
-	k := encryptedKey{
-		version,
-		muun,
-		firstEncryptedMessage,
-		secondHalfKeyEncryptedToRecoveryCode,
-	}
-
+	k := newEncryptedKey(version, muun, firstEncryptedMessage, secondHalfKeyEncryptedToRecoveryCode)
 	return k.serialize(), nil
 }
 
-func EncryptUserKey(userPrivateKey *libwallet.HDPrivateKey, recoveryCodePublicKey *btcec.PublicKey) (string, error) {
+func EncryptUserKey(
+	userPrivateKey *libwallet.HDPrivateKey,
+	recoveryCodePublicKey *btcec.PublicKey,
+) (string, error) {
 
 	privateKey, err := userPrivateKey.ECPrivateKey()
 	if err != nil {
-		return "", fmt.Errorf("encrypt extended key: failed to extract private key %w", err)
+		return "", errors.Errorf("encrypt extended key: failed to extract private key %w", err)
 	}
 
 	a, err := btcec.NewPrivateKey()
 	if err != nil {
-		return "", fmt.Errorf("encrypt extended key: failed to create new private key %w", err)
+		return "", errors.Errorf("encrypt extended key: failed to create new private key %w", err)
 	}
 	b := new(btcec.ModNScalar).Set(&a.Key).Negate().Add(&privateKey.Key).Bytes()
 
@@ -69,7 +69,9 @@ func EncryptUserKey(userPrivateKey *libwallet.HDPrivateKey, recoveryCodePublicKe
 		[]byte(""),
 	)
 	if err != nil {
-		return "", fmt.Errorf("encrypt extended key: failed for first encrypted message: %w", err)
+		return "", errors.Errorf(
+			"encrypt extended key: failed for first encrypted message: %w", err,
+		)
 	}
 
 	secondEncryptedMessage, err := bitcoin_hpke.SingleShotEncrypt(
@@ -79,20 +81,20 @@ func EncryptUserKey(userPrivateKey *libwallet.HDPrivateKey, recoveryCodePublicKe
 		[]byte(""),
 	)
 	if err != nil {
-		return "", fmt.Errorf("encrypt extended key: failed for second encrypted message: %w", err)
+		return "", errors.Errorf(
+			"encrypt extended key: failed for second encrypted message: %w", err,
+		)
 	}
 
-	ek := encryptedKey{
-		version,
-		user,
-		firstEncryptedMessage,
-		secondEncryptedMessage,
-	}
-
+	ek := newEncryptedKey(version, user, firstEncryptedMessage, secondEncryptedMessage)
 	return ek.serialize(), nil
 }
 
-func DecryptExtendedKey(recoveryCodePrivateKey *btcec.PrivateKey, encryptedExtendedKey string, network *libwallet.Network) (*libwallet.HDPrivateKey, error) {
+func DecryptExtendedKey(
+	recoveryCodePrivateKey *btcec.PrivateKey,
+	encryptedExtendedKey string,
+	network *libwallet.Network,
+) (*libwallet.HDPrivateKey, error) {
 
 	key, err := deserializeEncryptedKeyV3(encryptedExtendedKey)
 	if err != nil {
@@ -122,7 +124,7 @@ func DecryptExtendedKey(recoveryCodePrivateKey *btcec.PrivateKey, encryptedExten
 	if key.bearer == user {
 		infoForSecondHalf = userSecondHalfToRecoveryCode
 	} else {
-		infoForSecondHalf = muunSecondHalfToRecoveryCode
+		infoForSecondHalf = MuunSecondHalfToRecoveryCode
 	}
 	secondMessage, err := key.secondEncryptedMessage.SingleShotDecrypt(
 		recoveryCodePrivateKey,
@@ -146,6 +148,20 @@ type encryptedKey struct {
 	secondEncryptedMessage *bitcoin_hpke.EncryptedMessage
 }
 
+func newEncryptedKey(
+	version uint8,
+	bearer keyBearer,
+	first *bitcoin_hpke.EncryptedMessage,
+	second *bitcoin_hpke.EncryptedMessage,
+) *encryptedKey {
+	return &encryptedKey{
+		version:                version,
+		bearer:                 bearer,
+		firstEncryptedMessage:  first,
+		secondEncryptedMessage: second,
+	}
+}
+
 func (key *encryptedKey) serialize() string {
 	keyBytes := slices.Concat(
 		[]byte{key.version},
@@ -161,22 +177,25 @@ func deserializeEncryptedKeyV3(serializedKey string) (*encryptedKey, error) {
 
 	serializedKeyBytes, err := base64.StdEncoding.DecodeString(serializedKey)
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to decode from base64 %w", err)
+		return nil, errors.Errorf("decrypting key: failed to decode from base64 %w", err)
 	}
 	reader := bytes.NewReader(serializedKeyBytes)
 
 	versionByte, err := reader.ReadByte()
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to read version %w", err)
+		return nil, errors.Errorf("decrypting key: failed to read version %w", err)
 	}
 
 	if versionByte != 3 {
-		return nil, fmt.Errorf("decrypting key: expected a v3 key, version byte indicates v%d", versionByte)
+		return nil, errors.Errorf(
+			"decrypting key: expected a v3 key, version byte indicates v%d",
+			versionByte,
+		)
 	}
 
 	bearerByte, err := reader.ReadByte()
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to read bearer %w", err)
+		return nil, errors.Errorf("decrypting key: failed to read bearer %w", err)
 	}
 
 	bearer, err := validateBearerByte(bearerByte)
@@ -184,38 +203,39 @@ func deserializeEncryptedKeyV3(serializedKey string) (*encryptedKey, error) {
 		return nil, err
 	}
 
-	firstEncryptedMessageLenInBytes := bitcoin_hpke.SerializedEncryptedMessageLengthInBytes(privateKeyLenBytes + chainCodeLenBytes)
+	firstEncryptedMessageLenInBytes := bitcoin_hpke.SerializedEncryptedMessageLengthInBytes(
+		privateKeyLenBytes + chainCodeLenBytes,
+	)
 	firstEncryptedMessageBytes := make([]byte, firstEncryptedMessageLenInBytes)
 	n, err := reader.Read(firstEncryptedMessageBytes[:])
 	if err != nil || n != firstEncryptedMessageLenInBytes {
-		return nil, fmt.Errorf("decrypting key: failed to read firstEncryptedMessage %w", err)
+		return nil, errors.Errorf("decrypting key: failed to read firstEncryptedMessage %w", err)
 	}
 	firstEncryptedMessage, err := bitcoin_hpke.ParseEncryptedMessage(firstEncryptedMessageBytes[:])
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to parse firstEncryptedMessage %w", err)
+		return nil, errors.Errorf("decrypting key: failed to parse firstEncryptedMessage %w", err)
 	}
 
-	secondEncryptedMessageLenInBytes := bitcoin_hpke.SerializedEncryptedMessageLengthInBytes(privateKeyLenBytes)
+	secondEncryptedMessageLenInBytes := bitcoin_hpke.SerializedEncryptedMessageLengthInBytes(
+		privateKeyLenBytes,
+	)
 	secondEncryptedMessageBytes := make([]byte, secondEncryptedMessageLenInBytes)
 	n, err = reader.Read(secondEncryptedMessageBytes[:])
 	if err != nil || n != secondEncryptedMessageLenInBytes {
-		return nil, fmt.Errorf("decrypting key: failed to read secondEncryptedMessage %w", err)
+		return nil, errors.Errorf("decrypting key: failed to read secondEncryptedMessage %w", err)
 	}
-	secondEncryptedMessage, err := bitcoin_hpke.ParseEncryptedMessage(secondEncryptedMessageBytes[:])
+	secondEncryptedMessage, err := bitcoin_hpke.ParseEncryptedMessage(
+		secondEncryptedMessageBytes[:],
+	)
 	if err != nil {
-		return nil, fmt.Errorf("decrypting key: failed to parse secondEncryptedMessage %w", err)
+		return nil, errors.Errorf("decrypting key: failed to parse secondEncryptedMessage %w", err)
 	}
 
 	if reader.Len() > 0 {
 		return nil, errors.New("decrypting key: key is longer than expected")
 	}
 
-	return &encryptedKey{
-		versionByte,
-		bearer,
-		firstEncryptedMessage,
-		secondEncryptedMessage,
-	}, nil
+	return newEncryptedKey(versionByte, bearer, firstEncryptedMessage, secondEncryptedMessage), nil
 }
 
 func validateBearerByte(bearerByte uint8) (keyBearer, error) {
@@ -224,6 +244,6 @@ func validateBearerByte(bearerByte uint8) (keyBearer, error) {
 	case user, muun:
 		return bearer, nil
 	default:
-		return bearer, fmt.Errorf("invalid value for key bearer byte: %d", bearerByte)
+		return bearer, errors.Errorf("invalid value for key bearer byte: %d", bearerByte)
 	}
 }

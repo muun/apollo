@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"errors"
-	"fmt"
+
+	"github.com/go-errors/errors"
 )
 
 const KeySize = 32
@@ -17,7 +17,7 @@ func EncryptPkcs7(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 
 func EncryptNoPadding(key []byte, iv []byte, plaintext []byte) ([]byte, error) {
 	if len(key) != KeySize {
-		return nil, fmt.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
+		return nil, errors.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -43,7 +43,7 @@ func DecryptPkcs7(key []byte, iv []byte, ciphertext []byte) ([]byte, error) {
 
 func DecryptNoPadding(key []byte, iv []byte, ciphertext []byte) ([]byte, error) {
 	if len(key) != KeySize {
-		return nil, fmt.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
+		return nil, errors.Errorf("invalid key size, expected %v, got %v", KeySize, len(key))
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -69,11 +69,13 @@ func pkcs7UnPadding(src []byte) ([]byte, error) {
 	unpadding := int(src[length-1])
 
 	if unpadding > aes.BlockSize || unpadding == 0 {
-		return nil, errors.New("invalid pkcs7 padding (unpadding > aes.BlockSize || unpadding == 0)")
+		return nil, errors.New(
+			"invalid pkcs7 padding (unpadding > aes.BlockSize || unpadding == 0)",
+		)
 	}
 
 	pad := src[len(src)-unpadding:]
-	for i := 0; i < unpadding; i++ {
+	for i := 0; i < unpadding; i++ { //nolint:modernize // TODO: use range over int
 		if pad[i] != byte(unpadding) {
 			return nil, errors.New("invalid pkcs7 padding (pad[i] != unpadding)")
 		}

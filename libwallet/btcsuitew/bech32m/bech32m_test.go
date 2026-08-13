@@ -22,7 +22,7 @@ var invalidBech32m = []string{
 	"\x7f1g6xzxy", // HRP character out of range
 	"\x801vctc34", // HRP character out of range
 
-	"an84characterslonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11d6pts4", // Overall max length exceeded
+	"an84characterslonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11d6pts4", // Overall max length exceeded //nolint:lll
 
 	"qyrz8wqd2c9m",  // No separator
 	"1qyrz8wqd2c9m", // Empty HRP

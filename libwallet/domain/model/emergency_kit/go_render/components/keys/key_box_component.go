@@ -24,7 +24,11 @@ type singleKeyBox struct {
 	KeyText   string
 }
 
-func newSingleKeyBox(pdf *emergency_kit.PdfExtensions, titleText string, keyText string) *singleKeyBox {
+func newSingleKeyBox(
+	pdf *emergency_kit.PdfExtensions,
+	titleText string,
+	keyText string,
+) *singleKeyBox {
 	return &singleKeyBox{
 		pdf:       pdf,
 		TitleText: titleText,
@@ -38,7 +42,11 @@ func (r *singleKeyBox) Height() float64 {
 
 func (r *singleKeyBox) keyTextHeight() float64 {
 	assets.SetEncryptedKeyFont(r.pdf.Fpdf)
-	keyLines := r.pdf.LineCountWithLetterSpacing(r.getBoxContentWidth(), r.KeyText, assets.BodyLetterSpacing)
+	keyLines := r.pdf.LineCountWithLetterSpacing(
+		r.getBoxContentWidth(),
+		r.KeyText,
+		assets.BodyLetterSpacing,
+	)
 	return keyLines * assets.EncryptedKeysTextFontSize
 }
 
@@ -64,7 +72,12 @@ func (r *singleKeyBox) Render() {
 
 	// EncryptedKeysTextFontSize gives a 1.86 ratio for the KeyText 13px font. This high ratio
 	// is intentional to improve readability of dense monospace text.
-	r.pdf.MultiCellWithLetterSpacing(contentWidth, assets.EncryptedKeysTextFontSize, r.KeyText, assets.BodyLetterSpacing)
+	r.pdf.MultiCellWithLetterSpacing(
+		contentWidth,
+		assets.EncryptedKeysTextFontSize,
+		r.KeyText,
+		assets.BodyLetterSpacing,
+	)
 
 	r.pdf.SetY(startY + boxHeight)
 }

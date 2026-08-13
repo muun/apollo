@@ -5,14 +5,27 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/muun/libwallet/walletdb"
 )
+
+func newKeyValueStorageForTesting(t *testing.T) *KeyValueStorage {
+	pool, err := walletdb.NewPool(path.Join(t.TempDir(), "test.db"), nil)
+	if err != nil {
+		t.Fatalf("failed to open db: %v", err)
+	}
+	t.Cleanup(func() { pool.Close() })
+	return NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		buildStorageSchemaForTests(),
+	)
+}
 
 func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns error when key is not classified by saving data", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test saving an invalid key.
 		err := keyValueStorage.Save("invalid-key", nil)
@@ -28,8 +41,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns error when key is not classified by reading data", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test getting an invalid key.
 		_, err := keyValueStorage.Get("invalid-key")
@@ -45,8 +57,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("success when saving a key with nil value", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Try saving a valid key with nil as value.
 		err := keyValueStorage.Save("gcmToken", nil)
@@ -68,8 +79,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns error when key is not classified by deleting data", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test deleting an invalid key.
 		err := keyValueStorage.Delete("invalid-key")
@@ -85,8 +95,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("success when key is classified appropriately", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Try to save a value with key that exists in the classification for our keys.
 		err := keyValueStorage.Save("gcmToken", "abc123")
@@ -104,8 +113,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns no error when there are no stored values for a key", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Try to get a key for which no one has saved a value before.
 		var value any
@@ -122,8 +130,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns error when value has invalid type", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test saving a valid key with an invalid schema.
 		var invalidTypeForValue = 3.14
@@ -141,8 +148,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("success when value with type Bool can be parsed", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test saving a valid key with a valid type.
 		err := keyValueStorage.Save("isEmailVerified", true)
@@ -155,8 +161,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("success when value with type Int can be parsed", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test saving a valid key with a valid type.
 		err := keyValueStorage.Save("emergencyKitVersion", int32(1234))
@@ -169,8 +174,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("return no error when deleting a key-value pair", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Initially the value of a key is nil
 		got, err := keyValueStorage.Get("gcmToken")
@@ -219,8 +223,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns no error when updating a key with a new String value", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Initially the value of a key is nil
 		got, err := keyValueStorage.Get("gcmToken")
@@ -271,8 +274,7 @@ func TestGetAndSave(t *testing.T) {
 
 	t.Run("returns no error when updating a key with a new Int value", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Initially the value of a key is nil
 		got, err := keyValueStorage.Get("emergencyKitVersion")
@@ -327,8 +329,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 	t.Run("returns error when any key is not classified when saving batch", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test saving items with an invalid key.
 		var items = make(map[string]any)
@@ -348,8 +349,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 	t.Run("returns error when any key is not classified when getting batch", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Test getting items where one of the keys is invalid.
 		var keys = []string{"primaryCurrency", "invalid-key"}
@@ -367,8 +367,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 	t.Run("returns no error when there are no stored values by getting batch", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Try to get keys for which no one has saved a value before.
 		var keys = []string{"primaryCurrency", "isEmailVerified"}
@@ -392,8 +391,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 	t.Run("returns no error when reading, saving and updating batch", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Initially the value of the keys is nil
 		var keys = []string{"primaryCurrency", "email", "isEmailVerified", "emergencyKitVersion"}
@@ -456,8 +454,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 
 	t.Run("returns no error when reading, saving and updating a single item", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Initially the value of the key is nil
 		var keys = []string{"primaryCurrency"}
@@ -515,8 +512,7 @@ func TestGetBatchAndSaveBatch(t *testing.T) {
 func TestGetByPrefix(t *testing.T) {
 	t.Run("returns all feature flags", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Save some feature flags
 		items := make(map[string]any)
@@ -556,8 +552,7 @@ func TestGetByPrefix(t *testing.T) {
 
 	t.Run("returns empty map if no keys match prefix", func(t *testing.T) {
 		// Setup
-		dataDir := path.Join(t.TempDir(), "test.db")
-		keyValueStorage := NewKeyValueStorage(dataDir, buildStorageSchemaForTests())
+		keyValueStorage := newKeyValueStorageForTesting(t)
 
 		// Save some data
 		items := make(map[string]any)
@@ -583,28 +578,52 @@ func TestGetByPrefix(t *testing.T) {
 func buildStorageSchemaForTests() map[string]Classification {
 	return map[string]Classification{
 		"email": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
 		},
 		"emergencyKitVersion": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &IntType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &IntType{},
 		},
 		"gcmToken": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
 		},
 		"isEmailVerified": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
 		},
 		"primaryCurrency": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &StringType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
 		},
 		"featureFlag:useDiagnosticMode": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
 		},
 		"featureFlag:isDogfood": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
 		},
 		"featureFlag:supportsNfc": {
-			BackupType: NoAutoBackup, BackupSecurity: NotApplicable, SecurityCritical: false, ValueType: &BoolType{},
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
 		},
 	}
 }

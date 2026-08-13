@@ -3,9 +3,12 @@ package io.muun.apollo.domain.errors.p2p
 
 import android.content.Intent
 import io.muun.apollo.data.external.UserFacingErrorMessages
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.UserFacingError
 
 class InvalidPictureError : UserFacingError {
+
+    override val classification = ErrorClassification.EXPECTED
 
     constructor() : super(UserFacingErrorMessages.INSTANCE.invalidPicture())
 

@@ -13,34 +13,42 @@ type KVSchemaStateRepository interface {
 	BumpSchemaVersion(v int) error
 }
 
-type GORMKVSchemaStateRepository struct {
-	db *gorm.DB
+type kvSchemaStateRepository struct {
+	withDB gormProvider
+}
+
+func (r *kvSchemaStateRepository) gorm(fn gormOperation) error {
+	return r.withDB(fn)
 }
 
 // GetCurrentSchemaVersion returns the latest version from the schema state table.
-func (r *GORMKVSchemaStateRepository) GetCurrentSchemaVersion() (int, error) {
-	var v sql.NullInt64
-	row := r.db.CommonDB().QueryRow(`SELECT MAX(schema_version) FROM kv_schema_state`)
-	err := row.Scan(&v)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			// No version recorded yet
-			return 0, nil
+func (r *kvSchemaStateRepository) GetCurrentSchemaVersion() (int, error) {
+	var result int
+	err := r.gorm(func(db *gorm.DB) error {
+		var v sql.NullInt64
+		row := db.CommonDB().QueryRow(`SELECT MAX(schema_version) FROM kv_schema_state`)
+		if err := row.Scan(&v); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil
+			}
+			return err
 		}
-		return 0, err
-	}
-	if !v.Valid {
-		return 0, nil
-	}
-	return int(v.Int64), nil
+		if v.Valid {
+			result = int(v.Int64)
+		}
+		return nil
+	})
+	return result, err
 }
 
 // BumpSchemaVersion inserts a new version into the schema state table.
-func (r *GORMKVSchemaStateRepository) BumpSchemaVersion(version int) error {
-	now := time.Now().UTC()
-	query := `
-        INSERT INTO kv_schema_state (schema_version, applied_at)
-        VALUES (?, ?)
-    `
-	return r.db.Exec(query, version, now).Error
+func (r *kvSchemaStateRepository) BumpSchemaVersion(version int) error {
+	return r.gorm(func(db *gorm.DB) error {
+		now := time.Now().UTC()
+		query := `
+            INSERT INTO kv_schema_state (schema_version, applied_at)
+            VALUES (?, ?)
+        `
+		return db.Exec(query, version, now).Error
+	})
 }

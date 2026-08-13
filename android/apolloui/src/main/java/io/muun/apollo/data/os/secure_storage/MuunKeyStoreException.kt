@@ -2,10 +2,13 @@ package io.muun.apollo.data.os.secure_storage
 
 import android.security.KeyStoreException
 import io.muun.apollo.data.os.OS
+import io.muun.apollo.domain.errors.ErrorClassification
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.utils.getTypedClause
 
 class MuunKeyStoreException(cause: Throwable) : MuunError(cause) {
+
+    override val classification = ErrorClassification.UNEXPECTED
 
     init {
         val maybeKeystoreException = cause.getTypedClause<KeyStoreException>()

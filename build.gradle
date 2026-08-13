@@ -43,6 +43,7 @@ subprojects {
         global_version_dagger = '2.52'
         global_version_mockito = '3.8.0'
 
+        global_version_assertj = '3.9.1'
         global_version_moneta = '1.1'
         global_version_jackson_money = '1.0.0'
 

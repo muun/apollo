@@ -1,6 +1,6 @@
 package io.muun.apollo.data.os.secure_storage;
 
-import io.muun.apollo.domain.errors.MuunError;
+import io.muun.apollo.domain.errors.UnclassifiedError;
 import io.muun.common.utils.Preconditions;
 
 import android.annotation.TargetApi;
@@ -360,7 +360,9 @@ public class KeyStoreProvider {
                     Timber.e(e);
                 }
             } else {
-                Timber.e(new MuunKeyStoreException(new MuunError("Unknown alias: " + alias)));
+                Timber.e(new MuunKeyStoreException(
+                        new UnclassifiedError("Unknown alias: " + alias))
+                );
             }
         }
     }

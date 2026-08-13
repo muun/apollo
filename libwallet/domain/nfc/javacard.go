@@ -2,9 +2,11 @@ package nfc
 
 import (
 	"encoding/hex"
-	"fmt"
-	"github.com/muun/libwallet/app_provided_data"
 	"log/slog"
+
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/app_provided_data"
 )
 
 const nullByte = 0x00
@@ -13,6 +15,9 @@ const nullByte = 0x00
 // usually use CLA 0x00 for common ISO7816-4 commands like SELECT (for applet selection) and 0x80 -
 // 0xFF for applet-specific or Javacard proprietary commands.
 const cla = 0x00
+
+// claEdge is our custom Instruction Class for applet-specific commands (0x80-0xFF range).
+const claEdge = 0x80
 
 // InsSelect is the Instruction code sent to the card selecting the applet to operate with.
 // Most of the instructions are described in the ISO7816 interface document.
@@ -48,16 +53,18 @@ func newJavaCard(nfcBridge app_provided_data.NfcBridge) *JavaCard {
 }
 
 // selectApplet sends the ISO select apdu command with the specified AppletId to this JavaCard
-func (c *JavaCard) selectApplet(appletId string) error {
+func (c *JavaCard) selectApplet(
+	appletId string, //nolint:staticcheck // TODO: method parameter appletId should be appletID
+) error {
 
 	selectAPDU, err := newSelectAPDU(appletId)
 	if err != nil {
-		return fmt.Errorf("couldn't build select apdu command: %w", err)
+		return errors.Errorf("couldn't build select apdu command: %w", err)
 	}
 
-	initialResponse, err := c.transmit(selectAPDU.serialize())
+	initialResponse, err := c.transmit(selectAPDU.serializeShort())
 	if err != nil {
-		return fmt.Errorf("couldn't transmit select apdu command: %w", err)
+		return errors.Errorf("couldn't transmit select apdu command: %w", err)
 	}
 
 	if initialResponse.StatusCode != responseOk {
@@ -65,7 +72,7 @@ func (c *JavaCard) selectApplet(appletId string) error {
 			"unknown response to select apdu command",
 			slog.Any("response", hex.EncodeToString(initialResponse.Response)),
 		)
-		return fmt.Errorf("ISO app select failed, status code %x", initialResponse.StatusCode)
+		return errors.Errorf("ISO app select failed, status code %x", initialResponse.StatusCode)
 	}
 
 	return nil

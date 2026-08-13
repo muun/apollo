@@ -2,15 +2,15 @@ package swaps
 
 import (
 	"crypto/sha256"
-	"fmt"
-
-	"github.com/btcsuite/btcd/chaincfg"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/go-errors/errors"
+	hash "golang.org/x/crypto/ripemd160" //lint:ignore SA1019 using deprecated hash function for compatibility
+
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/hdpath"
-	hash "golang.org/x/crypto/ripemd160" //lint:ignore SA1019 using deprecated hash function for compatibility
 )
 
 type SubmarineSwap struct {
@@ -55,11 +55,11 @@ func (d *KeyDescriptor) DeriveTo(path string) (*hdkeychain.ExtendedKey, error) {
 
 	currentPath, err := hdpath.Parse(d.Path)
 	if err != nil {
-		return nil, fmt.Errorf("invalid current key path: %w", err)
+		return nil, errors.Errorf("invalid current key path: %w", err)
 	}
 	targetPath, err := hdpath.Parse(path)
 	if err != nil {
-		return nil, fmt.Errorf("invalid target key path: %w", err)
+		return nil, errors.Errorf("invalid target key path: %w", err)
 	}
 	indexes := targetPath.IndexesFrom(currentPath)
 	for _, index := range indexes {
@@ -89,9 +89,15 @@ func (swap *SubmarineSwap) Validate(
 	case addresses.SubmarineSwapV1:
 		return swap.validateV1(rawInvoice, userPublicKey, muunPublicKey, network)
 	case addresses.SubmarineSwapV2:
-		return swap.validateV2(rawInvoice, userPublicKey, muunPublicKey, originalExpirationInBlocks, network)
+		return swap.validateV2(
+			rawInvoice,
+			userPublicKey,
+			muunPublicKey,
+			originalExpirationInBlocks,
+			network,
+		)
 	default:
-		return fmt.Errorf("unknown swap version %v", version)
+		return errors.Errorf("unknown swap version %v", version)
 	}
 }
 

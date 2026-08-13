@@ -2,7 +2,7 @@ package io.muun.apollo.domain.errors
 
 import java.io.Serializable
 
-open class MuunError : RuntimeException {
+abstract class MuunError : RuntimeException, ClassifiedError {
 
     constructor()
     constructor(message: String) : super(message)

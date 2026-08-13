@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.libwallet
 
+import com.google.protobuf.ByteString
 import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
@@ -9,6 +10,7 @@ import io.muun.apollo.data.nfc.NfcBridger
 import io.muun.apollo.domain.errors.MuunErrorMapper
 import io.muun.apollo.domain.libwallet.errors.ErrorDetailType
 import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
+import io.muun.apollo.domain.secure_key_value_storage.Secret
 import rpc.WalletServiceGrpc
 import rpc.WalletServiceGrpc.WalletServiceBlockingStub
 import rpc.WalletServiceGrpc.WalletServiceStub
@@ -17,11 +19,14 @@ import rpc.WalletServiceOuterClass.DiagnosticSessionDescriptor
 import rpc.WalletServiceOuterClass.GetRequest
 import rpc.WalletServiceOuterClass.NullValue
 import rpc.WalletServiceOuterClass.SaveRequest
-import rpc.WalletServiceOuterClass.SignMessageSecurityCardRequest
+import rpc.WalletServiceOuterClass.SecureKeyValueStorageDeleteRequest
+import rpc.WalletServiceOuterClass.SecureKeyValueStorageGetRequest
+import rpc.WalletServiceOuterClass.SecureKeyValueStoragePutRequest
 import rpc.WalletServiceOuterClass.Value
 import rpc.WalletServiceOuterClass.GenerateEmergencyKitPDFRequest
 import rpc.WalletServiceOuterClass.GenerateEmergencyKitPDFResponse
 import rpc.WalletServiceOuterClass.EKInputRequest
+import rpc.WalletServiceOuterClass.ZipDataDirRequest
 import io.muun.apollo.domain.action.ek.GenerateEmergencyKitPDF
 import rx.Emitter
 import rx.Observable
@@ -45,32 +50,6 @@ class LibwalletClient(private val channel: ManagedChannel) {
         Timber.d("Paired Security Card - isCardAlreadyUsed: ${response.isCardAlreadyUsed}")
     }
 
-    fun resetSecurityCard(nfcBridger: NfcBridger) {
-
-        nfcBridger.setupBridge()
-        blockingStub.performSyncRequest {
-            resetSecurityCard(emptyMessage)
-        }
-        nfcBridger.tearDownBridge()
-
-        Timber.d("Reset Security Card")
-    }
-
-    fun securityCardSignMessage(nfcBridger: NfcBridger, message: String): ByteArray {
-
-        val request = SignMessageSecurityCardRequest.newBuilder()
-            .setMessageHex(message)
-            .build()
-
-        nfcBridger.setupBridge()
-        val signMessageNfcCardResponse = blockingStub.performSyncRequest {
-            signMessageSecurityCard(request)
-        }
-        nfcBridger.tearDownBridge()
-
-        return signMessageNfcCardResponse.signedMessageHex.toByteArray()
-    }
-
     fun securityCardV2SignMessage(nfcBridger: NfcBridger) {
 
         nfcBridger.setupBridge()
@@ -83,7 +62,7 @@ class LibwalletClient(private val channel: ManagedChannel) {
     fun generateEmergencyKitPDF(
         data: GenerateEmergencyKitPDF.RequiredData,
         outputPath: String,
-        language: String
+        language: String,
     ): GenerateEmergencyKitPDFResponse {
         val ekInput = EKInputRequest.newBuilder()
             .setFirstEncryptedKey(data.userKey)
@@ -259,6 +238,22 @@ class LibwalletClient(private val channel: ManagedChannel) {
     fun getInt(key: String, defaultValue: Int): Int =
         getInt(key) ?: defaultValue
 
+    fun resetData() {
+        blockingStub.performSyncRequest {
+            resetData(emptyMessage)
+        }
+    }
+
+    fun zipDataDir(outputPath: String) {
+        val request = ZipDataDirRequest.newBuilder()
+            .setOutputPath(outputPath)
+            .build()
+
+        blockingStub.performSyncRequest {
+            zipDataDir(request)
+        }
+    }
+
     fun delete(key: String) {
         val deleteRequest = DeleteRequest.newBuilder()
             .setKey(key)
@@ -266,6 +261,44 @@ class LibwalletClient(private val channel: ManagedChannel) {
 
         blockingStub.performSyncRequest {
             delete(deleteRequest)
+        }
+    }
+
+    fun secureKeyValueStoragePut(key: String, value: ByteArray) {
+        val request = SecureKeyValueStoragePutRequest.newBuilder()
+            .setKey(key)
+            .setValue(ByteString.copyFrom(value))
+            .build()
+
+        blockingStub.performSyncRequest {
+            secureKeyValueStoragePut(request)
+        }
+    }
+
+    fun secureKeyValueStorageGet(key: String): Secret {
+        val request = SecureKeyValueStorageGetRequest.newBuilder()
+            .setKey(key)
+            .build()
+
+        val response = blockingStub.performSyncRequest {
+            secureKeyValueStorageGet(request)
+        }
+        return Secret(response.value.toByteArray())
+    }
+
+    fun secureKeyValueStorageDelete(key: String) {
+        val request = SecureKeyValueStorageDeleteRequest.newBuilder()
+            .setKey(key)
+            .build()
+
+        blockingStub.performSyncRequest {
+            secureKeyValueStorageDelete(request)
+        }
+    }
+
+    fun secureKeyValueStorageWipe() {
+        blockingStub.performSyncRequest {
+            secureKeyValueStorageWipe(emptyMessage)
         }
     }
 

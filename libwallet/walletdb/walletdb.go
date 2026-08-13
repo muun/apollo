@@ -24,7 +24,7 @@ type Invoice struct {
 	PaymentHash   []byte
 	PaymentSecret []byte
 	KeyPath       string
-	ShortChanId   uint64
+	ShortChanId   uint64 //nolint:staticcheck // TODO: struct field ShortChanId should be ShortChanID
 	AmountSat     int64
 	State         InvoiceState
 	Metadata      string
@@ -35,11 +35,11 @@ type DB struct {
 	db *gorm.DB
 }
 
-func Open(path string) (*DB, error) {
+func open(path string) (*DB, error) {
 	// _busy_timeout: retry for up to 1s before returning "database is locked" on concurrent writes.
-	// Without it, SQLite fails immediately when two concurrent writes overlap.
-	// _journal_mode=WAL: improves read/write concurrency.
-	// Readers can proceed concurrently with a writer, though SQLite still allows only one writer at a time.
+	// Without it, SQLite fails immediately when two concurrent writes overlap. _journal_mode=WAL:
+	// improves read/write concurrency. Readers can proceed concurrently with a writer, though
+	// SQLite still allows only one writer at a time.
 	db, err := gorm.Open("sqlite3", path+"?_busy_timeout=1000&_journal_mode=WAL")
 	if err != nil {
 		return nil, err
@@ -55,28 +55,33 @@ func (d *DB) Gorm() *gorm.DB {
 	return d.db
 }
 
+type gormOperation func(*gorm.DB) error
+
+// gormProvider abstracts how a *gorm.DB is obtained for a repository
+type gormProvider func(gormOperation) error
+
 func (d *DB) NewFeeBumpRepository() FeeBumpRepository {
-	return &GORMFeeBumpRepository{db: d.db}
+	return &feeBumpRepository{withDB: func(fn gormOperation) error { return fn(d.db) }}
 }
 
 func (d *DB) NewKeyValueRepository() KeyValueRepository {
-	return &GORMKeyValueRepository{db: d.db}
+	return &keyValueRepository{withDB: func(fn gormOperation) error { return fn(d.db) }}
 }
 
-func NewKeyValueRepository(db *gorm.DB) KeyValueRepository {
-	// This constructor is useful to build a new repository for key-value operations bound
-	// to a specific GORM instance (which can be a DB connection or a transaction).
-	return &GORMKeyValueRepository{db: db}
+func (d *DB) WithTx(fn func(*DB) error) error {
+	tx := d.db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if err := fn(&DB{db: tx}); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 func (d *DB) NewKVSchemaStateRepository() KVSchemaStateRepository {
-	return &GORMKVSchemaStateRepository{db: d.db}
-}
-
-func NewKVSchemaStateRepository(db *gorm.DB) KVSchemaStateRepository {
-	// This constructor is useful to build a new repository for schema state operations bound
-	// to a specific GORM instance (which can be a DB connection or a transaction).
-	return &GORMKVSchemaStateRepository{db: db}
+	return &kvSchemaStateRepository{withDB: func(fn gormOperation) error { return fn(d.db) }}
 }
 
 func migrate(db *gorm.DB) error {
@@ -93,14 +98,13 @@ func migrate(db *gorm.DB) error {
 					PaymentHash   []byte
 					PaymentSecret []byte
 					KeyPath       string
-					ShortChanId   uint64
+					ShortChanId   uint64 //nolint:staticcheck // TODO: struct field ShortChanId should be ShortChanID
 					State         string
 					UsedAt        *time.Time
 				}
 				// This guard exists because at some point migrations were run outside a
-				// transactional context and a user experimented problems with an invoices
-				// table that was already created but whose migration had not been properly
-				// recorded.
+				// transactional context and a user experimented problems with an invoices table
+				// that was already created but whose migration had not been properly recorded.
 				if !tx.HasTable(&Invoice{}) {
 					return tx.CreateTable(&Invoice{}).Error
 				}
@@ -119,7 +123,7 @@ func migrate(db *gorm.DB) error {
 					PaymentHash   []byte
 					PaymentSecret []byte
 					KeyPath       string
-					ShortChanId   uint64
+					ShortChanId   uint64 //nolint:staticcheck // TODO: struct field ShortChanId should be ShortChanID
 					AmountSat     int64
 					State         string
 					UsedAt        *time.Time
@@ -139,7 +143,7 @@ func migrate(db *gorm.DB) error {
 					PaymentHash   []byte
 					PaymentSecret []byte
 					KeyPath       string
-					ShortChanId   uint64
+					ShortChanId   uint64 //nolint:staticcheck // TODO: struct field ShortChanId should be ShortChanID
 					AmountSat     int64
 					State         InvoiceState
 					Metadata      string
@@ -158,7 +162,7 @@ func migrate(db *gorm.DB) error {
 				type FeeBumpFunction struct {
 					gorm.Model
 					Position         uint
-					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`
+					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"` //nolint:lll
 				}
 
 				type PartialLinearFunction struct {
@@ -190,7 +194,7 @@ func migrate(db *gorm.DB) error {
 				type FeeBumpFunction struct {
 					gorm.Model
 					Position         uint
-					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"`
+					FeeBumpIntervals []PartialLinearFunction `gorm:"foreignKey:FunctionPosition;references:Position;"` //nolint:lll
 					SetID            uint                    `gorm:"default:0;not null"`
 				}
 				// Crea table FeeBumpFunctionSet and migrate FeeBumpFunction
@@ -202,7 +206,8 @@ func migrate(db *gorm.DB) error {
 					return err
 				}
 
-				if err := tx.Table("fee_bump_functions").DropColumn(gorm.ToColumnName("SetID")).Error; err != nil {
+				col := gorm.ToColumnName("SetID")
+				if err := tx.Table("fee_bump_functions").DropColumn(col).Error; err != nil {
 					return err
 				}
 
@@ -237,7 +242,8 @@ func migrate(db *gorm.DB) error {
 				//       AppliedAt     time.Time `gorm:"not null"`
 				//   }
 				//
-				// GORM will diff the struct against the real table regardless of how it was created.
+				// GORM will diff the struct against the real table regardless
+				// of how it was created.
 				return tx.Exec(`
 					CREATE TABLE IF NOT EXISTS kv_schema_state (
 						schema_version INTEGER PRIMARY KEY,
@@ -275,7 +281,8 @@ func (d *DB) SaveInvoice(invoice *Invoice) error {
 
 func (d *DB) FindFirstUnusedInvoice() (*Invoice, error) {
 	var invoice Invoice
-	if res := d.db.Where(&Invoice{State: InvoiceStateRegistered}).First(&invoice); res.Error != nil {
+	filter := &Invoice{State: InvoiceStateRegistered}
+	if res := d.db.Where(filter).First(&invoice); res.Error != nil {
 
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -289,7 +296,8 @@ func (d *DB) FindFirstUnusedInvoice() (*Invoice, error) {
 
 func (d *DB) CountUnusedInvoices() (int, error) {
 	var count int
-	if res := d.db.Model(&Invoice{}).Where(&Invoice{State: InvoiceStateRegistered}).Count(&count); res.Error != nil {
+	filter := &Invoice{State: InvoiceStateRegistered}
+	if res := d.db.Model(&Invoice{}).Where(filter).Count(&count); res.Error != nil {
 		return 0, res.Error
 	}
 	return count, nil

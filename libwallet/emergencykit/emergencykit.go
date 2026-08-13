@@ -3,11 +3,13 @@ package emergencykit
 import (
 	"bytes"
 	"crypto/sha256"
-	"fmt"
-	"github.com/muun/libwallet/data/emergency_kit/resources"
 	"strconv"
 	"text/template"
 	"time"
+
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/data/emergency_kit/resources"
 )
 
 // Input struct to fill the PDF
@@ -25,7 +27,8 @@ type Output struct {
 	VerificationCode string
 }
 
-// GenerateHTML returns the translated emergency kit html as a string along with the verification code.
+// GenerateHTML returns the translated emergency kit html as a string along with the verification
+// code.
 func GenerateHTML(params *Input, lang string) (*Output, error) {
 	verificationCode := GenerateDeterministicCode(params)
 
@@ -55,7 +58,7 @@ func GenerateHTML(params *Input, lang string) (*Output, error) {
 		IconPadlock: iconPadlock,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to render EmergencyKitContent template: %w", err)
+		return nil, errors.Errorf("failed to render EmergencyKitContent template: %w", err)
 	}
 
 	// Render complete HTML page:
@@ -64,7 +67,7 @@ func GenerateHTML(params *Input, lang string) (*Output, error) {
 		Content: content,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to render EmergencyKitPage template: %w", err)
+		return nil, errors.Errorf("failed to render EmergencyKitPage template: %w", err)
 	}
 
 	return &Output{
@@ -73,14 +76,15 @@ func GenerateHTML(params *Input, lang string) (*Output, error) {
 	}, nil
 }
 
-
 func GenerateDeterministicCode(params *Input) string {
 	// NOTE:
-	// This function creates a stable verification code given the inputs to render the Emergency Kit. For now, the
-	// implementation relies exclusively on the SecondEncryptedKey, which is the Muun key. This is obviously not ideal,
-	// since we're both dropping part of the input and introducing the assumption that the Muun key will always be
-	// rendered second -- but it compensates for a problem with one of our clients that causes the user key serialization
-	// to be recreated each time the kit is rendered (making this deterministic approach useless).
+	// This function creates a stable verification code given the inputs to render the
+	// Emergency Kit. For now, the implementation relies exclusively on the SecondEncryptedKey,
+	// which is the Muun key. This is obviously not ideal, since we're both dropping part of the
+	// input and introducing the assumption that the Muun key will always be rendered second --
+	// but it compensates for a problem with one of our clients that causes the user key
+	// serialization to be recreated each time the kit is rendered (making this deterministic
+	// approach useless).
 
 	// Create a deterministic serialization of the input:
 	inputMaterial := params.SecondEncryptedKey + strconv.Itoa(params.Version)
@@ -91,13 +95,16 @@ func GenerateDeterministicCode(params *Input) string {
 	// Extract a verification code from the hash (doesn't matter if we discard bytes):
 	var code string
 	for _, b := range inputHash[:6] {
-		code += strconv.Itoa(int(b) % 10)
+		code += strconv.Itoa(int(b) % 10) //nolint:modernize // TODO: use strings.Builder
 	}
 
 	return code
 }
 
-func render(name, language string, data interface{}) (string, error) {
+func render(
+	name, language string,
+	data interface{}, //nolint:modernize // TODO: use any instead of interface{}
+) (string, error) {
 	tmpl, err := template.New(name).Parse(getContent(name, language))
 	if err != nil {
 		return "", err

@@ -4,6 +4,7 @@ open class HardwareCapabilityError(capability: String, cause: Throwable) : MuunE
     "Error reading hardware capability",
     cause
 ) {
+    override val classification = ErrorClassification.UNEXPECTED
 
     init {
         metadata["capability"] = capability

@@ -5,9 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/btcsuite/btcd/chaincfg"
-
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
+	"github.com/btcsuite/btcd/chaincfg"
 )
 
 var (

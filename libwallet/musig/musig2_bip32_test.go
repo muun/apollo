@@ -129,9 +129,7 @@ func TestMuSig2Bip32UnhardenedSignatureTaprootTweak2(t *testing.T) {
 // This test ensures that the MuSig helpers can successfully derive an
 // unhardened path from an aggregated key. It also ensures that the helpers can
 // successfully create a valid signature for it
-//
-// This test also ensures that the following output descriptor can be paid and
-// redeemed.
+// This test also ensures that the following output descriptor can be paid and redeemed.
 //
 // Output descriptor of this test:
 //
@@ -156,30 +154,42 @@ func TestMuSig2Bip328UnhardenedTapscript(t *testing.T) {
 	}
 
 	// derive musig(user,muun)/1/2
-	agg_1_2, err := MuSig2ComputeInternalKey(musigVersion, pubKeys, []uint32{1, 2})
+	agg_1_2, err := MuSig2ComputeInternalKey( //nolint:staticcheck // TODO: should not use underscores in Go names; var agg_1_2 should be agg1_2
+		musigVersion,
+		pubKeys,
+		[]uint32{1, 2},
+	)
 	require.NoError(t, err)
-	signerCombinedPubKey_1_2 := agg_1_2.FinalKey
+	signerCombinedPubKey_1_2 := agg_1_2.FinalKey //nolint:staticcheck // TODO: should not use underscores in Go names; var signerCombinedPubKey_1_2 should be signerCombinedPubKey1_2
 
 	// derive musig(user,muun)/88
-	agg_88, err := MuSig2ComputeInternalKey(musigVersion, pubKeys, []uint32{88})
+	agg_88, err := MuSig2ComputeInternalKey( //nolint:staticcheck // TODO: should not use underscores in Go names; var agg_88 should be agg88
+		musigVersion,
+		pubKeys,
+		[]uint32{88},
+	)
 	require.NoError(t, err)
-	signerCombinedPubKey_88 := agg_88.FinalKey
+	signerCombinedPubKey_88 := agg_88.FinalKey //nolint:staticcheck // TODO: should not use underscores in Go names; var signerCombinedPubKey_88 should be signerCombinedPubKey88
 
 	// derive musig(user,muun)/123
 	internalKeyAgg, err := MuSig2ComputeInternalKey(musigVersion, pubKeys, []uint32{1, 2})
 	require.NoError(t, err)
 	internalKey := internalKeyAgg.FinalKey
 
-	// We're going to commit to a script and spend the output using the
-	// script. This is just an OP_CHECKSIG with the combined MuSig2 public
-	// key.
-	leaf_88 := testScriptSchnorrSig(t, signerCombinedPubKey_88)
-	leaf_1_2 := testScriptSchnorrSig(t, signerCombinedPubKey_1_2)
+	// We're going to commit to a script and spend the output using the script. This is just an
+	// OP_CHECKSIG with the combined MuSig2 public key.
+	leaf_88 := testScriptSchnorrSig( //nolint:staticcheck // TODO: should not use underscores in Go names; var leaf_88 should be leaf88
+		t,
+		signerCombinedPubKey_88,
+	)
+	leaf_1_2 := testScriptSchnorrSig( //nolint:staticcheck // TODO: should not use underscores in Go names; var leaf_1_2 should be leaf1_2
+		t,
+		signerCombinedPubKey_1_2,
+	)
 	tapScriptTree := txscript.AssembleTaprootScriptTree(leaf_88, leaf_1_2)
 
-	// Create final key for tr(musig(user,muun)/123, {...}) applying taproot
-	// tweak bytes for tapscript.rootMerlkeHash and bip32 tweaks for /123
-	// derivation path
+	// Create final key for tr(musig(user,muun)/123, {...}) applying taproot tweak bytes for
+	// tapscript.rootMerlkeHash and bip32 tweaks for /123 derivation path
 	rootMerkleHash := tapScriptTree.RootNode.TapHash()
 
 	tweak :=
@@ -217,13 +227,8 @@ func TestMuSig2Bip328UnhardenedTapscript(t *testing.T) {
 			},
 		},
 		{
-			// tr(
-			//   musig(userKey, muunKey)/123,
-			//   {
-			//      musig(userKey, muunKey)/88, <------- redeem
-			//      musig(userKey, muunKey)/1/2,
-			//   }
-			// )
+			// tr( musig(userKey, muunKey)/123, { musig(userKey, muunKey)/88, <------- redeem
+			// musig(userKey, muunKey)/1/2, } )
 			description: "tapscript with musig(user,muun)/88",
 			internalKey: internalKey,
 
@@ -264,9 +269,13 @@ func TestMuSig2Bip328UnhardenedTapscript(t *testing.T) {
 	}
 }
 
-// implementation of bip32 for musig, the naive way. use this function to validate
-// against implementated code
-func nativeBip32MusigDerivation(t *testing.T, aggregatedKey *secp256k1.PublicKey, path []uint32) *secp256k1.PublicKey {
+// implementation of bip32 for musig, the naive way. use this function to validate against
+// implementated code
+func nativeBip32MusigDerivation(
+	t *testing.T,
+	aggregatedKey *secp256k1.PublicKey,
+	path []uint32,
+) *secp256k1.PublicKey {
 	chainCode, _ := hex.DecodeString(
 		"868087ca02a6f974c4598924c36b57762d32cb45717167e300622c7167e38965")
 

@@ -219,22 +219,22 @@ func TestAnalyzeOnChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -259,27 +259,27 @@ func TestAnalyzeOnChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusConfirmed,
 					},
 					{
 						AmountInSat: 20_000,
 						SizeInVByte: 440,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 					{
 						AmountInSat: 30_000,
 						SizeInVByte: 780,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{firstFeeBumpFunction},
-				&FeeBumpFunction{secondFeeBumpFunction},
+				{firstFeeBumpFunction},
+				{secondFeeBumpFunction},
 			},
 			payment: &PaymentToAddress{
 				TakeFeeFromAmount:     false,
@@ -301,27 +301,27 @@ func TestAnalyzeOnChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusConfirmed,
 					},
 					{
 						AmountInSat: 20_000,
 						SizeInVByte: 440,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c3:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 					{
 						AmountInSat: 30_000,
 						SizeInVByte: 780,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c2:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{firstFeeBumpFunction},
-				&FeeBumpFunction{secondFeeBumpFunction},
+				{firstFeeBumpFunction},
+				{secondFeeBumpFunction},
 			},
 			payment: &PaymentToAddress{
 				TakeFeeFromAmount:     true,
@@ -343,14 +343,14 @@ func TestAnalyzeOnChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -616,7 +616,11 @@ func TestAnalyzeOnChain(t *testing.T) {
 				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(analysis, tC.expected) {
-				t.Fatalf("analysis does not match expected, got %+v, expected %+v", analysis, tC.expected)
+				t.Fatalf(
+					"analysis does not match expected, got %+v, expected %+v",
+					analysis,
+					tC.expected,
+				)
 			}
 		})
 	}
@@ -928,14 +932,14 @@ func TestAnalyzeOffChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -1013,14 +1017,14 @@ func TestAnalyzeOffChain(t *testing.T) {
 					{
 						AmountInSat: 10_000,
 						SizeInVByte: 240,
-						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0",
+						Outpoint:    "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c4:0", //nolint:lll
 						UtxoStatus:  UtxosStatusUnconfirmed,
 					},
 				},
 				ExpectedDebtInSat: 0,
 			},
 			feeBump: []*FeeBumpFunction{
-				&FeeBumpFunction{
+				{
 					[]*PartialLinearFunction{
 						partialLinearFunction,
 					}},
@@ -2521,7 +2525,9 @@ func TestAnalyzeOffChain(t *testing.T) {
 			}
 			if !reflect.DeepEqual(analysis, tC.expected) {
 				t.Fatalf(
-					"analysis does not match expected\n analysis: got %+v, expected %+v\nswapfees: got %+v, expected %+v",
+					"analysis does not match expected\n"+
+						" analysis: got %+v, expected %+v\n"+
+						"swapfees: got %+v, expected %+v",
 					analysis,
 					tC.expected,
 					analysis.SwapFees,

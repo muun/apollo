@@ -3,11 +3,12 @@ package txscriptw
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/btcsuitew/chainhashw"
 )
 
@@ -21,18 +22,18 @@ func CalcTaprootSigHash(
 ) ([]byte, error) {
 
 	if index >= len(tx.TxIn) {
-		return nil, fmt.Errorf("wanted index %d but found only %d inputs", index, len(tx.TxIn))
+		return nil, errors.Errorf("wanted index %d but found only %d inputs", index, len(tx.TxIn))
 	}
 
 	anyoneCanPay := hashType&txscript.SigHashAnyOneCanPay != 0
 	hashType = hashType & 0x1f
 
 	if hashType != txscript.SigHashAll {
-		return nil, fmt.Errorf("only SIGHASH_ALL is supported")
+		return nil, errors.Errorf("only SIGHASH_ALL is supported")
 	}
 
 	if anyoneCanPay {
-		return nil, fmt.Errorf("anyoneCanPay is not supported")
+		return nil, errors.Errorf("anyoneCanPay is not supported")
 	}
 
 	b := new(bytes.Buffer)
@@ -75,7 +76,7 @@ func CalcTaprootSigHash(
 	// MISSING: do some more hashing and commit to the annex (not supported)
 
 	if hashType == txscript.SigHashSingle {
-		return nil, fmt.Errorf("SIGHASH_SINGLE is not supported")
+		return nil, errors.Errorf("SIGHASH_SINGLE is not supported")
 	}
 
 	// MISSING: encode extensions, such as the script path commitment from BIP-342 (not supported)
@@ -121,7 +122,7 @@ func calcHashOutputs(tx *wire.MsgTx) chainhash.Hash {
 	b := new(bytes.Buffer)
 
 	for _, txOut := range tx.TxOut {
-		wire.WriteTxOut(b, 0, 0, txOut)
+		wire.WriteTxOut(b, 0, 0, txOut) //nolint:errcheck // TODO: check error
 	}
 
 	return chainhash.HashH(b.Bytes())
@@ -131,7 +132,7 @@ func calcHashScriptPubKeys(txOuts []*wire.TxOut) chainhash.Hash {
 	b := new(bytes.Buffer)
 
 	for _, txOut := range txOuts {
-		wire.WriteVarInt(b, 0, uint64(len(txOut.PkScript)))
+		wire.WriteVarInt(b, 0, uint64(len(txOut.PkScript))) //nolint:errcheck // TODO: check error
 		b.Write(txOut.PkScript)
 	}
 

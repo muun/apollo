@@ -1,12 +1,12 @@
 package libwallet
 
 import (
-	"fmt"
-
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
 )
@@ -25,12 +25,12 @@ type coinV1 struct {
 func (c *coinV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, _ *HDPublicKey) error {
 	userKey, err := userKey.DeriveTo(c.KeyPath)
 	if err != nil {
-		return fmt.Errorf("failed to derive user key: %w", err)
+		return errors.Errorf("failed to derive user key: %w", err)
 	}
 
 	sig, err := c.signature(index, tx, userKey)
 	if err != nil {
-		return fmt.Errorf("failed to sign V1 input: %w", err)
+		return errors.Errorf("failed to sign V1 input: %w", err)
 	}
 
 	builder := txscript.NewScriptBuilder()
@@ -38,7 +38,7 @@ func (c *coinV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, _ *
 	builder.AddData(userKey.PublicKey().Raw())
 	script, err := builder.Script()
 	if err != nil {
-		return fmt.Errorf("failed to generate signing script: %w", err)
+		return errors.Errorf("failed to generate signing script: %w", err)
 	}
 
 	txInput := tx.TxIn[index]
@@ -46,7 +46,11 @@ func (c *coinV1) SignInput(index int, tx *wire.MsgTx, userKey *HDPrivateKey, _ *
 	return nil
 }
 
-func (c *coinV1) FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error {
+func (c *coinV1) FullySignInput(
+	index int,
+	tx *wire.MsgTx,
+	userKey, muunKey *HDPrivateKey, //nolint:revive // TODO: use or remove muunKey
+) error {
 	return c.SignInput(index, tx, userKey, nil)
 }
 
@@ -54,7 +58,7 @@ func (c *coinV1) createRedeemScript(publicKey *HDPublicKey) ([]byte, error) {
 
 	userAddress, err := btcutil.NewAddressPubKey(publicKey.Raw(), c.Network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate address for user: %w", err)
+		return nil, errors.Errorf("failed to generate address for user: %w", err)
 	}
 
 	return txscriptw.PayToAddrScript(userAddress.AddressPubKeyHash())
@@ -64,17 +68,17 @@ func (c *coinV1) signature(index int, tx *wire.MsgTx, userKey *HDPrivateKey) ([]
 
 	redeemScript, err := c.createRedeemScript(userKey.PublicKey())
 	if err != nil {
-		return nil, fmt.Errorf("failed to build reedem script for signing: %w", err)
+		return nil, errors.Errorf("failed to build reedem script for signing: %w", err)
 	}
 
 	privKey, err := userKey.key.ECPrivKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to produce EC priv key for signing: %w", err)
+		return nil, errors.Errorf("failed to produce EC priv key for signing: %w", err)
 	}
 
 	sig, err := txscript.RawTxInSignature(tx, index, redeemScript, txscript.SigHashAll, privKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign V1 input: %w", err)
+		return nil, errors.Errorf("failed to sign V1 input: %w", err)
 	}
 
 	return sig, nil

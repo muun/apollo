@@ -3,9 +3,11 @@ package nfc
 import (
 	"bytes"
 	"crypto/sha256"
-	"fmt"
-	"github.com/muun/libwallet/cryptography"
 	"io"
+
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/cryptography"
 )
 
 // parseMetadata parses raw card metadata bytes into a structured CardMetadata.
@@ -27,7 +29,7 @@ import (
 func parseMetadata(data []byte) (*CardMetadata, error) {
 
 	if len(data) < MetadataSize {
-		return nil, fmt.Errorf(
+		return nil, errors.Errorf(
 			"invalid metadata length: %d (expected %d)", len(data), MetadataSize,
 		)
 	}
@@ -38,44 +40,44 @@ func parseMetadata(data []byte) (*CardMetadata, error) {
 	// Read global public key (65 bytes)
 	_, err := io.ReadFull(reader, metadata.GlobalPubCard[:])
 	if err != nil {
-		return nil, fmt.Errorf("failed to read global public key")
+		return nil, errors.Errorf("failed to read global public key")
 	}
 
 	err = cryptography.ValidateSecp256r1PublicKey(metadata.GlobalPubCard[:])
 	if err != nil {
-		return nil, fmt.Errorf("invalid card global public key: %w", err)
+		return nil, errors.Errorf("invalid card global public key: %w", err)
 	}
 
 	// Read card vendor (2 bytes)
 	_, err = io.ReadFull(reader, metadata.CardVendor[:])
 	if err != nil {
-		return nil, fmt.Errorf("failed to read card vendor")
+		return nil, errors.Errorf("failed to read card vendor")
 	}
 
 	// Read card model (2 bytes)
 	_, err = io.ReadFull(reader, metadata.CardModel[:])
 	if err != nil {
-		return nil, fmt.Errorf("failed to read card model")
+		return nil, errors.Errorf("failed to read card model")
 	}
 
 	// Read firmware version (2 bytes)
 	_, err = io.ReadFull(reader, metadata.FirmwareVersion[:])
 	if err != nil {
-		return nil, fmt.Errorf("failed to read firmware version")
+		return nil, errors.Errorf("failed to read firmware version")
 	}
 
 	// Read usage count (2 bytes, big-endian)
 	usageBytes := make([]byte, 2)
 	_, err = io.ReadFull(reader, usageBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read usage count")
+		return nil, errors.Errorf("failed to read usage count")
 	}
 	metadata.UsageCount = uint16(usageBytes[0])<<8 | uint16(usageBytes[1])
 
 	// Read language code (2 bytes)
 	_, err = io.ReadFull(reader, metadata.LanguageCode[:])
 	if err != nil {
-		return nil, fmt.Errorf("failed to read language code")
+		return nil, errors.Errorf("failed to read language code")
 	}
 
 	return metadata, nil
@@ -107,7 +109,7 @@ func parsePairingResponse(data []byte) (*PairingResponse, error) {
 
 	// TODO: this doesn't take into account signature size
 	if len(data) < PairResponseSize {
-		return nil, fmt.Errorf("response too short: %d bytes", len(data))
+		return nil, errors.Errorf("response too short: %d bytes", len(data))
 	}
 
 	reader := bytes.NewReader(data)
@@ -117,26 +119,26 @@ func parsePairingResponse(data []byte) (*PairingResponse, error) {
 	pairingResp.CardPublicKey = make([]byte, Secp256R1PointSize)
 	_, err := io.ReadFull(reader, pairingResp.CardPublicKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read card public key: %w", err)
+		return nil, errors.Errorf("failed to read card public key: %w", err)
 	}
 
 	// Read pairing slot
 	pairingResp.PairingSlot = make([]byte, PairingSlotSize)
 	_, err = io.ReadFull(reader, pairingResp.PairingSlot)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read pairing slot: %w", err)
+		return nil, errors.Errorf("failed to read pairing slot: %w", err)
 	}
 
 	// Read metadata
 	metadataBytes := make([]byte, MetadataSize)
 	_, err = io.ReadFull(reader, metadataBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read metadata: %w", err)
+		return nil, errors.Errorf("failed to read metadata: %w", err)
 	}
 
 	metadata, err := parseMetadata(metadataBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse metadata: %v", metadataBytes)
+		return nil, errors.Errorf("failed to parse metadata: %v", metadataBytes)
 	}
 	pairingResp.Metadata = metadata
 
@@ -144,24 +146,24 @@ func parsePairingResponse(data []byte) (*PairingResponse, error) {
 	pairingResp.MAC = make([]byte, MacSize)
 	_, err = io.ReadFull(reader, pairingResp.MAC)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read MAC: %w", err)
+		return nil, errors.Errorf("failed to read MAC: %w", err)
 	}
 
 	// Read remaining bytes as global signature
 	remainingBytes, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read global signature: %w", err)
+		return nil, errors.Errorf("failed to read global signature: %w", err)
 	}
 	pairingResp.GlobalSignature = remainingBytes
 
 	globalSignatureLength := len(pairingResp.GlobalSignature)
 	if globalSignatureLength > 72 {
-		return nil, fmt.Errorf("invalid global signature length: %v", globalSignatureLength)
+		return nil, errors.Errorf("invalid global signature length: %v", globalSignatureLength)
 	}
 
 	err = cryptography.ValidateSecp256r1PublicKey(pairingResp.CardPublicKey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid card public key: %w", err)
+		return nil, errors.Errorf("invalid card public key: %w", err)
 	}
 
 	return pairingResp, nil
@@ -185,11 +187,11 @@ func VerifyMetadata(metadata *CardMetadata) error {
 
 	err := cryptography.ValidateSecp256r1PublicKey(metadata.GlobalPubCard[:])
 	if err != nil {
-		return fmt.Errorf("expected valid GlobalPubCard, got 0x%02x", metadata.GlobalPubCard[0])
+		return errors.Errorf("expected valid GlobalPubCard, got 0x%02x", metadata.GlobalPubCard[0])
 	}
 
 	if metadata.FirmwareVersion[0] != 0x02 || metadata.FirmwareVersion[1] != 0x00 {
-		return fmt.Errorf(
+		return errors.Errorf(
 			"expected firmware version 2.0, got %d.%d",
 			metadata.FirmwareVersion[0],
 			metadata.FirmwareVersion[1],
@@ -221,14 +223,14 @@ func VerifyMetadata(metadata *CardMetadata) error {
 func parseSignChallengeResponse(response *CardResponse) (*ChallengeResponse, error) {
 
 	if len(response.Response) != SignChallengeResponseSize {
-		return nil, fmt.Errorf(
+		return nil, errors.Errorf(
 			"invalid sign challenge response length: %d", len(response.Response),
 		)
 	}
 
 	err := cryptography.ValidateSecp256r1PublicKey(response.Response[:Secp256R1PointSize])
 	if err != nil {
-		return nil, fmt.Errorf("invalid card public key: %w", err)
+		return nil, errors.Errorf("invalid card public key: %w", err)
 	}
 
 	return &ChallengeResponse{
@@ -351,7 +353,7 @@ func ComputeHMACSHA256(key, data []byte) []byte {
 	innerPad := make([]byte, blockSize)
 	outerPad := make([]byte, blockSize)
 
-	for i := 0; i < blockSize; i++ {
+	for i := 0; i < blockSize; i++ { //nolint:modernize // TODO: use range over int
 		innerPad[i] = paddedKey[i] ^ 0x36
 		outerPad[i] = paddedKey[i] ^ 0x5c
 	}

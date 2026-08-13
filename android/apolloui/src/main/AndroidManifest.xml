@@ -250,6 +250,14 @@
                 android:label="Muun debug panel"
         />
 
+        <!-- DebugSecureKeyValueStorageActivity -->
+
+        <activity
+                android:name=".presentation.ui.debug.securekv.DebugSecureKeyValueStorageActivity"
+                android:parentActivityName=".presentation.ui.debug.DebugPanelActivity"
+                android:label="SecureKeyValueStorage debug"
+        />
+
         <!-- RecoveryToolActivity -->
         <activity
                 android:name="io.muun.apollo.presentation.ui.recovery_tool.RecoveryToolActivity"
@@ -413,6 +421,14 @@
 
         <activity
                 android:name=".presentation.ui.security_cards_card_detail.CardDetailActivity"
+                />
+
+        <activity
+                android:name=".presentation.ui.security_cards_full_specs.SecurityCardsFullSpecsActivity"
+                />
+
+        <activity
+                android:name=".presentation.ui.security_cards_shipping_address.ShippingAddressActivity"
                 />
 
 

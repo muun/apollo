@@ -1,8 +1,9 @@
 package newop
 
 import (
-	"github.com/shopspring/decimal"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 var testPaymentContext = createTestPaymentContext()
@@ -47,11 +48,17 @@ func TestPaymentContextToBitcoinAmount(t *testing.T) {
 	btcAmount := testPaymentContext.toBitcoinAmount(100_000, "USD")
 
 	if btcAmount.InSat != 100_000 {
-		t.Fatalf("expected bitcoin amount in sats to remain unchanged and  be 100_000, got %v", btcAmount.InSat)
+		t.Fatalf(
+			"expected bitcoin amount in sats to remain unchanged and  be 100_000, got %v",
+			btcAmount.InSat,
+		)
 	}
 
 	if btcAmount.InInputCurrency.Currency != "USD" {
-		t.Fatalf("expected bitcoin amount input currency to be USD, got %v", btcAmount.InInputCurrency.Currency)
+		t.Fatalf(
+			"expected bitcoin amount input currency to be USD, got %v",
+			btcAmount.InInputCurrency.Currency,
+		)
 	}
 
 	if btcAmount.InInputCurrency.Value.Cmp(decimal.NewFromInt(32)) != 0 {
@@ -59,10 +66,16 @@ func TestPaymentContextToBitcoinAmount(t *testing.T) {
 	}
 
 	if btcAmount.InPrimaryCurrency.Currency != "BTC" {
-		t.Fatalf("expected bitcoin amount primary currency to be BTC, got %v", btcAmount.InPrimaryCurrency.Currency)
+		t.Fatalf(
+			"expected bitcoin amount primary currency to be BTC, got %v",
+			btcAmount.InPrimaryCurrency.Currency,
+		)
 	}
 
 	if btcAmount.InPrimaryCurrency.Value.Cmp(decimal.NewFromFloat(0.001)) != 0 {
-		t.Fatalf("expected amount in primary currency to be 0.001, got %v", btcAmount.InPrimaryCurrency.Value)
+		t.Fatalf(
+			"expected amount in primary currency to be 0.001, got %v",
+			btcAmount.InPrimaryCurrency.Value,
+		)
 	}
 }

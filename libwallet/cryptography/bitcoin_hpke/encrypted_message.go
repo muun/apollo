@@ -1,10 +1,11 @@
 package bitcoin_hpke
 
 import (
-	"errors"
-	"github.com/btcsuite/btcd/btcec/v2"
-	"golang.org/x/crypto/chacha20poly1305"
 	"slices"
+
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+	"golang.org/x/crypto/chacha20poly1305"
 )
 
 // EncryptedMessage represents a message encrypted with Bitcoin Hpke
@@ -19,16 +20,24 @@ func ParseEncryptedMessage(serializedEncryptedMessage []byte) (*EncryptedMessage
 		return nil, errors.New("serialized message too short")
 	}
 
-	encapsulatedKey, err := btcec.ParsePubKey(serializedEncryptedMessage[:encapsulatedKeyLengthInBytes])
+	encapsulatedKey, err := btcec.ParsePubKey(
+		serializedEncryptedMessage[:encapsulatedKeyLengthInBytes],
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &EncryptedMessage{encapsulatedKey, serializedEncryptedMessage[encapsulatedKeyLengthInBytes:]}, nil
+	return &EncryptedMessage{
+		encapsulatedKey,
+		serializedEncryptedMessage[encapsulatedKeyLengthInBytes:],
+	}, nil
 }
 
 func (encryptedMessage EncryptedMessage) Serialize() []byte {
-	return slices.Concat(encryptedMessage.encapsulatedKey.SerializeUncompressed(), encryptedMessage.ciphertext)
+	return slices.Concat(
+		encryptedMessage.encapsulatedKey.SerializeUncompressed(),
+		encryptedMessage.ciphertext,
+	)
 }
 
 func (encryptedMessage EncryptedMessage) GetEncapsulatedKey() *btcec.PublicKey {
@@ -43,7 +52,8 @@ func (encryptedMessage EncryptedMessage) PlaintextLengthInBytes() int {
 	return len(encryptedMessage.ciphertext) - chacha20poly1305.Overhead
 }
 
-// This is a companion to ParseEncryptedMessage that allows to know the length in bytes of an encrypted message.
+// This is a companion to ParseEncryptedMessage that allows to know the length in bytes of an
+// encrypted message.
 func SerializedEncryptedMessageLengthInBytes(plaintextLengthInBytes int) int {
 	return encapsulatedKeyLengthInBytes + plaintextLengthInBytes + authenticationTagLengthInBytes
 }

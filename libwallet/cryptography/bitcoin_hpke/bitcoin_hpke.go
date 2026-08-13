@@ -1,34 +1,39 @@
 package bitcoin_hpke
 
 import (
+	"slices"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"golang.org/x/crypto/chacha20poly1305"
-	"slices"
 )
 
-// This package implements HPKE(DHKEM(secp256k1, HKDF-SHA256), HKDF-SHA256, Chacha20Poly1305) in base, single shot mode.
-// Note that DHKEM(secp256k1, HKDF-SHA256) is not part of HPKE as described in RFC-9180 but of a proposed extension by
-// R.S. Wahby (https://www.ietf.org/archive/id/draft-wahby-cfrg-hpke-kem-secp256k1-01.html).
-// This HPKE configuration is notably used in the Payjoin protocol (https://github.com/payjoin/bitcoin-hpke).
+// This package implements HPKE(DHKEM(secp256k1, HKDF-SHA256), HKDF-SHA256, Chacha20Poly1305) in
+// base, single shot mode.
+// Note that DHKEM(secp256k1, HKDF-SHA256) is not part of HPKE as described in RFC-9180 but of a
+// proposed extension by R.S. Wahby
+// (https://www.ietf.org/archive/id/draft-wahby-cfrg-hpke-kem-secp256k1-01.html).
+// This HPKE configuration is notably used in the Payjoin protocol
+// (https://github.com/payjoin/bitcoin-hpke).
 
 const (
 	hpkeIdentifier = "HPKE-v1"
 
 	baseMode     = 0x00 // Table 1 of RFC 9180
 	defaultPsk   = ""   // Section 5.1 of RFC 9180
-	defaultPskId = ""   // Section 5.1 of RFC 9180
+	defaultPskId = ""   //nolint:staticcheck // TODO: const defaultPskId should be defaultPskID // Section 5.1 of RFC 9180
 
 	// KEM constants (see Wahby's Internet-Draft)
-	kemId                                  = 0x0016 // This is DHKEM(secp256k1, HKDF-SHA256)
-	privateKeyLengthInBytes                = 32     // The length in bytes of a KEM shared secret
-	encapsulatedKeyLengthInBytes           = 65     // The length in bytes of an encapsulated key
-	diffieHellmanSharedSecretLengthInBytes = 32     // The length in bytes of a Diffie-Hellman shared secret
+	kemId                        = 0x0016 //nolint:staticcheck // TODO: const kemId should be kemID // This is DHKEM(secp256k1, HKDF-SHA256)
+	privateKeyLengthInBytes      = 32     // The length in bytes of a KEM shared secret
+	encapsulatedKeyLengthInBytes = 65     // The length in bytes of an encapsulated key
+	// The length in bytes of a Diffie-Hellman shared secret.
+	diffieHellmanSharedSecretLengthInBytes = 32
 
 	// KDF constants (see Table 3 of RFC 9180)
-	kdfId = 0x0001 // This is HKDF-SHA256
+	kdfId = 0x0001 //nolint:staticcheck // TODO: const kdfId should be kdfID // This is HKDF-SHA256
 
 	// AEAD constants (see Table 5 of RFC 9180)
-	aeadId                         = 0x0003 // This is Chacha20Poly1305
+	aeadId                         = 0x0003 //nolint:staticcheck // TODO: const aeadId should be aeadID // This is Chacha20Poly1305
 	keyLengthInBytes               = 32     // The length in bytes of a key
 	nonceLengthInBytes             = 12     // The length in bytes of a nonce
 	authenticationTagLengthInBytes = 16     // The length in bytes of an authentication tag
@@ -57,7 +62,8 @@ func SingleShotEncrypt(
 		return nil, err
 	}
 
-	// Sealing with a nil value for the dst parameter has the effect of allocating a new slice for the result
+	// Sealing with a nil value for the dst parameter has the effect of allocating a new slice for
+	// the result
 	ciphertext := aead.Seal(nil, baseNonce, plaintext, additionalAuthenticatedData)
 
 	return &EncryptedMessage{
@@ -88,8 +94,14 @@ func (encryptedMessage EncryptedMessage) SingleShotDecrypt(
 		return nil, err
 	}
 
-	// Opening with a nil value for the dst parameter has the effect of allocating a new slice for the result
-	plaintext, err := aead.Open(nil, baseNonce, encryptedMessage.ciphertext, additionalAuthenticatedData)
+	// Opening with a nil value for the dst parameter has the effect of allocating a new slice for
+	// the result
+	plaintext, err := aead.Open(
+		nil,
+		baseNonce,
+		encryptedMessage.ciphertext,
+		additionalAuthenticatedData,
+	)
 
 	return normalize(plaintext), err
 }
@@ -97,14 +109,19 @@ func (encryptedMessage EncryptedMessage) SingleShotDecrypt(
 // See Section 5.1 of RFC 9180
 func keyScheduleBase(sharedSecret, info []byte) (key, baseNonce []byte, err error) {
 
-	suiteId := slices.Concat(
+	suiteId := slices.Concat( //nolint:staticcheck // TODO: var suiteId should be suiteID
 		[]byte("HPKE"),
 		i2Osp(kemId, 2),
 		i2Osp(kdfId, 2),
 		i2Osp(aeadId, 2),
 	)
 
-	pskIdHash := labeledExtract([]byte(""), []byte("psk_id_hash"), []byte(defaultPskId), suiteId)
+	pskIdHash := labeledExtract( //nolint:staticcheck // TODO: var pskIdHash should be pskIDHash
+		[]byte(""),
+		[]byte("psk_id_hash"),
+		[]byte(defaultPskId),
+		suiteId,
+	)
 
 	infoHash := labeledExtract([]byte(""), []byte("info_hash"), info, suiteId)
 
@@ -117,7 +134,13 @@ func keyScheduleBase(sharedSecret, info []byte) (key, baseNonce []byte, err erro
 		return nil, nil, err
 	}
 
-	baseNonce, err = labeledExpand(secret, []byte("base_nonce"), keyScheduleContext, nonceLengthInBytes, suiteId)
+	baseNonce, err = labeledExpand(
+		secret,
+		[]byte("base_nonce"),
+		keyScheduleContext,
+		nonceLengthInBytes,
+		suiteId,
+	)
 	if err != nil {
 		return nil, nil, err
 	}

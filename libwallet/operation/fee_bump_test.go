@@ -60,7 +60,11 @@ func TestPartialLinearFunction(t *testing.T) {
 			}
 
 			if bumpAmount != tC.bumpAmountExpected {
-				t.Fatalf("expected fee bump to be %v, but got %v", bumpAmount, tC.bumpAmountExpected)
+				t.Fatalf(
+					"expected fee bump to be %v, but got %v",
+					bumpAmount,
+					tC.bumpAmountExpected,
+				)
 			}
 		})
 	}
@@ -148,7 +152,11 @@ func TestFeeBumpFunction(t *testing.T) {
 			}
 
 			if bumpAmount != tC.bumpAmountExpected {
-				t.Fatalf("expected fee bump to be %v, but got %v", bumpAmount, tC.bumpAmountExpected)
+				t.Fatalf(
+					"expected fee bump to be %v, but got %v",
+					bumpAmount,
+					tC.bumpAmountExpected,
+				)
 			}
 		})
 	}

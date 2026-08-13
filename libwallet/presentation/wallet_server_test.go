@@ -3,8 +3,6 @@ package presentation
 import (
 	"context"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -14,31 +12,35 @@ import (
 	"testing"
 	"time"
 
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/muun/libwallet/data/keys"
-	"github.com/muun/libwallet/domain/action/challenge_keys"
-	"github.com/muun/libwallet/domain/action/recovery"
+	goerr "github.com/go-errors/errors"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/status"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
+
 	"github.com/muun/libwallet"
+	"github.com/muun/libwallet/data/keys"
+	"github.com/muun/libwallet/domain/action/challenge_keys"
+	"github.com/muun/libwallet/domain/action/recovery"
+	"github.com/muun/libwallet/domain/action/reset"
 	apierrors "github.com/muun/libwallet/errors"
 	"github.com/muun/libwallet/presentation/api"
 	"github.com/muun/libwallet/recoverycode"
 	"github.com/muun/libwallet/service"
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/test/bufconn"
+	"github.com/muun/libwallet/walletdb"
 )
 
 var bufconnListener *bufconn.Listener
 var walletServer = &WalletServer{}
 
 // 127.0.0.1 instead of localhost to avoid problems with network interfaces in local env
-const houstonUrl string = "http://127.0.0.1:8080"
+const houstonUrl string = "http://127.0.0.1:8080" //nolint:staticcheck // TODO: const houstonUrl should be houstonURL
 
 func defaultProvider() *service.TestProvider {
 	return &service.TestProvider{
@@ -53,18 +55,27 @@ func defaultProvider() *service.TestProvider {
 func init() {
 	walletServer.network = libwallet.Regtest()
 	walletServer.houstonService = service.NewHoustonService(defaultProvider())
-	walletServer.startChallengeSetup = challenge_keys.NewStartChallengeSetupAction(walletServer.houstonService)
+	walletServer.startChallengeSetup = challenge_keys.NewStartChallengeSetupAction(
+		walletServer.houstonService,
+	)
 
 	// Initialize grpc server of WalletService with bufconn
 	bufconnListener = bufconn.Listen(1024 * 1024)
 
-	// Add our interceptor for panic in order to test it.
+	// Add our interceptors for panic/error recovery in order to test them.
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
-				LoggingInterceptor(),
-				RecoverUnknownErrorInterceptor(),
-				RecoverPanicInterceptor(),
+				LoggingUnaryInterceptor(),
+				RecoverUnknownErrorUnaryInterceptor(),
+				RecoverPanicUnaryInterceptor(),
+			),
+		),
+		grpc.StreamInterceptor(
+			grpc_middleware.ChainStreamServer(
+				LoggingStreamInterceptor(),
+				RecoverUnknownErrorStreamInterceptor(),
+				RecoverPanicStreamInterceptor(),
 			),
 		),
 	}
@@ -111,7 +122,7 @@ func waitForHealthcheck() error {
 	deadline := time.Now().Add(timeout)
 	for {
 		if time.Now().After(deadline) {
-			return fmt.Errorf("healthcheck failed after %s", timeout)
+			return goerr.Errorf("healthcheck failed after %s", timeout)
 		}
 
 		err := walletServer.houstonService.HealthCheck()
@@ -284,7 +295,8 @@ func TestSaveAndGetAndDelete(t *testing.T) {
 			t.Errorf("want %v, but got %v", wantMsg, gotMsg)
 		}
 
-		wantDevMsg := "failed to save key with given data: classification not found for key: invalid-key"
+		wantDevMsg := "failed to save key with given data: " +
+			"classification not found for key: invalid-key"
 		gotDevMsg := errorDetail.GetDeveloperMessage()
 		if gotDevMsg != wantDevMsg {
 			t.Errorf("want %v, but got %v", wantDevMsg, gotDevMsg)
@@ -370,7 +382,13 @@ func TestSaveBatchAndGetBatch(t *testing.T) {
 
 		// Create GetBatchRequest
 		getBatchReq := api.GetBatchRequest_builder{
-			Keys: []string{"primaryCurrency", "email", "isEmailVerified", "emergencyKitVersion", "gcmToken"},
+			Keys: []string{
+				"primaryCurrency",
+				"email",
+				"isEmailVerified",
+				"emergencyKitVersion",
+				"gcmToken",
+			},
 		}.Build()
 
 		// Call grpc client with GetBatchRequest
@@ -526,6 +544,70 @@ func TestGetByPrefix(t *testing.T) {
 	})
 }
 
+func TestResetData(t *testing.T) {
+	t.Run("success when wiping all database entries", func(t *testing.T) {
+		setupKeyValueStorage(t, buildTestMigrationPlan())
+
+		conn, ctx := newGrpcClient(t)
+		defer conn.Close()
+		client := api.NewWalletServiceClient(conn)
+
+		// Save several values of different types.
+		emergencyKitVersion := int32(7)
+		_, err := client.Save(ctx, api.SaveRequest_builder{
+			Key:   "emergencyKitVersion",
+			Value: api.Value_builder{IntValue: &emergencyKitVersion}.Build(),
+		}.Build())
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		gcmToken := "test-token"
+		_, err = client.Save(ctx, api.SaveRequest_builder{
+			Key:   "gcmToken",
+			Value: api.Value_builder{StringValue: &gcmToken}.Build(),
+		}.Build())
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		// Reset the database.
+		_, err = client.ResetData(ctx, nil)
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		// All previously saved keys must return null after reset.
+		for _, key := range []string{"emergencyKitVersion", "gcmToken"} {
+			resp, err := client.Get(ctx, api.GetRequest_builder{Key: key}.Build())
+			if err != nil {
+				failWithGrpcErrorDetails(t, err)
+			}
+			if !resp.GetValue().HasNullValue() {
+				t.Errorf("Get(%q) after ResetData: want null, got non-null", key)
+			}
+		}
+
+		// DB must still accept writes after reset.
+		newVersion := int32(1)
+		_, err = client.Save(ctx, api.SaveRequest_builder{
+			Key:   "emergencyKitVersion",
+			Value: api.Value_builder{IntValue: &newVersion}.Build(),
+		}.Build())
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+
+		resp, err := client.Get(ctx, api.GetRequest_builder{Key: "emergencyKitVersion"}.Build())
+		if err != nil {
+			failWithGrpcErrorDetails(t, err)
+		}
+		if got := resp.GetValue().GetIntValue(); got != newVersion {
+			t.Errorf("Get() after ResetData + Save(): want %d, got %d", newVersion, got)
+		}
+	})
+}
+
 func TestErrorInterceptors(t *testing.T) {
 
 	t.Run("return internal error when rpc execution raises a panic", func(t *testing.T) {
@@ -577,15 +659,15 @@ func TestErrorInterceptors(t *testing.T) {
 
 	})
 
-	t.Run("return internal error when intercepting a generic error", func(t *testing.T) {
+	t.Run("unary: return internal error when intercepting a generic error", func(t *testing.T) {
 
 		// Create a generic error with fmt package
 		wantDevMsg := "generic error for testing"
-		handler := func(ctx context.Context, req any) (any, error) {
-			return nil, errors.New(wantDevMsg)
+		handler := func(ctx context.Context, req any) (any, error) { //nolint:revive // TODO: use or remove ctx
+			return nil, goerr.New(wantDevMsg)
 		}
 
-		interceptor := RecoverUnknownErrorInterceptor()
+		interceptor := RecoverUnknownErrorUnaryInterceptor()
 		_, err := interceptor(context.Background(), nil, nil, handler)
 		if err == nil {
 			t.Fatalf("expect error")
@@ -613,18 +695,91 @@ func TestErrorInterceptors(t *testing.T) {
 
 	})
 
-	t.Run("return internal error when intercepting unknown grpc error", func(t *testing.T) {
+	t.Run("unary: return internal error when intercepting unknown grpc error", func(t *testing.T) {
 
 		// Create gRPC error with codes.Unknown
 		errorMsg := "an unknown error for testing"
 		unknownErrorStatus := status.New(codes.Unknown, errorMsg)
 
-		handler := func(ctx context.Context, req any) (any, error) {
+		handler := func(ctx context.Context, req any) (any, error) { //nolint:revive // TODO: use or remove ctx
 			return nil, unknownErrorStatus.Err()
 		}
 
-		interceptor := RecoverUnknownErrorInterceptor()
+		interceptor := RecoverUnknownErrorUnaryInterceptor()
 		_, err := interceptor(context.Background(), nil, nil, handler)
+		if err == nil {
+			t.Fatalf("expect error")
+		}
+
+		grpcStatus := status.Convert(err)
+
+		// Verify we fail with codes.INTERNAL
+		if grpcStatus.Code() != codes.Internal {
+			t.Errorf("want %v, but got %v", codes.Internal, grpcStatus.Code())
+		}
+
+		// Verify we fail with error code ErrUnknown
+		wantCode := int64(apierrors.ErrorCodes.ErrUnknown.Code)
+		gotCode := getErrorDetail(t, grpcStatus).GetCode()
+		if gotCode != wantCode {
+			t.Errorf("want %v, but got %v", wantCode, gotCode)
+		}
+
+		// Verify we fail catching the original error message
+		wantDevMsg := "rpc error: code = Unknown desc = " + errorMsg
+		gotDevMsg := getErrorDetail(t, grpcStatus).GetDeveloperMessage()
+		if gotDevMsg != wantDevMsg {
+			t.Errorf("want %v, but got %v", wantDevMsg, gotDevMsg)
+		}
+
+	})
+
+	t.Run("stream: return internal error when intercepting a generic error", func(t *testing.T) {
+
+		wantDevMsg := "generic error for testing"
+		handler := func(_ any, _ grpc.ServerStream) error {
+			return goerr.New(wantDevMsg)
+		}
+
+		interceptor := RecoverUnknownErrorStreamInterceptor()
+		err := interceptor(nil, nil, nil, handler)
+		if err == nil {
+			t.Fatalf("expect error")
+		}
+
+		grpcStatus := status.Convert(err)
+
+		// Verify we fail with codes.INTERNAL
+		if grpcStatus.Code() != codes.Internal {
+			t.Errorf("want %v, but got %v", codes.Internal, grpcStatus.Code())
+		}
+
+		// Verify we fail with error code ErrUnknown
+		wantCode := int64(apierrors.ErrorCodes.ErrUnknown.Code)
+		gotCode := getErrorDetail(t, grpcStatus).GetCode()
+		if gotCode != wantCode {
+			t.Errorf("want %v, but got %v", wantCode, gotCode)
+		}
+
+		// Verify we fail catching the error message
+		got := getErrorDetail(t, grpcStatus).GetDeveloperMessage()
+		if got != wantDevMsg {
+			t.Errorf("want %v, but got %v", wantDevMsg, got)
+		}
+
+	})
+
+	t.Run("stream: return internal error when intercepting unknown grpc error", func(t *testing.T) {
+
+		errorMsg := "an unknown error for testing"
+		unknownErrorStatus := status.New(codes.Unknown, errorMsg)
+
+		handler := func(_ any, _ grpc.ServerStream) error {
+			return unknownErrorStatus.Err()
+		}
+
+		interceptor := RecoverUnknownErrorStreamInterceptor()
+		err := interceptor(nil, nil, nil, handler)
 		if err == nil {
 			t.Fatalf("expect error")
 		}
@@ -678,7 +833,10 @@ func TestFinishRecoveryCodeSetupEndpoint_Integration(t *testing.T) {
 
 	recoveryCodePublicKey := recoveryCodePrivateKey.PubKey()
 
-	createFirstSessionOkJson := createFirstSession(t, userPrivateKey.PublicKey())
+	createFirstSessionOkJson := createFirstSession( //nolint:staticcheck // TODO: var createFirstSessionOkJson should be createFirstSessionOkJSON
+		t,
+		userPrivateKey.PublicKey(),
+	)
 	muunPublicKey, err := libwallet.NewHDPublicKeyFromString(
 		createFirstSessionOkJson.CosigningPublicKey.Key,
 		createFirstSessionOkJson.CosigningPublicKey.Path,
@@ -731,7 +889,7 @@ func createFirstSession(t *testing.T, key *libwallet.HDPublicKey) model.CreateFi
 	if err != nil {
 		t.Fatal(err)
 	}
-	sessionJson := model.CreateFirstSessionJson{
+	sessionJson := model.CreateFirstSessionJson{ //nolint:staticcheck // TODO: var sessionJson should be sessionJSON
 		Client: model.ClientJson{
 			Type:        provider.ClientType,
 			BuildType:   "debug",
@@ -746,7 +904,9 @@ func createFirstSession(t *testing.T, key *libwallet.HDPublicKey) model.CreateFi
 			Path: "m/schema:1'/recovery:1'",
 		},
 	}
-	sessionOkJson, err := walletServer.houstonService.CreateFirstSession(sessionJson)
+	sessionOkJson, err := walletServer.houstonService.CreateFirstSession( //nolint:staticcheck // TODO: var sessionOkJson should be sessionOkJSON
+		sessionJson,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -754,15 +914,21 @@ func createFirstSession(t *testing.T, key *libwallet.HDPublicKey) model.CreateFi
 }
 
 func setupKeyValueStorage(t *testing.T, migrationPlan []storage.Migration) {
-	// Create a new empty DB providing a new dataFilePath
-	dataFilePath := path.Join(t.TempDir(), "test.db")
-	schema, err := storage.RunKeyValueMigrations(dataFilePath, migrationPlan)
+	dbPath := path.Join(t.TempDir(), "test.db")
+	var schema map[string]storage.Classification
+	pool, err := walletdb.NewPool(dbPath, func(db *walletdb.DB) error {
+		var migErr error
+		schema, migErr = storage.RunKeyValueMigrations(db, migrationPlan)
+		return migErr
+	})
 	if err != nil {
-		t.Fatalf("failed to run KV migrations: %v", err)
+		t.Fatalf("failed to open db: %v", err)
 	}
-	// For testing purpose, change reference to this new keyValueStorage
-	// in order to have a new empty DB
-	walletServer.keyValueStorage = storage.NewKeyValueStorage(dataFilePath, schema)
+	walletServer.keyValueStorage = storage.NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		schema,
+	)
+	walletServer.resetData = reset.NewResetDataAction(dbPath, pool, migrationPlan)
 }
 
 func newGrpcClient(t *testing.T) (*grpc.ClientConn, context.Context) {
@@ -780,7 +946,7 @@ func newGrpcClient(t *testing.T) (*grpc.ClientConn, context.Context) {
 }
 
 func dialer() func(context.Context, string) (net.Conn, error) {
-	return func(ctx context.Context, s string) (net.Conn, error) {
+	return func(ctx context.Context, s string) (net.Conn, error) { //nolint:revive // TODO: use or remove ctx
 		return bufconnListener.Dial()
 	}
 }
@@ -817,15 +983,69 @@ func failWithGrpcErrorDetails(t testing.TB, err error) {
 func buildTestMigrationPlan() []storage.Migration {
 	return []storage.Migration{
 		{Description: "Schema for testing purpose", Changes: []storage.Change{
-			storage.Define("email", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
-			storage.Define("emergencyKitVersion", storage.NoAutoBackup, storage.NotApplicable, false, &storage.IntType{}),
-			storage.Define("gcmToken", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
-			storage.Define("isEmailVerified", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
-			storage.Define("primaryCurrency", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
-			storage.Define("featureFlag:useDiagnosticMode", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
-			storage.Define("featureFlag:isDogfood", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
-			storage.Define("featureFlag:supportsNfc", storage.NoAutoBackup, storage.NotApplicable, false, &storage.BoolType{}),
-			storage.Define("featureFlag:utxoSelectionStrategy", storage.NoAutoBackup, storage.NotApplicable, false, &storage.StringType{}),
+			storage.Define(
+				"email",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.StringType{},
+			),
+			storage.Define(
+				"emergencyKitVersion",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.IntType{},
+			),
+			storage.Define(
+				"gcmToken",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.StringType{},
+			),
+			storage.Define(
+				"isEmailVerified",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.BoolType{},
+			),
+			storage.Define(
+				"primaryCurrency",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.StringType{},
+			),
+			storage.Define(
+				"featureFlag:useDiagnosticMode",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.BoolType{},
+			),
+			storage.Define(
+				"featureFlag:isDogfood",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.BoolType{},
+			),
+			storage.Define(
+				"featureFlag:supportsNfc",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.BoolType{},
+			),
+			storage.Define(
+				"featureFlag:utxoSelectionStrategy",
+				storage.NoAutoBackup,
+				storage.NotApplicable,
+				false,
+				&storage.StringType{},
+			),
 		}},
 	}
 }
@@ -865,7 +1085,7 @@ func (m *mockKeyProvider) MaxDerivedIndex() int {
 }
 
 func (m *mockKeyProvider) EncryptedMuunPrivateKey() (*libwallet.EncryptedPrivateKeyInfo, error) {
-	return nil, errors.New("not implemented")
+	return nil, goerr.New("not implemented")
 }
 
 func (m *mockKeyProvider) SetMaxDerivedIndex(maxDerivedIndex int) {

@@ -20,6 +20,10 @@ type DescriptorLine struct {
 	Segments []DescriptorSegment
 }
 
+func NewDescriptorLine() DescriptorLine {
+	return DescriptorLine{}
+}
+
 type SegmentType int
 
 const (
@@ -32,6 +36,10 @@ const (
 type DescriptorSegment struct {
 	Text string
 	Type SegmentType
+}
+
+func NewDescriptorSegment(text string, segmentType SegmentType) DescriptorSegment {
+	return DescriptorSegment{Text: text, Type: segmentType}
 }
 
 func NewAdvancedComponent(
@@ -71,11 +79,23 @@ func (r *AdvancedComponent) Height() float64 {
 	innerWidth := r.pdf.GetDrawablePageWidth()
 
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
-	introLines := r.pdf.LineCountWithLetterSpacing(innerWidth, r.IntroParagraph, assets.BodyLetterSpacing)
+	introLines := r.pdf.LineCountWithLetterSpacing(
+		innerWidth,
+		r.IntroParagraph,
+		assets.BodyLetterSpacing,
+	)
 
 	assets.SetDescriptorFont(r.pdf.Fpdf)
-	closing1Lines := r.pdf.LineCountWithLetterSpacing(innerWidth, r.ClosingParagraph1, assets.BodyLetterSpacing)
-	closing2Lines := r.pdf.LineCountWithLetterSpacing(innerWidth, r.ClosingParagraph2, assets.BodyLetterSpacing)
+	closing1Lines := r.pdf.LineCountWithLetterSpacing(
+		innerWidth,
+		r.ClosingParagraph1,
+		assets.BodyLetterSpacing,
+	)
+	closing2Lines := r.pdf.LineCountWithLetterSpacing(
+		innerWidth,
+		r.ClosingParagraph2,
+		assets.BodyLetterSpacing,
+	)
 
 	descriptorsHeight := descriptorsPadding +
 		float64(len(r.Descriptors))*descriptorLineHeight +
@@ -116,7 +136,12 @@ func (r *AdvancedComponent) Render() {
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
 	r.pdf.SetXY(innerStartX, r.pdf.GetY())
-	r.pdf.MultiCellWithLetterSpacing(innerWidth, assets.BodyParagraphLineHeight, r.IntroParagraph, assets.BodyLetterSpacing)
+	r.pdf.MultiCellWithLetterSpacing(
+		innerWidth,
+		assets.BodyParagraphLineHeight,
+		r.IntroParagraph,
+		assets.BodyLetterSpacing,
+	)
 
 	// Render descriptors box
 	r.renderDescriptors(innerStartX, innerWidth)
@@ -126,14 +151,24 @@ func (r *AdvancedComponent) Render() {
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
 	r.pdf.SetXY(innerStartX, r.pdf.GetY())
-	r.pdf.MultiCellWithLetterSpacing(innerWidth, assets.BodyParagraphLineHeight, r.ClosingParagraph1, assets.BodyLetterSpacing)
+	r.pdf.MultiCellWithLetterSpacing(
+		innerWidth,
+		assets.BodyParagraphLineHeight,
+		r.ClosingParagraph1,
+		assets.BodyLetterSpacing,
+	)
 
 	// Render closing paragraph 2
 	r.pdf.SetY(r.pdf.GetY() + assets.StandardHorizontalMargin)
 	assets.SetBodyParagraphFont(r.pdf.Fpdf)
 	assets.SetSecondaryTextColor(r.pdf.Fpdf)
 	r.pdf.SetXY(innerStartX, r.pdf.GetY())
-	r.pdf.MultiCellWithLetterSpacing(innerWidth, assets.BodyParagraphLineHeight, r.ClosingParagraph2, assets.BodyLetterSpacing)
+	r.pdf.MultiCellWithLetterSpacing(
+		innerWidth,
+		assets.BodyParagraphLineHeight,
+		r.ClosingParagraph2,
+		assets.BodyLetterSpacing,
+	)
 }
 
 // renderDescriptors is implemented in descriptors_render.go

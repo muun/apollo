@@ -84,6 +84,7 @@ public class OperationActions {
     /**
      * Fetches a single operation from the database, by id.
      */
+    @Deprecated // We should fetch by Hid using OperationSelector
     public Observable<Operation> fetchOperationById(Long operationId) {
         return operationDao.fetchById(operationId);
     }

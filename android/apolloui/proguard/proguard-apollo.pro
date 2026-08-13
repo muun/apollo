@@ -87,3 +87,10 @@
 -keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }
+
+# Keep class names used by the extraStackElements signal to detect unexpected
+# stack trace entries.
+-keepnames class rx.**
+-keepnames class io.muun.apollo.data.afs.RuntimeInfoProvider
+-keepnames class io.muun.apollo.data.net.base.interceptor.BackgroundExecutionMetricsInterceptor
+-keepnames class io.muun.apollo.data.net.base.BaseInterceptor

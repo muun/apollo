@@ -27,7 +27,8 @@ class SystemCapabilitiesProvider(private val context: Context) {
         "GVENZVFH" to 14,
         "HCFVQR_QBJA_PNXR" to 15,
         "INAVYYN_VPR_PERNZ" to 16,
-        "ONXYNIN" to 17
+        "ONXYNIN" to 17,
+        "PVAANZBA_OHA" to 18
     )
 
     val bridgeDaemonStatus: String

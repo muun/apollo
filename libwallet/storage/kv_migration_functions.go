@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/walletdb"
 )
 
@@ -22,7 +24,10 @@ type KeyDefinition struct {
 	ValueType        ValueType
 }
 
-func (c KeyDefinition) apply(schema map[string]Classification, dbOps *[]func(repo walletdb.KeyValueRepository) error) {
+func (c KeyDefinition) apply(
+	schema map[string]Classification,
+	dbOps *[]func(repo walletdb.KeyValueRepository) error,
+) {
 	_, exists := schema[c.Key]
 	if exists {
 		panic(fmt.Sprintf("kv migration: key '%s' is already defined", c.Key))
@@ -39,7 +44,13 @@ func (c KeyDefinition) apply(schema map[string]Classification, dbOps *[]func(rep
 }
 
 // Define returns a new KeyDefinition.
-func Define(key string, backupType BackupType, backupSecurity BackupSecurity, securityCritical bool, valueType ValueType) Change {
+func Define(
+	key string,
+	backupType BackupType,
+	backupSecurity BackupSecurity,
+	securityCritical bool,
+	valueType ValueType,
+) Change {
 	if reflect.TypeOf(valueType).Kind() != reflect.Ptr {
 		panic(fmt.Sprintf(
 			"kv migration: ValueType for key '%s' expects a pointer &%s{} but got value %s{}",
@@ -89,16 +100,24 @@ type TypeMigration struct {
 	NewType ValueType
 }
 
-func (c TypeMigration) apply(schema map[string]Classification, dbOps *[]func(repo walletdb.KeyValueRepository) error) {
+func (c TypeMigration) apply(
+	schema map[string]Classification,
+	dbOps *[]func(repo walletdb.KeyValueRepository) error, //nolint:revive // TODO: use or remove dbOps
+) {
 	classification, ok := schema[c.Key]
 	if !ok {
-		panic(fmt.Sprintf("kv migration: attempted to migrate type for key '%s' which has not been defined yet", c.Key))
+		panic(fmt.Sprintf(
+			"kv migration: attempted to migrate type for "+
+				"key '%s' which has not been defined yet",
+			c.Key,
+		))
 	}
 	oldType := classification.ValueType
 	if !isTrivialConversion(oldType, c.NewType) {
 		panic(fmt.Sprintf(
-			"kv migration: MigrateValueType cannot be used for a non-trivial conversion "+
-				"from %T to %T for key '%s'. Use MigrateValueTypeWithMap instead.",
+			"kv migration: MigrateValueType cannot be used "+
+				"for a non-trivial conversion from %T to %T "+
+				"for key '%s'. Use MigrateValueTypeWithMap instead.",
 			oldType, c.NewType, c.Key,
 		))
 	}
@@ -118,10 +137,17 @@ type MappedTypeMigration struct {
 	OldToNewMap map[string]string
 }
 
-func (c MappedTypeMigration) apply(schema map[string]Classification, dbOps *[]func(repo walletdb.KeyValueRepository) error) {
+func (c MappedTypeMigration) apply(
+	schema map[string]Classification,
+	dbOps *[]func(repo walletdb.KeyValueRepository) error,
+) {
 	classification, ok := schema[c.Key]
 	if !ok {
-		panic(fmt.Sprintf("kv migration: attempted to migrate type for key '%s' which has not been defined yet", c.Key))
+		panic(fmt.Sprintf(
+			"kv migration: attempted to migrate type for "+
+				"key '%s' which has not been defined yet",
+			c.Key,
+		))
 	}
 	classification.ValueType = c.NewType
 	schema[c.Key] = classification
@@ -147,7 +173,7 @@ func (c MappedTypeMigration) apply(schema map[string]Classification, dbOps *[]fu
 			return err
 		}
 		if !ok {
-			return fmt.Errorf("kv migration: unmapped value found for key '%s'", c.Key)
+			return errors.Errorf("kv migration: unmapped value found for key '%s'", c.Key)
 		}
 		return nil
 	})
@@ -172,10 +198,18 @@ type MapUpdate struct {
 	OldToNewMap map[string]string
 }
 
-func (c MapUpdate) apply(schema map[string]Classification, dbOps *[]func(repo walletdb.KeyValueRepository) error) {
+func (c MapUpdate) apply(
+	schema map[string]Classification,
+	dbOps *[]func(repo walletdb.KeyValueRepository) error,
+) {
 	_, exists := schema[c.Key]
 	if !exists {
-		panic(fmt.Sprintf("kv migration: attempted to update key '%s' which has not been defined yet", c.Key))
+		panic(
+			fmt.Sprintf(
+				"kv migration: attempted to update key '%s' which has not been defined yet",
+				c.Key,
+			),
+		)
 	}
 
 	*dbOps = append(*dbOps, func(repo walletdb.KeyValueRepository) error {
@@ -198,7 +232,10 @@ type CustomChange struct {
 	Step func(tx LimitedKeyValueRepository) error
 }
 
-func (c CustomChange) apply(_ map[string]Classification, dbOps *[]func(repo walletdb.KeyValueRepository) error) {
+func (c CustomChange) apply(
+	_ map[string]Classification,
+	dbOps *[]func(repo walletdb.KeyValueRepository) error,
+) {
 	*dbOps = append(*dbOps, func(repo walletdb.KeyValueRepository) error {
 		// Wrap the full repo in the limited repo before passing it to the custom step.
 		limitedRepo := &limitedKeyValueRepository{keyValueRepository: repo}
@@ -220,18 +257,19 @@ func isTrivialConversion(from, to ValueType) bool {
 	toType := reflect.TypeOf(to)
 
 	// Trivial conversion to String from safe types.
-	if toType == reflect.TypeOf(&StringType{}) {
+	if toType == reflect.TypeOf(&StringType{}) { //nolint:modernize // TODO: use reflect.TypeFor
 		switch fromType {
-		case reflect.TypeOf(&IntType{}),
-			reflect.TypeOf(&LongType{}),
-			reflect.TypeOf(&DoubleType{}),
-			reflect.TypeOf(&BoolType{}):
+		case reflect.TypeOf(&IntType{}), //nolint:modernize // TODO: use reflect.TypeFor
+			reflect.TypeOf(&LongType{}),   //nolint:modernize // TODO: use reflect.TypeFor
+			reflect.TypeOf(&DoubleType{}), //nolint:modernize // TODO: use reflect.TypeFor
+			reflect.TypeOf(&BoolType{}):   //nolint:modernize // TODO: use reflect.TypeFor
 			return true
 		}
 	}
 
 	// Trivial conversion from Int to Long.
-	if fromType == reflect.TypeOf(&IntType{}) && toType == reflect.TypeOf(&LongType{}) {
+	if fromType == reflect.TypeOf(&IntType{}) && //nolint:modernize // TODO: use reflect.TypeFor
+		toType == reflect.TypeOf(&LongType{}) { //nolint:modernize // TODO: use reflect.TypeFor
 		return true
 	}
 

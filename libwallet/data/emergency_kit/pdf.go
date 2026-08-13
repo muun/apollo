@@ -2,11 +2,13 @@ package emergency_kit
 
 import (
 	"bytes"
-	"github.com/muun/libwallet/data/emergency_kit/resources"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/phpdave11/gofpdf"
+
+	"github.com/muun/libwallet/data/emergency_kit/resources"
 )
 
 type RenderingContext struct {
@@ -34,6 +36,10 @@ type ImageAsset struct {
 type PdfExtensions struct {
 	*gofpdf.Fpdf
 	ctx RenderingContext
+
+	// Per-step durations of the (static) setup, exposed for profiling. In milliseconds.
+	RegisterFontsMs  int64
+	RegisterImagesMs int64
 }
 
 // CreateAndSetupPdf creates a new PdfExtensions wrapper around a gofpdf.Fpdf instance
@@ -49,8 +55,14 @@ func CreateAndSetupPdf(ctx RenderingContext) *PdfExtensions {
 		FontDirStr:     "",
 	})
 	pdfExt := &PdfExtensions{Fpdf: pdf, ctx: ctx}
+
+	startFonts := time.Now()
 	registerFonts(pdfExt)
+	pdfExt.RegisterFontsMs = time.Since(startFonts).Milliseconds()
+
+	startImages := time.Now()
 	registerImages(pdf, ctx.Images)
+	pdfExt.RegisterImagesMs = time.Since(startImages).Milliseconds()
 
 	// Remove cell margins globally to prevent unwanted padding
 	pdf.SetCellMargin(0)
@@ -100,7 +112,8 @@ type TextPart struct {
 //   - minLines: Minimum number of lines to use (0 for no minimum)
 //
 // Returns:
-//   - endY: Y coordinate after rendering all text (useful for calculating next element position)
+//   - endY: Y coordinate after rendering all text
+//     (useful for calculating next element position)
 func (p *PdfExtensions) RenderMultiStyledText(
 	startX float64,
 	startY float64,
@@ -137,7 +150,8 @@ func (p *PdfExtensions) RenderMultiStyledText(
 
 			// Check if next part starts with punctuation (don't add space before punctuation)
 			nextPartStartsWithPunctuation := false
-			if partIndex < len(parts)-1 && wordIndex == len(words)-1 && len(parts[partIndex+1].Text) > 0 {
+			if partIndex < len(parts)-1 && wordIndex == len(words)-1 &&
+				len(parts[partIndex+1].Text) > 0 {
 				nextPartStartsWithPunctuation = isPunctuation(parts[partIndex+1].Text[0])
 			}
 
@@ -202,7 +216,15 @@ func (p *PdfExtensions) RenderMultiStyledText(
 		parts[word.partIdx].SetFont(p.Fpdf)
 		parts[word.partIdx].SetColor(p.Fpdf)
 		if letterSpacing > 0 {
-			p.RenderTextWithLetterSpacing(currentX, currentY, word.text, letterSpacing, "L", "T", lineHeight)
+			p.RenderTextWithLetterSpacing(
+				currentX,
+				currentY,
+				word.text,
+				letterSpacing,
+				"L",
+				"T",
+				lineHeight,
+			)
 		} else {
 			p.SetXY(currentX, currentY)
 			p.Cell(word.width, lineHeight, word.text)
@@ -222,11 +244,15 @@ func (p *PdfExtensions) RenderMultiStyledText(
 	return currentY + lineHeight
 }
 
-// MultiCellWithLetterSpacing renders multi-line text using the current font/color with custom letter spacing.
-// It mimics the behaviour of gofpdf's MultiCell but applies inter-character spacing.
-// The caller must set X/Y position and font/color before calling, just like MultiCell.
+// MultiCellWithLetterSpacing renders multi-line text using the current font/color with custom
+// letter spacing. It mimics the behaviour of gofpdf's MultiCell but applies inter-character
+// spacing. The caller must set X/Y position and font/color before calling, just like MultiCell.
 // After rendering, the Y cursor is advanced to the bottom of the last line.
-func (p *PdfExtensions) MultiCellWithLetterSpacing(availableWidth, lineHeight float64, text string, letterSpacing float64) {
+func (p *PdfExtensions) MultiCellWithLetterSpacing(
+	availableWidth, lineHeight float64,
+	text string,
+	letterSpacing float64,
+) {
 	startX := p.GetX()
 	currentX := startX
 	currentY := p.GetY()
@@ -247,15 +273,27 @@ func (p *PdfExtensions) MultiCellWithLetterSpacing(availableWidth, lineHeight fl
 
 		if wordWidth <= availableWidth {
 			// 2. Word fits on a single line — render it whole.
-			currentX = p.RenderTextWithLetterSpacing(currentX, currentY, word, letterSpacing, "L", "T", lineHeight)
+			currentX = p.RenderTextWithLetterSpacing(
+				currentX,
+				currentY,
+				word,
+				letterSpacing,
+				"L",
+				"T",
+				lineHeight,
+			)
 		} else {
-			// 3. Word is longer than the available width (e.g. an encrypted key) — split character by character.
+			// 3. Word is longer than the available width
+			// (e.g. an encrypted key) — split character by character.
 			lineStr := ""
 			for _, char := range word {
 				charStr := string(char)
 				testWidth := p.GetStringWidthWithLetterSpacing(lineStr+charStr, letterSpacing)
 				if lineStr != "" && currentX+testWidth > maxX {
-					p.RenderTextWithLetterSpacing(currentX, currentY, lineStr, letterSpacing, "L", "T", lineHeight)
+					p.RenderTextWithLetterSpacing(
+						currentX, currentY, lineStr,
+						letterSpacing, "L", "T", lineHeight,
+					)
 					currentY += lineHeight
 					currentX = startX
 					lineStr = charStr
@@ -263,7 +301,10 @@ func (p *PdfExtensions) MultiCellWithLetterSpacing(availableWidth, lineHeight fl
 					lineStr += charStr
 				}
 			}
-			currentX = p.RenderTextWithLetterSpacing(currentX, currentY, lineStr, letterSpacing, "L", "T", lineHeight)
+			currentX = p.RenderTextWithLetterSpacing(
+				currentX, currentY, lineStr,
+				letterSpacing, "L", "T", lineHeight,
+			)
 		}
 
 		// Add one space after each word
@@ -277,7 +318,11 @@ func (p *PdfExtensions) MultiCellWithLetterSpacing(availableWidth, lineHeight fl
 
 // LineCountWithLetterSpacing estimates the number of lines text will occupy when rendered
 // with the given letter spacing, based on total text width divided by available width.
-func (p *PdfExtensions) LineCountWithLetterSpacing(maxWidth float64, text string, letterSpacing float64) float64 {
+func (p *PdfExtensions) LineCountWithLetterSpacing(
+	maxWidth float64,
+	text string,
+	letterSpacing float64,
+) float64 {
 	if maxWidth <= 0 {
 		return 1
 	}
@@ -288,13 +333,19 @@ func (p *PdfExtensions) LineCountWithLetterSpacing(maxWidth float64, text string
 	return math.Ceil(textWidth / maxWidth)
 }
 
-// RenderTextWithLetterSpacing renders text with custom letter spacing
-// letterSpacing is specified as a fraction of the font size in pixels (0.05 = 5% of font size)
-// The spacing is converted from points to millimeters to match PDF coordinate system.
-// Custom spacing was already being used in the html/css version so we had to replicate it.
-// horizontalAlign controls horizontal positioning: "L" (left), "C" (center), "R" (right)
-// verticalAlign controls vertical positioning: "T" (top), "M" (middle), "B" (bottom), "A" (baseline)
-// lineHeight is optional - if not provided or <= 0, defaults to fontHeight * 1.2
+// RenderTextWithLetterSpacing renders text with custom
+// letter spacing.
+// letterSpacing is specified as a fraction of the font size
+// in pixels (0.05 = 5% of font size). The spacing is converted
+// from points to millimeters to match PDF coordinate system.
+// Custom spacing was already being used in the html/css version
+// so we had to replicate it.
+// horizontalAlign controls horizontal positioning:
+// "L" (left), "C" (center), "R" (right)
+// verticalAlign controls vertical positioning:
+// "T" (top), "M" (middle), "B" (bottom), "A" (baseline)
+// lineHeight is optional - if not provided or <= 0,
+// defaults to fontHeight * 1.2
 func (p *PdfExtensions) RenderTextWithLetterSpacing(
 	x float64,
 	y float64,
@@ -319,7 +370,17 @@ func (p *PdfExtensions) RenderTextWithLetterSpacing(
 		charStr := string(char)
 		charWidth := p.GetStringWidth(charStr)
 		p.SetXY(currentX, y)
-		p.CellFormat(charWidth, cellHeight, charStr, "", 0, horizontalAlign+verticalAlign, false, 0, "")
+		p.CellFormat(
+			charWidth,
+			cellHeight,
+			charStr,
+			"",
+			0,
+			horizontalAlign+verticalAlign,
+			false,
+			0,
+			"",
+		)
 		currentX += charWidth + spacingAmount
 	}
 
@@ -330,7 +391,10 @@ func (p *PdfExtensions) RenderTextWithLetterSpacing(
 // GetStringWidthWithLetterSpacing calculates the width of text with custom letter spacing
 // letterSpacing is specified as a fraction of the font size in pixels (0.05 = 5% of font size)
 // The spacing is converted from points to millimeters to match PDF coordinate system
-func (p *PdfExtensions) GetStringWidthWithLetterSpacing(text string, letterSpacing float64) float64 {
+func (p *PdfExtensions) GetStringWidthWithLetterSpacing(
+	text string,
+	letterSpacing float64,
+) float64 {
 	if text == "" {
 		return 0
 	}
@@ -348,7 +412,8 @@ func (p *PdfExtensions) GetStringWidthWithLetterSpacing(text string, letterSpaci
 	return totalWidth - spacingAmount
 }
 
-// GetDrawablePageWidth returns the usable page width after subtracting the horizontal margins on both sides.
+// GetDrawablePageWidth returns the usable page width after subtracting the horizontal margins on
+// both sides.
 func (p *PdfExtensions) GetDrawablePageWidth() float64 {
 	pageWidth, _ := p.GetPageSize()
 	return pageWidth - 2*p.ctx.NonDrawableHorizontalMargins

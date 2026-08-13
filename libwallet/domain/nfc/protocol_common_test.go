@@ -2,9 +2,10 @@ package nfc
 
 import (
 	"fmt"
-	"github.com/muun/libwallet/cryptography"
 	"strings"
 	"testing"
+
+	"github.com/muun/libwallet/cryptography"
 )
 
 func TestParseMetadata_ErrorScenarios(t *testing.T) {
@@ -318,9 +319,9 @@ func TestParsePairingResponse_ValidSignatureLengths(t *testing.T) {
 }
 
 func TestParsePairingResponse_LargerThanMinimumSize(t *testing.T) {
-	// Test that data larger than minimum still works (the function reads the remaining bytes as signature)
-	// Since parsePairingResponse reads "remaining bytes" as signature, extra data becomes part of signature
-	// This should fail if signature becomes > 72 bytes
+	// Test that data larger than minimum still works (the function reads the remaining bytes as
+	// signature) Since parsePairingResponse reads "remaining bytes" as signature, extra data
+	// becomes part of signature This should fail if signature becomes > 72 bytes
 	baseData := createValidPairingResponseData(t) // This has 70-byte signature
 
 	// Add 2 extra bytes to make signature 72 bytes (still valid)
@@ -338,8 +339,11 @@ func TestParsePairingResponse_LargerThanMinimumSize(t *testing.T) {
 
 	// Should still parse correctly
 	if result.PairingSlot[0] != 0x12 || result.PairingSlot[1] != 0x34 {
-		t.Fatalf("PairingSlot not parsed correctly with extra data: got [%02x, %02x], want [0x12, 0x34]",
-			result.PairingSlot[0], result.PairingSlot[1])
+		t.Fatalf(
+			"PairingSlot not parsed correctly with extra data: got [%02x, %02x], want [0x12, 0x34]",
+			result.PairingSlot[0],
+			result.PairingSlot[1],
+		)
 	}
 
 	// Signature should now be 72 bytes
@@ -471,7 +475,7 @@ func TestParseSignChallengeResponse_Success(t *testing.T) {
 	// TODO: mac verification will tested in another test
 
 	// Verify MAC content matches
-	for i := 0; i < MacSize; i++ {
+	for i := 0; i < MacSize; i++ { //nolint:modernize // TODO: use range over int
 		if result.MAC[i] != testMAC[i] {
 			t.Fatalf("MAC byte %d not parsed correctly: got 0x%02x, want 0x%02x",
 				i, result.MAC[i], testMAC[i])
@@ -479,7 +483,7 @@ func TestParseSignChallengeResponse_Success(t *testing.T) {
 	}
 
 	// Verify the card public key matches what we put in
-	for i := 0; i < Secp256R1PointSize; i++ {
+	for i := 0; i < Secp256R1PointSize; i++ { //nolint:modernize // TODO: use range over int
 		if result.CardPublicKey[i] != cardKeyPair.PublicKey[i] {
 			t.Fatalf("CardPublicKey byte %d not parsed correctly: got 0x%02x, want 0x%02x",
 				i, result.CardPublicKey[i], cardKeyPair.PublicKey[i])

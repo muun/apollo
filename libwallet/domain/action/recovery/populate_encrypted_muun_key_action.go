@@ -1,13 +1,15 @@
 package recovery
 
 import (
-	"fmt"
+	"log/slog"
+
 	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/domain/model/verifiable_muun_key"
 	"github.com/muun/libwallet/service"
 	"github.com/muun/libwallet/storage"
-	"log/slog"
 )
 
 type PopulateEncryptedMuunKeyAction struct {
@@ -38,17 +40,17 @@ func (a *PopulateEncryptedMuunKeyAction) Run(recoveryCodePublicKey *btcec.Public
 
 	userHDPrivateKey, err := a.keyProvider.UserPrivateKey()
 	if err != nil {
-		return fmt.Errorf("error getting user key from KeyProvider: %w", err)
+		return errors.Errorf("error getting user key from KeyProvider: %w", err)
 	}
 
 	userEcPrivateKey, err := userHDPrivateKey.ECPrivateKey()
 	if err != nil {
-		return fmt.Errorf("error obtaining user ec private key: %w", err)
+		return errors.Errorf("error obtaining user ec private key: %w", err)
 	}
 
 	muunHDPublicKey, err := a.keyProvider.MuunPublicKey()
 	if err != nil {
-		return fmt.Errorf("error obtaining muun key from KeyProvider: %w", err)
+		return errors.Errorf("error obtaining muun key from KeyProvider: %w", err)
 	}
 
 	currentStatus, err := a.getCurrentStatus()
@@ -63,7 +65,7 @@ func (a *PopulateEncryptedMuunKeyAction) Run(recoveryCodePublicKey *btcec.Public
 	}
 
 	// we proceed, hoping to obtain a verified key
-	verifiableMuunKeyJson, err := a.houstonService.VerifiableMuunKey()
+	verifiableMuunKeyJson, err := a.houstonService.VerifiableMuunKey() //nolint:staticcheck // TODO: var verifiableMuunKeyJson should be verifiableMuunKeyJSON
 	if err != nil {
 		return err
 	}

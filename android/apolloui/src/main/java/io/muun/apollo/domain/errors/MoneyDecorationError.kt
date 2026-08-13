@@ -18,6 +18,8 @@ class MoneyDecorationError(
     after: Int,
 ) : MuunError(message), PotentialBug {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     init {
         metadata["newCaretPosition"] = newCaretPosition
         metadata["resultLength"] = resultLength

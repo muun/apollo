@@ -16,9 +16,8 @@ type InitialPaymentContext struct {
 // It comprises InitialPaymentContext with data from native apps,
 // adding properties loaded inside Libwallet.
 type PaymentContext struct {
-	//****** InitialPaymentContext ******
-	// Copied from InitialPaymentContext to avoid awful nested hierarchy
-	// on native apps.
+	//****** InitialPaymentContext ****** Copied from InitialPaymentContext to avoid awful nested
+	//hierarchy on native apps.
 	FeeWindow                *FeeWindow
 	NextTransactionSize      *NextTransactionSize
 	ExchangeRateWindow       *ExchangeRateWindow
@@ -61,7 +60,9 @@ func newPaymentAnalyzer(context *PaymentContext) *operation.PaymentAnalyzer {
 	)
 }
 
-func (ipc *InitialPaymentContext) newPaymentContext(feeBumpFunctionSet *operation.FeeBumpFunctionSet) *PaymentContext {
+func (ipc *InitialPaymentContext) newPaymentContext(
+	feeBumpFunctionSet *operation.FeeBumpFunctionSet,
+) *PaymentContext {
 	return &PaymentContext{
 		FeeWindow:                ipc.FeeWindow,
 		NextTransactionSize:      ipc.NextTransactionSize,

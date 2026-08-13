@@ -32,13 +32,19 @@ func Test_paddedSerializeBigInt(t *testing.T) {
 	}{
 		{
 			name: "31 bytes key",
-			args: args{size: 32, x: hexToBigInt("0e815b7892396a2e28e09c0d50082931eedd7fec16ef2e06724fe48f877ea6")},
+			args: args{
+				size: 32,
+				x:    hexToBigInt("0e815b7892396a2e28e09c0d50082931eedd7fec16ef2e06724fe48f877ea6"),
+			},
 			want: hexToBytes("000e815b7892396a2e28e09c0d50082931eedd7fec16ef2e06724fe48f877ea6"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := PaddedSerializeBigInt(tt.args.size, tt.args.x); !reflect.DeepEqual(got, tt.want) {
+			if got := PaddedSerializeBigInt(tt.args.size, tt.args.x); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("PaddedSerializeBigInt() = %v, want %v", got, tt.want)
 			}
 		})

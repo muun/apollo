@@ -9,7 +9,6 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.domain.libwallet.Invoice.decodeInvoice
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.Operation
-import io.muun.apollo.domain.utils.isEmpty
 import io.muun.apollo.domain.utils.locale
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -21,7 +20,6 @@ import io.muun.common.bitcoinj.BlockHelpers
 import io.muun.common.bitcoinj.NetworkParametersHelper
 import io.muun.common.exception.MissingCaseError
 import io.muun.common.model.OperationStatus
-import io.muun.common.utils.Preconditions
 import libwallet.Libwallet
 import java.util.Locale
 import java.util.regex.Pattern
@@ -84,7 +82,7 @@ abstract class UiOperation(
     val detailedFee: String
         get() {
             val (feeInSats, feeInPrimaryCurr) = calculateFee()
-            return getFormattedAmount(`feeInSats`, feeInPrimaryCurr)
+            return getFormattedAmount(feeInSats, feeInPrimaryCurr)
         }
 
     /**
@@ -102,7 +100,7 @@ abstract class UiOperation(
 
         // If operation is a swap we display both funding and sweep tx as the operation fee
         if (operation.swap != null) {
-            val totalFeeInSats = feeInSats + (operation.swap!!.totalFeesInSat() ?: 0)
+            val totalFeeInSats = feeInSats + (operation.swap.totalFeesInSat() ?: 0)
 
             // As we don't have the value in primary currency for some of the fees involved in a
             // swap, we use a Rule of 3 to calculate their value in primary currency using amount as
@@ -180,7 +178,7 @@ abstract class UiOperation(
         get() = isSwap && operation.swap!!.fundingOutput.confirmationsNeeded == 0
 
     val swapInvoice: String
-        get() = if (operation.swap == null) "" else operation.swap!!.invoice
+        get() = if (operation.swap == null) "" else operation.swap.invoice
 
     val isIncomingSwap: Boolean
         get() = operation.isIncomingSwap
@@ -198,7 +196,7 @@ abstract class UiOperation(
         get() = if (operation.swap == null) {
             ""
         } else {
-            operation.swap!!.receiver.formattedDestination
+            operation.swap.receiver.formattedDestination
         }
 
     /**
@@ -213,7 +211,7 @@ abstract class UiOperation(
     val preimage: String
         get() = if (operation.swap != null) {
             // 2nd ? is needed to avoid generic kotlin Any?.toString() which prints "null"
-            operation.swap!!.preimage?.toString() ?: ""
+            operation.swap.preimage?.toString() ?: ""
         } else {
             operation.incomingSwap?.getPreimage()?.toString() ?: ""
         }
@@ -223,7 +221,7 @@ abstract class UiOperation(
      */
     val paymentHash: String
         get() = if (operation.swap != null) {
-            operation.swap!!.fundingOutput.paymentHash.toString()
+            operation.swap.fundingOutput.paymentHash.toString()
         } else {
             // 2nd ? is needed to avoid generic kotlin Any?.toString() which prints "null"
             operation.incomingSwap?.getPaymentHash()?.toString() ?: ""
@@ -231,7 +229,7 @@ abstract class UiOperation(
 
     val invoiceDescription: String?
         get() {
-            if (operation.metadata == null || operation.metadata!!.invoice.isEmpty()) {
+            if (operation.metadata?.invoice.isNullOrEmpty()) {
                 return null
             }
 
@@ -239,7 +237,7 @@ abstract class UiOperation(
         }
 
     val lnUrlSender: String?
-        get() = if (operation.metadata != null) operation.metadata!!.lnurlSender else null
+        get() = operation.metadata?.lnurlSender
 
     /**
      * Get the input amount without sign, to be displayed in the operation detail.
@@ -272,7 +270,7 @@ abstract class UiOperation(
     /**
      * Get the description as formatted RichText.
      */
-    fun getFormattedDescription(context: Context): CharSequence? =
+    fun getFormattedDescription(context: Context): CharSequence =
         when {
             operation.description != null -> operation.description
             isIncomingSwap -> context.getString(R.string.history_external_incoming_swap_description)
@@ -398,8 +396,8 @@ abstract class UiOperation(
      * Get refund message for a failed swap.
      */
     fun getRefundMessage(context: Context, blockchainHeight: Int): String {
-        Preconditions.checkNotNull(operation.swap)
-        val fundingOutput = operation.swap!!.fundingOutput
+        checkNotNull(operation.swap)
+        val fundingOutput = operation.swap.fundingOutput
         return if (fundingOutput.scriptVersion == Libwallet.AddressVersionSwapsV2.toInt()) {
             context.getString(R.string.operation_swap_expired_desc)
         } else {
@@ -412,9 +410,9 @@ abstract class UiOperation(
      */
     private fun getRefundMessageForSwapV1(context: Context, blockchainHeight: Int): String {
         checkNotNull(operation.swap)
-        checkNotNull(operation.swap!!.fundingOutput.userLockTime)
+        checkNotNull(operation.swap.fundingOutput.userLockTime)
 
-        val fundingOutput = operation.swap!!.fundingOutput
+        val fundingOutput = operation.swap.fundingOutput
         val blocksUntilRefund = fundingOutput.userLockTime!! - blockchainHeight
         if (blocksUntilRefund <= 0) { // If userLockTime is reached, swap's already expired/refunded
             return context.getString(R.string.operation_swap_expired_desc)

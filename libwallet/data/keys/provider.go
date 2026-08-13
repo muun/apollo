@@ -1,7 +1,8 @@
 package keys
 
 import (
-	"fmt"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/app_provided_data"
 )
@@ -30,7 +31,11 @@ func (p *keyProvider) UserPrivateKey() (*libwallet.HDPrivateKey, error) {
 		return nil, err
 	}
 
-	userPrivKey, err := libwallet.NewHDPrivateKeyFromString(userKeyData.Serialized, userKeyData.Path, &p.network)
+	userPrivKey, err := libwallet.NewHDPrivateKeyFromString(
+		userKeyData.Serialized,
+		userKeyData.Path,
+		&p.network,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +58,11 @@ func (p *keyProvider) MuunPublicKey() (*libwallet.HDPublicKey, error) {
 		return nil, err
 	}
 
-	muunKey, err := libwallet.NewHDPublicKeyFromString(muunKeyData.Serialized, muunKeyData.Path, &p.network)
+	muunKey, err := libwallet.NewHDPublicKeyFromString(
+		muunKeyData.Serialized,
+		muunKeyData.Path,
+		&p.network,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -70,17 +79,21 @@ func (p *keyProvider) EncryptedMuunPrivateKey() (*libwallet.EncryptedPrivateKeyI
 	return libwallet.DecodeEncryptedPrivateKey(encodedKeyData)
 }
 
-func (p *keyProvider) DecryptMuunPrivateKey(recoveryCode string, encryptedKey *libwallet.EncryptedPrivateKeyInfo, network *libwallet.Network) (*libwallet.DecryptedPrivateKey, error) {
+func (p *keyProvider) DecryptMuunPrivateKey(
+	recoveryCode string,
+	encryptedKey *libwallet.EncryptedPrivateKeyInfo,
+	network *libwallet.Network,
+) (*libwallet.DecryptedPrivateKey, error) {
 	salt := encryptedKey.Salt
 	decryptionKey, err := libwallet.RecoveryCodeToKey(recoveryCode, salt)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to process recovery code: %w", err)
+		return nil, errors.Errorf("failed to process recovery code: %w", err)
 	}
 
 	decryptedKey, err := decryptionKey.DecryptKey(encryptedKey, network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt ke: %w", err)
+		return nil, errors.Errorf("failed to decrypt ke: %w", err)
 	}
 
 	return decryptedKey, nil

@@ -4,11 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	musig2v100 "github.com/btcsuite/btcd/btcec/v2/schnorr/musig2"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/go-errors/errors"
 )
 
 type bip32TweakStep struct {
@@ -18,12 +18,14 @@ type bip32TweakStep struct {
 	tweakBytes  [32]byte
 }
 
-// The following function receives an aggregatedKey and the unhardened
-// derivation steps to produce a list of MuSig KeyTweaks. Those tweaks are used
-// to produce a valid signature for the fresly derived key. To only derive the
-// xpub, BIP32 can be used with a special chaincode. See the tests or BIP328
-// for details.
-func getBip32TweaksForAggregatedKey(aggregatedKey *secp256k1.PublicKey, path []uint32) (*bip32TweakStep, []musig2v100.KeyTweakDesc, error) {
+// The following function receives an aggregatedKey and the unhardened derivation steps to produce a
+// list of MuSig KeyTweaks. Those tweaks are used to produce a valid signature for the fresly
+// derived key. To only derive the xpub, BIP32 can be used with a special chaincode.
+// See the tests or BIP328 for details.
+func getBip32TweaksForAggregatedKey(
+	aggregatedKey *secp256k1.PublicKey,
+	path []uint32,
+) (*bip32TweakStep, []musig2v100.KeyTweakDesc, error) {
 	// chainCode := SHA256("MuSig2MuSig2MuSig2")
 	chainCode := []byte{
 		0x86, 0x80, 0x87, 0xca, 0x02, 0xa6, 0xf9, 0x74,
@@ -61,11 +63,11 @@ func getBip32TweaksForAggregatedKey(aggregatedKey *secp256k1.PublicKey, path []u
 func (parent *bip32TweakStep) child(i uint32) (*bip32TweakStep, error) {
 	// Prevent derivation of children beyond the max allowed depth.
 	if parent.depth == 255 {
-		return nil, fmt.Errorf("trying to derive avobe max depth")
+		return nil, errors.Errorf("trying to derive avobe max depth")
 	}
 
 	if i >= 0x80000000 {
-		return nil, fmt.Errorf("trying to derive a hardened MuSig key")
+		return nil, errors.Errorf("trying to derive a hardened MuSig key")
 	}
 
 	// let data = serialize(parentPubKey) || serializeU32(i)
@@ -97,7 +99,7 @@ func (parent *bip32TweakStep) child(i uint32) (*bip32TweakStep, error) {
 	ilNum := new(btcec.ModNScalar)
 	overflows := ilNum.SetBytes((*[32]byte)(il))
 	if overflows > 0 {
-		return nil, fmt.Errorf("generated IL overflows P %d", overflows)
+		return nil, errors.Errorf("generated IL overflows P %d", overflows)
 	}
 
 	// Convert the serialized compressed parent public key into X

@@ -2,13 +2,14 @@ package nfc
 
 import (
 	"encoding/hex"
-	"errors"
-	"fmt"
+	"log/slog"
+
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/domain/nfc"
 	"github.com/muun/libwallet/service"
 	"github.com/muun/libwallet/service/model"
 	"github.com/muun/libwallet/storage"
-	"log/slog"
 )
 
 type SignMessageSecurityCardActionV2 struct {
@@ -36,7 +37,7 @@ func (ac *SignMessageSecurityCardActionV2) Run() error {
 
 	value, err := ac.keyValueStorage.Get(storage.KeySecurityCardPairingSlot)
 	if err != nil {
-		return fmt.Errorf("error loading security card info: %w", err)
+		return errors.Errorf("error loading security card info: %w", err)
 	}
 	if value == nil {
 		slog.Debug("doing automatic pairing")
@@ -62,22 +63,22 @@ func (ac *SignMessageSecurityCardActionV2) Run() error {
 	}
 	challengeResponse, err := ac.houstonService.ChallengeSecurityCardSign(request)
 	if err != nil {
-		return fmt.Errorf("error requesting a challenge from houston: %w", err)
+		return errors.Errorf("error requesting a challenge from houston: %w", err)
 	}
 
 	challenge, err := service.MapSecurityCardSignChallengeResponse(challengeResponse)
 	if err != nil {
-		return fmt.Errorf("fail to parse sign challenge response from houston: %w", err)
+		return errors.Errorf("fail to parse sign challenge response from houston: %w", err)
 	}
 
 	signChallengeResponse, err := ac.muunCard.SignChallenge(challenge, reasonBytes)
 	if err != nil {
-		return fmt.Errorf("error signing challenge: %w", err)
+		return errors.Errorf("error signing challenge: %w", err)
 	}
 
 	cardPublicKeyInHex := hex.EncodeToString(signChallengeResponse.CardPublicKey)
 	macInHex := hex.EncodeToString(signChallengeResponse.MAC)
-	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{
+	securityCardChallengeJson := model.SolveSecurityCardChallengeJson{ //nolint:staticcheck // TODO: var securityCardChallengeJson should be securityCardChallengeJSON
 		PublicKeyInHex: cardPublicKeyInHex,
 		MacInHex:       macInHex,
 	}
@@ -99,7 +100,7 @@ func (ac *SignMessageSecurityCardActionV2) Run() error {
 				}
 			}
 		}
-		return fmt.Errorf("error signing challenge: %w", err)
+		return errors.Errorf("error signing challenge: %w", err)
 	}
 
 	return nil

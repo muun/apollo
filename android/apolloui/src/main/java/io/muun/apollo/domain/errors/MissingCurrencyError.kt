@@ -13,6 +13,8 @@ class MissingCurrencyError(
     regionLocales: List<Locale> = listOf(),
 ) : MuunError(cause), PotentialBug {
 
+    override val classification = ErrorClassification.UNEXPECTED
+
     constructor(cause: UnknownCurrencyException) : this(cause, listOf()) // oh Java!!! OMG
 
     init {

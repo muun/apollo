@@ -31,18 +31,19 @@ class MetricsProvider @Inject constructor(
     private val systemInfoProvider: SystemInfoProvider,
     private val networkInfoProvider: NetworkInfoProvider,
     private val isRootedDeviceAction: IsRootedDeviceAction,
+    private val runtimeInfoProvider: RuntimeInfoProvider,
 ) {
 
     val isRootHint: Boolean by lazy { isRootedDeviceAction.isRooted() }
 
-    val isLowRamDevice: Boolean
-        get() = activityManagerInfoProvider.isLowRamDevice
+    val isLowRamDevice: Boolean by lazy { activityManagerInfoProvider.isLowRamDevice }
 
     val isBackgroundRestricted: Boolean
         get() = activityManagerInfoProvider.isBackgroundRestricted
 
-    val isLowMemoryKillReportSupported: Boolean
-        get() = activityManagerInfoProvider.isLowMemoryKillReportSupported
+    val isLowMemoryKillReportSupported: Boolean by lazy {
+        activityManagerInfoProvider.isLowMemoryKillReportSupported
+    }
 
     val exitReasons: List<ApplicationExitInfo>
         get() = activityManagerInfoProvider.exitReasons
@@ -68,59 +69,46 @@ class MetricsProvider @Inject constructor(
     val mobileRadioType: Int
         get() = telephonyInfoProvider.mobileRadioType
 
-    val androidId: String
-        get() = hardwareCapabilitiesProvider.androidId
+    val androidId: String by lazy { hardwareCapabilitiesProvider.androidId }
 
-    val drmClientIds: Map<String, String>
-        get() = hardwareCapabilitiesProvider.getDrmClientIds()
+    val drmClientIds: Map<String, String> by lazy { hardwareCapabilitiesProvider.getDrmClientIds() }
 
-    val bootCount: Int
-        get() = hardwareCapabilitiesProvider.bootCountDiscrete
+    val bootCount: Int by lazy { hardwareCapabilitiesProvider.bootCountDiscrete }
 
-    val glEsVersion: String
-        get() = hardwareCapabilitiesProvider.glEsVersion
+    val glEsVersion: String by lazy { hardwareCapabilitiesProvider.glEsVersion }
 
-    val installSourceInfo: InstallSourceInfo
-        get() = packageManagerInfoProvider.installSourceInfo
+    val installSourceInfo: InstallSourceInfo by lazy {
+        packageManagerInfoProvider.installSourceInfo
+    }
 
-    val appInfo: PackageManagerAppInfo
-        get() = packageManagerInfoProvider.appInfo
+    val appInfo: PackageManagerAppInfo by lazy { packageManagerInfoProvider.appInfo }
 
-    val deviceFeatures: PackageManagerDeviceFeatures
-        get() = packageManagerInfoProvider.deviceFeatures
+    val deviceFeatures: PackageManagerDeviceFeatures by lazy {
+        packageManagerInfoProvider.deviceFeatures
+    }
 
-    val signatureHash: String
-        get() = packageManagerInfoProvider.signatureHash
+    val signatureHash: String by lazy { packageManagerInfoProvider.signatureHash }
 
-    val firstInstallTimeInMs: Long
-        get() = packageManagerInfoProvider.firstInstallTimeInMs
+    val firstInstallTimeInMs: Long by lazy { packageManagerInfoProvider.firstInstallTimeInMs }
 
-    val buildInfo: BuildInfo
-        get() = buildInfoProvider.buildInfo
+    val buildInfo: BuildInfo by lazy { buildInfoProvider.buildInfo }
 
-    val deviceName: String
-        get() = buildInfoProvider.deviceName
+    val deviceName: String by lazy { buildInfoProvider.deviceName }
 
-    val deviceModel: String
-        get() = buildInfoProvider.deviceModel
+    val deviceModel: String by lazy { buildInfoProvider.deviceModel }
 
-    val quickEmProps: Int
-        get() = fileInfoProvider.quickEmProps
+    val quickEmProps: Int by lazy { fileInfoProvider.quickEmProps }
 
-    val emArchitecture: Int
-        get() = fileInfoProvider.emArchitecture
+    val emArchitecture: Int by lazy { fileInfoProvider.emArchitecture }
 
-    val appSize: Long
-        get() = fileInfoProvider.appSize
+    val appSize: Long by lazy { fileInfoProvider.appSize }
 
-    val securityEnhancedBuild: String
-        get() = systemCapabilitiesProvider.securityEnhancedBuild
+    val securityEnhancedBuild: String by lazy { systemCapabilitiesProvider.securityEnhancedBuild }
 
     val bridgeRootService: String
         get() = systemCapabilitiesProvider.bridgeRootService
 
-    val vbMeta: String
-        get() = systemCapabilitiesProvider.vbMeta
+    val vbMeta: String by lazy { systemCapabilitiesProvider.vbMeta }
 
     val totalInternalStorageInBytes: Long
         get() = hardwareCapabilitiesProvider.totalInternalStorageInBytes
@@ -128,8 +116,7 @@ class MetricsProvider @Inject constructor(
     val totalExternalStorageInBytes: List<Long>
         get() = hardwareCapabilitiesProvider.totalExternalStorageInBytes
 
-    val totalRamInBytes: Long
-        get() = hardwareCapabilitiesProvider.totalRamInBytes
+    val totalRamInBytes: Long by lazy { hardwareCapabilitiesProvider.totalRamInBytes }
 
     val usbConnected: Int
         get() = systemCapabilitiesProvider.usbConnected
@@ -146,8 +133,7 @@ class MetricsProvider @Inject constructor(
     val developerEnabled: Int
         get() = systemCapabilitiesProvider.developerEnabled
 
-    val appDatadir: String
-        get() = appInfoProvider.appDatadir
+    val appDatadir: String by lazy { appInfoProvider.appDatadir }
 
     val latestBackgroundTimes: List<BackgroundEvent>
         get() = appInfoProvider.latestBackgroundTimes
@@ -201,23 +187,50 @@ class MetricsProvider @Inject constructor(
     val androidMobileRxTraffic: Long
         get() = trafficStatsInfoProvider.androidMobileRxTraffic
 
-    val hasNfcFeature: Boolean
-        get() = nfcProvider.hasNfcFeature
+    val hasNfcFeature: Boolean by lazy { nfcProvider.hasNfcFeature }
 
-    val hasNfcAdapter: Boolean
-        get() = nfcProvider.hasNfcAdapter
+    val hasNfcAdapter: Boolean by lazy { nfcProvider.hasNfcAdapter }
 
     val isNfcEnabled: Boolean
         get() = nfcProvider.isNfcEnabled
 
-    val nfcAntennaPosition: List<Pair<Float, Float>>
-        get() = nfcProvider.nfcAntennaPosition
+    val nfcAntennaPosition: List<Pair<Float, Float>> by lazy { nfcProvider.nfcAntennaPosition }
 
-    val deviceSizeInMm: Pair<Int, Int>?
-        get() = nfcProvider.deviceSizeInMm
+    val deviceSizeInMm: Pair<Int, Int>? by lazy { nfcProvider.deviceSizeInMm }
 
-    val isDeviceFoldable: Boolean?
-        get() = nfcProvider.isDeviceFoldable
+    val isDeviceFoldable: Boolean? by lazy { nfcProvider.isDeviceFoldable }
+
+    val hasNfcHostCardEmulation: Int by lazy { nfcProvider.hasNfcHostCardEmulation }
+
+    val hasNfcOffHostCardEmulationUicc: Int by lazy {
+        nfcProvider.hasNfcOffHostCardEmulationUicc
+    }
+
+    val hasNfcOffHostCardEmulationEse: Int by lazy {
+        nfcProvider.hasNfcOffHostCardEmulationEse
+    }
+
+    val nfcExtendedApduSupportedEmpirical: Int
+        get() = nfcProvider.nfcExtendedApduSupportedEmpirical
+
+    val nfcMaxTransceiveLengthEmpirical: Int
+        get() = nfcProvider.nfcMaxTransceiveLengthEmpirical
+
+    val nfcConfigFilesPresent: List<String> by lazy { nfcProvider.nfcConfigFilesPresent }
+
+    val nfcChipIdentifier: String by lazy { nfcProvider.nfcChipIdentifier }
+
+    val nfcConfigFileHash: String by lazy { nfcProvider.nfcConfigFileHash }
+
+    val nfcExtendedApduSupportedReflected: Int by lazy {
+        nfcProvider.nfcExtendedApduSupportedReflected
+    }
+
+    val nfcMaxTransceiveLengthReflected: Int by lazy {
+        nfcProvider.nfcMaxTransceiveLengthReflected
+    }
+
+    val nfcReflectionFailureReason: String by lazy { nfcProvider.nfcReflectionFailureReason }
 
     val batteryLevel: Int
         get() = batteryInfoProvider.batteryLevel
@@ -240,11 +253,9 @@ class MetricsProvider @Inject constructor(
     val elapsedRealtime: Long
         get() = systemInfoProvider.elapsedRealtime
 
-    val internalLevel: Pair<Int, Int>
-        get() = systemCapabilitiesProvider.internalLevel
+    val internalLevel: Pair<Int, Int> by lazy { systemCapabilitiesProvider.internalLevel }
 
-    val applicationId: String
-        get() = packageManagerInfoProvider.applicationId
+    val applicationId: String by lazy { packageManagerInfoProvider.applicationId }
 
     val defaultFsDate: Long
         get() = fileInfoProvider.defaultDate
@@ -261,9 +272,34 @@ class MetricsProvider @Inject constructor(
     val hasNewEntriesInAppExternalStorage: Int
         get() = fileInfoProvider.hasNewEntriesInAppExternalStorage
 
-    val bootOffset: Int
-        get() = hardwareCapabilitiesProvider.bootOffset
+    val bootOffset: Int by lazy { hardwareCapabilitiesProvider.bootOffset }
 
-    val bootId: String
-        get() = fileInfoProvider.bootId
+    val bootId: String by lazy { fileInfoProvider.bootId }
+
+    val extraStackElements: List<String>
+        get() = runtimeInfoProvider.extraStackElements
+
+    val uidSharedStatus: Int by lazy { runtimeInfoProvider.uidSharedStatus }
+
+    val widevineSecurityLevel: String by lazy { hardwareCapabilitiesProvider.widevineSecurityLevel }
+
+    val widevineMajorVersion: Int by lazy { hardwareCapabilitiesProvider.widevineMajorVersion }
+
+    val runtimeExternalPackages: List<String> by lazy { runtimeInfoProvider.externalPackages }
+
+    val appOpsPackageName: String by lazy { runtimeInfoProvider.appOpsPackageName }
+
+    val restrictiveSdkStatus: Int by lazy { runtimeInfoProvider.restrictiveSdkStatus }
+
+    val allSignatureHashes: List<String> by lazy { packageManagerInfoProvider.allSignatureHashes }
+
+    val archiveSignatureHashes: List<String> by lazy { packageManagerInfoProvider.archiveSignatureHashes }
+
+    val appBasePackageName: String by lazy { runtimeInfoProvider.appBasePackageName }
+
+    val isPlainTextDrmId: Int by lazy { hardwareCapabilitiesProvider.isPlainTextDrmId }
+
+    val contextSwapDrmId: String by lazy { hardwareCapabilitiesProvider.contextSwapDrmId }
+
+    val drmIdNativeHook: Int by lazy { runtimeInfoProvider.drmIdNativeHook }
 }

@@ -45,7 +45,29 @@ object Email {
         val subject: String = emailReport.subject(subjectPrefix)
         val body: String = emailReport.body
 
-        return composeEmail(arrayOf("support@muun.com"), subject, body)
+        val intent = composeEmail(arrayOf("support@muun.com"), subject, body)
+
+        // For now, Email Error reports only support 1 attachment.
+        if (emailReport.attachmentUris.isNotEmpty()) {
+            intent.putExtra(Intent.EXTRA_STREAM, emailReport.attachmentUris.first())
+        }
+        return intent
+    }
+
+    /**
+     * Build an Android Intent to send a debug data email with multiple attachments.
+     */
+    fun buildDebugDataEmailIntent(context: Context, emailReport: EmailReport): Intent {
+        val subjectPrefix: String = context.getString(R.string.error_report_email_subject)
+        val subject: String = emailReport.subject(subjectPrefix)
+        val body: String = emailReport.body
+
+        return composeEmailWithMultipleAttachments(
+            arrayOf("mobile@muun.com"),
+            subject,
+            body,
+            ArrayList(emailReport.attachmentUris),
+        )
     }
 
     /**
@@ -77,6 +99,27 @@ object Email {
         intent.putExtra(Intent.EXTRA_EMAIL, addresses)
         intent.putExtra(Intent.EXTRA_SUBJECT, subject)
         intent.putExtra(Intent.EXTRA_TEXT, body)
+        return intent
+    }
+
+    private fun composeEmailWithMultipleAttachments(
+        addresses: Array<String>,
+        subject: String,
+        body: String,
+        attachmentUris: ArrayList<Uri>,
+    ): Intent {
+
+        // 1. Create the target share intent for multiple attachments
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE)
+        intent.putExtra(Intent.EXTRA_EMAIL, addresses)
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject)
+        intent.putExtra(Intent.EXTRA_TEXT, body)
+        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, attachmentUris)
+
+        // 2. Create the selector intent targeting strictly mail clients and attach it to main
+        // sharing intent. Crucial to only target email apps.
+        intent.selector = getSendEmailIntent()
+
         return intent
     }
 }

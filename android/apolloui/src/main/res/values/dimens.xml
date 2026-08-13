@@ -34,4 +34,20 @@
 
     <!--  Calculated as: ?android/?android:actionBarSize + gradientHeight = 56dp + 10dp  -->
     <dimen name="muun_header_plus_shadow_height">66dp</dimen>
+
+    <!-- SecurityCards - FullSpecs card background -->
+    <dimen name="sc_spec_card_horizontal_inset">24dp</dimen>
+    <dimen name="sc_spec_card_inner_padding">12dp</dimen>
+    <dimen name="sc_spec_card_top_offset">20dp</dimen>
+    <dimen name="sc_spec_card_corner_radius">5dp</dimen>
+
+    <dimen name="security_cards_checkout_website_pill_icon_size">20dp</dimen>
+    <dimen name="security_cards_checkout_website_pill_min_height">40dp</dimen>
+    <dimen name="security_cards_checkout_website_pill_stroke_width">1dp</dimen>
+    <dimen name="security_cards_checkout_website_pill_padding_start">16dp</dimen>
+    <dimen name="security_cards_checkout_website_pill_padding_end">8dp</dimen>
+    <dimen name="security_cards_checkout_website_pill_margin_end">16dp</dimen>
+
+    <!-- SecurityCards - Connected to website dialog -->
+    <dimen name="security_cards_connected_to_website_dialog_content_corner_radius">20dp</dimen>
 </resources>

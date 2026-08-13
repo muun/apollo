@@ -2,18 +2,20 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/muun/libwallet/service/model"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/service/model"
 )
 
 // 127.0.0.1 instead of localhost to avoid problems with network interfaces in local env
-const houstonUrl string = "http://127.0.0.1:8080"
+const houstonUrl string = "http://127.0.0.1:8080" //nolint:staticcheck // TODO: const houstonUrl should be houstonURL
 
 func defaultProvider() *TestProvider {
 	return &TestProvider{
@@ -57,7 +59,7 @@ func waitForHealthcheck() error {
 	deadline := time.Now().Add(timeout)
 	for {
 		if time.Now().After(deadline) {
-			return fmt.Errorf("healthcheck failed after %s", timeout)
+			return errors.Errorf("healthcheck failed after %s", timeout)
 		}
 
 		houstonService := NewHoustonService(defaultProvider())
@@ -223,7 +225,7 @@ func TestValidEndpointAndValidAuthToken_Integration(t *testing.T) {
 	houstonService := NewHoustonService(&provider)
 
 	// Create first session to get and set a valid AuthToken
-	sessionJson := model.CreateFirstSessionJson{
+	sessionJson := model.CreateFirstSessionJson{ //nolint:staticcheck // TODO: var sessionJson should be sessionJSON
 		Client: model.ClientJson{
 			Type:        provider.ClientType,
 			BuildType:   "debug",
@@ -234,11 +236,13 @@ func TestValidEndpointAndValidAuthToken_Integration(t *testing.T) {
 		GcmToken:        nil,
 		PrimaryCurrency: "USD",
 		BasePublicKey: model.PublicKeyJson{
-			Key:  "tpubDAygaiK3eZ9hpC3aQkxtu5fGSTK4P7QKTwwGExN8hGZytjpEfsrUjtM8ics8Y7YLrvf1GLBZTFjcpmkEP1KKTRyo8D2ku5zz49bRudDrngd",
+			Key:  "tpubDAygaiK3eZ9hpC3aQkxtu5fGSTK4P7QKTwwGExN8hGZytjpEfsrUjtM8ics8Y7YLrvf1GLBZTFjcpmkEP1KKTRyo8D2ku5zz49bRudDrngd", //nolint:lll
 			Path: "m/schema:1'/recovery:1'",
 		},
 	}
-	sessionOkJson, err := houstonService.CreateFirstSession(sessionJson)
+	sessionOkJson, err := houstonService.CreateFirstSession( //nolint:staticcheck // TODO: var sessionOkJson should be sessionOkJSON
+		sessionJson,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

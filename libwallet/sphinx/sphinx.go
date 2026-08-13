@@ -2,12 +2,11 @@ package sphinx
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btclog"
+	"github.com/go-errors/errors"
 	lndsphinx "github.com/lightningnetwork/lightning-onion"
 	"github.com/lightningnetwork/lnd/htlcswitch/hop"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -25,16 +24,20 @@ func Validate(
 	net *chaincfg.Params,
 ) error {
 	hop.UseLogger(btclog.Disabled)
-	router := lndsphinx.NewRouter(&lndsphinx.PrivKeyECDH{PrivKey: nodeKey}, net, lndsphinx.NewMemoryReplayLog())
+	router := lndsphinx.NewRouter(
+		&lndsphinx.PrivKeyECDH{PrivKey: nodeKey},
+		net,
+		lndsphinx.NewMemoryReplayLog(),
+	)
 	if err := router.Start(); err != nil {
-		return fmt.Errorf("could not start router for validating onion blob: %w", err)
+		return errors.Errorf("could not start router for validating onion blob: %w", err)
 	}
 	onionProcessor := hop.NewOnionProcessor(router)
 	err := onionProcessor.Start()
 	if err != nil {
 		return err
 	}
-	defer onionProcessor.Stop()
+	defer onionProcessor.Stop() //nolint:errcheck // TODO: check error
 
 	iterator, err := onionProcessor.ReconstructHopIterator(
 		bytes.NewReader(onionBlob),
@@ -44,7 +47,7 @@ func Validate(
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed decode sphinx due to %w", err)
+		return errors.Errorf("failed decode sphinx due to %w", err)
 	}
 	payload, _, err := iterator.HopPayload()
 	if err != nil {
@@ -53,14 +56,14 @@ func Validate(
 
 	amountToForward := payload.ForwardingInfo().AmountToForward
 	if amount != 0 && amountToForward > amount {
-		return fmt.Errorf(
+		return errors.Errorf(
 			"sphinx payment amount does not match (%v != %v)", amount, amountToForward,
 		)
 	}
 
 	// We require TLV onion
 	if payload.MPP == nil {
-		return fmt.Errorf("TLV onion is missing")
+		return errors.Errorf("TLV onion is missing")
 	}
 
 	// We require payment secret
@@ -72,7 +75,11 @@ func Validate(
 	// We don't accept multipart
 	total := payload.MultiPath().TotalMsat()
 	if amountToForward < total {
-		return fmt.Errorf("payment is multipart. forwarded amt = %v, total amt = %v", amountToForward, total)
+		return errors.Errorf(
+			"payment is multipart. forwarded amt = %v, total amt = %v",
+			amountToForward,
+			total,
+		)
 	}
 
 	return nil

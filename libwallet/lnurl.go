@@ -1,9 +1,11 @@
 package libwallet
 
 import (
-	"github.com/lightningnetwork/lnd/lnwire"
-	"github.com/muun/libwallet/lnurl"
 	"reflect"
+
+	"github.com/lightningnetwork/lnd/lnwire"
+
+	"github.com/muun/libwallet/lnurl"
 )
 
 type LNURLEvent struct {

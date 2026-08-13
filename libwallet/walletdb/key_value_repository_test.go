@@ -7,7 +7,7 @@ import (
 )
 
 // TestKeyValueRepositoryTimestampsAreUTC verifies that every write method in
-// GORMKeyValueRepository stores timestamps with a UTC timezone indicator ("Z").
+// keyValueRepository stores timestamps with a UTC timezone indicator ("Z").
 // This guards against regressions where time.Now() without .UTC() would produce
 // a local-timezone timestamp.
 func TestKeyValueRepositoryTimestampsAreUTC(t *testing.T) {

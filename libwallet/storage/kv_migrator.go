@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"fmt"
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet/walletdb"
 )
@@ -35,7 +35,10 @@ func (m *Migration) run(tx walletdb.KeyValueRepository, schema map[string]Classi
 }
 
 // RunKeyValueMigrations executes the entire migration plan, returning the final schema.
-func RunKeyValueMigrations(dataFilePath string, migrations []Migration) (map[string]Classification, error) {
+func RunKeyValueMigrations(
+	db *walletdb.DB,
+	migrations []Migration,
+) (map[string]Classification, error) {
 
 	// Validate that all CustomChange IDs are unique across all migrations.
 	seenIDs := make(map[string]bool)
@@ -43,7 +46,11 @@ func RunKeyValueMigrations(dataFilePath string, migrations []Migration) (map[str
 		for _, change := range migration.Changes {
 			if cc, ok := change.(CustomChange); ok {
 				if seenIDs[cc.ID] {
-					return nil, fmt.Errorf("duplicate custom change id '%s' in migration '%s'", cc.ID, migration.Description)
+					return nil, errors.Errorf(
+						"duplicate custom change id '%s' in migration '%s'",
+						cc.ID,
+						migration.Description,
+					)
 				}
 				seenIDs[cc.ID] = true
 			}
@@ -53,24 +60,18 @@ func RunKeyValueMigrations(dataFilePath string, migrations []Migration) (map[str
 	// Build the final schema in memory by running all changes without DB operations.
 	// This is done upfront to ensure we can return a valid schema even if DB operations fail.
 	finalSchema := make(map[string]Classification)
-	var discardedDbOperations []func(walletdb.KeyValueRepository) error
+	var discardedDbOperations []func(walletdb.KeyValueRepository) error //nolint:staticcheck // TODO: var discardedDbOperations should be discardedDBOperations
 	for i := range migrations {
 		for _, change := range migrations[i].Changes {
 			change.apply(finalSchema, &discardedDbOperations)
 		}
 	}
 
-	// Open DB and get current state.
-	db, err := walletdb.Open(dataFilePath)
-	if err != nil {
-		return finalSchema, fmt.Errorf("failed to open database: %w", err)
-	}
-	defer db.Close()
-
+	// Get current schema version.
 	schemaStateRepository := db.NewKVSchemaStateRepository()
 	currentVersion, err := schemaStateRepository.GetCurrentSchemaVersion()
 	if err != nil {
-		return finalSchema, fmt.Errorf("failed to get current schema version: %w", err)
+		return finalSchema, errors.Errorf("failed to get current schema version: %w", err)
 	}
 
 	// Early exit if no new migrations are needed.
@@ -80,7 +81,7 @@ func RunKeyValueMigrations(dataFilePath string, migrations []Migration) (map[str
 
 	// Re-build the schema state up to the current version before starting migrations.
 	currentSchema := make(map[string]Classification)
-	for i := 0; i < currentVersion; i++ {
+	for i := 0; i < currentVersion; i++ { //nolint:modernize // TODO: use range over int
 		for _, change := range migrations[i].Changes {
 			change.apply(currentSchema, &discardedDbOperations)
 		}
@@ -91,29 +92,27 @@ func RunKeyValueMigrations(dataFilePath string, migrations []Migration) (map[str
 		migration := &migrations[i]
 		targetVersion := i + 1
 
-		dbTx := db.Gorm().Begin()
-		if dbTx.Error != nil {
-			return finalSchema, fmt.Errorf("failed to begin transaction for migration %d: %w", targetVersion, dbTx.Error)
-		}
-
-		txRepository := walletdb.NewKeyValueRepository(dbTx)
-		txSchemaStateRepository := walletdb.NewKVSchemaStateRepository(dbTx)
-
-		err = migration.run(txRepository, currentSchema)
+		err = db.WithTx(func(txDB *walletdb.DB) error {
+			if err := migration.run(txDB.NewKeyValueRepository(), currentSchema); err != nil {
+				return errors.Errorf(
+					"migration %d (%s) failed: %w",
+					targetVersion,
+					migration.Description,
+					err,
+				)
+			}
+			schemaRepo := txDB.NewKVSchemaStateRepository()
+			if err := schemaRepo.BumpSchemaVersion(targetVersion); err != nil {
+				return errors.Errorf(
+					"failed to bump schema version to %d: %w",
+					targetVersion,
+					err,
+				)
+			}
+			return nil
+		})
 		if err != nil {
-			dbTx.Rollback()
-			return finalSchema, fmt.Errorf("migration %d (%s) failed: %w", targetVersion, migration.Description, err)
-		}
-
-		err = txSchemaStateRepository.BumpSchemaVersion(targetVersion)
-		if err != nil {
-			dbTx.Rollback()
-			return finalSchema, fmt.Errorf("failed to bump schema version to %d: %w", targetVersion, err)
-		}
-
-		err = dbTx.Commit().Error
-		if err != nil {
-			return finalSchema, fmt.Errorf("failed to commit transaction for migration %d: %w", targetVersion, err)
+			return finalSchema, err
 		}
 	}
 

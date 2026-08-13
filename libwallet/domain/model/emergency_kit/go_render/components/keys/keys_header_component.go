@@ -19,7 +19,10 @@ type KeysHeaderComponent struct {
 	Translations *assets.Translations
 }
 
-func NewKeysHeaderComponent(pdf *emergency_kit.PdfExtensions, translations *assets.Translations) *KeysHeaderComponent {
+func NewKeysHeaderComponent(
+	pdf *emergency_kit.PdfExtensions,
+	translations *assets.Translations,
+) *KeysHeaderComponent {
 	return &KeysHeaderComponent{
 		pdf:          pdf,
 		Translations: translations,
@@ -31,13 +34,18 @@ func (r *KeysHeaderComponent) Height() float64 {
 	textWidth := r.pdf.GetDrawablePageWidth() - iconTrailing
 
 	assets.SetKeysHeaderSubtitlesFont(r.pdf.Fpdf)
-	fullText := r.Translations.Keys.EncryptedBackupDesc1 + " " + r.Translations.Keys.EncryptedBackupDesc2
-	subtitleLines := r.pdf.LineCountWithLetterSpacing(textWidth, fullText, assets.BodyLetterSpacing)
+	fullText := r.Translations.Keys.EncryptedBackupDesc1 +
+		" " + r.Translations.Keys.EncryptedBackupDesc2
+	subtitleLines := r.pdf.LineCountWithLetterSpacing(
+		textWidth, fullText, assets.BodyLetterSpacing,
+	)
 	if subtitleLines < 2 {
 		subtitleLines = 2
 	}
 
-	totalTextHeightWithSpaces := assets.KeysSectionTitleLineHeight + titleToSubtitleSpace + subtitleLines*assets.BodyParagraphLineHeight
+	totalTextHeightWithSpaces := assets.KeysSectionTitleLineHeight +
+		titleToSubtitleSpace +
+		subtitleLines*assets.BodyParagraphLineHeight
 
 	return assets.StandardHorizontalMargin + totalTextHeightWithSpaces + subtitleToBottomSpace
 }
@@ -47,7 +55,17 @@ func (r *KeysHeaderComponent) Render() {
 
 	iconX := assets.StandardHorizontalMargin + iconMarginX
 	iconY := startY + assets.StandardHorizontalMargin + iconMarginTop
-	r.pdf.Image(assets.PadlockImageName, iconX, iconY, assets.PadlockIconSize, assets.PadlockIconSize, false, "", 0, "")
+	r.pdf.Image(
+		assets.PadlockImageName,
+		iconX,
+		iconY,
+		assets.PadlockIconSize,
+		assets.PadlockIconSize,
+		false,
+		"",
+		0,
+		"",
+	)
 
 	titleX := iconX + assets.PadlockIconSize
 	relativeToComponentYTitleY := startY + titleY
@@ -55,17 +73,43 @@ func (r *KeysHeaderComponent) Render() {
 	assets.SetKeysSectionTitleFont(r.pdf.Fpdf)
 	assets.SetTitleColor(r.pdf.Fpdf)
 	r.pdf.SetXY(titleX, relativeToComponentYTitleY)
-	r.pdf.CellFormat(0, assets.KeysSectionTitleLineHeight, r.Translations.Keys.EncryptedBackupTitle, "", 2, "L", false, 0, "")
+	r.pdf.CellFormat(
+		0,
+		assets.KeysSectionTitleLineHeight,
+		r.Translations.Keys.EncryptedBackupTitle,
+		"",
+		2,
+		"L",
+		false,
+		0,
+		"",
+	)
 
 	subtitleY := r.pdf.GetY() + titleToSubtitleSpace
 	textWidth := r.pdf.GetDrawablePageWidth() - (titleX - assets.StandardHorizontalMargin)
 
 	parts := []emergency_kit.TextPart{
-		{Text: r.Translations.Keys.EncryptedBackupDesc1, SetFont: assets.SetKeysHeaderSubtitlesFont, SetColor: assets.SetSecondaryTextColor},
-		{Text: r.Translations.Keys.EncryptedBackupDesc2, SetFont: assets.SetKeysHeaderSubtitleBoldFont, SetColor: assets.SetTitleColor},
+		{
+			Text:     r.Translations.Keys.EncryptedBackupDesc1,
+			SetFont:  assets.SetKeysHeaderSubtitlesFont,
+			SetColor: assets.SetSecondaryTextColor,
+		},
+		{
+			Text:     r.Translations.Keys.EncryptedBackupDesc2,
+			SetFont:  assets.SetKeysHeaderSubtitleBoldFont,
+			SetColor: assets.SetTitleColor,
+		},
 	}
 
-	_ = r.pdf.RenderMultiStyledText(titleX, subtitleY, textWidth, assets.BodyParagraphLineHeight, parts, assets.BodyLetterSpacing, 2)
+	_ = r.pdf.RenderMultiStyledText(
+		titleX,
+		subtitleY,
+		textWidth,
+		assets.BodyParagraphLineHeight,
+		parts,
+		assets.BodyLetterSpacing,
+		2,
+	)
 
 	r.pdf.SetY(startY + r.Height())
 }

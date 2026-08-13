@@ -70,7 +70,7 @@ func TestOpen(t *testing.T) {
 		panic(err)
 	}
 
-	db, err := Open(path.Join(dir, "test.db"))
+	db, err := open(path.Join(dir, "test.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,13 +83,15 @@ func TestInvoices(t *testing.T) {
 		panic(err)
 	}
 
-	db, err := Open(path.Join(dir, "test.db"))
+	db, err := open(path.Join(dir, "test.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
 
-	shortChanId := uint64((math.MaxInt64 - 5) | (1 << 63))
+	shortChanId := uint64( //nolint:staticcheck // TODO: var shortChanId should be shortChanID
+		(math.MaxInt64 - 5) | (1 << 63),
+	)
 	paymentHash := randomBytes(32)
 
 	err = db.CreateInvoice(&Invoice{
@@ -150,13 +152,13 @@ func TestBusyTimeout(t *testing.T) {
 	dbPath := path.Join(dir, "test.db")
 
 	// Open and close connection to ensure migrations are executed before acquiring any lock.
-	db, err := Open(dbPath)
+	db, err := open(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	db.Close()
 
-	db, err = Open(dbPath)
+	db, err = open(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,9 +187,9 @@ type lockHolder struct {
 	stdin io.WriteCloser
 }
 
-// startLockHolder re-executes the test binary as a subprocess that acquires an exclusive SQLite lock on dbPath
-// and holds it until released.
-// It returns once the subprocess has signalled that the lock is held.
+// startLockHolder re-executes the test binary as a subprocess that acquires an exclusive SQLite
+// lock on dbPath and holds it until released. It returns once the subprocess has signalled that the
+// lock is held.
 //
 // A separate process is required because SQLite uses POSIX fcntl() advisory locks,
 // which are per open file description.
@@ -203,7 +205,7 @@ func startLockHolder(t *testing.T, dbPath string) *lockHolder {
 		t.Fatal(err)
 	}
 
-	cmd := exec.Command(exe)
+	cmd := exec.Command(exe) //nolint:noctx // TODO: use exec.CommandContext
 	cmd.Env = append(os.Environ(), "LOCK_HOLDER_DB_PATH="+dbPath)
 
 	stdout, err := cmd.StdoutPipe()

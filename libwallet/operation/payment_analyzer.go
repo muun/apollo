@@ -1,11 +1,11 @@
 package operation
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/btcsuite/btcd/btcutil"
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet/fees"
 )
 
@@ -29,8 +29,8 @@ import (
 // 	collectAmount make `OutputAmount > uxtoBalance`. Hence it is an `StatusUnpayable`.
 // - We don't allow TFFA for LEND swaps (don't want to lend money if you're taking it all away)
 // - FeeCalculator DOES NOT return error when amount > balance
-// 		- Instead we return the fee it would take to spend all utxos and delegate to the caller the
-//		 task of checking if that is spendable with the given amount
+// 		- Instead we return the fee it would take to spend all utxos and delegate to the
+//		 caller the task of checking if that is spendable with the given amount
 //    	- This is to avoid using go error handling
 //	- We finally renamed sweepFee to outputPadding since that's its only use. Here's how it works:
 //    	- Only makes sense for swaps
@@ -52,11 +52,16 @@ type PaymentToAddress struct {
 }
 
 type PaymentToInvoice struct {
-	TakeFeeFromAmount     bool
-	AmountInSat           int64
-	SwapFees              *fees.SwapFees              // Nullable before we know the paymentAmount for amountless invoice
-	BestRouteFees         []fees.BestRouteFees        // Nullable when we know the amount beforehand (invoice with amount)
-	FundingOutputPolicies *fees.FundingOutputPolicies // Nullable when we know the amount beforehand (invoice with amount)
+	TakeFeeFromAmount bool
+	AmountInSat       int64
+	// Nullable before we know the paymentAmount for amountless invoice
+	SwapFees *fees.SwapFees
+	// Nullable when we know the amount beforehand
+	// (invoice with amount)
+	BestRouteFees []fees.BestRouteFees
+	// Nullable when we know the amount beforehand
+	// (invoice with amount)
+	FundingOutputPolicies *fees.FundingOutputPolicies
 }
 
 type PaymentAnalyzer struct {
@@ -116,14 +121,18 @@ const (
 	AnalysisStatusUnpayable                AnalysisStatus = "Unpayable"
 )
 
-// PaymentAnalysis encodes whether a payment can be made or not and some important extra metadata about the payment.
+// PaymentAnalysis encodes whether a payment can be made or not and some important extra metadata
+// about the payment.
 type PaymentAnalysis struct {
-	Status        AnalysisStatus // encodes the result of a payment's analysis
-	AmountInSat   int64          // payment amount (e.g the amount the recipient will receive)
-	FeeTotalInSat int64          // encodes the onchain total fee (other fees may apply, e.g routing/lightning fee)
+	Status      AnalysisStatus // encodes the result of a payment's analysis
+	AmountInSat int64          // payment amount (e.g the amount the recipient will receive)
+	// encodes the onchain total fee (other fees may apply, e.g routing/lightning fee)
+	FeeTotalInSat int64
 	FeeBumpInSat  int64          // fee bump to apply CPFP in unconfirmed utxos
 	SwapFees      *fees.SwapFees // metadata related to the swap (if one exists for payment)
-	TotalInSat    int64          // AmountInSat + fees (may include other than FeeTotalInSat). May provide extra information in case of error status (e.g payment can't be made).
+	// AmountInSat + fees (may include other than FeeTotalInSat). May provide extra information in case
+	// of error status (e.g payment can't be made).
+	TotalInSat int64
 }
 
 func NewPaymentAnalyzer(
@@ -159,7 +168,11 @@ func (a *PaymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis
 		}, nil
 	}
 	if payment.TakeFeeFromAmount && payment.AmountInSat != a.totalBalance() {
-		return nil, fmt.Errorf("amount (%v) != userBalance (%v) for TFFA", payment.AmountInSat, a.totalBalance())
+		return nil, errors.Errorf(
+			"amount (%v) != userBalance (%v) for TFFA",
+			payment.AmountInSat,
+			a.totalBalance(),
+		)
 	}
 
 	if payment.TakeFeeFromAmount {
@@ -168,7 +181,9 @@ func (a *PaymentAnalyzer) ToAddress(payment *PaymentToAddress) (*PaymentAnalysis
 	return a.analyzeFeeFromRemainingBalance(payment)
 }
 
-func (a *PaymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFeeFromAmount(
+	payment *PaymentToAddress,
+) (*PaymentAnalysis, error) {
 	fee, feeBump := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, true)
 
 	total := payment.AmountInSat
@@ -197,7 +212,9 @@ func (a *PaymentAnalyzer) analyzeFeeFromAmount(payment *PaymentToAddress) (*Paym
 	}, nil
 }
 
-func (a *PaymentAnalyzer) analyzeFeeFromRemainingBalance(payment *PaymentToAddress) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFeeFromRemainingBalance(
+	payment *PaymentToAddress,
+) (*PaymentAnalysis, error) {
 	fee, feeBump := a.feeCalculator.Fee(payment.AmountInSat, payment.FeeRateInSatsPerVByte, false)
 	total := payment.AmountInSat + fee
 
@@ -234,10 +251,16 @@ func (a *PaymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis
 	}
 	if payment.TakeFeeFromAmount {
 		if payment.BestRouteFees == nil {
-			return nil, errors.New("fixed amount swap can't be TFFA since that would change the amount")
+			return nil, errors.New(
+				"fixed amount swap can't be TFFA since that would change the amount",
+			)
 		}
 		if payment.AmountInSat != a.totalBalance() {
-			return nil, fmt.Errorf("amount (%v) != userBalance (%v) for TFFA", payment.AmountInSat, a.totalBalance())
+			return nil, errors.Errorf(
+				"amount (%v) != userBalance (%v) for TFFA",
+				payment.AmountInSat,
+				a.totalBalance(),
+			)
 		}
 	}
 
@@ -260,25 +283,34 @@ func (a *PaymentAnalyzer) ToInvoice(payment *PaymentToInvoice) (*PaymentAnalysis
 	}
 
 	if payment.SwapFees == nil {
-		return nil, fmt.Errorf("payment is missing required swap fees data")
+		return nil, errors.Errorf("payment is missing required swap fees data")
 	}
 
 	return a.analyzeFixedAmountSwap(payment, payment.SwapFees)
 }
 
-func (a *PaymentAnalyzer) analyzeFixedAmountSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeFixedAmountSwap(
+	payment *PaymentToInvoice,
+	swapFees *fees.SwapFees,
+) (*PaymentAnalysis, error) {
 	switch swapFees.DebtType {
 	case fees.DebtTypeLend:
 		return a.analyzeLendSwap(payment, swapFees)
 	case fees.DebtTypeCollect:
 		fallthrough
 	case fees.DebtTypeNone:
-		return a.analyzeCollectSwap(payment, swapFees) // a non-debt swap is just a collect swap with debtAmount = 0
+		return a.analyzeCollectSwap(
+			payment,
+			swapFees,
+		) // a non-debt swap is just a collect swap with debtAmount = 0
 	}
-	return nil, fmt.Errorf("unsupported debt type: %v", swapFees.DebtType)
+	return nil, errors.Errorf("unsupported debt type: %v", swapFees.DebtType)
 }
 
-func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+func (a *PaymentAnalyzer) analyzeLendSwap(
+	payment *PaymentToInvoice,
+	swapFees *fees.SwapFees,
+) (*PaymentAnalysis, error) {
 
 	amount := payment.AmountInSat
 	total := amount + int64(swapFees.RoutingFee)
@@ -304,9 +336,12 @@ func (a *PaymentAnalyzer) analyzeLendSwap(payment *PaymentToInvoice, swapFees *f
 	}, nil
 }
 
-// Analyze non LEND swaps (e.g both COLLECT and NON-DEBT swaps), understanding that both cases warrant
-// the same analysis. A non-debt swap is just a collect swap with debtAmount = 0.
-func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees *fees.SwapFees) (*PaymentAnalysis, error) {
+// Analyze non LEND swaps (e.g both COLLECT and NON-DEBT swaps), understanding that both cases
+// warrant the same analysis. A non-debt swap is just a collect swap with debtAmount = 0.
+func (a *PaymentAnalyzer) analyzeCollectSwap(
+	payment *PaymentToInvoice,
+	swapFees *fees.SwapFees,
+) (*PaymentAnalysis, error) {
 
 	outputAmount := int64(swapFees.OutputAmount)
 	collectAmount := int64(swapFees.DebtAmount)
@@ -317,8 +352,11 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 		collectAmount
 
 	if outputAmount != expectedOutputAmount {
-		return nil, fmt.Errorf(
-			"swap integrity check failed (outputAmount=%v, original_amount=%v, routing_fee=%v, output_padding=%v, collect_amount=%v)",
+		return nil, errors.Errorf(
+			"swap integrity check failed"+
+				" (outputAmount=%v, original_amount=%v,"+
+				" routing_fee=%v, output_padding=%v,"+
+				" collect_amount=%v)",
 			outputAmount,
 			payment.AmountInSat,
 			int64(swapFees.RoutingFee),
@@ -361,11 +399,12 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 // analyzeTFFAAmountlessInvoiceSwap takes care of the insurmountable task of deciding whether a take
 // take fee from amount payment for an amountless invoice swap can be made, and (if it can) what are
 // the fees and the destination/payment amount.
-// This is particularly tricky since we have kind of a circular dependency: we don't know the payment amount which
-// determines the fees (on-chain and lightning), and we need both to determine the number of confirmations required for
-// the swap, which affects the on-chain fee, which affects the amount (since this is TFFA).
-// For this implementation built from the assumptions that 0-conf on-chain fees are lower than 1-conf fees
-// (since we don't have to wait for a block to make the payment).
+// This is particularly tricky since we have kind of a circular dependency: we don't know the
+// payment amount which determines the fees (on-chain and lightning), and we need both to determine
+// the number of confirmations required for the swap, which affects the on-chain fee, which affects
+// the amount (since this is TFFA).
+// For this implementation built from the assumptions that 0-conf on-chain fees are lower than
+// 1-conf fees (since we don't have to wait for a block to make the payment).
 // Here we go:
 // 1. We calculate the on-chain fee for a 0-conf swap spending all funds
 //   - If that fee is greater than our balance -> payment can't be made (VERY low balance scenario)
@@ -373,12 +412,16 @@ func (a *PaymentAnalyzer) analyzeCollectSwap(payment *PaymentToInvoice, swapFees
 // 2. We calculate the amount, routing fee and on-chain fee for a 0-conf TFFA swap
 // 3. We determine the number of confirmations required for the calculated amount and routing fee.
 //   - If 0-conf -> we're good to continue
-//   - If 1-conf -> we perform step 2 for a 1-conf TFF swap (re calculate amount, routing fee and on-chain fee)
+//   - If 1-conf -> we perform step 2 for a 1-conf TFF swap (re calculate amount, routing fee and
+//     on-chain fee)
 //
 // 4. If amount <= 0 -> payment can't be made
 // If amount > 0 -> AWESOME! That's the payment amount.
-// 5. We determine the params of the funding output (SwapFees) and perform final checks to decide if payment can be made
-func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInvoice) (*PaymentAnalysis, error) {
+// 5. We determine the params of the funding output (SwapFees) and perform final checks to decide if
+// payment can be made
+func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(
+	payment *PaymentToInvoice,
+) (*PaymentAnalysis, error) {
 	zeroConfFeeRate, err := a.feeWindow.SwapFeeRate(0)
 
 	if err != nil {
@@ -398,7 +441,8 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 
 	params, err := a.computeParamsForTFFASwap(payment, 0)
 	if err != nil {
-		// This LITERALLY can never happen, as only source of error for computeParamsForTFFASwap are:
+		// This LITERALLY can never happen, as only source of error for
+		// computeParamsForTFFASwap are:
 		//  - negative conf target (we're using 0)
 		//  - no route for amount (should be guaranteed by BestRouteFees struct)
 		return &PaymentAnalysis{
@@ -409,11 +453,15 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		}, nil
 	}
 
-	confirmations := payment.FundingOutputPolicies.FundingConfirmations(params.Amount, params.RoutingFee)
+	confirmations := payment.FundingOutputPolicies.FundingConfirmations(
+		params.Amount,
+		params.RoutingFee,
+	)
 	if confirmations == 1 {
 		params, err = a.computeParamsForTFFASwap(payment, 1)
 		if err != nil {
-			// This LITERALLY can never happen, as only source of error for computeParamsForTFFASwap are:
+			// This LITERALLY can never happen, as only source of error for
+			// computeParamsForTFFASwap are:
 			//  - negative conf target (we're using 1)
 			//  - no route for amount (should be guaranteed by BestRouteFees struct)
 			return &PaymentAnalysis{
@@ -442,7 +490,12 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 		}, nil
 	}
 
-	swapFees := fees.ComputeSwapFees(amount, payment.BestRouteFees, payment.FundingOutputPolicies, true)
+	swapFees := fees.ComputeSwapFees(
+		amount,
+		payment.BestRouteFees,
+		payment.FundingOutputPolicies,
+		true,
+	)
 
 	if swapFees.DebtType == fees.DebtTypeLend {
 		return nil, errors.New("TFFA swap should not be a lend operation")
@@ -452,8 +505,12 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 	outputAmount := amount + lightningFee + swapFees.OutputPadding + swapFees.DebtAmount
 
 	if lightningFee != swapFees.RoutingFee {
-		return nil, fmt.Errorf(
-			"integrity error: inconsistent lightning fee calculated for TFFA swap (lightning_fee=%v, output_amount=%v, original_amount=%v, routing_fee=%v, output_padding=%v)",
+		return nil, errors.Errorf(
+			"integrity error: inconsistent lightning fee"+
+				" calculated for TFFA swap"+
+				" (lightning_fee=%v, output_amount=%v,"+
+				" original_amount=%v, routing_fee=%v,"+
+				" output_padding=%v)",
 			int64(lightningFee),
 			int64(outputAmount),
 			payment.AmountInSat,
@@ -463,12 +520,14 @@ func (a *PaymentAnalyzer) analyzeTFFAAmountlessInvoiceSwap(payment *PaymentToInv
 	}
 
 	total := outputAmount + onChainFee
-	totalForDisplay := total - swapFees.DebtAmount // amount + lightningFee + outputPadding + onChainFee
+	// amount + lightningFee + outputPadding + onChainFee
+	totalForDisplay := total - swapFees.DebtAmount
 
 	// We need to ensure we can spend on chain and that we have enough UI visible balance too
 	// That is, the collect doesn't make us spend more than we really can and the amount + fee
 	// doesn't default any debt.
-	canPay := total <= btcutil.Amount(a.utxoBalance()) && totalForDisplay <= btcutil.Amount(a.totalBalance())
+	canPay := total <= btcutil.Amount(a.utxoBalance()) &&
+		totalForDisplay <= btcutil.Amount(a.totalBalance())
 
 	if !canPay {
 		return &PaymentAnalysis{
@@ -528,7 +587,6 @@ type swapParams struct {
 // Then, x + (a * x + b) = y - h
 // Then, x * (1 + a) = y - h - b
 // Then, x = (y - h - b) / (a + 1)   (*1)
-//
 // BUT, we can have different routes for different amounts, aka:
 // l_1(x) = a_1 * x + b_1
 // l_2(x) = a_2 * x + b_2
@@ -548,7 +606,10 @@ type swapParams struct {
 // x = (y - h - b) / (FeeProportionalMillionth/1_000_000 + 1)
 // x = (y - h - b) / (FeeProportionalMillionth + 1_000_000) / 1_000_000
 // x = ((y - h - b) * 1_000_000) / (FeeProportionalMillionth + 1_000_000)
-func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, confs uint) (*swapParams, error) {
+func (a *PaymentAnalyzer) computeParamsForTFFASwap(
+	payment *PaymentToInvoice,
+	confs uint,
+) (*swapParams, error) {
 	feeRate, err := a.feeWindow.SwapFeeRate(confs)
 
 	if err != nil {
@@ -576,11 +637,10 @@ func (a *PaymentAnalyzer) computeParamsForTFFASwap(payment *PaymentToInvoice, co
 		if amount+lightningFee <= bestRouteFees.MaxCapacity {
 
 			// There's a special comment to be made here for VERY edgy case where
-			// bestRouteFees.ForAmount(amount+1) == lightningFee+1.
-			// In this case adding 1 sat to the amount makes you need an extra sat for the
-			// routingFee, and these 2 extra sats make the total go over userBalance, but
-			// there's 1 sat available in our balance. What do we do it? Answer: nothing,
-			// it will be burn as on-chain fee.
+			// bestRouteFees.ForAmount(amount+1) == lightningFee+1. In this case adding 1 sat to the
+			// amount makes you need an extra sat for the routingFee, and these 2 extra sats make
+			// the total go over userBalance, but there's 1 sat available in our balance. What do we
+			// do it? Answer: nothing, it will be burn as on-chain fee.
 
 			return &swapParams{
 				Amount:         amount,

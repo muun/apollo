@@ -1,12 +1,14 @@
 package recovery
 
 import (
-	"fmt"
+	"log/slog"
+
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/data/keys"
 	"github.com/muun/libwallet/electrum"
 	"github.com/muun/libwallet/scanner"
-	"log/slog"
 )
 
 type ScanForFundsAction struct {
@@ -15,7 +17,11 @@ type ScanForFundsAction struct {
 	network          *libwallet.Network
 }
 
-func NewScanForFundsAction(keyProvider keys.KeyProvider, electrumProvider *electrum.ServerProvider, network *libwallet.Network) *ScanForFundsAction {
+func NewScanForFundsAction(
+	keyProvider keys.KeyProvider,
+	electrumProvider *electrum.ServerProvider,
+	network *libwallet.Network,
+) *ScanForFundsAction {
 	return &ScanForFundsAction{
 		keyProvider:      keyProvider,
 		electrumProvider: electrumProvider,
@@ -32,7 +38,11 @@ func (action *ScanForFundsAction) Run(logger *slog.Logger) (<-chan *scanner.Repo
 	const electrumPoolSize = 8
 	connectionPool := electrum.NewPool(electrumPoolSize, true, logger)
 
-	utxoScanner := scanner.NewScanner(connectionPool, action.electrumProvider, action.network.ToParams())
+	utxoScanner := scanner.NewScanner(
+		connectionPool,
+		action.electrumProvider,
+		action.network.ToParams(),
+	)
 
 	return utxoScanner.Scan(addresses), nil
 }
@@ -53,7 +63,7 @@ func generateAddresses(keyProvider keys.KeyProvider) (chan libwallet.MuunAddress
 
 	maxIndex := keyProvider.MaxDerivedIndex()
 	if maxIndex == 0 {
-		return nil, fmt.Errorf("cannot generate 0 addresses")
+		return nil, errors.Errorf("cannot generate 0 addresses")
 	}
 	addresses := addrGen.Stream(int64(maxIndex))
 

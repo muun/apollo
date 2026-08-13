@@ -2,18 +2,23 @@ package verifiable_muun_key
 
 import (
 	"encoding/hex"
-	"github.com/btcsuite/btcd/btcec/v2"
 	"testing"
+
+	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 func TestSubtractPublicKeys(t *testing.T) {
 
-	aSerialization, err := hex.DecodeString("028e949335c8d8bc841167860949c990ac10c87004f74c4513c39603dddf687dbb")
+	aSerialization, err := hex.DecodeString(
+		"028e949335c8d8bc841167860949c990ac10c87004f74c4513c39603dddf687dbb",
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	bSerialization, err := hex.DecodeString("0316e7c706d5bfd42194360e7109d0717c18bdba36c24442af99555dc981d1a66b")
+	bSerialization, err := hex.DecodeString(
+		"0316e7c706d5bfd42194360e7109d0717c18bdba36c24442af99555dc981d1a66b",
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

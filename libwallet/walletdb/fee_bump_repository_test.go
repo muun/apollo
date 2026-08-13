@@ -86,7 +86,11 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 	}
 
 	if loadedFeeBumpFunctionSet.UUID != expectedFeeBumpFunctionSet.UUID {
-		t.Errorf("expected %v UUID, got %v", expectedFeeBumpFunctionSet.UUID, loadedFeeBumpFunctionSet.UUID)
+		t.Errorf(
+			"expected %v UUID, got %v",
+			expectedFeeBumpFunctionSet.UUID,
+			loadedFeeBumpFunctionSet.UUID,
+		)
 	}
 
 	if loadedFeeBumpFunctionSet.RefreshPolicy != expectedFeeBumpFunctionSet.RefreshPolicy {
@@ -97,7 +101,11 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 		)
 	}
 
-	if len(loadedFeeBumpFunctionSet.FeeBumpFunctions) != len(expectedFeeBumpFunctionSet.FeeBumpFunctions) {
+	if len(
+		loadedFeeBumpFunctionSet.FeeBumpFunctions,
+	) != len(
+		expectedFeeBumpFunctionSet.FeeBumpFunctions,
+	) {
 		t.Errorf(
 			"expected %d fee bump functions, got %d",
 			len(expectedFeeBumpFunctionSet.FeeBumpFunctions),
@@ -106,7 +114,11 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 
 	expectedFeeBumpFunctions := expectedFeeBumpFunctionSet.FeeBumpFunctions
 	for i, loadedFeeBumpFunction := range loadedFeeBumpFunctionSet.FeeBumpFunctions {
-		if len(loadedFeeBumpFunction.PartialLinearFunctions) != len(expectedFeeBumpFunctions[i].PartialLinearFunctions) {
+		if len(
+			loadedFeeBumpFunction.PartialLinearFunctions,
+		) != len(
+			expectedFeeBumpFunctions[i].PartialLinearFunctions,
+		) {
 			t.Errorf(
 				"expected %d intervals, got %d",
 				len(expectedFeeBumpFunctions[i].PartialLinearFunctions),
@@ -130,7 +142,11 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 	}
 
 	if loadedFeeBumpFunctionSet.CreatedAt != *creationDate {
-		t.Fatalf("date mismatch: got: %v, expected: %v", *creationDate, loadedFeeBumpFunctionSet.CreatedAt)
+		t.Fatalf(
+			"date mismatch: got: %v, expected: %v",
+			*creationDate,
+			loadedFeeBumpFunctionSet.CreatedAt,
+		)
 	}
 
 	err = repository.RemoveAll()
@@ -164,10 +180,12 @@ func TestCreateFeeBumpFunctions(t *testing.T) {
 	}
 }
 
-func setupTestDb(t *testing.T) (*DB, error) {
+func setupTestDb( //nolint:staticcheck // TODO: func setupTestDb should be setupTestDB
+	t *testing.T,
+) (*DB, error) {
 	dir := t.TempDir()
 
-	db, err := Open(path.Join(dir, "test.db"))
+	db, err := open(path.Join(dir, "test.db"))
 	if err != nil {
 		return nil, err
 	}

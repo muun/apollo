@@ -41,11 +41,20 @@ func (a *MayRetrieveEncryptedMuunKeyAction) Run() (*EncryptedMuunKeyWithStatus, 
 
 	if key, ok := keys[storage.VerifiedEncryptedMuunKey]; ok && key != nil {
 		encryptedMuunKey := key.(string)
-		return &EncryptedMuunKeyWithStatus{EncryptedMuunKey: &encryptedMuunKey, Status: HasVerifiedEncryptedMuunKey}, nil
+		return &EncryptedMuunKeyWithStatus{
+			EncryptedMuunKey: &encryptedMuunKey,
+			Status:           HasVerifiedEncryptedMuunKey,
+		}, nil
 	} else if key, ok := keys[storage.UnverifiedEncryptedMuunKey]; ok && key != nil {
 		encryptedMuunKey := key.(string)
-		return &EncryptedMuunKeyWithStatus{EncryptedMuunKey: &encryptedMuunKey, Status: OnlyHasUnverifiedEncryptedMuunKey}, nil
+		return &EncryptedMuunKeyWithStatus{
+			EncryptedMuunKey: &encryptedMuunKey,
+			Status:           OnlyHasUnverifiedEncryptedMuunKey,
+		}, nil
 	} else {
-		return &EncryptedMuunKeyWithStatus{EncryptedMuunKey: nil, Status: HasNoEncryptedMuunKey}, nil
+		return &EncryptedMuunKeyWithStatus{
+			EncryptedMuunKey: nil,
+			Status:           HasNoEncryptedMuunKey,
+		}, nil
 	}
 }

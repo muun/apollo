@@ -46,7 +46,8 @@ func GetDescriptorsHTML(data *DescriptorsData) string {
 
 		html := descriptor
 
-		// Replace script type expressions (parenthesis in match prevent replacing the "sh" in "wsh")
+		// Replace script type expressions (parenthesis in match prevent replacing the "sh" in
+		// "wsh")
 		html = strings.ReplaceAll(html, "wsh(", renderScriptType("wsh")+"(")
 		html = strings.ReplaceAll(html, "sh(", renderScriptType("sh")+"(")
 		html = strings.ReplaceAll(html, "multi(", renderScriptType("multi")+"(")
@@ -54,8 +55,16 @@ func GetDescriptorsHTML(data *DescriptorsData) string {
 		html = strings.ReplaceAll(html, "musig(", renderScriptType("musig")+"(")
 
 		// Replace fingerprint expressions:
-		html = strings.ReplaceAll(html, data.FirstFingerprint, renderFingerprint(data.FirstFingerprint))
-		html = strings.ReplaceAll(html, data.SecondFingerprint, renderFingerprint(data.SecondFingerprint))
+		html = strings.ReplaceAll(
+			html,
+			data.FirstFingerprint,
+			renderFingerprint(data.FirstFingerprint),
+		)
+		html = strings.ReplaceAll(
+			html,
+			data.SecondFingerprint,
+			renderFingerprint(data.SecondFingerprint),
+		)
 
 		// Add checksum and wrap everything:
 		html += renderChecksum(checksum)
@@ -98,20 +107,21 @@ func splitChecksum(descriptor string) (string, string) {
 }
 
 // -------------------------------------------------------------------------------------------------
-// WARNING:
-// Below this point, you may find only fear and confusion.
+// WARNING: Below this point, you may find only fear and confusion.
 
 // I translated the code for computing checksums from the original C++ in the bitcoind source,
 // making a few adjustments for language differences. It's a specialized algorithm for the domain of
 // output descriptors, and it uses the same primitives as the bech32 encoding.
 
-var inputCharset = "0123456789()[],'/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&+-.;<=>?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\"\\ "
+var inputCharset = "0123456789()[],'/*abcdefgh@:$%{}" + //nolint:lll
+	"IJKLMNOPQRSTUVWXYZ&+-.;<=>?!^_|~" +
+	"ijklmnopqrstuvwxyzABCDEFGH`#\"\\ "
 var checksumCharset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 func calculateChecksum(desc string) string {
 	var c uint64 = 1
-	var cls int = 0
-	var clscount int = 0
+	var cls int = 0      //nolint:staticcheck // TODO: should omit type int from declaration; it will be inferred from the right-hand side
+	var clscount int = 0 //nolint:staticcheck // TODO: should omit type int from declaration; it will be inferred from the right-hand side
 
 	for _, ch := range desc {
 		pos := strings.IndexRune(inputCharset, ch)
@@ -135,14 +145,14 @@ func calculateChecksum(desc string) string {
 		c = polyMod(c, cls)
 	}
 
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 8; i++ { //nolint:modernize // TODO: use range over int
 		c = polyMod(c, 0)
 	}
 
 	c ^= 1
 
 	ret := make([]byte, 8)
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 8; i++ { //nolint:modernize // TODO: use range over int
 		ret[i] = checksumCharset[(c>>(5*(7-i)))&31]
 	}
 

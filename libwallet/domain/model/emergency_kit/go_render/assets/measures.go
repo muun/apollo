@@ -8,10 +8,9 @@ import (
 var StandardHorizontalMargin = resources.Mm(16)
 
 // BodyParagraphLineHeight
-//
-//		Line height are the real size each line requires considering its bottom and top space when
-//		they are multiline. It dependes on how big the font is, but it goes from fontSize*1.25 to fontSize*1.75
-//	 	In the css all these values are explicit.
+// Line height are the real size each line requires considering its bottom and top space when they
+// are multiline. It dependes on how big the font is, but it goes from fontSize*1.25 to fontSize*1.75
+// In the css all these values are explicit.
 var BodyParagraphLineHeight = resources.Mm(24)
 
 var OutputDescriptorsLineHeight = resources.Mm(23)

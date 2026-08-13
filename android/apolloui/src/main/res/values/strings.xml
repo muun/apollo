@@ -771,6 +771,7 @@
     <string name="settings_delete_wallet_alert_yes">Delete</string>
     <string name="settings_delete_wallet_alert_no">Cancel</string>
     <string name="settings_disable_feature_flags">Your feature flags</string>
+    <string name="settings_send_debug_data">Send debug data via email</string>
     <string name="disable_feature_flags_security_card">Security Card</string>
 
     <string name="delete_wallet_success_message">You deleted your wallet</string>
@@ -1015,6 +1016,10 @@
     <string name="error_no_web_client_installed">
         There\'s no web browser app installed.
     </string>
+    <string name="error_web_client_problem_opening">
+        Couldn\'t open this link, try using another browser.
+    </string>
+
 
     <!-- Edit Fee -->
     <string name="edit_fee_title">Edit network fee</string>
@@ -1774,5 +1779,31 @@
     <!-- SecurityCards - CardDetail -->
     <string name="security_cards_card_detail_see_full_specs">See full specs</string>
     <string name="security_cards_card_detail_go_to_provider">GO TO %s</string>
+
+    <!-- In-App Updates (dogfood) -->
+    <string name="in_app_update_pending">Update download will start soon…</string>
+    <string name="in_app_update_downloading">Downloading update…</string>
+    <string name="in_app_update_downloaded">Update downloaded. Restart to install.</string>
+    <string name="in_app_update_restart">Restart</string>
+
+    <!-- SecurityCards - FullSpecs -->
+    <string name="security_cards_full_specs_dim_height">54\nmm</string>
+    <string name="security_cards_full_specs_dim_width">86.6mm</string>
+
+    <!-- SecurityCards - Shipping Address -->
+    <string name="security_cards_shipping_address_title">Shipping</string>
+    <string name="security_cards_shipping_address_description">Information needed to deliver your card.</string>
+    <string name="security_cards_shipping_address_full_name">Full Name</string>
+    <string name="security_cards_shipping_address_email">Email</string>
+    <string name="security_cards_shipping_address_address">Shipping address</string>
+    <string name="security_cards_shipping_address_country">Country/Region</string>
+    <string name="security_cards_shipping_address_city">City</string>
+    <string name="security_cards_shipping_address_state">State</string>
+    <string name="security_cards_shipping_address_zip_code">ZIP Code</string>
+    <string name="security_cards_shipping_address_continue">GO TO CHECKOUT</string>
+
+    <!-- SecurityCards - Connected to website dialog -->
+    <string name="security_cards_connected_to_website_title">Connected to %s</string>
+    <string name="security_cards_connected_to_website_description">No personal information is associated with your Muun wallet.</string>
 
 </resources>

@@ -3,13 +3,13 @@ package io.muun.apollo.domain.action;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
-import io.muun.apollo.data.fs.LibwalletDataDirectory;
 import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
+import io.muun.apollo.domain.libwallet.LibwalletClient;
 import io.muun.apollo.domain.model.SignupDraft;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
@@ -46,7 +46,7 @@ public class LogoutActions {
 
     private final NotificationService notificationService;
 
-    private final LibwalletDataDirectory libwalletDataDirectory;
+    private final LibwalletClient libwalletClient;
 
     /**
      * Constructor.
@@ -63,7 +63,7 @@ public class LogoutActions {
             TaskScheduler taskScheduler,
             SecureStorageProvider secureStorageProvider,
             NotificationService notificationService,
-            LibwalletDataDirectory libwalletDataDirectory
+            LibwalletClient libwalletClient
     ) {
 
         this.contactActions = contactActions;
@@ -77,7 +77,7 @@ public class LogoutActions {
         this.taskScheduler = taskScheduler;
         this.secureStorageProvider = secureStorageProvider;
         this.notificationService = notificationService;
-        this.libwalletDataDirectory = libwalletDataDirectory;
+        this.libwalletClient = libwalletClient;
     }
 
     /**
@@ -163,6 +163,6 @@ public class LogoutActions {
         lockManager.cancelAutoSetLocked();
 
         notificationService.cancelAllNotifications();
-        libwalletDataDirectory.reset();
+        libwalletClient.resetData();
     }
 }

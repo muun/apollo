@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"testing"
+
 	"github.com/btcsuite/btcd/btcec/v2"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/cryptography/bitcoin_hpke"
 	"github.com/muun/libwallet/recoverycode"
-	"testing"
 )
 
 func TestFinishMuunKeyEncryption(t *testing.T) {
@@ -37,11 +39,16 @@ func TestFinishMuunKeyEncryption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	secondHalfKeyBytes := new(btcec.ModNScalar).Set(&firstHalfKey.Key).Negate().Add(&muunECPrivateKey.Key).Bytes()
+	secondHalfKeyBytes := new(
+		btcec.ModNScalar,
+	).Set(&firstHalfKey.Key).
+		Negate().
+		Add(&muunECPrivateKey.Key).
+		Bytes()
 	secondHalfKeyEncryptedToRecoveryCode, err := bitcoin_hpke.SingleShotEncrypt(
 		secondHalfKeyBytes[:],
 		recoveryCodePublicKey,
-		[]byte(muunSecondHalfToRecoveryCode),
+		[]byte(MuunSecondHalfToRecoveryCode),
 		[]byte(""),
 	)
 	if err != nil {
@@ -49,12 +56,21 @@ func TestFinishMuunKeyEncryption(t *testing.T) {
 	}
 
 	// Now test FinishMuunKeyEncryption
-	encryptedMuunKey, err := FinishMuunKeyEncryption(recoveryCodePublicKey, firstHalfKey, muunKey.ChainCode(), secondHalfKeyEncryptedToRecoveryCode)
+	encryptedMuunKey, err := FinishMuunKeyEncryption(
+		recoveryCodePublicKey,
+		firstHalfKey,
+		muunKey.ChainCode(),
+		secondHalfKeyEncryptedToRecoveryCode,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	decryptedMuunKey, err := DecryptExtendedKey(recoveryCodePrivateKey, encryptedMuunKey, libwallet.Mainnet())
+	decryptedMuunKey, err := DecryptExtendedKey(
+		recoveryCodePrivateKey,
+		encryptedMuunKey,
+		libwallet.Mainnet(),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +103,11 @@ func TestEncryptUserKey(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	decryptedUserKey, err := DecryptExtendedKey(recoveryCodePrivateKey, encryptedUserKey, libwallet.Mainnet())
+	decryptedUserKey, err := DecryptExtendedKey(
+		recoveryCodePrivateKey,
+		encryptedUserKey,
+		libwallet.Mainnet(),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

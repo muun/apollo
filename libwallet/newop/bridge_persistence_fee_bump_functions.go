@@ -3,11 +3,10 @@ package newop
 import (
 	"encoding/base64"
 	"encoding/binary"
-	"errors"
-	"fmt"
 	"math"
-	"path"
 	"time"
+
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/operation"
@@ -18,7 +17,11 @@ const invalidationTimeInSeconds = 150.0
 
 // PersistFeeBumpFunctions This is a bridge that stores fee bump functions
 // from native apps in the device's local database.
-func PersistFeeBumpFunctions(encodedBase64Functions *libwallet.StringList, uuid string, refreshPolicy string) error {
+func PersistFeeBumpFunctions(
+	encodedBase64Functions *libwallet.StringList,
+	uuid string,
+	refreshPolicy string,
+) error {
 
 	if encodedBase64Functions == nil {
 		return errors.New("encoded base 64 function list is null")
@@ -31,34 +34,23 @@ func PersistFeeBumpFunctions(encodedBase64Functions *libwallet.StringList, uuid 
 
 	feeBumpFunctions := convertToLibwalletFeeBumpFunctions(decodedFunctions, uuid, refreshPolicy)
 
-	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	repository := db.NewFeeBumpRepository()
-
-	return repository.Store(feeBumpFunctions)
+	return libwallet.Pool.WithDB(func(db *walletdb.DB) error {
+		return db.NewFeeBumpRepository().Store(feeBumpFunctions)
+	})
 }
 
 func AreFeeBumpFunctionsInvalidated() bool {
-	db, err := walletdb.Open(path.Join(libwallet.Cfg.DataDir, "wallet.db"))
-	if err != nil {
-		return true
-	}
-	defer db.Close()
-
-	repository := db.NewFeeBumpRepository()
-	creationDate, err := repository.GetCreationDate()
-
-	if err != nil || creationDate == nil {
-		return true
-	}
-
-	durationInSeconds := time.Since(*creationDate).Seconds()
-
-	return durationInSeconds >= invalidationTimeInSeconds
+	var invalidated bool
+	poolErr := libwallet.Pool.WithDB(func(db *walletdb.DB) error {
+		creationDate, err := db.NewFeeBumpRepository().GetCreationDate()
+		if err != nil || creationDate == nil {
+			invalidated = true
+			return nil
+		}
+		invalidated = time.Since(*creationDate).Seconds() >= invalidationTimeInSeconds
+		return nil
+	})
+	return poolErr != nil || invalidated
 }
 
 func decodeFunctions(encodedFunctions []string) ([][][]float64, error) {
@@ -81,7 +73,7 @@ func decodeFromBase64(base64Function string) ([][]float64, error) {
 
 	const bytesPerFloat = 4
 	if len(decodedBytes)%bytesPerFloat != 0 {
-		return nil, fmt.Errorf(
+		return nil, errors.Errorf(
 			"decoded bytes length: %d is invalid. It should by multiple of %d",
 			len(decodedBytes),
 			bytesPerFloat,
@@ -103,8 +95,9 @@ func decodeFromBase64(base64Function string) ([][]float64, error) {
 	for i := 0; i < len(listOfFloats); i += floatsPerTuple {
 		end := i + floatsPerTuple
 		if end > len(listOfFloats) {
-			return nil, fmt.Errorf(
-				"fee bump function was incorrectly encoded; it should be a multiply of %d float numbers, got: %d",
+			return nil, errors.Errorf(
+				"fee bump function was incorrectly encoded; "+
+					"it should be a multiply of %d float numbers, got: %d",
 				floatsPerTuple,
 				len(listOfFloats),
 			)

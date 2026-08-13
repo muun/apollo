@@ -199,6 +199,22 @@ object OS {
         isAndroidUpsideDownCakeOrNewer()
 
     /**
+     * Whether this OS supports {@link PackageManager#FEATURE_NFC_OFF_HOST_CARD_EMULATION_UICC}
+     * and {@link PackageManager#FEATURE_NFC_OFF_HOST_CARD_EMULATION_ESE}, both introduced in
+     * Q-10-29.
+     */
+    fun supportsNfcOffHostCardEmulation(): Boolean =
+        isAndroidQOrNewer()
+
+    /**
+     * Whether this OS has restrictions on non-SDK interfaces, which was introduced in P-9-28.
+     * @see <a href="https://developer.android.com/guide/app-compatibility/restrictions-non-sdk-interfaces">
+     * Restrictions on non-SDK interfaces</a>
+     */
+    fun hasNonSdkInterfacesRestrictions(): Boolean =
+        isAndroidPOrNewer()
+
+    /**
      * Whether this OS supports {@link android.app.ActivityManager.isBackgroundRestricted}, which
      * was introduced in P-9-28.
      */

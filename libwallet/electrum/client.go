@@ -12,6 +12,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/go-errors/errors"
 )
 
 const defaultLoggerTag = "Electrum/?"
@@ -35,7 +37,7 @@ type Client struct {
 	nextRequestID int
 	conn          net.Conn
 	log           *slog.Logger
-	requireTls    bool
+	requireTls    bool //nolint:staticcheck // TODO: struct field requireTls should be requireTLS
 }
 
 // Request models the structure of all Electrum protocol requests.
@@ -48,7 +50,7 @@ type Request struct {
 // ErrorResponse models the structure of a generic error response.
 type ErrorResponse struct {
 	ID    int         `json:"id"`
-	Error interface{} `json:"error"` // type varies among Electrum implementations.
+	Error interface{} `json:"error"` //nolint:modernize // TODO: use any instead of interface{} // type varies among Electrum implementations.
 }
 
 // ServerVersionResponse models the structure of a `server.version` response.
@@ -66,7 +68,7 @@ type ServerFeaturesResponse struct {
 // ServerPeersResponse models the structure (or lack thereof) of a `server.peers.subscribe` response
 type ServerPeersResponse struct {
 	ID     int           `json:"id"`
-	Result []interface{} `json:"result"`
+	Result []interface{} `json:"result"` //nolint:modernize // TODO: use any instead of interface{}
 }
 
 // ListUnspentResponse models a `blockchain.scripthash.listunspent` response.
@@ -118,10 +120,13 @@ type ServerFeatures struct {
 }
 
 // Param is a convenience type that models an item in the `Params` array of an Request.
-type Param = interface{}
+type Param = interface{} //nolint:modernize // TODO: use any instead of interface{}
 
 // NewClient creates an initialized Client instance.
-func NewClient(requireTls bool, logger *slog.Logger) *Client {
+func NewClient(
+	requireTls bool, //nolint:staticcheck // TODO: func parameter requireTls should be requireTLS
+	logger *slog.Logger,
+) *Client {
 	return &Client{
 		log:        logger,
 		requireTls: requireTls,
@@ -130,7 +135,7 @@ func NewClient(requireTls bool, logger *slog.Logger) *Client {
 
 // Connect establishes a TLS connection to an Electrum server.
 func (c *Client) Connect(server string) error {
-	c.Disconnect()
+	c.Disconnect() //nolint:errcheck // TODO: check error
 
 	c.log = c.log.With(slog.String("source", "Electrum/"+server))
 	c.Server = server
@@ -139,7 +144,7 @@ func (c *Client) Connect(server string) error {
 
 	err := c.establishConnection()
 	if err != nil {
-		c.Disconnect()
+		c.Disconnect() //nolint:errcheck // TODO: check error
 		c.log.Error("Connect failed", "error", err)
 		return err
 	}
@@ -147,7 +152,7 @@ func (c *Client) Connect(server string) error {
 	// Before calling it a day send a test request (trust me), and as we do identify the server:
 	err = c.identifyServer()
 	if err != nil {
-		c.Disconnect()
+		c.Disconnect() //nolint:errcheck // TODO: check error
 		c.log.Error("Identifying server failed", "error", err)
 		return err
 	}
@@ -226,15 +231,17 @@ func (c *Client) ServerFeatures() (*ServerFeatures, error) {
 func (c *Client) ServerPeers() ([]string, error) {
 	res, err := c.rawServerPeers()
 	if err != nil {
-		return nil, err // note that, besides I/O errors, some servers close the socket on this request
+		// Note that, besides I/O errors, some servers close the
+		// socket on this request.
+		return nil, err
 	}
 
 	var peers []string
 
 	for _, entry := range res {
 		// Get ready for some hot casting action. Not for the faint of heart.
-		addr := entry.([]interface{})[1].(string)
-		port := entry.([]interface{})[2].([]interface{})[1].(string)[1:]
+		addr := entry.([]interface{})[1].(string)                        //nolint:modernize // TODO: use any instead of interface{}
+		port := entry.([]interface{})[2].([]interface{})[1].(string)[1:] //nolint:modernize // TODO: use any instead of interface{}
 
 		peers = append(peers, addr+":"+port)
 	}
@@ -247,7 +254,7 @@ func (c *Client) ServerPeers() ([]string, error) {
 //	[ "<ip>", "<domain>", ["<version>", "s<SSL port>", "t<TLS port>"] ]
 //
 // Ports can be in any order, or absent if the protocol is not supported
-func (c *Client) rawServerPeers() ([]interface{}, error) {
+func (c *Client) rawServerPeers() ([]interface{}, error) { //nolint:modernize // TODO: use any instead of interface{}
 	request := Request{
 		Method: "server.peers.subscribe",
 		Params: []Param{},
@@ -282,7 +289,8 @@ func (c *Client) Broadcast(rawTx string) (string, error) {
 	return response.Result, nil
 }
 
-// GetHeaders calls the `blockchain.headers.subscribe` endpoint and responds with the current block height and hash.
+// GetHeaders calls the `blockchain.headers.subscribe` endpoint and responds with the current block
+// height and hash.
 func (c *Client) GetHeaders() (*GetHeadersResult, error) {
 	request := Request{
 		Method: "blockchain.headers.subscribe",
@@ -354,7 +362,7 @@ func (c *Client) ListUnspentBatch(indexHashes []string) ([][]UnspentRef, error) 
 
 	err := c.callBatch(method, requests, &responses, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("ListUnspentBatch failed: %w", err)
+		return nil, errors.Errorf("ListUnspentBatch failed: %w", err)
 	}
 
 	// Don't forget to sort responses:
@@ -385,7 +393,12 @@ func (c *Client) establishConnection() error {
 		Timeout: connectionTimeout,
 	}
 
-	tlsConn, err := tls.DialWithDialer(dialer, "tcp", c.Server, config)
+	tlsConn, err := tls.DialWithDialer( //nolint:noctx // TODO: use (*tls.Dialer).DialContext
+		dialer,
+		"tcp",
+		c.Server,
+		config,
+	)
 	if err == nil {
 		c.conn = tlsConn
 		return nil
@@ -394,7 +407,11 @@ func (c *Client) establishConnection() error {
 		return err
 	}
 
-	conn, err := net.DialTimeout("tcp", c.Server, connectionTimeout)
+	conn, err := net.DialTimeout( //nolint:noctx // TODO: use (*net.Dialer).DialContext
+		"tcp",
+		c.Server,
+		connectionTimeout,
+	)
 	if err != nil {
 		return err
 	}
@@ -425,7 +442,11 @@ func (c *Client) IsConnected() bool {
 }
 
 // call executes a request with JSON marshalling, and loads the response into a pointer.
-func (c *Client) call(request *Request, response interface{}, timeout time.Duration) error {
+func (c *Client) call(
+	request *Request,
+	response interface{}, //nolint:modernize // TODO: use any instead of interface{}
+	timeout time.Duration,
+) error {
 	// Assign a fresh request ID:
 	request.ID = c.incRequestID()
 
@@ -470,7 +491,10 @@ func (c *Client) call(request *Request, response interface{}, timeout time.Durat
 // call executes a batch request with JSON marshalling, and loads the response into a pointer.
 // Response may not match request order, so callers MUST sort them by ID.
 func (c *Client) callBatch(
-	method string, requests []*Request, response interface{}, timeout time.Duration,
+	method string,
+	requests []*Request,
+	response interface{}, //nolint:modernize // TODO: use any instead of interface{}
+	timeout time.Duration,
 ) error {
 	// Assign fresh request IDs:
 	for _, request := range requests {
@@ -496,7 +520,13 @@ func (c *Client) callBatch(
 
 	err = json.Unmarshal(responseBytes, &maybeErrorResponses)
 	if err != nil {
-		c.log.Error("Unmarshal of potential error failed", "response", string(responseBytes), "error", err)
+		c.log.Error(
+			"Unmarshal of potential error failed",
+			"response",
+			string(responseBytes),
+			"error",
+			err,
+		)
 		return err
 	}
 
@@ -504,7 +534,7 @@ func (c *Client) callBatch(
 	for _, maybeErrorResponse := range maybeErrorResponses {
 		if maybeErrorResponse.Error != nil {
 			c.log.Error("Electrum error", "error", maybeErrorResponse.Error)
-			return fmt.Errorf("%v", maybeErrorResponse.Error)
+			return errors.Errorf("%v", maybeErrorResponse.Error)
 		}
 	}
 
@@ -524,7 +554,7 @@ func (c *Client) callRaw(method string, request []byte, timeout time.Duration) (
 	c.log.Debug(fmt.Sprintf("Sending %s body: %s", method, string(request)))
 
 	if !c.IsConnected() {
-		err := fmt.Errorf("send failed %s: not connected", method)
+		err := errors.Errorf("send failed %s: not connected", method)
 		c.log.Error("Send failed: not connected", "method", method)
 		return nil, err
 	}
@@ -552,7 +582,15 @@ func (c *Client) callRaw(method string, request []byte, timeout time.Duration) (
 
 	if err != nil {
 		duration := time.Since(start)
-		c.log.Error("Send failed", "method", method, "duration", duration.Milliseconds(), "error", err)
+		c.log.Error(
+			"Send failed",
+			"method",
+			method,
+			"duration",
+			duration.Milliseconds(),
+			"error",
+			err,
+		)
 		return nil, err
 	}
 
@@ -561,7 +599,15 @@ func (c *Client) callRaw(method string, request []byte, timeout time.Duration) (
 	response, err := reader.ReadBytes(messageDelim)
 	duration := time.Since(start)
 	if err != nil {
-		c.log.Error("Receive failed", "method", method, "duration", duration.Milliseconds(), "error", err)
+		c.log.Error(
+			"Receive failed",
+			"method",
+			method,
+			"duration",
+			duration.Milliseconds(),
+			"error",
+			err,
+		)
 		return nil, err
 	}
 

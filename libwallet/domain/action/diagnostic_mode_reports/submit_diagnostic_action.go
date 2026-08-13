@@ -13,9 +13,12 @@ func NewSubmitDiagnosticAction(service service.HoustonService) *SubmitDiagnostic
 	return &SubmitDiagnosticAction{service}
 }
 
-func (action SubmitDiagnosticAction) Run(sessionId string, debugLog string) error {
+func (action SubmitDiagnosticAction) Run(
+	sessionID string,
+	debugLog string,
+) error {
 	return action.houstonService.SubmitDiagnosticsScanData(model.DiagnosticScanDataJson{
-		ScanId: sessionId,
+		ScanId: sessionID,
 		Logs:   debugLog,
 	})
 }

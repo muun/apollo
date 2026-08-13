@@ -529,7 +529,23 @@ class NewOperationPresenter @Inject constructor(
         }
 
         if (::confirmStateViewModel.isInitialized) {
-            params += opSubmittedMetadata(confirmStateViewModel)
+            params += opStartedMetadata(confirmStateViewModel.paymentIntent.getPaymentType())
+
+            val objects = ArrayList<Pair<String, Any>>()
+            val payCtx = confirmStateViewModel.paymentContext
+            val selectedFeeRate = Preconditions.checkNotNull(
+                confirmStateViewModel.amountInfo.feeRateInSatsPerVByte
+            )
+            val type: AnalyticsEvent.E_FEE_OPTION_TYPE = getFeeOptionTypeParam(
+                selectedFeeRate,
+                payCtx
+            )
+
+            val amount = BitcoinAmount.fromLibwallet(confirmStateViewModel.amountInfo.amount)
+            objects.add(("fee_type" to type.name.lowercase(Locale.getDefault())))
+            objects.add(("sats_per_virtual_byte" to selectedFeeRate))
+            objects.add(("amount" to SerializationUtils.serializeBitcoinAmount(amount)))
+            params += objects
         }
 
         analytics.report(
@@ -811,13 +827,9 @@ class NewOperationPresenter @Inject constructor(
 
         val amount = BitcoinAmount.fromLibwallet(stateVm.amountInfo.amount)
         val fee = BitcoinAmount.fromLibwallet(stateVm.validated.fee)
-        val total = BitcoinAmount.fromLibwallet(stateVm.validated.total)
         val onchainFee = BitcoinAmount.fromLibwallet(stateVm.onchainFee)
-        val feeNeedsChange = stateVm.validated.feeNeedsChange
-        val isOneConf = stateVm.validated.swapInfo?.isOneConf
         val routingFeeInSat = stateVm.validated.swapInfo?.swapFees?.routingFeeInSat
         val confirmationsNeeded = stateVm.validated.swapInfo?.swapFees?.confirmationsNeeded
-        val debtType = stateVm.validated.swapInfo?.swapFees?.debtType
         val debtAmountInSat = stateVm.validated.swapInfo?.swapFees?.debtAmountInSat
         val outputAmountInSat = stateVm.validated.swapInfo?.swapFees?.outputAmountInSat
         val outputPaddingInSat = stateVm.validated.swapInfo?.swapFees?.outputPaddingInSat
@@ -831,22 +843,27 @@ class NewOperationPresenter @Inject constructor(
         objects.add(("sats_per_virtual_byte" to selectedFeeRate))
         objects.add(("amount" to SerializationUtils.serializeBitcoinAmount(amount)))
         objects.add(("fee" to SerializationUtils.serializeBitcoinAmount(fee)))
-        objects.add(("total" to SerializationUtils.serializeBitcoinAmount(total)))
         objects.add(("onchainFee" to SerializationUtils.serializeBitcoinAmount(onchainFee)))
-        objects.add(("feeNeedsChange" to feeNeedsChange))
-        objects.add(("isOneConf" to isOneConf.toString()))
-        objects.add(("routingFeeInSat" to routingFeeInSat.toString()))
-        objects.add(("confirmationsNeeded" to confirmationsNeeded.toString()))
-        objects.add(("debtType" to debtType.toString()))
-        objects.add(("debtAmountInSat" to debtAmountInSat.toString()))
-        objects.add(("outputAmountInSat" to outputAmountInSat.toString()))
-        objects.add(("outputPaddingInSat" to outputPaddingInSat.toString()))
-        objects.add("fee_bump_set_uuid" to feeBumpSetUUID.toString())
-        objects.add("fee_bump_amount_in_sat" to feeBumpAmountInSat.toString())
-        objects.add("fee_bump_policy" to feeBumpPolicy.toString())
-        objects.add(
-            "fee_bump_seconds_since_last_update" to feeBumpSecondsSinceLastUpdate.toString()
-        )
+
+        // Avoid sending "null" values since analytics has a maximum number of allowed event_params
+        // after which, other params are dropped. We're sending A LOT here, so we should scrutinize
+        // these and check if they add value or not.
+        if (stateVm.validated.swapInfo != null) {
+            objects.add(("routingFeeInSat" to routingFeeInSat.toString()))
+            objects.add(("confirmationsNeeded" to confirmationsNeeded.toString()))
+            objects.add(("debtAmountInSat" to debtAmountInSat.toString()))
+            objects.add(("outputAmountInSat" to outputAmountInSat.toString()))
+            objects.add(("outputPaddingInSat" to outputPaddingInSat.toString()))
+        }
+
+        if (stateVm.validated.feeBumpInfo != null) {
+            objects.add("fee_bump_set_uuid" to feeBumpSetUUID.toString())
+            objects.add("fee_bump_amount_in_sat" to feeBumpAmountInSat.toString())
+            objects.add("fee_bump_policy" to feeBumpPolicy.toString())
+            objects.add(
+                "fee_bump_seconds_since_last_update" to feeBumpSecondsSinceLastUpdate.toString()
+            )
+        }
 
         // Also add previously known metadata
         objects.addAll(opStartedMetadata(paymentType))

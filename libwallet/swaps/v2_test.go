@@ -28,11 +28,15 @@ func TestValidateSubmarineSwapV2(t *testing.T) {
 				},
 				rawInvoice: "invalid",
 				userPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk", //nolint:lll
+					),
 					Path: "m",
 				},
 				muunPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo", //nolint:lll
+					),
 					Path: "m",
 				},
 				originalExpirationInBlocks: 0,
@@ -48,13 +52,17 @@ func TestValidateSubmarineSwapV2(t *testing.T) {
 						ServerPaymentHashInHex: "invalid hex",
 					},
 				},
-				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd",
+				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd", //nolint:lll
 				userPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk", //nolint:lll
+					),
 					Path: "m",
 				},
 				muunPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo", //nolint:lll
+					),
 					Path: "m",
 				},
 				originalExpirationInBlocks: 0,
@@ -70,13 +78,17 @@ func TestValidateSubmarineSwapV2(t *testing.T) {
 						ServerPaymentHashInHex: "112233445566778899",
 					},
 				},
-				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd",
+				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd", //nolint:lll
 				userPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk", //nolint:lll
+					),
 					Path: "m",
 				},
 				muunPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo", //nolint:lll
+					),
 					Path: "m",
 				},
 				originalExpirationInBlocks: 0,
@@ -90,24 +102,32 @@ func TestValidateSubmarineSwapV2(t *testing.T) {
 			args: args{
 				swap: &SubmarineSwap{
 					FundingOutput: SubmarineSwapFundingOutput{
-						OutputAddress:          "bcrt1qk956axjf2pzmf6esd4jfrppkhmegn8eez2gl2zdkzje0w8lt2tmqvqvrut",
+						OutputAddress:          "bcrt1qk956axjf2pzmf6esd4jfrppkhmegn8eez2gl2zdkzje0w8lt2tmqvqvrut", //nolint:lll
 						ExpirationInBlocks:     10,
-						ServerPaymentHashInHex: "82709bbf96b49386610a63acabf1bcc95b53ffae05bb86f675dc0d3ceb4ead86",
-						UserPublicKey:          decodeKey("tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk"),
-						MuunPublicKey:          decodeKey("tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo"),
-						KeyPath:                "m",
+						ServerPaymentHashInHex: "82709bbf96b49386610a63acabf1bcc95b53ffae05bb86f675dc0d3ceb4ead86", //nolint:lll
+						UserPublicKey: decodeKey(
+							"tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk", //nolint:lll
+						),
+						MuunPublicKey: decodeKey(
+							"tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo", //nolint:lll
+						),
+						KeyPath: "m",
 					},
 					Receiver: SubmarineSwapReceiver{
-						PublicKey: "02c9a35bdbeab0b93ee9542d85c38beab7d1e72ea1d9639e5b00b1d5feb64bcfdd",
+						PublicKey: "02c9a35bdbeab0b93ee9542d85c38beab7d1e72ea1d9639e5b00b1d5feb64bcfdd", //nolint:lll
 					},
 				},
-				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd",
+				rawInvoice: "lnbcrt1p033394pp5sfcfh0ukkjfcvcg2vwk2hudue9d48lawqkacdan4msxne66w4krqdqqcqzpgsp5jelulm6a7q38j6jffa9qet3scz4qvcs08x6hfsyn0lfg34p2584q9qy9qsqjcq059jh8qeslj7qwl69ln69znalrxykhaj4kl0g0kfstwsa3warsyxx2d0rqs24tx896lz895wffqaj7l82zs896ec7r5arnw0cwtqpvzt8yd", //nolint:lll
 				userPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4Y3iy9soFSA9zoYbpyhUFu3eAH1sDWyERxH2yJVZUhPUX5QsxD6bZfMWRKzxw28ohD5n6AZWmvZbDpZzgxSVxUnMevqzTXQk", //nolint:lll
+					),
 					Path: "m",
 				},
 				muunPublicKey: &KeyDescriptor{
-					Key:  decodeKey("tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo"),
+					Key: decodeKey(
+						"tpubD6NzVbkrYhZ4XbhomyY2axxKe3KB1FK2Wq2z7XYyDF3T4QCuEDZFBUyGfjfHChvEbsbP9RpaYA8cwxkZpQjEcNdaPfuj3cKGqCiHC5YeRTo", //nolint:lll
+					),
 					Path: "m",
 				},
 				originalExpirationInBlocks: 10,

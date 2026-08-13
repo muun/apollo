@@ -44,7 +44,7 @@ object Crashlytics {
     private var defaultUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
 
     @JvmStatic
-    fun init(application: Application) {
+    fun init(application: Application, firebaseTestLabDevice: Boolean) {
         this.earlyMetricsProvider = EarlyMetricsProvider(application)
         this.analyticsProvider = AnalyticsProvider(application)
         this.analyticsProvider?.loadBigQueryPseudoId()
@@ -56,6 +56,8 @@ object Crashlytics {
 
         this.defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(customUncaughtExceptionHandler)
+
+        crashlytics?.setCustomKey("isFirebaseTestLabDevice", firebaseTestLabDevice)
 
         FirebaseInstallations.getInstance().id
             .addOnCompleteListener { task ->
@@ -156,6 +158,8 @@ object Crashlytics {
             "isLowMemoryKillReportSupported",
             earlyMetricsProvider.isLowMemoryKillReportSupported
         )
+
+        crashlytics?.setCustomKey("isUserAMonkey", earlyMetricsProvider.isUserAMonkey)
     }
 
     private fun getSupportedAbi(): String =

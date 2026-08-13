@@ -1,6 +1,8 @@
 package io.muun.apollo.domain.analytics
 
 import android.app.Activity
+import io.muun.apollo.domain.errors.ErrorClassification
+import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.Operation
@@ -20,23 +22,38 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     companion object {
         private const val ANALYTICS_EVENT_PARAM_VALUE_MAX_LENGTH = 100
 
-        fun buildParamsFor(report: ErrorReport): List<Pair<String, String>> = listOf(
+        private fun getClassification(error: Throwable?): String =
+            when (error) {
+                is MuunError -> error.classification.trackingValue
+                else -> ErrorClassification.UNEXPECTED.trackingValue
+            }
+
+        fun buildParamsFor(report: ErrorReport): List<Pair<String, String>> = listOfNotNull(
             "id" to report.uniqueId,
-            "tag" to report.tag,
+            if (report.tag != "Apollo") ("tag" to report.tag) else null,
             "title" to report.getTrackingTitle(),
             "message" to report.message,
-            // Trim error stacktraces to avoid problems (not ideal but should be more than enough)
-            "error" to report.printError(false),
-            "metadata" to report.printMetadata()
+            "metadata" to report.printMetadata(),
+            "error_classification" to getClassification(report.originalError ?: report.error)
         )
 
         fun buildParamsFor(error: Throwable): List<Pair<String, String>> {
-            return listOf(
-                "errorToString" to error.toString(),
+            return listOfNotNull(
                 "errorSimpleName" to error.javaClass.getSimpleName(),
-                "errorLocalizedMessage" to (error.localizedMessage ?: ""),
+                error.localizedMessage?.let { "errorLocalizedMessage" to it },
                 *buildParamsFor(ErrorReportBuilder.build(error)).toTypedArray()
             )
+        }
+
+        private fun buildErrorParams(
+            cause: Throwable?,
+            type: S_NEW_OP_ERROR_TYPE,
+        ): Array<Pair<String, String>> {
+            return if (cause != null) {
+                buildParamsFor(cause).toTypedArray()
+            } else {
+                arrayOf("error_classification" to type.getFallbackClassification().trackingValue)
+            }
         }
 
         /**
@@ -222,7 +239,35 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         INVALID_SWAP,
         CYCLICAL_SWAP,
         SWAP_FAILED,
-        OTHER
+        OTHER;
+
+        /**
+         * Fallback classification for when no Throwable cause is available to derive
+         * the error classification from. When a cause IS available, the classification
+         * is determined from the Throwable itself (see [buildParamsFor]).
+         */
+        fun getFallbackClassification(): ErrorClassification {
+            return when (this) {
+                EXCHANGE_RATE_WINDOW_TOO_OLD,
+                INVALID_SWAP,
+                SWAP_FAILED,
+                OTHER,
+                    -> ErrorClassification.UNEXPECTED
+
+                INVALID_ADDRESS,
+                EXPIRED_INVOICE,
+                INVALID_INVOICE,
+                INVOICE_EXPIRES_TOO_SOON,
+                INVOICE_ALREADY_USED,
+                INVOICE_MISSING_AMOUNT,
+                UNREACHABLE_NODE,
+                NO_PAYMENT_ROUTE,
+                INSUFFICIENT_FUNDS,
+                AMOUNT_BELOW_DUST,
+                CYCLICAL_SWAP,
+                    -> ErrorClassification.EXPECTED
+            }
+        }
     }
 
     class S_NEW_OP_ERROR(
@@ -234,8 +279,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         listOf(
 
             "origin" to origin.name.lowercase(Locale.getDefault()),
-            "type" to type.name.lowercase(Locale.getDefault()),
-            *(cause?.let { buildParamsFor(it).toTypedArray() } ?: emptyArray()),
+            "error_type" to type.name.lowercase(Locale.getDefault()),
+            *buildErrorParams(cause, type),
             *params
         )
     )

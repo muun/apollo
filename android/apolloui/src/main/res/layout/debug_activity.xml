@@ -151,19 +151,19 @@
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
                 android:layout_marginTop="8dp"
-                android:id="@+id/debug_button_unpair_security_card"
+                android:id="@+id/debug_button_enter_diagnostic_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Unpair Security Card"
+                android:text="Enter diagnostic mode"
                 tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
                 android:layout_marginTop="8dp"
-                android:id="@+id/debug_button_enter_diagnostic_mode"
+                android:id="@+id/debug_button_secure_key_value_storage_debug"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enter diagnostic mode"
+                android:text="SecureKeyValueStorage debug"
                 tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton

@@ -2,11 +2,11 @@ package walletdb
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/jinzhu/gorm"
 )
 
@@ -28,80 +28,96 @@ type KeyValue struct {
 	Value *string
 }
 
-type GORMKeyValueRepository struct {
-	db *gorm.DB
+type keyValueRepository struct {
+	withDB gormProvider
+}
+
+func (r *keyValueRepository) gorm(fn gormOperation) error {
+	return r.withDB(fn)
 }
 
 // Create inserts a key with a null value if the key doesn't exist.
-func (r *GORMKeyValueRepository) Create(key string) error {
-
-	now := time.Now().UTC()
-	query := `
-		INSERT INTO key_values (key, created_at, updated_at)
-		VALUES (?, ?, ?)
-		ON CONFLICT(key) DO NOTHING
-	`
-	_, err := r.db.CommonDB().Exec(query, key, now, now)
-	return err
+func (r *keyValueRepository) Create(key string) error {
+	return r.gorm(func(db *gorm.DB) error {
+		now := time.Now().UTC()
+		query := `
+			INSERT INTO key_values (key, created_at, updated_at)
+			VALUES (?, ?, ?)
+			ON CONFLICT(key) DO NOTHING
+		`
+		_, err := db.CommonDB().Exec(query, key, now, now)
+		return err
+	})
 }
 
 // Save inserts or updates a key-value into database
-func (r *GORMKeyValueRepository) Save(key string, value *string) error {
-
-	now := time.Now().UTC()
-	query := `
-		INSERT INTO key_values (key, value, created_at, updated_at)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(key) DO UPDATE SET 
-			value = excluded.value,
-			updated_at = excluded.updated_at;
-	`
-	err := r.db.Exec(query, key, value, now, now).Error
-	if err != nil {
-		return fmt.Errorf("failed to save or update key-value: %w", err)
-	}
-	return nil
+func (r *keyValueRepository) Save(key string, value *string) error {
+	return r.gorm(func(db *gorm.DB) error {
+		now := time.Now().UTC()
+		query := `
+			INSERT INTO key_values (key, value, created_at, updated_at)
+			VALUES (?, ?, ?, ?)
+			ON CONFLICT(key) DO UPDATE SET
+				value = excluded.value,
+				updated_at = excluded.updated_at;
+		`
+		err := db.Exec(query, key, value, now, now).Error
+		if err != nil {
+			return errors.Errorf("failed to save or update key-value: %w", err)
+		}
+		return nil
+	})
 }
 
 // Update updates the value of a key if it exists.
-func (r *GORMKeyValueRepository) Update(key string, newValue string) error {
-	now := time.Now().UTC()
-	query := `UPDATE key_values SET value=?, updated_at=? WHERE key=?`
-	_, err := r.db.CommonDB().Exec(query, newValue, now, key)
-	return err
+func (r *keyValueRepository) Update(key string, newValue string) error {
+	return r.gorm(func(db *gorm.DB) error {
+		now := time.Now().UTC()
+		query := `UPDATE key_values SET value=?, updated_at=? WHERE key=?`
+		_, err := db.CommonDB().Exec(query, newValue, now, key)
+		return err
+	})
 }
 
 // Get value by key from database
-func (r *GORMKeyValueRepository) Get(key string) (*string, error) {
-	var ns sql.NullString
-	err := r.db.Raw("SELECT value FROM key_values WHERE key = ?", key).Row().Scan(&ns)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			// If key is not found, return nil
-			return nil, nil
+func (r *keyValueRepository) Get(key string) (*string, error) {
+	var result *string
+	err := r.gorm(func(db *gorm.DB) error {
+		var ns sql.NullString
+		err := db.Raw("SELECT value FROM key_values WHERE key = ?", key).Row().Scan(&ns)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				// If key is not found, return nil
+				return nil
+			}
+			return errors.Errorf(
+				"failed to fetch from db: %w",
+				err,
+			)
 		}
-		return nil, fmt.Errorf("failed to fetch from db: %v", err)
-	}
-	if ns.Valid {
-		return &ns.String, nil
-	}
-	return nil, nil
+		if ns.Valid {
+			result = &ns.String
+		}
+		return nil
+	})
+	return result, err
 }
 
 // Delete key-value pair by key
-func (r *GORMKeyValueRepository) Delete(key string) error {
-
-	err := r.db.Exec("DELETE FROM key_values WHERE key = ?", key).Error
-	if err != nil {
-		return fmt.Errorf("failed to delete key-value: %w", err)
-	}
-	return nil
+func (r *keyValueRepository) Delete(key string) error {
+	return r.gorm(func(db *gorm.DB) error {
+		err := db.Exec("DELETE FROM key_values WHERE key = ?", key).Error
+		if err != nil {
+			return errors.Errorf("failed to delete key-value: %w", err)
+		}
+		return nil
+	})
 }
 
 // SaveBatch inserts or updates a map of key-value into database
-func (r *GORMKeyValueRepository) SaveBatch(items map[string]*string) error {
+func (r *keyValueRepository) SaveBatch(items map[string]*string) error {
 	if len(items) == 0 {
-		return fmt.Errorf("no items provided for database insertion")
+		return errors.Errorf("no items provided for database insertion")
 	}
 
 	now := time.Now().UTC()
@@ -121,18 +137,19 @@ func (r *GORMKeyValueRepository) SaveBatch(items map[string]*string) error {
 	`
 	query := fmt.Sprintf(baseQuery, strings.Join(placeholders, ", "))
 
-	err := r.db.Exec(query, args...).Error
-	if err != nil {
-		return fmt.Errorf("failed to save batch: %w", err)
-	}
-
-	return nil
+	return r.gorm(func(db *gorm.DB) error {
+		err := db.Exec(query, args...).Error
+		if err != nil {
+			return errors.Errorf("failed to save batch: %w", err)
+		}
+		return nil
+	})
 }
 
 // GetBatch returns a list of values from database given a key list
-func (r *GORMKeyValueRepository) GetBatch(keys []string) (map[string]*string, error) {
+func (r *keyValueRepository) GetBatch(keys []string) (map[string]*string, error) {
 	if len(keys) == 0 {
-		return nil, fmt.Errorf("no keys provided")
+		return nil, errors.Errorf("no keys provided")
 	}
 
 	keyValues := make(map[string]*string)
@@ -141,7 +158,10 @@ func (r *GORMKeyValueRepository) GetBatch(keys []string) (map[string]*string, er
 	}
 
 	placeholders := make([]string, len(keys))
-	args := make([]interface{}, len(keys))
+	args := make(
+		[]interface{}, //nolint:modernize // TODO: use any instead of interface{}
+		len(keys),
+	)
 	for i, key := range keys {
 		placeholders[i] = "?"
 		args[i] = key
@@ -152,26 +172,28 @@ func (r *GORMKeyValueRepository) GetBatch(keys []string) (map[string]*string, er
 	`
 	query := fmt.Sprintf(baseQuery, strings.Join(placeholders, ","))
 
-	rows, err := r.db.Raw(query, args...).Rows()
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var key string
-		var value sql.NullString
-
-		err := rows.Scan(&key, &value)
+	err := r.gorm(func(db *gorm.DB) error {
+		rows, err := db.Raw(query, args...).Rows()
 		if err != nil {
-			return nil, err
+			return err
 		}
+		defer rows.Close() //nolint:errcheck // TODO: check error
 
-		if value.Valid {
-			keyValues[key] = &value.String
+		for rows.Next() {
+			var key string
+			var value sql.NullString
+
+			err := rows.Scan(&key, &value)
+			if err != nil {
+				return err
+			}
+
+			if value.Valid {
+				keyValues[key] = &value.String
+			}
 		}
-	}
-	err = rows.Err()
+		return rows.Err()
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +201,10 @@ func (r *GORMKeyValueRepository) GetBatch(keys []string) (map[string]*string, er
 }
 
 // UpdateAccordingToMap updates key-values based on a map of old-to-new values.
-func (r *GORMKeyValueRepository) UpdateAccordingToMap(key string, oldToNewMap map[string]string) (int, error) {
+func (r *keyValueRepository) UpdateAccordingToMap(
+	key string,
+	oldToNewMap map[string]string,
+) (int, error) {
 	if len(oldToNewMap) == 0 {
 		return 0, nil
 	}
@@ -194,16 +219,21 @@ func (r *GORMKeyValueRepository) UpdateAccordingToMap(key string, oldToNewMap ma
 	queryBuilder.WriteString("ELSE value END, updated_at = ? WHERE key = ?")
 	args = append(args, now, key)
 
-	result, err := r.db.CommonDB().Exec(queryBuilder.String(), args...)
-	if err != nil {
-		return 0, err
-	}
-	rowsAffected, _ := result.RowsAffected()
-	return int(rowsAffected), nil
+	var n int
+	err := r.gorm(func(db *gorm.DB) error {
+		res, err := db.CommonDB().Exec(queryBuilder.String(), args...)
+		if err != nil {
+			return err
+		}
+		rowsAffected, _ := res.RowsAffected()
+		n = int(rowsAffected)
+		return nil
+	})
+	return n, err
 }
 
 // IsValueIn returns true if the current value of key is in allowedValues.
-func (r *GORMKeyValueRepository) IsValueIn(key string, allowedValues []string) (bool, error) {
+func (r *keyValueRepository) IsValueIn(key string, allowedValues []string) (bool, error) {
 	if len(allowedValues) == 0 {
 		return false, nil
 	}
@@ -221,10 +251,15 @@ func (r *GORMKeyValueRepository) IsValueIn(key string, allowedValues []string) (
 		strings.Join(placeholders, ","),
 	)
 
-	var count int
-	row := r.db.CommonDB().QueryRow(query, args...)
-	if err := row.Scan(&count); err != nil {
-		return false, err
-	}
-	return count > 0, nil
+	var result bool
+	err := r.gorm(func(db *gorm.DB) error {
+		var count int
+		row := db.CommonDB().QueryRow(query, args...)
+		if err := row.Scan(&count); err != nil {
+			return err
+		}
+		result = count > 0
+		return nil
+	})
+	return result, err
 }

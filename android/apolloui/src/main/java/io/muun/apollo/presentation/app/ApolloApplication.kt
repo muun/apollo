@@ -27,6 +27,7 @@ import io.muun.apollo.data.external.UserFacingErrorMessages
 import io.muun.apollo.data.logging.Crashlytics
 import io.muun.apollo.data.logging.LoggingContext
 import io.muun.apollo.data.logging.MuunTree
+import io.muun.apollo.data.nfc.NfcEmpiricalCache
 import io.muun.apollo.data.preferences.migration.PreferencesMigrationManager
 import io.muun.apollo.domain.ApplicationLockManager
 import io.muun.apollo.domain.BackgroundTimesProcessor
@@ -99,6 +100,9 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
     @Inject
     lateinit var appStartupInitializer: AppStartupInitializer
 
+    @Inject
+    lateinit var nfcEmpiricalCache: NfcEmpiricalCache
+
     override fun onCreate() {
         // The order of the calls in this method is intentional.
         // Please don't rearrange them without understanding the implications.
@@ -107,8 +111,9 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
 
         initializeStaticSingletons()
 
+        val firebaseTestLabDevice = isFirebaseTestLabDevice()
         HeapDumper.init(this)
-        Crashlytics.init(this)
+        Crashlytics.init(this, firebaseTestLabDevice)
         StrictMode.init()
 
         ensureCurrencyServicesLoaded()
@@ -116,7 +121,7 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         AndroidThreeTen.init(this)
 
         // Ignore tracking events for Firebase Test Lab devices
-        if (isFirebaseTestLabDevice()) {
+        if (firebaseTestLabDevice) {
             FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(false)
         }
 
@@ -127,6 +132,8 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         detectAppUpdate.run()
 
         initializeLibwallet()
+
+        nfcEmpiricalCache.initFromStorage()
 
         migrateSharedPreferences()
 
@@ -189,7 +196,7 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
      * [...](https://stackoverflow.com/a/45070039/901465)
      */
     private fun isFirebaseTestLabDevice(): Boolean {
-        return "true" == Settings.System.getString(getContentResolver(), "firebase.test.lab")
+        return "true" == Settings.System.getString(contentResolver, "firebase.test.lab")
     }
 
     /**

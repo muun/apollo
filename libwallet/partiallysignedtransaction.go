@@ -3,17 +3,15 @@ package libwallet
 import (
 	"bytes"
 	"encoding/hex"
-	"errors"
-	"fmt"
+
+	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/wire"
+	"github.com/go-errors/errors"
 
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/btcsuitew/txscriptw"
-
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
-
-	"github.com/btcsuite/btcd/btcutil"
-	"github.com/btcsuite/btcd/wire"
 )
 
 type SigningExpectations struct {
@@ -24,7 +22,13 @@ type SigningExpectations struct {
 	alternative bool
 }
 
-func NewSigningExpectations(destination string, amount int64, change MuunAddress, fee int64, alternative bool) *SigningExpectations {
+func NewSigningExpectations(
+	destination string,
+	amount int64,
+	change MuunAddress,
+	fee int64,
+	alternative bool,
+) *SigningExpectations {
 	return &SigningExpectations{
 		destination,
 		amount,
@@ -51,7 +55,7 @@ type MuunAddress interface {
 }
 
 type Outpoint interface {
-	TxId() []byte
+	TxId() []byte //nolint:staticcheck // should be TxID, but it's part of the gomobile contract with the apps
 	Index() int
 	Amount() int64
 }
@@ -128,7 +132,7 @@ func NewPartiallySignedTransaction(
 	tx := wire.NewMsgTx(0)
 	err := tx.Deserialize(bytes.NewReader(rawTx))
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode tx: %w", err)
+		return nil, errors.Errorf("failed to decode tx: %w", err)
 	}
 
 	return &PartiallySignedTransaction{
@@ -169,12 +173,17 @@ func (p *PartiallySignedTransaction) createPrevOuts(net *Network) ([]*wire.TxOut
 
 		decodedAddr, err := btcutilw.DecodeAddress(addr, net.network)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode address %s in prevOut %d: %w", addr, i, err)
+			return nil, errors.Errorf("failed to decode address %s in prevOut %d: %w", addr, i, err)
 		}
 
 		script, err := txscriptw.PayToAddrScript(decodedAddr)
 		if err != nil {
-			return nil, fmt.Errorf("failed to craft output script for %s in prevOut %d: %w", addr, i, err)
+			return nil, errors.Errorf(
+				"failed to craft output script for %s in prevOut %d: %w",
+				addr,
+				i,
+				err,
+			)
 		}
 
 		prevOuts[i] = &wire.TxOut{Value: amount, PkScript: script}
@@ -183,17 +192,20 @@ func (p *PartiallySignedTransaction) createPrevOuts(net *Network) ([]*wire.TxOut
 	return prevOuts, nil
 }
 
-func (p *PartiallySignedTransaction) Sign(userKey *HDPrivateKey, muunKey *HDPublicKey) (*Transaction, error) {
+func (p *PartiallySignedTransaction) Sign(
+	userKey *HDPrivateKey,
+	muunKey *HDPublicKey,
+) (*Transaction, error) {
 
 	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert input data to coin: %w", err)
+		return nil, errors.Errorf("could not convert input data to coin: %w", err)
 	}
 
 	for i, coin := range coins {
 		err = coin.SignInput(i, p.tx, userKey, muunKey)
 		if err != nil {
-			return nil, fmt.Errorf("failed to sign input: %w", err)
+			return nil, errors.Errorf("failed to sign input: %w", err)
 		}
 	}
 
@@ -201,26 +213,33 @@ func (p *PartiallySignedTransaction) Sign(userKey *HDPrivateKey, muunKey *HDPubl
 
 }
 
-func (p *PartiallySignedTransaction) FullySign(userKey, muunKey *HDPrivateKey) (*Transaction, error) {
+func (p *PartiallySignedTransaction) FullySign(
+	userKey, muunKey *HDPrivateKey,
+) (*Transaction, error) {
 
 	coins, err := p.coins(userKey.Network)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert input data to coin: %w", err)
+		return nil, errors.Errorf("could not convert input data to coin: %w", err)
 	}
 
 	for i, coin := range coins {
 		err = coin.FullySignInput(i, p.tx, userKey, muunKey)
 		if err != nil {
-			return nil, fmt.Errorf("failed to sign input: %w", err)
+			return nil, errors.Errorf("failed to sign input: %w", err)
 		}
 	}
 
 	return newTransaction(p.tx)
 }
 
-func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, userPublicKey *HDPublicKey, muunPublickKey *HDPublicKey) error {
+func (p *PartiallySignedTransaction) Verify(
+	expectations *SigningExpectations,
+	userPublicKey *HDPublicKey,
+	muunPublickKey *HDPublicKey,
+) error {
 
-	// TODO: We don't have enough information (yet) to check the inputs are actually ours and they exist.
+	// TODO: We don't have enough information (yet) to check the inputs are actually ours and they
+	// exist.
 
 	network := userPublicKey.Network
 
@@ -228,20 +247,25 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 	// If we were to receive more than that, we consider it invalid.
 	if expectations.change != nil {
 
-		// Alternative TXs with change output might not have the destination output, so we
-		// don't do a strict check but rather a sanity one. The strict check will be down
-		// the line.
+		// Alternative TXs with change output might not have the destination output, so we don't do
+		// a strict check but rather a sanity one. The strict check will be down the line.
 		if expectations.alternative {
 			if len(p.tx.TxOut) > 2 {
-				return fmt.Errorf("expected at most destination and change outputs but found %v", len(p.tx.TxOut))
+				return errors.Errorf(
+					"expected at most destination and change outputs but found %v",
+					len(p.tx.TxOut),
+				)
 			}
 
 		} else if len(p.tx.TxOut) != 2 {
-			return fmt.Errorf("expected destination and change outputs but found %v", len(p.tx.TxOut))
+			return errors.Errorf(
+				"expected destination and change outputs but found %v",
+				len(p.tx.TxOut),
+			)
 		}
 
 	} else if len(p.tx.TxOut) != 1 {
-		return fmt.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
+		return errors.Errorf("expected destination output only but found %v", len(p.tx.TxOut))
 	}
 
 	// Build output script corresponding to the destination address.
@@ -276,19 +300,24 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 	if expectations.alternative {
 		// Alternative TXs might not have a destination output if there's change present
 		if toOutput == nil && changeOutput == nil {
-			return fmt.Errorf("expected at least one of destination and change outputs but found zero")
+			return errors.Errorf(
+				"expected at least one of destination and change outputs but found zero",
+			)
 		}
 
 		if toOutput != nil && toOutput.Value >= expectedAmount {
-			return fmt.Errorf("destination amount is mismatched. found %v expected at most %v", toOutput.Value, expectedAmount)
+			return errors.Errorf(
+				"destination amount is mismatched. found %v expected at most %v",
+				toOutput.Value,
+				expectedAmount,
+			)
 		}
 
 		if (toOutput == nil || changeOutput == nil) && len(p.tx.TxOut) > 1 {
-			return fmt.Errorf("expected exactly one output and found %v", len(p.tx.TxOut))
+			return errors.Errorf("expected exactly one output and found %v", len(p.tx.TxOut))
 		}
 
-		// Re-adjust our expectations by moving the reduced destination amount
-		// to fee.
+		// Re-adjust our expectations by moving the reduced destination amount to fee.
 		if toOutput == nil {
 			expectedFee += expectedAmount
 			expectedAmount = 0
@@ -305,14 +334,20 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 		// Verify destination output value matches expected amount
 		if toOutput.Value != expectedAmount {
-			return fmt.Errorf("destination amount is mismatched. found %v expected %v", toOutput.Value, expectedAmount)
+			return errors.Errorf(
+				"destination amount is mismatched. found %v expected %v",
+				toOutput.Value,
+				expectedAmount,
+			)
 		}
 	}
 
 	/*
 		NOT CHECKED: outputs smaller than dustThreshold.
-		We removed this check, which could be exploited by the crafter to invalidate the transaction. Since failing the
-		integrity check ourselves would have the same effect (preventing us from signing) it doesn't make much sense.
+		We removed this check, which could be exploited by the crafter to
+		invalidate the transaction. Since failing the integrity check
+		ourselves would have the same effect (preventing us from signing)
+		it doesn't make much sense.
 	*/
 
 	var actualTotal int64
@@ -322,10 +357,13 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 	/*
 		NOT CHECKED: input amounts.
-		These are provided by the crafter, but for segwit inputs (scheme v3 and forward), the amount is part of
-		the data to sign. Thus, they can't be manipulated without invalidating the signature.
-		Client's using this code are all generating v3 or superior addresses. They could still have older UTXOs, but
-		they should be rare, only a handful of users ever used v1 and v2 addresses.
+		These are provided by the crafter, but for segwit inputs
+		(scheme v3 and forward), the amount is part of the data to sign.
+		Thus, they can't be manipulated without invalidating the
+		signature. Client's using this code are all generating v3 or
+		superior addresses. They could still have older UTXOs, but they
+		should be rare, only a handful of users ever used v1 and v2
+		addresses.
 	*/
 
 	// Verify change output is spendable by the wallet.
@@ -336,19 +374,19 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 		expectedChangeAmount := actualTotal - expectedAmount - expectedFee
 		if changeOutput.Value != expectedChangeAmount {
-			return fmt.Errorf("change amount is mismatched. found %v expected %v",
+			return errors.Errorf("change amount is mismatched. found %v expected %v",
 				changeOutput.Value, expectedChangeAmount)
 		}
 
 		derivedUserKey, err := userPublicKey.DeriveTo(expectedChange.DerivationPath())
 		if err != nil {
-			return fmt.Errorf("failed to derive user key to change path %v: %w",
+			return errors.Errorf("failed to derive user key to change path %v: %w",
 				expectedChange.DerivationPath(), err)
 		}
 
 		derivedMuunKey, err := muunPublickKey.DeriveTo(expectedChange.DerivationPath())
 		if err != nil {
-			return fmt.Errorf("failed to derive muun key to change path %v: %w",
+			return errors.Errorf("failed to derive muun key to change path %v: %w",
 				expectedChange.DerivationPath(), err)
 		}
 
@@ -360,24 +398,24 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 			network.network,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to build the change address with version %v: %w",
+			return errors.Errorf("failed to build the change address with version %v: %w",
 				expectedChange.Version(), err)
 		}
 
 		if expectedChangeAddress.Address() != expectedChange.Address() {
-			return fmt.Errorf("mismatched change address. found %v, expected %v",
+			return errors.Errorf("mismatched change address. found %v, expected %v",
 				expectedChange.Address(), expectedChangeAddress.Address())
 		}
 
 		actualFee := actualTotal - expectedAmount - expectedChangeAmount
 		if actualFee != expectedFee {
-			return fmt.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
+			return errors.Errorf("fee mismatched. found %v, expected %v", actualFee, expectedFee)
 		}
 
 	} else {
 		actualFee := actualTotal - expectedAmount
 		if actualFee >= expectedFee+dustThreshold {
-			return fmt.Errorf(
+			return errors.Errorf(
 				"change output is too big to be burned as fee. actual fee: %v, expected: %v",
 				actualFee, expectedFee,
 			)
@@ -386,9 +424,12 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 
 	/*
 		NOT CHECKED: locktimes.
-		Using locktimes set in the future would invalidate the transaction, so the crafter could prevent us from spending
-		money. However, we would inflict the same denial on ourselves by rejecting it. Also, we'll eventually rely on
-		locktimes ourselves and would then need version checks to decide whether to send them to specific clients.
+		Using locktimes set in the future would invalidate the
+		transaction, so the crafter could prevent us from spending money.
+		However, we would inflict the same denial on ourselves by
+		rejecting it. Also, we'll eventually rely on locktimes ourselves
+		and would then need version checks to decide whether to send
+		them to specific clients.
 	*/
 
 	return nil
@@ -397,11 +438,11 @@ func (p *PartiallySignedTransaction) Verify(expectations *SigningExpectations, u
 func addressToScript(address string, network *Network) ([]byte, error) {
 	parsedAddress, err := btcutilw.DecodeAddress(address, network.network)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse address %v: %w", address, err)
+		return nil, errors.Errorf("failed to parse address %v: %w", address, err)
 	}
 	script, err := txscriptw.PayToAddrScript(parsedAddress)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate script for address %v: %w", address, err)
+		return nil, errors.Errorf("failed to generate script for address %v: %w", address, err)
 	}
 	return script, nil
 }
@@ -410,7 +451,7 @@ func newTransaction(tx *wire.MsgTx) (*Transaction, error) {
 	var buf bytes.Buffer
 	err := tx.Serialize(&buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode tx: %w", err)
+		return nil, errors.Errorf("failed to encode tx: %w", err)
 	}
 
 	return &Transaction{
@@ -426,7 +467,13 @@ type coin interface {
 	FullySignInput(index int, tx *wire.MsgTx, userKey, muunKey *HDPrivateKey) error
 }
 
-func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.TaprootSigHashes, userNonces *MusigNonces) (coin, error) {
+func createCoin(
+	index int,
+	input Input,
+	network *Network,
+	sigHashes *txscriptw.TaprootSigHashes,
+	userNonces *MusigNonces,
+) (coin, error) {
 	txID, err := chainhash.NewHash(input.OutPoint().TxId())
 	if err != nil {
 		return nil, err
@@ -441,10 +488,10 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 	version := input.Address().Version()
 
 	if userNonces == nil {
-		return nil, fmt.Errorf("userNonces cannot be nil")
+		return nil, errors.Errorf("userNonces cannot be nil")
 	}
-	if len(userNonces.sessionIds) <= index {
-		return nil, fmt.Errorf("not enough nonces were provided")
+	if len(userNonces.sessionIDs) <= index {
+		return nil, errors.Errorf("not enough nonces were provided")
 	}
 
 	switch version {
@@ -487,7 +534,7 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 			OutPoint:       outPoint,
 			KeyPath:        keyPath,
 			Amount:         amount,
-			UserSessionId:  userNonces.sessionIds[index],
+			UserSessionID:  userNonces.sessionIDs[index],
 			MuunPubNonce:   nonce,
 			MuunPartialSig: muunPartialSig,
 			SigHashes:      sigHashes,
@@ -502,7 +549,7 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 			OutPoint:       outPoint,
 			KeyPath:        keyPath,
 			Amount:         amount,
-			UserSessionId:  userNonces.sessionIds[index],
+			UserSessionID:  userNonces.sessionIDs[index],
 			MuunPubNonce:   nonce,
 			MuunPartialSig: muunPartialSig,
 			SigHashes:      sigHashes,
@@ -561,6 +608,6 @@ func createCoin(index int, input Input, network *Network, sigHashes *txscriptw.T
 			HtlcOutputKeyPath:   swap.HtlcOutputKeyPath(),
 		}, nil
 	default:
-		return nil, fmt.Errorf("can't create coin from input version %v", version)
+		return nil, errors.Errorf("can't create coin from input version %v", version)
 	}
 }

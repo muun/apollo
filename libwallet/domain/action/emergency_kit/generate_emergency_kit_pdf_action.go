@@ -2,18 +2,23 @@ package emergency_kit
 
 import (
 	"encoding/json"
-	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/go-errors/errors"
+
 	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/domain/model/emergency_kit/go_render"
 	"github.com/muun/libwallet/emergencykit"
-	"os"
-	"path/filepath"
 )
 
 // GeneratedEKPDF is a model including the verificationCode and version
 type GeneratedEKPDF struct {
 	VerificationCode string
 	Version          int
+	// Profiling holds per-stage timings and allocation stats for this render.
+	Profiling *go_render.RenderProfiling
 }
 
 // GenerateEmergencyKitPDFAction action for generating emergency kit PDFs
@@ -36,7 +41,7 @@ func (a *GenerateEmergencyKitPDFAction) Run(
 	outputDir := filepath.Dir(outputPath)
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create directory: %w", err)
+		return nil, errors.Errorf("failed to create directory: %w", err)
 	}
 
 	ekInput := &emergencykit.Input{
@@ -58,14 +63,19 @@ func (a *GenerateEmergencyKitPDFAction) Run(
 		return nil, err
 	}
 
+	startEmbed := time.Now()
 	metadata, err := libwallet.CreateEmergencyKitMetadata(ekParams)
 	if err != nil {
-		return nil, fmt.Errorf("GenerateEkHtml failed to create metadata: %w", err)
+		return nil, errors.Errorf("GenerateEkHtml failed to create metadata: %w", err)
 	}
 
 	metadataBytes, err := json.Marshal(&metadata)
 	if err != nil {
-		return nil, fmt.Errorf("GenerateEkHtml failed to marshal %s: %w", string(metadataBytes), err)
+		return nil, errors.Errorf(
+			"GenerateEkHtml failed to marshal %s: %w",
+			string(metadataBytes),
+			err,
+		)
 	}
 
 	err = os.Remove(outputPath)
@@ -84,9 +94,12 @@ func (a *GenerateEmergencyKitPDFAction) Run(
 		return nil, err
 	}
 
+	result.Profiling.EmbedMetadataMs = time.Since(startEmbed).Milliseconds()
+
 	return &GeneratedEKPDF{
 		VerificationCode: result.VerificationCode,
 		Version:          result.Version,
+		Profiling:        result.Profiling,
 	}, nil
 }
 

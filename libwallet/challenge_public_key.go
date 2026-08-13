@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
+
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil/base58"
+	"github.com/go-errors/errors"
 )
 
 type ChallengePublicKey struct {
@@ -24,11 +25,11 @@ func NewChallengePublicKeyFromSerialized(serializedKey []byte) (*ChallengePublic
 }
 
 // EncryptKey
-// We must check whether the MuunKey is serialized as V2 or V3 before serializing the UserKey.
-// Since the MuunKey is stored client-side after login, users already logged in will always have
-// the MuunKey serialized as V2 on their devices. If the user updates the app without re-logging in,
-// a MuunKeyV2 will remain stored, and we must serialize the UserKey as V2 to maintain key consistency
-// in the EmergencyKit.
+// We must check whether the MuunKey is serialized as V2 or V3 before serializing the
+// UserKey. Since the MuunKey is stored client-side after login, users already logged in
+// will always have the MuunKey serialized as V2 on their devices. If the user updates
+// the app without re-logging in, a MuunKeyV2 will remain stored, and we must serialize
+// the UserKey as V2 to maintain key consistency in the EmergencyKit.
 func (k *ChallengePublicKey) EncryptKey(
 	privKey *HDPrivateKey,
 	recoveryCodeSalt []byte,
@@ -38,7 +39,7 @@ func (k *ChallengePublicKey) EncryptKey(
 	reader := bytes.NewReader(base58.Decode(muunPrivateKey))
 	version, err := reader.ReadByte()
 	if err != nil {
-		return "", fmt.Errorf("decrypting key: %w", err)
+		return "", errors.Errorf("decrypting key: %w", err)
 	}
 
 	switch version {
@@ -47,11 +48,15 @@ func (k *ChallengePublicKey) EncryptKey(
 	case 3:
 		return k.encryptKeyAsV3(privKey, recoveryCodeSalt, birthday)
 	default:
-		return "", fmt.Errorf("unrecognized key version %v", version)
+		return "", errors.Errorf("unrecognized key version %v", version)
 	}
 }
 
-func (k *ChallengePublicKey) encryptKeyAsV2(privKey *HDPrivateKey, recoveryCodeSalt []byte, birthday int) (string, error) {
+func (k *ChallengePublicKey) encryptKeyAsV2(
+	privKey *HDPrivateKey,
+	recoveryCodeSalt []byte,
+	birthday int,
+) (string, error) {
 	const (
 		chainCodeStart  = 13
 		chainCodeLength = 32
@@ -64,7 +69,10 @@ func (k *ChallengePublicKey) encryptKeyAsV2(privKey *HDPrivateKey, recoveryCodeS
 	plaintext = append(plaintext, rawHDKey[privKeyStart:privKeyStart+privKeyLength]...)
 	plaintext = append(plaintext, rawHDKey[chainCodeStart:chainCodeStart+chainCodeLength]...)
 	if len(plaintext) != 64 {
-		return "", fmt.Errorf("failed to encrypt key: expected payload of 64 bytes, found %v", len(plaintext))
+		return "", errors.Errorf(
+			"failed to encrypt key: expected payload of 64 bytes, found %v",
+			len(plaintext),
+		)
 	}
 
 	pubEph, ciphertext, err := encryptWithPubKey(k.pubKey, plaintext)
@@ -91,7 +99,11 @@ func (k *ChallengePublicKey) encryptKeyAsV2(privKey *HDPrivateKey, recoveryCodeS
 	return base58.Encode(buf.Bytes()), nil
 }
 
-func (k *ChallengePublicKey) encryptKeyAsV3(privKey *HDPrivateKey, recoveryCodeSalt []byte, birthday int) (string, error) {
+func (k *ChallengePublicKey) encryptKeyAsV3(
+	privKey *HDPrivateKey,
+	recoveryCodeSalt []byte,
+	birthday int, //nolint:revive // TODO: use or remove birthday
+) (string, error) {
 	const (
 		chainCodeStart  = 13
 		chainCodeLength = 32
@@ -104,7 +116,10 @@ func (k *ChallengePublicKey) encryptKeyAsV3(privKey *HDPrivateKey, recoveryCodeS
 	plaintext = append(plaintext, rawHDKey[privKeyStart:privKeyStart+privKeyLength]...)
 	plaintext = append(plaintext, rawHDKey[chainCodeStart:chainCodeStart+chainCodeLength]...)
 	if len(plaintext) != 64 {
-		return "", fmt.Errorf("failed to encrypt key: expected payload of 64 bytes, found %v", len(plaintext))
+		return "", errors.Errorf(
+			"failed to encrypt key: expected payload of 64 bytes, found %v",
+			len(plaintext),
+		)
 	}
 
 	pubEph, ciphertext, err := encryptWithPubKey(k.pubKey, plaintext)

@@ -34,7 +34,7 @@ class OperationsPresenter @Inject constructor(
         subscribeTo(observable)
     }
 
-    fun onOperationClicked(operationId: Long?) {
+    fun onOperationClicked(operationId: Long) {
         navigator.navigateToOperationDetail(context, operationId)
     }
 

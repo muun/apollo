@@ -1,10 +1,12 @@
 package nfc
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/muun/libwallet/app_provided_data"
 	"strings"
+
+	"github.com/muun/libwallet/app_provided_data"
 )
 
 type JavaCardApplet interface {
@@ -65,4 +67,28 @@ func (m *MockJavaCard) handleSelectApplet(apdu []byte) (
 
 	// Return some internal OS stuff + "muun.com" in hex (e.g. 6D75756E2E636F6D).
 	return newSuccessResponse([]byte("D1010855046D75756E2E636F6D")), nil
+}
+
+func newSuccessResponse(responseBytes []byte) *app_provided_data.NfcBridgeResponse {
+	return &app_provided_data.NfcBridgeResponse{
+		Response:   responseBytes,
+		StatusCode: responseOk,
+	}
+}
+
+func newErrorResponse(statusCode int32) *app_provided_data.NfcBridgeResponse {
+	return &app_provided_data.NfcBridgeResponse{
+		Response:   nil,
+		StatusCode: statusCode,
+	}
+}
+
+func randomBytes(count int) []byte {
+	buf := make([]byte, count)
+	_, err := rand.Read(buf)
+	if err != nil {
+		panic("couldn't read random bytes")
+	}
+
+	return buf
 }

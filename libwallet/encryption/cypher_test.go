@@ -15,6 +15,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
+
 	"github.com/muun/libwallet/hdpath"
 )
 
@@ -89,7 +90,9 @@ func (k keyProvider) WithPathUsingHardenedBug(path string) (*btcec.PrivateKey, e
 			modifier = hdkeychain.HardenedKeyStart
 		}
 		//lint:ignore SA1019 using deprecated method for backwards compat with the bug
-		key, err = key.DeriveNonStandard(index.Index | modifier)
+		key, err = key.DeriveNonStandard( //nolint:staticcheck // TODO: key.DeriveNonStandard is deprecated: This is a non-standard derivation that is affected by issue #172. 1-of-256 hardened derivations will be wrong.  See note in the Derive method and IsAffectedByIssue172.
+			index.Index | modifier,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -104,9 +107,9 @@ func (k keyProvider) Path() string {
 
 func TestPublicKeyEncryptionV1(t *testing.T) {
 	const (
-		priv         = "xprv9s21ZrQH143K2DAjx7FiAo2GQAQ5g7GrPYkTB2RaCd2Ei5ZH7f9cbREHiZTCc1FPn9HKuviUHk8sf5cW3dhYjz6W6XPjXNHu5mLpT5oRH1j"
-		ciphertext   = "AMWm2L3YjA7myBTQQgiZi9F5g1NzaaupkPq1y7csUkf7WLXwnPYjkmy5KjVkyTKjaSXPwjx2zmX9Augzwwh89AsWYTv7KfJTXTj3Lx2mNZgmxJ7eezaJyRHv4koQaEmRykSoVE4esjWK779Sac28kCstkqDMPDYeNud5H4ApetF4BvhvPJyMaVn4RHYSAGzBzMcBV7WxYoRveKHqU9LbAfhCndPtRSVZyTVXY8iE3EvQJFeZVyYdovPK67aHsXWRdi8QCinMQSG21TMmhs7GQAh6iB26X2ABcVFJRGeEKE2coAsfuAHzcAMZ3CdzGgVAm7rrQw13W3XpxwwjWVatH9Jm9H4TrnnnLxRCsBoSKDvA1hmH8a2UG9iMxkhsBVMPzNRMy4Bg4MHk8WyRo3bwCLSVJUFFEciQ3mUneHprezzbVZio"
-		plaintextHex = "ca4dabb05a47d3ab306c1fad895d97b06dc30564191e610f9b254b1a1d0a536b6eca2b83d0d17d67aaad2a958fe6a6557ad5b26f44e12e7662f47a4e4fd6f482b68a83cd140ad4ded43b90a2c2cf349af84d828b1f961901616b4c4cb01f761bd277ad0d3d90506065aef76b930a962fcb90f2f009898c0d55cd07b5e01c355a9067937185fa9237d03e5ed4243e1bf0f8a959c72a83cbb1729b679cbd660052dd2dd3096b0f19e9275ac459b94d02a95642"
+		priv         = "xprv9s21ZrQH143K2DAjx7FiAo2GQAQ5g7GrPYkTB2RaCd2Ei5ZH7f9cbREHiZTCc1FPn9HKuviUHk8sf5cW3dhYjz6W6XPjXNHu5mLpT5oRH1j"                                                                                                                                                                                                                                                                                                                                  //nolint:lll
+		ciphertext   = "AMWm2L3YjA7myBTQQgiZi9F5g1NzaaupkPq1y7csUkf7WLXwnPYjkmy5KjVkyTKjaSXPwjx2zmX9Augzwwh89AsWYTv7KfJTXTj3Lx2mNZgmxJ7eezaJyRHv4koQaEmRykSoVE4esjWK779Sac28kCstkqDMPDYeNud5H4ApetF4BvhvPJyMaVn4RHYSAGzBzMcBV7WxYoRveKHqU9LbAfhCndPtRSVZyTVXY8iE3EvQJFeZVyYdovPK67aHsXWRdi8QCinMQSG21TMmhs7GQAh6iB26X2ABcVFJRGeEKE2coAsfuAHzcAMZ3CdzGgVAm7rrQw13W3XpxwwjWVatH9Jm9H4TrnnnLxRCsBoSKDvA1hmH8a2UG9iMxkhsBVMPzNRMy4Bg4MHk8WyRo3bwCLSVJUFFEciQ3mUneHprezzbVZio" //nolint:lll
+		plaintextHex = "ca4dabb05a47d3ab306c1fad895d97b06dc30564191e610f9b254b1a1d0a536b6eca2b83d0d17d67aaad2a958fe6a6557ad5b26f44e12e7662f47a4e4fd6f482b68a83cd140ad4ded43b90a2c2cf349af84d828b1f961901616b4c4cb01f761bd277ad0d3d90506065aef76b930a962fcb90f2f009898c0d55cd07b5e01c355a9067937185fa9237d03e5ed4243e1bf0f8a959c72a83cbb1729b679cbd660052dd2dd3096b0f19e9275ac459b94d02a95642"                                                                             //nolint:lll
 	)
 
 	privKey, _ := hdkeychain.NewKeyFromString(priv)
@@ -136,7 +139,7 @@ func TestPublicKeyEncryptionV1(t *testing.T) {
 func TestPublicKeyDecryptV1(t *testing.T) {
 
 	const (
-		privHex = "xprv9s21ZrQH143K36uECEJcmTnxSXfHjT9jdb7FpMoUJpENDxeRgpscDF3g2w4ySH6G9uVsGKK7e6WgGp7Vc9VVnwC2oWdrr7a3taWiKW8jKnD"
+		privHex = "xprv9s21ZrQH143K36uECEJcmTnxSXfHjT9jdb7FpMoUJpENDxeRgpscDF3g2w4ySH6G9uVsGKK7e6WgGp7Vc9VVnwC2oWdrr7a3taWiKW8jKnD" //nolint:lll
 		path    = "m"
 		pathLen = 1
 	)
@@ -219,7 +222,10 @@ func TestPublicKeyDecryptV1(t *testing.T) {
 		nonce := data[len(data)-12:]
 		encryptionKey, _ := hdkeychain.NewKeyFromString(privHex)
 		ecEncryptionKey, _ := encryptionKey.ECPrivKey()
-		secret, _ := RecoverSharedEncryptionSecretForAES(ecEncryptionKey, data[1:serializedPublicKeyLength+1])
+		secret, _ := RecoverSharedEncryptionSecretForAES(
+			ecEncryptionKey,
+			data[1:serializedPublicKeyLength+1],
+		)
 
 		block, _ := aes.NewCipher(secret)
 		gcm, _ := cipher.NewGCM(block)
