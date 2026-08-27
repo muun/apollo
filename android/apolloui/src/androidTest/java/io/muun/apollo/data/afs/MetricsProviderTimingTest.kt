@@ -291,9 +291,6 @@ class MetricsProviderTimingTest {
             "isPlainTextDrmId", timingsInMicroSeconds
         ) { metricsProvider.isPlainTextDrmId }
         measure(
-            "contextSwapDrmId", timingsInMicroSeconds
-        ) { metricsProvider.contextSwapDrmId }
-        measure(
             "drmIdNativeHook", timingsInMicroSeconds
         ) { metricsProvider.drmIdNativeHook }
 

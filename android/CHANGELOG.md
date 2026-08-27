@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.11] - 2026-08-27
+
+### FIXED
+
+- Various crash fixes
+
 ## [55.10] - 2026-08-11
 
 ### FIXED

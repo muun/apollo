@@ -299,7 +299,5 @@ class MetricsProvider @Inject constructor(
 
     val isPlainTextDrmId: Int by lazy { hardwareCapabilitiesProvider.isPlainTextDrmId }
 
-    val contextSwapDrmId: String by lazy { hardwareCapabilitiesProvider.contextSwapDrmId }
-
     val drmIdNativeHook: Int by lazy { runtimeInfoProvider.drmIdNativeHook }
 }
