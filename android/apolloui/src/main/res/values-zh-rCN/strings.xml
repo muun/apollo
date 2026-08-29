@@ -1,1 +1,1710 @@
 
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Manifest strings -->
+    <string name="verify_link_handler_label" translatable="false">Muun</string>
+    <string name="authorize_link_handler_label" translatable="false">Muun</string>
+    <string name="confirm_link_handler_label" translatable="false">Muun</string>
+
+    <!-- General-purpose strings -->
+    <string name="no">否</string>
+    <string name="yes">是</string>
+    <string name="yes_cancel">是，取消</string>
+    <string name="cancel">取消</string>
+    <string name="dismiss">忽略</string>
+    <string name="stay">留下</string>
+    <string name="leave">离开</string>
+    <string name="go_to_settings">前往设置</string>
+    <string name="retry">重试</string>
+    <string name="send_report">发送报告</string>
+    <string name="abort">中止</string>
+    <string name="available_balance">余额</string>
+    <string name="selected">已选择</string>
+    <string name="why"><annotation link="why">为什么？</annotation></string>
+    <string name="no_internet">网络连接中断</string>
+    <string name="qr_code_image">二维码图片</string> <!-- accesibility -->
+    <string name="backspace">退格</string> <!-- accesibility -->
+    <string name="long_date_format">%s 于 %s%s</string>
+    <string name="not_available">不可用</string>
+    <string name="open_app">打开应用</string>
+    <string name="loading">加载中...</string>
+    <string name="contacting">联系中</string>   <!-- Just used for UI test matching -->
+
+    <string name="overflow_menu_hint">更多</string>
+
+    <!-- FCM -->
+    <string name="google_play_services_not_available">
+        此设备上似乎没有谷歌Play服务。Muun 需要它来发送闪电网络支付的推送通知。请安装谷歌Play服务后重试。
+    </string>
+    <string name="fcm_token_not_available">
+        Android 通知服务无响应。请重试。
+    </string>
+
+    <!-- New operation -->
+    <string name="new_operation_title">新支付</string>
+    <string name="operation_detail_title">支付详情</string>
+    <string name="showqr_title">接收</string>
+    <string name="scanqr_title">发送</string>
+    <string name="scanqr_drawer_title">使用剪贴板中的地址</string>
+    <string name="scanqr_drawer_no_address">来自 %s 的付款请求</string>
+    <string name="scanqr_drawer_no_address_no_host">来自商家的付款请求</string>
+    <string name="scanqr_drawer_ln_invoice_title">使用剪贴板中的发票</string>
+
+    <string name="grant_camera_permission_button">启用相机</string>
+
+    <string name="camera_permission_request_title">
+        扫描比特币或闪电网络二维码
+    </string>
+
+    <string name="camera_permission_request">
+        启用相机以扫描包含地址或发票的二维码
+    </string>
+
+    <string name="new_operation_to">发送至</string>
+    <string name="new_operation_to_hint">输入比特币地址或发票</string>
+    <string name="new_operation_dialog_full_address">完整地址</string>
+    <string name="new_operation_note_hint">添加备注</string>
+    <string name="new_operation_total">总计</string>
+    <string name="new_operation_fee">网络费用</string>
+    <string name="new_operation_amount">金额</string>
+    <string name="new_operation_use_all_funds">使用全部资金</string>
+    <string name="new_operation_note">备注</string>
+    <string name="new_operation_confirm">发送</string>
+    <string name="new_operation_resolving">正在加载支付详情</string>
+    <string name="new_operation_receiving_node_data">接收节点详情</string>
+    <string name="new_operation_invoice_exp_prefix">此发票将于</string>
+    <string name="new_operation_invoice_exp_weeks">%d 周 %d 天后过期</string>
+    <string name="new_operation_invoice_exp_days">%d 天 %d 小时后过期</string>
+    <string name="new_operation_invoice_exp_hours">%d 小时 %d 分钟后过期</string>
+    <string name="new_operation_invoice_exp_minutes">%02d:%02d 后过期</string>
+    <string name="new_operation_invoice_exp_seconds">%02d:%02d 后过期</string>
+
+    <string name="confirm_amount">确认金额</string>
+    <string name="confirm_note">确认备注</string>
+    <string name="title_new_operation">发送比特币</string>
+
+    <string name="new_operation_abort_alert_title">取消支付？</string>
+    <string name="new_operation_abort_alert_body">
+        您想取消此支付并返回主屏幕吗？
+    </string>
+
+    <string name="new_operation_swap_title">通过闪电网络支付</string>
+    <string name="new_operation_receiving_node_public_key">
+        <![CDATA[<b>公钥：</b> %s]]>
+    </string>
+    <string name="new_operation_receiving_node_network_address">
+        <![CDATA[<b>网络地址：</b> %s]]>
+    </string>
+    <string name="see_in_node_explorer">在节点浏览器中打开</string>
+
+    <string name="new_op_1_conf_notice_banner">
+        此支付可能比大多数闪电网络支付耗时更长。
+        <annotation link="link">为什么？</annotation>
+    </string>
+    <string name="new_op_1_conf_notice_title">为什么此支付会耗时更长？</string>
+    <string name="new_op_1_conf_notice_desc">
+        此闪电网络支付需要一笔已确认的链上交易。平均需要 10 分钟来确认。
+    </string>
+
+    <!-- Failed operation -->
+    <string name="error_op_insufficient_funds">您的资金不足</string>
+    <string name="error_op_insufficient_funds_desc">
+            您的资金不足以支付此款项和网络费用。
+    </string>
+
+    <string name="error_op_invoice_unreachable_node_title">无法支付此发票</string>
+    <string name="error_op_invoice_unreachable_node_desc">
+        此发票由一个无法访问的私有节点创建。要访问它，发票必须包含额外数据（RouteHints）。此问题只能由发票创建者解决。
+    </string>
+
+    <string name="error_op_invoice_no_route_title">没有可用路由</string>
+    <string name="error_op_invoice_no_route_desc">
+        没有足够容量的路由来完成此支付。请联系我们的
+        <annotation link="support">支持团队</annotation> 并告知我们发生了什么。我们很乐意提供帮助。
+    </string>
+
+    <string name="error_op_invoice_will_expire_soon_title">
+        此支付需要更长的过期时间
+    </string>
+    <string name="error_op_invoice_will_expire_soon_desc">
+        请申请一个过期时间至少为一小时的新发票，
+        或尝试扫描金额较小的发票。
+    </string>
+
+    <string name="error_op_invoice_expired_title">此发票已过期</string>
+    <string name="error_op_invoice_expired_desc">
+        此发票在支付完成前已过期。请创建或申请一个新的。
+    </string>
+
+    <string name="error_op_invoice_used_title">此发票已被使用</string>
+    <string name="error_op_invoice_used_desc">
+        此发票已被其他钱包扫描或支付。请创建或申请一个新的。
+    </string>
+
+    <string name="error_op_invoice_invalid_amount_title">
+        此发票不包含金额
+    </string>
+    <string name="error_op_invoice_invalid_amount_desc">
+        目前，您只能支付包含金额的发票。请创建或申请一个新的。
+    </string>
+
+    <string name="error_op_invoice_invalid_title">无法支付此发票</string>
+    <string name="error_op_invoice_invalid_desc">请尝试使用其他发票</string>
+
+    <string name="error_op_exchange_rate_window_too_old_title">比特币汇率已变化</string>
+    <string name="error_op_exchange_rate_window_too_old_desc">
+        您的支付未完成，因为自您开始操作以来比特币汇率已发生变化。请发起新的支付。
+    </string>
+
+    <string name="error_op_invalid_swap">发生意外错误</string>
+    <string name="error_op_invalid_swap_desc">
+        出了点问题，但我们不知道是什么。请联系我们的
+        <annotation link="support">支持团队</annotation> 并告知我们发生了什么。我们很乐意提供帮助。
+    </string>
+
+    <string name="error_op_cyclical_swap_title">无法支付此发票</string>
+    <string name="error_op_cyclical_swap_desc">您不能向自己支付发票。</string>
+
+    <string name="error_op_swap_failed_title">支付失败</string>
+    <string name="error_op_swap_failed_desc">
+        接收钱包当前无法处理闪电网络支付，因此支付失败。
+    </string>
+
+    <string name="error_op_generic">发生错误</string>
+    <string name="error_op_generic_desc">
+        出了点问题，但我们无法确定原因。我们创建了一份错误报告，这将帮助我们找到它。
+        \n\n
+        请将报告<annotation link="support">发送</annotation>给我们的团队。
+    </string>
+
+    <string name="error_op_amount_too_small_title">此支付金额过小</string>
+    <string name="error_op_amount_too_small_desc">
+        您尝试发送的金额过小。必须大于 546 聪。
+    </string>
+
+    <string name="error_op_invalid_address_title">这不是一个 BTC 地址</string>
+    <string name="error_op_invalid_address_desc">
+        这不是一个 BTC 地址或闪电网络发票。请仔细检查其来源并确保地址格式正确。
+        \n
+        \n扫描的文本：
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_op_invalid_address_title_no_arg">这不是一个 BTC 地址</string>
+    <string name="error_op_invalid_address_desc_no_arg">
+        这不是一个 BTC 地址或闪电网络发票。请仔细检查其来源并确保地址格式正确。
+    </string>
+
+    <string name="error_invalid_lnurl_title">这是一个 LNURL 码吗？</string>
+    <string name="error_invalid_lnurl_desc">
+        看起来不像。请仔细检查其来源。请记住，您只能在支持 LNURL 的服务上使用它。
+        \n
+        \n扫描的文本：
+        \n<annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+    </string>
+
+    <string name="error_invalid_lnurl_tag_title">这是一个 LNURL 提现吗？</string>
+    <string name="error_invalid_lnurl_tag_desc">
+        这是一个有效的 LNURL，但不适用于此操作。请仔细检查其来源。
+    </string>
+
+    <string name="error_lnurl_service_unresponsive_title">%s 无响应</string>
+    <string name="error_lnurl_service_unresponsive_desc">
+        创建该 LNURL 码的服务不可用。请稍后重试。
+    </string>
+
+    <string name="error_lnurl_unknown_title">出了点问题</string>
+    <string name="error_lnurl_unknown_desc">
+        出了点问题，我们不确定是什么。请向我们发送报告以帮助查明原因。
+        \n
+        \n<annotation fontStyle="bold">收到的消息：</annotation>
+        \n<annotation arg="0">placeholder</annotation>
+    </string>
+
+    <string name="error_lnurl_invoice_expired_title">@string/notification_ln_payment_failed</string>
+    <string name="error_lnurl_invoice_expired_desc">
+        您的闪电网络发票已过期，<annotation arg="0">placeholder</annotation> 未完成支付。请联系他们获取更多信息。
+        \n
+        \n<annotation fontStyle="bold">使用的发票：</annotation>
+        \n<annotation arg="1">placeholder</annotation>
+    </string>
+
+    <string name="error_lnurl_expired_title">提现请求已过期</string>
+    <string name="error_lnurl_expired_desc">
+        LNURL 在支付完成前已过期。请申请一个新的。
+    </string>
+
+    <string name="error_lnurl_no_balance_title">没有可提现的资金</string>
+    <string name="error_lnurl_no_balance_desc">
+        您似乎没有可从
+        <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation> 提现的资金。请检查您的余额是否为空。
+    </string>
+
+    <string name="error_lnurl_no_route_title">没有可用路由</string>
+    <string name="error_lnurl_no_route_desc">
+        <annotation fontStyle="bold"><annotation arg="0">service</annotation></annotation> 似乎找不到向您发送支付的路由。我们建议您联系
+        <annotation fontStyle="bold"><annotation arg="1">service</annotation></annotation>
+        让他们知晓。
+    </string>
+
+
+    <string name="error_desc_styled_string_fallback_to_arg">
+        <annotation arg="0">content</annotation>
+    </string>
+
+    <string name="error_op_action">返回主页</string>
+    <string name="error_op_action_back">返回</string>
+
+    <!-- Operation detail -->
+    <string name="operation_detail_description">描述</string>
+    <string name="operation_detail_date">时间</string>
+    <string name="operation_detail_amount">金额</string>
+    <string name="operation_detail_confirmations">确认数</string>
+    <string name="operation_detail_fee">网络费用</string> <!-- default always overridden -->
+    <string name="operation_detail_address_incoming">接收地址</string>
+    <string name="operation_detail_address_outgoing">发送地址</string>
+    <string name="operation_detail_txid">交易 ID</string>
+    <string name="operation_detail_share_txid_title">交易 ID</string>
+    <string name="operation_detail_invoice">闪电网络发票</string>
+    <string name="operation_detail_swap_hash">支付哈希</string>
+    <string name="operation_detail_swap_preimage">支付原像</string>
+    <string name="operation_detail_receiving_pubkey">接收节点</string>
+    <string name="operation_detail_fee_outgoing">支付给矿工的费用</string>
+
+    <string name="operation_swap_pending_0conf_desc">
+        等待接收方接受支付。
+    </string>
+    <string name="operation_swap_pending_desc">
+        此支付正在等待链上确认。
+    </string>
+    <string name="operation_swap_failed_desc">此支付没有可用路由。您将在大约 %d 小时（%d 个区块）内获得退款。
+    </string>
+    <string name="operation_swap_expired_desc">
+        此支付失败。您已收到退款。
+    </string>
+    <string name="operation_swap_pending_confirmations_explanation_title">需要确认
+    </string>
+    <string name="operation_swap_pending_explanation_desc">此闪电网络支付涉及一笔链上交易。要完成支付，该交易必须得到确认。
+    </string>
+    <string name="operation_detail_invoice_copied">发票已复制到剪贴板</string>
+    <string name="operation_detail_preimage_copied">支付原像已复制到剪贴板</string>
+    <string name="operation_detail_payment_hash_copied">支付哈希已复制到剪贴板</string>
+    <string name="operation_detail_txid_copied">交易 ID 已复制到剪贴板</string>
+    <string name="operation_detail_amount_copied">金额已复制到剪贴板</string>
+    <string name="operation_detail_fee_copied">网络费用已复制到剪贴板</string>
+    <string name="operation_detail_address_copied">地址已复制到剪贴板</string>
+    <string name="operation_detail_node_copied">接收节点已复制到剪贴板</string>
+
+    <!-- Operation history -->
+    <string name="home_operations_list_title">支付记录</string>
+    <string name="history_external_incoming_operation_description">来自比特币网络</string>
+    <string name="history_external_incoming_swap_description">来自闪电网络</string>
+    <string name="home_operations_empty">
+        <annotation link="go_to_receive">接收</annotation>您的第一笔支付，开始体验！
+    </string>
+    <string name="home_operations_empty_title">您的支付历史将显示在这里</string>
+    <string name="operation_sent_to_yourself">您支付给了自己</string>
+    <string name="internal_incoming_operation">%s 支付给您</string>
+    <string name="internal_outgoing_operation">您支付给 %s</string>
+    <string name="external_incoming_operation">您收到了一笔支付</string>
+    <string name="external_outgoing_operation">您支付了一笔款项</string>
+    <string name="external_outgoing_swap_operation">您支付给了 %s</string>
+    <string name="lnurl_withdraw_op_detail_title">%s 支付给您</string>
+
+    <!-- Contacts -->
+    <string name="contact_list_empty">
+        <annotation link="go_to_p2p_setup">启用联系人</annotation> 以便使用您的手机号码和联系人列表向朋友转账。
+    </string>
+    <!-- UI TESTING ONLY: Must match above clickable span  -->
+    <string name="contact_list_empty_clickable_span">启用联系人</string>
+
+    <string name="contact_list_title">联系人</string>
+
+    <!-- Notifications -->
+    <string name="notifications_new_contact">%s 刚刚加入 Muun！</string>
+    <string name="notifications_amount_received">收到 %s</string>
+    <string name="notifications_amount_received_from">%s 向您发送了 %s</string>
+    <string name="notifications_op_failed_title">您的支付失败</string>
+    <string name="notifications_op_failed_content">打开您的钱包查看详情</string>
+    <string name="notification_receiving_ln_payment">您的支付正在途中</string>
+    <string name="notification_receiving_ln_payment_desc">
+        一旦 %s 完成支付，您就会收到款项。
+    </string>
+    <string name="notification_ln_payment_failed">@string/notifications_op_failed_title</string>
+    <string name="notification_ln_payment_failed_desc">
+        您的闪电网络发票已过期，%s 未完成支付。
+    </string>
+    <string name="notification_incoming_ln_payment_pending">打开 Muun 接收支付</string>
+    <string name="notification_incoming_ln_payment_pending_desc">
+        有人通过闪电网络向您发送了比特币。点击此处接收。
+    </string>
+    <string name="notification_incoming_ln_payment_pending_cta">接收支付</string>
+
+
+    <!-- Generic strings -->
+    <string name="slogan">自托管钱包</string>
+    <string name="slogan_second_line">用于比特币和闪电网络</string>
+    <string name="network_error_message">无法连接到 Muun 服务器。这通常是暂时性的，可以自行恢复。请稍等几秒钟，检查您的网络连接后重试。如果问题仍然存在，请联系 <annotation fontStyle="bold">support@muun.com</annotation> 寻求帮助。</string>
+
+    <!-- Landing -->
+
+    <string name="signup_start">创建新钱包</string>
+    <string name="login_start">恢复现有钱包</string>
+
+    <!-- Signup -->
+
+    <string name="signup_continue">继续</string>
+    <string name="signup_title">注册</string> <!-- unused -->
+    <string name="login_title">恢复您的钱包</string>
+
+    <!-- signup.phone_number -->
+
+    <string name="signup_phone_number_title">验证您的手机号码</string>
+    <string name="signup_phone_number_explanation">
+        输入您的手机号码和国家/地区以接收验证码。可能会产生运营商费用。
+    </string>
+    <string name="signup_phone_number_why_this">为什么需要这个？</string>
+    <string name="signup_phone_number_why_this_title">为什么我们需要这个信息？</string>
+    <string name="signup_phone_number_why_this_description">
+        Muun 让您可以通过手机号码和联系人列表轻松支付。
+        那些已经知道您手机号码的人将能够更轻松地通过 Muun 向您付款。
+    </string>
+    <string name="signup_phone_number_select_country">选择您的国家/地区</string>
+
+    <string name="select_country">选择您的国家/地区</string>
+
+    <string name="signup_phone_number_code_helper">国家/地区</string>
+    <string name="signup_phone_number_phone_helper">手机号码</string>
+    <string name="signup_enter_number">继续</string>
+
+    <!-- signup.email -->
+
+    <string name="signup_email_verify">验证您的邮箱</string>
+    <string name="signup_email_authorize">授权钱包恢复</string>
+    <string name="signup_email_verify_explanation">
+        您将在
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> 收到一封授权邮件。
+        请点击邮件中的链接继续。
+    </string>
+    <string name="email_verify_open_mail">打开邮件应用</string>
+
+    <!-- signup.verification -->
+
+    <string name="signup_verification_title">@string/signup_phone_number_title</string>
+    <string name="signup_verification_explanation">
+        您将通过短信收到验证码
+    </string>
+    <string name="signup_verification_code_hint">6 位验证码</string>
+    <string name="signup_verification_resend_countdown">这可能需要 %d:%02d</string>
+    <string name="signup_verification_resend_message">没有收到？</string>
+    <string name="action_change_num">号码有误？</string>
+    <string name="action_resend_sms">重新发送短信</string>
+    <string name="action_call_me">打电话给我</string>
+    <string name="signup_enter_code">继续</string>
+
+    <string name="set_up_rc_step_count">第 %d 步，共 %d 步</string>
+
+    <!-- LoginEmailFragment -->
+    <string name="login_email_title">输入您的邮箱</string>
+    <string name="login_email_explanation">
+        您在设置钱包时选择了它。
+    </string>
+    <string name="login_email_input_hint">您的邮箱</string>
+    <string name="login_email_action">继续</string>
+
+    <!-- signup.profile -->
+
+    <string name="signup_profile_title">填写您的个人资料</string>
+    <string name="signup_profile_explanation">
+        您的全名和头像仅对您的联系人可见
+    </string>
+    <string name="signup_profile_why_this">谁可以看到这些信息？</string>
+    <string name="signup_profile_why_this_title">谁可以看到这些信息？</string>
+    <string name="signup_profile_why_this_explanation">您的全名和头像将仅对联系人列表中已有您手机号码的人可见。
+    </string>
+    <string name="signup_create_profile">创建个人资料</string>
+
+    <string name="signup_profile_first_name_hint">名字</string>
+    <string name="signup_profile_last_name_hint">姓氏</string>
+    <string name="field_first_name">名字</string>
+    <string name="field_last_name">姓氏</string>
+    <string name="field_password">密码</string>
+
+    <!-- signup.unlock -->
+
+    <string name="signup_unlock_title">输入您的密码</string>
+    <string name="signup_unlock_forgot">我忘记了密码</string>
+    <string name="signup_unlock_continue">继续</string>
+    <string name="signup_unlock_password_hint">您的密码</string>
+    <string name="signup_unlock_password_reminder">
+        <![CDATA[<b>提醒：</b> 密码至少 8 个字符。这是唯一的限制。]]>
+    </string>
+    <string name="signup_unlock_password_abort_title">取消钱包恢复？</string>
+    <string name="signup_unlock_password_abort_msg">
+        您尚未完成钱包恢复。您可以稍后再做。
+    </string>
+    <!-- signup.sync -->
+    <string name="signup_sync_creating">正在创建您的钱包</string>
+    <string name="signup_sync_loading">正在恢复您的钱包</string>
+
+    <!-- home -->
+    <string name="home_footer_action_send">发送</string>
+    <string name="home_footer_action_receive">接收</string>
+    <string name="home_send_feedback_action_title">帮助与反馈</string>
+
+    <!-- WelcomeToMuun -->
+    <string name="welcome_to_muun">您已创建了一个新钱包。</string>
+    <string name="welcome_to_muun_second_line">欢迎使用 Muun！</string>
+    <string name="welcome_to_muun_cta">开始使用</string>
+
+    <!-- Send screen -->
+    <string name="send_header_title">发送比特币</string>
+    <string name="send_confirm">继续</string>
+    <string name="send_uri_error_title">地址或发票无效</string>
+    <string name="send_uri_error_body"> 这不是一个比特币地址或闪电网络发票。</string>
+    <string name="send_cyclic_payment_warning">您将把资金发送到您自己的 Muun 钱包</string>
+
+    <string name="paste_from_clipboard_button">从剪贴板粘贴</string>
+    <string name="no_lnurl_in_clipboard_error">剪贴板中没有 LNURL</string>
+
+    <!-- QR scanner -->
+    <string name="qr_scanner_subtitle">@string/camera_permission_request_title</string>
+
+    <!-- request_update -->
+
+    <string name="request_update_title">需要更新</string>
+    <string name="request_update_subtitle">要继续使用 Muun，请将应用更新到最新版本。
+    </string>
+    <string name="request_update_body">只需要几分钟</string>
+    <string name="request_update_action">更新</string>
+
+    <!-- request_restart -->
+    <string name="request_restart_title">需要重启</string>
+    <string name="request_restart_subtitle">要继续使用 Muun，请重启应用
+        并恢复您的钱包。
+    </string>
+    <string name="request_restart_body">新功能和修复正在等待您！</string>
+    <string name="request_restart_action">重启</string>
+
+    <!-- pin -->
+    <string name="pin_error_on_setup_cancel">"请选择一个 PIN 码"</string> <!-- unused -->
+    <string name="navigation_back">返回</string>
+    <string name="your_pin_did_not_match">PIN 码不匹配</string>
+    <string name="choose_your_pin">创建您的 PIN 码</string>
+    <string name="choose_your_pin_description">保护您的钱包安全</string>
+    <string name="choose_your_pin_repeat_description">再次输入以确认</string>
+    <string name="confirm_your_pin">确认您的 PIN 码</string>
+    <string name="enter_your_pin">输入您的 PIN 码</string>
+    <string name="pin_attempts_left_many">剩余 %d 次尝试机会</string>
+    <string name="pin_attempts_left_one">剩余 1 次尝试机会</string>
+    <string name="pin_attempts_left_zero">没有剩余尝试机会</string>
+
+    <!-- Setup Email & Password  -->
+
+    <string name="setup_password_step_counter">%s / %s</string>
+
+    <string name="setup_password_intro_title">备份您的钱包</string>
+    <string name="setup_password_intro_body">
+        使用您的邮箱和密码，在更换手机或重新安装 Muun 时方便地恢复您的钱包。
+    </string>
+    <string name="setup_password_intro_title_has_rc">使用密码备份</string>
+    <string name="setup_password_intro_body_has_rc">
+        使用您的邮箱和密码，在更换手机或重新安装 Muun 时方便地恢复您的钱包。
+        \n\n
+        这将启用多因素认证，在使用您的恢复代码时提高安全性。
+    </string>
+    <string name="setup_password_intro_action">开始</string>
+
+    <string name="setup_password_abort_title">中止恢复设置？</string>
+    <string name="setup_password_abort_body">
+        除非您完成设置，否则您的密码将无法使用。
+    </string>
+
+    <string name="setup_password_skip_title">
+        您确定不设置邮箱恢复吗？
+    </string>
+    <string name="setup_password_skip_body">
+        如果您改变主意，可以稍后回来。
+    </string>
+    <string name="setup_password_skip_yes">我确定</string>
+    <string name="setup_password_skip_no">取消</string>
+
+
+    <string name="create_email_title">输入您的邮箱</string>
+    <string name="create_email_subtitle">
+        您将收到一封验证链接。
+        <annotation link="why">Muun 将如何使用我的邮箱？</annotation>
+    </string>
+    <string name="create_email_input_hint">您的邮箱</string>
+    <string name="create_email_skip">我不想使用我的邮箱</string>
+    <string name="create_email_action">确认邮箱</string>
+    <string name="create_email_how_dialog_title">Muun 将如何使用我的邮箱？</string>
+    <string name="create_email_how_dialog_desc">
+        每当有人尝试访问您的钱包时，Muun 都会向您发送邮件，请求您的授权。这可以保护您免受尝试猜测您密码的人（或计算机）的攻击。
+    </string>
+
+    <string name="create_password_title">创建您的密码</string>
+    <string name="create_password_subtitle">
+        选择一个容易记住的密码。如果可能，请避免使用您已经在用的旧密码。
+    </string>
+    <string name="create_password_input_hint">您的密码</string>
+    <string name="create_password_confirm_input_hint">确认您的密码</string>
+    <string name="create_password_input_helper">至少 8 个字符</string>
+    <string name="create_password_input_confirm_helper">密码必须匹配</string> <!-- unuse -->
+    <string name="create_password_action">继续</string>
+    <string name="create_email_help_link">
+        <annotation link="help">我需要帮助</annotation>
+    </string>
+    <string name="create_email_help_content">
+        <annotation role="h1">另一个钱包已在使用此邮箱</annotation>
+
+        <annotation role="p">
+            如果您需要帮助，请联系我们的
+            <annotation link="support">支持团队</annotation>
+            并告知我们发生了什么。我们很乐意提供帮助。
+        </annotation> <!-- check link -->
+    </string>
+
+    <string name="verify_email_title">验证您的邮箱</string>
+    <string name="verify_email_subtitle">
+        您将在
+        <annotation fontStyle="bold"><annotation arg="0">%s</annotation></annotation> 收到一封验证邮件。
+        点击邮件中的链接继续。
+    </string>
+    <string name="verify_email_action">打开邮件应用</string>
+
+    <string name="setup_password_accept_title">您必须理解的两件事</string>
+    <string name="setup_password_accept_why">
+        <annotation link="why">为什么 Muun 无法重置我的密码？</annotation>
+    </string> <!-- check if this fits -->
+    <string name="setup_password_accept_condition_1">
+        我理解我需要我的密码和邮箱访问权限才能恢复我的钱包。
+    </string>
+    <string name="setup_password_accept_condition_2">
+        我理解如果我忘记了密码，Muun 无法重置它。
+    </string>
+    <string name="setup_password_accept_action">完成</string>
+
+    <string name="setup_password_why_cant_reset_title">为什么 Muun 无法重置我的密码？</string>
+    <string name="setup_password_why_cang_reset_desc">
+        您的密码用于加密您的钱包备份，因此没有密码的人无法访问它——即使是 Muun 也不能。如果您丢失了原始密码，备份将无法解密和恢复。
+    </string>
+
+    <string name="setup_password_success_title">成功！</string>
+    <string name="setup_password_success_body">
+        您已备份您的钱包，现在可以使用您的邮箱和密码恢复它。
+    </string>
+    <string name="setup_password_success_action">太好了</string>
+
+    <!-- Setup Recovery Code -->
+    <string name="recovery_code_title">设置恢复代码</string>
+
+    <string name="priming_recovery_code_start">开始</string>
+    <string name="priming_recovery_code_title">创建备用备份</string>
+    <string name="priming_recovery_code_desc">
+        在纸上写下一个代码，以便在忘记密码时恢复您的钱包。
+    </string>
+    <string name="priming_recovery_code_email_skipped_title">备份您的钱包</string>
+    <string name="priming_recovery_code_email_skipped_desc">
+        在纸上写下一个代码，以便在更换手机或重新安装 Muun 时恢复您的钱包。
+    </string>
+
+    <string name="recovery_code_explanation_title">写下您的恢复代码</string>
+    <string name="recovery_code_explanation">
+        请使用笔和纸。为了安全起见，请勿将其保存在手机或云端。
+    </string>
+    <string name="recovery_code_continue">继续</string>
+
+    <string name="recovery_code_verify_explanation_title">确认您的恢复代码</string>
+    <string name="recovery_code_verify_action">继续</string>
+
+    <string name="recovery_code_verify_accept_explanation_title">
+        您必须理解的两件事
+    </string>
+    <string name="recovery_code_verify_accept_condition_1">
+        我理解如果我忘记了密码，我将需要我的恢复代码。
+    </string>
+    <string name="recovery_code_verify_accept_condition_1_skipped_email">
+        我理解我需要我的恢复代码才能恢复我的钱包。
+    </string>
+    <string name="recovery_code_verify_accept_condition_2">
+        我理解 Muun 不会保留我的恢复代码副本，并且该代码无法更改。
+    </string>
+    <string name="recovery_code_accept">完成</string>
+
+    <string name="recovery_code_success_message">成功！</string>
+    <string name="recovery_code_success_description">
+        您现在可以使用您的邮箱和恢复代码来恢复您的钱包。
+    </string>
+    <string name="recovery_code_success_description_email_skipped">
+        您已备份您的钱包，现在可以使用您的恢复代码恢复它。
+    </string>
+    <string name="recovery_code_success_action">太好了</string>
+
+    <string name="recovery_code_missing_title">缺少恢复代码</string> <!-- unused? -->
+    <string name="recovery_code_missing_message">
+        要继续，您首先需要设置您的恢复代码。
+    </string> <!-- unused? -->
+
+    <string name="recovery_code_missing_action">设置恢复代码</string>
+    <string name="recovery_code_error_invalid_character">
+        此代码中包含无效字符
+    </string>
+
+    <string name="recovery_code_abort_title">中止恢复代码设置？</string>
+    <string name="recovery_code_abort_body">
+        除非您完成设置，否则您的恢复代码将无法使用。
+    </string>
+
+    <!-- feedback -->
+    <string name="feedback_title">帮助与反馈</string>
+    <string name="feedback_explanation">
+        向我们发送您的任何想法、评论或问题。我们都会阅读！
+    </string>
+    <string name="feedback_input_hint">反馈</string>
+    <string name="feedback_action">发送反馈</string>
+    <string name="feedback_success">反馈已发送</string>
+    <string name="anon_feedback_explanation">
+        如果您有任何想法、评论或问题，请写信至
+        <annotation fontStyle="bold">support@muun.com</annotation>。
+    </string>
+    <string name="anon_feedback_explanation_support_id">
+        请附上此支持代码 (<annotation arg="0">1111-1111</annotation>)。
+    </string>
+    <string name="anon_feedback_open_email">打开邮件客户端</string>
+
+    <!-- other -->
+
+    <string name="operation_rbf">可取消</string>
+    <string name="operation_pending">确认中</string>
+    <string name="operation_failed">失败</string>
+    <string name="operation_completed">已完成</string>
+
+    <string name="copy">复制</string>
+    <string name="share">分享</string>
+
+    <!-- Phone Number Screen defaults -->
+    <string name="default_country_code">US</string>
+    <string name="default_country_prefix_hint">+1</string>
+
+    <string name="signup_forgot_password_recovery_code_explanation">
+        输入您的恢复代码
+    </string>
+
+    <!--Settings-->
+    <string name="settings_title_profile_hidden">设置</string>
+    <string name="settings_header_recovery">恢复</string>
+    <string name="settings_header_security">安全</string>
+    <string name="settings_header_wallet_details">钱包详情</string>
+    <string name="settings_header_general">通用</string>
+    <string name="settings_item_email">邮箱</string>
+    <string name="settings_item_phone">手机号码</string>
+    <string name="settings_item_primary_currency">主要货币</string>
+    <string name="settings_item_bitcoin_unit">比特币单位</string>
+    <string name="settings_password">更改密码</string>
+    <string name="settings_biometrics">指纹解锁</string>
+    <string name="settings_internal_debugging">内部调试设置</string>
+    <string name="settings_item_export_keys">私钥备份</string> <!-- unused -->
+    <string name="settings_setup_recovery_code">设置恢复代码</string>
+    <string name="settings_recovery_tool">恢复工具</string>
+    <string name="settings_version">版本 %s</string>
+
+    <string name="settings_logout">退出登录</string>
+    <string name="settings_logout_alert_title">您确定吗？</string>
+    <string name="settings_logout_alert_body">
+        您将需要您的密码或恢复代码才能重新访问。
+    </string>
+    <string name="settings_logout_alert_yes">退出登录</string>
+    <string name="settings_logout_alert_no">取消</string>
+
+    <string name="settings_logout_explanation_title">
+        您现在无法退出登录
+    </string>
+    <string name="settings_logout_explanation_description">
+        您收到的支付正在等待确认。
+        退出登录前，请等待它们确认。
+    </string>
+    <string name="settings_logout_explanation_action">确定</string>
+
+    <string name="settings_delete_wallet">删除钱包</string>
+    <string name="settings_delete_wallet_alert_title">
+        请仔细阅读
+    </string>
+    <string name="settings_delete_wallet_alert_body_recoverable_user">
+        您即将永久删除您的钱包。如果继续，您将无法恢复您的钱包，并且还会丢失您的支付历史记录。
+    </string>
+    <string name="settings_delete_wallet_alert_body_unrecoverable_user">
+        您即将永久删除您的钱包。如果继续，您将丢失您的支付历史记录。
+    </string>
+    <string name="settings_delete_wallet_alert_yes">删除</string>
+    <string name="settings_delete_wallet_alert_no">取消</string>
+    <string name="settings_disable_feature_flags">您的功能开关</string>
+    <string name="settings_send_debug_data">通过邮件发送调试数据</string>
+    <string name="disable_feature_flags_security_card">安全卡</string>
+
+    <string name="delete_wallet_success_message">您已删除您的钱包</string>
+    <string name="delete_wallet_success_description">
+        很遗憾看到您离开！我们很想知道原因。请联系
+        我们的 <annotation link="support">支持团队</annotation> 并告知我们。
+    </string>
+    <string name="delete_wallet_success_action">完成</string>
+
+    <string name="settings_delete_wallet_explanation_title">
+        请清空您的钱包
+    </string>
+    <string name="settings_delete_wallet_explanation_description">
+        您的钱包中仍有资金。要删除它，请将所有资金转出，并等待交易获得 6 次确认。
+    </string>
+    <string name="settings_delete_wallet_explanation_action">确定</string>
+
+    <string name="settings_edit_first_name">名字</string>
+    <string name="settings_edit_last_name">姓氏</string>
+    <string name="edit_username_save">保存</string>
+    <string name="edit_username_title">编辑姓名</string>
+
+    <string name="select_primary_currency_title">主要货币</string>
+    <string name="search_currency_title">搜索货币</string>
+    <string name="search_currency_hint">搜索</string>
+    <string name="select_currency_most_popular_section_title">最常用</string>
+    <string name="select_currency_all_section_title">国家/地区</string>
+
+    <string name="edit_password_explanation_title">您的密码用于安全保护。</string>
+    <string name="edit_password_explanation">要更改它，您需要访问您的 <annotation fontStyle="bold">邮箱</annotation> 以及您的 <annotation fontStyle="bold">当前密码</annotation> 或恢复代码。</string>
+    <string name="edit_password_start">开始</string>
+
+    <string name="export_keys_intro_action">创建您的应急工具包</string>
+    <string name="swipe_to_continue">滑动以继续</string>
+
+    <string name="export_keys_intro_1_title">一份文档</string>
+    <string name="export_keys_intro_1_body">
+        您的应急工具包是一个 PDF 文档，其中包含独立转移您的资金所需的信息和说明。
+    </string>
+
+    <string name="export_keys_intro_2_title">在线存储</string>
+    <string name="export_keys_intro_2_body">
+        您的私钥使用您的恢复代码进行安全加密，因此您可以将其保存在云端。
+    </string>
+
+    <string name="export_keys_intro_3_title">完全所有权</string>
+    <string name="export_keys_intro_3_body">
+        通过结合应急工具包和您的恢复代码，您将拥有对资金的完全、无可争议的控制权。
+    </string>
+
+    <string name="export_keys_intro_why_encrypted_title"> <!--unused -->
+        为什么我的私钥是加密的？
+    </string>
+    <string name="export_keys_intro_why_encrypted_body"> <!--unused -->
+        您的私钥经过加密，为您提供更好的安全性。它可以防止您在纸上暴露它们，并允许您安全地将它们在线存储。
+        \n
+        \n在 Muun 中，您可以通过点击邮件并输入密码来恢复对钱包的访问权限。私钥仅应在 Muun 无法配合的极端情况下使用。
+        \n
+        \n针对这种情况，我们构建了一个开源工具，让您可以解密并转移您的密钥。
+    </string>
+
+    <string name="export_keys_preparing">正在准备私钥</string>
+    <string name="export_keys_preparing_error_title">出了点问题</string>
+    <string name="export_keys_preparing_error_desc">
+        准备您的私钥时出错。请稍后重试。
+    </string>
+
+    <!--unused -->
+    <string name="recovery_tool_header">恢复工具</string>
+    <string name="recovery_tool_info_title">
+        使用恢复工具取回您的资金
+    </string>
+    <string name="recovery_tool_info_body">
+        在 Muun 不可用的场景下，这是无需我们服务器协作即可取回您所有资金的方式。
+        \n\n使用您的私钥、恢复代码和恢复工具来取回您的资金。
+        \n\n您可以在以下位置找到我们的恢复工具和此过程的说明：
+    </string>
+
+    <!-- Security logout -->
+    <string name="security_logout_action">恢复您的钱包</string>
+    <string name="security_logout_text">您已退出登录</string>
+    <string name="security_logout_subtext">
+        作为一项安全措施，您已退出登录。请重新登录以继续。
+    </string>
+
+    <string name="edit_profile_pic">编辑头像</string>
+    <string name="action_pick_profile_pic_title">选择图片</string>
+    <string name="action_camera">拍照</string>
+    <string name="action_gallery">从相册选择</string>
+    <string name="uploading_picture">上传图片中</string>
+
+    <string name="enter_old_password_explanation_title">输入您的密码</string>
+    <string name="enter_old_password_explanation">验证您是此钱包的所有者。</string>
+    <string name="enter_old_password_hint">当前密码</string>
+    <string name="use_recovery_code">使用恢复代码</string>
+    <string name="enter_old_password_continue">开始</string>
+
+    <string name="enter_recovery_code_title">输入您的恢复代码</string>
+    <string name="enter_recovery_code_continue">继续</string>
+    <string name="use_password">使用密码</string>
+
+    <string name="change_password_title">输入您的新密码</string>
+    <string name="change_password_hint">新密码</string>
+    <string name="change_password_helper_text">@string/create_password_input_helper</string>
+    <string name="change_password_confirm_input_hint">@string/create_password_confirm_input_hint</string>
+    <string name="change_password_condition">
+        我理解我的旧密码不再有效。
+    </string>
+    <string name="change_password_continue">确认新密码</string>
+    <string name="change_password_abort_dialog_title">中止密码更改？</string>
+    <string name="change_password_abort_dialog_message">
+        除非您完成，否则您的新密码将无法使用。
+    </string>
+    <string name="change_password_abort_dialog_yes">中止</string>
+    <string name="change_password_abort_dialog_no">取消</string>
+    <string name="change_password_success_action">太好了</string>
+    <string name="change_password_success_message">
+        使用您的新密码来恢复您的钱包。
+    </string>
+
+    <!-- Tools mock strings (to preview in layout design screen) -->
+    <string name="tools_mock_long_name">超级长的一个随机名字，它恰好也极其地长，并且还包含了一个额外的小姓氏 :)
+    </string>
+
+    <!-- Sync Contacts - P2PSetup-->
+    <string name="sync_contacts_title">允许访问您的联系人</string>
+    <string name="sync_contacts_explanation">
+        您的联系人电话号码永远不会发送给 Muun。
+    </string>
+    <string name="sync_contacts_how_it_works">这是如何运作的？</string>
+    <string name="sync_contacts_image">同步联系人图片</string>
+    <string name="sync_contacts_button_text">允许访问</string>
+    <string name="sync_contacts_how_it_works_title">这是如何运作的？</string>
+    <string name="sync_contacts_how_it_works_title_description">
+        只有电话号码的哈希值会发送给 Muun，而绝不会发送号码本身。
+        通过匹配这些哈希值，您使用 Muun 的朋友将会显示为联系人。
+    </string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">muun</string>
+
+    <string name="first_on_muun_image">Muun 上的第一位联系人图片</string>
+    <string name="first_on_muun_description">
+        您还没有使用 Muun 的联系人。当他们启用联系人功能后，您将在这里找到他们。
+    </string>
+    <string name="home_contacts_loading">正在扫描联系人</string>
+    <string name="home_contacts_permission_denied_forever_text">
+        Muun 需要通讯录权限才能显示您的联系人，但该权限已被永久拒绝。
+        \n\n
+        请前往应用设置菜单，选择
+        <annotation fontStyle="bold">权限</annotation>，
+        并启用 <annotation fontStyle="bold">通讯录</annotation>。
+    </string>
+    <string name="home_contacts_permission_denied_forever_action">前往设置</string>
+    <string name="select_currency_title">更改货币</string>
+
+    <!-- ERRORS -->
+    <string name="error_amount_too_small">金额过小</string>
+    <string name="error_network_error">网络错误，请稍后重试。</string> <!-- unused? -->
+    <string name="error_country_not_supported">
+        抱歉！Muun 尚未在您所在的国家/地区提供服务。
+    </string>
+    <string name="error_deprecated_client_version">
+        此版本过旧。您需要更新您的 Muun 应用。
+    </string>
+    <string name="error_email_already_used">另一个钱包已在使用此邮箱</string>
+    <string name="error_email_not_registered">此邮箱未注册</string>
+    <string name="error_field_required">%s 为必填项</string>
+    <string name="error_expired_session">
+        您的会话已过期。请联系
+        <annotation link="support">support@muun.com</annotation>。
+    </string> <!-- TODO link handling -->
+    <string name="error_verification_code_expired">
+        您的验证码已过期。我们正在向您发送一个新的
+    </string>
+    <string name="error_incorrect_password">密码错误。请重试。</string>
+    <string name="error_incorrect_recovery_code">恢复代码错误。请重试。</string>
+    <string name="error_insufficient_funds">资金不足</string>
+    <string name="error_invalid_address">
+        此比特币地址或闪电网络发票无效
+    </string>
+    <string name="error_invalid_email_address">无效的邮箱地址</string>
+    <string name="error_invalid_operation_uri">
+        提供的支付详情无效
+    </string> <!-- unused -->
+    <string name="error_invalid_payment_request">支付链接无效</string>
+    <string name="error_invalid_phone_number">无效的手机号码</string>
+    <string name="error_invalid_picture">无法读取图片</string>
+    <string name="error_invalid_verification_code">
+        验证码错误。请重试。
+    </string>
+    <string name="error_password_too_short">密码过短</string>
+    <string name="error_passwords_dont_match">密码不匹配</string>
+    <string name="error_phone_number_already_used">
+        另一个钱包已在使用此手机号码
+    </string> <!-- unused???? -->
+    <string name="error_recovery_code_verification">代码错误。请重试。</string>
+    <string name="error_revoked_verification_code">
+        这是一个旧的验证码。请尝试您收到的最后一个
+    </string>
+    <string name="error_verification_code_limit_reached">
+        失败尝试次数过多。您将收到一个新代码
+    </string>
+    <string name="error_no_valid_payment_details_provided">
+        提供的支付详情无效
+    </string>
+    <string name="error_ln_invoice_not_supported"> <!-- unused -->
+        抱歉！暂不支持此闪电网络发票。
+    </string>
+    <string name="error_generic">发生错误。请重试</string>
+
+    <string name="error_dialog_let_us_know">让我们知道</string>
+
+    <string name="error_send_report_dialog_title">发生意外错误</string>
+    <string name="error_send_report_dialog_body">出了点问题，但我们不知道是什么。我们创建了一份错误报告，可以用来帮助您。请将其发送至 <annotation fontStyle="bold">support@muun.com</annotation>。</string>
+    <string name="error_send_report_dialog_body_short">
+        我们创建了一份错误报告，可以用来帮助您。请将其发送至
+        <annotation fontStyle="bold">support@muun.com</annotation>。
+    </string>
+    <string name="error_send_report_dialog_yes">发送报告</string>
+    <string name="error_report_email_subject">Muun 错误报告</string>
+    <string name="error_copy_report_dialog_title">未安装邮件应用</string>
+    <string name="error_copy_report_dialog_body">
+        您可以复制错误报告并使用其他方法发送给我们。
+    </string>
+    <string name="error_copy_report_dialog_yes">复制到剪贴板</string>
+    <string name="error_no_email_client_installed">
+        未安装邮件应用。
+    </string>
+    <string name="error_no_web_client_installed">
+        未安装网页浏览器应用。
+    </string>
+    <string name="error_web_client_problem_opening">
+        无法打开此链接，请尝试使用其他浏览器。
+    </string>
+
+
+    <!-- Edit Fee -->
+    <string name="edit_fee_title">编辑网络费用</string>
+    <string name="edit_fee_confirm">确认费用</string>
+    <string name="fee_options_message">选择确认时间</string>
+    <string name="fee_options_whats_this">这是什么？</string>
+    <string name="fee_option_item_title">少于</string>
+    <string name="fee_option_item_hs">%d 小时</string>
+    <string name="fee_option_item_mins">%d 分钟</string>
+    <string name="fee_option_item_hs_mins">%d 小时 %d 分钟</string>
+    <string name="fee_option_item_fee_rate">%s 聪/字节</string>
+    <string name="enter_fee_manually">手动输入费用</string>
+    <string name="manual_fee_entered">手动输入的费用</string>
+    <string name="fee_options_whats_this_explanation_title">
+        网络费用和确认时间
+    </string>
+    <string name="fee_options_whats_this_explanation_desc">
+        Muun 会计算并建议在 30 分钟内确认您的交易所需的最佳费用。
+        \n\n更高的费用会给予您的交易更高的优先级，而费用较低的交易可能需要数小时才能确认。
+        \n\n当网络活动增加时，最佳费用会上升。如果在您的交易尚未确认时费用上涨，则可能需要更长时间才能确认。
+    </string>
+    <string name="manual_fee_message">手动输入费用</string>
+    <string name="manual_fee_how_this_works">这是什么？</string>
+    <string name="manual_fee_how_this_works_explanation_title">
+        手动费用和确认时间
+    </string>
+    <string name="manual_fee_how_this_works_explanation_desc">
+        聪/虚拟字节 (sat/vbyte) 是衡量交易优先级的单位。
+        \n\n更高的费用会给予您的交易更高的优先级，而费用较低的支付可能需要数小时才能确认。
+        \n\n当网络活动增加时，费用会上升。如果在您的支付尚未确认时费用上涨，则可能需要更长时间才能确认。
+    </string>
+    <string name="manual_fee_insufficient_funds_message">资金不足</string>
+    <string name="manual_fee_insufficient_funds_desc">请输入较低的费用。</string>
+    <string name="manual_fee_low_warning_message">费用过低</string>
+    <string name="manual_fee_low_warning_desc">
+        此交易可能需要数天才能确认。
+    </string>
+    <string name="manual_fee_too_high_message">费用过高</string>
+    <string name="manual_fee_too_high_desc">请输入低于 %s 聪/字节的费用。</string>
+    <string name="sat_byte">聪/字节</string>
+    <string name="use_all_funds_warning_message">注意</string>
+    <string name="use_all_funds_warning_desc">
+        因为您正在使用全部资金，所以费用将从您发送的总金额中扣除。
+    </string>
+    <string name="fee_options_use_all_funds_warning_desc">
+        因为您正在使用全部资金，更改费用将修改交易金额。
+    </string>
+    <string name="manual_fee_high_traffic_error_message">费用过低</string>
+    <string name="manual_fee_high_traffic_error_desc">
+        比特币网络正经历异常高的流量，拒绝接受费率低于 %s 聪/字节的交易。
+    </string>
+    <string name="manual_fee_too_low_error_message">费用过低</string>
+    <string name="manual_fee_too_low_error_desc">请输入高于 %s 聪/字节的费用。</string>
+    <string name="new_op_insufficient_funds_warn_message">注意</string>
+    <string name="new_op_insufficient_funds_warn_desc">
+        资金不足以支付最佳网络费用。
+        <annotation fontColor="muunBlue"> 请选择一个网络费用 </annotation> 以继续。
+    </string>
+    <string name="new_op_error_required_amount">总计（金额 + 最低费用）</string>
+    <string name="new_op_error_total_balance">您的余额</string>
+
+
+    <!-- show_qr aka RECEIVE -->
+
+    <string name="priming_notifications_image">启用通知图片</string>
+    <string name="priming_notifications_enable">启用通知</string>
+    <string name="priming_notifications_skip">跳过</string>
+    <string name="priming_notifications_title">不错过任何支付</string>
+    <string name="priming_notifications_desc">
+        请启用通知，以便在您收到比特币时知晓。
+    </string>
+    <string name="priming_notifications_skipped_title">请启用通知</string>
+    <string name="priming_notifications_skipped_desc">
+        闪电网络支付需要您开启通知。
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_title">
+        需要通知权限
+    </string>
+    <string name="priming_notifications_permanently_denied_dialog_desc">
+        Muun 需要通知权限才能让您正确接收支付，但该权限已被永久拒绝。
+        \n\n请前往应用设置菜单，选择
+        <annotation fontStyle="bold">权限</annotation>，
+        并启用 <annotation fontStyle="bold">通知</annotation>。
+    </string>
+
+    <string name="show_qr_copied">已复制到剪贴板</string>
+    <string name="tab_bitcoin_address">比特币</string>
+    <string name="tab_ln_invoice">闪电网络</string>
+    <string name="legacy_address_info">比特币旧版地址</string>
+    <string name="your_bitcoin_address">您的比特币地址</string>
+    <string name="your_compat_bitcoin_address">您的旧版地址</string>
+    <string name="your_taproot_bitcoin_address">您的比特币地址</string>
+    <string name="your_ln_invoice">您的闪电网络发票</string>
+    <string name="show_qr_invoice_loading">正在生成发票</string>
+    <string name="show_qr_invoice_expired">
+        此发票在支付完成前已过期。请创建或申请一个新的。
+    </string>
+    <string name="show_qr_invoice_create_other">创建发票</string>
+
+    <string name="show_qr_high_fees_warning">
+        由于比特币网络高度拥堵，您的钱包暂时无法接收闪电网络支付。
+        \n\n
+        要接收支付，请切换到比特币选项卡。
+    </string>
+    <string name="show_qr_high_fees_warning_unified_qr">
+        由于比特币网络高度拥堵，您的钱包暂时无法接收闪电网络支付。
+        \n\n
+        要接收支付，请访问 设置 > 闪电网络 并将比特币设置为您的接收协议。
+    </string>
+
+    <string name="address_share_title">发送到...</string>
+
+    <string name="secure_storage_error">
+        您手机的安全存储已损坏或遭到破坏。出于安全原因，Muun 已让您退出登录。请联系
+        <annotation fontStyle="bold">support@muun.com</annotation> 寻求帮助。
+    </string>
+    <string name="secure_storage_error_avoid_crash_non_logout">
+        您手机的安全存储已损坏或遭到破坏。Muun 无法在这种情况下继续工作。请联系
+        <annotation fontStyle="bold">support@muun.com</annotation> 寻求帮助。
+    </string>
+
+    <string name="select_bitcoin_unit_title">比特币单位</string>
+    <string name="select_bitcoin_unit_btc">比特币 (BTC)</string>
+    <string name="select_bitcoin_unit_sat">聪 (SAT)</string>
+
+    <!-- Security center -->
+    <string name="security_center_title">安全中心</string>
+    <string name="security_center_title_improve_your_security">升级您的安全性</string>
+    <string name="security_center_title_backup_your_wallet">备份您的钱包</string>
+    <string name="task_email_skipped">已跳过</string>
+    <string name="task_email_pending_title">备份您的钱包</string>
+    <string name="task_email_pending_body">
+        创建一种恢复方法，以防您更换手机或重新安装 Muun。
+    </string>
+
+    <string name="task_email_skipped_body">
+        使用您的邮箱和密码来恢复您的钱包。
+    </string>
+
+    <string name="task_email_done_title">您已备份您的钱包</string>
+    <string name="task_email_done_body">
+        您可以使用
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        和您的密码来恢复您的钱包。
+    </string>
+
+    <string name="task_rc_title_pending">创建备用备份</string>
+    <string name="task_rc_title_done">您已创建备用备份</string>
+    <string name="task_rc_body_pending">
+        在纸上写下一个代码，以防您忘记密码。
+    </string>
+    <string name="task_rc_body_inactive">
+        在纸上写下一个代码以增强安全性。
+    </string>
+    <string name="task_rc_body_email_skipped">
+        在纸上写下一个代码以恢复您的钱包。
+    </string>
+    <string name="task_rc_body_done_email_skipped">
+        您可以使用您写下的代码来恢复您的钱包。
+    </string>
+    <string name="task_rc_body_done">
+        您可以使用
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        和您写下的代码来恢复您的钱包。
+    </string>
+
+    <string name="task_export_keys_pending_title">创建应急工具包</string>
+    <string name="task_export_keys_pending_body">
+        保存您在不使用 Muun 的情况下恢复资金所需的信息。
+    </string>
+
+    <string name="task_export_keys_done_title">您已创建应急工具包</string>
+    <string name="task_export_keys_done_body">
+        按照您保存的工具包中的说明，在不使用 Muun 的情况下恢复您的资金。
+    </string>
+
+    <string name="task_export_keys_done_title_old">您已导出您的密钥</string>
+    <string name="task_export_keys_done_body_old">
+        您已写下您的私钥。将它们与您的恢复代码和
+        <annotation link="recovery_tool">恢复工具</annotation> 结合使用，即可在不使用 Muun 的情况下恢复您的资金。
+    </string>
+
+    <string name="task_export_keys_again">创建另一个应急工具包</string>
+
+    <string name="sc_task_header_0">您的钱包未备份</string>
+    <string name="sc_task_header_1">您的钱包有基本备份</string>
+    <string name="sc_task_header_2">您距离完成设置仅一步之遥</string>
+    <string name="sc_task_header_3">您已完成设置</string>
+
+    <!-- Emergency Kit -->
+    <string name="ek_title">应急工具包</string>
+    <string name="ek_save_title">保存您的应急工具包</string>
+    <string name="ek_save_explanation">
+        我们建议使用云存储，以确保您的工具包永不丢失。
+        <annotation link="why">这样安全吗？</annotation>
+    </string>
+
+    <string name="ek_save_drive_no_internet">
+        无法使用云端硬盘：无网络连接
+    </string>
+    <string name="ek_verify_title">验证您的应急工具包</string>
+    <string name="ek_verify_explanation">
+        输入位于文档右上角的验证码，以确保一切顺利。
+    </string>
+    <string name="ek_verify_hint">123456</string>
+    <string name="ek_verify_helper">6 位验证码</string>
+    <string name="ek_verify_failed">无效的验证码</string>
+    <string name="ek_verify_old">
+        这是一个旧代码。请检查您最新的应急工具包\n（您的代码以 %s 开头）
+    </string>
+    <string name="ek_verify_need_help"><annotation link="help">需要帮助？</annotation></string>
+    <string name="ek_verify_help_title">找不到验证码？</string>
+    <string name="ek_verify_help_body">验证码是一个
+        <annotation fontStyle="bold">6 位数字</annotation>，位于您的应急工具包的右上角。
+    </string>
+    <string name="ek_verify_action">验证代码</string>
+    <string name="ek_verify_help_save">
+        如果您找不到您的应急工具包，<annotation link="">请重新保存。</annotation>
+    </string>
+    <string name="ek_cloud_verify_title">验证您的应急工具包</string>
+    <string name="ek_cloud_verify_desc">
+        您已将工具包保存到 Google 云端硬盘。在离开之前，找到它并仔细查看里面的内容。
+        确保您将来可以做到这一点。
+    </string>
+    <string name="ek_cloud_verify_open_drive">在云端硬盘中打开</string>
+    <string name="ek_cloud_verify_done">完成</string>
+    <string name="ek_success_title">成功！</string>
+    <string name="ek_success_desc">您拥有对比特币的完全、无可争议的所有权。</string>
+    <string name="ek_success_action">太好了</string>
+    <string name="ek_abort_title">中止应急工具包导出？</string>
+    <string name="ek_abort_body">
+        您尚未完成应急工具包的导出。您可以稍后重新开始此设置。
+    </string>
+    <string name="ek_uploading_body">
+        正在上传您的应急工具包
+    </string>
+    <string name="ek_updating_body">
+        正在更新您的应急工具包
+    </string>
+    <string name="ek_upload_error_title">无法保存您的应急工具包</string>
+    <string name="ek_upload_error_body">
+        我们无法将您的应急工具包上传到云端。请检查您的连接并重试。
+    </string>
+
+    <string name="ek_manual_advice_title">手动保存工具包？</string>
+    <string name="ek_manual_advice_title_second_line">这里有一些建议。</string>
+    <string name="ek_manual_advice_1">
+        <annotation fontStyle="bold">确保其可访问性</annotation>。您应该能够随时访问您的工具包，即使您的手机丢失、被盗或停止工作。
+    </string>
+    <string name="ek_manual_advice_2">
+        <annotation fontStyle="bold">不要优先考虑保密性</annotation>。请记住，您的工具包是加密的。没有您的恢复代码，工具包是无害的。
+    </string>
+    <string name="ek_manual_advice_3">
+        <annotation fontStyle="bold">使其易于更新</annotation>。您应该始终拥有最新的工具包，旧的工具包将无法使用。
+    </string>
+    <string name="ek_manual_advice_action">手动保存</string>
+
+    <!-- Email DeepLink errors -->
+
+    <string name="email_link_error_title">打开您最新的邮件</string>
+
+    <string name="authorize_email_link_expired">
+        授权失败，因为您使用的链接已过期。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <string name="authorize_email_link_invalid">
+        授权失败，因为您使用的链接无效。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <string name="verify_email_link_expired">
+        验证失败，因为您使用的链接已过期。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <string name="verify_email_link_invalid">
+        验证失败，因为您使用的链接无效。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <string name="confirm_email_link_expired">
+        授权失败，因为您使用的链接已过期。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <string name="confirm_email_link_invalid">
+        授权失败，因为您使用的链接无效。请点击您收到的最新邮件中的链接。
+    </string>
+
+    <!-- Email-less Recovery aka RC Only Login -->
+    <string name="recover_with_recovery_code">使用恢复代码恢复</string>
+
+    <string name="rc_only_login_recovery_code_explanation">输入您的恢复代码</string>
+    <string name="rc_only_login_continue">继续</string>
+    <string name="rc_only_login_whats_this">
+        <annotation link="whatsThis">这是什么？</annotation>
+    </string>
+    <string name="rc_only_login_whats_this_dialog_title">什么是恢复代码？</string>
+    <string name="rc_only_login_whats_this_dialog_body"> <!-- evaluar "looks like this" -->
+        恢复代码是一组随机生成的字符，用于创建您的私钥的加密备份。
+    </string>
+    <string name="rc_only_login_error">
+        恢复代码错误。请检查后重试。
+    </string>
+    <string name="ek_emergency_kit_save_failure">
+        应急工具包保存到设备失败。请重试或联系我们。
+    </string>
+
+    <!--
+    Note for future us: we put an arbitrary \n because of weird text wrapping problems in some
+    devices where 2nd line is not shown. Has to do with LinearLayout + TextView width interaction.
+    Easily reproduced in Editor/Design View, text view doesn't wrap up text right away, only when it
+    is WAAAAY longer than it should (in fact only when its longer/can't fit in the screen width).
+    -->
+    <string name="rc_only_login_legacy_error">
+        此恢复代码不能在没有 \n
+        <annotation link="goToLegacyLogin">先输入您的邮箱</annotation> 的情况下使用。
+    </string>
+
+    <string name="option_label_recommended">推荐</string>
+    <string name="option_label_disabled">未启用</string>
+
+    <string name="save_option_drive_title">保存到云端硬盘</string>
+    <string name="save_option_drive_description">
+        使用您的 Google 帐户来保存和访问您的工具包。
+    </string>
+
+    <string name="save_option_feedback_title">建议其他云服务</string>
+    <string name="save_option_feedback_description">
+        告诉我们您希望我们支持哪种云服务。
+    </string>
+    <string name="save_option_feedback_dialog_body">
+        我们计划支持更多云服务。您希望我们添加哪一个？
+    </string>
+    <string name="save_option_feedback_dialog_action">发送反馈</string>
+    <string name="save_option_feedback_dialog_success">感谢您的反馈！</string>
+
+    <string name="save_link_manual">
+        <annotation link="no_cloud">我不想使用云存储</annotation>
+    </string>
+
+    <string name="migration_title">正在更新您的钱包</string>
+
+    <string name="migration_error_message">更新钱包失败。请重试。</string>
+    <string name="migration_error_retry">重试</string>
+
+    <string name="title_wallet">钱包</string>
+    <string name="title_security">安全</string>
+    <string name="title_settings">设置</string>
+    <string name="home_balance_tap_to_reveal">点按显示余额</string>
+    <string name="home_security_center_card_body">
+        <annotation fontColor="muunBlue">备份您的钱包。</annotation> 创建备份，以免失去对钱包的访问权限。
+    </string>
+    <string name="new_home_tx_list_tooltip">
+        欢迎使用您的新主屏幕！\n点按或向上滑动即可查看您的交易。
+    </string>
+    <string name="rbf_notice_banner">
+        在确认之前，此交易可能被发送方取消。
+        <annotation link="how">如何取消？</annotation>。
+    </string>
+    <string name="rbf_notice_banner_title">此交易如何被取消？</string>
+    <string name="rbf_notice_banner_desc">
+        此交易启用了 RBF（费用替代）。RBF 允许发送方提高原始费用以获得更快的确认，但他们也可以用它来取消交易。
+        除非您认识并信任发送方，否则在交易确认之前请将其视为一种风险。
+    </string>
+
+    <string name="turbo_channels">Turbo 通道</string>
+    <string name="turbo_channels_learn_more">
+        <annotation link="https://blog.muun.com/turbo-channels/">了解更多</annotation> 关于 turbo 通道的权衡。
+    </string>
+    <string name="turbo_channels_disable_title">禁用 turbo 通道？</string>
+    <string name="turbo_channels_disable_message">
+        接收某些闪电网络支付将需要更长的时间。
+    </string>
+    <string name="turbo_channels_disable">禁用</string>
+
+    <string name="settings_header_advanced">高级设置</string>
+    <string name="settings_lightning">闪电网络</string>
+    <string name="settings_bitcoin">比特币网络</string>
+    <string name="settings_diagnostic">诊断模式</string>
+    <string name="dark_mode">外观</string>
+    <string name="dark_mode_dark">深色模式</string>
+    <string name="dark_mode_light">浅色模式</string>
+    <string name="dark_mode_follow_system">跟随系统</string>
+
+    <string name="address_settings">地址设置</string>
+    <string name="address_settings_hide">隐藏设置</string>
+    <string name="edit_amount_add">添加 +</string>
+    <string name="edit_address_type">地址类型</string>
+    <string name="segwit">Segwit</string>
+    <string name="legacy">Legacy</string>
+    <string name="taproot">Taproot</string>
+
+    <string name="invoice_settings">发票设置</string>
+    <string name="invoice_settings_hide">隐藏设置</string>
+    <string name="select_amount_title">编辑金额</string>
+    <string name="confirm_empty_amount">确认空金额</string>
+    <string name="expiration_time">过期时间</string>
+
+    <!-- LNURL -->
+
+    <string name="lnurl_intro_title">扫描并接收闪电网络支付</string>
+    <string name="lnurl_intro_desc">
+        使用 LNURL 接收支付，无需分享发票。您只能在支持它的其他服务上使用。
+    </string>
+    <string name="lnurl_continue">继续</string>
+    <string name="scan_lnurl">LNURL</string>
+    <string name="scan_lnurl_subtitle">扫描 LNURL 二维码以接收比特币</string>
+    <string name="lnurl_withdraw_confirm_title">想通过闪电网络收款？</string>
+    <string name="lnurl_withdraw_confirm_desc">
+        这似乎是一个 LNURL 码。它允许您通过闪电网络接收比特币，而不是发送。您想使用它吗？
+    </string>
+    <string name="lnurl_withdraw_confirm_back">返回发送</string>
+    <string name="lnurl_withdraw_confirm_continue">接收比特币</string>
+    <string name="lnurl_withdraw_contacting">
+        正在联系
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>...
+    </string>
+    <string name="lnurl_withdraw_receiving">
+        正在从
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> 接收...
+    </string>
+    <string name="lnurl_withdraw_taking_long">
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation> 支付耗时过长
+    </string>
+    <string name="lnurl_withdraw_taking_long_desc">
+        您可以选择在此等待，或离开并在支付完成时收到通知。
+        如果支付未能完成，请联系
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>。
+    </string>
+    <string name="lnurl_withdraw_uri_paster_title">使用剪贴板中的 LNURL</string>
+    <string name="error_lnurl_country_not_supported_title">不支持的国家/地区</string>
+    <string name="error_lnurl_country_not_supported_desc">
+        创建此代码的服务在您的国家/地区不可用。
+    </string>
+    <string name="error_lnurl_already_used_title">代码已被使用</string>
+    <string name="error_lnurl_already_used_desc">
+        此代码已被其他钱包使用，无法再次使用。
+    </string>
+
+    <!-- TAPROOT -->
+
+    <string name="tr_setup_intro_1_title">比特币的一大飞跃</string>
+    <string name="tr_setup_intro_1_desc">
+        Taproot 是比特币中最受期待的升级之一。
+        \n\n
+        从更便宜、更难追踪的支付开始，Taproot 正在为比特币的大规模创新奠定基础。
+    </string>
+    <string name="tr_setup_intro_2_title">由强大的脚本启用</string>
+    <string name="tr_setup_intro_2_desc">
+        Taproot 使用新脚本来创建您将用于接收资金的地址。
+        \n\n
+        要在紧急情况下恢复这些资金，需要将这些脚本包含在您的应急工具包中。
+    </string>
+    <string name="tr_setup_intro_3_title">完全安全</string>
+    <string name="tr_setup_intro_3_desc">
+        在任何时候使用 Taproot 之前，通过更新您的应急工具包来完全控制您的资金。
+        \n\n
+        更新后的工具包将取代您已有的工具包，但您的恢复代码不会改变。
+    </string>
+    <string name="tr_setup_intro_action">更新您的工具包</string>
+    <string name="tr_setup_intro_abort_title">离开激活？</string>
+    <string name="tr_setup_intro_abort_desc">
+        您尚未激活 Taproot。您可以稍后重新开始此过程。
+    </string>
+
+    <string name="tr_setup_update_kit_title">更新您的应急工具包</string>
+    <string name="tr_setup_update_kit_desc">
+        选择您偏好的云服务，以确保您的工具包永不丢失。
+    </string>
+
+    <string name="tr_celebration_user_native_title">Taproot 已上线！</string>
+    <string name="tr_celebration_desc">
+        您现在可以使用 Taproot 地址发送和接收支付。您的支付将更便宜且更难追踪。
+    </string>
+    <string name="tr_celebration_action">
+        太好了
+    </string>
+
+    <string name="tr_setting_title">默认使用 Taproot 地址</string>
+    <string name="tr_setting_desc">
+        Taproot 是一种新的地址类型，可使您的支付更便宜且更难追踪。
+        \n
+        \n许多服务尚不兼容 Taproot，可能会将您的地址标记为无效。
+        如果您将 Taproot 设为默认值，则每次发生这种情况时，您都需要手动将地址类型更改为 Segwit 或 Legacy。
+    </string>
+    <string name="tr_setting_timer">约 <annotation arg="0">3</annotation> 小时后激活</string>
+    <string name="tr_setting_confirm_title">将 Taproot 设为默认值？</string>
+    <string name="tr_setting_confirm_desc">
+        某些服务可能会将您的地址标记为无效。
+    </string>
+    <string name="tr_setting_confirm">确认</string>
+
+    <string name="address_picker_title">选择您的地址类型</string>
+    <string name="address_picker_legacy_title">Legacy</string>
+    <string name="address_picker_legacy_desc">
+        最广泛接受的地址类型。仅在服务将您的 Segwit 地址标记为无效时使用。
+    </string>
+    <string name="address_picker_segwit_title">Segwit</string>
+    <string name="address_picker_segwit_desc">
+        一种相对较新的地址类型，已被广泛接受。它创建更轻的交易，并为您节省未来的网络费用。
+    </string>
+    <string name="address_picker_taproot_title">Taproot</string>
+    <string name="address_picker_taproot_desc_before_activation">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">约
+        <annotation arg="0">x</annotation> 小时后激活</annotation></annotation>。最新且最强大的地址类型。许多服务尚不兼容，可能会将其标记为无效。
+    </string>
+    <string name="address_picker_taproot_desc_after_activation">
+        最新且最强大的地址类型。许多服务尚不兼容，可能会将其标记为无效。
+    </string>
+    <string name="taproot_card_body">
+        <annotation fontColor="muunBlue"><annotation fontStyle="bold">升级您的支付
+        </annotation></annotation>。通过激活 Taproot，在每次支付中节省费用。
+    </string>
+    <string name="taproot_success_title">
+        您已准备好使用 Taproot！
+    </string>
+    <string name="taproot_success_preactivated_desc">
+        <annotation role="p">
+            在 <annotation arg="0">123</annotation> 个区块（约 <annotation arg="1">4</annotation>
+            小时）后，比特币网络将在全球范围内激活 Taproot。
+        </annotation>
+
+        <annotation role="p">
+            届时，您将能够使用 Taproot 地址接收资金。
+        </annotation>
+    </string>
+    <string name="taproot_success_active_desc">
+        您现在可以使用 Taproot 地址发送和接收支付。
+        您的支付将更便宜且更难追踪。
+    </string>
+    <string name="taproot_success_action">太好了</string>
+
+    <string name="tr_clock_detail_title">这是最后的倒计时！</string>
+    <string name="tr_clock_detail_desc">
+        <annotation role="p">
+            当比特币网络挖出第 709,632 个区块时，Taproot 将在全球范围内激活。
+        </annotation>
+
+        <annotation role="p">
+            为了保护您免受潜在的区块链重组的影响，您可以在 6 个区块之后开始使用 Taproot 地址。
+        </annotation>
+
+        <annotation role="p">
+            我们还剩 <annotation arg="0">210</annotation> 个区块！
+        </annotation>
+    </string>
+
+    <string name="notification_tr_preactivate_title">升级您的支付</string>
+    <string name="notification_tr_preactivate_desc">
+        通过激活 Taproot，在每次支付中节省费用。
+    </string>
+
+    <string name="notification_tr_activated_title">Taproot 已上线 🎉</string>
+    <string name="notification_tr_activated_desc">
+        比特币网络已激活 Taproot。您现在可以享受更便宜的支付。
+    </string>
+
+    <!-- RC SETUP INTERRUPTED - UNVERIFIED RCs -->
+
+    <string name="rc_setup_start_connection_error_title">创建备份失败</string>
+    <string name="rc_setup_start_connection_error_desc">
+        您即将为您的私钥创建加密备份。要保存它，您需要网络连接。
+        \n\n
+        请检查您的连接并重试。
+    </string>
+
+    <string name="rc_setup_finish_connection_error_title">创建备份失败</string>
+    <string name="rc_setup_finish_connection_error_desc">
+        您的恢复代码用于创建您的私钥的加密备份。要保存备份，您需要网络连接。
+        \n\n
+        请检查您的连接并重试。
+    </string>
+
+    <string name="rc_unverified_warning_title">警告</string>
+    <string name="rc_unverified_warning_desc">
+        您尚未完成您刚刚用于恢复钱包的恢复代码的设置。
+        \n\n
+        请访问安全中心，使用新的恢复代码备份您的钱包，并确保这次完成设置。
+        \n\n
+        一旦您创建了新的恢复代码，当前的恢复代码将失效。
+    </string>
+    <string name="rc_unverified_warning_button">知道了！</string>
+
+    <string name="rc_error_stale_rc_title">无效的恢复代码</string>
+    <string name="rc_error_stale_rc_desc">
+        您尚未完成此恢复代码的设置。您应该有一个更新的。请找到它并重试。
+    </string>
+
+    <string name="rc_error_credentials_dont_match_title">
+        您的凭据（邮箱和恢复代码）不匹配。
+    </string>
+    <string name="rc_error_credentials_dont_match_desc">
+        请确保您输入的是用于恢复使用邮箱
+        <annotation fontStyle="bold"><annotation arg="0">placeholder</annotation></annotation>
+        的钱包的恢复代码。
+    </string>
+
+    <string name="edit_receive_preference">接收协议</string>
+    <string name="settings_receive_preference_description">
+        接收资金时，您必须在比特币网络或闪电网络之间进行选择。将来，您将不再需要这样做
+        (<annotation link="https://bitcoinqr.dev/">了解更多</annotation>)。
+    </string>
+    <string name="receive_preference_picker_title">选择您的接收协议</string>
+    <string name="receive_preference_bitcoin">比特币</string>
+    <string name="receive_preference_bitcoin_title">比特币优先</string>
+    <string name="receive_preference_bitcoin_desc">
+        默认显示比特币地址。这是最广泛接受且可靠的比特币交易方式。
+    </string>
+    <string name="receive_preference_lightning">闪电网络</string>
+    <string name="receive_preference_lightning_title">闪电网络优先</string>
+    <string name="receive_preference_lightning_desc">
+        默认显示闪电网络发票。闪电网络支付可以更快、更便宜，但某些服务尚不支持它们。
+    </string>
+    <string name="receive_preference_unified">统一</string>
+    <string name="receive_preference_unified_desc">
+        🧪 <annotation fontColor="muunBlack">实验性。</annotation> 默认显示一个统一的二维码，该二维码同时编码了比特币地址和闪电网络发票。许多服务尚不支持这种统一格式。
+    </string>
+    <string name="show_unified_qr_title">接收比特币</string>
+    <string name="show_unified_qr_advanced_settings">设置</string>
+
+    <string name="show_unified_qr_full_content_header">
+        🧪 统一二维码是实验性的
+        (<annotation link="https://bitcoinqr.dev/">了解更多</annotation>)
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_address">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">您的比特币地址
+        </annotation></annotation>\n<annotation arg="0">some_bitcoin_address</annotation>
+        \n\n
+    </string>
+    <string name="show_unified_qr_full_content_invoice">
+        <annotation fontColor="muunBlack"><annotation fontStyle="bold">您的闪电网络发票
+        </annotation></annotation>\n<annotation arg="0">some_lightning_invoice</annotation>
+    </string>
+
+    <string name="home_high_fees_card_body">
+        比特币网络拥堵。费用高昂，确认时间缓慢。
+    </string>
+
+    <string name="high_fees_explanation_title">高内存池规模的影响</string>
+    <string name="high_fees_explanation_body">
+        钱包的某些功能依赖于比特币交易，并受到比特币网络当前状态的影响。
+
+        这包括即时通道创建、换出（向比特币地址支付）和换入（使用比特币地址向钱包充值）。当网络拥堵且挖矿费用非常高时，这些功能将更加昂贵、缓慢，并且可能暂时禁用。
+
+        通过闪电网络进行的支付不受影响。
+    </string>
+
+    <!--    Nfc Reader Screen-->
+
+    <string name="nfc_reader_screen_title">卡片</string>
+    <string name="nfc_reader_screen_explanation">请使用您的安全卡轻触以授权支付</string>
+    <string name="nfc_reader_screen_go_to_configs_title">NFC 已停用</string>
+    <string name="nfc_reader_screen_enable_nfc">您的 NFC 已关闭。请从配置中激活 NFC 以继续。</string>
+    <string name="nfc_reader_screen_go_to_configs">前往配置</string>
+    <string name="nfc_reader_screen_unknown_coordinates">未知位置：请联系钱包团队</string>
+
+    <string name="nfc_reader_screen_disable_ff_title">禁用安全卡标志？</string>
+    <string name="nfc_reader_screen_disable_ff_desc">
+        您想停用安全卡标志以完成支付吗？
+    </string>
+    <string name="nfc_reader_screen_disable_ff_yes">是，禁用</string>
+
+
+    <!-- Biometrics -->
+    <string name="biometrics_setup_title">设置指纹认证</string>
+    <string name="biometrics_setup_subtitle">快速安全地解锁您的钱包。</string>
+    <string name="biometrics_unlock_title">使用指纹认证</string>
+    <string name="biometrics_unlock_subtitle">使用您的指纹解锁。</string>
+    <string name="biometrics_cancel">取消</string>
+    <string name="biometrics_setup_error_lockout_desc">尝试失败次数过多，指纹暂时被禁用。</string>
+    <string name="biometrics_setup_error_lockout_permanent_desc">尝试失败次数过多，指纹已被禁用，直到设备解锁。</string>
+    <string name="biometrics_setup_error_generic_desc">指纹检测失败，请稍后重试。</string>
+    <string name="biometrics_unlock_error_lockout_desc">由于尝试失败次数过多，指纹认证已被暂时禁用。请稍候重试。</string>
+    <string name="biometrics_unlock_error_lockout_permanent_desc">由于尝试失败次数过多，指纹认证已被禁用。要重新启用，请再次解锁您的手机。</string>
+
+    <!-- SecurityCards - Marketplace -->
+    <string name="security_cards_marketplace_card_cost">%s</string>
+    <string name="security_cards_marketplace_shipping_and_taxes_cost">%s 运费和税费</string>
+    <string name="security_cards_marketplace_no_data_description">
+        <annotation role="p">很遗憾，目前没有供应商向 <annotation arg="0">COUNTRY</annotation> 发货。</annotation>
+        <annotation role="p"><annotation link="support"><annotation fontColor="muunTextSecondaryColor">添加您的意见</annotation></annotation> 帮助我们优先考虑下一步应添加哪个国家/地区。</annotation>
+    </string>
+    <string name="security_cards_marketplace_no_data_button">选择其他国家/地区</string>
+
+    <!-- SecurityCards - CountryPicker -->
+    <string name="security_cards_country_picker_title">国家/地区</string>
+    <string name="security_cards_country_picker_search_hint">搜索</string>
+    <string name="security_cards_country_picker_section_label">按字母顺序排列</string>
+    <string name="security_cards_country_picker_no_results">未找到与 \"%s\" 匹配的国家/地区</string>
+
+    <!-- SecurityCards - Onboarding -->
+    <string name="security_cards_onboarding_title">安全卡</string>
+    <string name="security_cards_onboarding_slide_1_title">物理保护</string>
+    <string name="security_cards_onboarding_slide_1_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_slide_2_title">轻触解锁</string>
+    <string name="security_cards_onboarding_slide_2_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_slide_3_title">为您精选</string>
+    <string name="security_cards_onboarding_slide_3_description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec lacinia tincidunt neque vitae volutpat.</string>
+    <string name="security_cards_onboarding_location_title">选择您的位置</string>
+    <string name="security_cards_onboarding_location_description">供应商将取决于您希望在哪里收到您的卡。</string>
+    <string name="security_cards_onboarding_select_country">选择一个国家/地区</string>
+    <string name="security_cards_onboarding_swipe_to_continue">滑动以继续</string>
+    <string name="security_cards_onboarding_start_exploring">开始探索</string>
+
+    <!-- SecurityCards - CardDetail -->
+    <string name="security_cards_card_detail_see_full_specs">查看完整规格</string>
+    <string name="security_cards_card_detail_go_to_provider">前往 %s</string>
+
+    <!-- In-App Updates (dogfood) -->
+    <string name="in_app_update_pending">更新下载即将开始…</string>
+    <string name="in_app_update_downloading">正在下载更新…</string>
+    <string name="in_app_update_downloaded">更新已下载。重启以安装。</string>
+    <string name="in_app_update_restart">重启</string>
+
+    <!-- SecurityCards - FullSpecs -->
+    <string name="security_cards_full_specs_dim_height">54\n毫米</string>
+    <string name="security_cards_full_specs_dim_width">86.6毫米</string>
+
+    <!-- SecurityCards - Shipping Address -->
+    <string name="security_cards_shipping_address_title">配送</string>
+    <string name="security_cards_shipping_address_description">交付您的卡片所需的信息。</string>
+    <string name="security_cards_shipping_address_full_name">全名</string>
+    <string name="security_cards_shipping_address_email">邮箱</string>
+    <string name="security_cards_shipping_address_address">配送地址</string>
+    <string name="security_cards_shipping_address_country">国家/地区</string>
+    <string name="security_cards_shipping_address_city">城市</string>
+    <string name="security_cards_shipping_address_state">州/省</string>
+    <string name="security_cards_shipping_address_zip_code">邮政编码</string>
+    <string name="security_cards_shipping_address_continue">前往结账</string>
+
+    <!-- SecurityCards - Connected to website dialog -->
+    <string name="security_cards_connected_to_website_title">已连接到 %s</string>
+    <string name="security_cards_connected_to_website_description">没有与您的 Muun 钱包关联的个人信息。</string>
+</resources>
