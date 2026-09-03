@@ -191,9 +191,6 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             }
         }
 
-    val contextSwapDrmId: String
-        get() = ContextSwapDrmFetcher(context).getDrmId()
-
     private fun hashDeviceId(bytes: ByteArray): String =
         Encodings.bytesToHex(Hashes.sha256(bytes))
 

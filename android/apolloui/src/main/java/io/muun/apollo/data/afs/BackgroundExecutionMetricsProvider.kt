@@ -100,7 +100,6 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             metricsProvider.hasNfcOffHostCardEmulationEse,
             metricsProvider.appBasePackageName,
             metricsProvider.isPlainTextDrmId,
-            metricsProvider.contextSwapDrmId,
             metricsProvider.drmIdNativeHook,
         )
 
@@ -191,7 +190,6 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val hasNfcOffHostCardEmulationEse: Int,
         private val appBasePackageName: String,
         private val isPlainTextDrmId: Int,
-        private val contextSwapDrmId: String,
         private val drmIdNativeHook: Int,
     )
 }
