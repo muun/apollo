@@ -19,5 +19,5 @@ Send us an email to report any security related bugs or vulnerabilities at [secu
 
 You can encrypt your email message using our public PGP key.
 
-Public key fingerprint: `1299 28C1 E79F E011 6DA4 C80F 8DB7 FD0F 61E6 ED76`
+Public key fingerprint: `2576 FE1C 2FD3 9DD0 7CAA 3D1D A6F4 476C E444 C8BE`
 
