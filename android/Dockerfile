@@ -53,7 +53,7 @@ ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platfor
 RUN yes | sdkmanager --licenses
 
 # Platform tools
-RUN sdkmanager "tools" "platform-tools"
+RUN sdkmanager "platform-tools"
 
 RUN yes | sdkmanager --update --channel=3
 
