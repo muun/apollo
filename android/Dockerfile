@@ -10,7 +10,13 @@ ENV ANDROID_PLATFORM_VERSION 28
 ENV ANDROID_BUILD_TOOLS_VERSION 28.0.3
 ENV GO_VERSION 1.24.7
 
-RUN apt-get update \
+# The base image runs Debian 11 (bullseye), which reached its end of life, so its packages are
+# served from archive.debian.org
+RUN sed -i \
+        -e 's|deb.debian.org|archive.debian.org|' \
+        -e 's|security.debian.org|archive.debian.org|' \
+        /etc/apt/sources.list \
+    && apt-get update \
     && apt-get install --yes --no-install-recommends \
         unzip \
         wget \
@@ -47,7 +53,7 @@ ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/platfor
 RUN yes | sdkmanager --licenses
 
 # Platform tools
-RUN sdkmanager "tools" "platform-tools"
+RUN sdkmanager "platform-tools"
 
 RUN yes | sdkmanager --update --channel=3
 
