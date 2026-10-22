@@ -12,6 +12,8 @@ import (
 
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/lightningnetwork/lnd/lnwire"
+
+	"github.com/muun/libwallet/platform/tlsdistrust"
 )
 
 const (
@@ -98,8 +100,11 @@ type EventMetadata struct {
 }
 
 // Extracted to external vars make Withdraw "more testable"
-var httpClient = http.Client{Timeout: 15 * time.Second}
-var withdrawClient WithdrawClient = &http.Client{Timeout: 3 * time.Minute}
+var httpClient = http.Client{Timeout: 15 * time.Second, Transport: tlsdistrust.Transport()}
+var withdrawClient WithdrawClient = &http.Client{
+	Timeout:   3 * time.Minute,
+	Transport: tlsdistrust.Transport(),
+}
 
 type WithdrawClient interface {
 	Get(url string) (resp *http.Response, err error)

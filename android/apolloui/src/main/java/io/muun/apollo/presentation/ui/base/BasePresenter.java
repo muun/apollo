@@ -349,6 +349,11 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
             return true;
 
         } else if (ExtensionsKt.isInstanceOrIsCausedByNetworkError(error)) {
+            if (ExtensionsKt.isInstanceOrIsCausedByTlsVerificationError(error)) {
+                // Unlike other network errors, this won't go away by waiting, and it may mean
+                // someone is intercepting the connection, so we want it in Crashlytics.
+                Timber.e(error);
+            }
             view.showErrorDialog(R.string.network_error_message);
             return true;
 

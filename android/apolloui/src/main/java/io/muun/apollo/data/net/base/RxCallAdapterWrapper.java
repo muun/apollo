@@ -30,12 +30,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
+import javax.net.ssl.SSLException;
 import javax.validation.constraints.NotNull;
 
 public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
     private static final Transformer HTTP_EXCEPTION_TRANSFORMER;
     private static final Transformer JSON_DESERIALIZATION_TRANSFORMER;
+    private static final Transformer TLS_VERIFICATION_TRANSFORMER;
     private static final Transformer IO_EXCEPTION_TRANSFORMER;
     private static final Transformer SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER;
 
@@ -78,6 +80,15 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
         JSON_DESERIALIZATION_TRANSFORMER = ObservableFn.replaceTypedError(
                 JsonProcessingException.class,
                 InvalidJsonError::new
+        );
+
+        // Rejecting the server's certificate chain isn't a connectivity issue, so we tell it apart
+        // before IO_EXCEPTION_TRANSFORMER turns every IOException into a NetworkException.
+        TLS_VERIFICATION_TRANSFORMER = ObservableFn.replaceTypedErrorExact(
+                SSLException.class,
+                error -> TlsVerificationError.isTlsTrustFailure(error)
+                        ? new TlsVerificationError(error)
+                        : error
         );
 
         // Use replaceTypedErrorExact to avoid replacing Jackson errors (subclasses of IOException)
@@ -176,7 +187,9 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 
         final Transformer<R,R> attachUrlTransformer = ObservableFn.replaceTypedError(
                 NetworkException.class,
-                original -> new NetworkException(url, original)
+                original -> original instanceof TlsVerificationError
+                        ? new TlsVerificationError(url, original)
+                        : new NetworkException(url, original)
         );
 
         final Observable<R> result = getRequestObservable(call)
@@ -187,6 +200,7 @@ public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
                 .compose(HTTP_EXCEPTION_TRANSFORMER)
                 .compose(SPECIAL_HTTP_EXCEPTIONS_TRANSFORMER)
                 .compose(JSON_DESERIALIZATION_TRANSFORMER)
+                .compose(TLS_VERIFICATION_TRANSFORMER)
                 .compose(IO_EXCEPTION_TRANSFORMER)
                 .compose(retryTransformer)
                 .compose(attachUrlTransformer)

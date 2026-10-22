@@ -5,6 +5,7 @@ import io.muun.apollo.data.external.Globals
 import io.muun.apollo.data.external.HoustonConfig
 import io.muun.apollo.data.net.base.interceptor.AuthHeaderInterceptor
 import io.muun.apollo.data.net.base.interceptor.BackgroundExecutionMetricsInterceptor
+import io.muun.apollo.data.net.base.interceptor.DistrustedCertificateInterceptor
 import io.muun.apollo.data.net.base.interceptor.IdempotencyKeyInterceptor
 import io.muun.apollo.data.net.base.interceptor.LanguageHeaderInterceptor
 import io.muun.apollo.data.net.base.interceptor.VersionHeaderInterceptor
@@ -102,6 +103,7 @@ open class BaseClient<ServiceT> protected constructor(
                 .addInterceptor(authHeaderInterceptor)
                 .addInterceptor(idempotencyKeyInterceptor)
                 .addInterceptor(backgroundExecutionMetricsInterceptor)
+                .addNetworkInterceptor(DistrustedCertificateInterceptor.withPlatformTrust())
 
             if (!Globals.INSTANCE.isRelease || Globals.INSTANCE.isDogfood) {
                 val loggingInterceptor = HttpLoggingInterceptor()

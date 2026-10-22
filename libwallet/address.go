@@ -16,6 +16,7 @@ import (
 	"github.com/muun/libwallet/addresses"
 	"github.com/muun/libwallet/btcsuitew/btcutilw"
 	"github.com/muun/libwallet/errors"
+	"github.com/muun/libwallet/platform/tlsdistrust"
 )
 
 // These constants are here for clients usage.
@@ -210,7 +211,7 @@ func DoPaymentRequestCall(url string, network *Network) (*MuunPaymentURI, error)
 
 	req.Header.Set("Accept", "application/bitcoin-paymentrequest")
 
-	client := &http.Client{}
+	client := &http.Client{Transport: tlsdistrust.Transport()}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.Errorf(ErrNetwork, "failed to make request to: %s", url)

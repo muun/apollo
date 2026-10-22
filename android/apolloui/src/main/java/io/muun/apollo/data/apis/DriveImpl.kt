@@ -17,6 +17,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.Revision
+import io.muun.apollo.data.net.base.DistrustedCertificateHostnameVerifier
 import io.muun.common.utils.Preconditions
 import rx.Observable
 import rx.schedulers.Schedulers
@@ -112,7 +113,12 @@ class DriveImpl @Inject constructor(
 
         credential.selectedAccount = GoogleSignIn.getLastSignedInAccount(context)!!.account
 
-        return Drive.Builder(NetHttpTransport(), GsonFactory(), credential)
+        // The Emergency Kit upload goes through HttpsURLConnection, not our OkHttp client.
+        val transport = NetHttpTransport.Builder()
+            .setHostnameVerifier(DistrustedCertificateHostnameVerifier.withPlatformTrust())
+            .build()
+
+        return Drive.Builder(transport, GsonFactory(), credential)
             .setApplicationName("Muun")
             .build()
     }
