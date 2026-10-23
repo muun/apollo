@@ -6,6 +6,12 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [55.12] - 2026-10-21
+
+### FIXED
+
+- Secure connections now reject certificates from a compromised certificate authority
+
 ## [55.11] - 2026-08-27
 
 ### FIXED

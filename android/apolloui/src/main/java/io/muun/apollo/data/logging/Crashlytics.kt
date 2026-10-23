@@ -43,6 +43,8 @@ object Crashlytics {
 
     private var defaultUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
 
+    private val reportedErrors = ReportedErrors()
+
     @JvmStatic
     fun init(application: Application, firebaseTestLabDevice: Boolean) {
         this.earlyMetricsProvider = EarlyMetricsProvider(application)
@@ -109,6 +111,12 @@ object Crashlytics {
 
         // Silence some common "nothing to worry about" errors
         if (isOnCrashlyticsBlacklist(report.originalError)) {
+            return
+        }
+
+        // The same error is often logged more than once (e.g. by an AsyncAction and then by the
+        // presenter handling its state), but it's a single failure.
+        if (!reportedErrors.markReported(report.originalError ?: report.error)) {
             return
         }
 

@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/muun/libwallet/app_provided_data"
+	"github.com/muun/libwallet/platform/tlsdistrust"
 )
 
 type Method string
@@ -151,7 +152,8 @@ func (r request[T]) do(c *client) (T, error) {
 	for attempt := 0; attempt < retries; attempt++ {
 		header.Set("X-Retry-Count", strconv.Itoa(attempt))
 		client := http.Client{
-			Timeout: timeout,
+			Timeout:   timeout,
+			Transport: tlsdistrust.Transport(),
 		}
 		response, err := client.Do(httpRequest) //nolint:bodyclose // TODO: close response body
 		if err != nil {

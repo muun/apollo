@@ -6,6 +6,7 @@ import android.text.TextUtils
 import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.Fragment
 import io.muun.apollo.data.net.base.NetworkException
+import io.muun.apollo.data.net.base.TlsVerificationError
 import io.muun.apollo.domain.errors.MuunError
 import io.muun.apollo.domain.errors.SecureStorageError
 import io.muun.apollo.domain.model.report.ErrorReport
@@ -75,6 +76,12 @@ fun Throwable.isInstanceOrIsCausedByTimeoutError() =
  */
 fun Throwable.isInstanceOrIsCausedByNetworkError() =
     isInstanceOrIsCausedByError<NetworkException>()
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isInstanceOrIsCausedByTlsVerificationError() =
+    isInstanceOrIsCausedByError<TlsVerificationError>()
 
 /**
  * Needed as inline reified functions can't be called from Java.
