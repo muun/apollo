@@ -1,6 +1,11 @@
 package io.muun.apollo.data.di
 
 import android.content.Context
+import android.os.Build
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.WorkManager
+import app_provided_data.App_provided_data
 import app_provided_data.Config
 import com.fasterxml.jackson.databind.ObjectMapper
 import dagger.Module
@@ -42,12 +47,17 @@ import io.muun.apollo.data.external.NotificationService
 import io.muun.apollo.data.fs.LibwalletDataDirectory
 import io.muun.apollo.data.libwallet.HttpClientSessionProvider
 import io.muun.apollo.data.libwallet.KeyProvider
-import io.muun.apollo.data.libwallet.LibwalletSecureKeyValueStorage
+import io.muun.apollo.data.libwallet.PeriodicActionsBridge
+import io.muun.apollo.data.libwallet.SessionProvider
 import io.muun.apollo.data.libwallet.grpc.GrpcChannelFactory
 import io.muun.apollo.data.net.NetworkInfoProvider
+import io.muun.apollo.data.net.NetworkStatusProvider
+import io.muun.apollo.data.net.NetworkStatusProviderImpl
 import io.muun.apollo.data.nfc.AndroidNfcBridge
 import io.muun.apollo.data.nfc.NfcEmpiricalCache
+import io.muun.apollo.data.os.AppStateProvider
 import io.muun.apollo.data.os.Configuration
+import io.muun.apollo.data.os.ProcessLifecycleAppStateProvider
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.data.os.execution.JobExecutor
 import io.muun.apollo.data.preferences.BackgroundTimesRepository
@@ -62,6 +72,8 @@ import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.libwallet.LibwalletFeeBumpFunctionsProvider
 import io.muun.apollo.domain.libwallet.LibwalletLogAdapter
 import io.muun.apollo.domain.selector.BitcoinUnitSelector
+import io.muun.apollo.osmodules.background_actions.BackgroundActionsScheduler
+import io.muun.apollo.osmodules.securekv.SecureKeyValueStoreBridge
 import io.muun.apollo.presentation.app.AppStandbyBucketProviderImpl
 import io.muun.apollo.presentation.app.NotificationServiceImpl
 import io.reactivex.schedulers.Schedulers
@@ -178,6 +190,25 @@ class DataModule(
 
     @Provides
     @Singleton
+    fun provideWorkManager(context: Context): WorkManager = WorkManager.getInstance(context)
+
+    @Provides
+    @Singleton
+    internal fun provideNetworkStatusProvider(
+        impl: NetworkStatusProviderImpl,
+    ): NetworkStatusProvider = impl
+
+    @Provides
+    fun provideProcessLifecycle(): Lifecycle = ProcessLifecycleOwner.get().lifecycle
+
+    @Provides
+    @Singleton
+    internal fun provideAppStateProvider(
+        impl: ProcessLifecycleAppStateProvider,
+    ): AppStateProvider = impl
+
+    @Provides
+    @Singleton
     fun provideRepositoryRegistry(): RepositoryRegistry = RepositoryRegistry()
 
     // TODO: this should be extracted to a DomainModule or similar
@@ -189,19 +220,24 @@ class DataModule(
 
     @Provides
     @Singleton
-    fun provideLibwalletConfig(
+    internal fun provideLibwalletConfig(
         libwalletDataDirectory: LibwalletDataDirectory,
         featuresRepository: FeaturesRepository,
         httpClientSessionProvider: HttpClientSessionProvider,
         nfcBridge: AndroidNfcBridge,
         keyProvider: KeyProvider,
-        secureKeyValueStorage: LibwalletSecureKeyValueStorage,
+        secureKeyValueStoreBridge: SecureKeyValueStoreBridge,
+        sessionProvider: SessionProvider,
+        periodicActionsBridge: PeriodicActionsBridge,
+        backgroundActionsScheduler: BackgroundActionsScheduler,
     ): Config {
         libwalletDataDirectory.ensureExists()
         val dataDir = libwalletDataDirectory.path.absolutePath
         val socketName = libwalletDataDirectory.socket.absolutePath
 
         val config = Config()
+        config.platform = App_provided_data.Android
+        config.osVersion = Build.VERSION.RELEASE
         config.dataDir = dataDir
         config.socketPath = socketName
         config.featureStatusProvider = featuresRepository
@@ -209,7 +245,10 @@ class DataModule(
         config.httpClientSessionProvider = httpClientSessionProvider
         config.nfcBridge = nfcBridge
         config.keyProvider = keyProvider
-        config.secureKeyValueStorage = secureKeyValueStorage
+        config.secureKeyValueStore = secureKeyValueStoreBridge
+        config.sessionProvider = sessionProvider
+        config.periodicActionsBridge = periodicActionsBridge
+        config.androidBackgroundActionsBridge = backgroundActionsScheduler
 
         val network = when (Globals.INSTANCE.network.getId()) {
             NetworkParameters.ID_MAINNET -> "mainnet"
@@ -221,6 +260,9 @@ class DataModule(
         }
 
         config.network = network
+
+        config.honeycombAPIKey = Globals.INSTANCE.honeycombApiKey
+        config.honeycombDataset = Globals.INSTANCE.honeycombDataset
 
         return config
     }

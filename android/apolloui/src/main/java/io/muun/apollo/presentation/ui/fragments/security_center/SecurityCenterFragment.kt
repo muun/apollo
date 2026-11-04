@@ -6,9 +6,12 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.fragment.NavHostFragment
 import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.FragmentSecurityCenterBinding
+import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN
 import io.muun.apollo.domain.model.SecurityCenter
 import io.muun.apollo.domain.model.SecurityLevel
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -20,14 +23,25 @@ import io.muun.apollo.presentation.ui.view.MuunTaskCard
 
 class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), SecurityCenterView {
 
+    companion object {
+        private const val ORIGIN_KEY = "origin"
+
+        /**
+         * Record how the user got to the Security Center of this back stack entry. Every
+         * navigation to Security Center calls this: a navigation argument can't carry the origin,
+         * since a restored entry keeps the arguments it was first created with.
+         */
+        @JvmStatic
+        fun setOrigin(entry: NavBackStackEntry, origin: SECURITY_CENTER_ORIGIN) {
+            entry.savedStateHandle[ORIGIN_KEY] = origin
+        }
+    }
+
     private val binding: FragmentSecurityCenterBinding
         get() = getBinding() as FragmentSecurityCenterBinding
 
     override fun inject() =
         component.inject(this)
-
-    override fun getLayoutResource() =
-        R.layout.fragment_security_center
 
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentSecurityCenterBinding::inflate
@@ -60,6 +74,14 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         menu.clear() // Effectively state that we don't want menu items. Yeap, this is how its done.
+    }
+
+    override fun getOrigin(): SECURITY_CENTER_ORIGIN {
+        val entry = NavHostFragment.findNavController(this)
+            .getBackStackEntry(R.id.security_center_fragment)
+
+        return entry.savedStateHandle.get<SECURITY_CENTER_ORIGIN>(ORIGIN_KEY)
+            ?: SECURITY_CENTER_ORIGIN.UNKNOWN
     }
 
     override fun setTaskStatus(
@@ -129,7 +151,6 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
             binding.tagEmailSkipped.visibility = View.VISIBLE
             binding.tagEmailSkipped.bringToFront()
             (binding.tagEmailSkipped.parent as View).invalidate()
-
         } else {
             binding.taskEmail.status = toCardStatus(status)
             binding.tagEmailSkipped.visibility = View.GONE
@@ -151,7 +172,6 @@ class SecurityCenterFragment : SingleFragment<SecurityCenterPresenter>(), Securi
 
         if (sc.emailSetupSkipped()) {
             binding.taskEmail.icon = getDrawable(R.drawable.ic_step_1_skipped)
-
         } else {
             binding.taskEmail.icon = getDrawable(
                 when (status) {

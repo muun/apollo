@@ -6,16 +6,17 @@ import io.muun.apollo.presentation.ui.view.MuunPinIndicator.PinIndicatorState;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.StringRes;
-import androidx.viewbinding.ViewBinding;
 import icepick.State;
-import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 
 import javax.annotation.Nullable;
 
-public class MuunPinInput extends MuunView {
+public class MuunPinInput extends MuunView<MuunPinInputBinding> {
 
     public interface OnPinEnteredListener {
         void onPinEntered(String pin);
@@ -31,11 +32,9 @@ public class MuunPinInput extends MuunView {
             .addInt(R.attr.pinLength, MuunPinInput::setPinLength)
             .build();
 
-    private MuunPinInputBinding binding;
-
     @Override
-    public Function1<View, ViewBinding> viewBinder() {
-        return MuunPinInputBinding::bind;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunPinInputBinding> bindingInflater() {
+        return MuunPinInputBinding::inflate;
     }
 
     @State
@@ -57,19 +56,12 @@ public class MuunPinInput extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_pin_input;
-    }
-
-    @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
-        binding = (MuunPinInputBinding) getBinding();
         viewProps.transfer(attrs, this);
 
-        binding.pinInputKeyboard.setListener(new KeyboardListener());
-        binding.pinInputKeyboard.setDeleteEnabled(false);
+        getBinding().pinInputKeyboard.setListener(new KeyboardListener());
+        getBinding().pinInputKeyboard.setDeleteEnabled(false);
     }
 
     public void setListener(OnPinEnteredListener listener) {
@@ -85,7 +77,7 @@ public class MuunPinInput extends MuunView {
      */
     public void clear() {
         content = "";
-        binding.errorMessage.setVisibility(View.INVISIBLE);
+        getBinding().errorMessage.setVisibility(View.INVISIBLE);
         updateAfterChange();
     }
 
@@ -93,22 +85,22 @@ public class MuunPinInput extends MuunView {
      * Set the remaining PIN attempts.
      */
     public void setRemainingAttempts(int attempts) {
-        binding.errorMessage.setVisibility(View.VISIBLE);
+        getBinding().errorMessage.setVisibility(View.VISIBLE);
 
         if (attempts > 1) {
-            binding.errorMessage.setText(getContext().getString(
+            getBinding().errorMessage.setText(getContext().getString(
                     R.string.pin_attempts_left_many,
                     attempts
             ));
         } else if (attempts == 1) {
-            binding.errorMessage.setText(R.string.pin_attempts_left_one);
+            getBinding().errorMessage.setText(R.string.pin_attempts_left_one);
         } else {
-            binding.errorMessage.setText(R.string.pin_attempts_left_zero);
+            getBinding().errorMessage.setText(R.string.pin_attempts_left_zero);
         }
     }
 
     public void setRemainingAttemptsVisible(boolean isVisible) {
-        binding.errorMessage.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        getBinding().errorMessage.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**
@@ -116,8 +108,8 @@ public class MuunPinInput extends MuunView {
      * @param text error message resource
      */
     public void setErrorMessage(@StringRes int text) {
-        binding.errorMessage.setVisibility(View.VISIBLE);
-        binding.errorMessage.setText(text);
+        getBinding().errorMessage.setVisibility(View.VISIBLE);
+        getBinding().errorMessage.setText(text);
     }
 
     /**
@@ -125,7 +117,7 @@ public class MuunPinInput extends MuunView {
      * @param resId title resource.
      */
     public void setTitle(@StringRes int resId) {
-        binding.setUpPinTitle.setText(resId);
+        getBinding().setUpPinTitle.setText(resId);
     }
 
     /**
@@ -133,22 +125,22 @@ public class MuunPinInput extends MuunView {
      * @param resId title resource.
      */
     public void setDescription(@StringRes int resId) {
-        binding.setUpPinDescription.setVisibility(VISIBLE);
-        binding.setUpPinDescription.setText(resId);
+        getBinding().setUpPinDescription.setVisibility(VISIBLE);
+        getBinding().setUpPinDescription.setText(resId);
     }
 
     /**
      * Hides the description (subtitle).
      */
     public void hideDescription() {
-        binding.setUpPinDescription.setVisibility(GONE);
+        getBinding().setUpPinDescription.setVisibility(GONE);
     }
 
     /**
      * Briefly indicate error, disabling and clearing the input, invoking a callback when done.
      */
     public void flashError(@Nullable Action0 callback) {
-        binding.pinInputIndicator.flashState(PinIndicatorState.ERROR, () -> {
+        getBinding().pinInputIndicator.flashState(PinIndicatorState.ERROR, () -> {
             clear();
 
             if (callback != null) {
@@ -158,26 +150,27 @@ public class MuunPinInput extends MuunView {
     }
 
     public void setPinLength(int length) {
-        binding.pinInputIndicator.setLength(length);
+        getBinding().pinInputIndicator.setLength(length);
     }
 
     /**
      * Indicate success, disabling further input.
      */
     public void setSuccess() {
-        binding.pinInputIndicator.setState(PinIndicatorState.SUCCESS);
+        getBinding().pinInputIndicator.setState(PinIndicatorState.SUCCESS);
     }
 
     private void updateAfterChange() {
         final int inputLength = content.length();
 
-        binding.pinInputIndicator.setProgress(inputLength);
+        getBinding().pinInputIndicator.setProgress(inputLength);
 
-        binding.pinInputKeyboard.setEnabled(inputLength
-                < binding.pinInputIndicator.getLength()); // allow typing when incomplete
-        binding.pinInputKeyboard.setDeleteEnabled(inputLength > 0); // allow deletion when empty
+        getBinding().pinInputKeyboard.setEnabled(inputLength
+                < getBinding().pinInputIndicator.getLength()); // allow typing when incomplete
+        // allow deletion when empty
+        getBinding().pinInputKeyboard.setDeleteEnabled(inputLength > 0);
 
-        if (inputLength == binding.pinInputIndicator.getLength() && listener != null) {
+        if (inputLength == getBinding().pinInputIndicator.getLength() && listener != null) {
             listener.onPinEntered(content);
         }
     }
@@ -185,7 +178,7 @@ public class MuunPinInput extends MuunView {
     private class KeyboardListener implements MuunNumericKeyboard.OnKeyListener {
         @Override
         public void onNumberKey(int number) {
-            if (content.length() < binding.pinInputIndicator.getLength()) {
+            if (content.length() < getBinding().pinInputIndicator.getLength()) {
                 content += number;
                 updateAfterChange();
             }

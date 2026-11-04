@@ -21,6 +21,10 @@ open class UserSelector @Inject constructor(private val userRepository: UserRepo
     fun getOptional(): Optional<User> =
         watchOptional().toBlocking().first()
 
+    fun getHoustonId(): Long? {
+        return userRepository.fetchHid()
+    }
+
     fun watchBalanceHidden(): Observable<Boolean> =
         userRepository.watchBalanceHidden()
 

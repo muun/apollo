@@ -13,7 +13,9 @@ import io.muun.apollo.data.serialization.SerializationUtils;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
 import io.muun.apollo.domain.action.session.LegacyLogoutUserForMigrationAction;
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError;
 import io.muun.apollo.domain.libwallet.LibwalletClient;
+import io.muun.apollo.domain.model.ExchangeRateWindow;
 import io.muun.apollo.domain.model.FeeWindow;
 import io.muun.apollo.domain.model.NightMode;
 import io.muun.common.crypto.ChallengeType;
@@ -124,6 +126,8 @@ public class PreferencesMigrationManager {
             this::initNtsUtxoStatus,
 
             this::moveNightModeToLibwalletStorage,
+
+            this::moveExchangeRateWindowToLibwalletStorage,
     };
 
     /**
@@ -288,12 +292,15 @@ public class PreferencesMigrationManager {
         // us re-encrypting the our base private key with our RC ChallengePublicKey (so if it hasn't
         // been migrated first, problem may arise).
         // Note: we shouldn't re-encrypt our basePrivateKey on a Password ChallengePublicKey change.
-        if (keysRepository.hasChallengePublicKey(ChallengeType.RECOVERY_CODE)) {
-            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.RECOVERY_CODE);
-        }
+        addChallengePublicKeyVersionIfStored(ChallengeType.RECOVERY_CODE);
+        addChallengePublicKeyVersionIfStored(ChallengeType.PASSWORD);
+    }
 
-        if (keysRepository.hasChallengePublicKey(ChallengeType.PASSWORD)) {
-            keysRepository.addChallengePublicKeyVersionMigration(ChallengeType.PASSWORD);
+    private void addChallengePublicKeyVersionIfStored(ChallengeType type) {
+        try {
+            keysRepository.addChallengePublicKeyVersionMigration(type);
+        } catch (SecureKeyValueStoreError.NotFound e) {
+            // Nothing stored for this challenge type, so there is nothing to migrate.
         }
     }
 
@@ -370,6 +377,29 @@ public class PreferencesMigrationManager {
         }
 
         prefs.edit().remove("current_night_mode").apply();
+    }
+
+    private void moveExchangeRateWindowToLibwalletStorage() {
+        final SharedPreferences prefs = context
+                .getSharedPreferences("exchange_rate_window", Context.MODE_PRIVATE);
+
+        final String json = prefs.getString("window", null);
+        if (json == null) {
+            return;
+        }
+
+        try {
+            final ExchangeRateWindow window =
+                    SerializationUtils.deserializeJson(ExchangeRateWindow.class, json);
+            libwalletClient.saveExchangeRateWindow(window);
+        } catch (Exception e) {
+            // If the copy fails the repository reads no window and forces a refetch,
+            // the same path as a fresh install.
+            Timber.e(e);
+        }
+        // The SharedPreferences value is deliberately not deleted: if the user
+        // downgrades to an older app version, that build still reads the window
+        // from SharedPreferences, so rates keep working after the downgrade.
     }
 
 }

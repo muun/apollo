@@ -43,10 +43,10 @@ public class SuccessRecoveryCodeFragment
     @Override
     public void setTexts(User user) {
         if (user.hasPassword) {
-            description.setText(R.string.recovery_code_success_description);
+            descriptionView().setText(R.string.recovery_code_success_description);
 
         } else {
-            description.setText(R.string.recovery_code_success_description_email_skipped);
+            descriptionView().setText(R.string.recovery_code_success_description_email_skipped);
         }
     }
 

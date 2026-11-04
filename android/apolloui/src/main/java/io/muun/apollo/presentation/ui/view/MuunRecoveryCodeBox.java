@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
-
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunRecoveryCodeBoxBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2;
 import io.muun.apollo.presentation.ui.utils.StyledStringRes;
@@ -13,21 +13,22 @@ import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewTreeLifecycleOwner;
-import butterknife.BindView;
-import butterknife.BindViews;
+import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class MuunRecoveryCodeBox extends MuunView {
+public class MuunRecoveryCodeBox extends MuunView<MuunRecoveryCodeBoxBinding> {
 
     public interface OnEditedListener {
 
@@ -39,20 +40,7 @@ public class MuunRecoveryCodeBox extends MuunView {
     }
 
     // This is a bit cumbersome, but these views require IDs to have persistent state:
-    @BindViews({
-            R.id.recovery_code_box_input_1,
-            R.id.recovery_code_box_input_2,
-            R.id.recovery_code_box_input_3,
-            R.id.recovery_code_box_input_4,
-            R.id.recovery_code_box_input_5,
-            R.id.recovery_code_box_input_6,
-            R.id.recovery_code_box_input_7,
-            R.id.recovery_code_box_input_8
-    })
     List<MuunTextInput> segmentInputs;
-
-    @BindView(R.id.recovery_code_error)
-    TextView errorText;
 
     OnEditedListener editedListener;
 
@@ -69,13 +57,24 @@ public class MuunRecoveryCodeBox extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_recovery_code_box;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunRecoveryCodeBoxBinding>
+            bindingInflater() {
+        return MuunRecoveryCodeBoxBinding::inflate;
     }
 
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        segmentInputs = Arrays.asList(
+                getBinding().recoveryCodeBoxInput1,
+                getBinding().recoveryCodeBoxInput2,
+                getBinding().recoveryCodeBoxInput3,
+                getBinding().recoveryCodeBoxInput4,
+                getBinding().recoveryCodeBoxInput5,
+                getBinding().recoveryCodeBoxInput6,
+                getBinding().recoveryCodeBoxInput7,
+                getBinding().recoveryCodeBoxInput8
+        );
 
         if (isInEditMode()) {
             return; // For layout preview, we just want the view to be measured and rendered
@@ -208,24 +207,24 @@ public class MuunRecoveryCodeBox extends MuunView {
      */
     public void setError(@Nullable UserFacingError error) {
         if (error != null) {
-            errorText.setText(error.getLocalizedMessage());
-            errorText.setVisibility(View.VISIBLE);
+            getBinding().recoveryCodeError.setText(error.getLocalizedMessage());
+            getBinding().recoveryCodeError.setVisibility(View.VISIBLE);
         } else {
-            errorText.setVisibility(View.GONE);
+            getBinding().recoveryCodeError.setVisibility(View.GONE);
         }
-        errorText.setOnClickListener(null); // Reset legacy onClick handling
+        getBinding().recoveryCodeError.setOnClickListener(null); // Reset legacy onClick handling
     }
 
     /**
      * Set special, one of a kind, error for RC-only Login flow.
      */
     public void showLegacyRecoveryCodeError(Action0 goToLegacySignIn) {
-        errorText.setText(
+        getBinding().recoveryCodeError.setText(
                 new StyledStringRes(getContext(), R.string.rc_only_login_legacy_error)
                         .toCharSequence()
         );
-        errorText.setVisibility(View.VISIBLE);
-        errorText.setOnClickListener(v -> goToLegacySignIn.call());
+        getBinding().recoveryCodeError.setVisibility(View.VISIBLE);
+        getBinding().recoveryCodeError.setOnClickListener(v -> goToLegacySignIn.call());
     }
 
     public void setOnEditedListener(OnEditedListener listener) {

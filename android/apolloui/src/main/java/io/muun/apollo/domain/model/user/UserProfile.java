@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model.user;
 
 import androidx.annotation.Nullable;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class UserProfile {
 

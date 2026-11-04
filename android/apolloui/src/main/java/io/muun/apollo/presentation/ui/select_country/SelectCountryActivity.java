@@ -1,10 +1,10 @@
 package io.muun.apollo.presentation.ui.select_country;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SelectCountryActivityBinding;
 import io.muun.apollo.domain.model.CountryInfo;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.base.BaseView;
-import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.apollo.presentation.ui.view.MuunViewHolder;
 
@@ -16,10 +16,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 public class SelectCountryActivity extends BaseActivity<SelectCountryPresenter>
         implements BaseView {
@@ -34,11 +35,14 @@ public class SelectCountryActivity extends BaseActivity<SelectCountryPresenter>
         return CountryInfo.findByCode(data.getStringExtra(COUNTRY_CODE_RESULT)).orElse(null);
     }
 
-    @BindView(R.id.header)
-    MuunHeader header;
+    private SelectCountryActivityBinding binding() {
+        return (SelectCountryActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.list)
-    RecyclerView recyclerView;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SelectCountryActivityBinding::inflate;
+    }
 
     private List<CountryInfo> countryInfoList;
 
@@ -48,27 +52,22 @@ public class SelectCountryActivity extends BaseActivity<SelectCountryPresenter>
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.select_country_activity;
-    }
-
-    @Override
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.select_country);
-        header.setNavigation(Navigation.BACK);
+        binding().header.attachToActivity(this);
+        binding().header.showTitle(R.string.select_country);
+        binding().header.setNavigation(Navigation.BACK);
 
-        recyclerView.setAdapter(new CountryAdapter());
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding().list.setAdapter(new CountryAdapter());
+        binding().list.setLayoutManager(new LinearLayoutManager(this));
 
         setUpCountryList();
     }
 
     private void setUpCountryList() {
         countryInfoList = CountryInfo.getAll();
-        recyclerView.getAdapter().notifyDataSetChanged();
+        binding().list.getAdapter().notifyDataSetChanged();
     }
 
     private void onCountryItemClick(CountryInfo countryInfo) {

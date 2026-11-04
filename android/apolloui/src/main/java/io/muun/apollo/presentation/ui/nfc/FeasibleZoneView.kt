@@ -7,6 +7,8 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import io.muun.apollo.domain.model.FeasibleZone
 import io.muun.apollo.presentation.ui.utils.calculatePixelsPerMm
 
@@ -108,11 +110,9 @@ class FeasibleZoneView @JvmOverloads constructor(
     }
 
     private fun getStatusBarHeight(): Int {
-        var result = 0
-        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-        if (resourceId > 0) {
-            result = resources.getDimensionPixelSize(resourceId)
-        }
-        return result
+        return ViewCompat.getRootWindowInsets(this)
+            ?.getInsets(WindowInsetsCompat.Type.statusBars())
+            ?.top
+            ?: 0
     }
 }

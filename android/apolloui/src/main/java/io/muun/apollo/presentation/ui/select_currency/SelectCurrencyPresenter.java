@@ -14,6 +14,7 @@ import io.muun.common.model.ExchangeRateProvider;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -22,7 +23,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class SelectCurrencyPresenter extends BasePresenter<SelectCurrencyView> {

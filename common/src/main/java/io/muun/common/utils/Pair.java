@@ -1,6 +1,7 @@
 package io.muun.common.utils;
 
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 // clone of com.sun.tools.javac.util.Pair;
 
@@ -8,7 +9,7 @@ public class Pair<A, B> {
     public final A fst;
     public final B snd;
 
-    public Pair(A first, B second) {
+    public Pair(@Nullable A first, @Nullable B second) {
         this.fst = first;
         this.snd = second;
     }
@@ -44,7 +45,7 @@ public class Pair<A, B> {
     /**
      * Build a pair out of the given objects.
      */
-    public static <A, B> Pair<A, B> of(A first, B second) {
+    public static <A, B> Pair<A, B> of(@Nullable A first, @Nullable B second) {
         return new Pair<>(first, second);
     }
 }

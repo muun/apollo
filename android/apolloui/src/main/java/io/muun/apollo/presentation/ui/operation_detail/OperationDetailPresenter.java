@@ -20,8 +20,8 @@ import icepick.State;
 import rx.Observable;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class OperationDetailPresenter extends BasePresenter<OperationDetailView> {

@@ -3,24 +3,21 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunUriPasterBinding
 import io.muun.apollo.domain.model.OperationUri
 
 class MuunUriPaster @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
-    MuunView(c, a, s) {
+    MuunView<MuunUriPasterBinding>(c, a, s) {
 
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.description)
-    lateinit var descriptionView: TextView
+    private val titleView get() = binding.title
+    private val descriptionView get() = binding.description
 
     var onSelectListener: (uri: OperationUri) -> Unit = {}
 
-    override val layoutResource: Int
-        get() = R.layout.muun_uri_paster
+    override fun bindingInflater(): BindingInflater<MuunUriPasterBinding> {
+        return MuunUriPasterBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

@@ -20,7 +20,9 @@ class BuildInfoProvider {
                 Build.MODEL,
                 Build.PRODUCT,
                 Build.VERSION.RELEASE,
-                AfsUtils.epochAtUtcMidnight(Build.TIME)
+                AfsUtils.epochAtUtcMidnight(Build.TIME),
+                Build.VERSION.INCREMENTAL,
+                Build.HARDWARE,
             )
         }
 

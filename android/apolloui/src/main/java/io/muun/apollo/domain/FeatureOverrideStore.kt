@@ -50,7 +50,9 @@ class FeatureOverrideStore @Inject constructor(
         libwalletClient.saveBoolean(key, isOverridden)
 
         val feature = overridableFeature.feature
-        analytics.report(AnalyticsEvent.E_FEATURE_FLAG_OVERRIDE(feature.name, isOverridden))
+        analytics.report(
+            AnalyticsEvent.E_FEATURE_FLAG_OVERRIDE(feature.name, isEnabled = !isOverridden)
+        )
     }
 
     /**

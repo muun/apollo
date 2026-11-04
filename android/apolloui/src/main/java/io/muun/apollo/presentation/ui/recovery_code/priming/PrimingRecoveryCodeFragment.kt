@@ -1,35 +1,30 @@
 package io.muun.apollo.presentation.ui.recovery_code.priming
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.PrimingRecoveryCodeFragmentBinding
 import io.muun.apollo.domain.model.user.User
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 internal class PrimingRecoveryCodeFragment : SingleFragment<PrimingRecoveryCodePresenter>(),
     PrimingRecoveryCodeView {
 
-    @BindView(R.id.priming_recovery_code_title)
-    lateinit var title: TextView
+    private val binding: PrimingRecoveryCodeFragmentBinding
+        get() = getBinding() as PrimingRecoveryCodeFragmentBinding
 
-    @BindView(R.id.priming_recovery_code_desc)
-    lateinit var description: TextView
-
-    @BindView(R.id.priming_recovery_code_start)
-    lateinit var startButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        PrimingRecoveryCodeFragmentBinding::inflate
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.priming_recovery_code_fragment
-
     override fun initializeUi(view: View) {
-        startButton.setOnClickListener { presenter.continueToShowRecoveryCode() }
+        binding.primingRecoveryCodeStart.setOnClickListener { presenter.continueToShowRecoveryCode() }
     }
 
     override fun setUpHeader() {
@@ -41,12 +36,12 @@ internal class PrimingRecoveryCodeFragment : SingleFragment<PrimingRecoveryCodeP
 
     override fun setTexts(user: User) {
         if (!user.hasPassword) {
-            title.setText(R.string.priming_recovery_code_email_skipped_title)
-            description.setText(R.string.priming_recovery_code_email_skipped_desc)
+            binding.primingRecoveryCodeTitle.setText(R.string.priming_recovery_code_email_skipped_title)
+            binding.primingRecoveryCodeDesc.setText(R.string.priming_recovery_code_email_skipped_desc)
         }
     }
 
     override fun handleLoading(isLoading: Boolean) {
-        startButton.setLoading(isLoading)
+        binding.primingRecoveryCodeStart.setLoading(isLoading)
     }
 }

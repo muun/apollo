@@ -10,7 +10,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/go-errors/errors"
 
-	electrum "github.com/muun/libwallet/electrum/v2"
+	electrum "github.com/muun/libwallet/base/data/electrum/v2"
 	"github.com/muun/libwallet/platform/test/testbitcoind"
 )
 

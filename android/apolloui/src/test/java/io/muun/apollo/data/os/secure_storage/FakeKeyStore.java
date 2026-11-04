@@ -31,7 +31,9 @@ public class FakeKeyStore extends KeyStoreProvider {
             throw new RuntimeException("IV doesn't match !");
         }
 
-        return pair.first;
+        // The real provider decrypts into a fresh array on every call, and consumers
+        // (e.g. Secret) are allowed to wipe what they receive.
+        return pair.first.clone();
     }
 
     @Override

@@ -2,50 +2,37 @@ package io.muun.apollo.presentation.ui.fragments.phone_number;
 
 import io.muun.apollo.R;
 import io.muun.apollo.data.afs.InternalMetricsProvider;
+import io.muun.apollo.databinding.SignupPhoneNumberFragmentBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.CountryInfo;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunCountryInput;
-import io.muun.apollo.presentation.ui.view.MuunPhoneInput;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.apollo.presentation.ui.view.RichText;
 import io.muun.common.Optional;
 
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindView;
-import butterknife.OnClick;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 import javax.inject.Inject;
 
 public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         implements PhoneNumberView {
 
-    @BindView(R.id.explanation)
-    HtmlTextView explanation;
+    private SignupPhoneNumberFragmentBinding binding() {
+        return (SignupPhoneNumberFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.signup_phone_number_edit_local_number)
-    MuunPhoneInput nationalNumber;
-
-    @BindView(R.id.signup_phone_number_edit_country_prefix)
-    MuunTextInput countryPrefix;
-
-    @BindView(R.id.signup_phone_number_country_picker)
-    MuunCountryInput countryPicker;
-
-    @BindView(R.id.signup_continue)
-    MuunButton continueButton;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SignupPhoneNumberFragmentBinding::inflate;
+    }
 
     @Inject
     InternalMetricsProvider internalMetricsProvider;
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_phone_number_fragment;
-    }
 
     @Override
     protected void inject() {
@@ -54,17 +41,28 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
 
     @Override
     protected void initializeUi(View view) {
-        countryPicker.setOnChangeListener(this::onCountryPickerChange);
+        binding().signupPhoneNumberCountryPicker.setOnChangeListener(this::onCountryPickerChange);
+        binding().signupContinue.setOnClickListener(v -> {
+            presenter.submitPhoneNumber(
+                    binding().signupPhoneNumberEditCountryPrefix.getText().toString()
+                            + binding().signupPhoneNumberEditLocalNumber.getText().toString()
+            );
+        });
 
-        countryPrefix.setHintEnabled(false);
-        countryPrefix.setHint(getString(R.string.default_country_prefix_hint));
+        binding().signupPhoneNumberEditCountryPrefix.setHintEnabled(false);
+        binding().signupPhoneNumberEditCountryPrefix
+                .setHint(getString(R.string.default_country_prefix_hint));
 
-        countryPrefix.setOnChangeListener(this, this::onCountryPrefixChange);
+        binding().signupPhoneNumberEditCountryPrefix
+                .setOnChangeListener(this, this::onCountryPrefixChange);
 
-        nationalNumber.setOnKeyboardNextListener(continueButton::callOnClick);
+        binding().signupPhoneNumberEditLocalNumber.setOnKeyboardNextListener(
+                binding().signupContinue::callOnClick
+        );
 
         final String userCountryCode = internalMetricsProvider.getRegion().orElse(null);
-        countryPicker.setValue(CountryInfo.findByCode(userCountryCode).orElse(null));
+        binding().signupPhoneNumberCountryPicker
+                .setValue(CountryInfo.findByCode(userCountryCode).orElse(null));
 
         final String whyThisText = getString(R.string.signup_phone_number_why_this);
 
@@ -74,18 +72,17 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
                 new RichText(whyThisText).setLink(this::onWhyThisClick)
         );
 
-        explanation.setText(content);
+        binding().explanation.setText(content);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (TextUtils.isEmpty(countryPrefix.getText())) {
-            countryPrefix.requestFocusInput();
-
+        if (TextUtils.isEmpty(binding().signupPhoneNumberEditCountryPrefix.getText())) {
+            binding().signupPhoneNumberEditCountryPrefix.requestFocusInput();
         } else {
-            nationalNumber.requestFocusInput();
+            binding().signupPhoneNumberEditLocalNumber.requestFocusInput();
         }
     }
 
@@ -97,26 +94,19 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
 
     @Override
     public void setLoading(boolean isLoading) {
-        nationalNumber.setEnabled(!isLoading);
-        countryPrefix.setEnabled(!isLoading);
-        countryPicker.setEnabled(!isLoading);
-        continueButton.setLoading(isLoading);
+        binding().signupPhoneNumberEditLocalNumber.setEnabled(!isLoading);
+        binding().signupPhoneNumberEditCountryPrefix.setEnabled(!isLoading);
+        binding().signupPhoneNumberCountryPicker.setEnabled(!isLoading);
+        binding().signupContinue.setLoading(isLoading);
     }
 
     @Override
     public void setPhoneNumberError(UserFacingError error) {
-        nationalNumber.setError(error);
+        binding().signupPhoneNumberEditLocalNumber.setError(error);
 
         if (error != null) {
-            nationalNumber.requestFocusInput();
+            binding().signupPhoneNumberEditLocalNumber.requestFocusInput();
         }
-    }
-
-    @OnClick(R.id.signup_continue)
-    void onContinueButtonClick() {
-        presenter.submitPhoneNumber(
-                countryPrefix.getText().toString() + nationalNumber.getText().toString()
-        );
     }
 
     private void onWhyThisClick() {
@@ -130,17 +120,17 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
 
     private void onCountryPickerChange(Optional<CountryInfo> item) {
         final CountryInfo countryInfo = item.orElse(null);
-        continueButton.setEnabled(countryInfo != null);
+        binding().signupContinue.setEnabled(countryInfo != null);
 
         if (countryInfo != null) {
-            countryPrefix.setTextSkipListener("+" + countryInfo.countryNumber);
-            nationalNumber.setCountryCode(countryInfo.countryCode);
-            nationalNumber.requestFocusInput();
-
+            binding().signupPhoneNumberEditCountryPrefix
+                    .setTextSkipListener("+" + countryInfo.countryNumber);
+            binding().signupPhoneNumberEditLocalNumber.setCountryCode(countryInfo.countryCode);
+            binding().signupPhoneNumberEditLocalNumber.requestFocusInput();
         } else {
-            countryPrefix.setTextSkipListener("");
-            nationalNumber.setCountryCode(null);
-            countryPrefix.requestFocusInput();
+            binding().signupPhoneNumberEditCountryPrefix.setTextSkipListener("");
+            binding().signupPhoneNumberEditLocalNumber.setCountryCode(null);
+            binding().signupPhoneNumberEditCountryPrefix.requestFocusInput();
         }
     }
 
@@ -154,14 +144,18 @@ public class PhoneNumberFragment extends SingleFragment<PhoneNumberPresenter>
         }
 
         final CountryInfo countryInfo = CountryInfo.findByNumber(countryNumber).orElse(null);
-        continueButton.setEnabled(countryInfo != null);
+        binding().signupContinue.setEnabled(countryInfo != null);
 
         if (countryInfo != null) {
-            countryPrefix.setTextSkipListener("+" + countryInfo.countryNumber);
-            countryPrefix.setSelection(countryPrefix.getText().length());
+            binding().signupPhoneNumberEditCountryPrefix
+                    .setTextSkipListener("+" + countryInfo.countryNumber);
+            binding().signupPhoneNumberEditCountryPrefix.setSelection(
+                    binding().signupPhoneNumberEditCountryPrefix.getText().length()
+            );
         }
 
-        countryPicker.setValueSkipListener(countryInfo);
-        nationalNumber.setCountryCode(countryInfo != null ? countryInfo.countryCode : null);
+        binding().signupPhoneNumberCountryPicker.setValueSkipListener(countryInfo);
+        binding().signupPhoneNumberEditLocalNumber.setCountryCode(
+                countryInfo != null ? countryInfo.countryCode : null);
     }
 }

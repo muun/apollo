@@ -1,32 +1,29 @@
 package io.muun.apollo.presentation.ui.fragments.sync;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SignupSyncFragmentBinding;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.setup_pin_code.SetUpPinCodeActivity;
-import io.muun.apollo.presentation.ui.view.LoadingView;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindString;
-import butterknife.BindView;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncView {
 
     private static final int REQUEST_PIN_CODE_SETUP = 5;
 
-    @BindView(R.id.initial_sync_loading)
-    LoadingView loadingView;
-
-    @BindString(R.string.signup_sync_creating)
-    String newUserMessage;
-
-    @BindString(R.string.signup_sync_loading)
-    String existingUserMessage;
+    private SignupSyncFragmentBinding binding() {
+        return (SignupSyncFragmentBinding) getBinding();
+    }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_sync_fragment;
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SignupSyncFragmentBinding::inflate;
     }
 
     @Override
@@ -46,12 +43,15 @@ public class SyncFragment extends SingleFragment<SyncPresenter> implements SyncV
 
     @Override
     public void setLoading(boolean isLoading) {
-        loadingView.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
+        binding().initialSyncLoading.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
     }
 
     @Override
     public void setIsExistingUser(boolean isExistingUser) {
-        loadingView.setTitle(isExistingUser ? existingUserMessage : newUserMessage);
+        final String message = getString(
+                isExistingUser ? R.string.signup_sync_loading : R.string.signup_sync_creating
+        );
+        binding().initialSyncLoading.setTitle(message);
     }
 
     @Override

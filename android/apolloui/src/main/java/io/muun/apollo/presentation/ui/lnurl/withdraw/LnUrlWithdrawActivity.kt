@@ -59,9 +59,6 @@ class LnUrlWithdrawActivity: SingleFragmentActivity<LnUrlWithdrawPresenter>(), L
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.activity_lnurl_withdraw
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityLnurlWithdrawBinding::inflate
     }

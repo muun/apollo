@@ -52,6 +52,11 @@
 
     <!-- Application -->
 
+    <!--
+    enableOnBackInvokedCallback="false" opts out of predictive back, which targetSdk 36 enables by
+    default. Without it, Activity#onBackPressed() is never called and SingleFragmentActivity's back
+    stack handling breaks. Future SDKs will ignore it: migrate to OnBackPressedCallback first.
+    -->
     <application
             android:name="io.muun.apollo.presentation.app.${mainApplicationClass}"
             android:allowBackup="false"
@@ -59,9 +64,20 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:theme="@style/AppTheme"
+            android:enableOnBackInvokedCallback="false"
+            tools:targetApi="33"
     >
 
         <property android:name="REQUIRE_SECURE_ENV" android:value="1" />
+
+        <!--
+        Opt out of Android 16 adaptive layout enforcement on sw>=600dp screens. Without this,
+        targetSdk 36 ignores orientation/aspect-ratio constraints on tablets/foldables. Stops
+        working on targetSdk 37: remove and adapt layouts before bumping past 36.
+        -->
+        <property
+                android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+                android:value="true" />
 
         <!--
         This tells Firebase analytics to not use the AD_ID.
@@ -248,14 +264,6 @@
                 android:name=".presentation.ui.debug.DebugPanelActivity"
                 android:parentActivityName=".presentation.ui.home.HomeActivity"
                 android:label="Muun debug panel"
-        />
-
-        <!-- DebugSecureKeyValueStorageActivity -->
-
-        <activity
-                android:name=".presentation.ui.debug.securekv.DebugSecureKeyValueStorageActivity"
-                android:parentActivityName=".presentation.ui.debug.DebugPanelActivity"
-                android:label="SecureKeyValueStorage debug"
         />
 
         <!-- RecoveryToolActivity -->

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.show_qr;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.ShowQrActivityBinding;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.selector.UserPreferencesSelector;
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension;
@@ -21,16 +22,16 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.annotation.RequiresApi;
-import androidx.viewpager.widget.ViewPager;
-import butterknife.BindView;
-import com.google.android.material.tabs.TabLayout;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> implements ShowQrView {
 
@@ -48,37 +49,23 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
     @Inject
     UserPreferencesSelector userPreferencesSelector;
 
-    @BindView(R.id.show_qr_header)
-    MuunHeader header;
+    private ShowQrActivityBinding binding() {
+        return (ShowQrActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.show_qr_tab)
-    TabLayout tabLayout;
-
-    @BindView(R.id.show_qr_viewpager)
-    ViewPager viewPager;
-
-    @BindView(R.id.show_qr_viewpager_container)
-    View viewPagerContainer;
-
-    @BindView(R.id.show_qr_unified_qr_container)
-    View unifiedQrLayoutContainer;
-
-    @BindView(R.id.show_qr_notifications_priming)
-    NotificationsPrimingView notificationsPrimingView;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return ShowQrActivityBinding::inflate;
+    }
 
     @Override
     public MuunHeader getHeader() {
-        return header;
+        return binding().showQrHeader;
     }
 
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.show_qr_activity;
     }
 
     @Override
@@ -121,20 +108,18 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.showqr_title);
-        header.setNavigation(Navigation.BACK);
+        binding().showQrHeader.attachToActivity(this);
+        binding().showQrHeader.showTitle(R.string.showqr_title);
+        binding().showQrHeader.setNavigation(Navigation.BACK);
 
         // TODO avoid presenter questions, extract view state and make presenter provide it
         if (OS.supportsNotificationRuntimePermission()) {
 
             if (!hasNotificationsPermission() && presenter.showFirstTimeNotificationPriming())  {
                 initializeUiForNotificationPrimingFirstTime();
-
             } else {
                 initializeUiWithoutInitialNotificationPriming();
             }
-
         } else {
             initializeUiWithoutInitialNotificationPriming();
         }
@@ -186,9 +171,8 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
         // an old wizard from Middle Earth, all we can do is "decide what to do with the time
         // that is given to us".
 
-        if (notificationsPrimingView.getVisibility() == View.VISIBLE) {
+        if (binding().showQrNotificationsPriming.getVisibility() == View.VISIBLE) {
             initializeUiWithoutInitialNotificationPriming();
-
         } else {
             refreshLightningViewState();
         }
@@ -219,45 +203,44 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void initializeUiForNotificationPrimingFirstTime() {
-        viewPager.setVisibility(View.GONE);
-        tabLayout.setVisibility(View.GONE);
+        binding().showQrViewpager.setVisibility(View.GONE);
+        binding().showQrTab.setVisibility(View.GONE);
 
-        notificationsPrimingView.setVisibility(View.VISIBLE);
-        notificationsPrimingView.setUpForFirstTime();
-        notificationsPrimingView.setEnableClickListener(v ->
+        binding().showQrNotificationsPriming.setVisibility(View.VISIBLE);
+        binding().showQrNotificationsPriming.setUpForFirstTime();
+        binding().showQrNotificationsPriming.setEnableClickListener(v ->
                 presenter.handleNotificationPermissionPrompt()
         );
-        notificationsPrimingView.setSkipClickListener(v -> {
+        binding().showQrNotificationsPriming.setSkipClickListener(v -> {
             presenter.reportNotificationPermissionSkipped();
             initializeUiWithoutInitialNotificationPriming();
         });
     }
 
     private void initializeUiWithoutInitialNotificationPriming() {
-        notificationsPrimingView.setVisibility(View.GONE);
+        binding().showQrNotificationsPriming.setVisibility(View.GONE);
 
         if (presenter.showUnifiedQr()) {
-            viewPager.setVisibility(View.GONE);
-            tabLayout.setVisibility(View.GONE);
-            viewPagerContainer.setVisibility(View.GONE);
+            binding().showQrViewpager.setVisibility(View.GONE);
+            binding().showQrTab.setVisibility(View.GONE);
+            binding().showQrViewpagerContainer.setVisibility(View.GONE);
 
             replaceFragment(new ShowUnifiedQrFragment(), false);
-            unifiedQrLayoutContainer.setVisibility(View.VISIBLE);
-
+            binding().showQrUnifiedQrContainer.setVisibility(View.VISIBLE);
         } else {
 
-            viewPager.setVisibility(View.VISIBLE);
-            tabLayout.setVisibility(View.VISIBLE);
-            viewPagerContainer.setVisibility(View.VISIBLE);
+            binding().showQrViewpager.setVisibility(View.VISIBLE);
+            binding().showQrTab.setVisibility(View.VISIBLE);
+            binding().showQrViewpagerContainer.setVisibility(View.VISIBLE);
 
             final ShowQrFragmentPagerAdapter adapter = new ShowQrFragmentPagerAdapter(
                     getSupportFragmentManager(),
                     this,
                     new ShowQrPager(userPreferencesSelector)
             );
-            viewPager.setAdapter(adapter);
-            viewPager.addOnPageChangeListener(adapter.onPageChangeListener);
-            tabLayout.setupWithViewPager(viewPager);
+            binding().showQrViewpager.setAdapter(adapter);
+            binding().showQrViewpager.addOnPageChangeListener(adapter.onPageChangeListener);
+            binding().showQrTab.setupWithViewPager(binding().showQrViewpager);
         }
     }
 
@@ -283,12 +266,13 @@ public class ShowQrActivity extends SingleFragmentActivity<ShowQrPresenter> impl
             return (BaseFragment<T>) getSupportFragmentManager().getFragments().get(0);
         }
 
-        final ShowQrFragmentPagerAdapter adapter = (ShowQrFragmentPagerAdapter) viewPager
-                .getAdapter();
+        final ShowQrFragmentPagerAdapter adapter = (ShowQrFragmentPagerAdapter) binding()
+                .showQrViewpager.getAdapter();
 
         Preconditions.checkNotNull(adapter);
 
         //noinspection unchecked
-        return (BaseFragment<T>) adapter.getExistingItem(viewPager.getCurrentItem());
+        return (BaseFragment<T>) adapter
+                .getExistingItem(binding().showQrViewpager.getCurrentItem());
     }
 }

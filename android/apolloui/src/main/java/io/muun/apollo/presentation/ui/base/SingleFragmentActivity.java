@@ -18,10 +18,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import icepick.State;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 public abstract class SingleFragmentActivity<PresenterT extends Presenter>
         extends BaseActivity<PresenterT> implements SingleFragmentView {
@@ -231,6 +231,14 @@ public abstract class SingleFragmentActivity<PresenterT extends Presenter>
 
         if (hadPreviousFragment) {
             backStackTags.remove(backStackTags.size() - 1);
+
+        } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            // Only "false"-tagged transactions are left, so there's no screen to go back to. Don't
+            // defer to super: FragmentManager's callback on the OnBackPressedDispatcher would pop
+            // one of them, leaving the container empty (or resurrecting a fragment we explicitly
+            // said we can't return to).
+            finishActivity();
+
         } else {
             super.onBackPressed();
         }

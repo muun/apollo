@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
-
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunTextInputBinding;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
@@ -20,7 +20,9 @@ import android.text.method.PasswordTransformationMethod;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
@@ -30,22 +32,18 @@ import androidx.annotation.NonNull;
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import butterknife.BindView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static com.google.android.material.textfield.TextInputLayout.END_ICON_NONE;
-import static com.google.android.material.textfield.TextInputLayout.END_ICON_PASSWORD_TOGGLE;
-
-public class MuunTextInput extends MuunView implements DefaultLifecycleObserver {
+public class MuunTextInput extends MuunView<MuunTextInputBinding>
+        implements DefaultLifecycleObserver {
 
     public enum HelperTextVisibility {
         VISIBLE,
@@ -130,13 +128,8 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
     @State
     protected HelperTextVisibility helperTextVisibility;
 
-    @BindView(R.id.muun_text_input_layout)
     protected TextInputLayout layout;
-
-    @BindView(R.id.muun_text_input_edit_text)
     protected TextInputEditText editText;
-
-    @BindView(R.id.muun_helper_text)
     protected TextView helperText;
 
     // -----------------------------
@@ -167,8 +160,8 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_text_input;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunTextInputBinding> bindingInflater() {
+        return MuunTextInputBinding::inflate;
     }
 
     @Override
@@ -178,6 +171,10 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
         isEnabled = true;
 
         super.setUp(context, attrs);
+        layout = getBinding().muunTextInputLayout;
+        editText = getBinding().muunTextInputEditText;
+        helperText = getBinding().muunHelperText;
+
         if (getComponent() != null) {
             getComponent().inject(this);
         }
@@ -437,7 +434,10 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
         }
 
         errorView.setGravity(helperText.getGravity());
-        errorFrame.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        errorFrame.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
     }
 
     @Override
@@ -462,7 +462,9 @@ public class MuunTextInput extends MuunView implements DefaultLifecycleObserver 
      * See: {@link TextInputLayout#END_ICON_PASSWORD_TOGGLE}
      */
     public void setPasswordRevealEnabled(boolean isEnabled) {
-        layout.setEndIconMode(isEnabled ? END_ICON_PASSWORD_TOGGLE : END_ICON_NONE);
+        layout.setEndIconMode(
+                isEnabled ? TextInputLayout.END_ICON_PASSWORD_TOGGLE : TextInputLayout.END_ICON_NONE
+        );
     }
 
     /**

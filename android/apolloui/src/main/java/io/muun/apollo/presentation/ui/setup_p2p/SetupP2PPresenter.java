@@ -32,8 +32,8 @@ import android.os.Bundle;
 import icepick.State;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class SetupP2PPresenter extends BasePresenter<SingleFragmentView> implements

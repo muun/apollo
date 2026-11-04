@@ -6,7 +6,7 @@ import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.Sha256Hash;
 import io.muun.common.api.messages.EventCommunicationMessage;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public interface NotificationService {
 

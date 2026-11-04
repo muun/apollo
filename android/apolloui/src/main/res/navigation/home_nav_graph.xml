@@ -21,13 +21,7 @@
             android:id="@+id/security_center_fragment"
             android:name="io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragment"
             android:label="security"
-            tools:layout="@layout/fragment_security_center">
-
-        <argument
-                android:name="origin"
-                app:argType="io.muun.apollo.domain.analytics.AnalyticsEvent$SECURITY_CENTER_ORIGIN"
-                android:defaultValue="SHIELD_BUTTON" />
-    </fragment>
+            tools:layout="@layout/fragment_security_center" />
 
     <fragment
             android:id="@+id/settings_fragment"

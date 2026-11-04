@@ -25,7 +25,7 @@
                 android:textSize="@dimen/muun_text_size_body"
                 android:textColor="?android:attr/textColorPrimary"
                 android:textStyle="bold"
-                tools:text="NFC_CARD_V2" />
+                tools:text="Security Card" />
 
         <TextView
                 android:id="@+id/feature_flag_description"
@@ -34,9 +34,7 @@
                 android:layout_marginTop="2dp"
                 android:textSize="14sp"
                 android:textColor="?android:attr/textColorSecondary"
-                android:maxLines="2"
-                android:ellipsize="end"
-                tools:text="Enables NFC Security Card V2 support"/>
+                tools:text="Confirm payments by tapping your Muun Security Card. Turn off if you have trouble scanning your card." />
 
     </LinearLayout>
 

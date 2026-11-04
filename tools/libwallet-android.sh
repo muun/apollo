@@ -19,7 +19,7 @@ mkdir -p "$(dirname "$libwallet")"
 mkdir -p "$build_dir/android"
 mkdir -p "$build_dir/pkg"
 
-GOCACHE="$build_dir/android"
+GOCACHE="${GOCACHE:-$build_dir/android}"
 
 # Install and setup gomobile on demand (no-op if already installed and up-to-date)
 . "$repo_root/tools/bootstrap-gomobile.sh"
@@ -52,12 +52,12 @@ export CGO_LDFLAGS="-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
 # Finally run gomobile bind using the version pinned by the go.mod file.
 # We need -androidapi 21 to set the min api targeted by the NDK.
 # The -trimpath and -ldflags are passed on to go build and are part of keeping the build reproducible.
-# Note that we bind & build two packages top-level libwallet and newop.
+# Note that we bind & build the packages legacy (the gomobile API, package libwallet) and legacy/newop.
 go run golang.org/x/mobile/cmd/gomobile bind \
     -target="android" -o "$libwallet" \
     -androidapi 21 \
     -trimpath -ldflags="-buildid=. -v" \
-    . ./newop ./app_provided_data ./libwallet_init
+    ./legacy ./legacy/newop ./app_provided_data ./libwallet_init
 
 st=$?
 echo "rebuilt gomobile with status $? to $libwallet"

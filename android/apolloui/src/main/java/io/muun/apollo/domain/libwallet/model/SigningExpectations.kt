@@ -7,7 +7,8 @@ class SigningExpectations(
     private val outputAmountInSats: Long,
     private val changeAddress: MuunAddress?,
     private val feeInSatoshis: Long,
-    private val isAlternativeTx: Boolean,
+    val isAlternativeTx: Boolean,
+    val expectedDebtInSat: Long,
 ) {
     fun toLibwalletModel(): libwallet.SigningExpectations {
         return libwallet.SigningExpectations(
@@ -15,7 +16,8 @@ class SigningExpectations(
             outputAmountInSats,
             changeAddress?.let { Address(it) },
             feeInSatoshis,
-            isAlternativeTx
+            isAlternativeTx,
+            expectedDebtInSat
         )
     }
 }

@@ -407,9 +407,6 @@ public enum ErrorCode implements BaseErrorCode {
     AMOUNTLESS_INVOICES_NOT_SUPPORTED(
             8124, StatusCode.CLIENT_FAILURE, "Amount less invoices not supported"
     ),
-    INVALID_DERIVATION_PATH(
-            2125, StatusCode.CLIENT_FAILURE, "Derivation path is invalid"
-    ),
 
     // nfc errors
     NFC_FEASIBLE_AREA_NOT_FOUND(

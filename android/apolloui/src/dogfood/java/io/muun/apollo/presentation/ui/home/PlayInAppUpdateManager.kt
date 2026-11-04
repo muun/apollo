@@ -57,7 +57,9 @@ class PlayInAppUpdateManager(
     override fun checkForUpdate() {
         appUpdateManager.registerListener(installStateListener)
 
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+        // Activity-scoped: Tasks drops the listener on onStop, so a late result can't launch
+        // updateLauncher after the activity is destroyed and the launcher unregistered.
+        appUpdateManager.appUpdateInfo.addOnSuccessListener(activity) { appUpdateInfo ->
 
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
 
@@ -87,7 +89,7 @@ class PlayInAppUpdateManager(
 
     override fun onResume(owner: LifecycleOwner) {
         // If the user backgrounds the app during download, check completion on resume
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+        appUpdateManager.appUpdateInfo.addOnSuccessListener(activity) { appUpdateInfo ->
             if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 showRestartSnackbar()
             }

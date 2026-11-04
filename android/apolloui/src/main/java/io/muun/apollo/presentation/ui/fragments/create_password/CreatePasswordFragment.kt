@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
-import io.muun.apollo.R
 import io.muun.apollo.databinding.FragmentCreatePasswordBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
@@ -29,9 +28,6 @@ class CreatePasswordFragment : SingleFragment<CreatePasswordPresenter>(), Create
     override fun inject() {
         component.inject(this)
     }
-
-    override fun getLayoutResource() =
-        R.layout.fragment_create_password
 
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentCreatePasswordBinding::inflate

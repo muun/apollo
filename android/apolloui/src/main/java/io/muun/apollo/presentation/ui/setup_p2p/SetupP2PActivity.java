@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.setup_p2p;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SetupP2pActivityBinding;
 import io.muun.apollo.presentation.ui.base.BaseView;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
@@ -8,9 +9,11 @@ import io.muun.apollo.presentation.ui.view.MuunHeader;
 
 import android.content.Context;
 import android.content.Intent;
-import butterknife.BindView;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SetupP2PActivity extends SingleFragmentActivity<SetupP2PPresenter>
         implements BaseView {
@@ -22,17 +25,18 @@ public class SetupP2PActivity extends SingleFragmentActivity<SetupP2PPresenter>
         return new Intent(context, SetupP2PActivity.class);
     }
 
-    @BindView(R.id.setup_p2p_header)
-    MuunHeader header;
+    private SetupP2pActivityBinding binding() {
+        return (SetupP2pActivityBinding) getBinding();
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SetupP2pActivityBinding::inflate;
+    }
 
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.setup_p2p_activity;
     }
 
     @Override
@@ -42,7 +46,7 @@ public class SetupP2PActivity extends SingleFragmentActivity<SetupP2PPresenter>
 
     @Override
     public MuunHeader getHeader() {
-        return header;
+        return binding().setupP2pHeader;
     }
 
     @Override

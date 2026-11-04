@@ -4,9 +4,9 @@ package io.muun.apollo.domain.model;
 import io.muun.apollo.domain.model.tx.PartiallySignedTransaction;
 import io.muun.common.crypto.hd.MuunAddress;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class OperationCreated {
 

@@ -3,10 +3,9 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
-import android.widget.TextView
-import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.EditReceivePreferenceItemBinding
 import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.PickerCard.Status
 import io.muun.common.model.ReceiveFormatPreference
@@ -15,7 +14,7 @@ class ReceivePreferenceItem @JvmOverloads constructor(
     c: Context,
     a: AttributeSet? = null,
     s: Int = 0,
-) : MuunView(c, a, s) {
+) : MuunView<EditReceivePreferenceItemBinding>(c, a, s) {
 
     companion object {
         const val REQUEST_RECEIVE_PREFERENCE = 1
@@ -27,14 +26,14 @@ class ReceivePreferenceItem @JvmOverloads constructor(
 
     private lateinit var listener: ReceivePreferenceChangedListener
 
-    @BindView(R.id.receive_preference_value)
-    lateinit var editReceivePreferenceButton: TextView
+    private val editReceivePreferenceButton get() = binding.receivePreferenceValue
 
     @State
     lateinit var current: ReceiveFormatPreference
 
-    override val layoutResource: Int
-        get() = R.layout.edit_receive_preference_item
+    override fun bindingInflater(): BindingInflater<EditReceivePreferenceItemBinding> {
+        return EditReceivePreferenceItemBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

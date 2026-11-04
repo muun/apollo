@@ -2,19 +2,17 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ViewNoticeBannerBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<ViewNoticeBannerBinding>(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<NoticeBanner> = ViewProps.Builder<NoticeBanner>().run {
@@ -28,20 +26,14 @@ class NoticeBanner @JvmOverloads constructor(c: Context, a: AttributeSet? = null
         }
     }
 
-    private val binding: ViewNoticeBannerBinding
-        get() = getBinding() as ViewNoticeBannerBinding
-
     private val icon: ImageView
         get() = binding.bannerIcon
 
     private val textView: TextView
         get() = binding.bannerText
 
-    override val layoutResource: Int
-        get() = R.layout.view_notice_banner
-
-    override fun viewBinder(): ((View) -> ViewBinding) {
-        return ViewNoticeBannerBinding::bind
+    override fun bindingInflater(): BindingInflater<ViewNoticeBannerBinding> {
+        return ViewNoticeBannerBinding::inflate
     }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {

@@ -1,20 +1,18 @@
 package io.muun.apollo.presentation.ui.single_action;
 
-
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SingleActionActivityBinding;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.base.BaseView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
 
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
-import android.widget.TextView;
-import butterknife.BindView;
-import butterknife.OnClick;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 import rx.functions.Action0;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SingleActionActivity extends BaseActivity<SingleActionPresenter>
         implements BaseView {
@@ -37,28 +35,20 @@ public class SingleActionActivity extends BaseActivity<SingleActionPresenter>
         return intent;
     }
 
-    @BindView(R.id.title)
-    TextView title;
+    private SingleActionActivityBinding binding() {
+        return (SingleActionActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.subtitle)
-    TextView subtitle;
-
-    @BindView(R.id.body)
-    TextView body;
-
-    @BindView(R.id.action_button)
-    MuunButton actionButton;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SingleActionActivityBinding::inflate;
+    }
 
     Action0 action;
 
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.single_action_activity;
     }
 
     @Override
@@ -96,18 +86,15 @@ public class SingleActionActivity extends BaseActivity<SingleActionPresenter>
             default:
                 break;
         }
-    }
 
-    @OnClick(R.id.action_button)
-    void onActionClick(View actionButton) {
-        action.call();
+        binding().actionButton.setOnClickListener(v -> action.call());
     }
 
     private void setText(int titleResId, int subtitleResId, int bodyResId, int actionLabelResId) {
-        title.setText(titleResId);
-        subtitle.setText(subtitleResId);
-        body.setText(bodyResId);
-        actionButton.setText(actionLabelResId);
+        binding().title.setText(titleResId);
+        binding().subtitle.setText(subtitleResId);
+        binding().body.setText(bodyResId);
+        binding().actionButton.setText(actionLabelResId);
     }
 
     private void setAction(Action0 action) {

@@ -6,7 +6,6 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.View
-import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ManualFeeInputBinding
 import io.muun.apollo.domain.ApplicationLockManager
@@ -21,34 +20,28 @@ import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.normalizeDecimalInput
 import io.muun.common.utils.Dates
 import io.muun.common.utils.Preconditions
-import timber.log.Timber
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Locale
 import javax.inject.Inject
 import javax.money.MonetaryAmount
+import timber.log.Timber
 
 class FeeManualInput @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : MuunView(context, attrs, defStyleAttr) {
+) : MuunView<ManualFeeInputBinding>(context, attrs, defStyleAttr) {
 
-    private val binding: ManualFeeInputBinding
-        get() = getBinding() as ManualFeeInputBinding
-
-    override fun viewBinder(): ((View) -> ViewBinding) {
-        return ManualFeeInputBinding::bind
+    override fun bindingInflater(): BindingInflater<ManualFeeInputBinding> {
+        return ManualFeeInputBinding::inflate
     }
 
     @Inject
     lateinit var lockManager: ApplicationLockManager
 
     private var onChangeListener: ((feeRateInSatsPerVbyte: Double?) -> Unit)? = null
-
-    override val layoutResource: Int
-        get() = R.layout.manual_fee_input
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

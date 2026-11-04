@@ -1,25 +1,27 @@
 package io.muun.apollo.presentation.ui.fragments.setup_password_success
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import io.muun.apollo.R
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
+import io.muun.apollo.databinding.FragmentSetupPasswordSuccessBinding
 import io.muun.apollo.presentation.ui.base.BaseView
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 
 class SetupPasswordSuccessFragment : SingleFragment<SetupPasswordSuccessPresenter>(), BaseView {
 
-    @BindView(R.id.setup_password_success_action)
-    lateinit var actionButton: MuunButton
+    private val binding: FragmentSetupPasswordSuccessBinding
+        get() = getBinding() as FragmentSetupPasswordSuccessBinding
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentSetupPasswordSuccessBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_setup_password_success
-
     override fun initializeUi(view: View) {
-        actionButton.setOnClickListener {
+        binding.setupPasswordSuccessAction.setOnClickListener {
             presenter.finishSetup()
         }
     }

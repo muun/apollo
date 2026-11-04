@@ -21,6 +21,7 @@ type Outpoint struct {
 // Core RPC call.
 type ListUnspentResult struct {
 	Outpoint
+	Address      string  `json:"address"`
 	Amount       float64 `json:"amount"`
 	ScriptPubKey string  `json:"scriptPubKey"`
 	// More fields are available

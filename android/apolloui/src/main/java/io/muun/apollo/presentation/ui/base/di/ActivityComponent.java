@@ -3,7 +3,6 @@ package io.muun.apollo.presentation.ui.base.di;
 import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
-import io.muun.apollo.presentation.ui.debug.securekv.DebugSecureKeyValueStorageActivity;
 import io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
@@ -64,8 +63,6 @@ public interface ActivityComponent {
     void inject(OperationDetailActivity operationDetailActivity);
 
     void inject(DebugPanelActivity debugPanelActivity);
-
-    void inject(DebugSecureKeyValueStorageActivity debugSecureKeyValueStorageActivity);
 
     void inject(ShowQrActivity showQrActivity);
 

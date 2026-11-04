@@ -10,8 +10,6 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.CallSuper
-import butterknife.BindDimen
-import butterknife.BindView
 import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -27,24 +25,14 @@ import timber.log.Timber
 
 abstract class QrFragment<PresenterT : QrPresenter<*>> : SingleFragment<PresenterT>(), QrView {
 
-    @BindView(R.id.show_qr_image_qr)
-    lateinit var qrImage: ImageView
+    protected abstract val qrImage: ImageView
+    protected abstract val qrContent: TextView
+    protected abstract val copyButton: MuunButton
+    protected abstract val shareButton: MuunButton
+    protected abstract val editAmountItem: EditAmountItem
 
-    @BindView(R.id.show_qr_content)
-    lateinit var qrContent: TextView
-
-    @BindView(R.id.show_qr_copy)
-    lateinit var copyButton: MuunButton
-
-    @BindView(R.id.show_qr_share)
-    lateinit var shareButton: MuunButton
-
-    @BindView(R.id.edit_amount_item)
-    lateinit var editAmountItem: EditAmountItem
-
-    @BindDimen(R.dimen.qr_code_size)
-    @JvmField
-    internal var qrCodeSize: Int = 0
+    private val qrCodeSize: Int
+        get() = resources.getDimensionPixelSize(R.dimen.qr_code_size)
 
     @CallSuper
     override fun initializeUi(view: View) {

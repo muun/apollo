@@ -1,10 +1,13 @@
-// Package tlsdistrust provides the HTTP transport libwallet uses for its HTTPS requests. The
-// transport refuses certificate chains that go through intermediates we distrust, even when the
-// platform's root store still trusts their issuers.
+// Package tlsdistrust provides the TLS configuration and the HTTP transport libwallet uses for its
+// TLS connections. Both refuse certificate chains that go through intermediates we distrust, even
+// when the platform's root store still trusts their issuers.
 //
-// Go filters these intermediates itself since Go 1.26.10 and 1.27.3 (https://go.dev/issue/82345).
-// This package keeps libwallet safe on older toolchains, and on Android, where Go verifies with
-// the copy of roots in /system and never sees the blocklist Google ships through Play Services.
+// Go filters these intermediates itself since Go 1.26.10 and 1.27.3 (https://go.dev/issue/82345),
+// but libwallet builds with an older toolchain. On Android that leaves no filter at all: Go runs
+// its own verifier there, against the copy of roots in /system, and never sees the blocklist
+// Google ships through Play Services.
+//
+// TODO: remove this package once libwallet builds with Go 1.26.10+.
 package tlsdistrust
 
 import (
@@ -53,14 +56,26 @@ func Transport() *http.Transport {
 	return transport()
 }
 
+// Config returns a new TLS client configuration that verifies servers against the platform's
+// roots and then drops the chains that go through a distrusted certificate. Callers own the
+// returned value and may set other fields on it.
+func Config() *tls.Config {
+	return distrusted.newConfig(nil)
+}
+
+// newConfig builds a TLS client configuration. A nil roots means the platform's roots.
+func (b spkiBlocklist) newConfig(roots *x509.CertPool) *tls.Config {
+	return &tls.Config{
+		RootCAs:          roots,
+		VerifyConnection: b.verifyConnection,
+	}
+}
+
 // newTransport clones http.DefaultTransport to keep its proxy, HTTP/2 and timeout settings.
 // A nil roots means the platform's roots.
 func (b spkiBlocklist) newTransport(roots *x509.CertPool) *http.Transport {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
-	httpTransport.TLSClientConfig = &tls.Config{
-		RootCAs:          roots,
-		VerifyConnection: b.verifyConnection,
-	}
+	httpTransport.TLSClientConfig = b.newConfig(roots)
 	return httpTransport
 }
 

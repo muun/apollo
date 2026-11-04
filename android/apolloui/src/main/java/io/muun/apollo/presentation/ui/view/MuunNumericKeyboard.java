@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunNumericKeyboardBinding;
 import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 
@@ -9,23 +10,23 @@ import android.content.res.Resources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewTreeLifecycleOwner;
-import butterknife.BindColor;
-import butterknife.BindView;
-import butterknife.BindViews;
+import kotlin.jvm.functions.Function3;
 
 import java.lang.ref.WeakReference;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-
-public class MuunNumericKeyboard extends MuunView {
+public class MuunNumericKeyboard extends MuunView<MuunNumericKeyboardBinding> {
 
     public interface OnKeyListener {
         void onNumberKey(int number);
@@ -49,29 +50,19 @@ public class MuunNumericKeyboard extends MuunView {
     };
 
     public static final int MAX_WIDTH_DP = 464;
+    private TextView[] numberKeys;
 
-    @BindViews({
-            R.id.key_0,
-            R.id.key_1,
-            R.id.key_2,
-            R.id.key_3,
-            R.id.key_4,
-            R.id.key_5,
-            R.id.key_6,
-            R.id.key_7,
-            R.id.key_8,
-            R.id.key_9
-    })
-    TextView[] numberKeys;
+    private ImageView getBiometricsKey() {
+        return getBinding().keyBiometrics;
+    }
 
-    @BindView(R.id.key_biometrics)
-    ImageView biometricsKey;
+    private ImageView getDeleteKey() {
+        return getBinding().keyDel;
+    }
 
-    @BindView(R.id.key_del)
-    ImageView deleteKey;
-
-    @BindColor(R.color.text_secondary_color)
-    int alphabetCharactersColor;
+    private int getAlphabetCharactersColor() {
+        return ContextCompat.getColor(getContext(), R.color.text_secondary_color);
+    }
 
     @Inject
     BiometricsController biometricsController;
@@ -93,13 +84,27 @@ public class MuunNumericKeyboard extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_numeric_keyboard;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunNumericKeyboardBinding>
+            bindingInflater() {
+        return MuunNumericKeyboardBinding::inflate;
     }
 
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        numberKeys = new TextView[]{
+                getBinding().key0,
+                getBinding().key1,
+                getBinding().key2,
+                getBinding().key3,
+                getBinding().key4,
+                getBinding().key5,
+                getBinding().key6,
+                getBinding().key7,
+                getBinding().key8,
+                getBinding().key9,
+        };
+
         if (getComponent() != null) {
             getComponent().inject(this);
         }
@@ -113,14 +118,14 @@ public class MuunNumericKeyboard extends MuunView {
                     "\n",
                     new RichText(NUMBER_KEY_LETTERS[number])
                             .setRelativeSize(0.5f)
-                            .setForegroundColor(alphabetCharactersColor)
+                            .setForegroundColor(getAlphabetCharactersColor())
             );
 
             numberKey.setText(label);
             numberKey.setOnClickListener(ignored -> onNumberKeyClicked(number));
         }
 
-        deleteKey.setOnClickListener(ignored -> onDeleteKeyClicked());
+        getDeleteKey().setOnClickListener(ignored -> onDeleteKeyClicked());
     }
 
     public void setListener(OnKeyListener listener) {
@@ -142,8 +147,8 @@ public class MuunNumericKeyboard extends MuunView {
      * Set whether the delete key can be pressed.
      */
     public void setDeleteEnabled(boolean enabled) {
-        UiUtils.setTint(deleteKey, enabled ? R.color.icon_color : R.color.disabled_color);
-        deleteKey.setEnabled(enabled);
+        UiUtils.setTint(getDeleteKey(), enabled ? R.color.icon_color : R.color.disabled_color);
+        getDeleteKey().setEnabled(enabled);
     }
 
     private void onNumberKeyClicked(int number) {
@@ -159,7 +164,7 @@ public class MuunNumericKeyboard extends MuunView {
     }
 
     private void onDeleteKeyClicked() {
-        if (listener != null && deleteKey.isEnabled()) {
+        if (listener != null && getDeleteKey().isEnabled()) {
             listener.onDeleteKey();
         }
     }
@@ -219,10 +224,10 @@ public class MuunNumericKeyboard extends MuunView {
         public void onResume(@NonNull LifecycleOwner owner) {
             if (biometricsController.hasUserOptedInBiometrics()
                     && biometricsController.getAuthenticationStatus().getCanAuthenticate()) {
-                biometricsKey.setOnClickListener(ignored -> onBiometricsKeyClicked());
-                biometricsKey.setVisibility(View.VISIBLE);
+                getBiometricsKey().setOnClickListener(ignored -> onBiometricsKeyClicked());
+                getBiometricsKey().setVisibility(View.VISIBLE);
             } else {
-                biometricsKey.setVisibility(View.INVISIBLE);
+                getBiometricsKey().setVisibility(View.INVISIBLE);
             }
         }
 

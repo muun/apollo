@@ -6,9 +6,22 @@ buildscript {
 
     ext.nav_version = "2.7.7" // Next version upgrade requires bump minSdk to 21
 
+    repositories {
+        maven {
+            url = 'https://jitpack.io'
+            content { includeGroup 'com.github.muun.sqldelight' }
+        }
+    }
+
     dependencies { // Add third party gradle plugins
         classpath 'com.google.gms:google-services:4.3.15'    // Google Services plugin
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.6'
+        // We're using a patched version of SQLDelight, for reproducible builds. Thanks JitPack!
+        // Keep it out of the root buildscript: its fat jar bundles an old, unrelocated
+        // kotlinx-coroutines that breaks AGP 8.13.2 when it auto-downloads an SDK platform.
+        // This only hides the fork's copy from AGP: the fork still resolves AGP's coroutines
+        // first (parent classloader). If a SQLDelight task breaks on an AGP bump, look here.
+        classpath 'com.github.muun.sqldelight:gradle-plugin:1.5.5-reproducible-build'
 
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
     }
@@ -90,10 +103,16 @@ static def configExternalLinks(productFlavor, String host) {
     productFlavor.buildConfigField "String", "CONFIRM_ACCOUNT_DELETION_PATH", quote(confirmAccountDeletionPath)
 }
 
+// Embeds the Honeycomb key and dataset from the environment.
+def honeycombFromEnv(target, String defaultDataset = "") {
+    target.buildConfigField "String", "HONEYCOMB_API_KEY", quote(System.getenv("APOLLO_HONEYCOMB_KEY") ?: "")
+    target.buildConfigField "String", "HONEYCOMB_DATASET", quote(System.getenv("APOLLO_HONEYCOMB_DATASET") ?: defaultDataset)
+}
+
 android {
     namespace "io.muun.apollo"
 
-    compileSdk 35
+    compileSdk 36
 
     buildFeatures {
         viewBinding true
@@ -103,9 +122,9 @@ android {
     defaultConfig {
         applicationId "io.muun.apollo"
         minSdk 21
-        targetSdk 35
-        versionCode 1512
-        versionName "55.12"
+        targetSdk 36
+        versionCode 1600
+        versionName "56.0"
 
         // Use default Proguard file, bundled with Android Gradle Plugin
         // See: https://issuetracker.google.com/issues/126772206
@@ -124,7 +143,25 @@ android {
         buildConfigField("boolean", "PRODUCTION", "false")
         buildConfigField("boolean", "RELEASE", "false")
 
+        // Honeycomb trace export is off by default.
+        buildConfigField("String", "HONEYCOMB_API_KEY", quote(""))
+        buildConfigField("String", "HONEYCOMB_DATASET", quote(""))
+
         signingConfigs {
+            // Shared across developers so debug builds have a stable certificate SHA-1, which
+            // Google Sign-In requires to match one registered in the Firebase project.
+            // Absent from the open source bundle, where the defaults below keep applying and the
+            // Android SDK generates a keystore per developer.
+            debug {
+                def sharedDebugKeystore = file("debug.keystore")
+                if (sharedDebugKeystore.exists()) {
+                    storeFile sharedDebugKeystore
+                    storePassword "android"
+                    keyAlias "androiddebugkey"
+                    keyPassword "android"
+                }
+            }
+
             dogfood {
 
                 def dogfoodKeystoreProps = new Properties()
@@ -150,15 +187,6 @@ android {
             debuggable true
             minifyEnabled false
             shrinkResources false
-
-            splits {
-                abi {
-                    enable !gradle.startParameter.taskNames.any { it.contains("Dogfood") }
-                    reset()
-                    include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
-                    universalApk false
-                }
-            }
         }
 
         // TODO research and fix this (probably after upgrade to AGP 9)
@@ -176,15 +204,20 @@ android {
             shrinkResources true
 
             buildConfigField("boolean", "RELEASE", "true")
+        }
+    }
 
-            splits {
-                abi {
-                    enable true
-                    reset()
-                    include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
-                    universalApk false
-                }
+    // AGP 8.13 fails to bundle an AAB with ABI splits enabled (issuetracker 402800800), so they
+    // are off whenever an AAB task is requested. Splits is module-wide, not per build type.
+    splits {
+        abi {
+            enable !gradle.startParameter.taskNames.any {
+                def task = it.toLowerCase()
+                task.contains("bundle") || task.contains("extractapksfor")
             }
+            reset()
+            include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+            universalApk false
         }
     }
 
@@ -209,6 +242,10 @@ android {
             buildConfigField("String", "OLD_BUILD_TYPE", quote("debug"))
 
             buildConfigField("String", "LAPP_URL", quote("http://" + getLocalIp() + ":7080"))
+
+            // Devs can setup Honeycomb trace export for local builds.
+            // The dataset defaults to ENV, where their local backends send their traces.
+            honeycombFromEnv(delegate, System.getenv("ENV") ?: "")
 
             signingConfig signingConfigs.debug
         }
@@ -285,6 +322,9 @@ android {
 
             buildConfigField("boolean", "PRODUCTION", "true")
 
+            // Dogfood turns Honeycomb trace export on
+            honeycombFromEnv(delegate)
+
             // App bundles with ABI split enabled
             // To mimic what we do for prod "multi apk" builds
             bundle {
@@ -320,7 +360,7 @@ android {
 
         main {
             proto {
-                srcDir "${project.rootDir}/libwallet/presentation/api"
+                srcDir "${project.rootDir}/libwallet/server/api"
             }
         }
 
@@ -345,10 +385,6 @@ android {
     lint {
         abortOnError true
         warningsAsErrors true
-        // Fires only on a third-party lint.jar (androidx.lifecycle) built against a newer Lint API
-        // than our AGP runs, never our own code, so it's not actionable. Removable on AGP >= 8.8.0
-        // (Lint API >= 16): lifecycle 2.9.0 needs API 16, our AGP 8.6.1 runs API 14.
-        disable 'ObsoleteLintCustomCheck'
         // Fires only on a third-party jar (google-http-client), never our own code, so it's not
         // actionable; warningsAsErrors would otherwise turn this tolerated warning into a fatal error.
         disable 'TrustAllX509TrustManager'
@@ -377,6 +413,9 @@ android {
         exclude 'lib/x86_64/linux/libscrypt.so'
         merge 'META-INF/services/javax.money.spi.CurrencyProviderSpi'
         exclude 'META-INF/rxjava.properties'
+        // Release builds (CI, android/Dockerfile) have no NDK that AGP can strip with, so they
+        // ship libgojni unstripped. Keep it that way everywhere so local builds match release.
+        jniLibs.keepDebugSymbols.add('**/libgojni.so')
     }
 
     // See: http://tools.android.com/tech-docs/unit-testing-support#TOC-Method-...-not-mocked.-
@@ -403,7 +442,6 @@ ext {
     // this discipline on our part. We probably need to extract it to a constant in top-level gradle
     version_retrofit = '2.5.0'
     version_workmanager = '2.9.0'   // Next version upgrade requires bump minSdk to 21
-    version_butterknife = '10.1.0'
     version_mockk = '1.13.7'    // Latest version targeting kotlin 1.8.20
     version_lifecycle = '2.9.0'
     version_grpc = "1.57.2"         // This is ancient, but we're stuck until we bump minSdk to 21
@@ -500,7 +538,6 @@ dependencies {
     implementation 'androidx.preference:preference:1.0.0'
     def emojiVersion = "1.1.0" // We need targetSdkVersion 32 to bump
     implementation "androidx.emoji2:emoji2:$emojiVersion"
-    // We need targetSdkVersion 36 to bump
     implementation "androidx.activity:activity-ktx:1.10.1"
 
     // Remove gridlayout-v7 once we drop minSDK version 19
@@ -522,11 +559,8 @@ dependencies {
     api "io.grpc:grpc-protobuf-lite:$version_grpc"
     api "io.grpc:grpc-stub:$version_grpc"
     api "io.grpc:grpc-okhttp:$version_grpc"
-    api "io.grpc:grpc-android:$version_grpc"
 
     // ui
-    kapt "com.jakewharton:butterknife-compiler:$version_butterknife"
-    implementation "com.jakewharton:butterknife:$version_butterknife"
     implementation "com.github.skydoves:balloon:1.2.7"
 
     // image processing
@@ -568,6 +602,7 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-core:3.10.0'
     androidTestImplementation 'org.mockito:mockito-android:3.10.0'
     androidTestImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+    androidTestImplementation "androidx.work:work-testing:$version_workmanager"
 
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
@@ -678,6 +713,19 @@ afterEvaluate {
 
     tasks.named("preBuild").configure {
         dependsOn("checkVersionNameLength")
+    }
+
+    // A dogfood release must export traces, so it fails without the Honeycomb config.
+    tasks.register("checkDogfoodHoneycombConfig") {
+        doLast {
+            if ((System.getenv("APOLLO_HONEYCOMB_KEY") ?: "").isEmpty()) {
+                throw new GradleException("❌ APOLLO_HONEYCOMB_KEY must be set for dogfood release builds.")
+            }
+        }
+    }
+
+    tasks.named("preDogfoodReleaseBuild").configure {
+        dependsOn("checkDogfoodHoneycombConfig")
     }
 }
 

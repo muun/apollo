@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model.base;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class HoustonUuidModel extends PersistentModel {
 

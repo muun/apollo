@@ -1,52 +1,46 @@
 package io.muun.apollo.presentation.ui.settings
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import io.muun.apollo.R
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
+import io.muun.apollo.databinding.RecoveryCodeFragmentBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
 
 class RecoveryCodeFragment : SingleFragment<RecoveryCodePresenter>(), RecoveryCodeView {
 
-    @BindView(R.id.enter_recovery_code_box)
-    lateinit var recoveryCodeBox: MuunRecoveryCodeBox
+    private val binding: RecoveryCodeFragmentBinding
+        get() = getBinding() as RecoveryCodeFragmentBinding
 
-    @BindView(R.id.use_password)
-    lateinit var usePasswordButton: MuunButton
-
-    @BindView(R.id.enter_recovery_code_continue)
-    lateinit var continueButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        RecoveryCodeFragmentBinding::inflate
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.recovery_code_fragment
-
     override fun initializeUi(view: View) {
-        recoveryCodeBox.setEditable(true)
-        recoveryCodeBox.setOnEditedListener { recoveryCodeString: String ->
+        binding.enterRecoveryCodeBox.setEditable(true)
+        binding.enterRecoveryCodeBox.setOnEditedListener { recoveryCodeString: String ->
             onRecoveryCodeEdited(recoveryCodeString)
         }
-        recoveryCodeBox.requestFocusOnFirstEditableSegment()
-        recoveryCodeBox.setOnKeyboardNextListeners()
-        recoveryCodeBox.setOnKeyboardDoneListener {
-            if (continueButton.isEnabled) {
-                continueButton.callOnClick()
+        binding.enterRecoveryCodeBox.requestFocusOnFirstEditableSegment()
+        binding.enterRecoveryCodeBox.setOnKeyboardNextListeners()
+        binding.enterRecoveryCodeBox.setOnKeyboardDoneListener {
+            if (binding.enterRecoveryCodeContinue.isEnabled) {
+                binding.enterRecoveryCodeContinue.callOnClick()
             }
         }
 
-        usePasswordButton.setOnClickListener { onUsePasswordButtonClick() }
-        continueButton.setOnClickListener { onContinueButtonClick() }
+        binding.usePassword.setOnClickListener { onUsePasswordButtonClick() }
+        binding.enterRecoveryCodeContinue.setOnClickListener { onContinueButtonClick() }
     }
 
     override fun onResume() {
         super.onResume()
-        onRecoveryCodeEdited(recoveryCodeBox.segmentInputsContent) // re-trigger validation
-        recoveryCodeBox.requestFocusOnFirstEditableSegment()
+        onRecoveryCodeEdited(binding.enterRecoveryCodeBox.segmentInputsContent)
+        binding.enterRecoveryCodeBox.requestFocusOnFirstEditableSegment()
     }
 
     override fun blockScreenshots(): Boolean {
@@ -58,15 +52,15 @@ class RecoveryCodeFragment : SingleFragment<RecoveryCodePresenter>(), RecoveryCo
     }
 
     private fun onContinueButtonClick() {
-        presenter.submitRecoveryCode(recoveryCodeBox.segmentInputsContent)
+        presenter.submitRecoveryCode(binding.enterRecoveryCodeBox.segmentInputsContent)
     }
 
     override fun setRecoveryCodeError(error: UserFacingError?) {
-        recoveryCodeBox.setError(error)
+        binding.enterRecoveryCodeBox.setError(error)
     }
 
     override fun setConfirmEnabled(isEnabled: Boolean) {
-        continueButton.isEnabled = isEnabled
+        binding.enterRecoveryCodeContinue.isEnabled = isEnabled
     }
 
     private fun onRecoveryCodeEdited(recoveryCodeString: String) {

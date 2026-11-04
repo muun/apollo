@@ -1,41 +1,37 @@
 package io.muun.apollo.presentation.ui.fragments.single_action;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.SingleActionFragmentBinding;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentPresenter;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.MuunButton;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.CallSuper;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import butterknife.BindView;
-
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public abstract class SingleActionFragment<PresenterT extends SingleFragmentPresenter>
         extends SingleFragment<PresenterT> {
 
-    @BindView(R.id.single_action_image)
-    ImageView image;
+    private SingleActionFragmentBinding binding() {
+        return (SingleActionFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.single_action_message)
-    TextView messageView;
-
-    @BindView(R.id.single_action_description)
-    protected TextView description;
-
-    @BindView(R.id.single_action_action)
-    MuunButton actionButton;
+    protected TextView descriptionView() {
+        return binding().singleActionDescription;
+    }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.single_action_fragment;
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SingleActionFragmentBinding::inflate;
     }
 
     @Override
@@ -53,7 +49,7 @@ public abstract class SingleActionFragment<PresenterT extends SingleFragmentPres
         final int actionLabelRes = getActionLabelRes();
 
         if (imageRes != 0) {
-            image.setImageResource(imageRes);
+            binding().singleActionImage.setImageResource(imageRes);
 
             final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     getImageWidth(),
@@ -62,19 +58,19 @@ public abstract class SingleActionFragment<PresenterT extends SingleFragmentPres
 
             params.bottomMargin = UiUtils.dpToPx(requireContext(), 24);
 
-            image.setLayoutParams(params);
-            image.setVisibility(View.VISIBLE);
+            binding().singleActionImage.setLayoutParams(params);
+            binding().singleActionImage.setVisibility(View.VISIBLE);
         }
 
-        messageView.setText(message);
+        binding().singleActionMessage.setText(message);
 
         if (descriptionText != null) {
-            description.setText(descriptionText);
-            description.setVisibility(View.VISIBLE);
+            binding().singleActionDescription.setText(descriptionText);
+            binding().singleActionDescription.setVisibility(View.VISIBLE);
         }
 
-        actionButton.setText(actionLabelRes);
-        actionButton.setOnClickListener(ignored -> onActionClick());
+        binding().singleActionAction.setText(actionLabelRes);
+        binding().singleActionAction.setOnClickListener(ignored -> onActionClick());
     }
 
     @DrawableRes

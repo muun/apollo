@@ -15,10 +15,10 @@ import io.muun.apollo.presentation.ui.recovery_code.accept.AcceptRecoveryCodeFra
 
 import android.os.Bundle;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 public class VerifyRecoveryCodePresenter
         extends SingleFragmentPresenter<VerifyRecoveryCodeView, SetupRecoveryCodePresenter> {

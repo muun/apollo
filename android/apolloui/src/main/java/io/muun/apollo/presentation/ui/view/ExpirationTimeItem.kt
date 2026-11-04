@@ -3,12 +3,11 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ExpirationTimeItemBinding
 
 class ExpirationTimeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
-    MuunView(c, a, s) {
+    MuunView<ExpirationTimeItemBinding>(c, a, s) {
 
     companion object {
 
@@ -17,17 +16,13 @@ class ExpirationTimeItem @JvmOverloads constructor(c: Context, a: AttributeSet? 
             .build()
     }
 
-    @BindView(R.id.expiration_time_label)
-    lateinit var label: TextView
+    private val label get() = binding.expirationTimeLabel
+    private val expirationTime get() = binding.expirationTimeValue
+    private val loadingView get() = binding.expirationTimeLoading
 
-    @BindView(R.id.expiration_time_value)
-    lateinit var expirationTime: TextView
-
-    @BindView(R.id.expiration_time_loading)
-    lateinit var loadingView: LoadingView
-
-    override val layoutResource: Int
-        get() = R.layout.expiration_time_item
+    override fun bindingInflater(): BindingInflater<ExpirationTimeItemBinding> {
+        return ExpirationTimeItemBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

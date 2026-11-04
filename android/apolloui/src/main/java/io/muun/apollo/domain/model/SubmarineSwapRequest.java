@@ -2,8 +2,8 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.analytics.NewOperationOrigin;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 public class SubmarineSwapRequest {
 

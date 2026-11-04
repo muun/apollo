@@ -14,8 +14,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerFragment
 public class EnterPasswordPresenter extends

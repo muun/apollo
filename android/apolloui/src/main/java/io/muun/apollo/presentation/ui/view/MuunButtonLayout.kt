@@ -7,27 +7,25 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DimenRes
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunButtonLayoutBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.addOnNextLayoutListener
 import io.muun.apollo.presentation.ui.utils.children
 
 class MuunButtonLayout @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunButtonLayoutBinding>(c, a, s) {
 
-    @BindView(R.id.muun_button_layout_content_box)
-    lateinit var contentBox: ViewGroup
-
-    @BindView(R.id.muun_button_layout_button_box)
-    lateinit var buttonBox: ViewGroup
+    private val contentBox: ViewGroup get() = binding.muunButtonLayoutContentBox
+    private val buttonBox: ViewGroup get() = binding.muunButtonLayoutButtonBox
 
     private val gradientHeight = getDimen(R.dimen.muun_button_layout_gradient_height)
     private val buttonSpacing = getDimen(R.dimen.muun_button_layout_button_spacing)
     private var isButtonBoxVisible = true
 
-    override val layoutResource: Int
-        get() = R.layout.muun_button_layout
+    override fun bindingInflater(): BindingInflater<MuunButtonLayoutBinding> {
+        return MuunButtonLayoutBinding::inflate
+    }
 
     override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams?) {
         if (child.id == R.id.muun_button_layout_root) {

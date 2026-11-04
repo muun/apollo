@@ -24,7 +24,6 @@ class PaymentContext(
     fun toLibwallet(submarineSwap: SubmarineSwap?): InitialPaymentContext {
         val libwalletPayCtx = InitialPaymentContext()
         libwalletPayCtx.feeWindow = feeWindow.toLibwallet()
-        libwalletPayCtx.exchangeRateWindow = exchangeRateWindow.toLibwallet()
         libwalletPayCtx.nextTransactionSize = nextTransactionSize.toLibwallet()
         libwalletPayCtx.primaryCurrency = user.getPrimaryCurrency(exchangeRateWindow).currencyCode
         libwalletPayCtx.minFeeRateInSatsPerVByte = Rules.toSatsPerVbyte(minFeeRate)

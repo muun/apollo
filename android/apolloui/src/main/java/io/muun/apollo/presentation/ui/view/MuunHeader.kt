@@ -5,7 +5,6 @@ import android.graphics.PorterDuff
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -14,12 +13,11 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
-import butterknife.BindColor
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunHeaderBinding
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 
-class MuunHeader : MuunView {
+class MuunHeader : MuunView<MuunHeaderBinding> {
 
     companion object {
         val viewProps: ViewProps<MuunHeader> = ViewProps.Builder<MuunHeader>()
@@ -36,18 +34,12 @@ class MuunHeader : MuunView {
         NONE, BACK, EXIT
     }
 
-    @BindView(R.id.muun_header_toolbar)
-    lateinit var toolbar: Toolbar
+    val toolbar: Toolbar get() = binding.muunHeaderToolbar
+    private val indicatorText get() = binding.muunHeaderIndicatorText
+    private val dropShadow: View get() = binding.muunHeaderDropShadow
 
-    @BindView(R.id.muun_header_indicator_text)
-    lateinit var indicatorText: TextView
-
-    @BindView(R.id.muun_header_drop_shadow)
-    lateinit var dropShadow: View
-
-    @JvmField
-    @BindColor(R.color.toolbarColor)
-    var defaultBackgroundColor = 0
+    private val defaultBackgroundColor: Int
+        get() = ContextCompat.getColor(context, R.color.toolbarColor)
 
     private var actionBar: ActionBar? = null
 
@@ -63,8 +55,9 @@ class MuunHeader : MuunView {
         viewProps.transfer(attrs, this)
     }
 
-    override val layoutResource: Int
-        get() = R.layout.muun_header
+    override fun bindingInflater(): BindingInflater<MuunHeaderBinding> {
+        return MuunHeaderBinding::inflate
+    }
 
     override fun setBackgroundColor(@ColorInt color: Int) {
         super.setBackgroundColor(color) // if not set on parent, elevation breaks

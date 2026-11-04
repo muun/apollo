@@ -3,11 +3,15 @@ package io.muun.apollo.domain.action;
 import io.muun.apollo.data.async.tasks.TaskScheduler;
 import io.muun.apollo.data.db.DaoManager;
 import io.muun.apollo.data.external.NotificationService;
-import io.muun.apollo.data.os.secure_storage.SecureStorageProvider;
+import io.muun.apollo.data.preferences.AuthRepository;
+import io.muun.apollo.data.preferences.UserRepository;
+import io.muun.apollo.data.secure_key_value_store.SecureKeyValueStoreRepository;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.SignupDraftManager;
 import io.muun.apollo.domain.action.base.AsyncActionStore;
 import io.muun.apollo.domain.action.session.ClearRepositoriesAction;
+import io.muun.apollo.domain.action.session.RebaseInstallBaselinesAction;
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError;
 import io.muun.apollo.domain.errors.UnrecoverableUserLogoutError;
 import io.muun.apollo.domain.libwallet.LibwalletClient;
 import io.muun.apollo.domain.model.SignupDraft;
@@ -15,6 +19,7 @@ import io.muun.apollo.domain.selector.LogoutOptionsSelector;
 import io.muun.apollo.domain.selector.LogoutOptionsSelector.LogoutOptions;
 import io.muun.common.utils.Preconditions;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
@@ -42,11 +47,17 @@ public class LogoutActions {
     // Data
     private final TaskScheduler taskScheduler;
 
-    private final SecureStorageProvider secureStorageProvider;
+    private final SecureKeyValueStoreRepository secureKeyValueStoreRepository;
 
     private final NotificationService notificationService;
 
     private final LibwalletClient libwalletClient;
+
+    private final UserRepository userRepository;
+
+    private final AuthRepository authRepository;
+
+    private final RebaseInstallBaselinesAction rebaseInstallBaselines;
 
     /**
      * Constructor.
@@ -61,9 +72,12 @@ public class LogoutActions {
             SignupDraftManager signupDraftManager,
             ClearRepositoriesAction clearRepositories,
             TaskScheduler taskScheduler,
-            SecureStorageProvider secureStorageProvider,
+            SecureKeyValueStoreRepository secureKeyValueStoreRepository,
             NotificationService notificationService,
-            LibwalletClient libwalletClient
+            LibwalletClient libwalletClient,
+            UserRepository userRepository,
+            AuthRepository authRepository,
+            RebaseInstallBaselinesAction rebaseInstallBaselines
     ) {
 
         this.contactActions = contactActions;
@@ -75,9 +89,12 @@ public class LogoutActions {
         this.clearRepositories = clearRepositories;
 
         this.taskScheduler = taskScheduler;
-        this.secureStorageProvider = secureStorageProvider;
+        this.secureKeyValueStoreRepository = secureKeyValueStoreRepository;
         this.notificationService = notificationService;
         this.libwalletClient = libwalletClient;
+        this.userRepository = userRepository;
+        this.authRepository = authRepository;
+        this.rebaseInstallBaselines = rebaseInstallBaselines;
     }
 
     /**
@@ -114,7 +131,7 @@ public class LogoutActions {
      * there's a signupDraft when doing this local storage wipe, we preserve it.
      */
     public void destroyWalletToStartClean() {
-        final SignupDraft signupDraft = signupDraftManager.fetchSignupDraft();
+        final SignupDraft signupDraft = fetchSignupDraftToPreserve();
         destroyWallet();
         if (signupDraft != null) {
             signupDraftManager.save(signupDraft);
@@ -149,12 +166,36 @@ public class LogoutActions {
         }
     }
 
+    /**
+     * Preserving the draft is best-effort: if it can't be read, the wipe goes ahead without it,
+     * since the wipe is what clears a secure storage that can't be read.
+     */
+    @Nullable
+    private SignupDraft fetchSignupDraftToPreserve() {
+        try {
+            return signupDraftManager.fetchSignupDraft();
+        } catch (SecureKeyValueStoreError e) {
+            Timber.e(e);
+            return null;
+        }
+    }
+
     private void destroyWallet() {
-        Timber.i("destroyWallet");
+        Timber.i("destroyWallet: %s", describeWipedSession());
         taskScheduler.unscheduleAllTasks();
 
         asyncActionStore.resetAllExceptLogout();
-        secureStorageProvider.wipe();
+
+        try {
+            secureKeyValueStoreRepository.wipe();
+        } finally {
+            // Whatever the wipe managed to remove, the next wallet here belongs to this install.
+            // A failed wipe still rebases: missing that copy is the safe way to fail, flagging
+            // the next wallet here is not. After the wipe, not before: dying in between must not
+            // leave a copied wallet with this install's baselines. Not at the end of this method:
+            // anything below can throw.
+            rebaseInstallBaselines.run();
+        }
 
         clearRepositories.clearForLogout();
         contactActions.stopWatchingContacts();
@@ -164,5 +205,23 @@ public class LogoutActions {
 
         notificationService.cancelAllNotifications();
         libwalletClient.resetData();
+    }
+
+    /**
+     * Describe whose data a wipe destroys, for the destroyWallet breadcrumb. Never throws: failing
+     * to read the stored user or session must not stop the wipe.
+     */
+    private String describeWipedSession() {
+        try {
+            final Long hid = userRepository.fetchHid();
+            final String sessionStatus = authRepository.getSessionStatus()
+                    .map(Enum::name)
+                    .orElse("none");
+
+            return "hid=" + (hid != null ? hid : "none") + ", session=" + sessionStatus;
+
+        } catch (Throwable error) {
+            return "unknown (" + error.getClass().getSimpleName() + ")";
+        }
     }
 }

@@ -3,8 +3,8 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -16,8 +16,12 @@ public class PublicKeySetJson {
     @Nullable
     public PublicKeyJson baseCosigningPublicKey;
 
+    // This field is kept for backward compatibility reasons, not needed for new mobile apps.
     @Nullable
     public PublicKeyJson baseSwapServerPublicKey;
+
+    @Nullable
+    public PublicKeyJson lightningServerPublicKey;
 
     @Nullable
     public ExternalAddressesRecord externalPublicKeyIndices;
@@ -50,11 +54,13 @@ public class PublicKeySetJson {
      */
     public PublicKeySetJson(PublicKeyJson basePublicKey,
                             PublicKeyJson baseCosigningPublicKey,
-                            PublicKeyJson baseSwapServerPublicKey,
+                            @Nullable PublicKeyJson baseSwapServerPublicKey,
+                            @Nullable PublicKeyJson lightningServerPublicKey,
                             ExternalAddressesRecord externalPublicKeyIndices) {
         this.basePublicKey = basePublicKey;
         this.baseCosigningPublicKey = baseCosigningPublicKey;
         this.baseSwapServerPublicKey = baseSwapServerPublicKey;
+        this.lightningServerPublicKey = lightningServerPublicKey;
         this.externalPublicKeyIndices = externalPublicKeyIndices;
     }
 }

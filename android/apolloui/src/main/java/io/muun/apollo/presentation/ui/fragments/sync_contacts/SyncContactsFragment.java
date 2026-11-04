@@ -1,35 +1,35 @@
 package io.muun.apollo.presentation.ui.fragments.sync_contacts;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SyncContactsFragmentBinding;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.RichText;
 
 import android.Manifest;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
         implements SyncContactsView {
 
-    @BindView(R.id.sync_contacts_explanation)
-    HtmlTextView explanation;
+    private SyncContactsFragmentBinding binding() {
+        return (SyncContactsFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.sync_contacts_button)
-    MuunButton button;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SyncContactsFragmentBinding::inflate;
+    }
 
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.sync_contacts_fragment;
     }
 
     @Override
@@ -42,8 +42,10 @@ public class SyncContactsFragment extends SingleFragment<SyncContactsPresenter>
                 new RichText(howItWorkText).setLink(this::onHowItWorksTextClick)
         );
 
-        explanation.setText(content);
-        button.setOnClickListener(v -> requestPermissions(Manifest.permission.READ_CONTACTS));
+        binding().syncContactsExplanation.setText(content);
+        binding().syncContactsButton.setOnClickListener(v ->
+                requestPermissions(Manifest.permission.READ_CONTACTS)
+        );
 
         hideKeyboard(view);
     }

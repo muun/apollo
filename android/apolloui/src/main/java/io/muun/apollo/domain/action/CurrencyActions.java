@@ -9,6 +9,7 @@ import io.muun.common.model.Currency;
 import androidx.annotation.VisibleForTesting;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +21,6 @@ import javax.money.CurrencyUnit;
 import javax.money.Monetary;
 import javax.money.MonetaryException;
 import javax.money.UnknownCurrencyException;
-import javax.validation.constraints.NotEmpty;
 
 
 @Singleton

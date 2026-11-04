@@ -50,7 +50,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
                 .putExtra(IS_BTC_ON_CHAIN, false)
                 .putExtra(PRE_SELECTED_AMOUNT, amount?.serialize())
                 .putExtra(SAT_SELECTED_AS_CURRENCY, satSelectedAsCurrency)
-
         }
 
         fun getPreSelectedAmount(bundle: Bundle): MonetaryAmount? {
@@ -92,10 +91,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.activity_select_amount
-    }
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySelectAmountBinding::inflate
     }
@@ -131,7 +126,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
         if (preSelectedAmount != null) {
             amountInput.setInitialBitcoinUnit(getPreSelectedBitcoinUnit(argumentsBundle))
             setAmount(preSelectedAmount)
-
         } else {
             setAmount(Money.of(0, primaryCurrency))
             // set initial bitcoin unit to user's pref
@@ -159,7 +153,6 @@ class SelectAmountActivity : BaseActivity<SelectAmountPresenter>(), SelectAmount
     override fun setAmountError(showAmountError: Boolean) {
         amountInput.setAmountError(showAmountError)
         confirmButton.isEnabled = !showAmountError
-
     }
 
     override fun finishWithResult(resultCode: Int, amount: BitcoinAmount?) {

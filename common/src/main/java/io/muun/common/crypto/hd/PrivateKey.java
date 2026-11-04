@@ -26,12 +26,12 @@ import org.bitcoinj.wallet.Wallet;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
+import jakarta.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
 
 public class PrivateKey extends BaseKey {
 

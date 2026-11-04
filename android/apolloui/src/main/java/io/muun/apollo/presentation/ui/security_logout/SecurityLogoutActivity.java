@@ -1,15 +1,16 @@
 package io.muun.apollo.presentation.ui.security_logout;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.SecurityLogoutActivityBinding;
 import io.muun.apollo.presentation.ui.activity.extension.ApplicationLockExtension;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import butterknife.OnClick;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
-
+import jakarta.validation.constraints.NotNull;
 
 public class SecurityLogoutActivity extends BaseActivity<SecurityLogoutPresenter> {
 
@@ -18,6 +19,15 @@ public class SecurityLogoutActivity extends BaseActivity<SecurityLogoutPresenter
      */
     public static Intent getStartActivityIntent(@NotNull Context context) {
         return new Intent(context, SecurityLogoutActivity.class);
+    }
+
+    private SecurityLogoutActivityBinding binding() {
+        return (SecurityLogoutActivityBinding) getBinding();
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SecurityLogoutActivityBinding::inflate;
     }
 
     @Override
@@ -32,12 +42,7 @@ public class SecurityLogoutActivity extends BaseActivity<SecurityLogoutPresenter
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.security_logout_activity;
-    }
-
-    @OnClick(R.id.security_logout_sign_in)
-    public void onSignInClick() {
-        presenter.goToSignIn();
+    protected void initializeUi() {
+        binding().securityLogoutSignIn.setOnClickListener(v -> presenter.goToSignIn());
     }
 }

@@ -1,0 +1,695 @@
+package storage
+
+import (
+	"path"
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/muun/libwallet/base/data/walletdb"
+)
+
+func newKeyValueStorageForTesting(t *testing.T) *KeyValueStorage {
+	pool, err := walletdb.NewPool(path.Join(t.TempDir(), "test.db"), nil)
+	if err != nil {
+		t.Fatalf("failed to open db: %v", err)
+	}
+	t.Cleanup(func() { pool.Close() })
+	return NewKeyValueStorage(
+		pool.NewKeyValueRepository(),
+		buildStorageSchemaForTests(),
+	)
+}
+
+func TestGetAndSave(t *testing.T) {
+
+	t.Run("returns error when key is not classified by saving data", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test saving an invalid key.
+		err := keyValueStorage.Save("invalid-key", nil)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+
+		wantErr := "classification not found for key: invalid-key"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Save() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("returns error when key is not classified by reading data", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test getting an invalid key.
+		_, err := keyValueStorage.Get("invalid-key")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+
+		wantErr := "classification not found for key: invalid-key"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Get() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("success when saving a key with nil value", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Try saving a valid key with nil as value.
+		err := keyValueStorage.Save("gcmToken", nil)
+		if err != nil {
+			t.Fatalf("Error saving 'nil' value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err := keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Verify value is nil
+		if got != nil {
+			t.Fatalf("Get() = %q, want nil", got)
+		}
+	})
+
+	t.Run("returns error when key is not classified by deleting data", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test deleting an invalid key.
+		err := keyValueStorage.Delete("invalid-key")
+		if err == nil {
+			t.Fatal("expected error")
+		}
+
+		wantErr := "classification not found for key: invalid-key"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Get() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("success when key is classified appropriately", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Try to save a value with key that exists in the classification for our keys.
+		err := keyValueStorage.Save("gcmToken", "abc123")
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Try to read a value with key that exists in the classification for our keys.
+		_, err = keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error getting value from db: %v", err)
+		}
+
+	})
+
+	t.Run("returns no error when there are no stored values for a key", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Try to get a key for which no one has saved a value before.
+		var value any
+		value, err := keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error getting value from db: %v", err)
+		}
+
+		// Expect nil
+		if value != nil {
+			t.Fatalf("Get() = %q, want nil", value)
+		}
+	})
+
+	t.Run("returns error when value has invalid type", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test saving a valid key with an invalid schema.
+		var invalidTypeForValue = 3.14
+		err := keyValueStorage.Save("gcmToken", invalidTypeForValue)
+
+		if err == nil {
+			t.Fatal("Parsing should fail")
+		}
+		wantErr := "StringType: invalid type, expected string"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Save() error = %v, wantErr = %v", err, wantErr)
+		}
+
+	})
+
+	t.Run("success when value with type Bool can be parsed", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test saving a valid key with a valid type.
+		err := keyValueStorage.Save("isEmailVerified", true)
+
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+	})
+
+	t.Run("success saving and getting a JSON value", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		in := `{"name":"satoshi","number":21}`
+		err := keyValueStorage.Save("jsonDocument", in)
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		got, err := keyValueStorage.Get("jsonDocument")
+		if err != nil {
+			t.Fatalf("Error getting value from db: %v", err)
+		}
+		if got != in {
+			t.Fatalf("Get() = %q, want %q", got, in)
+		}
+	})
+
+	t.Run("returns error when JSON value is not a string", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		err := keyValueStorage.Save("jsonDocument", 3.14)
+
+		if err == nil {
+			t.Fatal("Parsing should fail")
+		}
+		wantErr := "JSONType: invalid type, expected string"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Save() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("returns error when JSON value is not a valid JSON document", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		err := keyValueStorage.Save("jsonDocument", `{"name":`)
+
+		if err == nil {
+			t.Fatal("Parsing should fail")
+		}
+		wantErr := "JSONType: invalid JSON document"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("Save() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("success when value with type Int can be parsed", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test saving a valid key with a valid type.
+		err := keyValueStorage.Save("emergencyKitVersion", int32(1234))
+
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+	})
+
+	t.Run("return no error when deleting a key-value pair", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Initially the value of a key is nil
+		got, err := keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+		if got != nil {
+			t.Fatalf("Get() = %q, want nil", got)
+		}
+
+		// Save a new value.
+		err = keyValueStorage.Save("gcmToken", "abc123")
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Ensure the value is the same that we saved
+		wantFirstTime := "abc123"
+		if got != wantFirstTime {
+			t.Errorf("Save() = %s, want %s", got, wantFirstTime)
+		}
+
+		// Delete the key-value pair
+		err = keyValueStorage.Delete("gcmToken")
+		if err != nil {
+			t.Fatalf("error deleting key-value from db: %v", err)
+		}
+
+		// Try to read the delete key-value pair
+		got, err = keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Verify value is nil again
+		if got != nil {
+			t.Fatalf("Get() = %q, want nil", got)
+		}
+	})
+
+	t.Run("returns no error when updating a key with a new String value", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Initially the value of a key is nil
+		got, err := keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+		if got != nil {
+			t.Fatalf("Get() = %q, want nil", got)
+		}
+
+		// Save a new value.
+		err = keyValueStorage.Save("gcmToken", "abc123")
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Ensure the value is the same that we saved
+		wantFirstTime := "abc123"
+		if got != wantFirstTime {
+			t.Errorf("Save() = %s, want %s", got, wantFirstTime)
+		}
+
+		// Update the value
+		err = keyValueStorage.Save("gcmToken", "xyz789")
+		if err != nil {
+			t.Fatalf("error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.Get("gcmToken")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Verify key is updated with the new value
+		wantSecondTime := "xyz789"
+		if got != wantSecondTime {
+			t.Errorf("Save() = %s, want %s", got, wantSecondTime)
+		}
+
+	})
+
+	t.Run("returns no error when updating a key with a new Int value", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Initially the value of a key is nil
+		got, err := keyValueStorage.Get("emergencyKitVersion")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+		if got != nil {
+			t.Fatalf("Get() = %q, want nil", got)
+		}
+
+		// Save a new value.
+		err = keyValueStorage.Save("emergencyKitVersion", int32(123))
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.Get("emergencyKitVersion")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Ensure the value is the same that we saved
+		wantFirstTime := int32(123)
+		if got != wantFirstTime {
+			t.Errorf("Save() = %v, want %v", got, wantFirstTime)
+		}
+
+		// Update the value
+		err = keyValueStorage.Save("emergencyKitVersion", int32(789))
+		if err != nil {
+			t.Fatalf("error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.Get("emergencyKitVersion")
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Verify key is updated with the new value
+		wantSecondTime := int32(789)
+		if got != wantSecondTime {
+			t.Errorf("Save() = %v, want %v", got, wantSecondTime)
+		}
+
+	})
+
+}
+
+func TestGetBatchAndSaveBatch(t *testing.T) {
+
+	t.Run("returns error when any key is not classified when saving batch", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test saving items with an invalid key.
+		var items = make(map[string]any)
+		items["primaryCurrency"] = "USD"   // valid key
+		items["invalid-key"] = "any value" // invalid key
+
+		err := keyValueStorage.SaveBatch(items)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+
+		wantErr := "classification not found for key: invalid-key"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("SaveBatch() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("returns error when any key is not classified when getting batch", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Test getting items where one of the keys is invalid.
+		var keys = []string{"primaryCurrency", "invalid-key"}
+
+		_, err := keyValueStorage.GetBatch(keys)
+		if err == nil {
+			t.Fatal("expected error")
+		}
+
+		wantErr := "classification not found for key: invalid-key"
+		if !strings.Contains(err.Error(), wantErr) {
+			t.Fatalf("GetBatch() error = %v, wantErr = %v", err, wantErr)
+		}
+	})
+
+	t.Run("returns no error when there are no stored values by getting batch", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Try to get keys for which no one has saved a value before.
+		var keys = []string{"primaryCurrency", "isEmailVerified"}
+
+		got, err := keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error getting value from db: %v", err)
+		}
+
+		// Expect nil
+		primaryCurrency := got["primaryCurrency"]
+		if primaryCurrency != nil {
+			t.Fatalf("got %v, want nil", primaryCurrency)
+		}
+
+		isEmailVerified := got["isEmailVerified"]
+		if isEmailVerified != nil {
+			t.Fatalf("got %v, want nil", isEmailVerified)
+		}
+	})
+
+	t.Run("returns no error when reading, saving and updating batch", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Initially the value of the keys is nil
+		var keys = []string{"primaryCurrency", "email", "isEmailVerified", "emergencyKitVersion"}
+		items, err := keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+		// Expect nil for all values
+		for k, v := range items {
+			if v != nil {
+				t.Fatalf("for key %v, got = %v, want nil", k, v)
+			}
+		}
+
+		// Save batch
+		items = make(map[string]any)
+		items["primaryCurrency"] = "USD"
+		items["email"] = "pepe@test.com"
+		items["isEmailVerified"] = true
+		items["emergencyKitVersion"] = int32(123)
+
+		err = keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving values into db: %v", err)
+		}
+
+		// Read the stored values
+		got, err := keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error reading values from db: %v", err)
+		}
+
+		// Ensure the values are the same that we saved
+		if !reflect.DeepEqual(got, items) {
+			t.Fatalf("GetBatch() = %#v, want %#v", got, items)
+		}
+
+		// Update the values
+		items["primaryCurrency"] = "ARS"
+		items["email"] = nil
+		items["isEmailVerified"] = false
+		items["emergencyKitVersion"] = int32(789)
+		err = keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("error saving values into db: %v", err)
+		}
+
+		// Read the stored values
+		got, err = keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error reading values from db: %v", err)
+		}
+
+		// Verify keys are updated with the new values
+		if !reflect.DeepEqual(got, items) {
+			t.Fatalf("GetBatch() = %v, want %v", got, items)
+		}
+
+	})
+
+	t.Run("returns no error when reading, saving and updating a single item", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Initially the value of the key is nil
+		var keys = []string{"primaryCurrency"}
+		items, err := keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+		// Expect nil
+		if items["primaryCurrency"] != nil {
+			t.Fatalf("got = %v, want nil", items["primaryCurrency"])
+		}
+
+		// Save batch
+		items = make(map[string]any)
+		items["primaryCurrency"] = "USD"
+
+		err = keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err := keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Ensure the value is the same that we saved
+		if !reflect.DeepEqual(got, items) {
+			t.Fatalf("GetBatch() = %#v, want %#v", got, items)
+		}
+
+		// Update the value
+		items["primaryCurrency"] = "ARS"
+		err = keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving value into db: %v", err)
+		}
+
+		// Read the stored value
+		got, err = keyValueStorage.GetBatch(keys)
+		if err != nil {
+			t.Fatalf("Error reading value from db: %v", err)
+		}
+
+		// Verify key is updated with the new value
+		if !reflect.DeepEqual(got, items) {
+			t.Fatalf("GetBatch() = %v, want %v", got, items)
+		}
+
+	})
+
+}
+
+func TestGetByPrefix(t *testing.T) {
+	t.Run("returns all feature flags", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Save some feature flags
+		items := make(map[string]any)
+		items["featureFlag:useDiagnosticMode"] = true
+		items["featureFlag:isDogfood"] = false
+		items["featureFlag:supportsNfc"] = true
+		// Add a key that doesn't match the prefix
+		items["email"] = "some@email.com"
+
+		err := keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving values into db: %v", err)
+		}
+
+		// Get by prefix
+		got, err := keyValueStorage.GetByPrefix("featureFlag:")
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+
+		// Expected items
+		expectedItems := make(map[string]any)
+		expectedItems["featureFlag:useDiagnosticMode"] = true
+		expectedItems["featureFlag:isDogfood"] = false
+		expectedItems["featureFlag:supportsNfc"] = true
+
+		// Check that the number of items returned is expected
+		if len(got) != len(expectedItems) {
+			t.Fatalf("GetByPrefix() = %#v, want %v", len(got), len(expectedItems))
+		}
+
+		// Ensure the values are the same that we saved
+		if !reflect.DeepEqual(got, expectedItems) {
+			t.Fatalf("GetByPrefix() = %#v, want %#v", got, expectedItems)
+		}
+	})
+
+	t.Run("returns empty map if no keys match prefix", func(t *testing.T) {
+		// Setup
+		keyValueStorage := newKeyValueStorageForTesting(t)
+
+		// Save some data
+		items := make(map[string]any)
+		items["email"] = "some@email.com"
+		err := keyValueStorage.SaveBatch(items)
+		if err != nil {
+			t.Fatalf("Error saving values into db: %v", err)
+		}
+
+		// Get by prefix
+		got, err := keyValueStorage.GetByPrefix("nonExistentPrefix:")
+		if err != nil {
+			t.Fatalf("Error getting values from db: %v", err)
+		}
+
+		// Ensure the result is an empty map
+		if len(got) != 0 {
+			t.Fatalf("GetByPrefix() = %#v, want empty map", got)
+		}
+	})
+}
+
+func TestIsClassified(t *testing.T) {
+	keyValueStorage := newKeyValueStorageForTesting(t)
+
+	if !keyValueStorage.IsClassified("email") {
+		t.Fatal("expected a key from the schema to be classified")
+	}
+	if keyValueStorage.IsClassified("invalid-key") {
+		t.Fatal("expected an unknown key to not be classified")
+	}
+}
+
+func buildStorageSchemaForTests() map[string]Classification {
+	return map[string]Classification{
+		"email": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
+		},
+		"emergencyKitVersion": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &IntType{},
+		},
+		"gcmToken": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
+		},
+		"isEmailVerified": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
+		},
+		"primaryCurrency": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &StringType{},
+		},
+		"featureFlag:useDiagnosticMode": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
+		},
+		"featureFlag:isDogfood": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
+		},
+		"featureFlag:supportsNfc": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &BoolType{},
+		},
+		"jsonDocument": {
+			BackupType:       NoAutoBackup,
+			BackupSecurity:   NotApplicable,
+			SecurityCritical: false,
+			ValueType:        &JSONType{},
+		},
+	}
+}

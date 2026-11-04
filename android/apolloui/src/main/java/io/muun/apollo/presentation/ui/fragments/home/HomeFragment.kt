@@ -44,9 +44,6 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         component.inject(this)
     }
 
-    override fun getLayoutResource() =
-        R.layout.fragment_home
-
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentHomeBinding::inflate
     }
@@ -162,7 +159,6 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             // for someone to handle it. If true, all events are handled by the detector.
             return down
         }
-
     }
 
     override fun onPause() {
@@ -224,7 +220,6 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
         var displayedMuunHomeCard: MuunHomeCard? = null
         if (!homeState.user.isRecoverable) {
             displayedMuunHomeCard = binding.homeSecurityCenterCard
-
         } else when (homeState.taprootFeatureStatus) {
             UserActivatedFeatureStatus.OFF -> {} // Do nothing
             UserActivatedFeatureStatus.CAN_PREACTIVATE -> displayedMuunHomeCard = binding.homeTaprootCard
@@ -264,12 +259,10 @@ class HomeFragment : SingleFragment<HomeFragmentPresenter>(), HomeFragmentView {
             newOp.isOutgoing -> {
                 amountInBtc = amountInBtc.negate()
                 animRes = R.anim.new_op_badge_outgoing
-
             }
             newOp.isCyclical -> {
                 animRes = R.anim.new_op_badge_outgoing
                 amountInBtc = BitcoinUtils.satoshisToBitcoins(newOp.fee.inSatoshis).negate()
-
             }
             else -> {
                 animRes = R.anim.new_op_badge_incoming

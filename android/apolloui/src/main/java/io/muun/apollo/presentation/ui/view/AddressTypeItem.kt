@@ -3,8 +3,6 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
-import android.view.View
-import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.databinding.EditAddressTypeItemBinding
@@ -14,7 +12,7 @@ import io.muun.apollo.presentation.ui.utils.getStyledString
 import io.muun.apollo.presentation.ui.view.PickerCard.Status
 
 class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
-    MuunView(c, a, s) {
+    MuunView<EditAddressTypeItemBinding>(c, a, s) {
 
     companion object {
         const val REQUEST_ADDRESS_TYPE = 1
@@ -24,11 +22,8 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
         fun onAddressTypeChanged(newType: AddressType)
     }
 
-    private val binding: EditAddressTypeItemBinding
-        get() = getBinding() as EditAddressTypeItemBinding
-
-    override fun viewBinder(): ((View) -> ViewBinding) {
-        return EditAddressTypeItemBinding::bind
+    override fun bindingInflater(): BindingInflater<EditAddressTypeItemBinding> {
+        return EditAddressTypeItemBinding::inflate
     }
 
     private lateinit var listener: AddressTypeChangedListener
@@ -43,9 +38,6 @@ class AddressTypeItem @JvmOverloads constructor(c: Context, a: AttributeSet? = n
     @State
     @JvmField
     var hoursToTaproot: Int = 0
-
-    override val layoutResource: Int
-        get() = R.layout.edit_address_type_item
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.widget.TextView
@@ -61,8 +62,6 @@ class NfcReaderActivity : SingleFragmentActivity<BasePresenter<BaseView>>(), Err
         return NfcReaderActivityBinding::inflate
     }
 
-    override fun getLayoutResource() = R.layout.nfc_reader_activity
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,8 +82,8 @@ class NfcReaderActivity : SingleFragmentActivity<BasePresenter<BaseView>>(), Err
                                 viewModel.securityCard2faSuccess(this@NfcReaderActivity)
                             }
 
-                            is ViewCommand.Error -> {
-                                handleNfcError(viewCommand)
+                            is ViewCommand.CardReadingError -> {
+                                handleCardReadingError(viewCommand)
                             }
 
                             is ViewCommand.DisableSecurityCardFlag -> {
@@ -113,7 +112,7 @@ class NfcReaderActivity : SingleFragmentActivity<BasePresenter<BaseView>>(), Err
         }
     }
 
-    private fun handleNfcError(error: ViewCommand.Error) {
+    private fun handleCardReadingError(error: ViewCommand.CardReadingError) {
         generateAppEvent("nfc_reading_error")
 
         Timber.e("NFC Error: ${error.message}")
@@ -198,8 +197,11 @@ class NfcReaderActivity : SingleFragmentActivity<BasePresenter<BaseView>>(), Err
             )
         } ?: run {
             // TODO: get this information from table if not API > 34
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.muun_screen_margin)
             val textView = TextView(this).apply {
                 setText(R.string.nfc_reader_screen_unknown_coordinates)
+                gravity = Gravity.CENTER
+                setPadding(horizontalPadding, 0, horizontalPadding, 0)
             }
             container.attachChildAtMm(
                 childView = textView,

@@ -3,34 +3,33 @@ package io.muun.apollo.presentation.ui.fragments.tr_clock_detail
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentTrClockDetailBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.hasAppInstalled
 import io.muun.apollo.presentation.ui.utils.setStyledText
-import io.muun.apollo.presentation.ui.view.BlockClock
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import timber.log.Timber
-
 
 class TaprootClockDetailFragment : SingleFragment<TaprootClockDetailPresenter>(),
     TaprootClockDetailView {
 
-    @BindView(R.id.block_clock)
-    lateinit var blockClock: BlockClock
+    private val binding: FragmentTrClockDetailBinding
+        get() = getBinding() as FragmentTrClockDetailBinding
 
-    @BindView(R.id.description)
-    lateinit var descriptionView: TextView
-
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        FragmentTrClockDetailBinding::inflate
 
     override fun inject() {
         component.inject(this)
     }
 
     override fun initializeUi(view: View) {
-        blockClock.setOnClickListener {
+        binding.blockClock.setOnClickListener {
 
             // EASTER EGG TIME!!!
 
@@ -83,12 +82,9 @@ class TaprootClockDetailFragment : SingleFragment<TaprootClockDetailPresenter>()
         }
     }
 
-    override fun getLayoutResource() =
-        R.layout.fragment_tr_clock_detail
-
     override fun setTaprootCounter(blocksRemaining: Int) {
-        blockClock.value = blocksRemaining
-        descriptionView.setStyledText(R.string.tr_clock_detail_desc, blocksRemaining)
+        binding.blockClock.value = blocksRemaining
+        binding.description.setStyledText(R.string.tr_clock_detail_desc, blocksRemaining)
     }
 
     override fun onBackPressed(): Boolean {

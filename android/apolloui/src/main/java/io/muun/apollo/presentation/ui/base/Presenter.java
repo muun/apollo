@@ -5,7 +5,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public interface Presenter<ViewT extends BaseView> extends ParentPresenter {
 

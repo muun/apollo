@@ -2,9 +2,10 @@ package io.muun.apollo.data.libwallet.grpc;
 
 import android.net.LocalSocketAddress;
 import io.grpc.EquivalentAddressGroup;
+import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.NameResolver;
-import io.grpc.android.UdsChannelBuilder;
+import io.grpc.okhttp.OkHttpChannelBuilder;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -19,8 +20,13 @@ public class GrpcChannelFactory {
      * Create a gRPC channel using the given socket path.
      */
     public static ManagedChannel create(String socketPath) {
-        return UdsChannelBuilder
-                .forPath(socketPath, LocalSocketAddress.Namespace.FILESYSTEM)
+        // The target is unused by the UDS socket factory but required by the builder. TLS is
+        // unsupported: Conscrypt assumes the platform Socket implementation.
+        return OkHttpChannelBuilder
+                .forTarget("dns:///localhost", InsecureChannelCredentials.create())
+                .socketFactory(
+                        new UdsSocketFactory(socketPath, LocalSocketAddress.Namespace.FILESYSTEM)
+                )
                 // On Android 15, when our app is in background, a DNS call
                 // (which includes InetAddress.getAllByName("localhost")) could be blocked, throwing
                 // UnknownHostException.
@@ -42,9 +48,8 @@ public class GrpcChannelFactory {
 
         @Override
         public String getDefaultScheme() {
-            // UdsChannelBuilder uses the "dns" scheme by default, so by returning "dns" here we
-            // ensure gRPC will select this factory for our UDS channel instead of the built-in
-            // DNS resolver.
+            // The channel targets "dns:///localhost", so by returning "dns" here we ensure gRPC
+            // will select this factory for our UDS channel instead of the built-in DNS resolver.
             return "dns";
         }
     }

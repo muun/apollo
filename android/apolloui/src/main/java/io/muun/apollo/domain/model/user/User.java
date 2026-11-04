@@ -11,9 +11,9 @@ import io.muun.common.utils.Since;
 import androidx.annotation.Nullable;
 import org.threeten.bp.ZonedDateTime;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.SortedSet;
 import javax.money.CurrencyUnit;
-import javax.validation.constraints.NotNull;
 
 public class User {
 

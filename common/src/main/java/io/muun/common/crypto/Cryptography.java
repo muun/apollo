@@ -15,6 +15,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyAgreementSpi;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyPairGeneratorSpi;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,7 +41,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.validation.constraints.NotNull;
 
 /**
  * Cryptography utils.

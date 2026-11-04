@@ -10,7 +10,7 @@ class FeatureFlagViewHolder(itemView: View) : BaseViewHolder<FeatureFlagViewMode
 
     override fun bind(viewModel: FeatureFlagViewModel) {
 
-        binding.featureFlagTitle.text = viewModel.overridableFeature.feature.toString()
+        binding.featureFlagTitle.text = viewModel.overridableFeature.humanReadableTitle
         binding.featureFlagDescription.text = viewModel.overridableFeature.humanReadableDesc
 
         // Set initial state - switch is ON when feature is enabled (not overridden)

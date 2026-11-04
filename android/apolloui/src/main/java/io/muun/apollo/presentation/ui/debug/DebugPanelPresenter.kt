@@ -1,7 +1,6 @@
 package io.muun.apollo.presentation.ui.debug
 
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.domain.action.ContactActions
 import io.muun.apollo.domain.action.OperationActions
 import io.muun.apollo.domain.action.address.SyncExternalAddressIndexesAction
@@ -180,24 +179,10 @@ class DebugPanelPresenter @Inject constructor(
     }
 
     /**
-     * Pair/Set up a security card to use with this user/wallet. Only to be used in local builds.
-     */
-    fun setUpSecurityCard(nfcSession: NfcSession) {
-        debugExecutable.setUpSecurityCard(nfcSession)
-    }
-
-    /**
      * Navigates to the 'diagnostic' activity
      */
     fun enterDiagnosticMode() {
         navigator.navigateToDiagnosticMode(context)
-    }
-
-    /**
-     * Navigates to the SecureKeyValueStorage debug screen.
-     */
-    fun enterSecureKeyValueStorageDebug() {
-        navigator.navigateToSecureKeyValueStorageDebug(context)
     }
 
     /**

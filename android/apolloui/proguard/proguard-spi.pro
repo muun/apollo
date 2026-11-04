@@ -14,4 +14,4 @@
 
 -keep public class * implements org.javamoney.moneta.spi.LoaderService
 
--keep public class * implements javax.validation.spi.ValidationProvider
+-keep public class * implements jakarta.validation.spi.ValidationProvider

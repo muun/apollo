@@ -3,24 +3,19 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.annotation.ColorRes
-import butterknife.BindView
-import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewMuunHomeCardBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class MuunHomeCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<ViewMuunHomeCardBinding>(c, a, s) {
 
-    @BindView(R.id.icon)
-    lateinit var iconView: ImageView
+    private val iconView get() = binding.icon
+    private val bodyView get() = binding.body
 
-    @BindView(R.id.body)
-    lateinit var bodyView: TextView
-
-    override val layoutResource: Int
-        get() = R.layout.view_muun_home_card
+    override fun bindingInflater(): BindingInflater<ViewMuunHomeCardBinding> {
+        return ViewMuunHomeCardBinding::inflate
+    }
 
     var icon: Drawable
         get() = iconView.drawable

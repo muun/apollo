@@ -3,13 +3,13 @@ package io.muun.apollo.presentation.ui.show_qr
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.DrawerUnifiedQrFullContentBinding
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 import io.muun.apollo.presentation.ui.utils.openInBrowser
+import io.muun.apollo.presentation.ui.view.BindingInflater
 import io.muun.apollo.presentation.ui.view.DrawerDialogFragment
-import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.MuunActionDrawer
 
 class UnifiedQrFullContentDialogFragment : DrawerDialogFragment() {
@@ -51,23 +51,25 @@ class UnifiedQrFullContentDialogFragment : DrawerDialogFragment() {
 
     class UnifiedQrFullContentDrawer : MuunActionDrawer {
 
-        @BindView(R.id.drawer_unified_qr_header)
-        lateinit var headerTextView: HtmlTextView
+        // MuunActionDrawer fixes the binding type to ViewBinding since its subclasses inflate
+        // their own layouts, so we narrow it here.
+        private val contentBinding: DrawerUnifiedQrFullContentBinding
+            get() = binding as DrawerUnifiedQrFullContentBinding
 
-        @BindView(R.id.drawer_unified_qr_address)
-        lateinit var addressTextView: TextView
-
-        @BindView(R.id.drawer_unified_qr_address_copy_clickable_area)
-        lateinit var addressCopyButton: View
-
-        @BindView(R.id.drawer_unified_qr_invoice)
-        lateinit var invoiceTextView: TextView
-
-        @BindView(R.id.drawer_unified_qr_invoice_copy_clickable_area)
-        lateinit var invoiceCopyButton: View
+        private val headerTextView get() = contentBinding.drawerUnifiedQrHeader
+        private val addressTextView get() = contentBinding.drawerUnifiedQrAddress
+        private val addressCopyButton: View
+            get() = contentBinding.drawerUnifiedQrAddressCopyClickableArea
+        private val invoiceTextView get() = contentBinding.drawerUnifiedQrInvoice
+        private val invoiceCopyButton: View
+            get() = contentBinding.drawerUnifiedQrInvoiceCopyClickableArea
 
         constructor(context: Context) : super(context)
         constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+
+        override fun bindingInflater(): BindingInflater<ViewBinding> {
+            return DrawerUnifiedQrFullContentBinding::inflate
+        }
 
         override fun setUp(context: Context, attrs: AttributeSet?) {
             super.setUp(context, attrs)
@@ -100,8 +102,5 @@ class UnifiedQrFullContentDialogFragment : DrawerDialogFragment() {
                 .toCharSequence(invoice)
                 .let(invoiceTextView::setText)
         }
-
-        override val layoutResource: Int
-            get() = R.layout.drawer_unified_qr_full_content
     }
 }

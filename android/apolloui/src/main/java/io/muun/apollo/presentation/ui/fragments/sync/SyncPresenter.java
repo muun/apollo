@@ -20,8 +20,8 @@ import android.os.Bundle;
 import icepick.State;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerFragment
 public class SyncPresenter extends SingleFragmentPresenter<SyncView, SignupPresenter> {

@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 public class RealTimeData {
 

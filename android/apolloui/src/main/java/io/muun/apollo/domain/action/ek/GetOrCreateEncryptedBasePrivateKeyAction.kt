@@ -2,8 +2,10 @@ package io.muun.apollo.domain.action.ek
 
 import io.muun.apollo.data.preferences.KeysRepository
 import io.muun.apollo.domain.action.base.BaseAsyncAction0
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError
 import io.muun.common.crypto.ChallengePublicKey
 import io.muun.common.crypto.ChallengeType
+import io.muun.common.rx.ObservableFn
 import io.muun.common.utils.Encodings
 import io.muun.common.utils.Preconditions
 import rx.Observable
@@ -19,10 +21,15 @@ class GetOrCreateEncryptedBasePrivateKeyAction @Inject constructor(
      * Prepare the emergency kit for export, and render the HTML.
      */
     override fun action(): Observable<String> {
-        if (keysRepository.hasEncryptedBasePrivateKey) {
-            return keysRepository.encryptedBasePrivateKey
-        }
+        return keysRepository.encryptedBasePrivateKey
+            .compose(
+                ObservableFn.onTypedErrorResumeNext(
+                    SecureKeyValueStoreError.NotFound::class.java
+                ) { createEncryptedBasePrivateKey() }
+            )
+    }
 
+    private fun createEncryptedBasePrivateKey(): Observable<String> {
         Preconditions.checkState(keysRepository.hasChallengePublicKey(ChallengeType.RECOVERY_CODE))
         Preconditions.checkState(keysRepository.hasEncryptedMuunPrivateKey)
         Preconditions.checkState(keysRepository.hasBasePrivateKey)

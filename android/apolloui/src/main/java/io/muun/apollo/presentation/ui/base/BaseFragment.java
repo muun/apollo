@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.CallSuper;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.MainThread;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
@@ -33,23 +32,19 @@ import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.viewbinding.ViewBinding;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 import icepick.Icepick;
 import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 public abstract class BaseFragment<PresenterT extends Presenter> extends Fragment
         implements BaseView, Caller, PermissionRequester {
 
     private FragmentComponent component;
-
-    private Unbinder butterKnifeUnbinder;
 
     /**
      * Reserved property for View Binding use, will be automatically cleaned up by this parent class
@@ -71,21 +66,9 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     protected abstract void inject();
 
     /**
-     * Returns the id of the resource with the layout of the fragment.
-     * TODO rm this once all fragments have successfully migrated from butterKnife to view binding.
+     * Returns the View Binding inflater for this fragment's layout.
      */
-    @LayoutRes
-    protected abstract int getLayoutResource();
-
-    /**
-     * Override this method to opt in to use View Binding. This will turn into an abstract method
-     * to force all subclasses to implement once we finish the transition from ButterKnife to
-     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
-     * transitioned yet.
-     */
-    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
-        return null;
-    }
+    protected abstract Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater();
 
     /**
      * Returns the id of the resource with the menu for this activity.
@@ -166,28 +149,10 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
             Timber.i("Lifecycle: " + getClass().getSimpleName() + " is being recreated");
         }
 
-        final View view = inflateLayout(inflater, container);
+        _binding = bindingInflater().invoke(inflater, container, false);
+        final View view = _binding.getRoot();
         initializeUi(view);
         return view;
-    }
-
-    private View inflateLayout(@NonNull LayoutInflater inflater, ViewGroup container) {
-        final Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater =
-                bindingInflater();
-
-        // If fragment has opted-in to viewBinding, lets gooooo
-        if (bindingInflater != null) {
-            Timber.d(getClass().getSimpleName() + " using viewBinding");
-            _binding = bindingInflater.invoke(inflater, container, false);
-            return _binding.getRoot();
-
-        } else {
-            // Else we fallback to legacy butterknife view binding
-            Timber.d(getClass().getSimpleName() + " using Butterknife");
-            final View view = inflater.inflate(getLayoutResource(), container, false);
-            butterKnifeUnbinder = ButterKnife.bind(this, view);
-            return view;
-        }
     }
 
     /**
@@ -257,9 +222,6 @@ public abstract class BaseFragment<PresenterT extends Presenter> extends Fragmen
     @CallSuper
     public void onDestroyView() {
         Timber.d("Lifecycle: " + getClass().getSimpleName() + "#onDestroyView");
-        if (butterKnifeUnbinder != null) {
-            butterKnifeUnbinder.unbind();
-        }
         _binding = null;
         tearDownUi();
         super.onDestroyView();

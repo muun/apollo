@@ -1,26 +1,27 @@
 package io.muun.apollo.presentation.ui.settings;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.OldPasswordFragmentBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindView;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public class OldPasswordFragment extends SingleFragment<OldPasswordPresenter>
         implements OldPasswordView {
 
-    @BindView(R.id.enter_old_password_input)
-    MuunTextInput password;
+    private OldPasswordFragmentBinding binding() {
+        return (OldPasswordFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.use_recovery_code)
-    MuunButton useRecoveryCodeButton;
-
-    @BindView(R.id.change_password_continue)
-    MuunButton continueButton;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return OldPasswordFragmentBinding::inflate;
+    }
 
     @Override
     protected void inject() {
@@ -28,62 +29,61 @@ public class OldPasswordFragment extends SingleFragment<OldPasswordPresenter>
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.old_password_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
-        password.setPasswordRevealEnabled(true);
-        password.setOnKeyboardNextListener(() -> {
-            final String passwordText = password.getText().toString();
+        binding().enterOldPasswordInput.setPasswordRevealEnabled(true);
+        binding().enterOldPasswordInput.setOnKeyboardNextListener(() -> {
+            final String passwordText = binding().enterOldPasswordInput.getText().toString();
             if (shouldEnableContinueButton(passwordText)) {
                 onContinueButtonClick();
             }
         });
-        password.setOnChangeListener(this, this::conditionallyEnableContinueButton);
+        binding().enterOldPasswordInput.setOnChangeListener(
+                this,
+                this::conditionallyEnableContinueButton
+        );
 
-        conditionallyEnableContinueButton(password.getText().toString());
+        conditionallyEnableContinueButton(binding().enterOldPasswordInput.getText().toString());
 
-        useRecoveryCodeButton.setOnClickListener(v -> onUseRecoveryCodeButtonClick());
-        continueButton.setOnClickListener(v -> onContinueButtonClick());
+        binding().useRecoveryCode.setOnClickListener(v -> onUseRecoveryCodeButtonClick());
+        binding().changePasswordContinue.setOnClickListener(v -> onContinueButtonClick());
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        useRecoveryCodeButton.setEnabled(true);
+        binding().useRecoveryCode.setEnabled(true);
 
         setLoading(false);
 
-        password.requestFocusInput();
+        binding().enterOldPasswordInput.requestFocusInput();
     }
 
     @Override
     public void setLoading(boolean loading) {
-        continueButton.setLoading(loading);
-        password.setEnabled(!loading);
-        useRecoveryCodeButton.setEnabled(!loading);
+        binding().changePasswordContinue.setLoading(loading);
+        binding().enterOldPasswordInput.setEnabled(!loading);
+        binding().useRecoveryCode.setEnabled(!loading);
     }
 
     @Override
     public void setPasswordError(UserFacingError error) {
-        password.clearError();
+        binding().enterOldPasswordInput.clearError();
 
         if (error != null) {
-            password.setError(error);
-            password.requestFocusInput();
+            binding().enterOldPasswordInput.setError(error);
+            binding().enterOldPasswordInput.requestFocusInput();
         }
     }
 
     private void onUseRecoveryCodeButtonClick() {
-        useRecoveryCodeButton.setEnabled(false); // avoid double tap while preparing next Fragment
+        // avoid double tap while preparing next Fragment
+        binding().useRecoveryCode.setEnabled(false);
         presenter.useRecoveryCode();
     }
 
     private void onContinueButtonClick() {
         setLoading(true); // avoid double tap while preparing next Fragment
-        presenter.submitPassword(password.getText().toString());
+        presenter.submitPassword(binding().enterOldPasswordInput.getText().toString());
     }
 
     private boolean shouldEnableContinueButton(String passwordText) {
@@ -93,9 +93,9 @@ public class OldPasswordFragment extends SingleFragment<OldPasswordPresenter>
     private void conditionallyEnableContinueButton(String passwordText) {
         // We've seen some bizarre crashes that indicated fragment is not correctly initialized or
         // already being discarded when this event handler is called (e.g orientation change)
-        if (continueButton != null) {
+        if (getBinding() != null) {
             final boolean enable = shouldEnableContinueButton(passwordText);
-            continueButton.setEnabled(enable);
+            binding().changePasswordContinue.setEnabled(enable);
         }
     }
 }

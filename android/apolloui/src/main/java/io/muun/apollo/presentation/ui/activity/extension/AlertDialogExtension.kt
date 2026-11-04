@@ -3,10 +3,10 @@ package io.muun.apollo.presentation.ui.activity.extension
 import android.app.AlertDialog
 import android.content.DialogInterface
 import androidx.annotation.StringRes
-import butterknife.BindColor
 import io.muun.apollo.R
 import io.muun.apollo.presentation.ui.base.ActivityExtension
 import io.muun.apollo.presentation.ui.base.di.PerActivity
+import io.muun.apollo.presentation.ui.utils.getColorCompat
 import io.muun.apollo.presentation.ui.utils.getStyledString
 import rx.functions.Action0
 import javax.inject.Inject
@@ -14,13 +14,11 @@ import javax.inject.Inject
 @PerActivity
 class AlertDialogExtension @Inject constructor() : ActivityExtension() {
 
-    @JvmField
-    @BindColor(R.color.text_secondary_color)
-    var negativeButtonColor = 0
+    private val negativeButtonColor: Int
+        get() = activity.getColorCompat(R.color.text_secondary_color)
 
-    @JvmField
-    @BindColor(R.color.red)
-    var positiveButtonColor = 0
+    private val positiveButtonColor: Int
+        get() = activity.getColorCompat(R.color.red)
 
     private var activeDialog: AlertDialog? = null
 

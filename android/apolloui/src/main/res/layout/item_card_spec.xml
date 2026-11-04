@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:paddingTop="24dp"
-        android:paddingHorizontal="24dp"
+        android:paddingHorizontal="16dp"
         android:layout_height="wrap_content">
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -15,29 +15,28 @@
             app:layout_constraintBottom_toBottomOf="@id/textView_label"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/textView_label"
-            tools:src="@drawable/ic_clock" />
+            tools:src="@drawable/ic_clock_marketplace" />
 
     <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textView_label"
             android:layout_width="0dp"
-            android:fontFamily="sans-serif"
+            android:textAppearance="@style/MuunTextAppearance.Body.Md"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:textColor="@color/text_secondary_color"
-            android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/textView_value"
             app:layout_constraintStart_toEndOf="@id/imageView_icon"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Delivers in" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <io.muun.apollo.presentation.ui.security_cards.utils.ShimmerTextView
             android:id="@+id/textView_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_secondary_color"
-            android:textSize="16sp"
+            tools:textColor="@color/text_primary_color"
+            android:textAppearance="@style/MuunTextAppearance.Body.Md"
             app:layout_constraintBottom_toBottomOf="@id/textView_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/textView_label"

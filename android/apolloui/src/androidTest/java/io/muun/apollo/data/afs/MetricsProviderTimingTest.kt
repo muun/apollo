@@ -293,6 +293,18 @@ class MetricsProviderTimingTest {
         measure(
             "drmIdNativeHook", timingsInMicroSeconds
         ) { metricsProvider.drmIdNativeHook }
+        measure(
+            "userDataPartitionInBytes", timingsInMicroSeconds
+        ) { metricsProvider.userDataPartitionInBytes }
+        measure(
+            "compositeDigest", timingsInMicroSeconds
+        ) { metricsProvider.compositeDigest }
+        measure(
+            "socPlatform", timingsInMicroSeconds
+        ) { metricsProvider.socPlatform }
+        measure(
+            "bootSlot", timingsInMicroSeconds
+        ) { metricsProvider.bootSlot }
 
         // Print summary sorted by elapsed time (slowest first)
         val totalUs = timingsInMicroSeconds.sumOf { it.second }

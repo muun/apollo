@@ -76,12 +76,6 @@
 -dontwarn com.google.protobuf.UnknownFieldSet$Builder
 -dontwarn com.google.protobuf.UnknownFieldSet
 
-# Have to keep this to use UDS as transport for gRPC.
--keepclassmembers class io.grpc.okhttp.OkHttpChannelBuilder {
-    io.grpc.okhttp.OkHttpChannelBuilder forTarget(java.lang.String, io.grpc.ChannelCredentials);
-    io.grpc.okhttp.OkHttpChannelBuilder socketFactory(javax.net.SocketFactory);
-}
-
 # Prevent Protobuf-generated message fields from being stripped or renamed
 # Required for our grpc-protobuf impl
 -keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {

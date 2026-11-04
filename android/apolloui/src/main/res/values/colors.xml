@@ -10,7 +10,6 @@
     <color name="blue_buttons">@color/blue</color> <!-- Has DarkMode override -->
 
     <color name="green_darkest">#0A201A</color> <!-- Has DarkMode override -->
-    <color name="green_dark">#175B2F</color> <!-- Has DarkMode override -->
     <color name="green">#36A93F</color> <!-- Has DarkMode override -->
     <color name="green_light">#C3E5C5</color>
     <color name="green_lightest">#F7FCF9</color>
@@ -48,6 +47,7 @@
     <color name="disabled_color">@color/gray_light</color>
     <color name="sc_task_text_disabled_color">@color/disabled_color</color> <!-- Has DM override -->
     <color name="background">@color/white</color>
+    <color name="background_zero_alpha">#00FFFFFF</color>
     <color name="dialog_background">@color/white</color>
     <color name="error_color">@color/red</color>
     <color name="warning_color">@color/yellow</color>
@@ -138,6 +138,4 @@
 
     <!-- SC Marketplace -->
     <color name="sc_marketplace_full_specs_section_border">@color/gray_light</color>
-    <color name="sc_provider_satochip_primary">#614DFF</color>
-    <color name="sc_spec_table_background">#0D614DFF</color>
 </resources>

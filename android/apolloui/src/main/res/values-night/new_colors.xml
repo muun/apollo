@@ -7,4 +7,5 @@
     <!-- SecurityCards -->
     <color name="provider_pill_border">#CBCED2</color>
     <color name="provider_pill_text">#FFFFFF</color>
+    <color name="security_card_metal_text">#8F9490</color>
 </resources>

@@ -11,8 +11,8 @@ import io.muun.common.model.PhoneNumber;
 import android.os.Bundle;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerFragment
 public class PhoneNumberPresenter

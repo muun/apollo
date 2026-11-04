@@ -4,6 +4,7 @@ import io.muun.apollo.data.external.Globals;
 import io.muun.apollo.domain.errors.newop.InvalidPaymentRequestError;
 import io.muun.apollo.domain.libwallet.errors.AddressDerivationError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletEmergencyKitError;
+import io.muun.apollo.domain.libwallet.errors.LibwalletIncubatingCheckError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletSigningError;
 import io.muun.apollo.domain.libwallet.errors.LibwalletVerificationError;
 import io.muun.apollo.domain.libwallet.errors.PayloadDecryptError;
@@ -152,18 +153,27 @@ public class LibwalletBridge {
         final libwallet.PartiallySignedTransaction libwalletPst =
                 new libwallet.PartiallySignedTransaction(inputList, unsignedTx, musigNonces);
 
-        // Attempt client-side verification (log-only for now):
-        // We have some cases that aren't considered in libwallet yet, so keep this advisory
+        final libwallet.VerificationResult verification = libwalletPst.verify(
+                signingExpectations.toLibwalletModel(),
+                userKey.publicKey(),
+                muunKey
+        );
 
-        try {
-            libwalletPst.verify(
-                    signingExpectations.toLibwalletModel(),
-                    userKey.publicKey(),
-                    muunKey
+        if (verification.mustNotSign()) {
+            throw new LibwalletVerificationError(
+                    verification.failedChecks(),
+                    verification.summary(),
+                    signingExpectations.isAlternativeTx()
             );
+        }
 
-        } catch (Throwable error) {
-            Timber.e(new LibwalletVerificationError(error));
+        if (verification.incubatingCheckFailed()) {
+            Timber.e(new LibwalletIncubatingCheckError(
+                    verification.failedChecks(),
+                    verification.summary(),
+                    signingExpectations.isAlternativeTx(),
+                    signingExpectations.getExpectedDebtInSat()
+            ));
         }
 
         try {

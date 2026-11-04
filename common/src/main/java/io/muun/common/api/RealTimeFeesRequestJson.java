@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 /**
  * It contains the unconfirmed UTXOs that will be used to obtain the

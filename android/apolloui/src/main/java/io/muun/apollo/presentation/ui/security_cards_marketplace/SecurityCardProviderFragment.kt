@@ -18,20 +18,18 @@ import androidx.recyclerview.widget.SnapHelper
 import io.muun.apollo.R
 import io.muun.apollo.databinding.FragmentSecurityCardProviderBinding
 import io.muun.apollo.domain.model.BitcoinUnit
-import io.muun.apollo.domain.selector.ExchangeRateSelector
-import io.muun.apollo.domain.selector.UserSelector
-import io.muun.apollo.presentation.ui.new_operation.toRichText
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.MarketplaceFooter
+import io.muun.apollo.domain.model.marketplace.SecurityCardMarketplace
+import io.muun.apollo.domain.utils.locale
+import io.muun.apollo.presentation.ui.helper.MoneyHelper
+import io.muun.apollo.presentation.ui.security_cards.utils.theme
+import io.muun.apollo.presentation.ui.security_cards.utils.toCardCostRichText
 import io.muun.apollo.presentation.ui.security_cards_marketplace.models.MarketplaceFooter.CurrentCurrency
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCard
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider
+import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProviderParcelable
 import io.muun.apollo.presentation.ui.utils.getComponent
-import io.muun.common.model.ExchangeRateProvider
+import io.muun.common.utils.BitcoinUtils
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.money.CurrencyUnit
-import javax.money.MonetaryAmount
 import kotlin.math.abs
 
 class SecurityCardProviderFragment : Fragment() {
@@ -39,36 +37,42 @@ class SecurityCardProviderFragment : Fragment() {
     companion object {
         private const val KEY_PROVIDER = "KEY_PROVIDER"
 
-        fun newInstance(provider: SecurityCardProvider) = SecurityCardProviderFragment()
-            .apply {
+        fun newInstance(
+            provider: SecurityCardMarketplace.SecurityCardProvider,
+        ): SecurityCardProviderFragment {
+            return SecurityCardProviderFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable(KEY_PROVIDER, provider)
+                    putParcelable(KEY_PROVIDER, SecurityCardProviderParcelable(provider))
                 }
             }
+        }
     }
+
+    private val providerArgument: SecurityCardMarketplace.SecurityCardProvider
+        get() {
+            val argument: SecurityCardProviderParcelable =
+                requireNotNull(requireArguments().getParcelable(KEY_PROVIDER))
+
+            return argument.provider
+        }
 
     @Inject
     lateinit var viewModelFactory: SecurityCardProviderViewModel.Factory
 
     @Inject
-    lateinit var userSel: UserSelector
-
-    @Inject
-    lateinit var exchangeRateSelector: ExchangeRateSelector
-
-    @Inject
     lateinit var currencySelectionSharedViewModelFactory: CurrencySelectionSharedViewModel.Factory
 
-    private val currencySelectionSharedViewModel: CurrencySelectionSharedViewModel by activityViewModels {
-        CurrencySelectionSharedViewModelFactory(
-            initialCurrentCurrency = CurrentCurrency.PRIMARY,
-            assistedFactory = currencySelectionSharedViewModelFactory,
-        )
-    }
+    private val currencySelectionSharedViewModel: CurrencySelectionSharedViewModel
+        by activityViewModels {
+            CurrencySelectionSharedViewModelFactory(
+                initialCurrentCurrency = CurrentCurrency.PRIMARY,
+                assistedFactory = currencySelectionSharedViewModelFactory,
+            )
+        }
 
     private val viewModel: SecurityCardProviderViewModel by viewModels {
         SecurityCardProviderViewModelFactory(
-            provider = requireNotNull(requireArguments().getParcelable(KEY_PROVIDER)),
+            provider = providerArgument,
             currencySelection = currencySelectionSharedViewModel.selectedCurrency.value,
             assistedFactory = viewModelFactory,
         )
@@ -79,25 +83,16 @@ class SecurityCardProviderFragment : Fragment() {
         get() = _binding as FragmentSecurityCardProviderBinding
 
     private val recyclerViewAdapter: SecurityCardProviderRecyclerViewAdapter by lazy {
-        SecurityCardProviderRecyclerViewAdapter { securityCard ->
-            val viewState =
-                viewModel.viewState.value as? SecurityCardProviderViewModel.ViewState.Data ?: error(
-                    "This shouldn't happen"
-                )
-
-            listener?.onSecurityCardClicked(
-                provider = viewState.provider,
-                securityCard = securityCard,
-                footer = viewState.footer
-            )
+        SecurityCardProviderRecyclerViewAdapter(
+            providerPrimaryColor = providerArgument.theme(requireContext()).primaryColorHex,
+        ) { securityCard ->
+            // Navigation waits for the tapped card to snap to the center: the upcoming hero
+            // transition to card detail must start from the centered position.
+            binding.scrollToSecurityCardThenNavigate(securityCard)
         }
     }
 
-    private val snapHelper: SnapHelper by lazy {
-        PagerSnapHelper().apply {
-            attachToRecyclerView(binding.recyclerView)
-        }
-    }
+    private val snapHelper = PagerSnapHelper()
 
     private var listener: Listener? = null
 
@@ -142,10 +137,9 @@ class SecurityCardProviderFragment : Fragment() {
     private fun FragmentSecurityCardProviderBinding.setupRecyclerView() {
         recyclerView.addItemDecoration(VerticalAspectPaddingDecoration())
         recyclerView.adapter = recyclerViewAdapter
+        snapHelper.attachToRecyclerView(recyclerView)
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-
-            private var lastSelectedPosition = RecyclerView.NO_POSITION
 
             override fun onScrolled(
                 recyclerView: RecyclerView,
@@ -172,23 +166,6 @@ class SecurityCardProviderFragment : Fragment() {
                     child.alpha = alpha
                 }
             }
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-
-                    val layoutManager = recyclerView.layoutManager ?: return
-                    val snapView = snapHelper.findSnapView(layoutManager) ?: return
-
-                    val adapterPosition = layoutManager.getPosition(snapView)
-
-                    if (adapterPosition in recyclerViewAdapter.currentList.indices &&
-                        adapterPosition != lastSelectedPosition
-                    ) {
-                        lastSelectedPosition = adapterPosition
-                        viewModel.preselectProviderSecurityCard(cardIndex = adapterPosition)
-                    }
-                }
-            }
         })
     }
 
@@ -204,43 +181,44 @@ class SecurityCardProviderFragment : Fragment() {
         }
     }
 
-    private fun FragmentSecurityCardProviderBinding.handleData(data: SecurityCardProviderViewModel.ViewState.Data) {
+    private fun FragmentSecurityCardProviderBinding.handleData(
+        data: SecurityCardProviderViewModel.ViewState.Data,
+    ) {
         recyclerViewAdapter.submitList(data.provider.securityCards)
 
-        val rateProvider = exchangeRateSelector.watchLatest()
-            .toBlocking()
-            .first()
+        footerDivider.dividerColor = data.provider.theme(requireContext()).primaryColorHex
 
-        textViewFooterCardCost.text = getString(
-            R.string.security_cards_marketplace_card_cost,
-            requireActivity().toRichText(
-                amt = when (data.footer.currentCurrency) {
-                    CurrentCurrency.PRIMARY -> data.footer.cardCost.inCurrencyUnit(
-                        rateProvider,
-                        userSel.get().getPrimaryCurrency(rateProvider)
-                    )
-                    CurrentCurrency.BTC -> data.footer.cardCost.inBtc(rateProvider)
-                },
-                btcUnit = BitcoinUnit.BTC,
-                isValid = true,
-            )
-        )
+        val cardCost = when (data.footer.currentCurrency) {
+            CurrentCurrency.PRIMARY -> data.footer.cardCost
+            CurrentCurrency.BTC -> BitcoinUtils.satoshisToBitcoins(data.footer.cardCostInSats)
+        }
+        textViewFooterCardCost.text = cardCost.toCardCostRichText(requireContext())
+
+        val shippingCost = when (data.footer.currentCurrency) {
+            CurrentCurrency.PRIMARY -> data.footer.shippingAndTaxesCost
+            CurrentCurrency.BTC ->
+                BitcoinUtils.satoshisToBitcoins(data.footer.shippingAndTaxesCostInSats)
+        }
         textViewFooterShippingCost.text = getString(
             R.string.security_cards_marketplace_shipping_and_taxes_cost,
-            requireActivity().toRichText(
-                amt = when (data.footer.currentCurrency) {
-                    CurrentCurrency.PRIMARY -> data.footer.shippingAndTaxesCost.inCurrencyUnit(
-                        rateProvider,
-                        userSel.get().getPrimaryCurrency(rateProvider)
-                    )
-                    CurrentCurrency.BTC -> data.footer.shippingAndTaxesCost.inBtc(
-                        rateProvider
-                    )
-                },
-                btcUnit = BitcoinUnit.BTC,
-                isValid = true,
-            )
+            MoneyHelper.formatLongMonetaryAmount(
+                shippingCost,
+                BitcoinUnit.BTC,
+                requireContext().locale(),
+            ),
         )
+    }
+
+    private fun FragmentSecurityCardProviderBinding.scrollToSecurityCardThenNavigate(
+        securityCard: SecurityCardMarketplace.SecurityCard,
+    ) {
+        val position = recyclerViewAdapter.currentList.indexOf(securityCard)
+        val cardView =
+            requireNotNull(recyclerView.findViewHolderForAdapterPosition(position)).itemView
+
+        recyclerView.smoothScrollToCard(snapHelper, cardView) {
+            listener?.onSecurityCardClicked(securityCard.uuid)
+        }
     }
 
     override fun onDestroy() {
@@ -250,11 +228,7 @@ class SecurityCardProviderFragment : Fragment() {
     }
 
     interface Listener {
-        fun onSecurityCardClicked(
-            provider: SecurityCardProvider,
-            securityCard: SecurityCard,
-            footer: MarketplaceFooter,
-        )
+        fun onSecurityCardClicked(cardUuid: String)
     }
 }
 
@@ -300,13 +274,58 @@ private class VerticalAspectPaddingDecoration private constructor(
     }
 }
 
-// TODO: This should be moved into ViewModel (or even libwallet), the exchange rate window should be
-// fixed for the whole flow so prices don't change while the user is navigating the marketplace
-fun MonetaryAmount.inBtc(
-    rateProvider: ExchangeRateProvider,
-): MonetaryAmount = rateProvider.convert(this, BitcoinUnit.BTC.name)
+/**
+ * Smoothly scrolls [cardView] to [snapHelper]'s snap position (the carousel center) and invokes
+ * [onScrollToCardFinish] once it settles there. Fires immediately if the card is already snapped.
+ * A user drag cancels the pending callback, and a new call replaces any previous pending one
+ * (last tap wins).
+ *
+ * The in-flight scroll listener is tracked through the RecyclerView's plain [View.setTag]: a keyed
+ * tag can't use a runtime-generated key ([View.setTag] requires an application resource id), so
+ * this extension is private to the one fragment whose carousel's tag is known to be free.
+ */
+private fun RecyclerView.smoothScrollToCard(
+    snapHelper: SnapHelper,
+    cardView: View,
+    onScrollToCardFinish: () -> Unit,
+) {
+    val layoutManager = layoutManager ?: return
+    val snapDistance = snapHelper.calculateDistanceToFinalSnap(layoutManager, cardView)
 
-fun MonetaryAmount.inCurrencyUnit(
-    rateProvider: ExchangeRateProvider,
-    currencyUnit: CurrencyUnit,
-): MonetaryAmount = rateProvider.convert(this, currencyUnit)
+    val dx = snapDistance?.get(0) ?: 0
+    val dy = snapDistance?.get(1) ?: 0
+
+    (tag as? RecyclerView.OnScrollListener)?.let(::removeOnScrollListener)
+    tag = null
+
+    if (dx == 0 && dy == 0) {
+        onScrollToCardFinish()
+        return
+    }
+
+    val scrollListener = object : RecyclerView.OnScrollListener() {
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            when (newState) {
+                // The user grabbed the carousel: the card won't settle where we aimed.
+                RecyclerView.SCROLL_STATE_DRAGGING -> stopListening(recyclerView)
+
+                RecyclerView.SCROLL_STATE_IDLE -> {
+                    stopListening(recyclerView)
+                    onScrollToCardFinish()
+                }
+
+                else -> Unit
+            }
+        }
+
+        private fun stopListening(recyclerView: RecyclerView) {
+            recyclerView.removeOnScrollListener(this)
+            recyclerView.tag = null
+        }
+    }
+
+    tag = scrollListener
+    addOnScrollListener(scrollListener)
+    smoothScrollBy(dx, dy)
+}

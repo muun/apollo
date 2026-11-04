@@ -6,6 +6,19 @@ follow [https://changelog.md/](https://changelog.md/) guidelines.
 
 ## [Unreleased]
 
+## [56.0] - 2026-11-03
+
+### CHANGED
+
+- Support for Android 16
+
+### FIXED
+
+- Back button not leaving the payment screen while it loads
+- Wallet tab not leaving the security center when opened from the home card
+- Security logout running more than once on the same screen
+- Various crash fixes
+
 ## [55.12] - 2026-10-21
 
 ### FIXED

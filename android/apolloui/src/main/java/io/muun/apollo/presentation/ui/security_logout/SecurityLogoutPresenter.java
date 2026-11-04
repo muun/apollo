@@ -2,15 +2,13 @@ package io.muun.apollo.presentation.ui.security_logout;
 
 import io.muun.apollo.domain.action.session.LogoutAction;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
-import io.muun.apollo.domain.errors.UnclassifiedError;
 import io.muun.apollo.presentation.ui.base.BasePresenter;
 import io.muun.apollo.presentation.ui.base.BaseView;
 import io.muun.apollo.presentation.ui.base.di.PerActivity;
-import io.muun.common.Optional;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
-import timber.log.Timber;
+import icepick.State;
 
 import javax.inject.Inject;
 
@@ -18,6 +16,10 @@ import javax.inject.Inject;
 public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
 
     private final LogoutAction logout;
+
+    // setUp runs on every resume, and a second logout would find the wallet already wiped.
+    @State
+    boolean loggedOut;
 
     /**
      * Constructor.
@@ -30,8 +32,10 @@ public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
     @Override
     public void setUp(Bundle arguments) {
         super.setUp(arguments);
-        // TODO this should probably happen BEFORE navigating to this screen, right?
-        logout.run();
+        if (!loggedOut) {
+            logout.run();
+            loggedOut = true;
+        }
     }
 
     /**
@@ -46,17 +50,6 @@ public class SecurityLogoutPresenter extends BasePresenter<BaseView> {
     @Override
     protected AnalyticsEvent getEntryEvent() {
         return new AnalyticsEvent.S_LOG_OUT();
-    }
-
-    private String getJwt() {
-        final Optional<String> serverJwt = authRepository.getServerJwt();
-        if (!serverJwt.isPresent()) {
-            // Shouldn't happen but we wanna know 'cause probably a bug
-            Timber.e(new UnclassifiedError("Auth token expected to be present"));
-            return "";
-        }
-
-        return serverJwt.get();
     }
 
 }

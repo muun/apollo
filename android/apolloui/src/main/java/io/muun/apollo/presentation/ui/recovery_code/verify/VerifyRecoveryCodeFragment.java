@@ -1,27 +1,32 @@
 package io.muun.apollo.presentation.ui.recovery_code.verify;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.VerifyRecoveryCodeFragmentBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity;
-import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
-import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox;
 
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindView;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 import java.util.List;
 
 public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCodePresenter>
         implements VerifyRecoveryCodeView {
 
-    @BindView(R.id.recovery_code_box)
-    MuunRecoveryCodeBox recoveryCodeBox;
+    private VerifyRecoveryCodeFragmentBinding binding() {
+        return (VerifyRecoveryCodeFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.accept)
-    MuunButton acceptButton;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return VerifyRecoveryCodeFragmentBinding::inflate;
+    }
 
     @Override
     protected void inject() {
@@ -29,14 +34,9 @@ public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCod
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.verify_recovery_code_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
-        recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited);
-        acceptButton.setOnClickListener(this::onConfirmClick);
+        binding().recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited);
+        binding().accept.setOnClickListener(this::onConfirmClick);
     }
 
     @Override
@@ -56,8 +56,10 @@ public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCod
     @Override
     public void onResume() {
         super.onResume();
-        onRecoveryCodeEdited(recoveryCodeBox.getSegmentInputsContent()); // re-trigger validation
-        recoveryCodeBox.requestFocusOnFirstEditableSegment();
+        onRecoveryCodeEdited(
+                binding().recoveryCodeBox.getSegmentInputsContent()
+        ); // re-trigger validation
+        binding().recoveryCodeBox.requestFocusOnFirstEditableSegment();
     }
 
     @Override
@@ -67,34 +69,34 @@ public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCod
 
     @Override
     public void setRecoveryCode(RecoveryCodeV2 recoveryCode) {
-        recoveryCodeBox.setRecoveryCode(recoveryCode);
+        binding().recoveryCodeBox.setRecoveryCode(recoveryCode);
     }
 
     @Override
     public void setSegmentsToVerify(List<Integer> segmentsToVerify) {
         for (int i = 0; i < RecoveryCodeV2.SEGMENT_COUNT; i++) {
-            final boolean wasEditable = recoveryCodeBox.isSegmentEditable(i);
+            final boolean wasEditable = binding().recoveryCodeBox.isSegmentEditable(i);
             final boolean isEditable = segmentsToVerify.contains(i);
 
-            recoveryCodeBox.setSegmentEditable(i, isEditable);
+            binding().recoveryCodeBox.setSegmentEditable(i, isEditable);
 
             if (isEditable && !wasEditable) {
-                recoveryCodeBox.clearSegment(i);
+                binding().recoveryCodeBox.clearSegment(i);
             }
         }
 
-        recoveryCodeBox.requestFocusOnFirstEditableSegment();
-        recoveryCodeBox.setOnKeyboardNextListeners();
-        recoveryCodeBox.setOnKeyboardDoneListener(() -> {
-            if (acceptButton.isEnabled()) {
-                acceptButton.callOnClick();
+        binding().recoveryCodeBox.requestFocusOnFirstEditableSegment();
+        binding().recoveryCodeBox.setOnKeyboardNextListeners();
+        binding().recoveryCodeBox.setOnKeyboardDoneListener(() -> {
+            if (binding().accept.isEnabled()) {
+                binding().accept.callOnClick();
             }
         });
     }
 
     @Override
     public void setConfirmEnabled(boolean isEnabled) {
-        acceptButton.setEnabled(isEnabled);
+        binding().accept.setEnabled(isEnabled);
     }
 
     private void onConfirmClick(View view) {
@@ -107,6 +109,6 @@ public class VerifyRecoveryCodeFragment extends SingleFragment<VerifyRecoveryCod
 
     @Override
     public void setVerificationError(UserFacingError error) {
-        recoveryCodeBox.setError(error);
+        binding().recoveryCodeBox.setError(error);
     }
 }

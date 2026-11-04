@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FIXME Missing copies yet -->
+    <string name="security_card_provider_constellations_description">Constellations are officially recognized patterns of stars in the night sky that form recognizable shapes, figures, or outlines.</string>
+    <string name="security_card_provider_numbers_description">Numbers are mathematical objects used for counting, measuring, and labeling, with primary types including natural numbers (1, 2, 3…), whole numbers, and integers.</string>
+    <string name="security_card_provider_planets_description">There are eight officially recognized planets in our solar system, orbiting the Sun in this order: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.</string>
+</resources>

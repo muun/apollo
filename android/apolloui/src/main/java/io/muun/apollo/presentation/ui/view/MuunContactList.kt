@@ -3,43 +3,30 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
-import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunContactListBinding
 import io.muun.apollo.domain.model.Contact
-import io.muun.apollo.domain.model.PermissionState
 import io.muun.apollo.domain.model.P2PState
+import io.muun.apollo.domain.model.PermissionState
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory
 import io.muun.apollo.presentation.ui.adapter.viewmodel.ContactViewModel
 
 class MuunContactList @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunContactListBinding>(c, a, s) {
 
-    @BindView(R.id.contact_list_empty)
-    lateinit var goToP2PSetupView: MuunEmptyScreen
-
-    @BindView(R.id.contact_list_loading)
-    lateinit var loadingView: LoadingView
-
-    @BindView(R.id.contact_list_first_on_muun)
-    lateinit var firstOnMuunView: FirstOnMuunView
-
-    @BindView(R.id.contact_list_permission_denied_forever)
-    lateinit var goToSettingsView: SimpleMessageView
-
-    @BindView(R.id.contact_list_recycler)
-    lateinit var listView: RecyclerView
-
-    @BindView(R.id.contact_list_recycler_title)
-    lateinit var listViewTitle: TextView
+    private val goToP2PSetupView get() = binding.contactListEmpty
+    private val loadingView get() = binding.contactListLoading
+    private val firstOnMuunView get() = binding.contactListFirstOnMuun
+    private val goToSettingsView get() = binding.contactListPermissionDeniedForever
+    private val listView get() = binding.contactListRecycler
+    private val listViewTitle get() = binding.contactListRecyclerTitle
 
     private lateinit var listAdapter: ItemAdapter
 
-    override val layoutResource: Int
-        get() = R.layout.muun_contact_list
+    override fun bindingInflater(): BindingInflater<MuunContactListBinding> {
+        return MuunContactListBinding::inflate
+    }
 
     var onGoToSettingsListener: () -> Unit = {}
     var onGoToP2PSetupListener: () -> Unit = {}

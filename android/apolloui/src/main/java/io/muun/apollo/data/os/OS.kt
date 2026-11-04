@@ -178,6 +178,13 @@ object OS {
         isAndroidMOrNewer()
 
     /**
+     * Whether this OS supports ConnectivityManager#registerDefaultNetworkCallback(), which was
+     * introduced in N-7-24.
+     */
+    fun supportsDefaultNetworkCallback(): Boolean =
+        isAndroidNOrNewer()
+
+    /**
      * Whether this OS supports RouteInfo#hasGateway(), which was introduced
      * in Q-10-29.
      */
@@ -247,6 +254,14 @@ object OS {
      * See: https://developer.android.com/reference/androidx/work/WorkInfo#getStopReason()
      */
     fun supportsWorkManagerStopReason(): Boolean {
+        return isAndroidSOrNewer()
+    }
+
+    /**
+     * Whether this OS runs WorkManager expedited work as an expedited job, which was introduced in
+     * S-12-31. Older versions run it as a foreground service, showing a notification.
+     */
+    fun supportsExpeditedJobs(): Boolean {
         return isAndroidSOrNewer()
     }
 

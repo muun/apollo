@@ -5,6 +5,8 @@ import io.muun.apollo.data.logging.LoggingContext;
 import io.muun.apollo.domain.action.permission.UpdateContactsPermissionStateAction;
 import io.muun.apollo.domain.action.permission.UpdateNotificationPermissionStateAction;
 import io.muun.apollo.domain.errors.BugDetected;
+import io.muun.apollo.domain.errors.IncorrectAttemptsUnavailableError;
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.ApolloApplication;
@@ -38,7 +40,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.annotation.CallSuper;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,15 +47,14 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewbinding.ViewBinding;
-import butterknife.ButterKnife;
 import icepick.Icepick;
 import kotlin.jvm.functions.Function1;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 
 public abstract class BaseActivity<PresenterT extends Presenter> extends ExtensibleActivity
@@ -113,21 +113,9 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
     protected abstract void inject();
 
     /**
-     * Returns the id of the resource with the layout of the activity.
-     * TODO rm this once all activities have successfully migrated from butterKnife to view binding.
+     * Returns the View Binding inflater for this activity's layout.
      */
-    @LayoutRes
-    protected abstract int getLayoutResource();
-
-    /**
-     * Override this method to opt in to use View Binding. This will turn into an abstract method
-     * to force all subclasses to implement once we finish the transition from ButterKnife to
-     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
-     * transitioned yet.
-     */
-    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
-        return null;
-    }
+    protected abstract Function1<LayoutInflater, ViewBinding> bindingInflater();
 
     /**
      * Returns the id of the resource with the menu for this activity.
@@ -172,16 +160,9 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
             initializeUi();
 
             presenter.onViewCreated(savedInstanceState);
-        } catch (SecureStorageError e) {
-            // Avoid crashing on weird Android Keystore errors. Redundantly report error with
-            // extra metadata and offer some explanation to the user with the option to send
-            // error report email for maximum exposure and data points.
-
-            Timber.e(e);
-            showErrorDialog(
-                    R.string.secure_storage_error_avoid_crash_non_logout,
-                    () -> presenter.sendErrorReport(e)
-            );
+        } catch (SecureStorageError | SecureKeyValueStoreError
+                | IncorrectAttemptsUnavailableError e) {
+            showSecureStorageErrorDialog(e);
         }
     }
 
@@ -260,16 +241,9 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
 
             presenter.setUp(getArgumentsBundle());
             presenter.onSetUpFinished();
-        } catch (SecureStorageError e) {
-            // Avoid crashing on weird Android Keystore errors. Redundantly report error with
-            // extra metadata and offer some explanation to the user with the option to send
-            // error report email for maximum exposure and data points.
-
-            Timber.e(e);
-            showErrorDialog(
-                    R.string.secure_storage_error_avoid_crash_non_logout,
-                    () -> presenter.sendErrorReport(e)
-            );
+        } catch (SecureStorageError | SecureKeyValueStoreError
+                | IncorrectAttemptsUnavailableError e) {
+            showSecureStorageErrorDialog(e);
         }
     }
 
@@ -293,23 +267,28 @@ public abstract class BaseActivity<PresenterT extends Presenter> extends Extensi
         UiUtils.lastResortHideKeyboard(this);
     }
 
+    /**
+     * Avoid crashing on weird Android Keystore errors. Redundantly report error with extra
+     * metadata and offer some explanation to the user with the option to send error report
+     * email for maximum exposure and data points.
+     *
+     * <p>Callers hand over the whole SecureKeyValueStoreError hierarchy on purpose: this is a
+     * crash guard, not a classifier. Any case reaching it is a caller that didn't handle the
+     * error, and a dialog beats a crash for all of them. BasePresenter#handleFatalError is the
+     * one that needs to tell corruption apart, because it decides whether to offer logout.
+     */
+    private void showSecureStorageErrorDialog(Throwable error) {
+        Timber.e(error);
+        showErrorDialog(
+                R.string.secure_storage_error_avoid_crash_non_logout,
+                () -> presenter.sendErrorReport(error)
+        );
+    }
+
     private void setUpLayout() {
         setAnimation();
-
-        final Function1<LayoutInflater, ViewBinding> bindingInflater = bindingInflater();
-
-        // If activity has opted-in to viewBinding, lets gooooo
-        if (bindingInflater != null) {
-            Timber.d(getClass().getSimpleName() + " using viewBinding");
-            _binding = bindingInflater.invoke(LayoutInflater.from(this));
-            setContentView(_binding.getRoot());
-
-        } else {
-            // Else we fallback to legacy butterknife view binding
-            Timber.d(getClass().getSimpleName() + " using Butterknife");
-            setContentView(getLayoutResource());
-            ButterKnife.bind(this);
-        }
+        _binding = bindingInflater().invoke(LayoutInflater.from(this));
+        setContentView(_binding.getRoot());
     }
 
     /**

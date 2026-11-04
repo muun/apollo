@@ -23,6 +23,12 @@ class OnboardingExplanatorySlideFragment : Fragment() {
             }
     }
 
+    private val titleArgument: Int
+        get() = requireArguments().getInt(ARG_TITLE)
+
+    private val descriptionArgument: Int
+        get() = requireArguments().getInt(ARG_DESCRIPTION)
+
     private var _binding: FragmentOnboardingExplanatorySlideBinding? = null
     private val binding get() = _binding!!
 
@@ -38,8 +44,8 @@ class OnboardingExplanatorySlideFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textViewTitle.setText(requireArguments().getInt(ARG_TITLE))
-        binding.textViewDescription.setText(requireArguments().getInt(ARG_DESCRIPTION))
+        binding.textViewTitle.setText(titleArgument)
+        binding.textViewDescription.setText(descriptionArgument)
     }
 
     override fun onDestroyView() {

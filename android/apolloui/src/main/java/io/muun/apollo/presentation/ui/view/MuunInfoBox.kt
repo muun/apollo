@@ -2,16 +2,14 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunInfoBoxBinding
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
 
 class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunInfoBoxBinding>(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<MuunInfoBox> = ViewProps.Builder<MuunInfoBox>()
@@ -23,19 +21,15 @@ class MuunInfoBox @JvmOverloads constructor(c: Context, a: AttributeSet? = null,
             .build()
     }
 
-    @BindView(R.id.picture)
-    lateinit var iconView: ImageView
-
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.description)
-    lateinit var descriptionView: HtmlTextView
+    private val iconView get() = binding.picture
+    private val titleView get() = binding.title
+    private val descriptionView get() = binding.description
 
     lateinit var onLinkClick: (linkId: String) -> Unit
 
-    override val layoutResource: Int
-        get() = R.layout.muun_info_box
+    override fun bindingInflater(): BindingInflater<MuunInfoBoxBinding> {
+        return MuunInfoBoxBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

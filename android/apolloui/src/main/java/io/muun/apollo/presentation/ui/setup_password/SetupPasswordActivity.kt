@@ -40,9 +40,6 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
     override fun getFragmentsContainer() =
         R.id.container
 
-    override fun getLayoutResource() =
-        R.layout.activity_setup_password
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySetupPasswordBinding::inflate
     }
@@ -68,7 +65,6 @@ class SetupPasswordActivity : SingleFragmentActivity<SetupPasswordActivityPresen
     override fun setUser(user: User) {
         if (user.hasRecoveryCode) {
             headerView.showTitle(R.string.security_center_title_improve_your_security)
-
         } else {
             headerView.showTitle(R.string.security_center_title_backup_your_wallet)
         }

@@ -44,6 +44,8 @@ class RepositoryRegistry {
         UserPreferencesRepository::class.java,
         UserRepository::class.java,
         FeaturesRepository::class.java,
+        FirstInstallTimeRepository::class.java,
+        AndroidIdRepository::class.java,
         AppVersionRepository::class.java,
         PlayIntegrityNonceRepository::class.java,
         NotificationPermissionStateRepository::class.java,
@@ -52,6 +54,7 @@ class RepositoryRegistry {
         BackgroundTimesRepository::class.java,
         NfcFeasibleZoneRepository::class.java,
         BiometricsRepository::class.java,
+        ConnectedToWebsiteDialogSeenRepository::class.java,
     )
 
     // Notable exceptions:
@@ -59,16 +62,24 @@ class RepositoryRegistry {
     // - SchemaVersionRepository
     // - NotificationPermissionDeniedRepository
     // - NotificationPermissionSkippedRepository
+    // - BackgroundTimesRepository
+    // - FirstInstallTimeRepository
+    // - AndroidIdRepository
     // They get special treatment and are not wiped on logout to avoid problems.
     // Update: technically SchemaVersionRepository could be wiped with no issues, but we feel
     // its more clear and clean to keep it and avoid wiping it (there's no privacy or security
     // issues).
+    // FirstInstallTimeRepository and AndroidIdRepository record facts about the install, not
+    // about the user, and wiping them would lose the baselines right after the event they exist
+    // to identify.
     private val logoutSurvivorRepositories: Set<Class<out BaseRepository>> = setOf(
         FirebaseInstallationIdRepository::class.java,
         SchemaVersionRepository::class.java,
         NotificationPermissionDeniedRepository::class.java,
         NotificationPermissionSkippedRepository::class.java,
-        BackgroundTimesRepository::class.java
+        BackgroundTimesRepository::class.java,
+        FirstInstallTimeRepository::class.java,
+        AndroidIdRepository::class.java,
     )
 
     // Note: the use of a map is critical here for 2 reasons, both of them related to memory

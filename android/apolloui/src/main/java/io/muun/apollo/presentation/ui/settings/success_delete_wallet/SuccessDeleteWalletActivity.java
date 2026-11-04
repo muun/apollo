@@ -12,7 +12,7 @@ import android.view.LayoutInflater;
 import androidx.viewbinding.ViewBinding;
 import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalletPresenter> {
 
@@ -33,12 +33,6 @@ public class SuccessDeleteWalletActivity extends BaseActivity<SuccessDeleteWalle
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    // TODO rm this once all activities have successfully migrated from butterKnife to view binding.
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.success_delete_wallet_activity;
     }
 
     @Override

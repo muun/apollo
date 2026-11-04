@@ -20,9 +20,6 @@ class LnUrlIntroActivity : SingleFragmentActivity<LnUrlIntroPresenter>() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.activity_lnurl_intro
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityLnurlIntroBinding::inflate
     }
@@ -44,7 +41,6 @@ class LnUrlIntroActivity : SingleFragmentActivity<LnUrlIntroPresenter>() {
             onContinueClick()
         }
     }
-
 
     private fun onContinueClick() {
         presenter.continueWithLnUrlFlow()

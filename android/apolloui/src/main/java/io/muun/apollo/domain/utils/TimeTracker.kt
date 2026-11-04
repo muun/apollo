@@ -43,6 +43,8 @@ const val EK_CHILD_GO_TOTAL_HEAP_ALLOCATED = "go_total_heap_allocated_bytes"
 const val EK_CHILD_GO_TOTAL_OBJECTS_ALLOCATED = "go_total_objects_allocated"
 const val EK_CHILD_GO_EMBED_METADATA = "go_embed_metadata_ms"
 const val EK_CHILD_GO_TOTAL_INSIDE_GO = "go_total_inside_go_ms"
+const val EK_CHILD_GO_KIT_SIZE_BYTES = "go_kit_size_bytes"
+const val EK_CHILD_GO_DRAW_ICONS = "go_draw_icons_ms"
 
 /** Factory for timing traces. Inject this and call [start] to begin measuring. */
 class TimeTracker @Inject constructor(private val analytics: Analytics) {

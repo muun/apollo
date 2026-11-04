@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.ViewAmountInputBinding;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.domain.utils.ExtensionsKt;
@@ -16,18 +17,20 @@ import io.muun.common.model.ExchangeRateProvider;
 import io.muun.common.utils.BitcoinUtils;
 import io.muun.common.utils.MoneyUtils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import butterknife.BindColor;
-import butterknife.BindView;
-import butterknife.OnClick;
+import androidx.core.content.ContextCompat;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 import org.javamoney.moneta.Money;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.DecimalFormatSymbols;
 import java.util.Objects;
@@ -35,12 +38,8 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.money.MonetaryAmount;
-import javax.validation.constraints.NotNull;
 
-import static android.app.Activity.RESULT_OK;
-
-
-public class MuunAmountInput extends MuunView {
+public class MuunAmountInput extends MuunView<ViewAmountInputBinding> {
 
     public interface OnChangeListener {
 
@@ -59,26 +58,6 @@ public class MuunAmountInput extends MuunView {
     private static final int MIN_TEXT_SIZE_IN_DP = 24;
     private static final int REQUEST_CURRENCY = 1;
 
-    // Components:
-    @BindView(R.id.muun_amount)
-    MuunEditText inputAmount;
-
-    @BindView(R.id.secondary_amount)
-    TextView secondaryAmount;
-
-    @BindView(R.id.currency_code)
-    TextView currencyInput;
-
-    // Resources:
-    @BindColor(R.color.blue)
-    int normalNumberColor;
-
-    @BindColor(R.color.text_secondary_color)
-    int normalBalanceColor;
-
-    @BindColor(R.color.error_color)
-    int errorColor;
-
     // -----------------------------
 
     @Inject
@@ -87,7 +66,6 @@ public class MuunAmountInput extends MuunView {
     // State:
     @State
     float maxWidthPx;
-
 
     /**
      * Part of our (ugly) hack to allow SATs as an input currency option.
@@ -123,8 +101,8 @@ public class MuunAmountInput extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.view_amount_input;
+    public Function3<LayoutInflater, ViewGroup, Boolean, ViewAmountInputBinding> bindingInflater() {
+        return ViewAmountInputBinding::inflate;
     }
 
     @Override
@@ -137,10 +115,20 @@ public class MuunAmountInput extends MuunView {
         this.textMaxWidthPercent = 1f;
         viewProps.transfer(attrs, this);
 
+        getBinding().currencyCode.setOnClickListener(v -> onCurrencyClicked());
+
         // Avoid complex text decoration and listeners initialization for layout preview
         if (!isInEditMode()) {
             setUpNumberInput();
         }
+    }
+
+    private int getNormalNumberColor() {
+        return ContextCompat.getColor(getContext(), R.color.blue);
+    }
+
+    private int getErrorColor() {
+        return ContextCompat.getColor(getContext(), R.color.error_color);
     }
 
     private void setUpNumberInput() {
@@ -153,18 +141,18 @@ public class MuunAmountInput extends MuunView {
         symbols.setCurrencySymbol("");
 
         this.autoSizeDecoration = new AutoSizeDecoration(
-                inputAmount.getTextSize(),
+                getBinding().muunAmount.getTextSize(),
                 this.maxWidthPx,
                 UiUtils.dpToPx(getContext(), MIN_TEXT_SIZE_IN_DP)
         );
 
         this.moneyDecoration = new MoneyDecoration(getLocale());
 
-        new TextDecorator<>(inputAmount, new DecorationTransformation[]{
+        new TextDecorator<>(getBinding().muunAmount, new DecorationTransformation[]{
                 moneyDecoration,
                 autoSizeDecoration
         }).setAfterChangeListener(() -> onNumberInputChange(
-                inputAmount.getText()
+                getBinding().muunAmount.getText()
                         .toString()
                         .replace(MoneyDecoration.THIN_SPACE + "", "")
                         .replace(symbols.getDecimalSeparator(), '.')
@@ -213,23 +201,22 @@ public class MuunAmountInput extends MuunView {
                 ExtensionsKt.locale(getContext())
         );
 
-        this.secondaryAmount.setText(String.format(format, formattedAmount));
-        this.secondaryAmount.setVisibility(View.VISIBLE);
+        getBinding().secondaryAmount.setText(String.format(format, formattedAmount));
+        getBinding().secondaryAmount.setVisibility(View.VISIBLE);
     }
-
 
     /**
      * Make secondary amount disappear.
      */
     public void hideSecondaryAmount() {
-        this.secondaryAmount.setVisibility(View.GONE);
+        getBinding().secondaryAmount.setVisibility(View.GONE);
     }
 
     /**
      * Set amount error state.
      */
     public void setAmountError(boolean hasError) {
-        inputAmount.setTextColor(hasError ? errorColor : normalNumberColor);
+        getBinding().muunAmount.setTextColor(hasError ? getErrorColor() : getNormalNumberColor());
     }
 
     public void setExchangeRateProvider(ExchangeRateProvider rateProvider) {
@@ -248,7 +235,6 @@ public class MuunAmountInput extends MuunView {
         updateCurrencyCodeText(bitcoinUnit);
     }
 
-    @OnClick(R.id.currency_code)
     protected void onCurrencyClicked() {
         if (rateProvider == null) {
             return; // If we're not completely initialized, briefly ignore input
@@ -271,7 +257,7 @@ public class MuunAmountInput extends MuunView {
     @Override
     public void onExternalResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CURRENCY) {
-            if (resultCode == RESULT_OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 onCurrencyInputChange(SelectCurrencyActivity.getResult(data));
             }
 
@@ -310,7 +296,7 @@ public class MuunAmountInput extends MuunView {
         value = newValue;
 
         // Once we start typing, text should have this color, unless overruled by setAmountError
-        inputAmount.setTextColor(normalNumberColor);
+        getBinding().muunAmount.setTextColor(getNormalNumberColor());
 
         if (!isCurrentlyChangingCurrency) {
             valueBeforeCurrencyChange = newValue;
@@ -378,7 +364,7 @@ public class MuunAmountInput extends MuunView {
         isMakingInternalChange = true;
 
         final CurrencyUnit currency = value.getCurrency();
-        this.currencyInput.setText(MoneyHelper.formatCurrency(currency, bitcoinUnit));
+        getBinding().currencyCode.setText(MoneyHelper.formatCurrency(currency, bitcoinUnit));
 
         isMakingInternalChange = false;
     }
@@ -398,11 +384,13 @@ public class MuunAmountInput extends MuunView {
             // handleAndroidSupremeLocalizationBug. The idea is to avoid grouping separators to
             // behave "like the android textInput component" (which doesn't allow group separators).
             final char groupingSeparator = symbols.getGroupingSeparator();
-            inputAmount.setText(text.replace(groupingSeparator, MoneyDecoration.THIN_SPACE));
-            inputAmount.setSelection(inputAmount.getText().length());
+            getBinding().muunAmount.setText(
+                    text.replace(groupingSeparator, MoneyDecoration.THIN_SPACE)
+            );
+            getBinding().muunAmount.setSelection(getBinding().muunAmount.getText().length());
 
         } else {
-            inputAmount.setText("");
+            getBinding().muunAmount.setText("");
         }
 
         isCurrentlyChangingCurrency = false;
@@ -428,7 +416,7 @@ public class MuunAmountInput extends MuunView {
 
     @Override
     public void setEnabled(boolean enabled) {
-        inputAmount.setEnabled(enabled);
+        getBinding().muunAmount.setEnabled(enabled);
     }
 
     /**
@@ -438,7 +426,8 @@ public class MuunAmountInput extends MuunView {
      */
     public void requestFocusInput() {
         if (!lockManager.isLockSet()) {
-            UiUtils.focusInput(inputAmount); // Don't show soft keyboard if lock screen's showing
+            // Don't show soft keyboard if lock screen's showing
+            UiUtils.focusInput(getBinding().muunAmount);
         }
     }
 }

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunPictureInputBinding;
 import io.muun.apollo.domain.action.images.DecodeImageAction;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.errors.p2p.InvalidPictureError;
@@ -16,13 +17,13 @@ import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ProgressBar;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import butterknife.BindString;
-import butterknife.BindView;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 import timber.log.Timber;
 
 import java.io.ByteArrayOutputStream;
@@ -32,8 +33,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-
-public class MuunPictureInput extends MuunView {
+public class MuunPictureInput extends MuunView<MuunPictureInputBinding> {
 
     private static final int REQUEST_DRAWER = 1;
     private static final int REQUEST_PICTURE = 2;
@@ -56,17 +56,7 @@ public class MuunPictureInput extends MuunView {
         void onPictureError(UserFacingError error);
     }
 
-    @BindView(R.id.muun_picture_input_button)
     protected ProfilePictureView profilePictureView;
-
-    @BindView(R.id.muun_button_progress_bar)
-    ProgressBar progressBar;
-
-    @BindString(R.string.action_camera)
-    String cameraActionLabel;
-
-    @BindString(R.string.action_gallery)
-    String galleryActionLabel;
 
     // -----------------------------
 
@@ -92,19 +82,30 @@ public class MuunPictureInput extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_picture_input;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunPictureInputBinding>
+            bindingInflater() {
+        return MuunPictureInputBinding::inflate;
     }
 
     @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
+        profilePictureView = getBinding().muunPictureInputButton;
+
         if (getComponent() != null) {
             getComponent().inject(this);
         }
 
         profilePictureView.setOnClickListener(view -> openIntentChooser());
         profilePictureView.setListener((Uri uri) -> toggleLoading(false));
+    }
+
+    private String getCameraActionLabel() {
+        return getContext().getString(R.string.action_camera);
+    }
+
+    private String getGalleryActionLabel() {
+        return getContext().getString(R.string.action_gallery);
     }
 
     @Override
@@ -119,7 +120,7 @@ public class MuunPictureInput extends MuunView {
      */
     public void toggleLoading(boolean loading) {
         this.loading = loading;
-        progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        getBinding().muunButtonProgressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         profilePictureView.setOnClickListener(loading ? null : view -> openIntentChooser());
 
         if (loading) {
@@ -178,8 +179,8 @@ public class MuunPictureInput extends MuunView {
     private void openIntentChooser() {
         final DialogFragment drawerFragment = new DrawerDialogFragment()
                 .setTitle(R.string.action_pick_profile_pic_title)
-                .addAction(CAMERA_ACTION, R.drawable.ic_camera_24_px, cameraActionLabel)
-                .addAction(GALLERY_ACTION, R.drawable.ic_gallery_24_px, galleryActionLabel);
+                .addAction(CAMERA_ACTION, R.drawable.ic_camera_24_px, getCameraActionLabel())
+                .addAction(GALLERY_ACTION, R.drawable.ic_gallery_24_px, getGalleryActionLabel());
 
         requestExternalResult(REQUEST_DRAWER, drawerFragment);
     }

@@ -1,7 +1,7 @@
 package io.muun.common.api;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class ChallengeKeyUpdateMigrationJson {
 

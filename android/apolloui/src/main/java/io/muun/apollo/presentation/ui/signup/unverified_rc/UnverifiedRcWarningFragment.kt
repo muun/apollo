@@ -1,25 +1,26 @@
 package io.muun.apollo.presentation.ui.signup.unverified_rc
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import io.muun.apollo.R
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
+import io.muun.apollo.databinding.FragmentRcUnverifiedWarningBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 
 class UnverifiedRcWarningFragment : SingleFragment<UnverifiedRcWarningPresenter>() {
 
-    @BindView(R.id.rc_unverified_warning_button)
-    lateinit var continueButton: MuunButton
+    private val binding: FragmentRcUnverifiedWarningBinding
+        get() = getBinding() as FragmentRcUnverifiedWarningBinding
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        FragmentRcUnverifiedWarningBinding::inflate
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.fragment_rc_unverified_warning
-
     override fun initializeUi(view: View) {
-        continueButton.setOnClickListener {
+        binding.rcUnverifiedWarningButton.setOnClickListener {
             presenter.proceedToHome()
         }
     }

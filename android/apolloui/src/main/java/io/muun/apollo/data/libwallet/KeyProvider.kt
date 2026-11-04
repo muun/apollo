@@ -8,8 +8,12 @@ class KeyProvider @Inject constructor(
     private val keysRepository: KeysRepository,
 ): app_provided_data.KeyProvider {
 
-    override fun fetchUserKey(): KeyData {
-        val userKey = keysRepository.basePrivateKey.toBlocking().first()
+    override fun fetchUserKeyPath(): String {
+        return keysRepository.basePrivateKeyPath
+    }
+
+    override fun fetchUserPublicKey(): KeyData {
+        val userKey = keysRepository.basePublicKey
 
         val keyData = KeyData()
         keyData.serialized = userKey.serializeBase58()
@@ -17,7 +21,7 @@ class KeyProvider @Inject constructor(
         return keyData
     }
 
-    override fun fetchMuunKey(): KeyData {
+    override fun fetchCosignerKey(): KeyData {
         val muunKey = keysRepository.baseMuunPublicKey
 
         val keyData = KeyData()
@@ -26,7 +30,7 @@ class KeyProvider @Inject constructor(
         return keyData
     }
 
-    override fun fetchEncryptedMuunPrivateKey(): String {
+    override fun fetchEncryptedCosignerPrivateKey(): String {
         return keysRepository.encryptedMuunPrivateKey.toBlocking().first()
     }
 

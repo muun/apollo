@@ -3,14 +3,12 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunTaskCardBinding
 
 class MuunTaskCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0):
-    MuunView(c, a, s) {
+    MuunView<MuunTaskCardBinding>(c, a, s) {
 
     enum class Status {
         DEFAULT,    // no decorations or indicators
@@ -21,17 +19,13 @@ class MuunTaskCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null
                     // Only for EMAIL CARD.
     }
 
-    @BindView(R.id.icon)
-    lateinit var iconView: ImageView
+    private val iconView get() = binding.icon
+    private val titleView get() = binding.title
+    private val bodyView get() = binding.body
 
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.body)
-    lateinit var bodyView: TextView
-
-    override val layoutResource: Int
-        get() = R.layout.muun_task_card
+    override fun bindingInflater(): BindingInflater<MuunTaskCardBinding> {
+        return MuunTaskCardBinding::inflate
+    }
 
     var icon: Drawable
         get() = iconView.drawable

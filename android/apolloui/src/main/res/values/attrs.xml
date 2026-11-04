@@ -58,6 +58,12 @@
         <attr name="length" format="integer"/>
     </declare-styleable>
 
+    <!-- strokeColor is declared without format: it re-uses material's already-defined attr -->
+    <declare-styleable name="DimensionLineView">
+        <attr name="android:orientation"/>
+        <attr name="strokeColor"/>
+    </declare-styleable>
+
     <!-- For reason can't be called just 'picture' (probably clashes with some other attr) -->
     <attr name="pictureDrawable" format="reference" />
     <attr name="expandedLabel" format="reference" />

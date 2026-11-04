@@ -63,7 +63,7 @@ public class OperationUpdateMessage extends AbstractMessage {
                                   @Nullable String hash,
                                   OperationStatus status,
                                   NextTransactionSizeJson nextTransactionSize,
-                                  SubmarineSwapJson swapDetails,
+                                  @Nullable SubmarineSwapJson swapDetails,
                                   @Nullable Transaction transaction) {
         this.id = id;
         this.confirmations = confirmations;
