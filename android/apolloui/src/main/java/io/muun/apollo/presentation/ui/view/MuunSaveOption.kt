@@ -3,14 +3,12 @@ package io.muun.apollo.presentation.ui.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.annotation.DrawableRes
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunSaveOptionBinding
 
 class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunSaveOptionBinding>(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<MuunSaveOption> = ViewProps.Builder<MuunSaveOption>()
@@ -22,20 +20,14 @@ class MuunSaveOption @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
             .build()
     }
 
-    @BindView(R.id.icon)
-    lateinit var iconView: ImageView
+    private val iconView get() = binding.icon
+    private val titleView get() = binding.title
+    private val descriptionView get() = binding.description
+    private val labelView get() = binding.label
 
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.description)
-    lateinit var descriptionView: TextView
-
-    @BindView(R.id.label)
-    lateinit var labelView: MuunSaveOptionLabel
-
-    override val layoutResource: Int
-        get() = R.layout.muun_save_option
+    override fun bindingInflater(): BindingInflater<MuunSaveOptionBinding> {
+        return MuunSaveOptionBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)

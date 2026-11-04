@@ -3,8 +3,8 @@ package io.muun.common.crypto.hd;
 import io.muun.common.api.MuunInputSubmarineSwapV102Json;
 import io.muun.common.utils.Encodings;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 /**
  * Additional details required to spend a MuunInput consuming a SubmarineSwap output V102.
@@ -18,7 +18,7 @@ public class MuunInputSubmarineSwapV102 {
     private byte[] userPublicKey;
 
     @NotNull
-    private byte[] muunPublicKey;
+    private byte[] cosignerPublicKey;
 
     @NotNull
     private byte[] swapServerPublicKey;
@@ -55,7 +55,7 @@ public class MuunInputSubmarineSwapV102 {
     public MuunInputSubmarineSwapV102(
             byte[] swapPaymentHash256,
             byte[] userPublicKey,
-            byte[] muunPublicKey,
+            byte[] cosignerPublicKey,
             byte[] swapServerPublicKey,
             int numBlocksForExpiration,
             @Nullable Signature swapServerSignature,
@@ -63,7 +63,7 @@ public class MuunInputSubmarineSwapV102 {
 
         this.swapPaymentHash256 = swapPaymentHash256;
         this.userPublicKey = userPublicKey;
-        this.muunPublicKey = muunPublicKey;
+        this.cosignerPublicKey = cosignerPublicKey;
         this.swapServerPublicKey = swapServerPublicKey;
         this.numBlocksForExpiration = numBlocksForExpiration;
         this.swapServerSignature = swapServerSignature;
@@ -92,7 +92,7 @@ public class MuunInputSubmarineSwapV102 {
         return new MuunInputSubmarineSwapV102Json(
                 Encodings.bytesToHex(swapPaymentHash256),
                 Encodings.bytesToHex(userPublicKey),
-                Encodings.bytesToHex(muunPublicKey),
+                Encodings.bytesToHex(cosignerPublicKey),
                 Encodings.bytesToHex(swapServerPublicKey),
                 numBlocksForExpiration,
                 swapServerSignature == null ? null : swapServerSignature.toJson()
@@ -107,8 +107,16 @@ public class MuunInputSubmarineSwapV102 {
         return userPublicKey;
     }
 
+    public byte[] getCosignerPublicKey() {
+        return cosignerPublicKey;
+    }
+
+    /**
+     * Legacy name for {@link #getCosignerPublicKey()}: apollo still calls it.
+     */
+    @Deprecated
     public byte[] getMuunPublicKey() {
-        return muunPublicKey;
+        return cosignerPublicKey;
     }
 
     public byte[] getSwapServerPublicKey() {

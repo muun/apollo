@@ -1,55 +1,33 @@
 package io.muun.apollo.presentation.ui.fragments.recommended_fee
 
 import android.text.TextUtils
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindString
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.RecommendedFeeSelectionFragmentBinding
 import io.muun.apollo.domain.model.BitcoinAmount
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.new_operation.estimateTimeInMs
-import io.muun.apollo.presentation.ui.view.FeeManualItem
 import io.muun.apollo.presentation.ui.view.FeeOptionItem
-import io.muun.apollo.presentation.ui.view.HtmlTextView
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 import io.muun.apollo.presentation.ui.view.RichText
-import io.muun.apollo.presentation.ui.view.StatusMessage
 import io.muun.common.Rules
 import newop.EditFeeState
 import newop.FeeState
 
 class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), RecommendedFeeView {
 
-    @BindView(R.id.fee_options_message)
-    lateinit var message: HtmlTextView
+    private val binding: RecommendedFeeSelectionFragmentBinding
+        get() = getBinding() as RecommendedFeeSelectionFragmentBinding
 
-    @BindView(R.id.fee_option_fast)
-    lateinit var feeOptionItemFast: FeeOptionItem
-
-    @BindView(R.id.fee_option_medium)
-    lateinit var feeOptionItemMedium: FeeOptionItem
-
-    @BindView(R.id.fee_option_slow)
-    lateinit var feeOptionItemSlow: FeeOptionItem
-
-    @BindView(R.id.enter_fee_manually)
-    lateinit var feeManualItem: FeeManualItem
-
-    @BindView(R.id.status_message)
-    lateinit var statusMessage: StatusMessage
-
-    @BindView(R.id.confirm_fee)
-    lateinit var confirmButton: MuunButton
-
-    @BindString(R.string.fee_options_message)
-    lateinit var messageText: String
-
-    @BindString(R.string.fee_options_whats_this)
-    lateinit var whatsThisText: String
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return RecommendedFeeSelectionFragmentBinding::inflate
+    }
 
     private var selectedFeeRateInVBytes: Double? = null // Starts with null if no rate pre-selected
 
@@ -60,26 +38,24 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.recommended_fee_selection_fragment
-    }
-
     override fun initializeUi(view: View) {
-        message.text = TextUtils.concat(
-            messageText,
+        binding.feeOptionsMessage.text = TextUtils.concat(
+            resources.getString(R.string.fee_options_message),
             ". ",
-            RichText(whatsThisText).setLink { onWhatsThisClick() }
+            RichText(
+                resources.getString(R.string.fee_options_whats_this)
+            ).setLink { onWhatsThisClick() }
         )
 
         if (selectedFeeRateInVBytes == null) {
-            confirmButton.isEnabled = false
+            binding.confirmFee.isEnabled = false
         }
 
-        feeManualItem.setOnClickListener {
+        binding.enterFeeManually.setOnClickListener {
             presenter!!.editFeeManually()
         }
 
-        confirmButton.setOnClickListener {
+        binding.confirmFee.setOnClickListener {
             presenter!!.confirmFee(selectedFeeRateInVBytes!!) // NonNull (feeRate has been selected)
         }
     }
@@ -96,12 +72,12 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     override fun setState(state: EditFeeState) {
 
         val feeWindow = state.resolved.paymentContext.feeWindow
-        bindFeeOption(feeOptionItemFast, state, feeWindow.fastConfTarget)
-        bindFeeOption(feeOptionItemMedium, state, feeWindow.mediumConfTarget)
-        bindFeeOption(feeOptionItemSlow, state, feeWindow.slowConfTarget)
+        bindFeeOption(binding.feeOptionFast, state, feeWindow.fastConfTarget)
+        bindFeeOption(binding.feeOptionMedium, state, feeWindow.mediumConfTarget)
+        bindFeeOption(binding.feeOptionSlow, state, feeWindow.slowConfTarget)
 
         if (state.amountInfo.takeFeeFromAmount) {
-            statusMessage.setWarning(
+            binding.statusMessage.setWarning(
                 R.string.use_all_funds_warning_message,
                 R.string.fee_options_use_all_funds_warning_desc,
                 false,
@@ -122,18 +98,18 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
             return
         }
 
-        confirmButton.isEnabled = false // will be enabled later if selected fee is OK
+        binding.confirmFee.isEnabled = false // will be enabled later if selected fee is OK
 
         if (feeData.isFinal) {
             when {
                 Rules.feeRateEquals(currentFeeRateInVBytes, feeRateFastInVBytes) ->
-                    selectFeeOption(feeOptionItemFast, feeRateFastInVBytes)
+                    selectFeeOption(binding.feeOptionFast, feeRateFastInVBytes)
 
                 Rules.feeRateEquals(currentFeeRateInVBytes, feeRateMidInVBytes) ->
-                    selectFeeOption(feeOptionItemMedium, feeRateMidInVBytes)
+                    selectFeeOption(binding.feeOptionMedium, feeRateMidInVBytes)
 
                 Rules.feeRateEquals(currentFeeRateInVBytes, feeRateSlowInVBytes) ->
-                    selectFeeOption(feeOptionItemSlow, feeRateSlowInVBytes)
+                    selectFeeOption(binding.feeOptionSlow, feeRateSlowInVBytes)
 
                 else ->
                     showManuallySelectedFee(feeData, currentFeeRateInVBytes)
@@ -142,19 +118,21 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     }
 
     private fun alreadySomeOptionSelected(): Boolean =
-        feeOptionItemFast.isSelected
-            || feeOptionItemMedium.isSelected
-            || feeOptionItemSlow.isSelected
-            || feeManualItem.isSelected
+        binding.feeOptionFast.isSelected
+            || binding.feeOptionMedium.isSelected
+            || binding.feeOptionSlow.isSelected
+            || binding.enterFeeManually.isSelected
 
     private fun showManuallySelectedFee(feeData: FeeState, currentFeeRateInVBytes: Double) {
         if (feeData.isFinal) {
-            confirmButton.isEnabled = true
+            binding.confirmFee.isEnabled = true
             selectedFeeRateInVBytes = currentFeeRateInVBytes
         }
-        feeManualItem.bitcoinUnit = mBitcoinUnit
-        feeManualItem.amount = BitcoinAmount.fromLibwallet(feeData.amount).inInputCurrency
-        feeManualItem.isSelected = true
+
+        binding.enterFeeManually.bitcoinUnit = mBitcoinUnit
+        binding.enterFeeManually.amount =
+            BitcoinAmount.fromLibwallet(feeData.amount).inInputCurrency
+        binding.enterFeeManually.isSelected = true
     }
 
     private fun bindFeeOption(feeOptionItem: FeeOptionItem, state: EditFeeState, confTarget: Long) {
@@ -181,24 +159,24 @@ class RecommendedFeeFragment : SingleFragment<RecommendedFeePresenter>(), Recomm
     private fun hideDuplicatedFeeRateOptions(fast: Double, medium: Double, slow: Double) {
 
         if (Rules.feeRateEquals(medium, slow)) {
-            feeOptionItemSlow.visibility = View.GONE
+            binding.feeOptionSlow.visibility = View.GONE
         }
 
         if (Rules.feeRateEquals(fast, medium)) {
-            feeOptionItemMedium.visibility = View.GONE
+            binding.feeOptionMedium.visibility = View.GONE
         }
     }
 
     private fun selectFeeOption(item: FeeOptionItem, feeRateInVBytes: Double) {
         selectedFeeRateInVBytes = feeRateInVBytes
 
-        feeOptionItemFast.isSelected = false
-        feeOptionItemMedium.isSelected = false
-        feeOptionItemSlow.isSelected = false
-        feeManualItem.isSelected = false
+        binding.feeOptionFast.isSelected = false
+        binding.feeOptionMedium.isSelected = false
+        binding.feeOptionSlow.isSelected = false
+        binding.enterFeeManually.isSelected = false
 
         item.isSelected = true
-        confirmButton.isEnabled = true
+        binding.confirmFee.isEnabled = true
     }
 
     private fun onWhatsThisClick() {

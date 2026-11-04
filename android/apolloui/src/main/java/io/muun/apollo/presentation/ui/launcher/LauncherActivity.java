@@ -1,11 +1,14 @@
 package io.muun.apollo.presentation.ui.launcher;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.LauncherActivityBinding;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.base.BaseView;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import androidx.annotation.Nullable;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
 public class LauncherActivity extends BaseActivity<LauncherPresenter> implements BaseView {
 
@@ -15,8 +18,8 @@ public class LauncherActivity extends BaseActivity<LauncherPresenter> implements
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.launcher_activity;
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return LauncherActivityBinding::inflate;
     }
 
     @Override

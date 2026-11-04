@@ -20,7 +20,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 /**
  * Creates a client.

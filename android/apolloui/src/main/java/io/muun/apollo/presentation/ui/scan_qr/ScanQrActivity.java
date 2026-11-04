@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.scan_qr;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.ScanQrActivityBinding;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.model.OperationUri;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
@@ -8,29 +9,27 @@ import io.muun.apollo.presentation.ui.fragments.error.ErrorViewModel;
 import io.muun.apollo.presentation.ui.utils.ExtensionsKt;
 import io.muun.apollo.presentation.ui.utils.OS;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
-import io.muun.apollo.presentation.ui.view.MuunUriPaster;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
+import kotlin.jvm.functions.Function1;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
-import javax.validation.constraints.NotNull;
 
 public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         implements ScanQrView, ZXingScannerView.ResultHandler {
@@ -51,28 +50,18 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
                 .putExtra(ARG_LNURL_FLOW, flow.name());
     }
 
-    @BindView(R.id.empty_screen)
-    MuunEmptyScreen emptyScreen;
+    private ScanQrActivityBinding binding() {
+        return (ScanQrActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.scan_qr_header)
-    MuunHeader header;
+    private View pasteFromClipboardView() {
+        return binding().pasteFromClipboard.getRoot();
+    }
 
-    @BindView(R.id.scan_qr_scanner)
-    ZXingScannerView camera;
-
-    @BindView(R.id.scan_qr_subtitle)
-    TextView subtitle;
-
-    // This black rectangle covers the entire view (except for the toolbar), and is shown to hide
-    // the camera permission call to action when it isn't necessary.
-    @BindView(R.id.scan_qr_frame_background)
-    FrameLayout background;
-
-    @BindView(R.id.uri_paster)
-    MuunUriPaster uriPaster;
-
-    @BindView(R.id.paste_from_clipboard)
-    View pasteFromClipboard;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return ScanQrActivityBinding::inflate;
+    }
 
     private boolean clipboardContainsPlaintext = false;
 
@@ -82,72 +71,72 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.scan_qr_activity;
-    }
-
-    @Override
     public MuunHeader getHeader() {
-        return header;
+        return binding().scanQrHeader;
     }
 
     @Override
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
+        binding().scanQrHeader.attachToActivity(this);
 
         final String lnurlFlow = getArgumentsBundle().getString(ARG_LNURL_FLOW);
         if (lnurlFlow != null && LnUrlFlow.valueOf(lnurlFlow) == LnUrlFlow.STARTED_FROM_RECEIVE) {
-            header.showTitle(R.string.showqr_title);
-            subtitle.setText(R.string.scan_lnurl_subtitle);
+            binding().scanQrHeader.showTitle(R.string.showqr_title);
+            binding().scanQrSubtitle.setText(R.string.scan_lnurl_subtitle);
 
-            uriPaster.setOnSelectListener(presenter::selectFromUriPaster);
+            binding().uriPaster.setOnSelectListener(presenter::selectFromUriPaster);
         } else {
-            header.showTitle(R.string.scanqr_title);
+            binding().scanQrHeader.showTitle(R.string.scanqr_title);
         }
 
-        header.setNavigation(Navigation.BACK);
+        binding().scanQrHeader.setNavigation(Navigation.BACK);
 
-        emptyScreen.setOnActionClickListener(view -> onGrantPermissionClick());
+        binding().emptyScreen.setOnActionClickListener(view -> onGrantPermissionClick());
 
         if (allPermissionsGranted(Manifest.permission.CAMERA)) {
             showScannerView();
-
         } else {
             showCameraPermissionPriming();
         }
 
         setupCamera();
 
-        pasteFromClipboard.setOnClickListener(v -> presenter.pasteFromClipboard());
+        pasteFromClipboardView().setOnClickListener(v -> presenter.pasteFromClipboard());
     }
 
     private void showScannerView() {
-        background.setVisibility(View.VISIBLE);
-        subtitle.setVisibility(View.VISIBLE);
+        // This black rectangle covers the entire view (except for the toolbar), and is shown to
+        // hide the camera permission call to action when it isn't necessary.
+        binding().scanQrFrameBackground.setVisibility(View.VISIBLE);
+        binding().scanQrSubtitle.setVisibility(View.VISIBLE);
         if (OS.supportsClipboardAccessNotification() && clipboardContainsPlaintext) {
-            pasteFromClipboard.setVisibility(View.VISIBLE);
+            pasteFromClipboardView().setVisibility(View.VISIBLE);
         }
     }
 
     private void showCameraPermissionPriming() {
-        background.setVisibility(View.GONE);
-        subtitle.setVisibility(View.GONE);
-        pasteFromClipboard.setVisibility(View.GONE);
+        binding().scanQrFrameBackground.setVisibility(View.GONE);
+        binding().scanQrSubtitle.setVisibility(View.GONE);
+        pasteFromClipboardView().setVisibility(View.GONE);
     }
 
     private void setupCamera() {
-        camera.setFormats(Collections.singletonList(BarcodeFormat.QR_CODE));
-        camera.setAutoFocus(true);
-        camera.setMaskColor(UiUtils.getColorWithAlpha(this, R.color.black, getMaskColorAlpha()));
+        binding().scanQrScanner.setFormats(Collections.singletonList(BarcodeFormat.QR_CODE));
+        binding().scanQrScanner.setAutoFocus(true);
+        binding().scanQrScanner.setMaskColor(
+                UiUtils.getColorWithAlpha(this, R.color.black, getMaskColorAlpha())
+        );
 
-        camera.setLaserEnabled(false);
-        camera.setBorderColor(ContextCompat.getColor(getViewContext(), R.color.blue));
-        camera.setSquareViewFinder(true);
+        binding().scanQrScanner.setLaserEnabled(false);
+        binding().scanQrScanner.setBorderColor(
+                ContextCompat.getColor(getViewContext(), R.color.blue)
+        );
+        binding().scanQrScanner.setSquareViewFinder(true);
 
         // NOTE: this line fixed the problem with camera focus in Huawei Mate 9:
-        camera.setAspectTolerance(0.5f);
+        binding().scanQrScanner.setAspectTolerance(0.5f);
     }
 
     private float getMaskColorAlpha() {
@@ -157,14 +146,14 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
     @Override
     protected void onPause() {
         super.onPause();
-        camera.stopCamera();
+        binding().scanQrScanner.stopCamera();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        camera.setResultHandler(this);
-        camera.startCamera(findBackFacingCamera());
+        binding().scanQrScanner.setResultHandler(this);
+        binding().scanQrScanner.startCamera(findBackFacingCamera());
     }
 
     private int findBackFacingCamera() {
@@ -266,8 +255,8 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
         showScannerView();
         presenter.reportCameraPermissionGranted();
 
-        if (uriPaster.getUri() != null) {
-            uriPaster.setVisibility(View.VISIBLE);
+        if (binding().uriPaster.getUri() != null) {
+            binding().uriPaster.setVisibility(View.VISIBLE);
         }
     }
 
@@ -277,16 +266,16 @@ public class ScanQrActivity extends SingleFragmentActivity<ScanQrPresenter>
 
         if (allPermissionsGranted(Manifest.permission.CAMERA)) {
             if (OS.supportsClipboardAccessNotification() && clipboardContainsPlaintext) {
-                pasteFromClipboard.setVisibility(View.VISIBLE);
+                pasteFromClipboardView().setVisibility(View.VISIBLE);
             }
         }
     }
 
     @Override
     public void setClipboardUri(@Nullable OperationUri operationUri) {
-        uriPaster.setUri(operationUri);
+        binding().uriPaster.setUri(operationUri);
         if (!allPermissionsGranted(Manifest.permission.CAMERA)) {
-            uriPaster.setVisibility(View.GONE);
+            binding().uriPaster.setVisibility(View.GONE);
         }
     }
 

@@ -9,7 +9,6 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.annotation.AnimRes
 import androidx.core.content.ContextCompat
-import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ViewNewOpBadgeBinding
 import io.muun.apollo.domain.model.BitcoinUnit
@@ -25,10 +24,7 @@ class NewOpBadge @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     style: Int = 0,
-) : MuunView(context, attrs, style) {
-
-    private val binding: ViewNewOpBadgeBinding
-        get() = getBinding() as ViewNewOpBadgeBinding
+) : MuunView<ViewNewOpBadgeBinding>(context, attrs, style) {
 
     // Components:
 
@@ -49,11 +45,8 @@ class NewOpBadge @JvmOverloads constructor(
     private val incomingTxColor: Int
         get() = ContextCompat.getColor(context, R.color.green)
 
-    override val layoutResource: Int
-        get() = R.layout.view_new_op_badge
-
-    override fun viewBinder(): ((View) -> ViewBinding) {
-        return ViewNewOpBadgeBinding::bind
+    override fun bindingInflater(): BindingInflater<ViewNewOpBadgeBinding> {
+        return ViewNewOpBadgeBinding::inflate
     }
 
     fun setAmount(amountInBtc: MonetaryAmount, bitcoinUnit: BitcoinUnit) {

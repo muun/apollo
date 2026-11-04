@@ -7,51 +7,93 @@ import android.view.MenuItem
 import android.widget.AutoCompleteTextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.textfield.TextInputLayout
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ActivityShippingAddressBinding
+import io.muun.apollo.domain.model.marketplace.MarketplaceCountryCode
 import io.muun.apollo.presentation.app.Navigator
 import io.muun.apollo.presentation.ui.security_cards.utils.addWebsitePill
+import io.muun.apollo.presentation.ui.security_cards.utils.setPrimaryButtonColor
 import io.muun.apollo.presentation.ui.security_cards_country_picker.CountryPickerActivity
 import io.muun.apollo.presentation.ui.security_cards_country_picker.models.CountryInfo
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider
+import io.muun.apollo.presentation.ui.security_cards_shipping_address.ShippingAddressViewModel.ViewState
 import io.muun.apollo.presentation.ui.utils.doAfterTextAsStringChanged
 import io.muun.apollo.presentation.ui.utils.getColorCompat
 import io.muun.apollo.presentation.ui.utils.getComponent
 import io.muun.apollo.presentation.ui.utils.hideSoftInputMethod
+import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.utils.setTextIfChanged
 import io.muun.apollo.presentation.ui.utils.setWindowInsetsCompat
 import io.muun.apollo.presentation.ui.view.MuunHeader
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ShippingAddressActivity : AppCompatActivity() {
 
     companion object {
-        private const val EXTRA_COUNTRY_INFO = "countryInfo"
-        private const val EXTRA_PROVIDER = "provider"
+        // Matches the prototype's timeout for auto-opening the connected-to-website dialog.
+        private const val AUTO_SHOW_CONNECTED_DIALOG_DELAY_MS = 110L
+
+        private const val EXTRA_COUNTRY_CODE = "country_code"
+        private const val EXTRA_PROVIDER_UUID = "provider_uuid"
+        private const val EXTRA_PROVIDER_LIGHT_PRIMARY_COLOR = "provider_light_primary_color"
+        private const val EXTRA_PROVIDER_DARK_PRIMARY_COLOR = "provider_dark_primary_color"
+        private const val EXTRA_PROVIDER_WEBSITE_URL = "provider_website_url"
+
         fun getIntent(
             context: Context,
-            countryInfo: CountryInfo,
-            provider: SecurityCardProvider,
-        ) = Intent(context, ShippingAddressActivity::class.java).apply {
-            putExtra(EXTRA_COUNTRY_INFO, countryInfo)
-            putExtra(EXTRA_PROVIDER, provider)
+            countryCode: MarketplaceCountryCode,
+            providerUuid: String,
+            @ColorInt providerLightPrimaryColor: Int,
+            @ColorInt providerDarkPrimaryColor: Int,
+            providerWebsiteUrl: String,
+        ): Intent {
+            return Intent(context, ShippingAddressActivity::class.java).apply {
+                putExtra(EXTRA_COUNTRY_CODE, countryCode.value)
+                putExtra(EXTRA_PROVIDER_UUID, providerUuid)
+                putExtra(EXTRA_PROVIDER_LIGHT_PRIMARY_COLOR, providerLightPrimaryColor)
+                putExtra(EXTRA_PROVIDER_DARK_PRIMARY_COLOR, providerDarkPrimaryColor)
+                putExtra(EXTRA_PROVIDER_WEBSITE_URL, providerWebsiteUrl)
+            }
         }
     }
 
-    private val countryInfoExtra: CountryInfo
-        get() = requireNotNull(
-            intent.getParcelableExtra(EXTRA_COUNTRY_INFO)
+    private val countryCodeExtra: MarketplaceCountryCode
+        get() = MarketplaceCountryCode(
+            requireNotNull(intent.getStringExtra(EXTRA_COUNTRY_CODE))
         )
 
-    private val providerExtra: SecurityCardProvider
+    @get:ColorInt
+    private val providerPrimaryColorExtra: Int
+        get() {
+            val extra = if (isInNightMode()) {
+                EXTRA_PROVIDER_DARK_PRIMARY_COLOR
+            } else {
+                EXTRA_PROVIDER_LIGHT_PRIMARY_COLOR
+            }
+
+            return intent.getIntExtra(extra, 0)
+        }
+
+    private val providerUuidExtra: String
         get() = requireNotNull(
-            intent.getParcelableExtra(EXTRA_PROVIDER)
+            intent.getStringExtra(EXTRA_PROVIDER_UUID)
+        )
+
+    private val providerWebsiteUrlExtra: String
+        get() = requireNotNull(
+            intent.getStringExtra(EXTRA_PROVIDER_WEBSITE_URL)
         )
 
     private val binding: ActivityShippingAddressBinding by lazy {
@@ -66,7 +108,8 @@ class ShippingAddressActivity : AppCompatActivity() {
 
     private val viewModel: ShippingAddressViewModel by viewModels {
         ShippingAddressViewModelFactory(
-            countryInfo = countryInfoExtra,
+            countryCode = countryCodeExtra,
+            providerUuid = providerUuidExtra,
             assistedFactory = viewModelFactory,
             owner = this,
         )
@@ -80,7 +123,7 @@ class ShippingAddressActivity : AppCompatActivity() {
                 val picked = CountryPickerActivity.getResult(
                     requireNotNull(result.data)
                 )
-                viewModel.setShippingCountry(picked)
+                viewModel.setShippingCountryCode(picked.code)
             }
         }
 
@@ -99,7 +142,15 @@ class ShippingAddressActivity : AppCompatActivity() {
                 launch {
                     viewModel.viewState.collectLatest(::handleViewState)
                 }
+
+                launch {
+                    viewModel.viewEvent.collectLatest(::handleViewEvent)
+                }
             }
+        }
+
+        if (viewModel.shouldShowConnectedToWebsiteDialogOnStart()) {
+            autoShowConnectedToWebsiteDialog()
         }
     }
 
@@ -109,6 +160,33 @@ class ShippingAddressActivity : AppCompatActivity() {
         // if dialog is being shown we have to hide the soft keyboard.
         if (ConnectedToWebsiteDialogFragment.isShown(supportFragmentManager)) {
             hideSoftInputMethod()
+        }
+    }
+
+    /**
+     * Opens the connected-to-website dialog on its own: once the screen is laid out (the dialog
+     * expands out of the header's pill, and TransitionManager silently skips the animation if
+     * the scene isn't laid out when it starts), after the delay the designs call for. The delay
+     * only counts while the screen is STARTED — flowWithLifecycle cancels the countdown when
+     * the app goes to background and restarts it on return, so the dialog never opens over a
+     * screen the user isn't watching. A re-created activity (e.g. rotation) mid-wait just runs
+     * this again: the provider is acknowledged as seen only when the dialog actually shows.
+     */
+    private fun autoShowConnectedToWebsiteDialog() {
+        binding.root.doOnLayout {
+            lifecycleScope.launch {
+                flow {
+                    delay(AUTO_SHOW_CONNECTED_DIALOG_DELAY_MS)
+                    emit(Unit)
+                }
+                    .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+                    .first()
+
+                if (!ConnectedToWebsiteDialogFragment.isShown(supportFragmentManager)) {
+                    viewModel.saveDontShowConnectedToWebsiteDialogOnStart()
+                    showConnectedToWebsiteDialog()
+                }
+            }
         }
     }
 
@@ -127,7 +205,7 @@ class ShippingAddressActivity : AppCompatActivity() {
         binding.header.hideTitle()
 
         binding.header.addWebsitePill(
-            siteUrl = providerExtra.name,
+            siteUrl = providerWebsiteUrlExtra,
             id = R.id.security_cards_checkout_website_pill,
             onClick = { showConnectedToWebsiteDialog() }
         )
@@ -137,7 +215,7 @@ class ShippingAddressActivity : AppCompatActivity() {
         hideSoftInputMethod {
             ConnectedToWebsiteDialogFragment.show(
                 fragmentManager = supportFragmentManager,
-                websiteUrl = providerExtra.name,
+                websiteUrl = providerWebsiteUrlExtra,
                 animationStartViewId = R.id.security_cards_checkout_website_pill,
             )
         }
@@ -146,12 +224,14 @@ class ShippingAddressActivity : AppCompatActivity() {
     private fun configureFormFields() {
         binding.editTextFullName.doAfterTextAsStringChanged(viewModel::setFullName)
         binding.editTextEmail.doAfterTextAsStringChanged(viewModel::setEmail)
-        binding.editTextShippingAddress.doAfterTextAsStringChanged(viewModel::setShippingAddress)
+        binding.editTextAddress1.doAfterTextAsStringChanged(viewModel::setAddress1)
+        binding.editTextAddress2.doAfterTextAsStringChanged(viewModel::setAddress2)
         binding.textViewCountry.setOnClickListener {
-            val currentCountry = viewModel.viewState.value.countryInfo
+            val currentCountryCode = viewModel.viewState.value.countryCode
             navigator.navigateToCountryPickerForResult(
                 this,
-                currentCountry.code,
+                currentCountryCode,
+                providerUuidExtra,
                 countryPickerLauncher,
             )
         }
@@ -161,24 +241,69 @@ class ShippingAddressActivity : AppCompatActivity() {
     }
 
     private fun configureContinueButton() {
+        binding.buttonContinue.setPrimaryButtonColor(providerPrimaryColorExtra)
         binding.buttonContinue.setOnClickListener {
-            // TODO: Navigate to checkout
+            hideSoftInputMethod()
+            viewModel.submit()
         }
     }
 
     private fun handleViewState(viewState: ShippingAddressViewModel.ViewState) {
-        binding.editTextFullName.setTextIfChanged(viewState.fullName)
-        binding.editTextEmail.setTextIfChanged(viewState.email)
-        binding.editTextShippingAddress.setTextIfChanged(viewState.shippingAddress)
-        binding.textViewCountry.setTextWithoutFilteringIfChanged(
-            "${viewState.countryInfo.flagEmoji} ${viewState.countryInfo.name}"
-        )
-        binding.editTextCity.setTextIfChanged(viewState.city)
-        binding.editTextState.setTextIfChanged(viewState.state)
-        binding.editTextZipCode.setTextIfChanged(viewState.zipCode)
+        binding.editTextFullName.setTextIfChanged(viewState.fullName.value)
+        binding.editTextEmail.setTextIfChanged(viewState.email.value)
+        binding.editTextAddress1.setTextIfChanged(viewState.address1.value)
+        binding.editTextAddress2.setTextIfChanged(viewState.address2.value)
+        CountryInfo(viewState.countryCode).let { country ->
+            binding.textViewCountry.setTextWithoutFilteringIfChanged(
+                "${country.flagEmoji} ${country.name(this)}"
+            )
+        }
+        binding.editTextCity.setTextIfChanged(viewState.city.value)
+        binding.editTextState.setTextIfChanged(viewState.state.value)
+        binding.editTextZipCode.setTextIfChanged(viewState.zipCode.value)
 
-        binding.buttonContinue.isEnabled = viewState.isFormComplete
+        fieldLayouts.forEach { (field, layout) ->
+            val message = field(viewState).error?.let(::getString)
+
+            if (layout.error?.toString() != message) {
+                layout.error = message
+            }
+        }
     }
+
+    private fun handleViewEvent(viewEvent: ShippingAddressViewModel.ViewEvent) {
+        when (viewEvent) {
+            ShippingAddressViewModel.ViewEvent.NavigateToCheckout -> {
+                // TODO: Navigate to checkout
+            }
+
+            ShippingAddressViewModel.ViewEvent.ScrollToFirstError -> scrollToFirstFieldError()
+        }
+    }
+
+    // region: Form error handling
+    /** The layout hosting each validated form field, in the form's visual order. */
+    private val fieldLayouts: List<Pair<(ViewState) -> FormItemValue, TextInputLayout>> by lazy {
+        listOf(
+            ViewState::email to binding.layoutEmail,
+            ViewState::fullName to binding.layoutFullName,
+            ViewState::address1 to binding.layoutAddress1,
+            ViewState::city to binding.layoutCity,
+            ViewState::state to binding.layoutState,
+            ViewState::zipCode to binding.layoutZipCode,
+        )
+    }
+
+    private fun scrollToFirstFieldError() {
+        val viewState = viewModel.viewState.value
+        val firstErrorLayout = fieldLayouts
+            .firstOrNull { (field, _) -> field(viewState).error != null }
+            ?.second
+            ?: return
+
+        binding.scrollView.smoothScrollTo(0, firstErrorLayout.top)
+    }
+    // endregion
 }
 
 private fun AutoCompleteTextView.setTextWithoutFilteringIfChanged(value: String) {

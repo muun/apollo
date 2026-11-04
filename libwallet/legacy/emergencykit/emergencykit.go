@@ -1,0 +1,158 @@
+package emergencykit
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"fmt"
+	"io"
+	"log/slog"
+	"strconv"
+	"strings"
+	"text/template"
+	"time"
+
+	"github.com/go-errors/errors"
+
+	"github.com/muun/libwallet/platform/i18n"
+)
+
+// Input struct to fill the PDF
+type Input struct {
+	FirstEncryptedKey  string
+	FirstFingerprint   string
+	SecondEncryptedKey string
+	SecondFingerprint  string
+	Version            int
+}
+
+// Format prints LogValue for every verb.
+// Format and LogValue take value receivers, unlike the other methods, so values print
+// redacted too, not only pointers.
+func (i Input) Format(f fmt.State, _ rune) {
+	_, _ = io.WriteString(f, i.LogValue().String())
+}
+
+// LogValue returns the fingerprints and version, without the encrypted keys.
+func (i Input) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("first_fingerprint", i.FirstFingerprint),
+		slog.String("second_fingerprint", i.SecondFingerprint),
+		slog.Int("version", i.Version),
+	)
+}
+
+// Output with the html as string and the verification code
+type Output struct {
+	HTML             string
+	VerificationCode string
+}
+
+// GenerateHTML returns the translated emergency kit html as a string along with the verification
+// code.
+func GenerateHTML(params *Input, lang string) (*Output, error) {
+	verificationCode := GenerateDeterministicCode(params)
+
+	// Render output descriptors:
+	var descriptors string
+
+	if params.hasFingerprints() {
+		descriptors = GetDescriptorsHTML(&DescriptorsData{
+			FirstFingerprint:  params.FirstFingerprint,
+			SecondFingerprint: params.SecondFingerprint,
+		})
+	}
+
+	// Render page body:
+	content, err := render("EmergencyKitContent", lang, &contentData{
+		// Externally provided:
+		FirstEncryptedKey:  params.FirstEncryptedKey,
+		SecondEncryptedKey: params.SecondEncryptedKey,
+
+		// Computed by us:
+		VerificationCode: verificationCode,
+		CurrentDate:      i18n.FormatDate(time.Now(), lang),
+		Descriptors:      descriptors,
+
+		// Template pieces separated for reuse:
+		IconHelp:    iconHelp,
+		IconPadlock: iconPadlock,
+	})
+	if err != nil {
+		return nil, errors.Errorf("failed to render EmergencyKitContent template: %w", err)
+	}
+
+	// Render complete HTML page:
+	page, err := render("EmergencyKitPage", lang, &pageData{
+		CSS:     css,
+		Content: content,
+	})
+	if err != nil {
+		return nil, errors.Errorf("failed to render EmergencyKitPage template: %w", err)
+	}
+
+	return &Output{
+		HTML:             page,
+		VerificationCode: verificationCode,
+	}, nil
+}
+
+func GenerateDeterministicCode(params *Input) string {
+	// NOTE:
+	// This function creates a stable verification code given the inputs to render the
+	// Emergency Kit. For now, the implementation relies exclusively on the SecondEncryptedKey,
+	// which is the cosigner key. This is obviously not ideal, since we're both dropping part of the
+	// input and introducing the assumption that the cosigner key will always be rendered second --
+	// but it compensates for a problem with one of our clients that causes the user key
+	// serialization to be recreated each time the kit is rendered (making this deterministic
+	// approach useless).
+
+	// Create a deterministic serialization of the input:
+	inputMaterial := params.SecondEncryptedKey + strconv.Itoa(params.Version)
+
+	// Compute a cryptographically secure hash of the material (critical, these are keys):
+	inputHash := sha256.Sum256([]byte(inputMaterial))
+
+	// Extract a verification code from the hash (doesn't matter if we discard bytes):
+	var code strings.Builder
+	for _, b := range inputHash[:6] {
+		code.WriteString(strconv.Itoa(int(b) % 10))
+	}
+
+	return code.String()
+}
+
+func render(
+	name, language string,
+	data any,
+) (string, error) {
+	tmpl, err := template.New(name).Parse(getContent(name, language))
+	if err != nil {
+		return "", err
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func getContent(name string, language string) string {
+	switch name {
+	case "EmergencyKitPage":
+		return page
+
+	case "EmergencyKitContent":
+		if language == "es" {
+			return contentES
+		}
+		return contentEN
+
+	default:
+		panic("could not find template with name: " + name)
+	}
+}
+
+func (i *Input) hasFingerprints() bool {
+	return i.FirstFingerprint != "" && i.SecondFingerprint != ""
+}

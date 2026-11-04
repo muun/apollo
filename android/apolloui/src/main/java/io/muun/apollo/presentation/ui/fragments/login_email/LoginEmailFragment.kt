@@ -23,9 +23,6 @@ class LoginEmailFragment : SingleFragment<LoginEmailPresenter>(), LoginEmailView
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.login_email
-
     override fun initializeUi(view: View) {
         with(binding) {
             enterEmailInput.apply {

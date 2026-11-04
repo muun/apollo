@@ -26,6 +26,7 @@ import io.muun.apollo.domain.analytics.AnalyticsEvent.E_NEW_OP_ACTION_TYPE
 import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CARD_TAP_PARAM
 import io.muun.apollo.domain.errors.nfc.NoFeasibleZoneForModelError
 import io.muun.apollo.domain.libwallet.LibwalletClient
+import io.muun.apollo.domain.libwallet.errors.ErrorDetail
 import io.muun.apollo.domain.libwallet.errors.ErrorDetailCode
 import io.muun.apollo.domain.libwallet.errors.LibwalletGrpcError
 import io.muun.apollo.domain.model.FeasibleZone
@@ -66,7 +67,7 @@ class NfcReaderViewModel @Inject constructor(
 
     sealed interface ViewCommand {
         object Success : ViewCommand
-        data class Error(val message: String) : ViewCommand
+        data class CardReadingError(val message: String) : ViewCommand
         object DisableSecurityCardFlag : ViewCommand
     }
 
@@ -99,15 +100,15 @@ class NfcReaderViewModel @Inject constructor(
         viewModelScope.launch {
             _viewState.emit(ViewState.Reading)
             try {
-                handleSignChallenge(nfcSession)
-                analytics.report(AnalyticsEvent.E_SECURITY_CARD_SIGN_SUCCESS())
+                val firmwareVersion = handleSignChallenge(nfcSession)
+                analytics.report(AnalyticsEvent.E_SECURITY_CARD_SIGN_SUCCESS(firmwareVersion))
                 _viewCommand.emit(ViewCommand.Success)
             } catch (error: Exception) {
 
                 val errorMessage = buildErrorMessage(error)
                 reportNfcError(error, errorMessage)
                 latestError = error
-                _viewCommand.emit(ViewCommand.Error(errorMessage))
+                _viewCommand.emit(ViewCommand.CardReadingError(errorMessage))
 
                 if (error is LibwalletGrpcError) {
                     if (error.errorDetail?.code == ErrorDetailCode.NO_SLOTS_AVAILABLE.code) {
@@ -130,6 +131,9 @@ class NfcReaderViewModel @Inject constructor(
             if (errorDetail?.code == ErrorDetailCode.SIGN_MAC_VALIDATION_FAILED.code) {
                 "Invalid Signature Verification! You're probably tapping with another " +
                     "(incorrect) security card"
+            } else if (errorDetail?.code == ErrorDetailCode.UNSUPPORTED_CARD_VERSION.code) {
+                "Couldn't recognize this card. Check you're tapping your Muun security card; " +
+                    "if you are, try updating the app."
             } else {
                 if (errorDetail?.developerMessage?.isNotEmpty() == true) {
                     errorDetail.developerMessage
@@ -142,19 +146,21 @@ class NfcReaderViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleSignChallenge(nfcSession: NfcSession) {
-        withContext(Dispatchers.IO) {
-            nfcSession.connect()
+    /**
+     * Signs with the tapped card and returns the firmware version it reported, or null when no
+     * security card is enabled.
+     */
+    private suspend fun handleSignChallenge(nfcSession: NfcSession): String? {
+        return withContext(Dispatchers.IO) {
             val nfcBridger = nfcBridgerFactory.forSession(nfcSession)
 
             if (featureSelector.get(MuunFeature.NFC_CARD_V2)) {
-                libwalletClient.securityCardV2SignMessage(nfcBridger)
+                libwalletClient.securityCardSignMessage(nfcBridger)
             } else {
                 // this shouldn't happen
                 Timber.e("No security card enabled in nfc reader activity")
+                null
             }
-
-            nfcSession.close()
         }
     }
 
@@ -171,7 +177,11 @@ class NfcReaderViewModel @Inject constructor(
         if (error is LibwalletGrpcError) {
             val code = error.errorDetail?.code.toString()
             val message = error.errorDetail?.developerMessage
-            analytics.report(AnalyticsEvent.E_SECURITY_CARD_TAP_ERROR(code, message))
+            val firmwareVersion =
+                error.errorDetail?.context?.get(ErrorDetail.CARD_FIRMWARE_VERSION_KEY)
+            analytics.report(
+                AnalyticsEvent.E_SECURITY_CARD_TAP_ERROR(code, message, firmwareVersion)
+            )
 
         } else {
             analytics.report(AnalyticsEvent.E_SECURITY_CARD_TAP_ERROR("unknown", error.message))
@@ -258,11 +268,12 @@ class NfcReaderViewModel @Inject constructor(
                     _viewState.tryEmit(ViewState.Scanning(feasibleZone))
                 },
                 { error ->
-                    if (error is NoFeasibleZoneForModelError) {
-                        _viewState.tryEmit(ViewState.Scanning(null))
-                    } else {
-                        _viewCommand.tryEmit(ViewCommand.Error(error.message ?: ""))
+                    // The feasible zone is only a visual aid for placing the card. Failing to
+                    // fetch it must not be surfaced as a card reading error.
+                    if (error !is NoFeasibleZoneForModelError) {
+                        Timber.e(error, "Failed to fetch the NFC feasible zone")
                     }
+                    _viewState.tryEmit(ViewState.Scanning(null))
                 }
             )
     }

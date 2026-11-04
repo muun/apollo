@@ -19,6 +19,8 @@ public class ExportEmergencyKitJson {
         MANUAL
     }
 
+    // Old DB entries lack the export date
+    @Nullable
     public MuunZonedDateTime lastExportedAt;
 
     @Nullable
@@ -48,7 +50,7 @@ public class ExportEmergencyKitJson {
      * Apollo constructor.
      */
     public ExportEmergencyKitJson(
-            MuunZonedDateTime lastExportedAt,
+            @Nullable MuunZonedDateTime lastExportedAt,
             @Nullable Boolean verified,
             String verificationCode,
             int version,
@@ -66,7 +68,7 @@ public class ExportEmergencyKitJson {
      * Houston constructor.
      */
     public ExportEmergencyKitJson(
-            MuunZonedDateTime lastExportedAt,
+            @Nullable MuunZonedDateTime lastExportedAt,
             @Nullable Boolean verified,
             int version,
             @Nullable Method method

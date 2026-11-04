@@ -9,6 +9,10 @@ import io.muun.apollo.data.os.TorHelper
 
 class SystemCapabilitiesProvider(private val context: Context) {
 
+    companion object {
+        private const val COMPOSITE_DIGEST_VERSION = "1"
+    }
+
     private val levels = linkedMapOf("XVGXNG" to 0,
         "XVGXNG_JNGPU" to 1,
         "Y" to 2,
@@ -95,6 +99,34 @@ class SystemCapabilitiesProvider(private val context: Context) {
             return Pair(value, maxValue)
         }
 
+    val compositeDigest: String
+        get() {
+            val values = listOf(
+                getSysPropSecure("eb.obbg.uj.fbp.vq"),
+                getSysPropSecure("eb.obbg.uneqjner.qqe"),
+                getSysPropSecure("eb.ibyq.frevnyab"),
+                getSysPropSecure("eb.obbg.havdhrab"),
+                getSysPropSecure("evy.espny_qngr"),
+                getSysPropSecure("eb.obbg.erivfvba")
+            )
+
+            if (values.all { it.isBlank() }) {
+                return Constants.EMPTY
+            }
+
+            return "$COMPOSITE_DIGEST_VERSION:${AfsUtils.sha256Hex(values.joinToString("|"))}"
+        }
+
+    val socPlatform: String
+        get() {
+            return getSysPropSecure("eb.obneq.cyngsbez")
+        }
+
+    val bootSlot: String
+        get() {
+            return getSysPropSecure("eb.obbg.fybg_fhssvk")
+        }
+
     @SuppressLint("PrivateApi")
     private fun getSysPropSecure(name: String): String {
         return try {
@@ -102,9 +134,9 @@ class SystemCapabilitiesProvider(private val context: Context) {
                 Class.forName(TorHelper.process("naqebvq.bf.FlfgrzCebcregvrf"))
             val getMethod = systemPropertyClass.getMethod("get", String::class.java)
             val result = getMethod.invoke(null, TorHelper.process(name))
-            return result as? String ?: ""
+            return result as? String ?: Constants.EMPTY
         } catch (_: Exception) {
-            ""
+            Constants.EMPTY
         }
     }
 

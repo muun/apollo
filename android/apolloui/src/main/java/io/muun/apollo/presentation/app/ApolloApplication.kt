@@ -35,6 +35,7 @@ import io.muun.apollo.domain.NightModeManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.action.realtime.PreloadFeeDataAction
 import io.muun.apollo.domain.action.session.DetectAppUpdateAction
+import io.muun.apollo.domain.action.session.RecordInstallBaselinesAction
 import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_APP_WILL_ENTER_FOREGROUND
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_APP_WILL_GO_TO_BACKGROUND
@@ -46,16 +47,16 @@ import io.muun.apollo.domain.model.NightMode.FOLLOW_SYSTEM
 import io.muun.apollo.domain.model.NightMode.LIGHT
 import io.muun.apollo.domain.model.feebump.FeeBumpRefreshPolicy
 import io.muun.apollo.domain.sync.FeeDataSyncer
+import io.muun.apollo.osmodules.background_actions.BackgroundActionsForegroundRunner
 import io.muun.apollo.presentation.app.di.ApplicationComponent
 import io.muun.apollo.presentation.app.di.DaggerApplicationComponent
 import io.muun.apollo.presentation.app.startup.AppStartupInitializer
 import io.muun.apollo.presentation.ui.utils.UserFacingErrorMessagesImpl
 import rx.plugins.RxJavaHooks
 import timber.log.Timber
-import java.util.ServiceLoader
 import java.util.concurrent.Executor
 import javax.inject.Inject
-import javax.money.spi.CurrencyProviderSpi
+import javax.money.spi.Bootstrap
 
 open class ApolloApplication : Application(), DataComponentProvider, Configuration.Provider,
     DefaultLifecycleObserver {
@@ -98,10 +99,16 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
     lateinit var userActions: UserActions
 
     @Inject
+    lateinit var backgroundActionsForegroundRunner: BackgroundActionsForegroundRunner
+
+    @Inject
     lateinit var appStartupInitializer: AppStartupInitializer
 
     @Inject
     lateinit var nfcEmpiricalCache: NfcEmpiricalCache
+
+    @Inject
+    lateinit var recordInstallBaselines: RecordInstallBaselinesAction
 
     override fun onCreate() {
         // The order of the calls in this method is intentional.
@@ -116,8 +123,6 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         Crashlytics.init(this, firebaseTestLabDevice)
         StrictMode.init()
 
-        ensureCurrencyServicesLoaded()
-
         AndroidThreeTen.init(this)
 
         // Ignore tracking events for Firebase Test Lab devices
@@ -126,8 +131,16 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         }
 
         setupDebugTools()
+
+        // Before anything uses Moneta, but after setupDebugTools so that it can report errors.
+        installMoneyServiceProvider()
+
         initializeDagger()
         appStartupInitializer.init().await()
+
+        // Ahead of the secure storage reads further down: a launch that dies there must still
+        // have recorded the baselines.
+        recordInstallBaselines.run()
 
         detectAppUpdate.run()
 
@@ -148,6 +161,8 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         // Apparently this won't correctly handle/track app crashes or ANRs.
         // See: https://stackoverflow.com/a/44461605/901465 (and its comments)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        backgroundActionsForegroundRunner.start()
 
         registerReceiver(lockWhenDisplayIsOff, IntentFilter(Intent.ACTION_SCREEN_OFF))
 
@@ -266,21 +281,17 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
     }
 
     /**
-     * TODO: should be done off the main Thread.
+     * Make Moneta load its services with the app's class loader from any thread, including
+     * libwallet's Go threads, which have no context class loader (see [MoneyServiceProvider]).
+     * Must run before anything uses Moneta.
      */
-    private fun ensureCurrencyServicesLoaded() {
-        // This method eagerly loads the CurrencyProviderSpi instances available in the application
-        // space, instead of letting the ServiceLoader create them lazily as needed.
-
-        // This fixes an occasional UnknownCurrencyException that would randomly crash the app
-        // on startup, possibly (never fully understood it) due to a timing issue with the provider.
-
-        val loader = ServiceLoader.load(CurrencyProviderSpi::class.java)
-
-        val it = loader.iterator()
-
-        while (it.hasNext()) {
-            it.next() // nothing else to do, just populate the ServiceLoader cache.
+    private fun installMoneyServiceProvider() {
+        val previousProvider = Bootstrap.init(MoneyServiceProvider(classLoader))
+        if (previousProvider != null) {
+            Timber.e(
+                "Moneta was used before MoneyServiceProvider was installed, replaced %s",
+                previousProvider.javaClass.name
+            )
         }
     }
 

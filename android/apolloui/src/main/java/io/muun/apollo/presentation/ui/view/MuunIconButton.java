@@ -1,25 +1,24 @@
 package io.muun.apollo.presentation.ui.view;
 
-
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunIconButtonBinding;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.core.content.ContextCompat;
-import butterknife.BindView;
+import kotlin.jvm.functions.Function3;
 
 import javax.annotation.Nullable;
 
-public class MuunIconButton extends MuunView {
+public class MuunIconButton extends MuunView<MuunIconButtonBinding> {
 
     static final ViewProps<MuunIconButton> viewProps = new ViewProps.Builder<MuunIconButton>()
             .addRefJava(R.attr.icon, MuunIconButton::setIcon)
@@ -28,15 +27,6 @@ public class MuunIconButton extends MuunView {
             .addStringJava(R.attr.label, MuunIconButton::setLabel)
             .addSizeJava(R.attr.labelSize, MuunIconButton::setLabelSize)
             .build();
-
-    @BindView(R.id.muun_icon_button_container)
-    ViewGroup container;
-
-    @BindView(R.id.muun_icon_button_image)
-    ImageView icon;
-
-    @BindView(R.id.muun_icon_button_text)
-    TextView label;
 
     ColorStateList colorList;
 
@@ -53,14 +43,13 @@ public class MuunIconButton extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_icon_button;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunIconButtonBinding> bindingInflater() {
+        return MuunIconButtonBinding::inflate;
     }
 
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
         setClickable(true);
         setFocusable(true);
         setColor(ContextCompat.getColorStateList(getContext(), R.color.blue));
@@ -75,12 +64,17 @@ public class MuunIconButton extends MuunView {
     }
 
     public void setIcon(@DrawableRes int resId) {
-        icon.setImageResource(resId);
+        getBinding().muunIconButtonImage.setImageResource(resId);
     }
 
+    /**
+     * Set the icon size.
+     */
     public void setIconSize(int pixelSize) {
-        icon.setLayoutParams(new LinearLayout.LayoutParams(pixelSize, pixelSize));
-        icon.requestLayout();
+        getBinding().muunIconButtonImage.setLayoutParams(
+                new LinearLayout.LayoutParams(pixelSize, pixelSize)
+        );
+        getBinding().muunIconButtonImage.requestLayout();
     }
 
     public void setColor(ColorStateList colorList) {
@@ -89,8 +83,8 @@ public class MuunIconButton extends MuunView {
     }
 
     public void setLabel(CharSequence content) {
-        label.setText(content);
-        setLabelVisible(label.length() > 0);
+        getBinding().muunIconButtonText.setText(content);
+        setLabelVisible(getBinding().muunIconButtonText.length() > 0);
     }
 
     /**
@@ -105,17 +99,20 @@ public class MuunIconButton extends MuunView {
      * TypedValue} for the possible dimension units.
      */
     public void setLabelSize(int unit, float size) {
-        label.setTextSize(unit, size);
+        getBinding().muunIconButtonText.setTextSize(unit, size);
     }
 
     public void setLabelVisible(boolean isVisible) {
-        label.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        getBinding().muunIconButtonText.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     private void updateColor() {
+        if (colorList == null) {
+            return;
+        }
         final int stateColor = colorList.getColorForState(getDrawableState(), Color.TRANSPARENT);
 
-        icon.setColorFilter(stateColor);
-        label.setTextColor(stateColor);
+        getBinding().muunIconButtonImage.setColorFilter(stateColor);
+        getBinding().muunIconButtonText.setTextColor(stateColor);
     }
 }

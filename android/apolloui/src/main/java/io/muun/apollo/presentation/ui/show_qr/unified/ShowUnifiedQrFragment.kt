@@ -2,27 +2,29 @@ package io.muun.apollo.presentation.ui.show_qr.unified
 
 import android.app.Activity
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
-import androidx.core.widget.NestedScrollView
-import butterknife.BindView
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.viewbinding.ViewBinding
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentShowQrUnifiedBinding
 import io.muun.apollo.domain.libwallet.DecodedBitcoinUri
 import io.muun.apollo.domain.model.AddressType
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.UserActivatedFeatureStatus
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
-import io.muun.apollo.presentation.ui.show_qr.NotificationsPrimingView
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
 import io.muun.apollo.presentation.ui.show_qr.UnifiedQrFullContentDialogFragment
 import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
 import io.muun.apollo.presentation.ui.view.AddressTypeItem
-import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
-import io.muun.apollo.presentation.ui.view.HiddenSection
-import io.muun.apollo.presentation.ui.view.LoadingView
+import io.muun.apollo.presentation.ui.view.EditAmountItem
+import io.muun.apollo.presentation.ui.view.MuunButton
 import javax.money.MonetaryAmount
 
 class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
@@ -34,38 +36,22 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
         private const val REQUEST_AMOUNT = 3
     }
 
-    @BindView(R.id.unified_qr_scrollView)
-    lateinit var scrollView: NestedScrollView
+    private val binding: FragmentShowQrUnifiedBinding
+        get() = getBinding() as FragmentShowQrUnifiedBinding
 
-    @BindView(R.id.unified_qr_notifications_priming)
-    lateinit var notificationsPrimingView: NotificationsPrimingView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        FragmentShowQrUnifiedBinding::inflate
 
-    @BindView(R.id.qr_overlay)
-    lateinit var qrOverlay: View
-
-    @BindView(R.id.unified_qr_settings)
-    lateinit var hiddenSection: HiddenSection
-
-    @BindView(R.id.unified_qr_settings_content)
-    lateinit var uriSettingsContent: View
-
-    @BindView(R.id.expiration_time_item)
-    lateinit var expirationTimeItem: ExpirationTimeItem
-
-    @BindView(R.id.unified_qr_loading)
-    lateinit var loadingView: LoadingView
-
-    @BindView(R.id.unified_qr_invoice_expired_overlay)
-    lateinit var invoiceExpiredOverlay: View
-
-    @BindView(R.id.create_other_invoice)
-    lateinit var createOtherInvoice: View
-
-    @BindView(R.id.address_type_item)
-    lateinit var addressTypeItem: AddressTypeItem
-
-    @BindView(R.id.high_fees_warning_overlay)
-    lateinit var highFeesOverlay: View
+    override val qrImage: ImageView
+        get() = binding.showQrImageQr
+    override val qrContent: TextView
+        get() = binding.showQrContent
+    override val copyButton: MuunButton
+        get() = binding.showQrCopy
+    override val shareButton: MuunButton
+        get() = binding.showQrShare
+    override val editAmountItem: EditAmountItem
+        get() = binding.editAmountItem
 
     // State:
 
@@ -84,22 +70,18 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.fragment_show_qr_unified
-    }
-
     override fun initializeUi(view: View) {
         super.initializeUi(view)
 
-        addressTypeItem.setOnAddressTypeChangedListener(this)
-        hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
-        createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
+        binding.addressTypeItem.setOnAddressTypeChangedListener(this)
+        binding.unifiedQrSettings.setOnClickListener { presenter.toggleAdvancedSettings() }
+        binding.createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
 
-        hiddenSection.setExpanded(false)
+        binding.unifiedQrSettings.setExpanded(false)
 
         if (OS.supportsNotificationRuntimePermission()) {
-            notificationsPrimingView.setUpForLightning()
-            notificationsPrimingView.setEnableClickListener {
+            binding.unifiedQrNotificationsPriming.setUpForLightning()
+            binding.unifiedQrNotificationsPriming.setEnableClickListener {
                 presenter.handleNotificationPermissionPrompt()
             }
         }
@@ -117,15 +99,15 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
     }
 
     override fun setLoading(loading: Boolean) {
-        loadingView.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.unifiedQrLoading.visibility = if (loading) View.VISIBLE else View.GONE
         qrContent.visibility = if (loading) View.INVISIBLE else View.VISIBLE // Keep view Bounds
 
         copyButton.isEnabled = !loading
         shareButton.isEnabled = !loading
 
         editAmountItem.setLoading(loading)
-        expirationTimeItem.setLoading(loading)
-        addressTypeItem.isClickable = !loading
+        binding.expirationTimeItem.setLoading(loading)
+        binding.addressTypeItem.isClickable = !loading
     }
 
     override fun setBitcoinUri(
@@ -139,7 +121,7 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
         val address = bitcoinUri.addressGroup.getAddress(addressType)
         super.setQrContent("🧪 $address", uriString)
 
-        addressTypeItem.show(addressType)
+        binding.addressTypeItem.show(addressType)
 
         stopTimer()
         countdownTimer = MuunCountdownTimer(bitcoinUri.invoice.remainingMillis(), this)
@@ -148,14 +130,13 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
 
         if (amount != null) {
             editAmountItem.setAmount(amount, getBitcoinUnit())
-
         } else {
             editAmountItem.resetAmount()
         }
     }
 
     override fun setTaprootState(status: UserActivatedFeatureStatus) {
-        addressTypeItem.taprootStatus = status
+        binding.addressTypeItem.taprootStatus = status
     }
 
     override fun onStop() {
@@ -176,21 +157,19 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
         dialog.setOnAddressClickListener { presenter.copyAddress() }
         dialog.setOnInvoiceClickListener { presenter.copyInvoice() }
 
-
         showDrawerDialog(dialog)
     }
 
     override fun toggleAdvancedSettings() {
-        hiddenSection.toggleSection()
+        binding.unifiedQrSettings.toggleSection()
 
-        if (uriSettingsContent.visibility == View.VISIBLE) {
-            uriSettingsContent.visibility = View.GONE
-
+        if (binding.unifiedQrSettingsContent.visibility == View.VISIBLE) {
+            binding.unifiedQrSettingsContent.visibility = View.GONE
         } else {
-            uriSettingsContent.visibility = View.VISIBLE
+            binding.unifiedQrSettingsContent.visibility = View.VISIBLE
 
-            scrollView.postDelayed({
-                scrollView.fullScroll(View.FOCUS_DOWN)
+            binding.unifiedQrScrollView.postDelayed({
+                binding.unifiedQrScrollView.fullScroll(View.FOCUS_DOWN)
             }, 100)
         }
     }
@@ -219,7 +198,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
 
             if (result != null && !result.isZero) {
                 presenter.setAmount(result)
-
             } else {
                 resetAmount()
             }
@@ -233,7 +211,7 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
 
     override fun onCountDownTick(remainingSeconds: Long) {
         // Using minimalistic pattern/display/formatting to better fit in small screen space
-        expirationTimeItem.setExpirationTime(
+        binding.expirationTimeItem.setExpirationTime(
             ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
         )
     }
@@ -243,18 +221,18 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
     }
 
     private fun showHighFeesOverlay() {
-        highFeesOverlay.visibility = View.VISIBLE
-        invoiceExpiredOverlay.visibility = View.GONE
-        qrOverlay.visibility = View.GONE
-        hiddenSection.visibility = View.GONE
-        uriSettingsContent.visibility = View.GONE
+        binding.highFeesWarningOverlay.visibility = View.VISIBLE
+        binding.unifiedQrInvoiceExpiredOverlay.visibility = View.GONE
+        binding.qrOverlay.visibility = View.GONE
+        binding.unifiedQrSettings.visibility = View.GONE
+        binding.unifiedQrSettingsContent.visibility = View.GONE
     }
 
     private fun showInvoiceExpiredOverlay() {
-        invoiceExpiredOverlay.visibility = View.VISIBLE
-        qrOverlay.visibility = View.GONE
-        hiddenSection.visibility = View.GONE
-        uriSettingsContent.visibility = View.GONE
+        binding.unifiedQrInvoiceExpiredOverlay.visibility = View.VISIBLE
+        binding.qrOverlay.visibility = View.GONE
+        binding.unifiedQrSettings.visibility = View.GONE
+        binding.unifiedQrSettingsContent.visibility = View.GONE
     }
 
     private fun onCreateInvoiceClick() {
@@ -263,19 +241,19 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
     }
 
     private fun resetViewState() {
-        notificationsPrimingView.visibility = View.GONE
-        highFeesOverlay.visibility = View.GONE
-        invoiceExpiredOverlay.visibility = View.GONE
-        qrOverlay.visibility = View.VISIBLE
-        hiddenSection.visibility = View.VISIBLE
+        binding.unifiedQrNotificationsPriming.visibility = View.GONE
+        binding.highFeesWarningOverlay.visibility = View.GONE
+        binding.unifiedQrInvoiceExpiredOverlay.visibility = View.GONE
+        binding.qrOverlay.visibility = View.VISIBLE
+        binding.unifiedQrSettings.visibility = View.VISIBLE
 
         if (showNotificationPriming()) {
-            notificationsPrimingView.visibility = View.VISIBLE
+            binding.unifiedQrNotificationsPriming.visibility = View.VISIBLE
 
-            highFeesOverlay.visibility = View.GONE
-            invoiceExpiredOverlay.visibility = View.GONE
-            qrOverlay.visibility = View.GONE
-            hiddenSection.visibility = View.GONE
+            binding.highFeesWarningOverlay.visibility = View.GONE
+            binding.unifiedQrInvoiceExpiredOverlay.visibility = View.GONE
+            binding.qrOverlay.visibility = View.GONE
+            binding.unifiedQrSettings.visibility = View.GONE
         }
     }
 
@@ -292,7 +270,6 @@ class ShowUnifiedQrFragment : QrFragment<ShowUnifiedQrPresenter>(),
     override fun refresh() {
         if (highFees) {
             showHighFeesOverlay()
-
         } else {
             resetViewState()
             presenter.generateNewUri()

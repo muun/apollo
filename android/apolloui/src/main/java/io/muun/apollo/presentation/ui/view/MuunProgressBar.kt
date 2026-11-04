@@ -5,19 +5,19 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout.LayoutParams.MATCH_PARENT
 import androidx.annotation.ColorRes
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunProgressBarBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 import io.muun.apollo.presentation.ui.utils.addOnNextLayoutListener
 
 class MuunProgressBar @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunProgressBarBinding>(c, a, s) {
 
-    @BindView(R.id.progress)
-    lateinit var progressView: View
+    private val progressView: View get() = binding.progress
 
-    override val layoutResource: Int
-        get() = R.layout.muun_progress_bar
+    override fun bindingInflater(): BindingInflater<MuunProgressBarBinding> {
+        return MuunProgressBarBinding::inflate
+    }
 
     var progress: Double = 0.0
         set(progress) {

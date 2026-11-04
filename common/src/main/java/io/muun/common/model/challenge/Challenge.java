@@ -3,8 +3,8 @@ package io.muun.common.model.challenge;
 
 import io.muun.common.crypto.ChallengeType;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class Challenge {
 

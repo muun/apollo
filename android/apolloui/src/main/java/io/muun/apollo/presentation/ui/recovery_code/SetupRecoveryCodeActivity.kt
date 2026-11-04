@@ -41,9 +41,6 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.recovery_code_activity
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return RecoveryCodeActivityBinding::inflate
     }
@@ -109,7 +106,6 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
         hideError()
         if (errorType == AnalyticsEvent.ERROR_TYPE.RC_SETUP_START_CONNECTION_ERROR) {
             presenter.retryRecoveryCodeSetupStart()
-
         } else if (errorType == AnalyticsEvent.ERROR_TYPE.RC_SETUP_FINISH_CONNECTION_ERROR) {
             presenter.retryRecoveryCodeSetupFinish()
         }
@@ -119,7 +115,6 @@ internal class SetupRecoveryCodeActivity : SingleFragmentActivity<SetupRecoveryC
         hideError()
         if (errorType == AnalyticsEvent.ERROR_TYPE.RC_SETUP_START_CONNECTION_ERROR) {
             presenter.handleBackFromErrorInStart()
-
         } else if (errorType == AnalyticsEvent.ERROR_TYPE.RC_SETUP_FINISH_CONNECTION_ERROR) {
             presenter.handleBackFromErrorInFinish()
         }

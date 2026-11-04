@@ -9,7 +9,7 @@ import androidx.annotation.StringRes;
 import rx.functions.Action0;
 import rx.functions.Action1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public interface BaseView {
 

@@ -9,7 +9,6 @@
     <color name="blue_buttons">#2474CD</color> <!-- aka light mode blue -->
 
     <color name="green_darkest">#1C2528</color>
-    <color name="green_dark">#23492E</color>
     <color name="green">#36A93F</color>
 
     <color name="red_darkest">#2B242A</color>
@@ -36,6 +35,7 @@
     <color name="disabled_color">@color/gray_darkest</color>
     <color name="sc_task_text_disabled_color">@color/gray_dark</color>
     <color name="background">@color/black</color>
+    <color name="background_zero_alpha">#001B2026</color>
     <color name="dialog_background">@color/gray_darkest</color>
 
     <!-- Used Only in api >= 21  -->

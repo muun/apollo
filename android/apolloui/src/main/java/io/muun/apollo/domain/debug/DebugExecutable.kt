@@ -3,15 +3,12 @@ package io.muun.apollo.domain.debug
 import io.muun.apollo.data.debug.LappClient
 import io.muun.apollo.data.debug.LappClientError
 import io.muun.apollo.data.net.HoustonClient
-import io.muun.apollo.data.nfc.NfcBridgerFactory
-import io.muun.apollo.data.nfc.api.NfcSession
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.action.address.CreateAddressAction
 import io.muun.apollo.domain.action.debug.ForceErrorReportAction
 import io.muun.apollo.domain.action.incoming_swap.GenerateInvoiceAction
 import io.muun.apollo.domain.action.user.UpdateUserPreferencesAction
 import io.muun.apollo.domain.errors.debug.DebugExecutableError
-import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.selector.UserPreferencesSelector
 import io.muun.common.crypto.hd.MuunAddress
 import rx.Observable
@@ -31,8 +28,6 @@ class DebugExecutable @Inject constructor(
     private val userPreferencesSel: UserPreferencesSelector,
     private val houstonClient: HoustonClient,
     private val transformerFactory: ExecutionTransformerFactory,
-    private val nfcBridgerFactory: NfcBridgerFactory,
-    private val libwalletClient: LibwalletClient,
 ) {
 
     private val lapp = LappClient()
@@ -81,15 +76,6 @@ class DebugExecutable @Inject constructor(
         Observable.just<Void?>(null)
     }.compose(transformerFactory.getAsyncExecutor())
         .compose(errorMapper())
-
-    fun setUpSecurityCard(nfcSession: NfcSession) {
-        nfcSession.connect()
-        val nfcBridger = nfcBridgerFactory.forSession(nfcSession)
-
-        libwalletClient.setUpSecurityCard(nfcBridger)
-
-        nfcSession.close()
-    }
 
     /**
      * Enable/Disable "Multiple sessions" feature for this user.

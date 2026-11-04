@@ -38,9 +38,6 @@ class SingleFragmentActivityImpl :
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.activity_single_fragment
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySingleFragmentBinding::inflate
     }

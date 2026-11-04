@@ -4,20 +4,21 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunButtonLayoutAnchorBinding
 
 class MuunButtonLayoutAnchor @JvmOverloads constructor(
     c: Context,
     a: AttributeSet? = null,
     s: Int = 0
-) : MuunView(c, a, s) {
+) : MuunView<MuunButtonLayoutAnchorBinding>(c, a, s) {
 
-    @BindView(R.id.muun_button_layout_anchor)
-    lateinit var rootLayout: ViewGroup
+    private val rootLayout: ViewGroup
+        get() = binding.muunButtonLayoutAnchor
 
-    override val layoutResource: Int
-        get() = R.layout.muun_button_layout_anchor
+    override fun bindingInflater(): BindingInflater<MuunButtonLayoutAnchorBinding> {
+        return MuunButtonLayoutAnchorBinding::inflate
+    }
 
     override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams) {
         if (child.id == R.id.muun_button_layout_anchor) {

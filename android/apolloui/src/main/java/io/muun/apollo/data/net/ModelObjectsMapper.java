@@ -78,6 +78,7 @@ import io.muun.common.utils.Preconditions;
 import org.bitcoinj.core.NetworkParameters;
 import org.threeten.bp.ZonedDateTime;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -88,7 +89,6 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 
 @Singleton

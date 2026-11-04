@@ -5,7 +5,7 @@ import io.muun.common.api.MuunAddressJson;
 
 import org.bitcoinj.core.Address;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class MuunAddress {
 
@@ -25,11 +25,31 @@ public class MuunAddress {
 
     public static final int VERSION_TO_CLIENT_P2WSH = 8;
 
+    public static final int VERSION_TO_CLIENT_P2TR = 9;
+
     public static final int VERSION_SUBMARINE_SWAP_V1 = 101;
 
     public static final int VERSION_SUBMARINE_SWAP_V2 = 102;
 
     public static final int VERSION_INCOMING_SWAP = 201;
+
+    public static final int VERSION_TO_SERVER = 301;
+
+    public static final int VERSION_TO_SERVER_HTLC = 302;
+
+    public static final int VERSION_TO_CLIENT_HTLC = 303;
+
+    public static final int VERSION_TO_CLIENT_WITHDRAWAL = 304;
+
+    public static final int VERSION_TO_SERVER_IMMEDIATELY = 305;
+
+    public static final int VERSION_TO_SERVER_HTLC_WITHDRAWAL = 306;
+
+    public static final int VERSION_TO_CLIENT_REVOCABLE = 307;
+
+    public static final int VERSION_TO_CLIENT_HTLC_ENFORCEMENT = 308;
+
+    public static final int VERSION_TO_SERVER_HTLC_ENFORCEMENT = 309;
 
     /**
      * Return the TransactionScheme version used in new Addresses by default.

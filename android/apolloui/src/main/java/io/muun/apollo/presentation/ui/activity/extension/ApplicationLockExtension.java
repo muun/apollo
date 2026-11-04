@@ -5,7 +5,7 @@ import io.muun.apollo.data.os.execution.ExecutionTransformerFactory;
 import io.muun.apollo.domain.ApplicationLockManager;
 import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
-import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError;
+import io.muun.apollo.domain.errors.IncorrectAttemptsUnavailableError;
 import io.muun.apollo.domain.model.BiometricAuthenticationErrorReason;
 import io.muun.apollo.domain.utils.ExtensionsKt;
 import io.muun.apollo.presentation.app.Navigator;
@@ -212,16 +212,30 @@ public class ApplicationLockExtension extends ActivityExtension {
                     }, throwable -> {
                         lockOverlay.reportError(null);
 
-                        // Avoid crashes due to keystore's weird bugs. If it's a secure storage
-                        // error, catch it, otherwise re-throw it
-                        if (ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable)) {
-                            Timber.e(throwable); // Probably redundant, should already be logged
-
-                        } else if (throwable instanceof WeirdIncorrectAttemptsBugError) {
-                            // Attempt to log/track weird error we've seen in prd. Handle error will
-                            // show error report dialog and hopefully users will send it to us.
+                        if (isAttemptCounterUnavailable(throwable)) {
+                            // The counter, not the pin. It gates the unlock but says nothing
+                            // about what the user typed, so the lock stays and they can retry.
                             Timber.e(throwable);
+
+                        } else if (isPinRecordMissing(throwable)) {
+                            // The record vanished between hasPin() saying true and this read.
+                            // NotFound means neither half of it is left, so hasPin() answers
+                            // false from here on and the next resume takes the lock screen
+                            // down. Log it, since the store treats NotFound as expected and
+                            // doesn't log it, and leave the lock up until then.
+                            Timber.e(throwable);
+
+                        } else if (isPinUnreadable(throwable)) {
+                            // The pin is stored and securekv could not read it, so no PIN the
+                            // user types can ever pass. Swallowing it strands them on the lock
+                            // screen with no way out.
                             ((BaseActivity) getActivity()).getPresenter().handleError(throwable);
+
+                        } else if (isLegacySecureStorageError(throwable)) {
+                            // An out of range attempt counter, and anything still reaching the
+                            // legacy provider from a path that hasn't moved to securekv. Neither
+                            // is a finding about the pin, so neither strands the user.
+                            Timber.e(throwable);
 
                         } else {
                             // IDKW but we can't throw other error than this one, go figure
@@ -265,6 +279,25 @@ public class ApplicationLockExtension extends ActivityExtension {
                         return Unit.INSTANCE;
                     }
             );
+        }
+
+        // Direct instanceof on purpose: one class raises it and it travels one frame. A
+        // cause-walking predicate would match the securekv error it carries, which is how the
+        // counter ended up on the pin's path in the first place.
+        private boolean isAttemptCounterUnavailable(Throwable throwable) {
+            return throwable instanceof IncorrectAttemptsUnavailableError;
+        }
+
+        private boolean isPinRecordMissing(Throwable throwable) {
+            return ExtensionsKt.isInstanceOrIsCausedBySecureKeyValueStoreNotFound(throwable);
+        }
+
+        private boolean isPinUnreadable(Throwable throwable) {
+            return ExtensionsKt.isUnreadableSecureKeyValueStoreValue(throwable);
+        }
+
+        private boolean isLegacySecureStorageError(Throwable throwable) {
+            return ExtensionsKt.isInstanceOrIsCausedBySecureStorageError(throwable);
         }
     }
 }

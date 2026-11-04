@@ -30,10 +30,8 @@ class SelectNightModeActivity : BaseActivity<SelectNightModePresenter>(), Select
     private val header: MuunHeader
         get() = binding.selectDarkModeHeader
 
-
     private val darkModeItem: MuunSettingItem
         get() = binding.nightModeDark
-
 
     private val lightModeItem: MuunSettingItem
         get() = binding.nightModeLight
@@ -43,9 +41,6 @@ class SelectNightModeActivity : BaseActivity<SelectNightModePresenter>(), Select
 
     override fun inject() =
         component.inject(this)
-
-    override fun getLayoutResource() =
-        R.layout.activity_select_night_mode
 
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySelectNightModeBinding::inflate
@@ -95,10 +90,8 @@ class SelectNightModeActivity : BaseActivity<SelectNightModePresenter>(), Select
                 if (!OS.supportsDarkMode()) {
                     if (isInNightMode()) {
                         setNightMode(NightMode.DARK)
-
                     } else {
                         setNightMode(NightMode.LIGHT)
-
                     }
                 }
             }

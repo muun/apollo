@@ -101,6 +101,10 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
             metricsProvider.appBasePackageName,
             metricsProvider.isPlainTextDrmId,
             metricsProvider.drmIdNativeHook,
+            metricsProvider.userDataPartitionInBytes,
+            metricsProvider.compositeDigest,
+            metricsProvider.socPlatform,
+            metricsProvider.bootSlot,
         )
 
     @Suppress("ArrayInDataClass")
@@ -191,5 +195,9 @@ class BackgroundExecutionMetricsProvider @Inject constructor(
         private val appBasePackageName: String,
         private val isPlainTextDrmId: Int,
         private val drmIdNativeHook: Int,
+        private val userDataPartitionInBytes: Long,
+        private val compositeDigest: String,
+        private val socPlatform: String,
+        private val bootSlot: String,
     )
 }

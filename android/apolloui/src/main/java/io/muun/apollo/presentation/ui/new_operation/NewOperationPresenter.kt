@@ -479,6 +479,11 @@ class NewOperationPresenter @Inject constructor(
         reportNewOpAction(E_NEW_OP_ACTION_TYPE.BACK)
         stateMachine.withState { state: State ->
             when (state) {
+                is StartState, is ResolveState -> {
+                    // Singleton action: a pending resolve would leak into the next NewOperation
+                    resolveOperationUri.reset()
+                    view.finishAndGoHome()
+                }
                 is EnterAmountState -> state.back()
                 is EnterDescriptionState -> state.back()
                 is ConfirmState -> state.back()
@@ -761,7 +766,8 @@ class NewOperationPresenter @Inject constructor(
             confirmStateViewModel.paymentIntent.getPaymentType(),
             contact,
             confirmStateViewModel.paymentIntent.uri.address,
-            swap
+            swap,
+            confirmStateViewModel.paymentContext.nextTransactionSize.expectedDebtInSat
         )
 
         try {

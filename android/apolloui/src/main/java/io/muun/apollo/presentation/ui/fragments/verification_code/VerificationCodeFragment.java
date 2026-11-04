@@ -1,30 +1,27 @@
 package io.muun.apollo.presentation.ui.fragments.verification_code;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SignupVerificationFragmentBinding;
 import io.muun.apollo.presentation.ui.MuunCountdownTimer;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
 import io.muun.apollo.presentation.ui.view.DrawerDialogFragment;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.apollo.presentation.ui.view.RichText;
 import io.muun.common.exception.MissingCaseError;
 import io.muun.common.model.VerificationType;
+import io.muun.common.utils.Dates;
 
 import android.content.Intent;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
 import androidx.appcompat.app.AppCompatDialogFragment;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.OnClick;
+import androidx.viewbinding.ViewBinding;
 import icepick.State;
-
-import static io.muun.common.utils.Dates.MINUTE_IN_SECONDS;
+import kotlin.jvm.functions.Function3;
 
 public class VerificationCodeFragment extends SingleFragment<VerificationCodePresenter>
         implements VerificationCodeView, MuunCountdownTimer.CountDownTimerListener {
@@ -35,32 +32,14 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
 
     private static final int RESEND_COUNTDOWN_MS = 90 * 1000;
 
-    @BindView(R.id.signup_verification_text_explanation)
-    HtmlTextView explanation;
+    private SignupVerificationFragmentBinding binding() {
+        return (SignupVerificationFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.signup_verification_text_code)
-    MuunTextInput verificationCode;
-
-    @BindView(R.id.signup_continue)
-    MuunButton continueButton;
-
-    @BindView(R.id.signup_verification_resend)
-    TextView resendButton;
-
-    @BindView(R.id.signup_verification_countdown)
-    TextView countdownText;
-
-    @BindString(R.string.signup_verification_resend_countdown)
-    String countdownTextFormat;
-
-    @BindString(R.string.action_resend_sms)
-    String resendSmsLabel;
-
-    @BindString(R.string.action_call_me)
-    String callMeLabel;
-
-    @BindString(R.string.action_change_num)
-    String changeNumberLinkText;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SignupVerificationFragmentBinding::inflate;
+    }
 
     @State
     long deadlineInRealtime = 0; // time when resendButton is re-enabled
@@ -73,19 +52,37 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_verification_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
-        verificationCode.setOnChangeListener(this, newText -> {
+        binding().signupVerificationTextCode.setOnChangeListener(this, newText -> {
             final boolean enable = !TextUtils.isEmpty(newText) && newText.length() >= 6;
-            continueButton.setEnabled(enable);
-            verificationCode.setOnKeyboardNextListener(enable ? continueButton::callOnClick : null);
+            binding().signupContinue.setEnabled(enable);
+            binding().signupVerificationTextCode.setOnKeyboardNextListener(
+                    enable ? binding().signupContinue::callOnClick : null
+            );
         });
 
-        continueButton.setEnabled(false);
+        binding().signupVerificationResend.setOnClickListener(v -> {
+            final AppCompatDialogFragment drawer = new DrawerDialogFragment()
+                    .addAction(
+                            SEND_SMS_ACTION,
+                            R.drawable.ic_gallery_24_px,
+                            getString(R.string.action_resend_sms)
+                    )
+                    .addAction(
+                            CALL_ME_ACTION,
+                            R.drawable.ic_camera_24_px,
+                            getString(R.string.action_call_me)
+                    );
+
+            requestExternalResult(DRAWER_REQUEST, drawer);
+        });
+
+        binding().signupContinue.setEnabled(false);
+        binding().signupContinue.setOnClickListener(v -> {
+            presenter.submitVerificationCode(
+                    binding().signupVerificationTextCode.getText().toString()
+            );
+        });
 
         // Don't reset countdown if it's a fragment recreation (e.g. rotation change)
         if (deadlineInRealtime == 0) {
@@ -102,7 +99,7 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     @Override
     public void onResume() {
         super.onResume();
-        verificationCode.requestFocusInput();
+        binding().signupVerificationTextCode.requestFocusInput();
     }
 
     @Override
@@ -119,22 +116,8 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
 
     @Override
     public void setLoading(boolean isLoading) {
-        verificationCode.setEnabled(!isLoading);
-        continueButton.setLoading(isLoading);
-    }
-
-    @OnClick(R.id.signup_verification_resend)
-    void onResendButtonClick() {
-        final AppCompatDialogFragment drawer = new DrawerDialogFragment()
-                .addAction(SEND_SMS_ACTION, R.drawable.ic_gallery_24_px, resendSmsLabel)
-                .addAction(CALL_ME_ACTION, R.drawable.ic_camera_24_px, callMeLabel);
-
-        requestExternalResult(DRAWER_REQUEST, drawer);
-    }
-
-    @OnClick(R.id.signup_continue)
-    void onContinueButtonClick() {
-        presenter.submitVerificationCode(verificationCode.getText().toString());
+        binding().signupVerificationTextCode.setEnabled(!isLoading);
+        binding().signupContinue.setLoading(isLoading);
     }
 
     @Override
@@ -162,10 +145,11 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
                 " to ",
                 new RichText(UiUtils.convertToNonBreakableSpaces(phoneNumber)).setBold(),
                 ". ",
-                new RichText(changeNumberLinkText).setLink(this::onChangePhoneNumberClick)
+                new RichText(getString(R.string.action_change_num))
+                        .setLink(this::onChangePhoneNumberClick)
         );
 
-        explanation.setText(content);
+        binding().signupVerificationTextExplanation.setText(content);
     }
 
     private void onDrawerResult(int resultCode) {
@@ -201,8 +185,8 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
         // This needs to be BEFORE countdown.start() to handle correctly the case where remainingMs
         // is <= 0 and the countDown immediately finish (as in RIGHT after countdownTimer.start())
         // E.g countdown reaches zero + fragment recreation/rotation change.
-        resendButton.setVisibility(View.GONE);
-        countdownText.setVisibility(View.VISIBLE);
+        binding().signupVerificationResend.setVisibility(View.GONE);
+        binding().signupVerificationCountdown.setVisibility(View.VISIBLE);
 
         countdownTimer = new MuunCountdownTimer(remainingMs, this);
         countdownTimer.start();
@@ -216,22 +200,27 @@ public class VerificationCodeFragment extends SingleFragment<VerificationCodePre
     @Override
     public void handleVerificationCodeError(Throwable error) {
         if (error != null) {
-            verificationCode.requestFocusInput();
+            binding().signupVerificationTextCode.requestFocusInput();
         }
     }
 
     @Override
     public void onCountDownTick(long remainingSeconds) {
-        final long minutes = remainingSeconds / MINUTE_IN_SECONDS;
-        final long seconds = remainingSeconds % MINUTE_IN_SECONDS;
+        final long minuteInSeconds = Dates.MINUTE_IN_SECONDS;
+        final long minutes = remainingSeconds / minuteInSeconds;
+        final long seconds = remainingSeconds % minuteInSeconds;
 
-        final String text = String.format(countdownTextFormat, minutes, seconds);
-        countdownText.setText(text);
+        final String text = String.format(
+                getString(R.string.signup_verification_resend_countdown),
+                minutes,
+                seconds
+        );
+        binding().signupVerificationCountdown.setText(text);
     }
 
     @Override
     public void onCountDownFinish() {
-        countdownText.setVisibility(View.GONE);
-        resendButton.setVisibility(View.VISIBLE);
+        binding().signupVerificationCountdown.setVisibility(View.GONE);
+        binding().signupVerificationResend.setVisibility(View.VISIBLE);
     }
 }

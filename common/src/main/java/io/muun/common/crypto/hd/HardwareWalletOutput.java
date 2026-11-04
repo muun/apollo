@@ -1,6 +1,6 @@
 package io.muun.common.crypto.hd;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class HardwareWalletOutput {
 
@@ -13,7 +13,7 @@ public class HardwareWalletOutput {
 
     private final PublicKey publicKey;
 
-    private String rawPreviousTransaction;
+    private final String rawPreviousTransaction;
 
     /**
      * Constructor.
@@ -46,10 +46,6 @@ public class HardwareWalletOutput {
 
     public PublicKey getPublicKey() {
         return publicKey;
-    }
-
-    public void setRawPreviousTransaction(String rawPreviousTransaction) {
-        this.rawPreviousTransaction = rawPreviousTransaction;
     }
 
     public String getRawPreviousTransaction() {

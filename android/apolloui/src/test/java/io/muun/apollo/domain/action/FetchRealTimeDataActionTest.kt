@@ -15,6 +15,7 @@ import io.muun.apollo.data.preferences.FeeWindowRepository
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository
 import io.muun.apollo.data.preferences.MinFeeRateRepository
 import io.muun.apollo.domain.action.realtime.FetchRealTimeDataAction
+import io.muun.apollo.domain.libwallet.LibwalletClient
 import io.muun.apollo.domain.model.MuunFeature
 import io.muun.apollo.domain.model.RealTimeData
 import org.junit.Before
@@ -38,6 +39,8 @@ class FetchRealTimeDataActionTest : BaseTest() {
 
     private val houstonClient = mockk<HoustonClient>()
 
+    private val libwalletClient = mockk<LibwalletClient>(relaxed = true)
+
     private lateinit var fetchRealTimeDataAction: FetchRealTimeDataAction
 
     @Before
@@ -50,6 +53,7 @@ class FetchRealTimeDataActionTest : BaseTest() {
             forwardingPoliciesRepository,
             minFeeRateRepository,
             featuresRepository,
+            libwalletClient,
         )
     }
 
@@ -82,11 +86,13 @@ class FetchRealTimeDataActionTest : BaseTest() {
         verify { forwardingPoliciesRepository.store(forwardingPolicies) }
         verify { minFeeRateRepository.store(minFeeRateInWeightUnits) }
         verify { featuresRepository.store(listOfFeatures) }
+        verify { libwalletClient.saveMarketplaceControlPlane(any()) }
 
         confirmVerified(blockchainHeightRepository)
         confirmVerified(forwardingPoliciesRepository)
         confirmVerified(minFeeRateRepository)
         confirmVerified(featuresRepository)
+        confirmVerified(libwalletClient)
 
         // TODO we should test shouldSync() logic (e.g multiple syncs in short term don't fetch
         //  new data, but they do after threshold)

@@ -201,7 +201,7 @@ class EmergencyKitSavePresenter @Inject constructor(
         // TODO: we need to render, save and share the PDF. Now, a Presenter should NOT receive a
         // WebView instance (needed to render), and a Fragment should NOT handle storing the kit.
         // So who is responsible? Thorny issue. For now, this.
-        val webView = view.pdfWebView
+        val webView = view.getPdfWebView()
 
         val exporter = PdfExporter(webView, kitGen.html, file) {
             onPdfExportFinished(kitGen, it)

@@ -41,7 +41,10 @@ public class UserJson {
     )
     public List<Integer> exportedKitVersions;
 
+    @Nullable
     public PublicProfileJson publicProfile;
+
+    @Nullable
     public PhoneNumberJson phoneNumber;
 
     public CurrencyUnit primaryCurrency;
@@ -74,8 +77,8 @@ public class UserJson {
                     boolean hasExportedKeys,
                     @Nullable ExportEmergencyKitJson emergencyKit,
                     List<Integer> exportedKitVersions,
-                    PublicProfileJson publicProfile,
-                    PhoneNumberJson phoneNumber,
+                    @Nullable PublicProfileJson publicProfile,
+                    @Nullable PhoneNumberJson phoneNumber,
                     CurrencyUnit primaryCurrency,
                     boolean hasPasswordChallengeKey,
                     boolean hasRecoveryCodeChallengeKey,

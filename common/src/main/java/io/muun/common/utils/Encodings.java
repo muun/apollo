@@ -17,6 +17,7 @@ import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.math.ec.ECPoint;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -25,7 +26,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 
 /**
  * Encoding utils.

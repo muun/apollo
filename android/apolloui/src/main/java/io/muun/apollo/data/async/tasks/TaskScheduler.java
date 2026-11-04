@@ -11,11 +11,11 @@ import androidx.work.WorkManager;
 import org.threeten.bp.Duration;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnegative;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 /**
  * The task scheduler lets you create task from the application, that will run in a service.

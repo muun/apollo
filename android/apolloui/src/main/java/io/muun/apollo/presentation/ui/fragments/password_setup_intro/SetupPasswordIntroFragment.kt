@@ -23,9 +23,6 @@ class SetupPasswordIntroFragment : SingleFragment<SetupPasswordIntroPresenter>()
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_setup_password_intro
-
     override fun initializeUi(view: View) {
         binding.createEmailSkip.setOnClickListener { presenter.skipEmailSetup() }
         binding.setupPasswordIntroAction.setOnClickListener { presenter.startSetup() }

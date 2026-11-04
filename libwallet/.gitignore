@@ -1,5 +1,6 @@
-libwallet/.gitignore# binary
-libwallet
+/libwallet
 .build
 librs/target
 
+# /impl working files
+specs/

@@ -1,27 +1,22 @@
 package io.muun.apollo.presentation.ui.view;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunPillBinding;
 
 import android.content.Context;
 import android.net.Uri;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
-import butterknife.BindView;
+import android.view.ViewGroup;
+import kotlin.jvm.functions.Function3;
 
 import javax.annotation.Nullable;
 
-public class MuunPill extends MuunView {
+public class MuunPill extends MuunView<MuunPillBinding> {
 
     static final ViewProps<MuunPill> viewProps = new ViewProps.Builder<MuunPill>()
             .addStringJava(android.R.attr.text, MuunPill::setText)
             .build();
-
-    @BindView(R.id.muun_pill_picture)
-    ProfilePictureView picture;
-
-    @BindView(R.id.muun_pill_text)
-    TextView text;
 
     public MuunPill(Context context) {
         super(context);
@@ -36,14 +31,13 @@ public class MuunPill extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_pill;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunPillBinding> bindingInflater() {
+        return MuunPillBinding::inflate;
     }
 
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
         if (attrs != null) {
             viewProps.transfer(attrs, this);
         }
@@ -56,25 +50,25 @@ public class MuunPill extends MuunView {
     }
 
     public void setText(CharSequence content) {
-        text.setText(content);
+        getBinding().muunPillText.setText(content);
     }
 
     public void setPictureUri(@Nullable String pictureUri) {
-        picture.setPictureUri(pictureUri);
+        getBinding().muunPillPicture.setPictureUri(pictureUri);
     }
 
     public void setPictureUri(@Nullable Uri pictureUri) {
-        picture.setPictureUri(pictureUri);
+        getBinding().muunPillPicture.setPictureUri(pictureUri);
     }
 
     public void setPictureVisible(boolean isVisible) {
-        picture.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        getBinding().muunPillPicture.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     private void adjustPictureSize() {
         final int size = getMeasuredHeight();
 
-        picture.getLayoutParams().width = size;
-        picture.getLayoutParams().height = size;
+        getBinding().muunPillPicture.getLayoutParams().width = size;
+        getBinding().muunPillPicture.getLayoutParams().height = size;
     }
 }

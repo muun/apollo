@@ -3,24 +3,24 @@ package io.muun.apollo.presentation.ui.fragments.ek_save
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.data.apis.DriveError
 import io.muun.apollo.data.fs.LocalFile
 import io.muun.apollo.data.os.sharer.FileSharer
+import io.muun.apollo.databinding.FragmentEkSaveBinding
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.postDelayed
 import io.muun.apollo.presentation.ui.utils.setStyledText
-import io.muun.apollo.presentation.ui.view.HtmlTextView
 import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunSaveOption
 import io.muun.apollo.presentation.ui.view.MuunSaveOptionLabel
 import io.muun.apollo.presentation.ui.view.MuunTextInput
 
@@ -46,23 +46,12 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
             }
     }
 
-    @BindView(R.id.pdf_exporter_web_view)
-    override lateinit var pdfWebView: WebView
+    private val binding: FragmentEkSaveBinding
+        get() = getBinding() as FragmentEkSaveBinding
 
-    @BindView(R.id.save_emergency_kit_title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.explanation)
-    lateinit var explanationView: HtmlTextView
-
-    @BindView(R.id.save_link_manual)
-    lateinit var shareManuallyLink: HtmlTextView
-
-    @BindView(R.id.save_option_drive)
-    lateinit var saveToDriveOption: MuunSaveOption
-
-    @BindView(R.id.save_option_feedback)
-    lateinit var cloudFeedbackOption: MuunSaveOption
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentEkSaveBinding::inflate
+    }
 
     /** The last export option selected by the user. */
     private var selectedOption: EmergencyKitSaveOption? = null
@@ -78,16 +67,13 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_ek_save
-
     override fun initializeUi(view: View) {
-        saveToDriveOption.labelKind = MuunSaveOptionLabel.Kind.RECOMMENDED
+        binding.saveOptionDrive.labelKind = MuunSaveOptionLabel.Kind.RECOMMENDED
 
-        saveToDriveOption.setOnClickListener { onSaveToDriveClick() }
-        cloudFeedbackOption.setOnClickListener { onCloudFeedbackClick() }
+        binding.saveOptionDrive.setOnClickListener { onSaveToDriveClick() }
+        binding.saveOptionFeedback.setOnClickListener { onCloudFeedbackClick() }
 
-        shareManuallyLink.setStyledText(R.string.save_link_manual, this::onShareManuallyClick)
+        binding.saveLinkManual.setStyledText(R.string.save_link_manual, this::onShareManuallyClick)
 
         FileSharer.onSelectionListener = { onShareApplicationChosen(it.className) }
 
@@ -95,13 +81,18 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         clearSelectedOption()
 
         if (argumentsBundle.getBoolean(ARG_UPDATE_KIT)) {
-            titleView.text = getString(R.string.tr_setup_update_kit_title)
-            explanationView.text = getString(R.string.tr_setup_update_kit_desc)
-
+            binding.saveEmergencyKitTitle.text = getString(R.string.tr_setup_update_kit_title)
+            binding.explanation.text = getString(R.string.tr_setup_update_kit_desc)
         } else {
-            titleView.text = getString(R.string.ek_save_title)
-            explanationView.text = getString(R.string.tr_setup_update_kit_desc)
+            binding.saveEmergencyKitTitle.text = getString(R.string.ek_save_title)
+            binding.explanation.text = getString(R.string.tr_setup_update_kit_desc)
         }
+    }
+
+    override fun tearDownUi() {
+        // FileSharer's listener is static: drop our reference so this fragment can be collected
+        FileSharer.onSelectionListener = { }
+        super.tearDownUi()
     }
 
     override fun setDriveUploading(isUploading: Boolean) {
@@ -120,7 +111,6 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
                 .let(this::showDialog)
 
             showingLoadingDialog = true
-
         } else if (showingLoadingDialog) {
             dismissDialog()
             showingLoadingDialog = false
@@ -142,6 +132,10 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
             .build()
 
         showDialog(dialog)
+    }
+
+    override fun getPdfWebView(): WebView {
+        return binding.pdfExporterWebView
     }
 
     private fun onShareManuallyClick(linkId: String) {
@@ -260,7 +254,6 @@ class EmergencyKitSaveFragment : SingleFragment<EmergencyKitSavePresenter>(),
         // Report back to Presenter (unless the prompt was dismissed):
         if (resultCode == Activity.RESULT_OK) {
             presenter.reportGoogleSignInComplete(data)
-
         } else {
             presenter.reportGoogleSignInCanceled(data)
         }

@@ -51,7 +51,6 @@ class SendActivity : SingleFragmentActivity<SendPresenter>(), SendView {
     private val contactList: MuunContactList
         get() = binding.contactList
 
-
     private val confirmButton: MuunButton
         get() = binding.confirm
 
@@ -60,9 +59,6 @@ class SendActivity : SingleFragmentActivity<SendPresenter>(), SendView {
 
     override fun inject() =
         component.inject(this)
-
-    override fun getLayoutResource() =
-        R.layout.activity_send
 
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySendBinding::inflate
@@ -163,7 +159,6 @@ class SendActivity : SingleFragmentActivity<SendPresenter>(), SendView {
                     '.'
                 )
             }
-
         } else {
             confirmButton.isEnabled = false
 

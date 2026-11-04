@@ -32,11 +32,6 @@ public class EnterPasswordFragment extends SingleFragment<EnterPasswordPresenter
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_unlock_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
         final var binding = binding();
         binding.signupUnlockEditPassword.setPasswordRevealEnabled(true);

@@ -5,18 +5,24 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ItemSecurityCardSpecCardImageBinding
 import io.muun.apollo.databinding.ItemSecurityCardSpecHeaderBinding
 import io.muun.apollo.databinding.ItemSecurityCardSpecRowBinding
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.AdditionalInfo
+import io.muun.apollo.domain.utils.locale
+import io.muun.apollo.presentation.ui.security_cards_full_specs.models.AdditionalInfo
+import io.muun.apollo.presentation.ui.utils.setTextColorCompat
+import io.muun.apollo.presentation.ui.utils.toCompactDecimalString
 
 class SecurityCardsFullSpecsAdapter(
     private val onAdditionalInfoClick: (AdditionalInfo) -> Unit,
@@ -50,11 +56,18 @@ class SecurityCardsFullSpecsAdapter(
         }
     }
 
+    // The metal shimmer auto-plays once per screen, not on every rebind of a recycled row.
+    private var metalShimmerAutoPlayed = false
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
             is SpecListItem.CardImage -> (holder as CardImageViewHolder).bind(item)
             is SpecListItem.SectionHeader -> (holder as HeaderViewHolder).bind(item)
-            is SpecListItem.Row -> (holder as RowViewHolder).bind(item, onAdditionalInfoClick)
+            is SpecListItem.Row -> {
+                val autoPlayShimmer = item.isMetalValue && !metalShimmerAutoPlayed
+                metalShimmerAutoPlayed = metalShimmerAutoPlayed || autoPlayShimmer
+                (holder as RowViewHolder).bind(item, onAdditionalInfoClick, autoPlayShimmer)
+            }
         }
     }
 
@@ -63,7 +76,21 @@ class SecurityCardsFullSpecsAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: SpecListItem.CardImage) {
-            binding.imageViewCard.setImageResource(item.imageRes)
+            val context = binding.root.context
+            binding.textViewDimHeight.text = context.getString(
+                R.string.security_cards_full_specs_dim_height,
+                item.cardHeight.toCompactDecimalString(context.locale()),
+            )
+            binding.textViewDimWidth.text = context.getString(
+                R.string.security_cards_full_specs_dim_width,
+                item.cardWidth.toCompactDecimalString(context.locale()),
+            )
+            Glide.with(binding.imageViewCard)
+                .load(item.imageUrl)
+                .into(binding.imageViewCard)
+
+            binding.lineVertical.strokeColor = item.arrowColor
+            binding.lineHorizontal.strokeColor = item.arrowColor
         }
     }
 
@@ -80,27 +107,68 @@ class SecurityCardsFullSpecsAdapter(
         private val binding: ItemSecurityCardSpecRowBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: SpecListItem.Row, onInfoClick: (AdditionalInfo) -> Unit) {
+        // The ripple is applied only to values that open an additional info dialog: it hints at
+        // content behind the tap, which values like the shimmering metal material don't have.
+        private val selectableItemBackgroundRes = TypedValue().let { outValue ->
+            binding.root.context.theme
+                .resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+            outValue.resourceId
+        }
+
+        fun bind(
+            item: SpecListItem.Row,
+            onInfoClick: (AdditionalInfo) -> Unit,
+            autoPlayShimmer: Boolean,
+        ) {
             binding.imageViewIcon.setImageResource(item.iconRes)
             binding.textViewLabel.text = item.label
             binding.textViewValue.text = item.value
 
+            if (item.isMetalValue) {
+                binding.textViewValue.setTextColorCompat(R.color.security_card_metal_text)
+                binding.textViewValue.armShimmer(autoPlay = autoPlayShimmer)
+            } else {
+                binding.textViewValue.setTextColorCompat(R.color.text_primary_color)
+                binding.textViewValue.clearShimmer()
+            }
+
+            // Runs after the shimmer handling: an additional info dialog takes over the value's
+            // tap (and clearShimmer clears the listener that armShimmer sets).
             val info = item.additionalInfo
             if (info != null) {
-                binding.textViewValue.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_outline_24), null)
+                binding.textViewValue.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    null,
+                    null,
+                    ContextCompat.getDrawable(itemView.context, R.drawable.ic_info),
+                    null,
+                )
+                binding.textViewValue.setBackgroundResource(selectableItemBackgroundRes)
                 binding.textViewValue.setOnClickListener { onInfoClick(info) }
                 binding.textViewValue.isClickable = true
             } else {
-                binding.textViewValue.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
-                binding.textViewValue.setOnClickListener(null)
-                binding.textViewValue.isClickable = false
+                binding.textViewValue.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    null,
+                    null,
+                    null,
+                    null,
+                )
+                binding.textViewValue.background = null
+                if (!item.isMetalValue) {
+                    binding.textViewValue.setOnClickListener(null)
+                    binding.textViewValue.isClickable = false
+                }
             }
         }
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<SpecListItem>() {
-        override fun areItemsTheSame(oldItem: SpecListItem, newItem: SpecListItem) = oldItem == newItem
-        override fun areContentsTheSame(oldItem: SpecListItem, newItem: SpecListItem) = oldItem == newItem
+        override fun areItemsTheSame(oldItem: SpecListItem, newItem: SpecListItem): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun areContentsTheSame(oldItem: SpecListItem, newItem: SpecListItem): Boolean {
+            return oldItem == newItem
+        }
     }
 }
 
@@ -108,11 +176,14 @@ class SecurityCardsFullSpecsAdapter(
  * Draws a rounded card background (fill + border) behind each group of consecutive
  * [SpecListItem.Row] items, and adds spacing offsets so the card doesn't overlap adjacent items.
  */
-class SpecSectionItemDecoration(context: Context) : RecyclerView.ItemDecoration() {
+class SpecSectionItemDecoration(
+    context: Context,
+    @ColorInt providerSurfaceColor: Int,
+) : RecyclerView.ItemDecoration() {
 
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = ContextCompat.getColor(context, R.color.sc_spec_table_background)
+        color = providerSurfaceColor
     }
 
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -122,16 +193,23 @@ class SpecSectionItemDecoration(context: Context) : RecyclerView.ItemDecoration(
     }
 
     private val cornerRadius = context.resources.getDimension(R.dimen.sc_spec_card_corner_radius)
-    private val horizontalInset = context.resources.getDimension(R.dimen.sc_spec_card_horizontal_inset)
+    private val horizontalInset =
+        context.resources.getDimension(R.dimen.sc_spec_card_horizontal_inset)
     private val innerPadding = context.resources.getDimension(R.dimen.sc_spec_card_inner_padding)
-    private val topOffset = context.resources.getDimensionPixelOffset(R.dimen.sc_spec_card_top_offset)
+    private val topOffset =
+        context.resources.getDimensionPixelOffset(R.dimen.sc_spec_card_top_offset)
 
     // Pre-allocated to avoid per-frame allocations during scroll
     private val drawRect = RectF()
 
     // region getItemOffsets — spacing around the card
 
-    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+    override fun getItemOffsets(
+        outRect: Rect,
+        view: View,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
         val pos = parent.getChildAdapterPosition(view)
         if (pos == RecyclerView.NO_POSITION) return
         val adapter = parent.adapter as? SecurityCardsFullSpecsAdapter ?: return
@@ -182,7 +260,11 @@ class SpecSectionItemDecoration(context: Context) : RecyclerView.ItemDecoration(
             }
 
             val groupStart = i
-            while (i < list.size && adapter.getItemViewType(i) == SecurityCardsFullSpecsAdapter.VIEW_TYPE_ROW) i++
+            while (i < list.size
+                && adapter.getItemViewType(i) == SecurityCardsFullSpecsAdapter.VIEW_TYPE_ROW
+            ) {
+                i++
+            }
             val groupEnd = i - 1
 
             drawCardForGroup(c, groupStart, groupEnd, left, right, parent.height.toFloat(),

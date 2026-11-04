@@ -38,9 +38,9 @@ import rx.Observable;
 import rx.functions.Actions;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class SignupPresenter extends BasePresenter<SignupView> implements

@@ -35,6 +35,12 @@ class OnboardingCountrySelectorSlideFragment : Fragment() {
             }
     }
 
+    private val titleArgument: Int
+        get() = requireArguments().getInt(ARG_TITLE)
+
+    private val descriptionArgument: Int
+        get() = requireArguments().getInt(ARG_DESCRIPTION)
+
     private var _binding: FragmentOnboardingCountrySelectorSlideBinding? = null
     private val binding get() = _binding!!
 
@@ -59,8 +65,8 @@ class OnboardingCountrySelectorSlideFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textViewTitle.setText(requireArguments().getInt(ARG_TITLE))
-        binding.textViewDescription.setText(requireArguments().getInt(ARG_DESCRIPTION))
+        binding.textViewTitle.setText(titleArgument)
+        binding.textViewDescription.setText(descriptionArgument)
         binding.viewTextInputLayoutCountryOverlay.setOnClickListener {
             listener?.onCountryPickerClick()
         }
@@ -73,7 +79,9 @@ class OnboardingCountrySelectorSlideFragment : Fragment() {
     }
 
     private fun handleSelectedCountry(countryInfo: CountryInfo?) {
-        binding.textInputEditTextCountry.setText(countryInfo?.let { "${countryInfo.flagEmoji} ${countryInfo.name}" })
+        binding.textInputEditTextCountry.setText(
+            countryInfo?.let { "${it.flagEmoji} ${it.name(requireContext())}" }
+        )
     }
 
     override fun onDestroyView() {

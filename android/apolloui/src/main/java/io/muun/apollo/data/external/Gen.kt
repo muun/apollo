@@ -118,12 +118,12 @@ object Gen {
     /**
      * Get a known PIN.
      */
-    fun pin() = listOf(1, 1, 1, 1)
+    fun pin() = listOf(1, 1, 1, 1, 1, 1)
 
     /**
      * Get a PIN.
      */
-    fun randomPin() = listOf(digit(), digit(), digit(), digit())
+    fun randomPin() = List(6) { digit() }
 
     /**
      * Get a phone number string.

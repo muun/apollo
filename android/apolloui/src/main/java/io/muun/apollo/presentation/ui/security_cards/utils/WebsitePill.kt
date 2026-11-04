@@ -16,7 +16,7 @@ fun MuunHeader.addWebsitePill(
     val chip = Chip(context).apply {
         this.id = id
         text = siteUrl
-        setChipIconResource(R.drawable.ic_language)
+        setChipIconResource(R.drawable.ic_world)
         chipIconTint = ContextCompat.getColorStateList(
             context, R.color.provider_pill_text
         )

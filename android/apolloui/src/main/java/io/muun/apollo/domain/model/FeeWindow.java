@@ -5,10 +5,10 @@ import io.muun.common.Rules;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.threeten.bp.ZonedDateTime;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import javax.validation.constraints.NotNull;
 
 public class FeeWindow {
 

@@ -36,8 +36,8 @@
     <dimen name="muun_header_plus_shadow_height">66dp</dimen>
 
     <!-- SecurityCards - FullSpecs card background -->
-    <dimen name="sc_spec_card_horizontal_inset">24dp</dimen>
-    <dimen name="sc_spec_card_inner_padding">12dp</dimen>
+    <dimen name="sc_spec_card_horizontal_inset">16dp</dimen>
+    <dimen name="sc_spec_card_inner_padding">16dp</dimen>
     <dimen name="sc_spec_card_top_offset">20dp</dimen>
     <dimen name="sc_spec_card_corner_radius">5dp</dimen>
 
@@ -50,4 +50,7 @@
 
     <!-- SecurityCards - Connected to website dialog -->
     <dimen name="security_cards_connected_to_website_dialog_content_corner_radius">20dp</dimen>
+
+    <!-- SecurityCards - Marketplace -->
+    <dimen name="security_cards_marketplace_card_corner_radius">12dp</dimen>
 </resources>

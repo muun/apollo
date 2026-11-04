@@ -51,7 +51,7 @@ object Extensions {
         PublicKey.deserializeFromBase58(pubKey.path, pubKey.string())
 
     fun fromLibwallet(privKey: HDPrivateKey): PrivateKey =
-        PrivateKey.deserializeFromBase58(privKey.path, privKey.string())
+        PrivateKey.deserializeFromBase58(privKey.path, privKey.base58())
 
 }
 

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.settings.edit_password;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.EditPasswordActivityBinding;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
@@ -8,9 +9,11 @@ import io.muun.apollo.presentation.ui.view.MuunHeader;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import butterknife.BindView;
+import android.view.LayoutInflater;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class EditPasswordActivity extends SingleFragmentActivity<EditPasswordPresenter>
         implements EditPasswordView {
@@ -22,26 +25,28 @@ public class EditPasswordActivity extends SingleFragmentActivity<EditPasswordPre
         return new Intent(context, EditPasswordActivity.class);
     }
 
-    @BindView(R.id.edit_password_header)
-    MuunHeader header;
+    private EditPasswordActivityBinding binding() {
+        return (EditPasswordActivityBinding) getBinding();
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return EditPasswordActivityBinding::inflate;
+    }
 
     @Override protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override protected int getLayoutResource() {
-        return R.layout.edit_password_activity;
     }
 
     @Override
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-        header.setBackgroundColor(Color.TRANSPARENT);
-        header.setNavigation(MuunHeader.Navigation.BACK);
-        header.showTitle(R.string.settings_password);
-        header.setElevated(true);
+        binding().editPasswordHeader.attachToActivity(this);
+        binding().editPasswordHeader.setBackgroundColor(Color.TRANSPARENT);
+        binding().editPasswordHeader.setNavigation(MuunHeader.Navigation.BACK);
+        binding().editPasswordHeader.showTitle(R.string.settings_password);
+        binding().editPasswordHeader.setElevated(true);
     }
 
     @Override
@@ -55,6 +60,6 @@ public class EditPasswordActivity extends SingleFragmentActivity<EditPasswordPre
     }
 
     public MuunHeader getHeader() {
-        return header;
+        return binding().editPasswordHeader;
     }
 }

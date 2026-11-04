@@ -43,6 +43,29 @@ func TestTransportAcceptsChainWithoutDistrustedCertificates(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestConfigRefusesHandshakeThroughDistrustedIntermediate(t *testing.T) {
+	pki := newTestPKI(t)
+	server := pki.startServer(t)
+
+	blocklist := spkiBlocklist{spkiHashHex(pki.intermediate): {}}
+	dialer := &tls.Dialer{Config: blocklist.newConfig(pki.roots())}
+
+	_, err := dialer.DialContext(t.Context(), "tcp", server.Listener.Addr().String())
+
+	require.ErrorIs(t, err, ErrDistrustedCertificate)
+}
+
+func TestConfigReturnsANewValueOnEachCall(t *testing.T) {
+	first := Config()
+	first.MinVersion = tls.VersionTLS13
+
+	second := Config()
+
+	require.NotSame(t, first, second)
+	require.Zero(t, second.MinVersion)
+	require.NotNil(t, second.VerifyConnection)
+}
+
 func TestVerifyConnectionAcceptsWhenOneChainAvoidsTheBlocklist(t *testing.T) {
 	pki := newTestPKI(t)
 	blocklist := spkiBlocklist{spkiHashHex(pki.intermediate): {}}

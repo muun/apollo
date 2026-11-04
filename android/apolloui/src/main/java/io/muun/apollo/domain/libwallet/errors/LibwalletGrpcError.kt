@@ -65,7 +65,8 @@ class LibwalletGrpcError(cause: StatusRuntimeException) : MuunError(cause) {
             mapToErrorDetailType(grpcErrorDetail.type),
             grpcErrorDetail.code,
             grpcErrorDetail.message,
-            grpcErrorDetail.developerMessage
+            grpcErrorDetail.developerMessage,
+            grpcErrorDetail.contextMap
         )
     }
 

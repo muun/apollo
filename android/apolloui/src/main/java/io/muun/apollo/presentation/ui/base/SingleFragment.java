@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import timber.log.Timber;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public abstract class SingleFragment<PresenterT extends SingleFragmentPresenter>
         extends BaseFragment<PresenterT> implements SingleFragmentView, OnBackPressedListener {

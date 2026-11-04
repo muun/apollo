@@ -8,13 +8,13 @@ import (
 
 	"github.com/go-errors/errors"
 
-	"github.com/muun/libwallet/internal/kvmigrationlock"
-	"github.com/muun/libwallet/storage"
+	"github.com/muun/libwallet/base/data/storage"
+	"github.com/muun/libwallet/base/data/storage/kvmigrationlock"
 )
 
 // Default paths assume the tool is run from the libwallet directory.
-const defaultMigrationsFile = "storage/kv_migrations.go"
-const defaultLockfile = "storage/testdata/kv_migrations.lock"
+const defaultMigrationsFile = "base/data/storage/kv_migrations.go"
+const defaultLockfile = "base/data/storage/testdata/kv_migrations.lock"
 
 func main() {
 	lockCmd := flag.NewFlagSet("lock", flag.ExitOnError)
@@ -39,13 +39,17 @@ func main() {
 
 	switch os.Args[1] {
 	case "lock":
-		lockCmd.Parse(os.Args[2:]) //nolint:errcheck // TODO: check error
+		if err := lockCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
 		err := runLock(storage.BuildKVMigrationPlan(), *lockMigrationsFile, *lockLockfile)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "verify":
-		verifyCmd.Parse(os.Args[2:]) //nolint:errcheck // TODO: check error
+		if err := verifyCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
 		err := runVerify(storage.BuildKVMigrationPlan(), *verifyMigrationsFile, *verifyLockfile)
 		if err != nil {
 			log.Fatal(err)

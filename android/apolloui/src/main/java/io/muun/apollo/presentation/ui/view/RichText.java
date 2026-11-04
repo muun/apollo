@@ -16,7 +16,7 @@ import android.text.style.UnderlineSpan;
 import android.view.View;
 import androidx.annotation.NonNull;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class RichText extends SpannableStringBuilder {
 

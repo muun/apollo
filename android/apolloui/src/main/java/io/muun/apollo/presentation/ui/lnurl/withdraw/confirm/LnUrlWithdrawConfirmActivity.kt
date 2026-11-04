@@ -27,9 +27,6 @@ class LnUrlWithdrawConfirmActivity : SingleFragmentActivity<LnUrlWithdrawConfirm
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.activity_lnurl_withdraw_confirm
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityLnurlWithdrawConfirmBinding::inflate
     }
@@ -46,7 +43,6 @@ class LnUrlWithdrawConfirmActivity : SingleFragmentActivity<LnUrlWithdrawConfirm
     private fun getConfirmButton() =
         binding.lnurlWithdrawConfirmAction
 
-
     override fun initializeUi() {
         super.initializeUi()
 
@@ -62,7 +58,6 @@ class LnUrlWithdrawConfirmActivity : SingleFragmentActivity<LnUrlWithdrawConfirm
         getBackButton().setOnClickListener {
             onBackClick()
         }
-
     }
 
     private fun onBackClick() {

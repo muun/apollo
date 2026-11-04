@@ -88,6 +88,7 @@ class SettingsPresenter @Inject constructor(
                 featureSelector.fetchOverridableFlags(),
                 ::SettingsState
             )
+            .compose(getAsyncExecutor())
             .doOnNext { state ->
                 view.setState(state)
             }

@@ -8,20 +8,20 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.viewbinding.ViewBinding;
-import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class MuunPinIndicator extends MuunView {
+public class MuunPinIndicator extends MuunView<MuunPinIndicatorBinding> {
 
     static final ViewProps<MuunPinIndicator> viewProps = new ViewProps.Builder<MuunPinIndicator>()
             .addInt(R.attr.length, MuunPinIndicator::setLength)
@@ -47,11 +47,10 @@ public class MuunPinIndicator extends MuunView {
     private final Drawable bubbleBackgroundError =
             ContextCompat.getDrawable(getContext(), R.drawable.muun_bubble_error);
 
-    private MuunPinIndicatorBinding binding;
-
     @Override
-    public Function1<View, ViewBinding> viewBinder() {
-        return MuunPinIndicatorBinding::bind;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunPinIndicatorBinding>
+            bindingInflater() {
+        return MuunPinIndicatorBinding::inflate;
     }
 
     private int progress;
@@ -72,14 +71,8 @@ public class MuunPinIndicator extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_pin_indicator;
-    }
-
-    @Override
     protected void setUp(@NonNull Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-        binding = (MuunPinIndicatorBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
@@ -113,7 +106,7 @@ public class MuunPinIndicator extends MuunView {
      * Set the number of bubbles to draw.
      */
     public void setLength(int length) {
-        final ViewGroup root = binding.root;
+        final ViewGroup root = getBinding().root;
 
         if (bubbles != null) {
             bubbles.clear();

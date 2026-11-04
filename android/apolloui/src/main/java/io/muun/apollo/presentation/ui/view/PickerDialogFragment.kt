@@ -6,9 +6,9 @@ import io.muun.apollo.presentation.ui.base.BaseActivity
 
 class PickerDialogFragment : MuunBottomSheetDialogFragment(), Picker.OnOptionPickListener {
 
-    private var pickerFactory: ((Context) -> Picker<*>)? = null
+    private var pickerFactory: ((Context) -> Picker<*, *>)? = null
 
-    fun setPickerFactory(pickerFactory: (Context) -> Picker<*>) {
+    fun setPickerFactory(pickerFactory: (Context) -> Picker<*, *>) {
         this.pickerFactory = pickerFactory
     }
 

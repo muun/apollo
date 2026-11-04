@@ -4,8 +4,8 @@ package io.muun.common.crypto.hd;
 import io.muun.common.api.MuunInputJson;
 import io.muun.common.utils.Encodings;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class MuunInput {
 
@@ -19,10 +19,10 @@ public class MuunInput {
     private Signature userSignature;
 
     @Nullable
-    private Signature muunSignature; // co-signed inputs only
+    private Signature cosignerSignature; // co-signed inputs only
 
     @Nullable
-    private Signature swapServerSignature; // channel inputs only
+    private Signature lightningServerSignature; // channel inputs only
 
     @Nullable
     private MuunInputSubmarineSwapV101 submarineSwap; // submarine swap V101 refund inputs only
@@ -37,7 +37,7 @@ public class MuunInput {
     private byte[] rawUserPublicNonce; // musig inputs only. Set by user.
 
     @Nullable
-    private byte[] rawMuunPublicNonce; // musig inputs only. Set by houston.
+    private byte[] rawCosignerPublicNonce; // musig inputs only. Set by cosigner.
 
     // NOTE: exists only for testing capabilities. DO NOT EVER assume its existence or try to use it
     @Nullable
@@ -85,22 +85,22 @@ public class MuunInput {
     public MuunInput(MuunOutput prevOut,
                      MuunAddress address,
                      @Nullable Signature userSignature,
-                     @Nullable Signature muunSignature,
-                     @Nullable Signature swapServerSignature,
+                     @Nullable Signature cosignerSignature,
+                     @Nullable Signature lightningServerSignature,
                      @Nullable MuunInputSubmarineSwapV101 submarineSwap,
                      @Nullable MuunInputSubmarineSwapV102 submarineSwapV102,
                      @Nullable MuunInputIncomingSwap incomingSwap,
-                     @Nullable byte[] rawMuunPublicNonce) {
+                     @Nullable byte[] rawCosignerPublicNonce) {
 
         this.prevOut = prevOut;
         this.address = address;
         this.userSignature = userSignature;
-        this.muunSignature = muunSignature;
-        this.swapServerSignature = swapServerSignature;
+        this.cosignerSignature = cosignerSignature;
+        this.lightningServerSignature = lightningServerSignature;
         this.submarineSwap = submarineSwap;
         this.submarineSwapV102 = submarineSwapV102;
         this.incomingSwap = incomingSwap;
-        this.rawMuunPublicNonce = rawMuunPublicNonce;
+        this.rawCosignerPublicNonce = rawCosignerPublicNonce;
     }
 
     public MuunOutput getPrevOut() {
@@ -125,25 +125,34 @@ public class MuunInput {
     }
 
     @Nullable
+    public Signature getCosignerSignature() {
+        return cosignerSignature;
+    }
+
+    /**
+     * Legacy name for {@link #getCosignerSignature()}: apollo still calls it.
+     */
+    @Deprecated
+    @Nullable
     public Signature getMuunSignature() {
-        return muunSignature;
+        return cosignerSignature;
     }
 
     @Nullable
-    public Signature getSwapServerSignature() {
-        return swapServerSignature;
+    public Signature getLightningServerSignature() {
+        return lightningServerSignature;
     }
 
     public void setUserSignature(Signature userSignature) {
         this.userSignature = userSignature;
     }
 
-    public void setMuunSignature(Signature muunSignature) {
-        this.muunSignature = muunSignature;
+    public void setCosignerSignature(Signature cosignerSignature) {
+        this.cosignerSignature = cosignerSignature;
     }
 
-    public void setSwapServerSignature(Signature swapServerSignature) {
-        this.swapServerSignature = swapServerSignature;
+    public void setLightningServerSignature(Signature lightningServerSignature) {
+        this.lightningServerSignature = lightningServerSignature;
     }
 
     @Nullable
@@ -178,13 +187,22 @@ public class MuunInput {
         return rawUserPublicNonce;
     }
 
-    public void setRawMuunPublicNonce(@Nullable byte[] rawMuunPublicNonce) {
-        this.rawMuunPublicNonce = rawMuunPublicNonce;
+    public void setRawCosignerPublicNonce(@Nullable byte[] rawCosignerPublicNonce) {
+        this.rawCosignerPublicNonce = rawCosignerPublicNonce;
     }
 
     @Nullable
+    public byte[] getRawCosignerPublicNonce() {
+        return rawCosignerPublicNonce;
+    }
+
+    /**
+     * Legacy name for {@link #getRawCosignerPublicNonce()}: apollo still calls it.
+     */
+    @Deprecated
+    @Nullable
     public byte[] getRawMuunPublicNonce() {
-        return rawMuunPublicNonce;
+        return rawCosignerPublicNonce;
     }
 
     public void setRawUserPublicNonce(@Nullable byte[] rawUserPublicNonce) {
@@ -209,12 +227,13 @@ public class MuunInput {
                 prevOut.toJson(),
                 address.toJson(),
                 userSignature == null ? null : userSignature.toJson(),
-                muunSignature == null ? null : muunSignature.toJson(),
-                swapServerSignature == null ? null : swapServerSignature.toJson(),
+                cosignerSignature == null ? null : cosignerSignature.toJson(),
+                lightningServerSignature == null ? null : lightningServerSignature.toJson(),
                 submarineSwap == null ? null : submarineSwap.toJson(),
                 submarineSwapV102 == null ? null : submarineSwapV102.toJson(),
                 incomingSwap == null ? null : incomingSwap.toJson(),
-                rawMuunPublicNonce == null ? null : Encodings.bytesToHex(rawMuunPublicNonce)
+                rawCosignerPublicNonce == null
+                        ? null : Encodings.bytesToHex(rawCosignerPublicNonce)
         );
     }
 

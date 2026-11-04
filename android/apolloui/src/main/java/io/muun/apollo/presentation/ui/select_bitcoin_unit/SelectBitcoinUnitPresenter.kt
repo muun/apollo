@@ -7,7 +7,7 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.base.BasePresenter
 import io.muun.apollo.presentation.ui.base.di.PerActivity
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 @PerActivity
 class SelectBitcoinUnitPresenter @Inject constructor(

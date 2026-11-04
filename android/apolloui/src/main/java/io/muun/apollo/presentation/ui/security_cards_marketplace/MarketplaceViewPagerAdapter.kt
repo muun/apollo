@@ -1,29 +1,32 @@
 package io.muun.apollo.presentation.ui.security_cards_marketplace
 
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider
+import io.muun.apollo.domain.model.marketplace.SecurityCardMarketplace
 
 class MarketplaceViewPagerAdapter(
     activity: FragmentActivity,
 ) : FragmentStateAdapter(activity) {
 
-    private var data: List<SecurityCardProvider> = emptyList()
+    private var data: List<SecurityCardMarketplace.SecurityCardProvider> = emptyList()
 
-    override fun createFragment(position: Int) = SecurityCardProviderFragment.newInstance(data[position])
+    override fun createFragment(position: Int): Fragment {
+        return SecurityCardProviderFragment.newInstance(data[position])
+    }
 
     override fun getItemCount() = data.size
 
     override fun getItemId(position: Int): Long {
-        return data[position].hashCode().toLong()
+        return data[position].uuid.hashCode().toLong()
     }
 
     override fun containsItem(itemId: Long): Boolean {
-        return data.singleOrNull { dataItem -> dataItem.hashCode().toLong() == itemId } != null
+        return data.any { it.uuid.hashCode().toLong() == itemId }
     }
 
-    fun setData(newData: List<SecurityCardProvider>) {
+    fun setData(newData: List<SecurityCardMarketplace.SecurityCardProvider>) {
         val diffCallback = MarketplaceViewPagerDiffUtil(oldList = data, newList = newData)
         val diff = DiffUtil.calculateDiff(diffCallback)
 
@@ -36,9 +39,14 @@ class MarketplaceViewPagerAdapter(
         return data[index].name
     }
 
+    // TODO: This will change, dont review
+    fun getProvider(index: Int): SecurityCardMarketplace.SecurityCardProvider {
+        return data[index]
+    }
+
     private class MarketplaceViewPagerDiffUtil(
-        private val oldList: List<SecurityCardProvider>,
-        private val newList: List<SecurityCardProvider>,
+        private val oldList: List<SecurityCardMarketplace.SecurityCardProvider>,
+        private val newList: List<SecurityCardMarketplace.SecurityCardProvider>,
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize() = oldList.size

@@ -7,10 +7,10 @@ class Input(val input: MuunInput) : libwallet.Input {
     override fun userSignature(): ByteArray =
         input.userSignature?.bytes ?: ByteArray(0)
 
-    override fun muunSignature(): ByteArray =
+    override fun cosignerSignature(): ByteArray =
         input.muunSignature?.bytes ?: ByteArray(0)
 
-    override fun muunPublicNonce() =
+    override fun cosignerPublicNonce() =
         input.rawMuunPublicNonce
 
     override fun address(): Address =

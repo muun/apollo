@@ -1,11 +1,12 @@
 package io.muun.apollo.presentation.ui.fragments.loading
 
 import android.os.Handler
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.annotation.StringRes
-import butterknife.BindView
-import io.muun.apollo.R
+import androidx.viewbinding.ViewBinding
+import io.muun.apollo.databinding.LoadingViewBinding
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.base.SingleFragment
 
@@ -22,17 +23,18 @@ class LoadingFragment : SingleFragment<LoadingFragmentPresenter>() {
             }
     }
 
-    @BindView(R.id.loading_view_title)
-    lateinit var titleView: TextView
+    private val binding: LoadingViewBinding
+        get() = getBinding() as LoadingViewBinding
 
-    override fun getLayoutResource() =
-        R.layout.loading_view
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return LoadingViewBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
 
     override fun initializeUi(view: View) {
-        titleView.text = getString(argumentsBundle.getInt(MESSAGE_ARG))
+        binding.loadingViewTitle.text = getString(argumentsBundle.getInt(MESSAGE_ARG))
 
         // Whenever this fragment is used, we want to avoid spinner flickers when the loading is
         // completed instantly:

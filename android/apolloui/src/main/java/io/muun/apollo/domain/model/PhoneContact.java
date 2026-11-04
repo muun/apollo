@@ -6,7 +6,7 @@ import io.muun.common.utils.Hashes;
 
 import androidx.annotation.Nullable;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class PhoneContact extends PersistentModel {
 

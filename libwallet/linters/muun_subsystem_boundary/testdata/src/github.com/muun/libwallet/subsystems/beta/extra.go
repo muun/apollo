@@ -1,0 +1,3 @@
+package beta
+
+func Extra() {}

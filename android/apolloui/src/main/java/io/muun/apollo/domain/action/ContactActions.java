@@ -32,11 +32,11 @@ import rx.Subscription;
 import rx.functions.Func0;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 @Singleton
 public class ContactActions {

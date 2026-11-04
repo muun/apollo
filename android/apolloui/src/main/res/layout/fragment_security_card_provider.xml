@@ -30,14 +30,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_height="wrap_content" />
 
+    <!-- The design's amount uses heading/h1 metrics at regular weight. -->
     <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textView_footer_card_cost"
             app:layout_constraintBottom_toTopOf="@id/textView_footer_shipping_cost"
             app:layout_constraintStart_toStartOf="@id/textView_footer_shipping_cost"
             app:layout_constraintEnd_toEndOf="@id/textView_footer_shipping_cost"
             android:layout_width="0dp"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="32sp"
+            android:textAppearance="@style/MuunTextAppearance.Heading.H1"
+            android:fontFamily="sans-serif"
             android:textColor="@color/text_primary_color"
             tools:text="30,000.00 ARS"
             android:gravity="center"
@@ -49,10 +50,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="24dp"
-            android:textSize="16sp"
+            android:textAppearance="@style/MuunTextAppearance.Body.Md"
             android:layout_marginHorizontal="16dp"
             android:gravity="center"
-            android:fontFamily="sans-serif"
             android:textColor="@color/text_secondary_color"
             tools:text="+23,000 ARS shipping &amp; taxes"
             android:layout_width="0dp"

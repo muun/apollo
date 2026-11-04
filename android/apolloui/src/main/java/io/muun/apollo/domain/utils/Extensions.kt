@@ -7,8 +7,12 @@ import androidx.core.os.ConfigurationCompat
 import androidx.fragment.app.Fragment
 import io.muun.apollo.data.net.base.NetworkException
 import io.muun.apollo.data.net.base.TlsVerificationError
+import io.muun.apollo.data.os.secure_storage.SecureStorageProvider.KeyStoreCorruptedError
+import io.muun.apollo.data.os.secure_storage.SecureStorageProvider.SecureStorageNoSuchElementError
 import io.muun.apollo.domain.errors.MuunError
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError
 import io.muun.apollo.domain.errors.SecureStorageError
+import io.muun.apollo.domain.errors.WeirdIncorrectAttemptsBugError
 import io.muun.apollo.domain.model.report.ErrorReport
 import io.muun.common.Optional
 import io.muun.common.model.Currency
@@ -91,10 +95,100 @@ fun Throwable.isInstanceOrIsCausedBySecureStorageError() =
 
 /**
  * Needed as inline reified functions can't be called from Java.
+ *
+ * Answers only that securekv is what went wrong: enough for a crash guard, and enough to tell
+ * a securekv failure from a legacy one. It says nothing about which failure, so a caller that
+ * branches on the kind wants [isInstanceOrIsCausedBySecureStorageCorruption] or
+ * [isUnreadableSecureKeyValueStoreValue] instead.
+ */
+fun Throwable.isInstanceOrIsCausedBySecureKeyValueStoreError() =
+    isInstanceOrIsCausedByError<SecureKeyValueStoreError>()
+
+/**
+ * Needed as inline reified functions can't be called from Java.
+ */
+fun Throwable.isInstanceOrIsCausedBySecureKeyValueStoreNotFound() =
+    isInstanceOrIsCausedByError<SecureKeyValueStoreError.NotFound>()
+
+/**
+ * A value is stored under the key and securekv could not hand it over, so no retry of the same
+ * read will do any better.
+ *
+ * NotFound is excluded because it is the opposite finding: there is nothing stored, which the
+ * next read of the same key will keep reporting until something writes one.
+ */
+fun Throwable.isUnreadableSecureKeyValueStoreValue() =
+    isInstanceOrIsCausedBySecureKeyValueStoreError() &&
+        !isInstanceOrIsCausedBySecureKeyValueStoreNotFound()
+
+/**
+ * Needed as inline reified functions can't be called from Java.
  */
 fun Throwable.isCauseByBadPaddingException() =
     isInstanceOrIsCausedByError<BadPaddingException>()
 
+/**
+ * Needed as inline reified functions can't be called from Java.
+ *
+ * NotFound and OperationFailed are not corruption: nothing is known to be wrong with the data.
+ *
+ * Where securekv already classified the failure, its answer wins. A SecureKeyValueStoreError
+ * built from a legacy failure carries it as its cause, so the scan below would otherwise call
+ * those cases corruption, including the two this predicate exists to leave out.
+ */
+fun Throwable.isInstanceOrIsCausedBySecureStorageCorruption(): Boolean {
+    val storeError = getTypedClause<SecureKeyValueStoreError>().orElse(null)
+        ?: return isCausedByLegacySecureStorageCorruption()
+
+    // Exhaustive on purpose: a new subtype has to be classified here rather than default to
+    // "not corruption", which would silently stop offering the logout on a corrupt store.
+    return when (storeError) {
+        is SecureKeyValueStoreError.DecryptionFailed,
+        is SecureKeyValueStoreError.StorageFailed,
+        -> true
+
+        is SecureKeyValueStoreError.NotFound,
+        is SecureKeyValueStoreError.OperationFailed,
+        -> false
+    }
+}
+
+/**
+ * A stored value lost its keystore key, which is what a device-to-device copy leaves behind:
+ * the preferences travel and the keystore keys never do. Narrower than
+ * [isInstanceOrIsCausedBySecureStorageCorruption], which also counts any other corrupt value or
+ * unusable store.
+ *
+ * When a SecureKeyValueStoreError is in the chain, only KeystoreKeyMissing counts: a legacy cause
+ * wrapped in another securekv type (e.g. OperationFailed) is not a finding about the value.
+ */
+fun Throwable.isInstanceOrIsCausedByMissingKeystoreKey(): Boolean {
+    val storeError = getTypedClause<SecureKeyValueStoreError>().orElse(null)
+        ?: return isInstanceOrIsCausedByError<KeyStoreCorruptedError>()
+
+    return storeError is SecureKeyValueStoreError.KeystoreKeyMissing
+}
+
+/**
+ * A key missing from both the keystore and the preferences was never written, which securekv
+ * calls NotFound. Both APIs are in use, so that condition cannot get one answer here and a
+ * different one there.
+ *
+ * WeirdIncorrectAttemptsBugError is a lock screen attempt counter out of range. It extends
+ * SecureStorageError only to carry a debug snapshot, and the store answered for the counter
+ * just fine. No caller reaches this with one today: the lock screen swallows it and the pin
+ * setup screen throws past any handler. It is here so that the type answers correctly whenever
+ * one does.
+ *
+ * Everything else the legacy API raises stays corruption: it uses a single type for the read
+ * and the write paths, so there is nothing finer to go on.
+ */
+private fun Throwable.isCausedByLegacySecureStorageCorruption(): Boolean {
+    val legacyError = getTypedClause<SecureStorageError>().orElse(null) ?: return false
+
+    return legacyError !is SecureStorageNoSuchElementError &&
+        legacyError !is WeirdIncorrectAttemptsBugError
+}
 
 inline fun <reified T> Throwable.isInstanceOrIsCausedByError() =
     this is T || isCausedByError<T>()

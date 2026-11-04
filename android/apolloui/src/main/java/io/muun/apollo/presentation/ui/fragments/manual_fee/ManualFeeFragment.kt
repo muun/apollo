@@ -36,10 +36,6 @@ class ManualFeeFragment : SingleFragment<ManualFeePresenter>(), ManualFeeView {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.manual_fee_selection_fragment
-    }
-
     override fun initializeUi(view: View) {
         val content = TextUtils.concat(
             resources.getString(R.string.manual_fee_message),

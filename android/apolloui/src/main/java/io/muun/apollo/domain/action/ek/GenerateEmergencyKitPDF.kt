@@ -10,7 +10,9 @@ import io.muun.apollo.domain.model.EmergencyKitExport
 import io.muun.apollo.domain.model.GeneratedEmergencyKitInfo
 import io.muun.apollo.domain.utils.EK_CHILD_GO_COMPONENTS_RENDERING
 import io.muun.apollo.domain.utils.EK_CHILD_GO_CREATE_AND_SAVE_ON_DISK
+import io.muun.apollo.domain.utils.EK_CHILD_GO_DRAW_ICONS
 import io.muun.apollo.domain.utils.EK_CHILD_GO_EMBED_METADATA
+import io.muun.apollo.domain.utils.EK_CHILD_GO_KIT_SIZE_BYTES
 import io.muun.apollo.domain.utils.EK_CHILD_GO_LOAD_TRANSLATIONS
 import io.muun.apollo.domain.utils.EK_CHILD_GO_REGISTER_FONTS
 import io.muun.apollo.domain.utils.EK_CHILD_GO_REGISTER_IMAGES
@@ -124,6 +126,8 @@ class GenerateEmergencyKitPDF @Inject constructor(
         trace.addChild(EK_CHILD_GO_TOTAL_OBJECTS_ALLOCATED, profiling.totalObjectsAllocated)
         trace.addChild(EK_CHILD_GO_EMBED_METADATA, profiling.embedMetadataMs)
         trace.addChild(EK_CHILD_GO_TOTAL_INSIDE_GO, profiling.totalInsideGoMs)
+        trace.addChild(EK_CHILD_GO_KIT_SIZE_BYTES, profiling.kitSizeBytes)
+        trace.addChild(EK_CHILD_GO_DRAW_ICONS, profiling.drawIconsMs)
     }
 
     private fun watchData(): Observable<RequiredData> {

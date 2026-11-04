@@ -2,7 +2,7 @@ package io.muun.apollo.presentation.ui.base;
 
 import androidx.fragment.app.Fragment;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public interface SingleFragmentView extends BaseView {
 

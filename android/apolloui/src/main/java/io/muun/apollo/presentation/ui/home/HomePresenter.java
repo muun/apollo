@@ -24,10 +24,10 @@ import android.os.Bundle;
 import icepick.State;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class HomePresenter extends BasePresenter<HomeView> implements HomeFragmentParentPresenter {

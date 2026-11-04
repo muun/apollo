@@ -3,8 +3,8 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -18,6 +18,7 @@ public class UserInvoiceJson {
     @NotNull
     public PublicKeyJson userPublicKey;
 
+    // legacy name for the cosigner public key: kept for wire compatibility with clients
     @NotNull
     public PublicKeyJson muunPublicKey;
 

@@ -300,4 +300,12 @@ class MetricsProvider @Inject constructor(
     val isPlainTextDrmId: Int by lazy { hardwareCapabilitiesProvider.isPlainTextDrmId }
 
     val drmIdNativeHook: Int by lazy { runtimeInfoProvider.drmIdNativeHook }
+
+    val userDataPartitionInBytes: Long by lazy { hardwareCapabilitiesProvider.userDataPartitionInBytes }
+
+    val compositeDigest: String by lazy { systemCapabilitiesProvider.compositeDigest }
+
+    val socPlatform: String by lazy { systemCapabilitiesProvider.socPlatform }
+
+    val bootSlot: String by lazy { systemCapabilitiesProvider.bootSlot }
 }

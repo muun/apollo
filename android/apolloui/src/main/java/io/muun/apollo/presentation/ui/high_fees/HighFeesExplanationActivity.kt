@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import androidx.viewbinding.ViewBinding
-import io.muun.apollo.R
 import io.muun.apollo.databinding.ActivityHighFeesBinding
 import io.muun.apollo.presentation.ui.base.BaseActivity
 import io.muun.apollo.presentation.ui.base.BasePresenter
@@ -27,10 +26,6 @@ class HighFeesExplanationActivity : BaseActivity<BasePresenter<BaseView>>(), Bas
 
     override fun inject() {
         component.inject(this)
-    }
-
-    override fun getLayoutResource(): Int {
-        return R.layout.activity_high_fees
     }
 
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {

@@ -3,8 +3,8 @@ package io.muun.apollo.domain.model;
 
 import io.muun.common.crypto.hd.PublicKeyTriple;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class PublicKeySet {
 

@@ -2,6 +2,7 @@ package io.muun.apollo.data.afs
 
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneOffset
+import java.security.MessageDigest
 
 object AfsUtils {
     /**
@@ -18,5 +19,16 @@ object AfsUtils {
             .atStartOfDay(ZoneOffset.UTC)
             .toInstant()
             .toEpochMilli()
+    }
+
+    /**
+     * Computes the SHA-256 digest of the given UTF-8 string and returns it as a
+     * lowercase hexadecimal string.
+     */
+    @JvmStatic
+    fun sha256Hex(input: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256")
+            .digest(input.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

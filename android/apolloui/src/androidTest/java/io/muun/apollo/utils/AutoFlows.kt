@@ -743,6 +743,8 @@ class AutoFlows(
     fun lnUrlWithdrawViaReceive(seenLnurlFirstTime: Boolean = false) {
         val lnurl = LappClient().generateWithdrawLnUrl()
         Clipboard.write(lnurl)
+        // The paste-from-clipboard button only shows once the camera permission is granted
+        grantPermission("android.permission.CAMERA")
 
         homeScreen.goToReceive()
         receiveScreen.goToScanLnUrl()

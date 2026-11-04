@@ -12,9 +12,9 @@ import com.squareup.sqldelight.ColumnAdapter;
 import com.squareup.sqldelight.EnumColumnAdapter;
 import org.threeten.bp.ZonedDateTime;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nonnull;
 import javax.money.MonetaryAmount;
-import javax.validation.constraints.NotNull;
 
 public interface Adapters {
 

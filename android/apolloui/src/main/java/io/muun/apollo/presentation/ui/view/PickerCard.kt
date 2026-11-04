@@ -2,13 +2,12 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.TextView
-import butterknife.BindColor
-import butterknife.BindView
+import androidx.core.content.ContextCompat
 import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunPickerCardBinding
 
 class PickerCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunPickerCardBinding>(c, a, s) {
 
     enum class Status {
         NORMAL,
@@ -16,22 +15,18 @@ class PickerCard @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
         DISABLED
     }
 
-    @BindView(R.id.title)
-    internal lateinit var titleView: TextView
+    private val titleView get() = binding.title
+    private val descriptionView get() = binding.description
 
-    @BindView(R.id.description)
-    internal lateinit var descriptionView: TextView
+    private val textPrimaryColor: Int
+        get() = ContextCompat.getColor(context, R.color.text_primary_color)
 
-    @BindColor(R.color.text_primary_color)
-    @JvmField
-    internal var textPrimaryColor = 0
+    private val disabledTintColor: Int
+        get() = ContextCompat.getColor(context, R.color.picker_disabled_color)
 
-    @BindColor(R.color.picker_disabled_color)
-    @JvmField
-    internal var disabledTintColor = 0
-
-    override val layoutResource: Int
-        get() = R.layout.muun_picker_card
+    override fun bindingInflater(): BindingInflater<MuunPickerCardBinding> {
+        return MuunPickerCardBinding::inflate
+    }
 
     var title: CharSequence
         get() = titleView.text

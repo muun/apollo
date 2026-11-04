@@ -2,11 +2,11 @@ package io.muun.apollo.presentation.ui.security_cards_marketplace
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import io.muun.apollo.domain.model.marketplace.SecurityCardMarketplace
 import io.muun.apollo.presentation.ui.security_cards_marketplace.models.MarketplaceFooter.CurrentCurrency
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider
 
 class SecurityCardProviderViewModelFactory(
-    private val provider: SecurityCardProvider,
+    private val provider: SecurityCardMarketplace.SecurityCardProvider,
     private val currencySelection: CurrentCurrency,
     private val assistedFactory: SecurityCardProviderViewModel.Factory,
 ) : ViewModelProvider.Factory {

@@ -1,8 +1,8 @@
 package io.muun.apollo.domain.model;
 
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class BitcoinUriContent {
     @NotNull

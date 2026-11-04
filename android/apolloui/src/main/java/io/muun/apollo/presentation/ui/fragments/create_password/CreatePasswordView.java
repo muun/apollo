@@ -4,8 +4,8 @@ package io.muun.apollo.presentation.ui.fragments.create_password;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.base.SingleFragmentView;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public interface CreatePasswordView extends SingleFragmentView {
 

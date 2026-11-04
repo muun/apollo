@@ -3,8 +3,8 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -44,7 +44,7 @@ public class IncomingSwapJson {
                             final String sphinxPacketHex,
                             final long paymentAmountInSats,
                             final long collectInSats,
-                            final String preimageHex) {
+                            @Nullable final String preimageHex) {
         this.uuid = uuid;
         this.paymentHashHex = paymentHashHex;
         this.htlc = htlc;

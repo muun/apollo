@@ -22,10 +22,6 @@ class StartPasswordChangeFragment : SingleFragment<StartPasswordChangePresenter>
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.start_password_change_fragment
-    }
-
     override fun initializeUi(view: View) {
         with(binding) {
             changePasswordStartExplanationTitle.text =

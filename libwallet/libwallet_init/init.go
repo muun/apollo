@@ -1,69 +1,65 @@
 package libwallet_init
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
 	"path"
 	"runtime/debug"
+	"time"
 
 	"github.com/go-errors/errors"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 
-	"github.com/muun/libwallet"
 	"github.com/muun/libwallet/app_provided_data"
-	"github.com/muun/libwallet/data/keys"
-	"github.com/muun/libwallet/data/securekv"
-	"github.com/muun/libwallet/data/security_cards"
-	"github.com/muun/libwallet/domain/action/challenge_keys"
-	debugAction "github.com/muun/libwallet/domain/action/debug"
-	"github.com/muun/libwallet/domain/action/diagnostic_mode_reports"
-	"github.com/muun/libwallet/domain/action/emergency_kit"
-	nfcActions "github.com/muun/libwallet/domain/action/nfc"
-	"github.com/muun/libwallet/domain/action/recovery"
-	"github.com/muun/libwallet/domain/action/reset"
-	"github.com/muun/libwallet/domain/action/security_cards_marketplace"
-	"github.com/muun/libwallet/domain/nfc"
-	"github.com/muun/libwallet/electrum"
-	"github.com/muun/libwallet/storage"
-	"github.com/muun/libwallet/walletdb"
+	"github.com/muun/libwallet/base/data/electrum"
+	"github.com/muun/libwallet/base/data/securekv"
+	"github.com/muun/libwallet/base/data/storage"
+	"github.com/muun/libwallet/base/data/walletdb"
+	libwallet "github.com/muun/libwallet/legacy"
+	"github.com/muun/libwallet/legacy/newop"
+	"github.com/muun/libwallet/platform/concurrency/memlock"
+	"github.com/muun/libwallet/subsystems/background_actions"
+	ba_model "github.com/muun/libwallet/subsystems/background_actions/presentation/model"
+	"github.com/muun/libwallet/subsystems/diagnostics"
+	"github.com/muun/libwallet/subsystems/emergency_kit"
+	"github.com/muun/libwallet/subsystems/marketplace"
+	"github.com/muun/libwallet/subsystems/rates"
+	"github.com/muun/libwallet/subsystems/recovery"
+	"github.com/muun/libwallet/subsystems/recovery_tool"
+	"github.com/muun/libwallet/subsystems/security_card"
 
-	"github.com/muun/libwallet/log"
-	"github.com/muun/libwallet/presentation"
-	"github.com/muun/libwallet/presentation/api"
-	"github.com/muun/libwallet/service"
+	"github.com/muun/libwallet/app_provided_data/adapted"
+	"github.com/muun/libwallet/base/data/houston"
+	"github.com/muun/libwallet/base/data/houston/simulator"
+	"github.com/muun/libwallet/platform/observability/logging"
+	"github.com/muun/libwallet/platform/observability/otel"
+	"github.com/muun/libwallet/server"
+	"github.com/muun/libwallet/server/api"
 )
 
-var server *grpc.Server
+var grpcServer *grpc.Server
 var pool *walletdb.Pool
 var cfg *app_provided_data.Config
 var keyValueStorage *storage.KeyValueStorage
 var network *libwallet.Network
-var houstonService service.HoustonService
-var mockHoustonService service.HoustonService
-var keyProvider keys.KeyProvider
-var startChallengeSetupAction *challenge_keys.StartChallengeSetupAction
-var finishChallengeSetupAction *challenge_keys.FinishChallengeSetupAction
-var computeAndStoreEncryptedMuunKeyAction *recovery.ComputeAndStoreEncryptedMuunKeyAction
-var populateEncryptedMuunKeyAction *recovery.PopulateEncryptedMuunKeyAction
-var scanForFundsAction *recovery.ScanForFundsAction
-var submitDiagnosticAction *diagnostic_mode_reports.SubmitDiagnosticAction
-var buildSweepTxAction *recovery.BuildSweepTxAction
-var signSweepTxAction *recovery.SignSweepTxAction
-var pairSecurityCardActionV2 *nfcActions.PairSecurityCardActionV2
-var signMessageSecurityCardActionV2 *nfcActions.SignMessageSecurityCardActionV2
-var pairRequestChallengeAction *nfcActions.PairRequestChallengeAction
-var pairLoadPersistedChallengeAction *nfcActions.PairLoadPersistedChallengeAction
-var pairSignChallengeAction *nfcActions.PairSignChallengeAction
-var pairSubmitSolvedChallengeAction *nfcActions.PairSubmitSolvedChallengeAction
-var pairSignAndSubmitChallengeAction *nfcActions.PairSignAndSubmitChallengeAction
-var securityCardsProtocolRepository *security_cards.ProtocolRepository
-var securityCardsMarketplaceAction *security_cards_marketplace.GetSecurityCardsMarketplaceAction
-var generateEmergencyKitPDFAction *emergency_kit.GenerateEmergencyKitPDFAction
-var secureKeyValueStorage securekv.SecureKeyValueStorage
-var zipDataDirAction *debugAction.ZipDataDirAction
-var resetDataAction reset.ResetDataAction
+var houstonService houston.HoustonService
+var simulatedHoustonService houston.HoustonService
+var keyProvider adapted.KeyProvider
+var otelSetup *otel.Setup
+var resetDataFn func() error
+var locker memlock.NamedLocker
+
+var recoverySubsystem recovery.Recovery
+var recoveryToolSubsystem recovery_tool.RecoveryTool
+var diagnosticsSubsystem diagnostics.Diagnostics
+var securityCardSubsystem security_card.SecurityCard
+var marketplaceSubsystem marketplace.Marketplace
+var emergencyKitSubsystem emergency_kit.EmergencyKit
+var backgroundActionsSubsystem background_actions.BackgroundActions
+var ratesSubsystem rates.Rates
 
 // Init configures libwallet
 func Init(c *app_provided_data.Config) {
@@ -73,13 +69,12 @@ func Init(c *app_provided_data.Config) {
 	libwallet.Init(c)
 
 	if c.AppLogSink != nil {
-		level := c.AppLogSink.GetDefaultLogLevel()
-		logger := slog.New(log.NewBridgeLogHandler(c.AppLogSink, slog.Level(level)))
+		logger := slog.New(logging.NewBridgeHandler(c.AppLogSink))
 		slog.SetDefault(logger)
 	}
 
 	if cfg.HttpClientSessionProvider != nil {
-		houstonService = service.NewHoustonService(cfg.HttpClientSessionProvider)
+		houstonService = houston.NewHoustonService(cfg.HttpClientSessionProvider)
 	}
 
 	dbPath := path.Join(cfg.DataDir, "wallet.db")
@@ -100,8 +95,6 @@ func Init(c *app_provided_data.Config) {
 		storageSchema,
 	)
 
-	mockHoustonService = service.NewMockHoustonService(keyValueStorage)
-
 	switch c.Network {
 	case libwallet.Mainnet().Name():
 		network = libwallet.Mainnet()
@@ -112,78 +105,97 @@ func Init(c *app_provided_data.Config) {
 	default:
 		panic("unknown network: " + c.Network)
 	}
-	keyProvider = keys.NewKeyProvider(c.KeyProvider, *network)
+	secureKeyValueStore := securekv.NewSecureKeyValueStore(c.SecureKeyValueStore)
+	keyProvider = adapted.NewKeyProvider(c.KeyProvider, secureKeyValueStore, *network)
 
-	// TODO do this only for debug builds and while making use of FakeNfcSession or equivalent
-	// Enables security cards testing in emulators and ui tests.
-	//mockMuunCardV2, _ := nfc.NewMockMuunCardV2()
-	//cfg.NfcBridge = nfc.NewMockJavaCard(mockMuunCardV2)
+	simulatedHoustonService = simulator.NewSimulatedHoustonService(keyValueStorage, keyProvider)
 
-	muuncardV2 := nfc.NewCardV2(cfg.NfcBridge)
-	// Actions
-	computeAndStoreEncryptedMuunKeyAction = recovery.NewComputeAndStoreEncryptedMuunKeyAction(
-		keyValueStorage,
-		keyProvider,
-	)
-	populateEncryptedMuunKeyAction = recovery.NewPopulateEncryptedMuunKeyAction(
-		houstonService,
-		keyValueStorage,
-		keyProvider,
-	)
-	startChallengeSetupAction = challenge_keys.NewStartChallengeSetupAction(houstonService)
-	finishChallengeSetupAction = challenge_keys.NewFinishChallengeSetupAction(
-		houstonService,
-		keyValueStorage,
-		computeAndStoreEncryptedMuunKeyAction,
-	)
-	electrumProvider := electrum.NewServerProvider(electrum.PublicServers)
-	scanForFundsAction = recovery.NewScanForFundsAction(keyProvider, electrumProvider, network)
-	submitDiagnosticAction = diagnostic_mode_reports.NewSubmitDiagnosticAction(houstonService)
-	buildSweepTxAction = recovery.NewBuildSweepTxAction(keyProvider, network)
-	signSweepTxAction = recovery.NewSignSweepTxAction(keyProvider, network)
-	pairSecurityCardActionV2 = nfcActions.NewPairSecurityCardActionV2(
-		keyValueStorage,
-		muuncardV2,
-		mockHoustonService,
-	)
-	signMessageSecurityCardActionV2 = nfcActions.NewSignMessageSecurityCardActionV2(
-		muuncardV2,
-		mockHoustonService,
-		keyValueStorage,
-		pairSecurityCardActionV2,
-	)
-	securityCardsProtocolRepository = security_cards.NewProtocolRepository(keyValueStorage)
-	pairRequestChallengeAction = nfcActions.NewPairRequestChallengeAction(
-		securityCardsProtocolRepository,
-		mockHoustonService,
-	)
-	pairLoadPersistedChallengeAction = nfcActions.NewPairLoadPersistedChallengeAction(
-		securityCardsProtocolRepository,
-	)
-	pairSignChallengeAction = nfcActions.NewPairSignChallengeAction(muuncardV2)
-	pairSubmitSolvedChallengeAction = nfcActions.NewPairSubmitSolvedChallengeAction(
-		securityCardsProtocolRepository,
-		mockHoustonService,
-	)
-	pairSignAndSubmitChallengeAction = nfcActions.NewPairSignAndSubmitChallengeAction(
-		pairLoadPersistedChallengeAction,
-		pairRequestChallengeAction,
-		pairSignChallengeAction,
-		pairSubmitSolvedChallengeAction,
-	)
-	securityCardsMarketplaceAction = security_cards_marketplace.
-		NewGetSecurityCardsMarketplaceAction(mockHoustonService)
-	generateEmergencyKitPDFAction = emergency_kit.NewGenerateEmergencyKitPDFAction()
-
-	if cfg.SecureKeyValueStorage != nil {
-		secureKeyValueStorage = securekv.NewSecureKeyValueStorage(cfg.SecureKeyValueStorage)
+	platform := app_provided_data.Platform(c.Platform)
+	if !platform.Android() && !platform.IOS() {
+		panic("unknown platform: " + c.Platform)
 	}
-	zipDataDirAction = debugAction.NewZipDataDirAction(cfg.DataDir)
-	resetDataAction = reset.NewResetDataAction(dbPath, pool, storage.BuildKVMigrationPlan())
+
+	periodicActionsBridge := adapted.NewPeriodicActionsBridge(c.PeriodicActionsBridge)
+
+	otelConfig := otel.NewConfig().
+		WithHoneycombAPIKey(cfg.HoneycombAPIKey).
+		WithHoneycombDataset(cfg.HoneycombDataset).
+		WithLogSpans(true).
+		WithExtraAttrs(map[string]string{
+			"os_name":    cfg.Platform,
+			"os_version": cfg.OsVersion,
+		})
+
+	if cfg.HoneycombAPIKey != "" && cfg.HttpClientSessionProvider != nil {
+		session, err := cfg.HttpClientSessionProvider.Session()
+		if err != nil {
+			slog.Error("failed to get the client session for tracing", "error", err)
+		} else {
+			otelConfig.WithExtraAttrs(map[string]string{
+				"client_type":         session.ClientType,
+				"client_version":      session.ClientVersion,
+				"client_version_name": session.ClientVersionName,
+				"client_sdk_version":  session.ClientSdkVersion,
+			})
+		}
+	}
+
+	otelSetup, err = otel.NewSetup(context.Background(), otelConfig)
+	if err != nil {
+		slog.Error("Failed to setup OpenTelemetry", "error", err)
+		otelSetup = nil
+	}
+
+	electrumProvider := electrum.NewServerProvider(electrum.PublicServers)
+
+	recoverySubsystem = recovery.NewRecovery(
+		houstonService, keyValueStorage, keyProvider,
+	)
+	recoveryToolSubsystem = recovery_tool.NewRecoveryTool(
+		keyProvider, electrumProvider, network,
+	)
+	diagnosticsSubsystem = diagnostics.NewDiagnostics(houstonService, cfg.DataDir)
+	securityCardSubsystem = security_card.NewSecurityCard(
+		cfg.NfcBridge, keyValueStorage, simulatedHoustonService, keyProvider,
+	)
+	marketplaceSubsystem = marketplace.NewMarketplace(
+		simulatedHoustonService, keyValueStorage, network,
+	)
+	emergencyKitSubsystem = emergency_kit.NewEmergencyKit()
+	backgroundActionsSubsystem = background_actions.NewBackgroundActions(
+		&locker,
+		keyValueStorage,
+		platform,
+		cfg.AndroidBackgroundActionsBridge,
+		cfg.IOSBackgroundActionsBridge,
+		cfg.SessionProvider,
+		map[ba_model.Function]ba_model.Handler{
+			ba_model.PlatformPullNotifications: periodicActionsBridge.PullNotifications,
+			ba_model.PlatformSyncRealTimeData:  periodicActionsBridge.SyncRealTimeData,
+			ba_model.PlatformRegisterInvoices:  periodicActionsBridge.RegisterInvoices,
+		},
+		[]ba_model.StaticRegistration{
+			ba_model.NewStaticRegistration(ba_model.PlatformPullNotifications, 3*time.Hour),
+			ba_model.NewStaticRegistration(ba_model.PlatformSyncRealTimeData, 6*time.Hour),
+			ba_model.NewStaticRegistration(ba_model.PlatformRegisterInvoices, 6*time.Hour),
+		},
+	)
+	ratesSubsystem = rates.NewRates(keyValueStorage)
+	newop.SetRates(&ratesSubsystem)
+
+	migrationPlan := storage.BuildKVMigrationPlan()
+	resetPool := pool
+	resetDataFn = func() error {
+		return walletdb.ResetDB(dbPath, resetPool, func(db *walletdb.DB) error {
+			_, err := storage.RunKeyValueMigrations(db, migrationPlan)
+			return err
+		})
+	}
+
 }
 
 func StartServer() error {
-	if server != nil {
+	if grpcServer != nil {
 		return errors.New("server is already running")
 	}
 
@@ -194,55 +206,66 @@ func StartServer() error {
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				// Order is important.
-				presentation.LoggingUnaryInterceptor(), // First interceptor
-				presentation.RecoverUnknownErrorUnaryInterceptor(),
-				presentation.RecoverPanicUnaryInterceptor(), // Last interceptor
+				server.TracingUnaryInterceptor(
+					otelSetup,
+					cfg.SessionProvider,
+					// Methods where we want to force flush traces when finished.
+					api.WalletService_RunDueBackgroundActions_FullMethodName,
+				), // First interceptor
+				server.RecoverUnknownErrorUnaryInterceptor(),
+				server.RecoverPanicUnaryInterceptor(), // Last interceptor
 			),
 		),
 		grpc.StreamInterceptor(
 			grpc_middleware.ChainStreamServer(
 				// Order is important.
-				presentation.LoggingStreamInterceptor(), // First interceptor
-				presentation.RecoverUnknownErrorStreamInterceptor(),
-				presentation.RecoverPanicStreamInterceptor(), // Last interceptor
+				server.TracingStreamInterceptor(
+					otelSetup,
+					cfg.SessionProvider,
+				), // First interceptor
+				server.RecoverUnknownErrorStreamInterceptor(),
+				server.RecoverPanicStreamInterceptor(), // Last interceptor
 			),
 		),
 	}
 
-	server = grpc.NewServer(opts...)
-	api.RegisterWalletServiceServer(server, presentation.NewWalletServer(
+	grpcServer = grpc.NewServer(opts...)
+	api.RegisterWalletServiceServer(grpcServer, server.NewWalletServer(
 		cfg.NfcBridge,
 		keyProvider,
 		network,
 		houstonService,
 		keyValueStorage,
-		resetDataAction,
-		startChallengeSetupAction,
-		finishChallengeSetupAction,
-		populateEncryptedMuunKeyAction,
-		scanForFundsAction,
-		submitDiagnosticAction,
-		buildSweepTxAction,
-		signSweepTxAction,
-		pairSecurityCardActionV2,
-		signMessageSecurityCardActionV2,
-		pairRequestChallengeAction,
-		pairSignAndSubmitChallengeAction,
-		securityCardsMarketplaceAction,
-		generateEmergencyKitPDFAction,
-		zipDataDirAction,
-		secureKeyValueStorage,
+		resetDataFn,
+		&recoverySubsystem,
+		&recoveryToolSubsystem,
+		&diagnosticsSubsystem,
+		&securityCardSubsystem,
+		&marketplaceSubsystem,
+		&emergencyKitSubsystem,
+		&backgroundActionsSubsystem,
+		&ratesSubsystem,
 	))
 
-	listener, err := net.Listen("unix", cfg.SocketPath) //nolint:noctx // TODO: use (*net.ListenConfig).Listen
+	lc := net.ListenConfig{}
+	listener, err := lc.Listen(context.Background(), "unix", cfg.SocketPath)
 	if err != nil {
 		slog.Error("socket creation failure", "error", err)
 		return err
 	}
 
 	go func() {
-		if err := server.Serve(listener); err != nil {
+		if err := grpcServer.Serve(listener); err != nil {
 			slog.Error("error when starting server goroutine", "error", err)
+		}
+
+		if otelSetup != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			if err := otelSetup.Shutdown(ctx); err != nil {
+				slog.Error("error when shutting down OpenTelemetry", "error", err)
+			}
 		}
 	}()
 
@@ -250,14 +273,15 @@ func StartServer() error {
 }
 
 func StopServer() {
-	if server == nil {
+	if grpcServer == nil {
 		slog.Warn("tried to stop server when none is running")
 		return
 	}
-	server.Stop()
+	grpcServer.Stop()
 	if pool != nil {
 		pool.Close()
 		pool = nil
 		libwallet.Pool = nil
 	}
+	newop.SetRates(nil)
 }

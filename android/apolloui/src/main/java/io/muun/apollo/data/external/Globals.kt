@@ -107,6 +107,16 @@ abstract class Globals {
     abstract val lappUrl: String
 
     /**
+     * Get the Honeycomb API key. An empty key disables export.
+     */
+    abstract val honeycombApiKey: String
+
+    /**
+     * Get the Honeycomb dataset libwallet exports traces to.
+     */
+    abstract val honeycombDataset: String
+
+    /**
      * Get whether the current build is a release build.
      */
     val isRelease: Boolean

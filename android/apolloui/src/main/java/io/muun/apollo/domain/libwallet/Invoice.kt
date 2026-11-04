@@ -150,7 +150,7 @@ object Invoice {
 
         val userPublicKey: PublicKey = Extensions.fromLibwallet(secret.userHtlcKey)
 
-        val muunPublicKey: PublicKey = Extensions.fromLibwallet(secret.muunHtlcKey)
+        val muunPublicKey: PublicKey = Extensions.fromLibwallet(secret.cosignerHtlcKey)
 
         val identityKey: PublicKey = Extensions.fromLibwallet(secret.identityKey)
 

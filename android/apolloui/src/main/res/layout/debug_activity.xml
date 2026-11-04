@@ -142,28 +142,10 @@
         <io.muun.apollo.presentation.ui.view.MuunButton
                 style="@style/muun_button_primary"
                 android:layout_marginTop="8dp"
-                android:id="@+id/debug_button_pair_security_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Pair Security Card"
-                tools:ignore="HardcodedText" />
-
-        <io.muun.apollo.presentation.ui.view.MuunButton
-                style="@style/muun_button_primary"
-                android:layout_marginTop="8dp"
                 android:id="@+id/debug_button_enter_diagnostic_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Enter diagnostic mode"
-                tools:ignore="HardcodedText" />
-
-        <io.muun.apollo.presentation.ui.view.MuunButton
-                style="@style/muun_button_primary"
-                android:layout_marginTop="8dp"
-                android:id="@+id/debug_button_secure_key_value_storage_debug"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="SecureKeyValueStorage debug"
                 tools:ignore="HardcodedText" />
 
         <io.muun.apollo.presentation.ui.view.MuunButton
@@ -222,27 +204,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     tools:text="https://192.168.0.1:8080" />
-
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="5dp">
-
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="NFC Card Paired: "
-                    android:textStyle="normal|bold"
-                    tools:ignore="HardcodedText" />
-
-            <TextView
-                    android:id="@+id/nfc_card_paired"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="false" />
 
         </LinearLayout>
 

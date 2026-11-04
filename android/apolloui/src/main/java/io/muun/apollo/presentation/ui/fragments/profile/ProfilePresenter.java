@@ -13,8 +13,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 
 @PerFragment

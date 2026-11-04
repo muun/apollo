@@ -5,7 +5,6 @@ import android.os.SystemClock
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import io.muun.apollo.data.external.NotificationService
-import io.muun.apollo.data.os.OS.supportsWorkManagerStopReason
 import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_WORKMANAGER_TASK_STARTED
 import io.muun.apollo.domain.analytics.AnalyticsEvent.E_WORKMANAGER_TASK_STOPPED
@@ -53,12 +52,6 @@ class LnPaymentFailedNotificationWorker(
     override fun onStopped() {
         super.onStopped()
 
-        var stopReason: Int? = null
-
-        if (supportsWorkManagerStopReason()) {
-            stopReason = getStopReason()
-        }
-
         val durationInMillis = if (startMs != null) {
             SystemClock.elapsedRealtime() - startMs!!
         } else {
@@ -68,7 +61,7 @@ class LnPaymentFailedNotificationWorker(
         analytics.report(
             E_WORKMANAGER_TASK_STOPPED(
                 "LnPaymentFailedNotification",
-                mapStopReason(stopReason),
+                mapStopReason(stopReasonOrNull()),
                 durationInMillis
             )
         )

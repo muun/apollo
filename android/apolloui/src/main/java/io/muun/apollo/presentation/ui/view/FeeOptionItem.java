@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.FeeOptionItemBinding;
 import io.muun.apollo.domain.model.BitcoinAmount;
 import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.ui.helper.BitcoinHelper;
@@ -13,44 +14,16 @@ import io.muun.common.utils.Preconditions;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.View;
-import android.widget.TextView;
-import butterknife.BindColor;
-import butterknife.BindString;
-import butterknife.BindView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import androidx.core.content.ContextCompat;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 
 import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 
-public class FeeOptionItem extends MuunView {
-
-    @BindView(R.id.fee_option_item)
-    View layout;
-
-    @BindView(R.id.fee_option_title)
-    TextView title;
-
-    @BindView(R.id.fee_option_fee_rate)
-    TextView feeRate;
-
-    @BindView(R.id.fee_option_main_value)
-    TextView mainValue;
-
-    @BindView(R.id.fee_option_secondary_value)
-    TextView secondaryValue;
-
-    @BindString(R.string.fee_option_item_title)
-    String titlePrefix;
-
-    @BindColor(R.color.text_primary_color)
-    int textPrimaryColor;
-
-    @BindColor(R.color.text_secondary_color)
-    int textSecondaryColor;
-
-    @BindColor(R.color.disabled_color)
-    int disabledTintColor;
+public class FeeOptionItem extends MuunView<FeeOptionItemBinding> {
 
     @State
     BitcoinUnit bitcoinUnit;
@@ -68,8 +41,24 @@ public class FeeOptionItem extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.fee_option_item;
+    public Function3<LayoutInflater, ViewGroup, Boolean, FeeOptionItemBinding> bindingInflater() {
+        return FeeOptionItemBinding::inflate;
+    }
+
+    private String getTitlePrefix() {
+        return getContext().getString(R.string.fee_option_item_title);
+    }
+
+    private int getTextPrimaryColor() {
+        return ContextCompat.getColor(getContext(), R.color.text_primary_color);
+    }
+
+    private int getTextSecondaryColor() {
+        return ContextCompat.getColor(getContext(), R.color.text_secondary_color);
+    }
+
+    private int getDisabledTintColor() {
+        return ContextCompat.getColor(getContext(), R.color.disabled_color);
     }
 
     /**
@@ -79,19 +68,19 @@ public class FeeOptionItem extends MuunView {
         final CharSequence timeText = new ConfirmationTimeFormatter(getContext()).formatMs(timeMs);
 
         final CharSequence text = TextUtils.concat(
-                titlePrefix,
+                getTitlePrefix(),
                 " ",
                 new RichText(timeText).setBold()
         );
 
-        title.setText(text);
+        getBinding().feeOptionTitle.setText(text);
     }
 
     /**
      * Set fee rate, in satoshis per virtual byte, for this fee option.
      */
     public void setFeeRate(double feeRateInSatsPerVbyte) {
-        feeRate.setText(getContext().getString(
+        getBinding().feeOptionFeeRate.setText(getContext().getString(
                 R.string.fee_option_item_fee_rate,
                 UiUtils.formatFeeRate(feeRateInSatsPerVbyte)
         ));
@@ -115,7 +104,7 @@ public class FeeOptionItem extends MuunView {
     }
 
     private void setFeeInBtc(long feeInSat) {
-        mainValue.setText(
+        getBinding().feeOptionMainValue.setText(
                 BitcoinHelper.formatLongBitcoinAmount(feeInSat, bitcoinUnit, getLocale())
         );
     }
@@ -124,7 +113,7 @@ public class FeeOptionItem extends MuunView {
      * Set fee value, in secondary currency, for this fee option.
      */
     private void setFeeInSecondaryCurrency(MonetaryAmount feeAmount) {
-        secondaryValue.setText(TextUtils.concat(
+        getBinding().feeOptionSecondaryValue.setText(TextUtils.concat(
                 "(",
                 MoneyHelper.formatLongMonetaryAmount(feeAmount, bitcoinUnit, getLocale()),
                 ")"
@@ -133,7 +122,7 @@ public class FeeOptionItem extends MuunView {
 
     @Override
     public void setOnClickListener(@Nullable OnClickListener clickListener) {
-        layout.setOnClickListener(clickListener);
+        getBinding().feeOptionItem.setOnClickListener(clickListener);
     }
 
     @Override
@@ -143,23 +132,25 @@ public class FeeOptionItem extends MuunView {
          * to an inner view, we should redirect @callOnClick too. A similar case could be made for
          * #performOnClick.
          */
-        return layout.callOnClick();
+        return getBinding().feeOptionItem.callOnClick();
     }
 
     @Override
     public void setSelected(boolean selected) {
-        layout.setSelected(selected);
+        getBinding().feeOptionItem.setSelected(selected);
     }
 
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        layout.setEnabled(enabled);
+        getBinding().feeOptionItem.setEnabled(enabled);
 
-        title.setTextColor(enabled ? textPrimaryColor : disabledTintColor);
-        mainValue.setTextColor(enabled ? textPrimaryColor : disabledTintColor);
-        feeRate.setTextColor(enabled ? textSecondaryColor : disabledTintColor);
-        secondaryValue.setTextColor(enabled ? textSecondaryColor : disabledTintColor);
+        final int primary = enabled ? getTextPrimaryColor() : getDisabledTintColor();
+        final int secondary = enabled ? getTextSecondaryColor() : getDisabledTintColor();
+        getBinding().feeOptionTitle.setTextColor(primary);
+        getBinding().feeOptionMainValue.setTextColor(primary);
+        getBinding().feeOptionFeeRate.setTextColor(secondary);
+        getBinding().feeOptionSecondaryValue.setTextColor(secondary);
     }
 
     public void setBitcoinUnit(BitcoinUnit bitcoinUnit) {

@@ -2,14 +2,12 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.ImageView
-import android.widget.TextView
-import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewHiddenSectionBinding
 
 class HiddenSection @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<ViewHiddenSectionBinding>(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<HiddenSection> = ViewProps.Builder<HiddenSection>()
@@ -18,11 +16,8 @@ class HiddenSection @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
             .build()
     }
 
-    @BindView(R.id.hidden_section_text)
-    lateinit var hiddenSectionText: TextView
-
-    @BindView(R.id.hidden_section_icon)
-    lateinit var hiddenSectionChevron: ImageView
+    private val hiddenSectionText get() = binding.hiddenSectionText
+    private val hiddenSectionChevron get() = binding.hiddenSectionIcon
 
     // State:
     @State
@@ -37,8 +32,9 @@ class HiddenSection @JvmOverloads constructor(c: Context, a: AttributeSet? = nul
     @JvmField
     var expanded: Boolean = false
 
-    override val layoutResource: Int
-        get() = R.layout.view_hidden_section
+    override fun bindingInflater(): BindingInflater<ViewHiddenSectionBinding> {
+        return ViewHiddenSectionBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
