@@ -4,8 +4,8 @@ package io.muun.common.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,6 +20,7 @@ public class MuunInputJson {
     @Nullable
     public SignatureJson userSignature;
 
+    // legacy name for the cosigner signature: kept for wire compatibility with clients
     @Nullable
     public SignatureJson muunSignature;
 
@@ -35,6 +36,7 @@ public class MuunInputJson {
     @Nullable
     public MuunInputIncomingSwapJson incomingSwap;
 
+    // legacy name for the cosigner public nonce: kept for wire compatibility with clients
     @Nullable
     public String rawMuunPublicNonceHex;
 

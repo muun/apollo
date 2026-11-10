@@ -26,9 +26,6 @@ class SetupPasswordAcceptFragment : SingleFragment<SetupPasswordAcceptPresenter>
         component.inject(this)
     }
 
-    override fun getLayoutResource() =
-        R.layout.fragment_setup_password_accept
-
     override fun initializeUi(view: View) {
         with(binding) {
             setupPasswordAcceptSubtitle.text = StyledStringRes(

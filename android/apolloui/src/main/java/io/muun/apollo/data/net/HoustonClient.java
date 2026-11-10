@@ -96,12 +96,12 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
-import javax.validation.constraints.NotNull;
 
 
 public class HoustonClient extends BaseClient<HoustonService> {

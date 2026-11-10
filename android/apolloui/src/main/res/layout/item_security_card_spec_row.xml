@@ -5,47 +5,44 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="12dp"
-    android:paddingHorizontal="36dp">
+    android:paddingHorizontal="32dp">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:contentDescription="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/text_view_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/text_secondary_color"
-        tools:src="@drawable/ic_circle_off_outline_24" />
+        app:layout_constraintTop_toTopOf="@id/text_view_label"
+        app:tint="@color/text_secondary_color" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_view_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:textAppearance="@style/MuunTextAppearance.Body.Md"
         android:textColor="@color/text_secondary_color"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_view_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Label" />
 
-    <com.google.android.material.textview.MaterialTextView
+    <io.muun.apollo.presentation.ui.security_cards.utils.ShimmerTextView
         android:id="@+id/text_view_value"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:background="?attr/selectableItemBackground"
         android:drawablePadding="4dp"
         android:gravity="end|center_vertical"
+        android:textAppearance="@style/MuunTextAppearance.Body.Md"
         android:textColor="@color/text_primary_color"
-        android:textSize="16sp"
         app:drawableTint="@color/text_secondary_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/text_view_label"
         app:layout_constraintTop_toTopOf="parent"
-        tools:drawableEnd="@drawable/ic_info_outline_24"
+        tools:drawableEnd="@drawable/ic_info"
         tools:text="Value" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

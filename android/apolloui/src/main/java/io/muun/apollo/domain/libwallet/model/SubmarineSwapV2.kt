@@ -7,7 +7,7 @@ class SubmarineSwapV2(val swap: MuunInputSubmarineSwapV102) : libwallet.InputSub
     override fun blocksForExpiration(): Long =
         swap.numBlocksForExpiration.toLong()
 
-    override fun muunPublicKey(): ByteArray =
+    override fun cosignerPublicKey(): ByteArray =
         swap.muunPublicKey
 
     override fun paymentHash256(): ByteArray =

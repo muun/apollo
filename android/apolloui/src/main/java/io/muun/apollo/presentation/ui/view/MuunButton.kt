@@ -7,21 +7,19 @@ import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import androidx.viewbinding.ViewBinding
 import icepick.State
 import io.muun.apollo.R
 import io.muun.apollo.databinding.MuunButtonBinding
 import io.muun.apollo.presentation.ui.utils.UiUtils
 
 class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunButtonBinding>(c, a, s) {
 
     companion object {
         val viewProps: ViewProps<MuunButton> = ViewProps.Builder<MuunButton>()
@@ -71,9 +69,6 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
         private const val MONOSPACE = 3
     }
 
-    private val binding: MuunButtonBinding
-        get() = getBinding() as MuunButtonBinding
-
     private val button: Button
         get() = binding.muunButtonButton
 
@@ -113,12 +108,8 @@ class MuunButton @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
     private var typeface: Typeface? = null
     private var fontFamily: String? = null
 
-    // TODO rm this once all views have successfully migrated from butterKnife to view binding.
-    override val layoutResource: Int
-        get() = R.layout.muun_button
-
-    override fun viewBinder(): ((View) -> ViewBinding) {
-        return MuunButtonBinding::bind
+    override fun bindingInflater(): BindingInflater<MuunButtonBinding> {
+        return MuunButtonBinding::inflate
     }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {

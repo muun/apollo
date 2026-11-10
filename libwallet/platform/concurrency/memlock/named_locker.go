@@ -68,6 +68,11 @@ func (l *NamedLocker) Acquire(
 	return l.acquire(ctx, lockName)
 }
 
+// AcquireLock is Acquire with the name and timeout of spec.
+func (l *NamedLocker) AcquireLock(ctx context.Context, spec LockSpec) (*NamedLock, error) {
+	return l.Acquire(ctx, spec.name, spec.timeout)
+}
+
 // Run acquires the lock for the given lockName with a timeout, calls f, and releases the lock when
 // f returns. If the lock cannot be acquired, f is not called and the context error is returned.
 func (l *NamedLocker) Run(

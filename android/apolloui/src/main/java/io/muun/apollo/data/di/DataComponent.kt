@@ -37,6 +37,8 @@ import io.muun.apollo.domain.action.di.ActionComponent
 import io.muun.apollo.domain.analytics.Analytics
 import io.muun.apollo.domain.libwallet.FeeBumpFunctionsProvider
 import io.muun.apollo.domain.libwallet.LibwalletClient
+import io.muun.apollo.osmodules.background_actions.BackgroundActionsScheduler
+import io.muun.apollo.osmodules.background_actions.BackgroundActionsForegroundRunner
 import org.bitcoinj.core.NetworkParameters
 import java.util.concurrent.Executor
 import javax.inject.Singleton
@@ -82,6 +84,10 @@ interface DataComponent : ActionComponent {
     fun networkParameters(): NetworkParameters
 
     fun taskScheduler(): TaskScheduler
+
+    fun backgroundActionsScheduler(): BackgroundActionsScheduler
+
+    fun backgroundActionsForegroundRunner(): BackgroundActionsForegroundRunner
 
     fun exchangeRateWindowRepository(): ExchangeRateWindowRepository
 

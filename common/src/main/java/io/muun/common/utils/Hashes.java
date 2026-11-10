@@ -7,11 +7,11 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 
+import jakarta.validation.constraints.NotNull;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.annotation.Nonnegative;
-import javax.validation.constraints.NotNull;
 
 public final class Hashes {
 

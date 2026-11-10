@@ -4,7 +4,6 @@ import android.content.Context
 import android.nfc.NfcAdapter
 import timber.log.Timber
 import java.io.File
-import java.security.MessageDigest
 
 /**
  * Probes the device for hints about NFC Extended APDU support without needing a tapped tag.
@@ -91,14 +90,8 @@ class NfcExtendedApduProbe(private val context: Context) {
         return NfcConfigFileScan(
             filesPresent = filesPresent.toList(),
             chipIdentifier = CHIP_PATTERN.find(raw)?.value?.uppercase() ?: Constants.EMPTY,
-            contentHash = if (raw.isNotEmpty()) sha256Hex(raw) else Constants.EMPTY,
+            contentHash = if (raw.isNotEmpty()) AfsUtils.sha256Hex(raw) else Constants.EMPTY,
         )
-    }
-
-    private fun sha256Hex(input: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256")
-            .digest(input.toByteArray(Charsets.UTF_8))
-        return bytes.joinToString("") { "%02x".format(it) }
     }
 
     private fun probeViaReflection(): NfcReflectionScan {

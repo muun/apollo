@@ -3,6 +3,7 @@ package io.muun.apollo.data.os.execution;
 import androidx.annotation.NonNull;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -12,7 +13,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 /**
  * Thread pool executor used by {ExecutionTransformerFactory} to take as much work as possible off

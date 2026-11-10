@@ -1,35 +1,29 @@
 package io.muun.apollo.presentation.ui.view;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunActionDrawerBinding;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 
 import java.util.HashMap;
 
-public class MuunActionDrawer extends MuunView {
+public class MuunActionDrawer extends MuunView<ViewBinding> {
 
     public interface OnActionClickListener {
         void onActionClick(int actionId);
     }
-
-    @Nullable   // Subclasses may not have this view
-    @BindView(R.id.muun_action_drawer_container)
-    ViewGroup container;
-
-    @Nullable   // Subclasses may not have this view
-    @BindView(R.id.muun_action_drawer_title)
-    TextView title;
 
     @State
     HashMap<Integer, Integer> actionIdToViewIndex = new HashMap<>();
@@ -49,20 +43,40 @@ public class MuunActionDrawer extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_action_drawer;
+    public Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return MuunActionDrawerBinding::inflate;
+    }
+
+    @Nullable
+    protected ViewGroup getContainer() {
+        return null;
+    }
+
+    @Nullable
+    protected TextView getDrawerTitle() {
+        return null;
     }
 
     public void setOnItemClickListener(OnActionClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Show the drawer title from a string resource.
+     */
     public void setTitle(@StringRes int resId) {
+        final TextView title = getDrawerTitle();
+        Preconditions.checkNotNull(title);
         title.setText(resId);
         title.setVisibility(VISIBLE);
     }
 
+    /**
+     * Show the drawer title from a literal char sequence.
+     */
     public void setTitle(CharSequence text) {
+        final TextView title = getDrawerTitle();
+        Preconditions.checkNotNull(title);
         title.setText(text);
         title.setVisibility(VISIBLE);
     }
@@ -75,13 +89,13 @@ public class MuunActionDrawer extends MuunView {
                           @Nullable @DrawableRes Integer maybeIconRes,
                           String label) {
 
+        final ViewGroup container = getContainer();
         Preconditions.checkNotNull(container);
 
         final MuunActionDrawerItem item = new MuunActionDrawerItem(getContext());
 
         if (maybeIcon != null) {
             item.setIcon(maybeIcon);
-
         } else if (maybeIconRes != null) {
             item.setIcon(maybeIconRes);
         }
@@ -93,6 +107,9 @@ public class MuunActionDrawer extends MuunView {
         container.addView(item);
     }
 
+    /**
+     * Update the label of an action previously added with {@link #addAction}.
+     */
     public void setActionLabel(int actionId, String text) {
         final MuunActionDrawerItem item = getItem(actionId);
         if (item != null) {
@@ -100,6 +117,9 @@ public class MuunActionDrawer extends MuunView {
         }
     }
 
+    /**
+     * Enable or disable an action previously added with {@link #addAction}.
+     */
     public void setActionEnabled(int actionId, boolean enabled) {
         final MuunActionDrawerItem item = getItem(actionId);
         if (item != null) {
@@ -108,6 +128,7 @@ public class MuunActionDrawer extends MuunView {
     }
 
     private MuunActionDrawerItem getItem(int actionId) {
+        final ViewGroup container = getContainer();
         Preconditions.checkNotNull(container);
 
         final Integer index = actionIdToViewIndex.get(actionId);

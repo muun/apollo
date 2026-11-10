@@ -7,19 +7,20 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
-import androidx.viewbinding.ViewBinding;
-import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function3;
 
 import javax.annotation.Nullable;
 
-public class MuunSettingItem extends MuunView {
+public class MuunSettingItem extends MuunView<MuunSettingItemBinding> {
 
     static final ViewProps<MuunSettingItem> viewProps = new ViewProps.Builder<MuunSettingItem>()
             .addStringJava(R.attr.label, MuunSettingItem::setLabel)
@@ -28,11 +29,9 @@ public class MuunSettingItem extends MuunView {
             .addColorList(R.attr.iconTint, MuunSettingItem::setIconColor)
             .build();
 
-    private MuunSettingItemBinding binding;
-
     @Override
-    public Function1<View, ViewBinding> viewBinder() {
-        return MuunSettingItemBinding::bind;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunSettingItemBinding> bindingInflater() {
+        return MuunSettingItemBinding::inflate;
     }
 
     public MuunSettingItem(Context context) {
@@ -47,30 +46,24 @@ public class MuunSettingItem extends MuunView {
         super(context, attrs, defStyleAttr);
     }
 
-    @Override protected int getLayoutResource() {
-        return R.layout.muun_setting_item;
-    }
-
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
-        binding = (MuunSettingItemBinding) getBinding();
         viewProps.transfer(attrs, this);
     }
 
     public void setLabel(CharSequence labelText) {
-        binding.settingItemLabel.setText(labelText);
+        getBinding().settingItemLabel.setText(labelText);
     }
 
     public void setDescription(@StringRes int descriptionRes) {
         showDescription(getContext().getString(descriptionRes));
-        binding.settingItemDescriptionIcon.setVisibility(GONE);
+        getBinding().settingItemDescriptionIcon.setVisibility(GONE);
     }
 
     public void setDescription(CharSequence descriptionText) {
         showDescription(descriptionText);
-        binding.settingItemDescriptionIcon.setVisibility(GONE);
+        getBinding().settingItemDescriptionIcon.setVisibility(GONE);
     }
 
     public void setDescription(CharSequence descriptionText, @DrawableRes int descriptionIconRes) {
@@ -79,13 +72,13 @@ public class MuunSettingItem extends MuunView {
     }
 
     private void showDescription(CharSequence descriptionText) {
-        final TextView description = binding.settingItemDescription;
+        final TextView description = getBinding().settingItemDescription;
         description.setText(descriptionText);
         description.setVisibility(View.VISIBLE);
     }
 
     private void setDescriptionIcon(@DrawableRes int descriptionIconRes) {
-        final ImageView descriptionIcon = binding.settingItemDescriptionIcon;
+        final ImageView descriptionIcon = getBinding().settingItemDescriptionIcon;
         descriptionIcon.setImageResource(descriptionIconRes);
         descriptionIcon.setVisibility(VISIBLE);
     }
@@ -95,12 +88,12 @@ public class MuunSettingItem extends MuunView {
     }
 
     public void setIcon(Drawable drawable) {
-        final ImageView icon = binding.settingItemIcon;
+        final ImageView icon = getBinding().settingItemIcon;
         icon.setImageDrawable(drawable);
         icon.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
     }
 
     public void setIconColor(ColorStateList color) {
-        ImageViewCompat.setImageTintList(binding.settingItemIcon, color);
+        ImageViewCompat.setImageTintList(getBinding().settingItemIcon, color);
     }
 }

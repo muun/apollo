@@ -1,33 +1,26 @@
 package io.muun.apollo.presentation.ui.fragments.flow_intro
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.viewbinding.ViewBinding
 import androidx.viewpager.widget.ViewPager
-import butterknife.BindView
-import butterknife.OnClick
-import com.google.android.material.tabs.TabLayout
 import icepick.State
-import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentIntroductionBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
 
 abstract class FlowIntroFragment<V, P, PP> : SingleFragment<P>(), FlowIntroView
     where V : FlowIntroView,
           P : FlowIntroPresenter<V, PP>,
           PP : FlowIntroParentPresenter {
 
-    @BindView(R.id.pager)
-    lateinit var viewPager: ViewPager
+    private val binding: FragmentIntroductionBinding
+        get() = getBinding() as FragmentIntroductionBinding
 
-    @BindView(R.id.pagerDots)
-    lateinit var viewPagerDots: TabLayout
-
-    @BindView(R.id.pager_footnote)
-    lateinit var footnoteView: TextView
-
-    @BindView(R.id.accept)
-    lateinit var acceptButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentIntroductionBinding::inflate
+    }
 
     @State
     @JvmField
@@ -38,40 +31,34 @@ abstract class FlowIntroFragment<V, P, PP> : SingleFragment<P>(), FlowIntroView
     @StringRes
     abstract fun getConfirmLabel(): Int
 
-    override fun getLayoutResource() =
-        R.layout.fragment_introduction
-
     override fun initializeUi(view: View) {
         // Keep currentPosition from restored State, or init from arguments (0 if not passed):
         if (currentPosition == -1) {
             currentPosition = argumentsBundle.getInt(FlowIntroView.ARG_STEP)
         }
 
-        viewPager.adapter = getPager()
-        viewPager.currentItem = currentPosition
-        viewPager.addOnPageChangeListener(pageChangeListener)
+        binding.pager.adapter = getPager()
+        binding.pager.currentItem = currentPosition
+        binding.pager.addOnPageChangeListener(pageChangeListener)
 
-        viewPagerDots.setupWithViewPager(viewPager)
+        binding.pagerDots.setupWithViewPager(binding.pager)
 
-        acceptButton.setText(getConfirmLabel())
+        binding.accept.setText(getConfirmLabel())
+        binding.accept.setOnClickListener {
+            presenter.confirmIntroduction()
+        }
 
-        onPagerPositionChanged(viewPager.currentItem)
+        onPagerPositionChanged(binding.pager.currentItem)
     }
 
     override fun setLoading(isLoading: Boolean) {
-        acceptButton.setLoading(isLoading)
-    }
-
-    @OnClick(R.id.accept)
-    fun onConfirmClick() {
-        presenter.confirmIntroduction()
+        binding.accept.setLoading(isLoading)
     }
 
     override fun onBackPressed(): Boolean =
         if (currentPosition > 0) {
-            viewPager.currentItem = currentPosition - 1
+            binding.pager.currentItem = currentPosition - 1
             true
-
         } else {
             false
         }
@@ -82,10 +69,10 @@ abstract class FlowIntroFragment<V, P, PP> : SingleFragment<P>(), FlowIntroView
         presenter.reportIntroductionStep(position)
 
         val inFirstStep = (position == 0)
-        val inLastStep = (position == viewPager.adapter!!.count - 1)
+        val inLastStep = (position == requireNotNull(binding.pager.adapter).count - 1)
 
-        footnoteView.visibility = if (inFirstStep) View.VISIBLE else View.INVISIBLE
-        acceptButton.visibility = if (inLastStep) View.VISIBLE else View.INVISIBLE
+        binding.pagerFootnote.visibility = if (inFirstStep) View.VISIBLE else View.INVISIBLE
+        binding.accept.visibility = if (inLastStep) View.VISIBLE else View.INVISIBLE
     }
 
     // Listener to show action buttons on final slide:

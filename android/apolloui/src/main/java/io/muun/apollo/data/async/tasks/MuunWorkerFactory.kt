@@ -7,10 +7,13 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import io.muun.apollo.data.external.DataComponentProvider
 import io.muun.apollo.data.external.NotificationService
+import io.muun.apollo.data.os.AppStateProvider
 import io.muun.apollo.data.os.execution.ExecutionTransformerFactory
 import io.muun.apollo.domain.LoggingContextManager
 import io.muun.apollo.domain.action.UserActions
 import io.muun.apollo.domain.analytics.Analytics
+import io.muun.apollo.domain.libwallet.LibwalletClient
+import io.muun.apollo.osmodules.background_actions.BackgroundActionsWorker
 import io.muun.common.utils.Preconditions
 import timber.log.Timber
 import javax.inject.Inject
@@ -41,6 +44,12 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
     @Inject
     lateinit var analytics: Analytics
 
+    @Inject
+    lateinit var libwalletClient: LibwalletClient
+
+    @Inject
+    lateinit var appStateProvider: AppStateProvider
+
     init {
         Timber.d("[MuunWorkerFactory] Execute Dependency Injection")
         provider.dataComponent.inject(this)
@@ -53,7 +62,13 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
     ): ListenableWorker? {
 
         Timber.d("[MuunWorkerFactory] Create worker for $workerClassName")
-        val workerClass = Class.forName(workerClassName)
+        val workerClass = try {
+            Class.forName(workerClassName)
+        } catch (_: ClassNotFoundException) {
+            // Legacy workers removed but still registered end up here
+            Timber.i("[MuunWorkerFactory] Worker for $workerClassName no longer exists")
+            return null
+        }
 
         // Should be enforce by WorkManager API but still (why don't they use Class param?!)
         Preconditions.checkArgument(Worker::class.java.isAssignableFrom(workerClass))
@@ -78,6 +93,16 @@ class MuunWorkerFactory(provider: DataComponentProvider) : WorkerFactory() {
                     appContext,
                     workerParameters,
                     notificationService,
+                    analytics
+                )
+            }
+
+            BackgroundActionsWorker::class.java -> {
+                return BackgroundActionsWorker(
+                    appContext,
+                    workerParameters,
+                    libwalletClient::runDueBackgroundActions,
+                    appStateProvider,
                     analytics
                 )
             }

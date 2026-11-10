@@ -26,9 +26,6 @@ internal class AcceptRecoveryCodeFragment : SingleFragment<AcceptRecoveryCodePre
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.accept_recovery_code_fragment
-
     override fun onResume() {
         super.onResume()
         updateAcceptButtonState()

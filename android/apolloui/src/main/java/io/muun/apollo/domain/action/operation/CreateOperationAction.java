@@ -20,9 +20,9 @@ import io.muun.common.utils.Preconditions;
 import rx.Observable;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 @Singleton
 public class CreateOperationAction {

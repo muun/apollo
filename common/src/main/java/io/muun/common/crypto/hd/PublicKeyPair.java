@@ -8,25 +8,33 @@ import org.bitcoinj.core.NetworkParameters;
 public class PublicKeyPair {
 
     private final PublicKey userPublicKey;
-    private final PublicKey muunPublicKey;
+    private final PublicKey cosignerPublicKey;
 
     /**
      * Constructor.
      */
-    public PublicKeyPair(PublicKey userPublicKey, PublicKey muunPublicKey) {
+    public PublicKeyPair(PublicKey userPublicKey, PublicKey cosignerPublicKey) {
         this.userPublicKey = userPublicKey;
-        this.muunPublicKey = muunPublicKey;
+        this.cosignerPublicKey = cosignerPublicKey;
 
-        checkDerivationPaths(userPublicKey, muunPublicKey);
-        checkNetworkParameters(userPublicKey, muunPublicKey);
+        checkDerivationPaths(userPublicKey, cosignerPublicKey);
+        checkNetworkParameters(userPublicKey, cosignerPublicKey);
     }
 
     public PublicKey getUserPublicKey() {
         return userPublicKey;
     }
 
+    public PublicKey getCosignerPublicKey() {
+        return cosignerPublicKey;
+    }
+
+    /**
+     * Legacy name for {@link #getCosignerPublicKey()}: apollo still calls it.
+     */
+    @Deprecated
     public PublicKey getMuunPublicKey() {
-        return muunPublicKey;
+        return cosignerPublicKey;
     }
 
     public String getAbsoluteDerivationPath() {
@@ -47,7 +55,7 @@ public class PublicKeyPair {
     public PublicKeyPair deriveFromAbsolutePath(String absolutePath) throws KeyDerivationException {
         return new PublicKeyPair(
                 userPublicKey.deriveFromAbsolutePath(absolutePath),
-                muunPublicKey.deriveFromAbsolutePath(absolutePath)
+                cosignerPublicKey.deriveFromAbsolutePath(absolutePath)
         );
     }
 
@@ -73,21 +81,21 @@ public class PublicKeyPair {
     public PublicKeyPair deriveChild(int childIndex) throws KeyDerivationException {
         return new PublicKeyPair(
                 userPublicKey.deriveChild(childIndex),
-                muunPublicKey.deriveChild(childIndex)
+                cosignerPublicKey.deriveChild(childIndex)
         );
     }
 
-    private void checkDerivationPaths(PublicKey userPublicKey, PublicKey muunPublicKey) {
+    private void checkDerivationPaths(PublicKey userPublicKey, PublicKey cosignerPublicKey) {
         final String userPath = userPublicKey.getAbsoluteDerivationPath();
-        final String muunPath = muunPublicKey.getAbsoluteDerivationPath();
+        final String cosignerPath = cosignerPublicKey.getAbsoluteDerivationPath();
 
-        Preconditions.checkArgument(userPath.equals(muunPath));
+        Preconditions.checkArgument(userPath.equals(cosignerPath));
     }
 
-    private void checkNetworkParameters(PublicKey userPublicKey, PublicKey muunPublicKey) {
+    private void checkNetworkParameters(PublicKey userPublicKey, PublicKey cosignerPublicKey) {
         final NetworkParameters userNetwork = userPublicKey.getNetworkParameters();
-        final NetworkParameters muunNetwork = muunPublicKey.getNetworkParameters();
+        final NetworkParameters cosignerNetwork = cosignerPublicKey.getNetworkParameters();
 
-        Preconditions.checkArgument(userNetwork.equals(muunNetwork));
+        Preconditions.checkArgument(userNetwork.equals(cosignerNetwork));
     }
 }

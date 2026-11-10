@@ -15,7 +15,6 @@ import io.muun.apollo.domain.analytics.Analytics;
 import io.muun.apollo.domain.analytics.AnalyticsEvent;
 import io.muun.apollo.domain.errors.DeprecatedClientVersionError;
 import io.muun.apollo.domain.errors.ExpiredSessionError;
-import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.apollo.domain.errors.TooManyRequestsError;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.report.EmailReport;
@@ -49,9 +48,9 @@ import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 /**
  * Base presenter whose lifetime is the same as its view.
@@ -316,12 +315,33 @@ public class BasePresenter<ViewT extends BaseView> implements Presenter<ViewT> {
                 );
             }
 
-        } else if (error instanceof SecureStorageError && isRecoverableWallet) {
+        } else if (ExtensionsKt.isInstanceOrIsCausedBySecureStorageCorruption(error)) {
 
-            view.showErrorDialog(
-                    R.string.secure_storage_error,
-                    this::logout
-            );
+            // This runs before handleNonFatalError on purpose: MigrationPresenter answers
+            // every non-fatal error with a retry, and retrying will not fix a store that can
+            // no longer decrypt what it holds.
+
+            // Returning true skips handleUnknownError, which is the only other place that
+            // logs this to Crashlytics. The guard avoids a second report: handleError already
+            // logged anything that implements PotentialBug.
+            if (!(error instanceof PotentialBug)) {
+                Timber.e(error);
+            }
+
+            if (isRecoverableWallet) {
+                view.showErrorDialog(
+                        R.string.secure_storage_error,
+                        this::logout
+                );
+
+            } else {
+                // Logging out would destroy the only copy of the keys: explain and offer the
+                // error report instead.
+                view.showErrorDialog(
+                        R.string.secure_storage_error_avoid_crash_non_logout,
+                        () -> sendErrorReport(error)
+                );
+            }
 
         } else {
             return false;

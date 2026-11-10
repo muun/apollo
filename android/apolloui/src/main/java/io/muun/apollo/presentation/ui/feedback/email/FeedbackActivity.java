@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.viewbinding.ViewBinding;
 import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements FeedbackView {
 
@@ -45,11 +45,6 @@ public class FeedbackActivity extends BaseActivity<FeedbackPresenter> implements
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.feedback_activity;
     }
 
     @Override

@@ -56,9 +56,6 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.new_operation_error_fragment
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         UiUtils.lastResortHideKeyboard(parentActivity)
@@ -73,7 +70,6 @@ class NewOperationErrorFragment : SingleFragment<NewOperationErrorPresenter>(),
                 if (errorType in arrayOf(INVALID_SWAP, INVOICE_NO_ROUTE, SWAP_FAILED)) {
                     presenter!!.contactSupport()
                     finishActivity()
-
                 } else if (errorType == GENERIC) {
                     presenter!!.sendErrorReport()
                 }

@@ -1,5 +1,6 @@
 package io.muun.apollo.domain.action.realtime;
 
+import io.muun.apollo.data.libwallet.MarketplaceControlPlaneDevStub;
 import io.muun.apollo.data.net.HoustonClient;
 import io.muun.apollo.data.preferences.BlockchainHeightRepository;
 import io.muun.apollo.data.preferences.ExchangeRateWindowRepository;
@@ -8,6 +9,7 @@ import io.muun.apollo.data.preferences.FeeWindowRepository;
 import io.muun.apollo.data.preferences.ForwardingPoliciesRepository;
 import io.muun.apollo.data.preferences.MinFeeRateRepository;
 import io.muun.apollo.domain.action.base.BaseAsyncAction0;
+import io.muun.apollo.domain.libwallet.LibwalletClient;
 import io.muun.apollo.domain.model.MuunFeature;
 import io.muun.common.rx.RxHelper;
 
@@ -34,6 +36,8 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
 
     private final FeaturesRepository featuresRepository;
 
+    private final LibwalletClient libwalletClient;
+
     /**
      * Update time-sensitive data, such as network fees and exchange rates.
      */
@@ -45,7 +49,8 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
             final BlockchainHeightRepository blockchainHeightRepository,
             final ForwardingPoliciesRepository forwardingPoliciesRepository,
             final MinFeeRateRepository minFeeRateRepository,
-            final FeaturesRepository featuresRepository
+            final FeaturesRepository featuresRepository,
+            final LibwalletClient libwalletClient
     ) {
 
         this.houstonClient = houstonClient;
@@ -55,6 +60,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
         this.forwardingPoliciesRepository = forwardingPoliciesRepository;
         this.minFeeRateRepository = minFeeRateRepository;
         this.featuresRepository = featuresRepository;
+        this.libwalletClient = libwalletClient;
     }
 
     /**
@@ -86,6 +92,7 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                     blockchainHeightRepository.store(realTimeData.currentBlockchainHeight);
                     forwardingPoliciesRepository.store(realTimeData.forwardingPolicies);
                     featuresRepository.store(realTimeData.features);
+                    storeMarketplaceControlPlane();
 
                     // When the FF is ON, this data will be stored by FetchRealTimeFeesAction
                     if (!realTimeData.features.contains(MuunFeature.EFFECTIVE_FEES_CALCULATION)) {
@@ -94,6 +101,13 @@ public class FetchRealTimeDataAction extends BaseAsyncAction0<Void> {
                     }
                 })
                 .map(RxHelper::toVoid);
+    }
+
+    // TODO: source the control plane from realTimeData once houston serves it
+    // there; until then the dev stub stands in for the RealTimeData payload.
+    // The push can't fail the sync: saveMarketplaceControlPlane never throws.
+    private void storeMarketplaceControlPlane() {
+        libwalletClient.saveMarketplaceControlPlane(MarketplaceControlPlaneDevStub.request);
     }
 
     private boolean shouldSync() {

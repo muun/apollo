@@ -22,9 +22,6 @@ class CreateEmailHelpFragment : SingleFragment<CreateEmailHelpPresenter>() {
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_create_email_help
-
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentCreateEmailHelpBinding::inflate
     }

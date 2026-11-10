@@ -25,13 +25,13 @@ import rx.Observable.Transformer;
 import rx.Single;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
 import javax.net.ssl.SSLException;
-import javax.validation.constraints.NotNull;
 
 public class RxCallAdapterWrapper<R> implements CallAdapter<R, Object> {
 

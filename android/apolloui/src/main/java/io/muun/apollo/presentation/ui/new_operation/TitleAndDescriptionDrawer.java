@@ -1,15 +1,18 @@
 package io.muun.apollo.presentation.ui.new_operation;
 
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.DrawerTitleAndDescriptionBinding;
 import io.muun.apollo.presentation.ui.view.DrawerDialogFragment;
 import io.muun.apollo.presentation.ui.view.MuunActionDrawer;
 
 import android.content.Context;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 import javax.annotation.Nullable;
 
@@ -33,8 +36,7 @@ public class TitleAndDescriptionDrawer extends DrawerDialogFragment {
 
     public static class MuunDescriptionDrawer extends MuunActionDrawer {
 
-        @BindView(R.id.muun_action_drawer_description)
-        TextView descriptionTextView;
+        private DrawerTitleAndDescriptionBinding binding;
 
         public MuunDescriptionDrawer(Context context) {
             super(context);
@@ -45,19 +47,25 @@ public class TitleAndDescriptionDrawer extends DrawerDialogFragment {
         }
 
         @Override
-        protected void setUp(Context context, @Nullable AttributeSet attrs) {
-            super.setUp(context, attrs);
-
-            descriptionTextView.setMovementMethod(LinkMovementMethod.getInstance());
-        }
-
-        public void setDescription(CharSequence description) {
-            descriptionTextView.setText(description);
+        public Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+            return DrawerTitleAndDescriptionBinding::inflate;
         }
 
         @Override
-        protected int getLayoutResource() {
-            return R.layout.drawer_title_and_description;
+        protected void setUp(Context context, @Nullable AttributeSet attrs) {
+            super.setUp(context, attrs);
+            binding = (DrawerTitleAndDescriptionBinding) getBinding();
+            binding.muunActionDrawerDescription.setMovementMethod(LinkMovementMethod.getInstance());
+        }
+
+        @Override
+        @Nullable
+        protected TextView getDrawerTitle() {
+            return binding != null ? binding.muunActionDrawerTitle : null;
+        }
+
+        public void setDescription(CharSequence description) {
+            binding.muunActionDrawerDescription.setText(description);
         }
     }
 }

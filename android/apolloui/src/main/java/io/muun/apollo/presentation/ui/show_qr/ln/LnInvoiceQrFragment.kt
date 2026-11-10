@@ -2,27 +2,28 @@ package io.muun.apollo.presentation.ui.show_qr.ln
 
 import android.app.Activity
 import android.content.Intent
+import android.view.LayoutInflater
 import android.view.View
-import androidx.core.widget.NestedScrollView
-import butterknife.BindView
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.viewbinding.ViewBinding
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentShowQrLnBinding
 import io.muun.apollo.domain.libwallet.DecodedInvoice
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.MuunCountdownTimer
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.select_amount.SelectAmountActivity
-import io.muun.apollo.presentation.ui.show_qr.NotificationsPrimingView
 import io.muun.apollo.presentation.ui.show_qr.QrFragment
 import io.muun.apollo.presentation.ui.utils.OS
 import io.muun.apollo.presentation.ui.utils.ReceiveLnInvoiceFormatter
-import io.muun.apollo.presentation.ui.view.ExpirationTimeItem
-import io.muun.apollo.presentation.ui.view.HiddenSection
-import io.muun.apollo.presentation.ui.view.LoadingView
+import io.muun.apollo.presentation.ui.view.EditAmountItem
+import io.muun.apollo.presentation.ui.view.MuunButton
 import java.util.Locale
 import javax.money.MonetaryAmount
-
 
 class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     LnInvoiceView,
@@ -32,35 +33,22 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         private const val REQUEST_AMOUNT = 2
     }
 
-    @BindView(R.id.scrollView)
-    lateinit var scrollView: NestedScrollView
+    private val binding: FragmentShowQrLnBinding
+        get() = getBinding() as FragmentShowQrLnBinding
 
-    @BindView(R.id.invoice_notifications_priming)
-    lateinit var notificationsPrimingView: NotificationsPrimingView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        FragmentShowQrLnBinding::inflate
 
-    @BindView(R.id.qr_overlay)
-    lateinit var qrOverlay: View
-
-    @BindView(R.id.invoice_settings)
-    lateinit var hiddenSection: HiddenSection
-
-    @BindView(R.id.invoice_settings_content)
-    lateinit var invoiceSettingsContent: View
-
-    @BindView(R.id.expiration_time_item)
-    lateinit var expirationTimeItem: ExpirationTimeItem
-
-    @BindView(R.id.invoice_loading)
-    lateinit var loadingView: LoadingView
-
-    @BindView(R.id.invoice_expired_overlay)
-    lateinit var invoiceExpiredOverlay: View
-
-    @BindView(R.id.create_other_invoice)
-    lateinit var createOtherInvoice: View
-
-    @BindView(R.id.high_fees_warning_overlay)
-    lateinit var highFeesOverlay: View
+    override val qrImage: ImageView
+        get() = binding.showQrImageQr
+    override val qrContent: TextView
+        get() = binding.showQrContent
+    override val copyButton: MuunButton
+        get() = binding.showQrCopy
+    override val shareButton: MuunButton
+        get() = binding.showQrShare
+    override val editAmountItem: EditAmountItem
+        get() = binding.editAmountItem
 
     // State:
 
@@ -79,18 +67,15 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         component.inject(this)
     }
 
-    override fun getLayoutResource() =
-        R.layout.fragment_show_qr_ln
-
     override fun initializeUi(view: View) {
         super.initializeUi(view)
 
-        hiddenSection.setOnClickListener { presenter.toggleAdvancedSettings() }
-        createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
+        binding.invoiceSettings.setOnClickListener { presenter.toggleAdvancedSettings() }
+        binding.createOtherInvoice.setOnClickListener { onCreateInvoiceClick() }
 
         if (OS.supportsNotificationRuntimePermission()) {
-            notificationsPrimingView.setUpForLightning()
-            notificationsPrimingView.setEnableClickListener {
+            binding.invoiceNotificationsPriming.setUpForLightning()
+            binding.invoiceNotificationsPriming.setEnableClickListener {
                 presenter.handleNotificationPermissionPrompt()
             }
         }
@@ -101,21 +86,21 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     }
 
     override fun setShowingAdvancedSettings(showingAdvancedSettings: Boolean) {
-        hiddenSection.setExpanded(showingAdvancedSettings)
+        binding.invoiceSettings.setExpanded(showingAdvancedSettings)
         if (showingAdvancedSettings) {
-            invoiceSettingsContent.visibility = View.VISIBLE
+            binding.invoiceSettingsContent.visibility = View.VISIBLE
         }
     }
 
     override fun setLoading(loading: Boolean) {
-        loadingView.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.invoiceLoading.visibility = if (loading) View.VISIBLE else View.GONE
         qrContent.visibility = if (loading) View.INVISIBLE else View.VISIBLE // Keep view Bounds
 
         copyButton.isEnabled = !loading
         shareButton.isEnabled = !loading
 
         editAmountItem.setLoading(loading)
-        expirationTimeItem.setLoading(loading)
+        binding.expirationTimeItem.setLoading(loading)
     }
 
     override fun setInvoice(invoice: DecodedInvoice, amount: MonetaryAmount?) {
@@ -129,7 +114,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
 
         if (amount != null) {
             editAmountItem.setAmount(amount, getBitcoinUnit())
-
         } else {
             editAmountItem.resetAmount()
         }
@@ -151,16 +135,15 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
         ErrorCorrectionLevel.L  // Bech 32 already has its own error correction.
 
     override fun toggleAdvancedSettings() {
-        hiddenSection.toggleSection()
+        binding.invoiceSettings.toggleSection()
 
-        if (invoiceSettingsContent.visibility == View.VISIBLE) {
-            invoiceSettingsContent.visibility = View.GONE
-
+        if (binding.invoiceSettingsContent.visibility == View.VISIBLE) {
+            binding.invoiceSettingsContent.visibility = View.GONE
         } else {
-            invoiceSettingsContent.visibility = View.VISIBLE
+            binding.invoiceSettingsContent.visibility = View.VISIBLE
 
-            scrollView.postDelayed({
-                scrollView.fullScroll(View.FOCUS_DOWN)
+            binding.scrollView.postDelayed({
+                binding.scrollView.fullScroll(View.FOCUS_DOWN)
             }, 100)
         }
     }
@@ -185,7 +168,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
 
             if (result != null && !result.isZero) {
                 presenter.setAmount(result)
-
             } else {
                 resetAmount()
             }
@@ -198,7 +180,7 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
 
     override fun onCountDownTick(remainingSeconds: Long) {
         // Using minimalistic pattern/display/formatting to better fit in small screen space
-        expirationTimeItem.setExpirationTime(
+        binding.expirationTimeItem.setExpirationTime(
             ReceiveLnInvoiceFormatter().formatSeconds(remainingSeconds)
         )
     }
@@ -208,20 +190,20 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     }
 
     private fun resetViewState() {
-        notificationsPrimingView.visibility = View.GONE
-        highFeesOverlay.visibility = View.GONE
-        invoiceExpiredOverlay.visibility = View.GONE
-        qrOverlay.visibility = View.VISIBLE
-        hiddenSection.visibility = View.VISIBLE
+        binding.invoiceNotificationsPriming.visibility = View.GONE
+        binding.highFeesWarningOverlay.visibility = View.GONE
+        binding.invoiceExpiredOverlay.visibility = View.GONE
+        binding.qrOverlay.visibility = View.VISIBLE
+        binding.invoiceSettings.visibility = View.VISIBLE
 
         if (showNotificationPriming()) {
-            notificationsPrimingView.visibility = View.VISIBLE
+            binding.invoiceNotificationsPriming.visibility = View.VISIBLE
 
-            highFeesOverlay.visibility = View.GONE
-            invoiceExpiredOverlay.visibility = View.GONE
-            qrOverlay.visibility = View.GONE
-            hiddenSection.visibility = View.GONE
-            invoiceSettingsContent.visibility = View.GONE
+            binding.highFeesWarningOverlay.visibility = View.GONE
+            binding.invoiceExpiredOverlay.visibility = View.GONE
+            binding.qrOverlay.visibility = View.GONE
+            binding.invoiceSettings.visibility = View.GONE
+            binding.invoiceSettingsContent.visibility = View.GONE
         }
     }
 
@@ -236,20 +218,20 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     }
 
     private fun showHighFeesOverlay() {
-        highFeesOverlay.visibility = View.VISIBLE
-        invoiceExpiredOverlay.visibility = View.GONE
-        qrOverlay.visibility = View.GONE
-        hiddenSection.visibility = View.GONE
-        hiddenSection.setExpanded(false)
-        invoiceSettingsContent.visibility = View.GONE
+        binding.highFeesWarningOverlay.visibility = View.VISIBLE
+        binding.invoiceExpiredOverlay.visibility = View.GONE
+        binding.qrOverlay.visibility = View.GONE
+        binding.invoiceSettings.visibility = View.GONE
+        binding.invoiceSettings.setExpanded(false)
+        binding.invoiceSettingsContent.visibility = View.GONE
     }
 
     private fun showInvoiceExpiredOverlay() {
-        invoiceExpiredOverlay.visibility = View.VISIBLE
-        qrOverlay.visibility = View.GONE
-        hiddenSection.visibility = View.GONE
-        hiddenSection.setExpanded(false)
-        invoiceSettingsContent.visibility = View.GONE
+        binding.invoiceExpiredOverlay.visibility = View.VISIBLE
+        binding.qrOverlay.visibility = View.GONE
+        binding.invoiceSettings.visibility = View.GONE
+        binding.invoiceSettings.setExpanded(false)
+        binding.invoiceSettingsContent.visibility = View.GONE
     }
 
     private fun onCreateInvoiceClick() {
@@ -260,7 +242,6 @@ class LnInvoiceQrFragment : QrFragment<LnInvoiceQrPresenter>(),
     override fun refresh() {
         if (highFees) {
             showHighFeesOverlay()
-
         } else {
             resetViewState()
             presenter.generateNewInvoice()

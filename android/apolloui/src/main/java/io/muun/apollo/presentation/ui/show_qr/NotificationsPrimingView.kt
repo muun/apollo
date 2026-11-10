@@ -3,25 +3,17 @@ package io.muun.apollo.presentation.ui.show_qr
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.view.MuunButton
+import io.muun.apollo.databinding.ViewNotificationsPrimingBinding
+import io.muun.apollo.presentation.ui.view.BindingInflater
 import io.muun.apollo.presentation.ui.view.MuunView
 
-class NotificationsPrimingView : MuunView {
+class NotificationsPrimingView : MuunView<ViewNotificationsPrimingBinding> {
 
-    @BindView(R.id.priming_notifications_title)
-    lateinit var title: TextView
-
-    @BindView(R.id.priming_notifications_desc)
-    lateinit var description: TextView
-
-    @BindView(R.id.priming_notifications_enable)
-    lateinit var enableButton: MuunButton
-
-    @BindView(R.id.priming_notifications_skip)
-    lateinit var skipButton: MuunButton
+    private val title get() = binding.primingNotificationsTitle
+    private val description get() = binding.primingNotificationsDesc
+    private val enableButton get() = binding.primingNotificationsEnable
+    private val skipButton get() = binding.primingNotificationsSkip
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -29,8 +21,9 @@ class NotificationsPrimingView : MuunView {
         context, attrs, defStyleAttr
     )
 
-    override val layoutResource: Int
-        get() = R.layout.view_notifications_priming
+    override fun bindingInflater(): BindingInflater<ViewNotificationsPrimingBinding> {
+        return ViewNotificationsPrimingBinding::inflate
+    }
 
     fun setUpForFirstTime() {
         title.setText(R.string.priming_notifications_title)

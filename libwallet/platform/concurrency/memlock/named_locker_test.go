@@ -385,3 +385,25 @@ func TestRunCancel(t *testing.T) {
 		t.Fatalf("expected len()==0 after release, got %d", locker.len())
 	}
 }
+
+func TestAcquireLock(t *testing.T) {
+	var locker NamedLocker
+	spec := NewLockSpec("entity-1", 50*time.Millisecond)
+
+	lock1, err := locker.AcquireLock(t.Context(), spec)
+	if err != nil {
+		t.Fatalf("AcquireLock returned error: %v", err)
+	}
+
+	// A second acquisition waits on the spec's name and gives up after its timeout.
+	_, err = locker.AcquireLock(t.Context(), spec)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("expected DeadlineExceeded error, got %v", err)
+	}
+
+	lock1.Release()
+
+	if locker.len() != 0 {
+		t.Fatalf("expected len()==0 after release, got %d", locker.len())
+	}
+}

@@ -7,6 +7,7 @@ import io.muun.apollo.domain.analytics.NewOperationOrigin;
 import io.muun.apollo.domain.model.FeedbackCategory;
 import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.domain.model.OperationUri;
+import io.muun.apollo.domain.model.marketplace.MarketplaceCountryCode;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.selector.UserSelector;
 import io.muun.apollo.presentation.app.di.PerApplication;
@@ -14,7 +15,6 @@ import io.muun.apollo.presentation.ui.activity.operations.OperationsActivity;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivityImpl;
 import io.muun.apollo.presentation.ui.debug.DebugPanelActivity;
-import io.muun.apollo.presentation.ui.debug.securekv.DebugSecureKeyValueStorageActivity;
 import io.muun.apollo.presentation.ui.diagnostic.DiagnosticActivity;
 import io.muun.apollo.presentation.ui.export_keys.EmergencyKitActivity;
 import io.muun.apollo.presentation.ui.feedback.anon.AnonFeedbackActivity;
@@ -41,8 +41,6 @@ import io.muun.apollo.presentation.ui.security_cards_country_picker.models.Count
 import io.muun.apollo.presentation.ui.security_cards_full_specs.SecurityCardsFullSpecsActivity;
 import io.muun.apollo.presentation.ui.security_cards_marketplace.SecurityCardsMarketplaceActivity;
 import io.muun.apollo.presentation.ui.security_cards_marketplace.models.MarketplaceFooter;
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCard;
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCardProvider;
 import io.muun.apollo.presentation.ui.security_cards_onboarding.SecurityCardsOnboardingActivity;
 import io.muun.apollo.presentation.ui.security_cards_shipping_address.ShippingAddressActivity;
 import io.muun.apollo.presentation.ui.security_logout.SecurityLogoutActivity;
@@ -72,11 +70,12 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 
 /**
@@ -205,18 +204,6 @@ public class Navigator {
         final Intent intent = DiagnosticActivity.Companion.getStartActivityIntent(context);
 
         // No animation between activities for now
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
-        context.startActivity(intent);
-    }
-
-    /**
-     * Takes the user to the SecureKeyValueStorage debug screen.
-     */
-    public void navigateToSecureKeyValueStorageDebug(Context context) {
-        final Intent intent =
-                DebugSecureKeyValueStorageActivity.Companion.getStartActivityIntent(context);
-
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
 
         context.startActivity(intent);
@@ -712,14 +699,18 @@ public class Navigator {
      */
     public void navigateToCardDetail(
             @NotNull Context context,
-            @NotNull CountryInfo countryInfo,
-            @NotNull SecurityCardProvider provider,
-            @NotNull SecurityCard card,
-            @NotNull MarketplaceFooter footer
+            @NotNull MarketplaceCountryCode countryCode,
+            @NotNull String providerUuid,
+            @NotNull String cardUuid,
+            @NotNull MarketplaceFooter.CurrentCurrency currentCurrency
     ) {
         final Intent intent =
                 CardDetailActivity.Companion.getIntent(
-                        context, countryInfo, provider, card, footer
+                        context,
+                        countryCode,
+                        providerUuid,
+                        cardUuid,
+                        currentCurrency
                 );
         context.startActivity(intent);
     }
@@ -729,12 +720,29 @@ public class Navigator {
      */
     public void navigateToCountryPickerForResult(
             @NotNull Context context,
-            @Nullable String selectedCountryCode,
+            @Nullable MarketplaceCountryCode selectedCountryCode,
             @NotNull ActivityResultLauncher<Intent> activityLauncher
     ) {
         activityLauncher.launch(CountryPickerActivity.Companion.getIntent(
                 context,
                 selectedCountryCode
+        ));
+    }
+
+    /**
+     * Navigate to country picker activity, limiting the countries to those where the given
+     * provider operates.
+     */
+    public void navigateToCountryPickerForResult(
+            @NotNull Context context,
+            @Nullable MarketplaceCountryCode selectedCountryCode,
+            @NotNull String providerUuid,
+            @NotNull ActivityResultLauncher<Intent> activityLauncher
+    ) {
+        activityLauncher.launch(CountryPickerActivity.Companion.getIntent(
+                context,
+                selectedCountryCode,
+                providerUuid
         ));
     }
 
@@ -749,10 +757,11 @@ public class Navigator {
 
     public void navigateToSecurityCardsFullSpecs(
             @NotNull Context context,
-            @NotNull SecurityCard card
+            @NotNull MarketplaceCountryCode countryCode,
+            @NotNull String cardUuid
     ) {
         context.startActivity(
-                SecurityCardsFullSpecsActivity.Companion.getIntent(context, card)
+                SecurityCardsFullSpecsActivity.Companion.getIntent(context, countryCode, cardUuid)
         );
     }
 
@@ -761,12 +770,20 @@ public class Navigator {
      */
     public void navigateToShippingAddress(
             @NotNull Context context,
-            @NotNull CountryInfo countryInfo,
-            @NotNull SecurityCardProvider provider
+            @NotNull MarketplaceCountryCode countryCode,
+            @NotNull String providerUuid,
+            @ColorInt int providerLightPrimaryColor,
+            @ColorInt int providerDarkPrimaryColor,
+            @NotNull String providerWebsiteUrl
     ) {
         context.startActivity(
                 ShippingAddressActivity.Companion.getIntent(
-                        context, countryInfo, provider
+                        context,
+                        countryCode,
+                        providerUuid,
+                        providerLightPrimaryColor,
+                        providerDarkPrimaryColor,
+                        providerWebsiteUrl
                 )
         );
     }

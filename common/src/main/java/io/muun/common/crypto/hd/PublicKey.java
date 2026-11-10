@@ -8,6 +8,7 @@ import io.muun.common.bitcoinj.TestNetParamsU;
 import io.muun.common.bitcoinj.TestNetParamsV;
 import io.muun.common.crypto.hd.exception.InvalidDerivationBranchException;
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
+import io.muun.common.crypto.hd.exception.InvalidSignatureException;
 import io.muun.common.crypto.hd.exception.KeyDerivationException;
 import io.muun.common.utils.ByteArray;
 import io.muun.common.utils.Encodings;
@@ -17,17 +18,21 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.SignatureDecodeException;
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.VerificationException;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDDerivationException;
+import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class PublicKey extends BaseKey {
 
@@ -254,6 +259,38 @@ public class PublicKey extends BaseKey {
     }
 
     /**
+     * Verify a Bitcoin signature of a transaction hash, as produced by
+     * {@link PrivateKey#signTransactionHash}.
+     *
+     * @throws InvalidSignatureException If the signature is malformed or does not verify.
+     */
+    public void verifyTransactionHashSignature(byte[] txHash, Signature signature)
+            throws InvalidSignatureException {
+        final boolean requireCanonicalEncoding = true;
+        final boolean requireCanonicalSValue = true;
+
+        final TransactionSignature txSignature;
+        try {
+            txSignature = TransactionSignature.decodeFromBitcoin(
+                    signature.getBytes(),
+                    requireCanonicalEncoding,
+                    requireCanonicalSValue
+            );
+        } catch (SignatureDecodeException | VerificationException e) {
+            throw new InvalidSignatureException("signature is not canonically encoded", e);
+        }
+
+        // Not sigHashMode(), which masks the flags and reports ALL for ANYONECANPAY too.
+        if (txSignature.sighashFlags != Transaction.SigHash.ALL.value) {
+            throw new InvalidSignatureException("signature does not use SIGHASH_ALL");
+        }
+
+        if (!deterministicKey.verify(Sha256Hash.wrap(txHash), txSignature)) {
+            throw new InvalidSignatureException("signature does not match the transaction hash");
+        }
+    }
+
+    /**
      * Convert to a json-serializable representation.
      */
     public PublicKeyJson toJson() {
@@ -279,7 +316,7 @@ public class PublicKey extends BaseKey {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(@Nullable Object other) {
 
         if (this == other) {
             return true;

@@ -40,9 +40,6 @@ class LandingFragment : SingleFragment<LandingPresenter>() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.landing_activity
-
     override fun initializeUi(view: View) {
         with(binding) {
             if (argumentsBundle.getBoolean(ARG_SHOW_ANIMATION)) {

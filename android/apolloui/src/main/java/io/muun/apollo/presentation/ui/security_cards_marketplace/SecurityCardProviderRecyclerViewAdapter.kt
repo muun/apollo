@@ -1,46 +1,102 @@
 package io.muun.apollo.presentation.ui.security_cards_marketplace
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import io.muun.apollo.R
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.SecurityCard
+import io.muun.apollo.databinding.ItemSecurityCardsMarketplaceCardBinding
+import io.muun.apollo.domain.model.marketplace.SecurityCardMarketplace
+import io.muun.apollo.presentation.ui.utils.capitalizedName
+import io.muun.apollo.presentation.ui.utils.getColorCompat
+import io.muun.apollo.presentation.ui.utils.setBackgroundTint
+import io.muun.apollo.presentation.ui.utils.setTextColorCompat
 
 class SecurityCardProviderRecyclerViewAdapter(
-    private val onSecurityCardClick: (SecurityCard) -> Unit
-) : ListAdapter<SecurityCard, SecurityCardProviderRecyclerViewAdapter.ViewHolder>(
+    @ColorInt private val providerPrimaryColor: Int,
+    private val onSecurityCardClick: (SecurityCardMarketplace.SecurityCard) -> Unit,
+) : ListAdapter<
+    SecurityCardMarketplace.SecurityCard,
+    SecurityCardProviderRecyclerViewAdapter.ViewHolder,
+    >(
     SecurityCardProviderDiffUtil()
 ) {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val view: View = view.findViewById(R.id.securityCard)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_security_cards_marketplace_card, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ItemSecurityCardsMarketplaceCardBinding
+            .inflate(LayoutInflater.from(parent.context), parent, false)
             .let(::ViewHolder)
+    }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.view.setBackgroundResource(currentList[position].imageRes)
-        holder.itemView.setOnClickListener { onSecurityCardClick(currentList[position]) }
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount() = currentList.size
+    inner class ViewHolder(
+        private val binding: ItemSecurityCardsMarketplaceCardBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
 
-    private class SecurityCardProviderDiffUtil : DiffUtil.ItemCallback<SecurityCard>() {
+        fun bind(item: SecurityCardMarketplace.SecurityCard) {
+            binding.bindImage(item)
+            binding.bindTag(item)
+            itemView.setOnClickListener { onSecurityCardClick(item) }
+        }
+
+        private fun ItemSecurityCardsMarketplaceCardBinding.bindImage(
+            item: SecurityCardMarketplace.SecurityCard
+        ) {
+            Glide.with(imageViewCard)
+                .load(item.imageUrl)
+                .into(imageViewCard)
+        }
+
+        private fun ItemSecurityCardsMarketplaceCardBinding.bindTag(
+            item: SecurityCardMarketplace.SecurityCard
+        ) {
+            when {
+                item.isOutOfStock -> {
+                    viewOutOfStockOverlay.isVisible = true
+                    textViewCardTag.isVisible = true
+                    textViewCardTag.setText(R.string.security_cards_marketplace_out_of_stock)
+                    textViewCardTag.setTextColorCompat(R.color.white)
+                    textViewCardTag.setBackgroundTint(providerPrimaryColor)
+                }
+
+                item.material.isMetal -> {
+                    viewOutOfStockOverlay.isVisible = false
+                    textViewCardTag.isVisible = true
+                    textViewCardTag.text = item.material.capitalizedName()
+                    textViewCardTag.setTextColorCompat(R.color.security_card_metal_text)
+                    textViewCardTag.setBackgroundTint(getColorCompat(R.color.background))
+                }
+
+                else -> {
+                    viewOutOfStockOverlay.isVisible = false
+                    textViewCardTag.isVisible = false
+                }
+            }
+        }
+    }
+
+    private class SecurityCardProviderDiffUtil :
+        DiffUtil.ItemCallback<SecurityCardMarketplace.SecurityCard>() {
 
         override fun areItemsTheSame(
-            oldItem: SecurityCard,
-            newItem: SecurityCard,
-        ) = true
+            oldItem: SecurityCardMarketplace.SecurityCard,
+            newItem: SecurityCardMarketplace.SecurityCard,
+        ): Boolean {
+            return oldItem.uuid == newItem.uuid
+        }
 
         override fun areContentsTheSame(
-            oldItem: SecurityCard,
-            newItem: SecurityCard,
-        ) = oldItem == newItem
+            oldItem: SecurityCardMarketplace.SecurityCard,
+            newItem: SecurityCardMarketplace.SecurityCard,
+        ): Boolean {
+            return oldItem == newItem
+        }
     }
 }

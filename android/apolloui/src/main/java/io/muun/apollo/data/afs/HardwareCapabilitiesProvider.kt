@@ -5,6 +5,7 @@ import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import android.media.MediaDrm
 import android.os.Environment
+import android.os.StatFs
 import android.provider.Settings
 import androidx.annotation.VisibleForTesting
 import io.muun.apollo.data.os.OS
@@ -17,13 +18,6 @@ import timber.log.Timber
 import java.io.File
 import java.util.*
 import kotlin.math.abs
-
-private const val UNKNOWN = "UNKNOWN"
-
-private const val UNKNOWN_BYTES_AMOUNT = -1L
-
-private const val BOOT_COUNT_UNSUPPORTED = -1
-private const val BOOT_COUNT_ERROR = -2
 
 /**
  * UUID for the W3C.
@@ -105,7 +99,7 @@ class HardwareCapabilitiesProvider(private val context: Context) {
                 memInfo.totalMem
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("totalRam", e))
-                UNKNOWN_BYTES_AMOUNT
+                Constants.LONG_UNKNOWN
             }
         }
 
@@ -118,13 +112,23 @@ class HardwareCapabilitiesProvider(private val context: Context) {
             return externalVolumeRootDirs.map { it.getTotalSpaceSafe() }
         }
 
+    val userDataPartitionInBytes: Long
+        get() {
+            return try {
+                val statFs = StatFs(Environment.getDataDirectory().path)
+                statFs.totalBytes
+            } catch (_: Exception) {
+                Constants.LONG_UNKNOWN
+            }
+        }
+
     val androidId: String
         get() {
             return try {
                 Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("androidId", e))
-                UNKNOWN
+                Constants.UNKNOWN
             }
         }
 
@@ -144,7 +148,7 @@ class HardwareCapabilitiesProvider(private val context: Context) {
                 activityManager.deviceConfigurationInfo.glEsVersion
             } catch (e: Exception) {
                 Timber.e(HardwareCapabilityError("glEsVersion", e))
-                UNKNOWN
+                Constants.UNKNOWN
             }
         }
 
@@ -163,14 +167,14 @@ class HardwareCapabilitiesProvider(private val context: Context) {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun bootCount(): Int {
         if (!OS.supportsBootCountSetting()) {
-            return BOOT_COUNT_UNSUPPORTED
+            return Constants.INT_UNKNOWN
         }
 
         return try {
             return Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
         } catch (e: Exception) {
             Timber.e(HardwareCapabilityError("bootCount", e))
-            BOOT_COUNT_ERROR
+            Constants.INT_EXCEPTION
         }
     }
 
@@ -207,10 +211,10 @@ class HardwareCapabilitiesProvider(private val context: Context) {
     }
 
     private fun File?.getTotalSpaceSafe() = try {
-        this?.totalSpace ?: UNKNOWN_BYTES_AMOUNT
+        this?.totalSpace ?: Constants.LONG_UNKNOWN
     } catch (e: Exception) {
         Timber.e(HardwareCapabilityError("totalSpace", e))
-        UNKNOWN_BYTES_AMOUNT
+        Constants.LONG_UNKNOWN
     }
 
     private fun saveClientIdForProviderIfExists(map: HashMap<String, String>, providerUuid: UUID) {

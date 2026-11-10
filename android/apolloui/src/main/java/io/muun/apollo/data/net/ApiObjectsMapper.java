@@ -68,6 +68,7 @@ import io.muun.common.utils.Preconditions;
 import androidx.annotation.NonNull;
 import libwallet.MusigNonces;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,7 +79,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.money.CurrencyUnit;
-import javax.validation.constraints.NotNull;
 
 public class ApiObjectsMapper {
 

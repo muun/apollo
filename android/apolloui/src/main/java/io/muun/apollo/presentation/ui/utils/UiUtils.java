@@ -41,11 +41,11 @@ import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.format.FormatStyle;
 
+import jakarta.validation.constraints.NotNull;
 import java.lang.ref.WeakReference;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import javax.money.MonetaryAmount;
-import javax.validation.constraints.NotNull;
 
 
 public class UiUtils {

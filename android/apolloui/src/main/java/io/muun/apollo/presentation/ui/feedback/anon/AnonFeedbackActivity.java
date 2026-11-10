@@ -16,7 +16,7 @@ import androidx.viewbinding.ViewBinding;
 import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class AnonFeedbackActivity
         extends BaseActivity<AnonFeedbackPresenter>
@@ -48,11 +48,6 @@ public class AnonFeedbackActivity
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.anon_feedback_activity;
     }
 
     @Override

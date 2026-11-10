@@ -4,22 +4,17 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.widget.EditText
-import android.widget.ImageView
-import butterknife.BindView
-import io.muun.apollo.R
+import io.muun.apollo.databinding.MuunUriInputBinding
 
 class MuunUriInput @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<MuunUriInputBinding>(c, a, s) {
 
-    @BindView(R.id.text_input)
-    lateinit var textInput: EditText
+    private val textInput get() = binding.textInput
+    private val scanQrButton get() = binding.scanQrButton
 
-    @BindView(R.id.scan_qr_button)
-    lateinit var scanQrButton: ImageView
-
-    override val layoutResource: Int
-        get() = R.layout.muun_uri_input
+    override fun bindingInflater(): BindingInflater<MuunUriInputBinding> {
+        return MuunUriInputBinding::inflate
+    }
 
     var onChangeListener: (content: String) -> Unit = {}
     var onScanQrClickListener: () -> Unit = {}

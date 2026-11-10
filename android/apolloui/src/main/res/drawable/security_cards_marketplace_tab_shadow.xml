@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background-colored drop shadow below the marketplace header: softly fades out the cards
+     scrolling past the TabLayout instead of cutting them with a hard edge. The end color must be
+     a zero-alpha version of the same RGB (not plain transparent): interpolating towards
+     transparent black would dim the fade through gray. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+        android:shape="rectangle">
+    <gradient
+            android:angle="270"
+            android:startColor="@color/background"
+            android:endColor="@color/background_zero_alpha" />
+</shape>

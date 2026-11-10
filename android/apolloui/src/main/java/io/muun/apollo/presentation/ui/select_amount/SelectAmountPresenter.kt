@@ -18,7 +18,7 @@ import rx.Observable
 import javax.inject.Inject
 import javax.money.CurrencyUnit
 import javax.money.MonetaryAmount
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 @PerActivity
 class SelectAmountPresenter @Inject constructor(

@@ -3,14 +3,16 @@ package io.muun.apollo.presentation.ui.fragments.settings
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.core.view.isVisible
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Globals
+import io.muun.apollo.databinding.FragmentSettingsBinding
 import io.muun.apollo.domain.ClipboardManager
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.domain.model.BitcoinUnit
@@ -31,10 +33,6 @@ import io.muun.apollo.presentation.ui.select_currency.SelectCurrencyActivity
 import io.muun.apollo.presentation.ui.utils.isInNightMode
 import io.muun.apollo.presentation.ui.utils.supportsDarkMode
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation
-import io.muun.apollo.presentation.ui.view.MuunIconButton
-import io.muun.apollo.presentation.ui.view.MuunPictureInput
-import io.muun.apollo.presentation.ui.view.MuunSettingItem
-import io.muun.apollo.presentation.ui.view.MuunSwitchSettingItem
 import io.muun.common.model.Currency
 import javax.inject.Inject
 
@@ -48,109 +46,44 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     @Inject
     lateinit var biometricsController: BiometricsController
 
-    @BindView(R.id.settings_profile_picture)
-    lateinit var muunPictureInput: MuunPictureInput
-
-    @BindView(R.id.settings_username)
-    lateinit var username: TextView
-
-    @BindView(R.id.settings_header_section)
-    lateinit var settingsHeaderSection: View
-
-    @BindView(R.id.wallet_details_section)
-    lateinit var walletDetailsSection: View
-
-    @BindView(R.id.settings_edit_username)
-    lateinit var usernameItem: MuunIconButton
-
-    @BindView(R.id.settings_password)
-    lateinit var passwordItem: MuunSettingItem
-
-    @BindView(R.id.settings_phone_number)
-    lateinit var phoneNumberItem: MuunSettingItem
-
-    @BindView(R.id.settings_bitcoin_unit)
-    lateinit var bitcoinUnitItem: MuunSettingItem
-
-    @BindView(R.id.settings_primary_currency)
-    lateinit var currencyItem: MuunSettingItem
-
-    @BindView(R.id.settings_dark_mode)
-    lateinit var darkModeItem: MuunSettingItem
-
-    @BindView(R.id.settings_bitcoin)
-    lateinit var bitcoinSettingsItem: MuunSettingItem
-
-    @BindView(R.id.settings_lightning)
-    lateinit var lightningSettingsItem: MuunSettingItem
-
-    @BindView(R.id.settings_diagnostic)
-    lateinit var diagnosticSettingsItem: MuunSettingItem
-
-    @BindView(R.id.settings_biometrics)
-    lateinit var biometricsSettingsItem: MuunSwitchSettingItem
-
-
-    @BindView(R.id.internal_debugging_section)
-    lateinit var featureFlagsSection: View
-
-    @BindView(R.id.settings_disable_feature_flags)
-    lateinit var featureFlagsSettingsItem: MuunSettingItem
-
-    @BindView(R.id.settings_send_debug_data)
-    lateinit var sendDebugDataItem: MuunSettingItem
-
-    @BindView(R.id.recovery_section)
-    lateinit var recoverySection: View
-
-    @BindView(R.id.security_section)
-    lateinit var securitySection: View
-
-    @BindView(R.id.settings_logout)
-    lateinit var logoutItem: View
-
-    @BindView(R.id.settings_delete_wallet)
-    lateinit var deleteWalletItem: View
-
-    @BindView(R.id.settings_version_code)
-    lateinit var versionCode: TextView
-
     /** Whether the loading dialog is currently on screen. Required due to limitations of
      * AlertDialogExtensions. It can't handle multiple dismissDialogs() calls prompted by
      * handleStates(). */
     private var showingLoadingDialog = false
 
+    private val binding: FragmentSettingsBinding
+        get() = getBinding() as FragmentSettingsBinding
+
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        FragmentSettingsBinding::inflate
+
     override fun inject() {
         component.inject(this)
     }
-
-    override fun getLayoutResource(): Int =
-        R.layout.fragment_settings
 
     override fun initializeUi(view: View) {
         // Tell parent activity we want a say in how, when and if menu items are/should be displayed
         setHasOptionsMenu(true)
 
-        muunPictureInput.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
-        muunPictureInput.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
-        versionCode.text = getString(R.string.settings_version, getVersionForDisplay())
+        binding.settingsProfilePicture.setOnErrorListener { error: UserFacingError? -> presenter.handleError(error) }
+        binding.settingsProfilePicture.setOnChangeListener { uri: Uri -> onPictureChange(uri) }
+        binding.settingsVersionCode.text = getString(R.string.settings_version, getVersionForDisplay())
 
-        usernameItem.setOnClickListener { editUsername() }
-        passwordItem.setOnClickListener { editPassword() }
-        darkModeItem.setOnClickListener { editDarkMode() }
-        bitcoinUnitItem.setOnClickListener { editBitcoinUnit() }
-        logoutItem.setOnClickListener { logout() }
-        deleteWalletItem.setOnClickListener { deleteWallet() }
-        bitcoinSettingsItem.setOnClickListener { goToBitcoinSettings() }
-        lightningSettingsItem.setOnClickListener { goToLightningSettings() }
-        diagnosticSettingsItem.setOnClickListener { goToDiagnosticMode() }
+        binding.settingsEditUsername.setOnClickListener { editUsername() }
+        binding.settingsPassword.setOnClickListener { editPassword() }
+        binding.settingsDarkMode.setOnClickListener { editDarkMode() }
+        binding.settingsBitcoinUnit.setOnClickListener { editBitcoinUnit() }
+        binding.settingsLogout.setOnClickListener { logout() }
+        binding.settingsDeleteWallet.setOnClickListener { deleteWallet() }
+        binding.settingsBitcoin.setOnClickListener { goToBitcoinSettings() }
+        binding.settingsLightning.setOnClickListener { goToLightningSettings() }
+        binding.settingsDiagnostic.setOnClickListener { goToDiagnosticMode() }
 
         if (Globals.INSTANCE.isDebug) {
-            versionCode.setOnClickListener { presenter.openDebugPanel() }
-
+            binding.settingsVersionCode.setOnClickListener { presenter.openDebugPanel() }
         } else if (Globals.INSTANCE.isDogfood) {
-            versionCode.setOnClickListener {
-                clipboardManager.copy("version", versionCode.text.toString())
+            binding.settingsVersionCode.setOnClickListener {
+                clipboardManager.copy("version", binding.settingsVersionCode.text.toString())
                 showTextToast(getString(R.string.show_qr_copied))
             }
         }
@@ -174,7 +107,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
             showTitle(R.string.settings_title_profile_hidden)
             setElevated(true)
         }
-        settingsHeaderSection.visibility = View.GONE
+        binding.settingsHeaderSection.visibility = View.GONE
     }
 
     override fun setState(state: SettingsState) {
@@ -184,43 +117,42 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         setUpWalletDetailsSection(state.user)
         setUpGeneralSection(state.user, state.bitcoinUnit, state.exchangeRateWindow)
 
-        bitcoinSettingsItem.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
+        binding.settingsBitcoin.visibility = if (showBitcoinSettings(state)) View.VISIBLE else View.GONE
 
-        diagnosticSettingsItem.visibility =
+        binding.settingsDiagnostic.visibility =
             if (showDiagnosticSettings(state)) View.VISIBLE else View.GONE
 
         // Helper code for internal builds
         if (Globals.INSTANCE.isDogfood || Globals.INSTANCE.isDebug) {
-            featureFlagsSection.visibility = View.VISIBLE
+            binding.internalDebuggingSection.visibility = View.VISIBLE
 
             if (state.overridableFeatures.isNotEmpty()) {
-                featureFlagsSettingsItem.visibility = View.VISIBLE
-                featureFlagsSettingsItem.setOnClickListener {
+                binding.settingsDisableFeatureFlags.visibility = View.VISIBLE
+                binding.settingsDisableFeatureFlags.setOnClickListener {
                     presenter.navigateToDisableFeatureFlags()
                 }
             } else {
-                featureFlagsSettingsItem.visibility = View.GONE
+                binding.settingsDisableFeatureFlags.visibility = View.GONE
             }
 
-            sendDebugDataItem.visibility = View.VISIBLE
-            sendDebugDataItem.setOnClickListener { presenter.sendDebugData() }
+            binding.settingsSendDebugData.visibility = View.VISIBLE
+            binding.settingsSendDebugData.setOnClickListener { presenter.sendDebugData() }
         }
     }
 
     override fun setNightMode(mode: NightMode) {
         when (mode) {
-            NightMode.DARK -> darkModeItem.setDescription(getString(R.string.dark_mode_dark))
-            NightMode.LIGHT -> darkModeItem.setDescription(getString(R.string.dark_mode_light))
+            NightMode.DARK -> binding.settingsDarkMode.setDescription(getString(R.string.dark_mode_dark))
+            NightMode.LIGHT -> binding.settingsDarkMode.setDescription(getString(R.string.dark_mode_light))
             NightMode.FOLLOW_SYSTEM -> setFollowSystemDarkMode()
         }
     }
 
     private fun setFollowSystemDarkMode() {
         when {
-            supportsDarkMode() -> darkModeItem.setDescription(R.string.dark_mode_follow_system)
+            supportsDarkMode() -> binding.settingsDarkMode.setDescription(R.string.dark_mode_follow_system)
             isInNightMode() -> setNightMode(NightMode.DARK)
             else -> setNightMode(NightMode.LIGHT)
-
         }
     }
 
@@ -234,13 +166,13 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun setupSecuritySection() {
         if (!biometricsController.getAuthenticationStatus().canAuthenticate) {
-            securitySection.visibility = View.GONE
+            binding.securitySection.visibility = View.GONE
             return
         }
 
-        securitySection.visibility = View.VISIBLE
-        biometricsSettingsItem.setChecked(biometricsController.hasUserOptedInBiometrics())
-        biometricsSettingsItem.setOnCheckedChangeListener { switch, checked ->
+        binding.securitySection.visibility = View.VISIBLE
+        binding.settingsBiometrics.setChecked(biometricsController.hasUserOptedInBiometrics())
+        binding.settingsBiometrics.setOnCheckedChangeListener { switch, checked ->
             if (checked) {
                 biometricsController.authenticate(
                     activity = requireActivity(),
@@ -269,7 +201,7 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
         val currency = Currency.getInfo(user.getPrimaryCurrency(rateWindow).currencyCode).get()
         setUpCurrency(currency, rateWindow)
 
-        bitcoinUnitItem.setDescription(
+        binding.settingsBitcoinUnit.setDescription(
             " " + MoneyHelper.formatCurrencyName(Currency.BTC, bitcoinUnit),
             R.drawable.btc_logo
         )
@@ -277,65 +209,65 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
 
     private fun setUpCurrency(currency: Currency, rateWindow: ExchangeRateWindow) {
         if (currency.flag != null) {
-            currencyItem.setDescription(currency.flag + " " + currency.name)
+            binding.settingsPrimaryCurrency.setDescription(currency.flag + " " + currency.name)
         } else {
             if (currency.code == Currency.BTC.code) {
-                currencyItem.setDescription(" ${currency.name}", R.drawable.btc_logo)
+                binding.settingsPrimaryCurrency.setDescription(" ${currency.name}", R.drawable.btc_logo)
             } else {
-                currencyItem.setDescription(" ${currency.name}", R.drawable.default_flag)
+                binding.settingsPrimaryCurrency.setDescription(" ${currency.name}", R.drawable.default_flag)
             }
         }
 
-        currencyItem.setOnClickListener { editPrimaryCurrency(rateWindow) }
+        binding.settingsPrimaryCurrency.setOnClickListener { editPrimaryCurrency(rateWindow) }
     }
 
     private fun setUpWalletDetailsSection(user: User) {
         if (user.hasP2PEnabled) {
-            walletDetailsSection.visibility = View.VISIBLE
-            phoneNumberItem.setDescription(user.phoneNumber.get().toE164String())
+            binding.walletDetailsSection.visibility = View.VISIBLE
+            binding.settingsPhoneNumber.setDescription(user.phoneNumber.get().toE164String())
         } else {
-            walletDetailsSection.visibility = View.GONE
+            binding.walletDetailsSection.visibility = View.GONE
         }
     }
 
     private fun setUpPublicProfileSection(user: User) {
         if (user.profile.isPresent) {
             val profile = user.profile.get()
-            muunPictureInput.setPicture(profile.pictureUrl)
-            username.text = profile.fullName
-            settingsHeaderSection.visibility = View.VISIBLE
+            binding.settingsProfilePicture.setPicture(profile.pictureUrl)
+            binding.settingsUsername.text = profile.fullName
+            binding.settingsHeaderSection.visibility = View.VISIBLE
         } else {
             hidePublicProfileSection()
         }
     }
 
     private fun setUpUnrecoverableUser() {
-        recoverySection.visibility = View.GONE
-        logoutItem.visibility = View.GONE
+        binding.recoverySection.visibility = View.GONE
+        binding.settingsLogout.visibility = View.GONE
     }
 
     private fun setUpRecoverableUser(user: User) {
-        if (user.hasPassword) { // For now, only item in recoverySection is ChangePassword
-            recoverySection.visibility = View.VISIBLE
+        if (user.hasPassword) { // For now, only item in binding.recoverySection is ChangePassword
+            binding.recoverySection.visibility = View.VISIBLE
         } else {
-            recoverySection.visibility = View.GONE
+            binding.recoverySection.visibility = View.GONE
         }
-        logoutItem.visibility = View.VISIBLE
-        deleteWalletItem.visibility = View.VISIBLE
+        binding.settingsLogout.visibility = View.VISIBLE
+        binding.settingsDeleteWallet.visibility = View.VISIBLE
     }
 
     override fun profilePictureUpdated(userProfile: UserProfile?) {
         if (userProfile != null) {
-            muunPictureInput.setPicture(userProfile.pictureUrl)
+            binding.settingsProfilePicture.setPicture(userProfile.pictureUrl)
         } else {
-            muunPictureInput.clearPicture()
+            binding.settingsProfilePicture.clearPicture()
         }
     }
 
     override fun setLoading(loading: Boolean) {
-        if (muunPictureInput.isVisible) {
-            muunPictureInput.toggleLoading(loading)
-            muunPictureInput.resetPicture()
+        if (binding.settingsProfilePicture.isVisible) {
+            binding.settingsProfilePicture.toggleLoading(loading)
+            binding.settingsProfilePicture.resetPicture()
         }
 
         if (loading) {
@@ -347,7 +279,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
                 .let(this::showDialog)
 
             showingLoadingDialog = true
-
         } else if (showingLoadingDialog) {
             dismissDialog()
             showingLoadingDialog = false
@@ -410,7 +341,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     private fun showDiagnosticSettings(state: SettingsState): Boolean =
         state.features.contains(MuunFeature.DIAGNOSTIC_MODE)
 
-
     private fun goToDiagnosticMode() {
         presenter.navigateToDiagnosticMode()
     }
@@ -467,7 +397,6 @@ open class SettingsFragment : SingleFragment<SettingsPresenter>(), SettingsView 
     override fun handleDeleteWallet(canDeleteWallet: Boolean, isRecoverableUser: Boolean) {
         if (!canDeleteWallet) {
             showCantDeleteNonEmptyWalletDialog()
-
         } else {
             showDeleteWalletDialog(isRecoverableUser)
         }

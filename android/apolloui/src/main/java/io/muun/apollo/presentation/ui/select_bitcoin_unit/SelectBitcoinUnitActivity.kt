@@ -40,9 +40,6 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.activity_select_bitcoin_unit
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivitySelectBitcoinUnitBinding::inflate
     }
@@ -83,7 +80,6 @@ class SelectBitcoinUnitActivity: BaseActivity<SelectBitcoinUnitPresenter>(), Sel
 
         if (bitcoinUnit == BitcoinUnit.BTC) {
             bitcoinUnitItem.setIcon(selectedIcon)
-
         } else if (bitcoinUnit == BitcoinUnit.SATS) {
             satoshisUnitItem.setIcon(selectedIcon)
         }

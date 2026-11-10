@@ -12,8 +12,8 @@ import io.muun.apollo.presentation.ui.base.di.PerActivity;
 import android.os.Bundle;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 @PerActivity
 public class EditUsernamePresenter extends BasePresenter<EditUsernameView> {

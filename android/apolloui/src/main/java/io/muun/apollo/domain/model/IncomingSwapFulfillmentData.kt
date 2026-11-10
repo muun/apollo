@@ -11,7 +11,7 @@ class IncomingSwapFulfillmentData(
         val data = libwallet.IncomingSwapFulfillmentData()
 
         data.fulfillmentTx = fulfillmentTx
-        data.muunSignature = muunSignature
+        data.cosignerSignature = muunSignature
         data.outputPath = outputPath
         data.outputVersion = outputVersion.toLong()
 

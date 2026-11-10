@@ -2,8 +2,8 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.libwallet.ExtensionsKt;
 
+import jakarta.validation.constraints.NotNull;
 import javax.money.MonetaryAmount;
-import javax.validation.constraints.NotNull;
 
 public class BitcoinAmount {
 

@@ -7,6 +7,7 @@ enum class ErrorDetailCode(val code: Long) {
     PAIR_INTERNAL_ERROR(14_103),
     NO_SLOTS_AVAILABLE(14_104),
     MUUN_APPLET_NOT_FOUND(14_105),
+    UNSUPPORTED_CARD_VERSION(14_106),
     UNKNOWN(14_999)
 }
 

@@ -33,7 +33,8 @@ func ReportStalenessOnce(pass *analysis.Pass) {
 	stalenessOnce.Do(func() {
 		stalenessError = VerifyStaleness()
 	})
-	if stalenessError == "" || len(pass.Files) == 0 {
+	file := FirstHandWrittenFile(pass)
+	if stalenessError == "" || file == nil {
 		return
 	}
 	reportedMu.Lock()
@@ -41,7 +42,7 @@ func ReportStalenessOnce(pass *analysis.Pass) {
 	reportedStale = true
 	reportedMu.Unlock()
 	if shouldReport {
-		pass.Reportf(pass.Files[0].Package, "%s", stalenessError)
+		pass.Reportf(file.Package, "%s", stalenessError)
 	}
 }
 

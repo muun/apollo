@@ -1,8 +1,9 @@
 package io.muun.apollo.data.preferences
 
 import android.content.Context
-import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 import io.muun.apollo.data.preferences.rx.Preference
+import io.muun.apollo.data.secure_key_value_store.SecureKeyValueStoreRepository
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError
 import io.muun.common.Optional
 import io.muun.common.model.SessionStatus
 import io.muun.common.utils.Encodings
@@ -12,7 +13,7 @@ import javax.inject.Inject
 class AuthRepository @Inject constructor(
     context: Context,
     repositoryRegistry: RepositoryRegistry,
-    private val secureStorageProvider: SecureStorageProvider,
+    private val secureKeyValueStoreRepository: SecureKeyValueStoreRepository,
 ) : BaseRepository(context, repositoryRegistry) {
 
     companion object {
@@ -33,18 +34,36 @@ class AuthRepository @Inject constructor(
      */
     val serverJwt: Optional<String>
         get() {
-            if (!secureStorageProvider.has(KEY_SERVER_JWT)) {
+            var serverJwt: String? = null
+
+            try {
+                secureKeyValueStoreRepository.get(KEY_SERVER_JWT).withSecret { jwtBytes ->
+                    // TODO: this builds a String the JVM can't clear, so the session token
+                    // outlives the wipe. Bytes won't fix it here: OkHttp only takes String
+                    // headers and the token arrives as a String. The way out is libwallet
+                    // owning the token. Don't copy this shape to a key or a recovery code.
+                    serverJwt = Encodings.bytesToString(jwtBytes)
+                }
+            } catch (e: SecureKeyValueStoreError.NotFound) {
                 return Optional.empty()
             }
-            val serverJwt = secureStorageProvider[KEY_SERVER_JWT]
-            return Optional.ofNullable(Encodings.bytesToString(serverJwt))
+
+            return Optional.ofNullable(serverJwt)
         }
 
     /**
      * Store server JWT on secure storage.
      */
     fun storeServerJwt(serverJwt: String) {
-        secureStorageProvider.put(KEY_SERVER_JWT, Encodings.stringToBytes(serverJwt))
+        val jwtBytes = Encodings.stringToBytes(serverJwt)
+
+        try {
+            secureKeyValueStoreRepository.put(KEY_SERVER_JWT, jwtBytes)
+        } finally {
+            // Only this copy of the session token is wiped: serverJwt is a String the JVM
+            // can't clear.
+            jwtBytes.fill(0)
+        }
     }
 
     /**
@@ -63,7 +82,7 @@ class AuthRepository @Inject constructor(
      */
     fun clearSession() {
         super.clear()
-        secureStorageProvider.delete(KEY_SERVER_JWT)
+        secureKeyValueStoreRepository.delete(KEY_SERVER_JWT)
     }
 
     /**

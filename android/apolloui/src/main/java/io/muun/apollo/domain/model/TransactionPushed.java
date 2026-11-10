@@ -3,8 +3,8 @@ package io.muun.apollo.domain.model;
 
 import io.muun.apollo.domain.model.feebump.FeeBumpFunctions;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public class TransactionPushed {
 

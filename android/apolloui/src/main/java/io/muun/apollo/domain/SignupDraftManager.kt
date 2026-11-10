@@ -3,10 +3,11 @@ package io.muun.apollo.domain
 import android.content.Context
 import android.content.SharedPreferences
 import io.muun.apollo.data.external.Globals
-import io.muun.apollo.data.os.secure_storage.SecureStorageProvider
 import io.muun.apollo.data.preferences.adapter.JsonPreferenceAdapter
 import io.muun.apollo.data.preferences.rx.RxSharedPreferences
+import io.muun.apollo.data.secure_key_value_store.SecureKeyValueStoreRepository
 import io.muun.apollo.data.serialization.SerializationUtils
+import io.muun.apollo.domain.errors.SecureKeyValueStoreError
 import io.muun.apollo.domain.errors.SignupDraftFormatError
 import io.muun.apollo.domain.model.SignupDraft
 import io.muun.common.utils.Encodings
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class SignupDraftManager @Inject constructor(
     private val context: Context,
-    private val secureStorageProvider: SecureStorageProvider
+    private val secureKeyValueStoreRepository: SecureKeyValueStoreRepository,
 ) {
 
     companion object {
@@ -40,14 +41,25 @@ class SignupDraftManager @Inject constructor(
     /**
      * Save the current SignupDraft to secure storage.
      */
-    fun save(signupDraft: SignupDraft?) = if (signupDraft != null) {
-        secureStorageProvider.put(SIGNUP_DRAFT_KEY, toBytes(signupDraft))
-    } else {
-        secureStorageProvider.delete(SIGNUP_DRAFT_KEY)
+    fun save(signupDraft: SignupDraft?) {
+        if (signupDraft == null) {
+            secureKeyValueStoreRepository.delete(SIGNUP_DRAFT_KEY)
+            return
+        }
+
+        val draftBytes = toBytes(signupDraft)
+
+        try {
+            secureKeyValueStoreRepository.put(SIGNUP_DRAFT_KEY, draftBytes)
+        } finally {
+            // In a login-with-RC flow the draft carries the recovery code in plaintext. Only
+            // this copy is wiped: the JSON String and the draft's own rc can't be cleared.
+            draftBytes.fill(0)
+        }
     }
 
     fun clear() {
-        secureStorageProvider.delete(SIGNUP_DRAFT_KEY)
+        secureKeyValueStoreRepository.delete(SIGNUP_DRAFT_KEY)
     }
 
     /**
@@ -84,21 +96,17 @@ class SignupDraftManager @Inject constructor(
      * destroyWalletToStartClean.
      */
     fun fetchSignupDraft(): SignupDraft? {
-        if (!secureStorageProvider.has(SIGNUP_DRAFT_KEY)) {
+        var signupDraft: SignupDraft? = null
+
+        try {
+            secureKeyValueStoreRepository.get(SIGNUP_DRAFT_KEY).withSecret { bytes ->
+                signupDraft = fromBytesOrNull(bytes)
+            }
+        } catch (e: SecureKeyValueStoreError.NotFound) {
             return null
         }
 
-        val bytes = secureStorageProvider.get(SIGNUP_DRAFT_KEY)
-
-        return try {
-            fromBytes(bytes)
-
-        } catch (e: Exception) {
-            // SignupDraft may have changed, and this is an old format. Discard it:
-            val rawValue: String = Encodings.bytesToString(bytes)
-            Timber.e(SignupDraftFormatError(rawValue))
-            null
-        }
+        return signupDraft
     }
 
     /**
@@ -111,8 +119,30 @@ class SignupDraftManager @Inject constructor(
         userRepositoryPrefs.edit().remove("signup_draft").apply()
     }
 
+    // TODO: migrate to a consume-in-place read so the draft never leaves the callback. Two
+    // copies escape the wipe: the JSON String, and the SignupDraft itself, whose LoginWithRc.rc
+    // is the recovery code in plaintext. SignupPresenter keeps it for the whole flow; don't add
+    // other holders.
     private fun fromBytes(bytes: ByteArray): SignupDraft =
         SerializationUtils.deserializeJson(SignupDraft::class.java, Encodings.bytesToString(bytes))
+
+    private fun fromBytesOrNull(bytes: ByteArray): SignupDraft? {
+        return try {
+            fromBytes(bytes)
+
+        } catch (e: Exception) {
+            // SignupDraft may have changed, and this is an old format. The stored record is
+            // left alone, so every later read fails the same way until something overwrites it.
+            // TODO: this sends the whole draft to the crash backend through
+            // SignupDraftFormatError's metadata, and a login-with-RC draft holds the email and
+            // the recovery code in plaintext. The legacy prefs migration does the same. Logging
+            // the parse error instead isn't safe either: its MuunDeserializationError cause
+            // carries the JSON in its metadata too.
+            val rawValue: String = Encodings.bytesToString(bytes)
+            Timber.e(SignupDraftFormatError(rawValue))
+            null
+        }
+    }
 
     private fun toBytes(draft: SignupDraft): ByteArray =
         Encodings.stringToBytes(SerializationUtils.serializeJson(SignupDraft::class.java, draft))

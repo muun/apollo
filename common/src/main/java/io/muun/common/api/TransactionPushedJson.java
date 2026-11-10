@@ -5,8 +5,8 @@ import io.muun.common.api.error.BroadcastErrorJson;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -15,7 +15,7 @@ public class TransactionPushedJson {
     @Nullable
     public String hex; // COMPAT: lousy modeling, but this field is expected by Apollo < 35
 
-    @NotNull
+    @Nullable // NTS is absent when the utxo set hasn't changed
     public NextTransactionSizeJson nextTransactionSize;
 
     @NotNull
@@ -38,7 +38,7 @@ public class TransactionPushedJson {
      */
     public TransactionPushedJson(
             @Nullable String hex,
-            NextTransactionSizeJson nextTransactionSize,
+            @Nullable NextTransactionSizeJson nextTransactionSize,
             OperationJson operation,
             @Nullable BroadcastErrorJson broadcastErrorCode,
             FeeBumpFunctionsJson feeBumpFunctions

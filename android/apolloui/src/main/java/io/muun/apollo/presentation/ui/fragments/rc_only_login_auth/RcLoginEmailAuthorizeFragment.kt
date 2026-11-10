@@ -1,47 +1,34 @@
 package io.muun.apollo.presentation.ui.fragments.rc_only_login_auth
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentRcLoginEmailAuthBinding
 import io.muun.apollo.presentation.app.Email
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.view.HtmlTextView
-import io.muun.apollo.presentation.ui.view.LoadingView
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
 class RcLoginEmailAuthorizeFragment : SingleFragment<RcLoginEmailAuthorizePresenter>(),
     RcLoginEmailAuthorizeView {
 
-    @BindView(R.id.open_email_client)
-    lateinit var openEmailAppButton: MuunButton
+    private val binding: FragmentRcLoginEmailAuthBinding
+        get() = getBinding() as FragmentRcLoginEmailAuthBinding
 
-    @BindView(R.id.rc_login_email_auth_title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.rc_login_email_auth_description)
-    lateinit var descriptionView: HtmlTextView
-
-    @BindView(R.id.rc_login_email_auth_icon)
-    lateinit var emailIcon: ImageView
-
-    @BindView(R.id.rc_login_email_auth_loading)
-    lateinit var loadingView: LoadingView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentRcLoginEmailAuthBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.fragment_rc_login_email_auth
-
     override fun initializeUi(view: View) {
-        titleView.setText(R.string.signup_email_authorize)
-        openEmailAppButton.isEnabled = Email.hasEmailAppInstalled(requireContext())
-        openEmailAppButton.setOnClickListener { presenter.openEmailClient() }
+        binding.rcLoginEmailAuthTitle.setText(R.string.signup_email_authorize)
+        binding.openEmailClient.isEnabled = Email.hasEmailAppInstalled(requireContext())
+        binding.openEmailClient.setOnClickListener { presenter.openEmailClient() }
     }
 
     override fun setUpHeader() {
@@ -62,27 +49,27 @@ class RcLoginEmailAuthorizeFragment : SingleFragment<RcLoginEmailAuthorizePresen
             R.string.signup_email_verify_explanation
         )
 
-        descriptionView.text = styledDesc.toCharSequence(obfuscatedEmail)
+        binding.rcLoginEmailAuthDescription.text = styledDesc.toCharSequence(obfuscatedEmail)
     }
 
     override fun setLoading(isLoading: Boolean) {
-        loadingView.visibility = if (isLoading) View.VISIBLE else View.GONE
-        titleView.visibility = if (!isLoading) View.VISIBLE else View.GONE
-        descriptionView.visibility = if (!isLoading) View.VISIBLE else View.GONE
-        emailIcon.visibility = if (!isLoading) View.VISIBLE else View.GONE
+        binding.rcLoginEmailAuthLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.rcLoginEmailAuthTitle.visibility = if (!isLoading) View.VISIBLE else View.GONE
+        binding.rcLoginEmailAuthDescription.visibility = if (!isLoading) View.VISIBLE else View.GONE
+        binding.rcLoginEmailAuthIcon.visibility = if (!isLoading) View.VISIBLE else View.GONE
     }
 
     override fun handleInvalidLinkError() {
         setLoading(false)
-        emailIcon.setImageResource(R.drawable.ic_envelope_error)
-        titleView.setText(R.string.email_link_error_title)
-        descriptionView.setText(R.string.authorize_email_link_invalid)
+        binding.rcLoginEmailAuthIcon.setImageResource(R.drawable.ic_envelope_error)
+        binding.rcLoginEmailAuthTitle.setText(R.string.email_link_error_title)
+        binding.rcLoginEmailAuthDescription.setText(R.string.authorize_email_link_invalid)
     }
 
     override fun handleExpiredLinkError() {
         setLoading(false)
-        emailIcon.setImageResource(R.drawable.ic_envelope_error)
-        titleView.setText(R.string.email_link_error_title)
-        descriptionView.setText(R.string.authorize_email_link_expired)
+        binding.rcLoginEmailAuthIcon.setImageResource(R.drawable.ic_envelope_error)
+        binding.rcLoginEmailAuthTitle.setText(R.string.email_link_error_title)
+        binding.rcLoginEmailAuthDescription.setText(R.string.authorize_email_link_expired)
     }
 }

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.select_currency;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SelectCurrencyActivityBinding;
 import io.muun.apollo.domain.model.BitcoinUnit;
 import io.muun.apollo.presentation.model.CurrencyItem;
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter;
@@ -10,7 +11,6 @@ import io.muun.apollo.presentation.ui.adapter.viewmodel.ItemViewModel;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.SectionHeaderViewModel;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
 import io.muun.common.Optional;
 import io.muun.common.model.Currency;
@@ -20,24 +20,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindColor;
-import butterknife.BindString;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import icepick.State;
+import kotlin.jvm.functions.Function1;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.money.CurrencyContext;
 import javax.money.CurrencyUnit;
-import javax.validation.constraints.NotNull;
 
 public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter>
         implements SelectCurrencyView {
@@ -47,20 +47,14 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     private static final String FIXED_EXCHANGE_RATE_WINDOW_ID = "FIXED_EXCHANGE_RATE_WINDOW_ID";
     private static final String HEADER_TITLE = "HEADER_TITLE";
 
-    @BindView(R.id.select_currency_header)
-    MuunHeader header;
+    private SelectCurrencyActivityBinding binding() {
+        return (SelectCurrencyActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.select_currency_list)
-    RecyclerView recyclerView;
-
-    @BindColor(R.color.icon_color)
-    int toolbarMenuItemColor;
-
-    @BindString(R.string.select_currency_most_popular_section_title)
-    String mostPopularSectionTitle;
-
-    @BindString(R.string.select_currency_all_section_title)
-    String allCurrenciesSectionTitle;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SelectCurrencyActivityBinding::inflate;
+    }
 
     @State
     BitcoinUnit bitcoinUnit;
@@ -161,25 +155,20 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.select_currency_activity;
-    }
-
-    @Override
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.select_currency_title);
-        header.setNavigation(Navigation.BACK);
+        binding().selectCurrencyHeader.attachToActivity(this);
+        binding().selectCurrencyHeader.showTitle(R.string.select_currency_title);
+        binding().selectCurrencyHeader.setNavigation(Navigation.BACK);
 
-        getHeaderTitle(getArgumentsBundle()).ifPresent(header::showTitle);
+        getHeaderTitle(getArgumentsBundle()).ifPresent(binding().selectCurrencyHeader::showTitle);
 
         adapter = new ItemAdapter(new ViewHolderFactory());
         adapter.setOnItemClickListener(this::onItemClick);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+        binding().selectCurrencyList.setLayoutManager(new LinearLayoutManager(this));
+        binding().selectCurrencyList.setAdapter(adapter);
     }
 
     @Override
@@ -188,7 +177,10 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
         inflater.inflate(R.menu.select_currency_activity, menu);
 
         final MenuItem searchItem = menu.findItem(R.id.search);
-        UiUtils.setTintColor(searchItem.getIcon(), toolbarMenuItemColor);
+        UiUtils.setTintColor(
+                searchItem.getIcon(),
+                ContextCompat.getColor(this, R.color.icon_color)
+        );
 
         final SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setQueryHint(getString(R.string.search_currency_hint));
@@ -246,13 +238,18 @@ public class SelectCurrencyActivity extends BaseActivity<SelectCurrencyPresenter
                               BitcoinUnit bitcoinUnit) {
 
         final List<ItemViewModel> topItems = toViewModel(topCurrencies, selectedCurrency, false);
-        topItems.add(0, new SectionHeaderViewModel(mostPopularSectionTitle));
+        topItems.add(0, new SectionHeaderViewModel(
+                getString(R.string.select_currency_most_popular_section_title)
+        ));
 
         adapter.clear();    // avoid nasty duplication after onResume
         adapter.addFirst(topItems);
 
         final List<ItemViewModel> sortedItems = toViewModel(allCurrencies, selectedCurrency, true);
-        sortedItems.add(0, new SectionHeaderViewModel(allCurrenciesSectionTitle, true));
+        sortedItems.add(0, new SectionHeaderViewModel(
+                getString(R.string.select_currency_all_section_title),
+                true
+        ));
 
         adapter.addItems(sortedItems);
     }

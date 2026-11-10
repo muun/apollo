@@ -9,7 +9,7 @@ import io.muun.apollo.presentation.ui.base.di.PerFragment
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodePresenter
 import io.muun.apollo.presentation.ui.recovery_code.verify.VerifyRecoveryCodeFragment
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 @PerFragment
 internal class ShowRecoveryCodePresenter @Inject constructor(

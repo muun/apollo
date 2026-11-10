@@ -1,6 +1,8 @@
 package io.muun.apollo.data.async.tasks
 
+import androidx.work.ListenableWorker
 import androidx.work.WorkInfo
+import io.muun.apollo.data.os.OS
 
 internal fun mapStopReason(stopReason: Int?): String {
     return when (stopReason) {
@@ -26,5 +28,13 @@ internal fun mapStopReason(stopReason: Int?): String {
         WorkInfo.STOP_REASON_USER -> "STOP_REASON_USER"
 
         else -> "STOP_REASON_UNKNOWN"
+    }
+}
+
+internal fun ListenableWorker.stopReasonOrNull(): Int? {
+    return if (OS.supportsWorkManagerStopReason()) {
+        stopReason
+    } else {
+        null
     }
 }

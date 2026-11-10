@@ -23,10 +23,14 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- tabIndicatorColor must stay TRANSPARENT: the indicator is tinted at runtime by mutating
+         the indicator drawable's color (see SecurityCardsMarketplaceActivity), and TabLayout only
+         honors the drawable's own color when its indicator color is TRANSPARENT. -->
     <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="0dp"
             app:tabMode="fixed"
+            app:tabIndicatorColor="@android:color/transparent"
             android:background="@color/background"
             tools:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/appBarLayout"
@@ -42,6 +46,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
+
+    <View
+            android:id="@+id/view_tab_layout_shadow"
+            android:layout_width="0dp"
+            android:layout_height="8dp"
+            android:background="@drawable/security_cards_marketplace_tab_shadow"
+            app:layout_constraintTop_toBottomOf="@id/tabLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/viewGroup_no_data"
@@ -60,7 +73,7 @@
                 android:id="@+id/imageView_no_data"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:srcCompat="@drawable/ic_circle_off_outline_24"
+                app:srcCompat="@drawable/ic_no_card"
                 app:tint="@color/icon_color"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
@@ -75,9 +88,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="32dp"
                 app:layout_constrainedWidth="true"
+                android:textAppearance="@style/MuunTextAppearance.Body.Md"
                 android:textColor="@color/text_secondary_color"
-                android:textSize="16sp"
-                android:fontFamily="sans-serif"
                 tools:text="@string/security_cards_marketplace_no_data_description"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginHorizontal="24dp"

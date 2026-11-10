@@ -35,6 +35,22 @@ object SystemCommand {
         adb("settings put secure show_ime_with_hard_keyboard 0")
     }
 
+    /**
+     * Turn wifi and mobile data off.
+     */
+    fun disableNetwork() {
+        adb("svc wifi disable")
+        adb("svc data disable")
+    }
+
+    /**
+     * Turn wifi and mobile data on.
+     */
+    fun enableNetwork() {
+        adb("svc wifi enable")
+        adb("svc data enable")
+    }
+
     fun dumpView(id: Int) {
         adb("uiautomator", "dump", "/sdcard/ui_test_{$id}_window_dump.xml")
     }

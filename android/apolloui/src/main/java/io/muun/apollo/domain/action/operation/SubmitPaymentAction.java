@@ -35,11 +35,11 @@ import libwallet.MusigNonces;
 import libwallet.Transaction;
 import rx.Observable;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 @Singleton
 public class SubmitPaymentAction extends BaseAsyncAction1<
@@ -141,7 +141,9 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                         op,
                         userPrivKey,
                         musigNonces,
-                        buildSigningExpectations(op, opCreated, false),
+                        buildSigningExpectations(
+                                op, opCreated, false, prepPayment.expectedDebtInSat
+                        ),
                         opCreated.partiallySignedTransaction
                 );
 
@@ -153,7 +155,9 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                                     op,
                                     userPrivKey,
                                     alternativeTxNonces.get(i),
-                                    buildSigningExpectations(op, opCreated, true),
+                                    buildSigningExpectations(
+                                            op, opCreated, true, prepPayment.expectedDebtInSat
+                                    ),
                                     opCreated.alternativeTransactions.get(i)
                             )
                     );
@@ -252,7 +256,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
     private static SigningExpectations buildSigningExpectations(
             final Operation operation,
             final OperationCreated operationCreated,
-            boolean isAlternativeTx
+            boolean isAlternativeTx,
+            final long expectedDebtInSat
     ) {
         final long outputAmount = operation.swap != null
                 ? operation.swap.getFundingOutput().getOutputAmountInSatoshis()
@@ -263,7 +268,8 @@ public class SubmitPaymentAction extends BaseAsyncAction1<
                 outputAmount,
                 operationCreated.changeAddress,
                 operation.fee.inSatoshis,
-                isAlternativeTx
+                isAlternativeTx,
+                expectedDebtInSat
         );
     }
 

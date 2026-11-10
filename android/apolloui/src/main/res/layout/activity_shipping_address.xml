@@ -24,6 +24,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -36,12 +37,11 @@
                 android:id="@+id/text_view_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="24dp"
-                android:fontFamily="sans-serif-medium"
                 android:text="@string/security_cards_shipping_address_title"
+                android:textAppearance="@style/MuunTextAppearance.Heading.H1"
                 android:textColor="@color/text_primary_color"
-                android:textSize="32sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -50,102 +50,108 @@
                 android:id="@+id/text_view_description"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="24dp"
-                android:fontFamily="sans-serif"
+                android:layout_marginEnd="16dp"
                 android:text="@string/security_cards_shipping_address_description"
+                android:textAppearance="@style/MuunTextAppearance.Body.Lg"
                 android:textColor="@color/text_secondary_color"
-                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_view_title" />
+
+            <!-- Every field reserves its error line with an invisible helperText (&#160;), so
+                 showing or clearing an error never moves the form: the design's inter-field gap
+                 is that reserved line + the 6dp margins below. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_email"
+                style="@style/SecurityCardFormField"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="28dp"
+                app:helperText="&#160;"
+                android:hint="@string/security_cards_shipping_address_email"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_view_description">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
+                    android:inputType="textEmailAddress" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/layout_full_name"
                 style="@style/SecurityCardFormField"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                app:helperText="&#160;"
                 android:hint="@string/security_cards_shipping_address_full_name"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/text_view_description">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edit_text_full_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPersonName" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layout_email"
-                style="@style/SecurityCardFormField"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="16dp"
-                android:hint="@string/security_cards_shipping_address_email"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layout_full_name">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edit_text_email"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textEmailAddress" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layout_shipping_address"
-                style="@style/SecurityCardFormField"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="16dp"
-                android:hint="@string/security_cards_shipping_address_address"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layout_email">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edit_text_shipping_address"
+                    android:id="@+id/edit_text_full_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
+                    android:inputType="textPersonName" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_address1"
+                style="@style/SecurityCardFormField"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                app:helperText="&#160;"
+                android:hint="@string/security_cards_shipping_address_address1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layout_full_name">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_address1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
                     android:inputType="textPostalAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/layout_country"
+                android:id="@+id/layout_address2"
                 style="@style/SecurityCardFormField"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="12dp"
-                android:hint="@string/security_cards_shipping_address_country"
-                app:layout_constraintEnd_toStartOf="@id/layout_city"
-                app:layout_constraintHorizontal_weight="1"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                app:helperText="&#160;"
+                android:hint="@string/security_cards_shipping_address_address2"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layout_shipping_address">
+                app:layout_constraintTop_toBottomOf="@id/layout_address1">
 
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/text_view_country"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_address2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:focusable="false"
-                    android:inputType="none"
-                    android:longClickable="false"
-                    android:minHeight="56dp"
-                    android:paddingHorizontal="16dp"
-                    android:singleLine="true" />
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
+                    android:inputType="textPostalAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -154,42 +160,45 @@
                 style="@style/SecurityCardFormField"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="24dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                app:helperText="&#160;"
                 android:hint="@string/security_cards_shipping_address_city"
-                app:layout_constraintBottom_toBottomOf="@id/layout_country"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_weight="1"
-                app:layout_constraintStart_toEndOf="@id/layout_country"
-                app:layout_constraintTop_toTopOf="@id/layout_country">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layout_address2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_text_city"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
                     android:inputType="textPostalAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
-
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/layout_state"
                 style="@style/SecurityCardFormField"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="12dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="10dp"
+                app:helperText="&#160;"
                 android:hint="@string/security_cards_shipping_address_state"
                 app:layout_constraintEnd_toStartOf="@id/layout_zip_code"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layout_country">
+                app:layout_constraintTop_toBottomOf="@id/layout_city">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_text_state"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
                     android:inputType="textPostalAddress" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -199,8 +208,9 @@
                 style="@style/SecurityCardFormField"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="24dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="16dp"
+                app:helperText="&#160;"
                 android:hint="@string/security_cards_shipping_address_zip_code"
                 app:layout_constraintBottom_toBottomOf="@id/layout_state"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -212,7 +222,37 @@
                     android:id="@+id/edit_text_zip_code"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
                     android:inputType="textPostalAddress" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_country"
+                style="@style/SecurityCardFormField"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="6dp"
+                android:hint="@string/security_cards_shipping_address_country"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layout_state">
+
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/text_view_country"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:focusable="false"
+                    android:inputType="none"
+                    android:textAppearance="@style/MuunTextAppearance.Body.Md"
+                    android:textColor="@color/text_primary_color"
+                    android:longClickable="false"
+                    android:minHeight="56dp"
+                    android:paddingHorizontal="16dp"
+                    android:singleLine="true" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -224,16 +264,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_min="40dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layout_state" />
+                app:layout_constraintTop_toBottomOf="@id/layout_country" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_continue"
                 style="@style/muun_button_primary"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
+                android:layout_height="48dp"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="24dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
                 android:text="@string/security_cards_shipping_address_continue"
+                android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

@@ -16,7 +16,6 @@ import io.muun.apollo.presentation.ui.base.SingleFragmentView
 import io.muun.apollo.presentation.ui.fragments.operations.OperationsFragment
 import io.muun.apollo.presentation.ui.view.MuunHeader
 
-
 class OperationsActivity
     : SingleFragmentActivity<SingleFragmentPresenter<SingleFragmentView, ParentPresenter>>() {
 
@@ -34,9 +33,6 @@ class OperationsActivity
     override fun inject() {
         component.inject(this)
     }
-
-    override fun getLayoutResource(): Int =
-        R.layout.activity_operations
 
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityOperationsBinding::inflate

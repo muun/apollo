@@ -1,46 +1,40 @@
 package io.muun.apollo.presentation.ui.fragments.ek_verify
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentEkVerifyBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.view.HtmlTextView
-import io.muun.apollo.presentation.ui.view.MuunButton
-import io.muun.apollo.presentation.ui.view.MuunTextInput
-
 
 class EmergencyKitVerifyFragment : SingleFragment<EmergencyKitVerifyPresenter>(),
     EmergencyKitVerifyView {
 
-    @BindView(R.id.code_input)
-    lateinit var verificationCodeInput: MuunTextInput
+    private val binding: FragmentEkVerifyBinding
+        get() = getBinding() as FragmentEkVerifyBinding
 
-    @BindView(R.id.ek_verify_action)
-    lateinit var verifyButton: MuunButton
-
-    @BindView(R.id.need_help)
-    lateinit var needHelpView: HtmlTextView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentEkVerifyBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_ek_verify
-
     override fun initializeUi(view: View) {
-        verificationCodeInput.setOnChangeListener(this) {
-            verifyButton.isEnabled = verificationCodeInput.text.isNotEmpty()
+        binding.codeInput.setOnChangeListener(this) {
+            binding.ekVerifyAction.isEnabled = binding.codeInput.text.isNotEmpty()
         }
 
-        verifyButton.setOnClickListener {
-            presenter.verifyCode(verificationCodeInput.text.toString())
+        binding.ekVerifyAction.setOnClickListener {
+            presenter.verifyCode(binding.codeInput.text.toString())
         }
 
         StyledStringRes(requireContext(), R.string.ek_verify_need_help, this::onNeedHelpClick)
             .toCharSequence()
-            .let(needHelpView::setText)
+            .let(binding.needHelp::setText)
     }
 
     override fun setUpHeader() {
@@ -61,11 +55,11 @@ class EmergencyKitVerifyFragment : SingleFragment<EmergencyKitVerifyPresenter>()
     }
 
     override fun setLoading(isLoading: Boolean) {
-        verifyButton.setLoading(isLoading)
+        binding.ekVerifyAction.setLoading(isLoading)
     }
 
     override fun setVerificationError(error: UserFacingError) {
-        verificationCodeInput.setError(error)
+        binding.codeInput.setError(error)
     }
 
     private fun onNeedHelpClick(linkId: String) {

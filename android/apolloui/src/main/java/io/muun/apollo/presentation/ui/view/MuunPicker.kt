@@ -2,13 +2,10 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.LinearLayout
-import android.widget.TextView
-import butterknife.BindView
-import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewPickerBinding
 
 class MuunPicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    Picker<MuunPicker.Option>(c, a, s) {
+    Picker<MuunPicker.Option, ViewPickerBinding>(c, a, s) {
 
     class Option(
         id: Int,
@@ -17,18 +14,16 @@ class MuunPicker @JvmOverloads constructor(c: Context, a: AttributeSet? = null, 
         val status: PickerCard.Status,
     ) : Picker.Option(id)
 
-    @BindView(R.id.picker_title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.picker_card_container)
-    lateinit var cardContainer: LinearLayout
+    private val titleView get() = binding.pickerTitle
+    private val cardContainer get() = binding.pickerCardContainer
 
     private var selectedView: PickerCard? = null
 
     private var onOptionPickListener: OnOptionPickListener? = null
 
-    override val layoutResource: Int
-        get() = R.layout.view_picker
+    override fun bindingInflater(): BindingInflater<ViewPickerBinding> {
+        return ViewPickerBinding::inflate
+    }
 
     override fun setTitle(title: CharSequence) {
         titleView.text = title

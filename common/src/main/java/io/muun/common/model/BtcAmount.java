@@ -2,10 +2,10 @@ package io.muun.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
 
 /**
  * Immutable Bitcoin amount.

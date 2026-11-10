@@ -3,7 +3,6 @@ package io.muun.apollo.data.os.secure_storage;
 import io.muun.apollo.domain.errors.SecureStorageError;
 import io.muun.common.utils.Encodings;
 
-import rx.Observable;
 import timber.log.Timber;
 
 import java.util.List;
@@ -53,13 +52,6 @@ public class SecureStorageProvider {
     }
 
     /**
-     * Like `get(key)`, but asynchronous.
-     */
-    public Observable<byte[]> getAsync(String key) {
-        return Observable.fromCallable(() -> get(key));
-    }
-
-    /**
      * Encrypt and save a value in secure storage.
      */
     public void put(String key, byte[] value) {
@@ -73,16 +65,6 @@ public class SecureStorageProvider {
         } finally {
             lock.unlock();
         }
-    }
-
-    /**
-     * Like `put(key, value)`, but asynchronous.
-     */
-    public Observable<Void> putAsync(String key, byte[] value) {
-        return Observable.fromCallable(() -> {
-            put(key, value);
-            return null;
-        });
     }
 
     /**
@@ -122,8 +104,15 @@ public class SecureStorageProvider {
             // Let's try to avoid crashing in this scenarios and check if Crashlytics or
             // our error report infra offers more metadata/insights on this issue
             if (hasKeyInPreferences != hasKeyInKeystore) {
-                final SecureStorageError error = new SecureStorageError(debugSnapshot());
-                error.addMetadata("key", key);
+                final SecureStorageError error;
+                if (hasKeyInPreferences) {
+                    // The value lost its keystore key (a device-to-device copy is one way this
+                    // happens): same error the read path raises for it.
+                    error = new KeyStoreCorruptedError(key, debugSnapshot());
+                } else {
+                    error = new SecureStorageError(debugSnapshot());
+                    error.addMetadata("key", key);
+                }
                 error.addMetadata("hasKeyInPreferences", hasKeyInPreferences);
                 error.addMetadata("hasKeyInKeystore", hasKeyInKeystore);
                 Timber.e(error);
@@ -138,7 +127,79 @@ public class SecureStorageProvider {
     }
 
     /**
-     * Remove all values from secure storage (careful!).
+     * Return `true` if a ciphertext record is stored under the given key. Legacy primitive that
+     * exists ONLY to back
+     * {@link io.muun.apollo.osmodules.securekv.SecureKeyValueStore#has(String)}: don't add
+     * callers, this provider is being phased out behind the securekv store.
+     *
+     * <p>{@link #has} throws on a prefs/keystore mismatch in either direction, which crashes
+     * the app when it runs during Application#onCreate. Here a mismatch is an answer: either
+     * half is evidence that something was stored, so either half answers true, and the read
+     * that follows classifies the damage. Existence and readability are separate questions,
+     * and readability is answered by the securekv error taxonomy alone.
+     *
+     * <p>Answering false on a surviving keystore key would make erasing the preferences record
+     * a way to turn off whatever that record gates. The pin is the case that matters: a plain
+     * preferences file is far easier to tamper with than a pin is to guess.
+     *
+     * <p>A keystore that can't be asked answers false. A probe that failed is not evidence of
+     * a record, and treating it as one would put a lock screen in front of someone who never
+     * set a pin.
+     */
+    public boolean hasCiphertext(String key) {
+        lock.lock();
+        try {
+            if (preferences.hasKey(key)) {
+                return true;
+            }
+
+            return hasOrphanKeystoreEntry(key);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Return `true` if a value is stored under the key but its keystore key is gone (a
+     * device-to-device copy is one way this happens). Unlike {@link #has(String)}, it reports that
+     * instead of throwing on it, and a failed probe answers `false`: it's meant for callers that
+     * act on a `true`.
+     */
+    public boolean isKeystoreKeyMissing(String key) {
+        lock.lock();
+        try {
+            return preferences.hasKey(key) && !keyStore.hasKey(key);
+        } catch (Throwable e) {
+            Timber.e(e);
+            return false;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @GuardedBy("lock")
+    private boolean hasOrphanKeystoreEntry(String key) {
+        final boolean hasKeyInKeystore;
+
+        try {
+            hasKeyInKeystore = keyStore.hasKey(key);
+        } catch (Throwable e) {
+            // hasCiphertext runs during Application#onCreate, where a throw is a crash before
+            // any Activity exists.
+            Timber.e(e);
+            return false;
+        }
+
+        if (hasKeyInKeystore) {
+            reportOrphanKeystoreEntry(key);
+        }
+
+        return hasKeyInKeystore;
+    }
+
+    /**
+     * Remove all values from secure storage (careful!). Callers must also run
+     * RebaseInstallBaselinesAction, see its docs.
      */
     public void wipe() {
         lock.lock();
@@ -166,7 +227,9 @@ public class SecureStorageProvider {
         final boolean hasKeyInKeystore = keyStore.hasKey(key);
 
         if (!hasKeyInKeystore && !hasKeyInPreferences) {
-            Timber.i("SecureStorageNoSuchElementError for key: " + key);
+            // Deliberately not logged. Timber.i is the breadcrumb channel, and a key that was
+            // never written is the ordinary answer on a logged out app, where the session token
+            // is read once per request.
             throw new SecureStorageNoSuchElementError(key, debugSnapshot());
         }
 
@@ -178,6 +241,23 @@ public class SecureStorageProvider {
         if (!hasKeyInKeystore) {
             Timber.i("KeyStoreCorruptedError for key: " + key);
             throw new KeyStoreCorruptedError(key, debugSnapshot());
+        }
+    }
+
+    @GuardedBy("lock")
+    private void reportOrphanKeystoreEntry(String key) {
+        try {
+            final SecureStorageError error = new SecureStorageError(debugSnapshot());
+            error.addMetadata("key", key);
+            error.addMetadata("hasKeyInPreferences", false);
+            error.addMetadata("hasKeyInKeystore", true);
+            Timber.e(error);
+
+        } catch (Throwable e) {
+            // Telemetry must not change the answer, and the caller runs during
+            // Application#onCreate. The snapshot parses the MODE preference and gets a raw
+            // IllegalArgumentException when it holds garbage.
+            Timber.e(e);
         }
     }
 

@@ -53,7 +53,7 @@ import io.muun.common.utils.Preconditions
 import rx.Observable
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 class NotificationServiceImpl @Inject constructor(
     private val context: Context,

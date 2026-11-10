@@ -1,28 +1,27 @@
 package io.muun.apollo.presentation.ui.view;
 
-
-import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunLockOverlayBinding;
 import io.muun.apollo.presentation.biometrics.BiometricsController;
 import io.muun.common.utils.Preconditions;
 
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentActivity;
-import butterknife.BindView;
+import kotlin.jvm.functions.Function3;
 import rx.functions.Action0;
 import timber.log.Timber;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-
-public class MuunLockOverlay extends MuunView {
+public class MuunLockOverlay extends MuunView<MuunLockOverlayBinding> {
 
     private static final int CONCURRENT_ACCESS_WINDOW_MS = 500;
 
@@ -35,15 +34,16 @@ public class MuunLockOverlay extends MuunView {
         void onUnlockUsingBiometrics();
     }
 
-    @BindView(R.id.unlock_pin_input)
-    MuunPinInput pinInput;
-
     @Inject
     BiometricsController biometricsController;
 
     private LockOverlayListener listener;
 
     private String lastPin;
+
+    private MuunPinInput getPinInput() {
+        return getBinding().unlockPinInput;
+    }
 
     public MuunLockOverlay(Context context) {
         super(context);
@@ -58,8 +58,8 @@ public class MuunLockOverlay extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_lock_overlay;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunLockOverlayBinding> bindingInflater() {
+        return MuunLockOverlayBinding::inflate;
     }
 
     @Override
@@ -69,8 +69,8 @@ public class MuunLockOverlay extends MuunView {
             getComponent().inject(this);
         }
 
-        pinInput.setListener(this::onPinEntered);
-        pinInput.setBiometricsRequestedListener(this::onUnlockUsingBiometrics);
+        getPinInput().setListener(this::onPinEntered);
+        getPinInput().setBiometricsRequestedListener(this::onUnlockUsingBiometrics);
     }
 
     /**
@@ -130,15 +130,15 @@ public class MuunLockOverlay extends MuunView {
     public void setRemainingAttempts(int remainingAttempts, int maxAttempts) {
         Preconditions.checkArgument(remainingAttempts <= maxAttempts);
 
-        pinInput.setRemainingAttempts(remainingAttempts);
-        pinInput.setRemainingAttemptsVisible(remainingAttempts < maxAttempts);
+        getPinInput().setRemainingAttempts(remainingAttempts);
+        getPinInput().setRemainingAttemptsVisible(remainingAttempts < maxAttempts);
     }
 
     /**
      * Report to the Overlay that an unlock attempt failed.
      */
     public void reportError(Action0 onComplete) {
-        pinInput.flashError(onComplete);
+        getPinInput().flashError(onComplete);
         new Handler().postDelayed(this::resetLastPin, CONCURRENT_ACCESS_WINDOW_MS);
     }
 
@@ -148,12 +148,12 @@ public class MuunLockOverlay extends MuunView {
     public void reportSuccess() {
         Timber.i("MuunLockOverlay: reportSuccess");
 
-        pinInput.setSuccess();
+        getPinInput().setSuccess();
         new Handler().postDelayed(this::resetLastPin, CONCURRENT_ACCESS_WINDOW_MS);
     }
 
     public void setPinLength(int length) {
-        pinInput.setPinLength(length);
+        getPinInput().setPinLength(length);
     }
 
     public void setListener(LockOverlayListener lockOverlayListener) {

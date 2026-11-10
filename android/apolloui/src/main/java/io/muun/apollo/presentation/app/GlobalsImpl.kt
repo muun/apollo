@@ -60,4 +60,10 @@ class GlobalsImpl : Globals() {
 
     override val lappUrl: String
         get() = BuildConfig.LAPP_URL
+
+    override val honeycombApiKey: String
+        get() = BuildConfig.HONEYCOMB_API_KEY
+
+    override val honeycombDataset: String
+        get() = BuildConfig.HONEYCOMB_DATASET
 }

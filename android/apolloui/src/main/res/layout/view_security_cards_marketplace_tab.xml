@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Custom tab view: TabLayout's built-in tab text view can't match the design — it reverts
+     programmatic maxLines changes back to its own default (2) on each measure pass, and the
+     default appearance is 14sp all-caps medium while the design wants 18sp regular mixed-case.
+     TabLayout routes the tab's text into @android:id/text1 and otherwise leaves the view alone.
+     The selected color is applied at runtime with each provider's primary color. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@android:id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAppearance="@style/MuunTextAppearance.Body.Lg"
+        android:textColor="@color/text_secondary_color" />

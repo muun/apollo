@@ -9,14 +9,16 @@ import io.muun.common.Optional
 import timber.log.Timber
 import javax.inject.Inject
 
-class LogoutAction @Inject constructor(
+// open so mockito can mock/spy
+open class LogoutAction @Inject constructor(
     private val logoutActions: LogoutActions,
     private val userActions: UserActions,
     private val authRepository: AuthRepository,
     private val biometricsRepository: BiometricsRepository,
 ) {
 
-    fun run() {
+    // open so mockito can mock/spy
+    open fun run() {
         val jwt: String = getJwt()
         logoutActions.destroyRecoverableWallet()
         userActions.notifyLogoutAction.run(jwt)

@@ -107,7 +107,7 @@ enum class MuunFeature {
      * - Return `NotOverridable` for flags that must not be overridden locally.
      * - Return `Overridable` for flags that support local overrides.
      *  When using `Overridable`, you MUST provide:
-     *  - A human-readable description (shown in the Disable Feature Flags screen)
+     *  - A human-readable title and description (shown in the Disable Feature Flags screen)
      *  - A libwallet key name that matches exactly the storage key suffix used by libwallet
      *    (see libwallet/storage/schema.go). The `featureFlagOverrides:` prefix
      *    is automatically added by the storage repository.
@@ -123,18 +123,22 @@ enum class MuunFeature {
             OS_VERSION_DEPRECATED_FLOW -> OverridableFeature.NotOverridable
             NFC_CARD -> OverridableFeature.NotOverridable
             NFC_CARD_V2 -> OverridableFeature.Overridable(
-                this,
-                "Enables NFC Security Card V2 support",
-                "nfcCardV2"
+                feature = this,
+                humanReadableTitle = "Security Card",
+                humanReadableDesc = "Confirm payments by tapping your Muun Security Card." +
+                    " Turn off if you have trouble scanning your card.",
+                libwalletKeySuffix = "nfcCardV2"
             )
 
             NFC_SENSORS -> OverridableFeature.NotOverridable
             DIAGNOSTIC_MODE -> OverridableFeature.NotOverridable
             SECURITY_CARDS_MARKETPLACE -> OverridableFeature.NotOverridable
             EK_GO_RENDERING -> OverridableFeature.Overridable(
-                this,
-                "Enables Go-based emergency kit rendering",
-                "ekGoRendering"
+                feature = this,
+                humanReadableTitle = "Emergency Kit generator",
+                humanReadableDesc = "Generate your Emergency Kit PDF with the new generator. Turn" +
+                    " off if your kit fails to generate or looks wrong.",
+                libwalletKeySuffix = "ekGoRendering"
             )
 
             UNSUPPORTED_FEATURE -> OverridableFeature.NotOverridable
@@ -150,6 +154,7 @@ enum class MuunFeature {
 
         data class Overridable(
             val feature: MuunFeature,
+            val humanReadableTitle: String,
             val humanReadableDesc: String,
             val libwalletKeySuffix: String,
         ) : OverridableFeature()

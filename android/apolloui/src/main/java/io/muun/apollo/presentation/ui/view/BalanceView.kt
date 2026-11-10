@@ -4,14 +4,11 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
-import butterknife.BindColor
-import butterknife.BindDrawable
-import butterknife.BindView
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ViewBalanceBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.selector.UtxoSetStateSelector
 import io.muun.apollo.presentation.ui.bundler.CurrencyUnitBundler
@@ -33,33 +30,21 @@ class BalanceView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     style: Int = 0
-) : MuunView(context, attrs, style) {
+) : MuunView<ViewBalanceBinding>(context, attrs, style) {
 
-    // Components:
-    @BindView(R.id.balance_main_currency_amount)
-    lateinit var mainAmount: TextView
+    private val mainAmount get() = binding.balanceMainCurrencyAmount
+    private val mainCurrencyCode get() = binding.balanceMainCurrencyCode
+    private val secondaryAmount get() = binding.balanceSecondaryCurrencyAmount
+    private val clockIcon get() = binding.balanceClockIcon
 
-    @BindView(R.id.balance_main_currency_code)
-    lateinit var mainCurrencyCode: TextView
+    private val clockDrawable: Drawable
+        get() = requireNotNull(ContextCompat.getDrawable(context, R.drawable.ic_clock))
 
-    @BindView(R.id.balance_secondary_currency_amount)
-    lateinit var secondaryAmount: TextView // Contains Currency Code
+    private val clockPendingColor: Int
+        get() = ContextCompat.getColor(context, R.color.pending_color)
 
-    @BindView(R.id.balance_clock_icon)
-    lateinit var clockIcon: ImageView
-
-    // Resources:
-
-    @BindDrawable(R.drawable.ic_clock)
-    lateinit var clockDrawable: Drawable
-
-    @BindColor(R.color.pending_color)
-    @JvmField
-    internal var clockPendingColor: Int = 0
-
-    @BindColor(R.color.rbf_color)
-    @JvmField
-    internal var clockRbfColor: Int = 0
+    private val clockRbfColor: Int
+        get() = ContextCompat.getColor(context, R.color.rbf_color)
 
     // State:
     @State
@@ -87,9 +72,9 @@ class BalanceView @JvmOverloads constructor(
 
     private var rateProvider: ExchangeRateProvider? = null
 
-    override val layoutResource: Int
-        get() = R.layout.view_balance
-
+    override fun bindingInflater(): BindingInflater<ViewBalanceBinding> {
+        return ViewBalanceBinding::inflate
+    }
 
     fun setBalance(homeState: HomeFragmentPresenter.HomeState) {
         val paymentContext = homeState.paymentContext

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/muun/libwallet/internal/kvmigrationlock"
-	"github.com/muun/libwallet/storage"
+	"github.com/muun/libwallet/base/data/storage"
+	"github.com/muun/libwallet/base/data/storage/kvmigrationlock"
 )
 
 var planV1 = []storage.Migration{

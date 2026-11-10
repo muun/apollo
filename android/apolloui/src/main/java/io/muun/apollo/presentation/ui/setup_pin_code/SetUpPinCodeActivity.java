@@ -17,7 +17,6 @@ import kotlin.jvm.functions.Function1;
 
 import javax.inject.Inject;
 
-
 public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
         implements SetUpPinCodeView {
 
@@ -39,11 +38,6 @@ public class SetUpPinCodeActivity extends BaseActivity<SetUpPinCodePresenter>
     @Override
     protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
         return SetUpPinCodeBinding::inflate;
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.set_up_pin_code;
     }
 
     @Override

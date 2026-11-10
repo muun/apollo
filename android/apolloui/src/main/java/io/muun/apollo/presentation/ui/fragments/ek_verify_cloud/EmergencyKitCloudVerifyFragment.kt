@@ -1,33 +1,31 @@
 package io.muun.apollo.presentation.ui.fragments.ek_verify_cloud
 
+import android.view.LayoutInflater
 import android.view.View
-import butterknife.BindView
-import io.muun.apollo.R
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
+import io.muun.apollo.databinding.FragmentEkCloudVerifyBinding
 import io.muun.apollo.presentation.ui.base.SingleFragment
-import io.muun.apollo.presentation.ui.view.MuunButton
-
 
 class EmergencyKitCloudVerifyFragment : SingleFragment<EmergencyKitCloudVerifyPresenter>(),
     EmergencyKitCloudVerifyView {
 
-    @BindView(R.id.open_cloud_file)
-    lateinit var openCloudFileButton: MuunButton
+    private val binding: FragmentEkCloudVerifyBinding
+        get() = getBinding() as FragmentEkCloudVerifyBinding
 
-    @BindView(R.id.confirm)
-    lateinit var confirmButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentEkCloudVerifyBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_ek_cloud_verify
-
     override fun initializeUi(view: View) {
-        openCloudFileButton.setOnClickListener {
+        binding.openCloudFile.setOnClickListener {
             presenter.openCloudFile()
         }
 
-        confirmButton.setOnClickListener {
+        binding.confirm.setOnClickListener {
             presenter.confirmVerify()
         }
     }

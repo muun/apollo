@@ -15,7 +15,7 @@ if [ ! -f "$apk_to_verify" ]; then
 fi
 
 # Go to repo root
-cd $(git rev-parse --show-toplevel)
+cd "$(git rev-parse --show-toplevel)"
 
 tmp=$(mktemp -d)
 

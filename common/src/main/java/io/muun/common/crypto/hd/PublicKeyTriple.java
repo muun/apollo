@@ -6,25 +6,30 @@ import io.muun.common.utils.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 import org.bitcoinj.core.NetworkParameters;
 
+import java.util.List;
+
+/**
+ * Public keys used to build an address.
+ */
 public class PublicKeyTriple {
 
     private final PublicKey userPublicKey;
 
-    private final PublicKey muunPublicKey;
+    private final PublicKey cosignerPublicKey;
 
-    private final PublicKey swapServerPublicKey;
+    private final PublicKey lightningServerPublicKey;
 
     /**
      * Constructor.
      */
     public PublicKeyTriple(
             PublicKey userPublicKey,
-            PublicKey muunPublicKey,
-            PublicKey swapServerPublicKey
+            PublicKey cosignerPublicKey,
+            PublicKey lightningServerPublicKey
     ) {
         this.userPublicKey = userPublicKey;
-        this.muunPublicKey = muunPublicKey;
-        this.swapServerPublicKey = swapServerPublicKey;
+        this.cosignerPublicKey = cosignerPublicKey;
+        this.lightningServerPublicKey = lightningServerPublicKey;
 
         checkDerivationPaths();
         checkNetworkParameters();
@@ -34,14 +39,32 @@ public class PublicKeyTriple {
         return userPublicKey;
     }
 
+    public PublicKey getCosignerPublicKey() {
+        return cosignerPublicKey;
+    }
+
+    public PublicKey getLightningServerPublicKey() {
+        return lightningServerPublicKey;
+    }
+
+    /**
+     * Legacy name for {@link #getCosignerPublicKey()}: apollo still calls it.
+     */
+    @Deprecated
     public PublicKey getMuunPublicKey() {
-        return muunPublicKey;
+        return cosignerPublicKey;
     }
 
+    // TODO: delete in the Apollo switch, once nothing in-repo calls it.
+    // Temporary backward compat for old Apollo builds. Returns cosigning key (same path).
+    @Deprecated
     public PublicKey getSwapServerPublicKey() {
-        return swapServerPublicKey;
+        return cosignerPublicKey;
     }
 
+    /**
+     * Return the shared user/cosigner path.
+     */
     public String getAbsoluteDerivationPath() {
         return userPublicKey.getAbsoluteDerivationPath();
     }
@@ -62,15 +85,47 @@ public class PublicKeyTriple {
     //}
 
     /**
-     * Derive all PublicKeys from an absolute path.
+     * Derive user/cosigner to the target and Lightning by the same relative steps.
      */
     public PublicKeyTriple deriveFromAbsolutePath(String absolutePath)
             throws KeyDerivationException {
 
+        final PublicKey derivedLightningServerKey =
+                deriveLightningServerKeyIgnoringBasePath(absolutePath);
+
         return new PublicKeyTriple(
                 userPublicKey.deriveFromAbsolutePath(absolutePath),
-                muunPublicKey.deriveFromAbsolutePath(absolutePath),
-                swapServerPublicKey.deriveFromAbsolutePath(absolutePath)
+                cosignerPublicKey.deriveFromAbsolutePath(absolutePath),
+                derivedLightningServerKey
+        );
+    }
+
+    private PublicKey deriveLightningServerKeyIgnoringBasePath(String absolutePath)
+            throws KeyDerivationException {
+
+        // User/cosigner and Lightning can have different bases. For example, with bases
+        // m/1'/1' and m, a user target of m/1'/1'/1/7 maps to Lightning target m/1/7.
+        final List<ChildNumber> userBasePath = DerivationPathUtils.parsePath(
+                userPublicKey.getAbsoluteDerivationPath()
+        );
+        final List<ChildNumber> targetPath = DerivationPathUtils.parsePath(absolutePath);
+
+        // The target must equal or descend from the user's base path, ignoring labels.
+        Preconditions.checkArgument(
+                targetPath.size() >= userBasePath.size()
+                        && targetPath.subList(0, userBasePath.size()).equals(userBasePath)
+        );
+
+        // Append only the steps below the user base to the current Lightning path.
+        final StringBuilder lightningServerTargetPath = new StringBuilder(
+                lightningServerPublicKey.getAbsoluteDerivationPath()
+        );
+        for (ChildNumber step : targetPath.subList(userBasePath.size(), targetPath.size())) {
+            lightningServerTargetPath.append('/').append(step);
+        }
+
+        return lightningServerPublicKey.deriveFromAbsolutePath(
+                lightningServerTargetPath.toString()
         );
     }
 
@@ -97,8 +152,8 @@ public class PublicKeyTriple {
     public PublicKeyTriple deriveChild(int childIndex) throws KeyDerivationException {
         return new PublicKeyTriple(
                 userPublicKey.deriveChild(childIndex),
-                muunPublicKey.deriveChild(childIndex),
-                swapServerPublicKey.deriveChild(childIndex)
+                cosignerPublicKey.deriveChild(childIndex),
+                lightningServerPublicKey.deriveChild(childIndex)
         );
     }
 
@@ -109,38 +164,37 @@ public class PublicKeyTriple {
      */
     @VisibleForTesting
     public PublicKeyPair toPair() {
-        return new PublicKeyPair(userPublicKey, muunPublicKey);
+        return new PublicKeyPair(userPublicKey, cosignerPublicKey);
     }
 
     /**
-     * Ensures that all three derivation paths are equal.
+     * Check that user and cosigner share a path.
      */
     private void checkDerivationPaths() {
         checkDerivationPaths(userPublicKey.getAbsoluteDerivationPath());
     }
 
     /**
-     * Ensures that the triple is derived at the specified derivation path.
+     * Check that user and cosigner are at the given path.
      */
     public void checkDerivationPaths(final String derivationPath) {
+        // The Lightning key may have a different base path.
         Preconditions.checkArgument(
                 derivationPath.equals(userPublicKey.getAbsoluteDerivationPath())
         );
         Preconditions.checkArgument(
-                derivationPath.equals(muunPublicKey.getAbsoluteDerivationPath())
-        );
-        Preconditions.checkArgument(
-                derivationPath.equals(swapServerPublicKey.getAbsoluteDerivationPath())
+                derivationPath.equals(cosignerPublicKey.getAbsoluteDerivationPath())
         );
     }
 
 
     private void checkNetworkParameters() {
         final NetworkParameters userNetwork = userPublicKey.getNetworkParameters();
-        final NetworkParameters muunNetwork = muunPublicKey.getNetworkParameters();
-        final NetworkParameters swapServerNetwork = swapServerPublicKey.getNetworkParameters();
+        final NetworkParameters cosignerNetwork = cosignerPublicKey.getNetworkParameters();
+        final NetworkParameters lightningServerNetwork =
+                lightningServerPublicKey.getNetworkParameters();
 
-        Preconditions.checkArgument(userNetwork.equals(muunNetwork));
-        Preconditions.checkArgument(muunNetwork.equals(swapServerNetwork));
+        Preconditions.checkArgument(userNetwork.equals(cosignerNetwork));
+        Preconditions.checkArgument(cosignerNetwork.equals(lightningServerNetwork));
     }
 }

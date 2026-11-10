@@ -222,8 +222,8 @@ class NewOperationScreen(
                 .isCloseTo((invoice.amount.amountInSatoshis * 0.0005).toLong(), withinPercentage(5))
 
         } else { // Normal & Collect swaps
-            // On-chain (~219/226 * 1 sat/vbyte) + sweep + ln fee
-            assertThat(confirmedFeeInSat > 200).isTrue
+            // On-chain (~219/226 vbytes * 0.1 sat/vbyte min fee rate) + sweep + ln fee
+            assertThat(confirmedFeeInSat > 20).isTrue
         }
     }
 

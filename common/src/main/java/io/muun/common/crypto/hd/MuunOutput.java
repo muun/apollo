@@ -2,7 +2,7 @@ package io.muun.common.crypto.hd;
 
 import io.muun.common.api.MuunOutputJson;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class MuunOutput {
 

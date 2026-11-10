@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.signup;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SignupActivityBinding;
 import io.muun.apollo.domain.model.SignupStep;
 import io.muun.apollo.presentation.ui.activity.extension.ApplicationLockExtension;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
@@ -22,10 +23,12 @@ import io.muun.common.exception.MissingCaseError;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.view.LayoutInflater;
 import androidx.fragment.app.Fragment;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
         implements SignupView {
@@ -37,8 +40,14 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
         return new Intent(context, SignupActivity.class);
     }
 
-    @BindView(R.id.signup_header)
-    MuunHeader header;
+    private SignupActivityBinding binding() {
+        return (SignupActivityBinding) getBinding();
+    }
+
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return SignupActivityBinding::inflate;
+    }
 
     @Override
     protected void setUpExtensions() {
@@ -53,15 +62,10 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
 
     @Override
     protected void initializeUi() {
-        header.attachToActivity(this);
-        header.setBackgroundColor(Color.TRANSPARENT);
-        header.setNavigation(Navigation.NONE); // let each fragment decide
-        header.hideTitle();
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_activity;
+        binding().signupHeader.attachToActivity(this);
+        binding().signupHeader.setBackgroundColor(Color.TRANSPARENT);
+        binding().signupHeader.setNavigation(Navigation.NONE); // let each fragment decide
+        binding().signupHeader.hideTitle();
     }
 
     @Override
@@ -80,7 +84,7 @@ public class SignupActivity extends SingleFragmentActivity<SignupPresenter>
     }
 
     public MuunHeader getHeader() {
-        return header;
+        return binding().signupHeader;
     }
 
     private Fragment createStepFragment(SignupStep step) {

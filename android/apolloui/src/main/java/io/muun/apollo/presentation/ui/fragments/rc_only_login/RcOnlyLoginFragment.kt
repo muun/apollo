@@ -1,48 +1,43 @@
 package io.muun.apollo.presentation.ui.fragments.rc_only_login
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentRcOnlyLoginBinding
 import io.muun.apollo.domain.errors.UserFacingError
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
 import io.muun.apollo.presentation.ui.utils.StyledStringRes
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
-import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
 
 class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginView {
 
-    @BindView(R.id.rc_only_login_whats_this)
-    lateinit var whatsThis: TextView
+    private val binding: FragmentRcOnlyLoginBinding
+        get() = getBinding() as FragmentRcOnlyLoginBinding
 
-    @BindView(R.id.rc_only_login_recovery_code_box)
-    lateinit var recoveryCodeBox: MuunRecoveryCodeBox
-
-    @BindView(R.id.rc_only_login_continue)
-    lateinit var submitButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentRcOnlyLoginBinding::inflate
+    }
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.fragment_rc_only_login
-
     override fun initializeUi(view: View) {
-        recoveryCodeBox.setEditable(true)
-        recoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited)
-        recoveryCodeBox.requestFocusOnFirstEditableSegment()
-        recoveryCodeBox.setOnKeyboardNextListeners()
-        recoveryCodeBox.setOnKeyboardDoneListener {
-            if (submitButton.isEnabled) {
-                submitButton.callOnClick()
+        binding.rcOnlyLoginRecoveryCodeBox.setEditable(true)
+        binding.rcOnlyLoginRecoveryCodeBox.setOnEditedListener(this::onRecoveryCodeEdited)
+        binding.rcOnlyLoginRecoveryCodeBox.requestFocusOnFirstEditableSegment()
+        binding.rcOnlyLoginRecoveryCodeBox.setOnKeyboardNextListeners()
+        binding.rcOnlyLoginRecoveryCodeBox.setOnKeyboardDoneListener {
+            if (binding.rcOnlyLoginContinue.isEnabled) {
+                binding.rcOnlyLoginContinue.callOnClick()
             }
         }
 
-        whatsThis.text = getWhatThisText()
-        submitButton.setOnClickListener(this::onContinueClick)
+        binding.rcOnlyLoginWhatsThis.text = getWhatThisText()
+        binding.rcOnlyLoginContinue.setOnClickListener(this::onContinueClick)
     }
 
     override fun setUpHeader() {
@@ -55,8 +50,9 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
 
     override fun onResume() {
         super.onResume()
-        onRecoveryCodeEdited(recoveryCodeBox.segmentInputsContent) // re-trigger validation
-        recoveryCodeBox.requestFocusOnFirstEditableSegment()
+        // re-trigger validation
+        onRecoveryCodeEdited(binding.rcOnlyLoginRecoveryCodeBox.segmentInputsContent)
+        binding.rcOnlyLoginRecoveryCodeBox.requestFocusOnFirstEditableSegment()
     }
 
     override fun blockScreenshots(): Boolean {
@@ -64,8 +60,8 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
     }
 
     override fun setLoading(loading: Boolean) {
-        submitButton.setLoading(loading)
-        recoveryCodeBox.setEditable(!loading)
+        binding.rcOnlyLoginContinue.setLoading(loading)
+        binding.rcOnlyLoginRecoveryCodeBox.setEditable(!loading)
     }
 
     override fun onBackPressed(): Boolean {
@@ -74,15 +70,15 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
     }
 
     override fun setRecoveryCodeError(error: UserFacingError?) {
-        recoveryCodeBox.setError(error)
+        binding.rcOnlyLoginRecoveryCodeBox.setError(error)
     }
 
     override fun handleLegacyRecoveryCodeError() {
-        recoveryCodeBox.showLegacyRecoveryCodeError { onBackPressed() }
+        binding.rcOnlyLoginRecoveryCodeBox.showLegacyRecoveryCodeError { onBackPressed() }
     }
 
     override fun setConfirmEnabled(enabled: Boolean) {
-        submitButton.isEnabled = enabled
+        binding.rcOnlyLoginContinue.isEnabled = enabled
     }
 
     private fun onRecoveryCodeEdited(recoveryCode: String) {
@@ -90,7 +86,7 @@ class RcOnlyLoginFragment : SingleFragment<RcOnlyLoginPresenter>(), RcOnlyLoginV
     }
 
     private fun onContinueClick(view: View) {
-        presenter.submitRecoveryCode(recoveryCodeBox.segmentInputsContent)
+        presenter.submitRecoveryCode(binding.rcOnlyLoginRecoveryCodeBox.segmentInputsContent)
     }
 
     private fun getWhatThisText() =

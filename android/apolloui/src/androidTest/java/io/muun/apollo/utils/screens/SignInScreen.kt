@@ -1,6 +1,7 @@
 package io.muun.apollo.utils.screens
 
 import android.content.Context
+import androidx.test.espresso.Espresso
 import androidx.test.uiautomator.UiDevice
 import io.muun.apollo.R
 import io.muun.apollo.data.external.Gen
@@ -75,6 +76,8 @@ class SignInScreen(
 
     fun back() {
         id(R.id.signup_header)  // Check toolbar is showed, but...
+        // A focused input keeps the soft keyboard up, and a back press would only dismiss it.
+        Espresso.closeSoftKeyboard()
         device.pressBack()      // Still use device back btn, targeting toolbar back btn is sketchy
     }
 

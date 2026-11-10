@@ -207,9 +207,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.activity_new_operation
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityNewOperationBinding::inflate
     }
@@ -286,7 +283,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
                 else ->
                     presenter.startForBitcoinUri(uri, operationUri, newOpOrigin)
             }
-
         } catch (e: Exception) {
 
             Timber.e(e)
@@ -747,7 +743,6 @@ class NewOperationActivity : SingleFragmentActivity<NewOperationPresenter>(),
             UiUtils.setMarginBottom(scrollableLayout, buttonLayoutAnchor.height)
         }
     }
-
 
     private fun getFormattedDestinationData(receiver: SubmarineSwapReceiver): CharSequence {
         val publicKeyText: CharSequence = Html.fromHtml(

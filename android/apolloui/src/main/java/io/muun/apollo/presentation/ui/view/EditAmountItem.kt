@@ -4,13 +4,10 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
-import butterknife.BindColor
-import butterknife.BindDrawable
-import butterknife.BindView
-import butterknife.OnClick
+import androidx.core.content.ContextCompat
 import icepick.State
 import io.muun.apollo.R
+import io.muun.apollo.databinding.EditAmountItemBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.bundler.MonetaryAmountBundler
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
@@ -19,7 +16,7 @@ import io.muun.apollo.presentation.ui.utils.setDrawableTint
 import javax.money.MonetaryAmount
 
 class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = null, s: Int = 0) :
-    MuunView(c, a, s) {
+    MuunView<EditAmountItemBinding>(c, a, s) {
 
     interface EditAmountHandler {
         fun onEditAmount(amount: MonetaryAmount?)
@@ -31,27 +28,18 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
             .build()
     }
 
-    @BindView(R.id.amount_label)
-    lateinit var label: TextView
+    private val label get() = binding.amountLabel
+    private val selectedAmount get() = binding.selectedAmount
+    private val addAmountButton: View get() = binding.addAmount
 
-    @BindView(R.id.selected_amount)
-    lateinit var selectedAmount: TextView
+    private val editIcon: Drawable
+        get() = requireNotNull(ContextCompat.getDrawable(context, R.drawable.ic_edit_black_24))
 
-    @BindView(R.id.add_amount)
-    lateinit var addAmountButton: View
+    private val disabledIconColor: Int
+        get() = ContextCompat.getColor(context, R.color.muun_button_primary_bg_disabled)
 
-    // Resources:
-
-    @BindDrawable(R.drawable.ic_edit_black_24)
-    lateinit var editIcon: Drawable
-
-    @BindColor(R.color.muun_button_primary_bg_disabled)
-    @JvmField
-    internal var disabledIconColor: Int = 0
-
-    @BindColor(R.color.blue)
-    @JvmField
-    internal var enabledIconColor: Int = 0
+    private val enabledIconColor: Int
+        get() = ContextCompat.getColor(context, R.color.blue)
 
     // State:
 
@@ -61,12 +49,14 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
 
     private lateinit var editAmountHandler: EditAmountHandler
 
-    override val layoutResource: Int
-        get() = R.layout.edit_amount_item
+    override fun bindingInflater(): BindingInflater<EditAmountItemBinding> {
+        return EditAmountItemBinding::inflate
+    }
 
     override fun setUp(context: Context, attrs: AttributeSet?) {
         super.setUp(context, attrs)
         viewProps.transfer(attrs, this)
+        addAmountButton.setOnClickListener { onAddAmountClick() }
     }
 
     fun setLabel(labelText: CharSequence) {
@@ -104,7 +94,6 @@ class EditAmountItem @JvmOverloads constructor(c: Context, a: AttributeSet? = nu
         this.editAmountHandler = editAmountHandler
     }
 
-    @OnClick(R.id.add_amount)
     fun onAddAmountClick() {
         editAmountHandler.onEditAmount(amount)
     }

@@ -1,41 +1,29 @@
 package io.muun.apollo.presentation.ui.fragments.profile;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.SignupProfileFragmentBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer;
-import io.muun.apollo.presentation.ui.view.HtmlTextView;
-import io.muun.apollo.presentation.ui.view.MuunButton;
-import io.muun.apollo.presentation.ui.view.MuunPictureInput;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 import io.muun.apollo.presentation.ui.view.RichText;
 
 import android.net.Uri;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import butterknife.BindView;
-import butterknife.OnClick;
+import android.view.ViewGroup;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function3;
 
 public class ProfileFragment extends SingleFragment<ProfilePresenter> implements ProfileView {
 
-    @BindView(R.id.signup_profile_explanation)
-    HtmlTextView explanation;
-
-    @BindView(R.id.signup_profile_picture)
-    MuunPictureInput profilePicture;
-
-    @BindView(R.id.signup_profile_edit_first_name)
-    MuunTextInput firstName;
-
-    @BindView(R.id.signup_profile_edit_last_name)
-    MuunTextInput lastName;
-
-    @BindView(R.id.signup_continue)
-    MuunButton continueButton;
+    private SignupProfileFragmentBinding binding() {
+        return (SignupProfileFragmentBinding) getBinding();
+    }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_profile_fragment;
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return SignupProfileFragmentBinding::inflate;
     }
 
     @Override
@@ -45,8 +33,8 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
 
     @Override
     protected void initializeUi(View view) {
-        profilePicture.setOnErrorListener(presenter::handleError);
-        profilePicture.setOnChangeListener(this::onPictureChange);
+        binding().signupProfilePicture.setOnErrorListener(presenter::handleError);
+        binding().signupProfilePicture.setOnChangeListener(this::onPictureChange);
 
         final String whyThisText = getString(R.string.signup_profile_why_this);
 
@@ -56,44 +44,40 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
                 new RichText(whyThisText).setLink(this::onWhyThisClick)
         );
 
-        explanation.setText(content);
+        binding().signupProfileExplanation.setText(content);
+        binding().signupContinue.setOnClickListener(v -> presenter.submitManualProfile(
+                binding().signupProfileEditFirstName.getText().toString().trim(),
+                binding().signupProfileEditLastName.getText().toString().trim(),
+                binding().signupProfilePicture.getPictureUri()
+        ));
 
         hideKeyboard(view);
     }
 
-    @OnClick(R.id.signup_continue)
-    void onContinueButtonClick() {
-        presenter.submitManualProfile(
-                firstName.getText().toString().trim(),
-                lastName.getText().toString().trim(),
-                profilePicture.getPictureUri()
-        );
-    }
-
     @Override
     public void setFirstNameError(UserFacingError error) {
-        firstName.setError(error);
+        binding().signupProfileEditFirstName.setError(error);
 
         if (error != null) {
-            firstName.requestFocusInput();
+            binding().signupProfileEditFirstName.requestFocusInput();
         }
     }
 
     @Override
     public void setLastNameError(UserFacingError error) {
-        lastName.setError(error);
+        binding().signupProfileEditLastName.setError(error);
 
         if (error != null) {
-            lastName.requestFocusInput();
+            binding().signupProfileEditLastName.requestFocusInput();
         }
     }
 
     @Override
     public void setLoading(boolean isLoading) {
-        firstName.setEnabled(!isLoading);
-        lastName.setEnabled(!isLoading);
-        profilePicture.setEnabled(!isLoading);
-        continueButton.setLoading(isLoading);
+        binding().signupProfileEditFirstName.setEnabled(!isLoading);
+        binding().signupProfileEditLastName.setEnabled(!isLoading);
+        binding().signupProfilePicture.setEnabled(!isLoading);
+        binding().signupContinue.setLoading(isLoading);
 
         if (isLoading) {
             hideKeyboard(getView());
@@ -101,7 +85,7 @@ public class ProfileFragment extends SingleFragment<ProfilePresenter> implements
     }
 
     private void onPictureChange(Uri uri) {
-        profilePicture.setPicture(uri);
+        binding().signupProfilePicture.setPicture(uri);
     }
 
     private void onWhyThisClick() {

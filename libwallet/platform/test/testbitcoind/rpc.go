@@ -37,7 +37,10 @@ func makeRequest[Result any](b *Client, method string, args ...any) (Result, err
 	return result, nil
 }
 
-func mustMakeRequest[Result any](b *Client, method string, args ...any) Result {
+// MustMakeRequest calls method on the client's wallet with args, which must be
+// JSON-encodable, and decodes the result as Result. Nil args are dropped.
+// Fails the test on any error.
+func MustMakeRequest[Result any](b *Client, method string, args ...any) Result {
 	b.Helper()
 
 	result, err := makeRequest[Result](b, method, args...)
@@ -53,11 +56,5 @@ func checkResponseCode(err error, expectedCodes ...btcjson.RPCErrorCode) bool {
 		return false
 	}
 
-	for _, expectedCode := range expectedCodes { //nolint:modernize // TODO: use slices.Contains
-		if rpcErr.Code == expectedCode {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(expectedCodes, rpcErr.Code)
 }

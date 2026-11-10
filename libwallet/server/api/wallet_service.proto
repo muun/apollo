@@ -1,0 +1,494 @@
+syntax = "proto3";
+
+package rpc;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/muun/libwallet/api";
+
+service WalletService {
+  // NFC security cards Native->Libwallet API
+  // Signs with whichever security card version the user taps, so the client
+  // no longer picks the protocol.
+  rpc SignMessageSecurityCard(google.protobuf.Empty) returns (SignMessageSecurityCardResponse);
+
+  rpc PairRequestChallenge(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc PairSignAndSubmitChallenge(google.protobuf.Empty) returns (stream PairSignAndSubmitChallengeProgress);
+
+  // Diagnostic Mode API
+  rpc StartDiagnosticSession(google.protobuf.Empty) returns (DiagnosticSessionDescriptor);
+  rpc PerformDiagnosticScanForUtxos(DiagnosticSessionDescriptor) returns (stream ScanProgressUpdate);
+  rpc SubmitDiagnosticLog(DiagnosticSessionDescriptor) returns (DiagnosticSubmitStatus);
+  rpc PrepareSweepTx(PrepareSweepTxRequest) returns (PrepareSweepTxResponse);
+  rpc SignAndBroadcastSweepTx(SignAndBroadcastSweepTxRequest) returns (SignAndBroadcastSweepTxResponse);
+
+  rpc StartChallengeSetup(ChallengeSetupRequest) returns (SetupChallengeResponse);
+  rpc FinishRecoveryCodeSetup(FinishRecoveryCodeSetupRequest) returns (google.protobuf.Empty);
+  rpc PopulateEncryptedCosignerKey(PopulateEncryptedCosignerKeyRequest) returns (google.protobuf.Empty);
+
+  // Key-Value Storage
+  rpc Save(SaveRequest) returns (google.protobuf.Empty);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc SaveBatch(SaveBatchRequest) returns (google.protobuf.Empty);
+  rpc GetBatch(GetBatchRequest) returns (GetBatchResponse);
+  rpc GetByPrefix(GetByPrefixRequest) returns (GetBatchResponse);
+
+  // SCM (Security Cards Marketplace) — screen-specific endpoints
+  rpc FetchSecurityCardsCountries(google.protobuf.Empty) returns (SCMCountriesResponse);
+  // Filters the available countries down to the ones the given provider
+  // serves. A known provider serving none of them returns an empty list; an
+  // unknown or empty provider_uuid is an error.
+  rpc FetchSecurityCardsCountriesByProvider(SCMCountriesByProviderRequest) returns (SCMCountriesResponse);
+  rpc FetchSecurityCardsMarketplaceByCountry(SCMMarketplaceRequest) returns (SCMMarketplaceResponse);
+  rpc FetchSecurityCardDetail(SCMCardDetailRequest) returns (SCMCardDetailResponse);
+  rpc FetchSecurityCardFullSpecs(SCMFullSpecsRequest) returns (SCMFullSpecsResponse);
+  // Asks the card's provider which shipping methods it offers to the given
+  // country. Provider refusals (out of stock, deprecated card, unreachable
+  // country) and failures come back as their own libwallet error codes.
+  rpc FetchSecurityCardShippingMethods(SCMShippingMethodsRequest) returns (SCMShippingMethodsResponse);
+  rpc RefreshSecurityCardsMarketplaceCards(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc RefreshSecurityCardsMarketplacePrices(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // Validates and persists the marketplace control plane the app sourced
+  // from RealTimeData, replacing the stored one. Until the first push the
+  // marketplace fails closed and shows nothing.
+  rpc SaveSecurityCardsMarketplaceControlPlane(SCMSaveControlPlaneRequest) returns (google.protobuf.Empty);
+
+  // Emergency Kit PDF Generation
+  rpc GenerateEmergencyKitPDF(GenerateEmergencyKitPDFRequest) returns (GenerateEmergencyKitPDFResponse);
+
+  // Background Actions subsystem
+  rpc RunDueBackgroundActions(RunDueBackgroundActionsRequest) returns (RunDueBackgroundActionsResponse);
+
+  // Exchange rates
+  rpc SaveExchangeRateWindow(SaveExchangeRateWindowRequest) returns (google.protobuf.Empty);
+  rpc GetExchangeRateWindow(google.protobuf.Empty) returns (GetExchangeRateWindowResponse);
+
+  // Reset all data from the local SQLite database
+  rpc ResetData(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Zip all regular files in the libwallet data directory for debug extraction
+  rpc ZipDataDir(ZipDataDirRequest) returns (google.protobuf.Empty);
+}
+
+enum ErrorType {
+  CLIENT = 0;
+  LIBWALLET = 1;
+  HOUSTON = 2;
+}
+
+message ErrorDetail {
+  ErrorType type = 1;
+  int64 code = 2;
+  string message = 3;
+  string developer_message = 4;
+  ErrorStackTrace stack_trace = 5;
+  // Key-values the error carries for the native layer to report along with it, such as the
+  // firmware version of the security card a sign failed with.
+  map<string, string> context = 6;
+}
+
+message StackFrame {
+  string file = 1;
+  int32 line = 2;
+  string function = 3;
+  string package = 4;
+}
+
+// ErrorStackTrace is a representation of a Go error tree.
+message ErrorStackTrace {
+  string message = 1;
+  repeated StackFrame frames = 2;
+  ErrorStackTrace cause = 3;
+  repeated ErrorStackTrace siblings = 4;
+}
+
+message PairSignAndSubmitChallengeResponse {
+  bool is_known_provider = 1;
+  bool is_card_already_used = 2;
+}
+
+message SignMessageSecurityCardResponse {
+  // The firmware version the card that signed named itself with, as major.minor ("3.1").
+  string firmware_version = 1;
+}
+
+// Progress event streamed by PairSignAndSubmitChallenge. Exactly one
+// variant of the oneof is set per event.
+message PairSignAndSubmitChallengeProgress {
+  oneof event {
+    RefreshingChallenge refreshing_challenge = 1;
+    ChallengeSigned challenge_signed = 2;
+    PairSignAndSubmitChallengeResponse completed = 3;
+  }
+}
+
+// Emitted just before the action refreshes a missing/stale pending
+// challenge. Only fires when the self-heal path runs.
+message RefreshingChallenge {}
+
+// Emitted right after the signing device (e.g. card) produces its response,
+// before the action hands the signed challenge to Houston for validation.
+message ChallengeSigned {}
+
+message DiagnosticSessionDescriptor {
+  string session_id = 1;
+}
+
+message ScanProgressUpdate {
+  oneof update {
+    FoundUtxoReport found_utxo_report = 1;
+    ScanComplete scan_complete = 2;
+  }
+}
+
+message FoundUtxoReport {
+  string address = 1;
+  int64 amount = 2;
+}
+
+message ScanComplete {
+  string status = 1;
+}
+
+message DiagnosticSubmitStatus {
+  int64 status_code = 1;
+  string status_message = 2;
+}
+
+message PrepareSweepTxRequest {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string destinationAddress = 2;
+  double feeRateInSatsPerVByte = 3;
+}
+
+message PrepareSweepTxResponse {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string destinationAddress = 2;
+  int64 txSizeInBytes = 3;
+  int64 txTotalFee = 4;
+}
+
+message SignAndBroadcastSweepTxRequest {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string recoveryCode = 2;
+}
+
+message SignAndBroadcastSweepTxResponse {
+  DiagnosticSessionDescriptor sessionDescriptor = 1;
+  string txid = 2;
+}
+
+message ChallengeSetupRequest {
+  string type = 1;
+  string public_key = 2;
+  string salt = 3;
+  string encrypted_private_key = 4;
+  int32 version = 5;
+}
+
+message SetupChallengeResponse {
+  optional string cosigner_key = 1;
+  optional string cosigner_key_fingerprint = 2;
+}
+
+message FinishRecoveryCodeSetupRequest {
+  string recovery_code_public_key_hex = 1;
+}
+
+message PopulateEncryptedCosignerKeyRequest {
+  string recovery_code_public_key_hex = 1;
+}
+
+enum NullValue {
+  NULL_VALUE = 0;
+}
+
+message Struct {
+  // Unordered map of dynamically typed values
+  map<string, Value> fields = 1;
+}
+
+message Value {
+  oneof kind {
+    NullValue null_value = 1;
+    double double_value = 2;
+    int32 int_value = 3;
+    int64 long_value = 4;
+    string string_value = 5;
+    bool bool_value = 6;
+  }
+}
+
+message SaveRequest {
+  string key = 1;
+  Value value = 2;
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetResponse {
+  Value value = 1;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message SaveBatchRequest {
+  Struct items = 1;
+}
+
+message GetBatchRequest {
+  repeated string keys = 1;
+}
+
+message GetBatchResponse {
+  Struct items = 1;
+}
+
+message GetByPrefixRequest {
+  string prefix = 1;
+}
+
+// SCM (Security Cards Marketplace) — reusable models
+
+message SCMCountryInfo {
+  string code = 1;
+}
+
+message SCMMonetaryAmount {
+  string currency_code = 1;
+  string amount = 2;
+}
+
+message SCMBitcoinAmount {
+  int64 in_sat = 1;
+  SCMMonetaryAmount in_input_currency = 2;
+  SCMMonetaryAmount in_primary_currency = 3;
+}
+
+message SCMProviderTheme {
+  fixed32 primary_color_hex = 1;
+  fixed32 surface_color_hex = 2;
+}
+
+message SCMProvider {
+  string uuid = 1;
+  string name = 2;
+  string site_url = 3;
+  SCMProviderTheme light_theme = 4;
+  SCMProviderTheme dark_theme = 5;
+}
+
+message SCMCard {
+  string uuid = 1;
+  string sku = 2;
+  string image_url = 3;
+  bool has_stock = 4;
+  SCMCardMaterial material = 5;
+}
+
+enum SCMCardMaterial {
+  PLASTIC = 0;
+  METAL = 1;
+}
+
+enum SCMSecureElement {
+  EAL_5 = 0;
+  EAL_5_PLUS = 1;
+  EAL_6 = 2;
+  EAL_6_PLUS = 3;
+}
+
+enum SCMShippingMethod {
+  MAIL = 0;
+  COURIER = 1;
+}
+
+// SCM — FetchSecurityCardsCountries
+
+message SCMCountriesResponse {
+  repeated SCMCountryInfo countries = 1;
+}
+
+// SCM — FetchSecurityCardsCountriesByProvider
+
+message SCMCountriesByProviderRequest {
+  string provider_uuid = 1;
+}
+
+// SCM — SaveSecurityCardsMarketplaceControlPlane
+
+message SCMSaveControlPlaneRequest {
+  // Whitelisted shipping countries (ISO 3166-1 alpha-2).
+  repeated string countries = 1;
+  // Per-provider listings. A provider with no entry is deactivated.
+  repeated SCMControlPlaneListing listings = 2;
+  // Whitelisted card UUIDs.
+  repeated string cards = 3;
+}
+
+message SCMControlPlaneListing {
+  string provider_uuid = 1;
+  repeated string countries = 2;
+}
+
+// SCM — FetchSecurityCardsMarketplaceByCountry
+
+message SCMMarketplaceRequest {
+  SCMCountryInfo country = 1;
+}
+
+message SCMMarketplaceResponse {
+  message ProviderListing {
+    SCMProvider provider = 1;
+    repeated SCMCard cards = 2;
+    SCMBitcoinAmount estimated_shipping_price = 3;
+    SCMBitcoinAmount card_price = 4;
+  }
+
+  repeated ProviderListing providers = 1;
+}
+
+// SCM — FetchSecurityCardDetail
+
+message SCMCardDetailRequest {
+  SCMCountryInfo country = 1;
+  string security_card_uuid = 2;
+}
+
+message SCMCardDetailResponse {
+  message Provider {
+    SCMProvider provider = 1;
+    SCMCountryInfo shipping_country = 2;
+    int32 min_shipping_time_days = 3;
+    int32 max_shipping_time_days = 4;
+    SCMBitcoinAmount estimated_shipping_price = 5;
+    SCMBitcoinAmount card_price = 6;
+  }
+
+  Provider provider = 1;
+  SCMCard card = 2;
+}
+
+// SCM — FetchSecurityCardFullSpecs
+
+message SCMFullSpecsRequest {
+  SCMCountryInfo country = 1;
+  string security_card_uuid = 2;
+}
+
+message SCMFullSpecsResponse {
+  message Provider {
+    SCMProvider provider = 1;
+    SCMCountryInfo shipping_country = 2;
+    int32 min_shipping_time_days = 3;
+    int32 max_shipping_time_days = 4;
+  }
+
+  message Card {
+    SCMCard card = 1;
+    float width_mm = 2;
+    float height_mm = 3;
+    float thickness_mm = 4;
+    float weight_grams = 5;
+    SCMSecureElement secure_element = 6;
+  }
+
+  Provider provider = 1;
+  Card card = 2;
+}
+
+// SCM — FetchSecurityCardShippingMethods
+
+message SCMShippingMethodsRequest {
+  SCMCountryInfo country = 1;
+  string security_card_uuid = 2;
+}
+
+message SCMShippingMethodsResponse {
+  repeated SCMShippingOption shipping_options = 1;
+}
+
+// Wraps a shipping method instead of repeating the enum directly: Android
+// compiles its proto code with protoc 4.x against protobuf-javalite 3.22,
+// which can't build the code generated for repeated enum fields.
+message SCMShippingOption {
+  SCMShippingMethod method = 1;
+}
+
+message EKInputRequest {
+  string first_encrypted_key = 1;
+  string first_fingerprint = 2;
+  string second_encrypted_key = 3;
+  string second_fingerprint = 4;
+  string rc_checksum = 5;
+}
+
+message GenerateEmergencyKitPDFRequest {
+  EKInputRequest ek_input = 1;
+  string output_path = 2;
+  string language = 3;
+}
+
+message GenerateEmergencyKitPDFResponse {
+  string verification_code = 1;
+  int32 version = 2;
+  // Per-render profiling, so prod telemetry can validate the offline profiling.
+  RenderProfiling profiling = 3;
+}
+
+// RenderProfiling carries per-stage durations (milliseconds) and total allocation stats for a
+// single PDF render. Alloc stats are a process-wide delta and thus an approximation.
+message RenderProfiling {
+  int64 load_translations_ms = 1;
+  int64 register_fonts_ms = 2;
+  int64 register_images_ms = 3;
+  int64 components_rendering_ms = 4;
+  int64 create_and_save_on_disk_ms = 5;
+  int64 total_heap_allocated_bytes = 6;
+  int64 total_objects_allocated = 7;
+  int64 embed_metadata_ms = 8;
+  int64 total_inside_go_ms = 9;
+  int64 kit_size_bytes = 10;
+  int64 draw_icons_ms = 11;
+}
+
+message ZipDataDirRequest {
+  string output_path = 1;
+}
+
+enum ExecutionContext {
+  EXECUTION_CONTEXT_UNSPECIFIED = 0;
+  ANDROID_BACKGROUND = 1;
+  ANDROID_FOREGROUND = 2;
+  IOS_BACKGROUND_REFRESH = 3;
+  IOS_BACKGROUND_PROCESSING = 4;
+  IOS_FOREGROUND = 5;
+}
+
+message RunDueBackgroundActionsRequest {
+  ExecutionContext execution_context = 1;
+}
+
+message RunDueBackgroundActionsResponse {}
+
+// ExchangeRateWindow is a snapshot of exchange rates from BTC to every currency we handle,
+// as fetched from Houston.
+message ExchangeRateWindow {
+  int64 window_id = 1;
+  int64 fetch_date_in_millis = 2;
+  map<string, double> rates = 3;
+}
+
+message SaveExchangeRateWindowRequest {
+  ExchangeRateWindow window = 1;
+}
+
+message GetExchangeRateWindowResponse {
+  // Unset when no window has been stored yet.
+  ExchangeRateWindow window = 1;
+}

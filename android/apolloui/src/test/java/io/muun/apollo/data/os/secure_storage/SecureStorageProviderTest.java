@@ -1,6 +1,8 @@
 package io.muun.apollo.data.os.secure_storage;
 
 import io.muun.apollo.BaseTest;
+import io.muun.apollo.domain.errors.SecureStorageError;
+import io.muun.apollo.domain.utils.ExtensionsKt;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 
+import java.security.KeyStoreException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -135,6 +138,68 @@ public class SecureStorageProviderTest extends BaseTest {
 
         putSecret(SECRET_1_KEY, SECRET_2);
         assertThat(getSecret(SECRET_1_KEY)).isEqualTo(SECRET_2);
+    }
+
+    @Test
+    public void has_reports_a_value_that_lost_its_keystore_key() {
+        putSecret(SECRET_1_KEY, SECRET_1);
+        keyStore.wipe();
+
+        assertThatThrownBy(() -> secureStorage.has(SECRET_1_KEY))
+                .isExactlyInstanceOf(SecureStorageProvider.KeyStoreCorruptedError.class)
+                .satisfies(error -> {
+                    final boolean isCorruption =
+                            ExtensionsKt.isInstanceOrIsCausedBySecureStorageCorruption(error);
+                    assertThat(isCorruption).isTrue();
+                });
+    }
+
+    @Test
+    public void has_reports_a_keystore_key_left_without_its_value() {
+        putSecret(SECRET_1_KEY, SECRET_1);
+        preferences.wipe();
+
+        assertThatThrownBy(() -> secureStorage.has(SECRET_1_KEY))
+                .isExactlyInstanceOf(SecureStorageError.class);
+    }
+
+    @Test
+    public void probe_finds_a_value_that_lost_its_keystore_key() {
+        putSecret(SECRET_1_KEY, SECRET_1);
+        keyStore.wipe();
+
+        assertThat(secureStorage.isKeystoreKeyMissing(SECRET_1_KEY)).isTrue();
+    }
+
+    @Test
+    public void probe_finds_nothing_missing_in_a_healthy_or_empty_storage() {
+        putSecret(SECRET_1_KEY, SECRET_1);
+
+        assertThat(secureStorage.isKeystoreKeyMissing(SECRET_1_KEY)).isFalse();
+        assertThat(secureStorage.isKeystoreKeyMissing(SECRET_2_KEY)).isFalse();
+    }
+
+    @Test
+    public void probe_finds_nothing_missing_when_only_the_keystore_key_is_left() {
+        putSecret(SECRET_1_KEY, SECRET_1);
+        preferences.wipe();
+
+        assertThat(secureStorage.isKeystoreKeyMissing(SECRET_1_KEY)).isFalse();
+    }
+
+    @Test
+    public void probe_answers_false_when_the_keystore_fails() {
+        final FakeKeyStore failingKeyStore = new FakeKeyStore() {
+            @Override
+            public boolean hasKey(String keyAlias) {
+                throw new MuunKeyStoreException(new KeyStoreException());
+            }
+        };
+        final SecureStorageProvider storage =
+                new SecureStorageProvider(failingKeyStore, preferences);
+        preferences.saveBytes(SECRET_1, SECRET_1_KEY);
+
+        assertThat(storage.isKeystoreKeyMissing(SECRET_1_KEY)).isFalse();
     }
 
     private void putSecret(String key, byte[] secret) {

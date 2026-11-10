@@ -40,9 +40,6 @@ class EmergencyKitActivity : SingleFragmentActivity<EmergencyKitPresenter>(), Em
         component.inject(this)
     }
 
-    override fun getLayoutResource() =
-        R.layout.export_keys_activity
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ExportKeysActivityBinding::inflate
     }

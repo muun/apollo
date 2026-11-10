@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/dialog_background"
-    android:padding="24dp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="24dp">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_icon"
@@ -15,8 +16,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/text_secondary_color"
-        tools:src="@drawable/ic_code_24px" />
+        app:tint="@color/text_primary_color"
+        tools:src="@drawable/ic_code" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/text_view_title"
@@ -39,6 +40,7 @@
         android:layout_marginTop="32dp"
         android:fontFamily="sans-serif"
         android:textColor="@color/text_secondary_color"
+        android:textColorLink="@color/blue"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

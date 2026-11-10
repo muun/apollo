@@ -27,9 +27,6 @@ class DisableFeatureFlagsFragment : SingleFragment<DisableFeatureFlagsPresenter>
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int =
-        R.layout.fragment_disable_feature_flags
-
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentDisableFeatureFlagsBinding::inflate
     }

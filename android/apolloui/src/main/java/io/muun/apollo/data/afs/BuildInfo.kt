@@ -16,5 +16,7 @@ data class BuildInfo(
     val model: String,
     val product: String,
     val release: String,
-    val date: Long
+    val date: Long,
+    val incremental: String,
+    val hardware: String,
 )

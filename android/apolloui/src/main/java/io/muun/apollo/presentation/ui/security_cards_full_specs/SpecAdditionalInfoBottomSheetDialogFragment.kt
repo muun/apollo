@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.core.text.HtmlCompat
 import io.muun.apollo.databinding.BottomSheetSpecAdditionalInfoBinding
-import io.muun.apollo.presentation.ui.security_cards_marketplace.models.AdditionalInfo
+import io.muun.apollo.presentation.ui.security_cards_full_specs.models.AdditionalInfo
 import io.muun.apollo.presentation.ui.view.MuunBottomSheetDialogFragment
 
 class SpecAdditionalInfoBottomSheetDialogFragment : MuunBottomSheetDialogFragment() {
@@ -21,9 +21,14 @@ class SpecAdditionalInfoBottomSheetDialogFragment : MuunBottomSheetDialogFragmen
             }
     }
 
+    private val infoArgument: AdditionalInfo
+        get() = requireNotNull(requireArguments().getParcelable(ARG_INFO))
+
     override fun createContentView(): View {
-        val binding = BottomSheetSpecAdditionalInfoBinding.inflate(LayoutInflater.from(requireContext()))
-        val info = requireNotNull(requireArguments().getParcelable<AdditionalInfo>(ARG_INFO))
+        val binding = BottomSheetSpecAdditionalInfoBinding.inflate(
+            LayoutInflater.from(requireContext())
+        )
+        val info = infoArgument
 
         binding.imageViewIcon.setImageResource(info.iconRes)
         binding.textViewTitle.text = info.title

@@ -1,42 +1,40 @@
 package io.muun.apollo.presentation.ui.settings.edit_username;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.EditUsernameActivityBinding;
 import io.muun.apollo.domain.errors.UserFacingError;
 import io.muun.apollo.domain.model.user.User;
 import io.muun.apollo.domain.model.user.UserProfile;
 import io.muun.apollo.presentation.ui.base.BaseActivity;
 import io.muun.apollo.presentation.ui.utils.UiUtils;
-import io.muun.apollo.presentation.ui.view.MuunHeader;
 import io.muun.apollo.presentation.ui.view.MuunHeader.Navigation;
-import io.muun.apollo.presentation.ui.view.MuunTextInput;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import butterknife.BindColor;
-import butterknife.BindView;
+import androidx.core.content.ContextCompat;
+import androidx.viewbinding.ViewBinding;
+import kotlin.jvm.functions.Function1;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         implements EditUsernameView {
 
-    @BindView(R.id.edit_username_header)
-    MuunHeader header;
+    private EditUsernameActivityBinding binding() {
+        return (EditUsernameActivityBinding) getBinding();
+    }
 
-    @BindView(R.id.settings_edit_first_name)
-    MuunTextInput firstName;
-
-    @BindView(R.id.settings_edit_last_name)
-    MuunTextInput lastName;
-
-    @BindColor(R.color.disabled_color)
-    int disabledColor;
+    @Override
+    protected Function1<LayoutInflater, ViewBinding> bindingInflater() {
+        return EditUsernameActivityBinding::inflate;
+    }
 
     private MenuItem saveMenuItem;
 
@@ -53,11 +51,6 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.edit_username_activity;
-    }
-
-    @Override
     protected int getMenuResource() {
         return R.menu.edit_username_activity;
     }
@@ -66,19 +59,19 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     protected void initializeUi() {
         super.initializeUi();
 
-        header.attachToActivity(this);
-        header.showTitle(R.string.edit_username_title);
-        header.setNavigation(Navigation.EXIT);
-        header.setPadding(0, 0, UiUtils.dpToPx(this, 16), 0);
+        binding().editUsernameHeader.attachToActivity(this);
+        binding().editUsernameHeader.showTitle(R.string.edit_username_title);
+        binding().editUsernameHeader.setNavigation(Navigation.EXIT);
+        binding().editUsernameHeader.setPadding(0, 0, UiUtils.dpToPx(this, 16), 0);
 
-        firstName.setOnChangeListener(this, ignored -> onInputChange());
-        lastName.setOnChangeListener(this, ignored -> onInputChange());
+        binding().settingsEditFirstName.setOnChangeListener(this, ignored -> onInputChange());
+        binding().settingsEditLastName.setOnChangeListener(this, ignored -> onInputChange());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        firstName.requestFocusInput();
+        binding().settingsEditFirstName.requestFocusInput();
     }
 
     @Override
@@ -115,26 +108,30 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
 
     @Override
     public void setUsername(User user) {
-        firstName.setText(user.profile.map(UserProfile::getFirstName).orElse(""));
-        lastName.setText(user.profile.map(UserProfile::getLastName).orElse(""));
+        binding().settingsEditFirstName.setText(
+                user.profile.map(UserProfile::getFirstName).orElse("")
+        );
+        binding().settingsEditLastName.setText(
+                user.profile.map(UserProfile::getLastName).orElse("")
+        );
     }
 
     @Override
     public void setFirstNameError(UserFacingError error) {
-        firstName.setError(error);
+        binding().settingsEditFirstName.setError(error);
 
         if (error != null) {
-            lastName.requestFocusInput();
+            binding().settingsEditLastName.requestFocusInput();
             toggleMenuButtonEnabled(saveMenuItem, true);
         }
     }
 
     @Override
     public void setLastNameError(UserFacingError error) {
-        lastName.setError(error);
+        binding().settingsEditLastName.setError(error);
 
         if (error != null) {
-            lastName.requestFocusInput();
+            binding().settingsEditLastName.requestFocusInput();
             toggleMenuButtonEnabled(saveMenuItem, true);
         }
     }
@@ -145,8 +142,8 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     }
 
     private void onInputChange() {
-        final String firstNameText = firstName.getText().toString();
-        final String lastNameText = lastName.getText().toString();
+        final String firstNameText = binding().settingsEditFirstName.getText().toString();
+        final String lastNameText = binding().settingsEditLastName.getText().toString();
 
         final boolean bothNotEmpty = !firstNameText.isEmpty() && !lastNameText.isEmpty();
         toggleMenuButtonEnabled(saveMenuItem, bothNotEmpty);
@@ -164,9 +161,10 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
         if (itemView instanceof TextView) {
             // Ideally we would like to check if item is an ActionMenuItemView but is restrictedApi
 
-            final int color = enabled ? getMenuItemEnabledColor() : disabledColor;
+            final int color = enabled
+                    ? getMenuItemEnabledColor()
+                    : ContextCompat.getColor(this, R.color.disabled_color);
             ((TextView) itemView).setTextColor(color);
-
         }
     }
 
@@ -179,6 +177,9 @@ public class EditUsernameActivity extends BaseActivity<EditUsernamePresenter>
     }
 
     private void onSave() {
-        presenter.onSave(firstName.getText().toString(), lastName.getText().toString());
+        presenter.onSave(
+                binding().settingsEditFirstName.getText().toString(),
+                binding().settingsEditLastName.getText().toString()
+        );
     }
 }

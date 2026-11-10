@@ -7,6 +7,8 @@ import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.domain.model.NightMode
 import io.muun.apollo.domain.model.Operation
 import io.muun.apollo.domain.model.PaymentRequest
+import io.muun.apollo.domain.model.background_actions.BackgroundActionsRunOrigin
+import io.muun.apollo.domain.model.background_actions.ExecutionContext
 import io.muun.apollo.domain.model.report.ErrorReport
 import io.muun.apollo.domain.model.report.ErrorReportBuilder
 import io.muun.common.model.OperationDirection
@@ -314,6 +316,8 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     enum class SECURITY_CENTER_ORIGIN {
         SHIELD_BUTTON,
         EMPTY_HOME_ANON_USER,
+        // Reported when a navigation to Security Center didn't record its origin.
+        UNKNOWN,
     }
 
     enum class S_SECURITY_CENTER_NEXT_STEP {
@@ -678,7 +682,13 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
     class E_PUSH_NOTI_PERMISSION_DECLINED : AnalyticsEvent()
     class E_PUSH_NOTI_PERMISSION_PERMA_DECLINED : AnalyticsEvent()
 
-    class E_SECURITY_CARD_SIGN_SUCCESS : AnalyticsEvent()
+    // firmwareVersion is null only when the NFC reader has no security card enabled, so nothing
+    // was signed.
+    class E_SECURITY_CARD_SIGN_SUCCESS(firmwareVersion: String?) : AnalyticsEvent(
+        listOfNotNull(
+            firmwareVersion?.let { "card_firmware_version" to it }
+        )
+    )
 
     enum class SECURITY_CARD_TAP_PARAM {
         DETECTED,
@@ -689,10 +699,15 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
         listOf("type" to param)
     )
 
-    class E_SECURITY_CARD_TAP_ERROR(code: String?, message: String?) : AnalyticsEvent(
+    class E_SECURITY_CARD_TAP_ERROR(
+        code: String?,
+        message: String?,
+        firmwareVersion: String? = null,
+    ) : AnalyticsEvent(
         listOfNotNull(
             code?.let { "code" to it },
-            message?.let { "message" to it }
+            message?.let { "message" to it },
+            firmwareVersion?.let { "card_firmware_version" to it }
         )
     )
 
@@ -721,6 +736,64 @@ sealed class AnalyticsEvent(metadataKeyValues: List<Pair<String, Any>> = listOf(
             durationMillis?.let { "duration" to it }
         )
     )
+
+    class E_BACKGROUND_ACTIONS_RUN_STARTED(
+        id: String,
+        attempt: Int,
+        executionContext: ExecutionContext,
+        origin: BackgroundActionsRunOrigin,
+        expedited: Boolean
+    ) : AnalyticsEvent(listOf(
+        "run_id" to id,
+        "attempt" to attempt,
+        "execution_context" to executionContext.name.lowercase(Locale.ROOT),
+        "origin" to origin.name.lowercase(Locale.ROOT),
+        "expedited" to expedited
+    ))
+
+    class E_BACKGROUND_ACTIONS_RUN_SUCCESS(
+        id: String,
+        attempt: Int,
+        executionContext: ExecutionContext,
+        origin: BackgroundActionsRunOrigin,
+        expedited: Boolean,
+        durationMillis: Long
+    ) : AnalyticsEvent(listOf(
+        "run_id" to id,
+        "attempt" to attempt,
+        "execution_context" to executionContext.name.lowercase(Locale.ROOT),
+        "origin" to origin.name.lowercase(Locale.ROOT),
+        "expedited" to expedited,
+        "duration_ms" to durationMillis
+    ))
+
+    enum class BACKGROUND_ACTIONS_RUN_FAILURE_REASON {
+        TIMEOUT,
+        STOPPED,
+        ERROR
+    }
+
+    class E_BACKGROUND_ACTIONS_RUN_FAILURE(
+        id: String,
+        attempt: Int,
+        executionContext: ExecutionContext,
+        origin: BackgroundActionsRunOrigin,
+        expedited: Boolean,
+        durationMillis: Long,
+        reason: BACKGROUND_ACTIONS_RUN_FAILURE_REASON,
+        stopReason: String? = null,
+        error: Throwable? = null,
+    ) : AnalyticsEvent(listOfNotNull(
+        "run_id" to id,
+        "attempt" to attempt,
+        "execution_context" to executionContext.name.lowercase(Locale.ROOT),
+        "origin" to origin.name.lowercase(Locale.ROOT),
+        "expedited" to expedited,
+        "duration_ms" to durationMillis,
+        "reason" to reason.name.lowercase(Locale.ROOT),
+        stopReason?.let { "stop_reason" to it },
+        error?.let { "error" to it.javaClass.simpleName }
+    ))
 
     class E_BIOMETRICS_AUTH_SUCCESS : AnalyticsEvent()
     class E_BIOMETRICS_AUTH_ERROR(

@@ -111,20 +111,14 @@ class ReceiveScreen(
     }
 
     fun addUnifiedQrAmount(amountInSat: Long) {
-        if (label(R.string.priming_notifications_enable).exists()) {
-            label(R.string.priming_notifications_enable).click()
-            permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        enableNotificationsIfPrimed()
         id(R.id.unified_qr_settings).click()
 
         editAmount(amountInSat)
     }
 
     fun addInvoiceAmount(amountInSat: Long) {
-        if (label(R.string.priming_notifications_enable).exists()) {
-            label(R.string.priming_notifications_enable).click()
-            permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        enableNotificationsIfPrimed()
         normalizedLabel(ShowQrPage.LN.titleRes).click()
         id(R.id.invoice_settings).click()
 
@@ -132,10 +126,18 @@ class ReceiveScreen(
     }
 
     fun addBitcoinUriAmount(amount: MonetaryAmount) {
+        enableNotificationsIfPrimed()
         normalizedLabel(ShowQrPage.BITCOIN.titleRes).click()
         id(R.id.address_settings).click()
 
         editAmount(amount)
+    }
+
+    private fun enableNotificationsIfPrimed() {
+        if (label(R.string.priming_notifications_enable).exists()) {
+            label(R.string.priming_notifications_enable).click()
+            permissionGranter.allowPermissionsIfNeeded(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     private fun editAmount(amountInSat: Long) {

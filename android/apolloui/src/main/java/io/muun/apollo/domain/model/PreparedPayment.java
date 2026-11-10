@@ -1,7 +1,7 @@
 package io.muun.apollo.domain.model;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 public class PreparedPayment {
 
@@ -27,6 +27,8 @@ public class PreparedPayment {
 
     public final SubmarineSwap swap;
 
+    public final long expectedDebtInSat;
+
     /**
      * Manual constructor.
      */
@@ -39,7 +41,8 @@ public class PreparedPayment {
             final PaymentRequest.Type type,
             final Contact contact,
             final String address,
-            final SubmarineSwap swap) {
+            final SubmarineSwap swap,
+            final long expectedDebtInSat) {
 
         this.amount = amount;
         this.fee = fee;
@@ -50,5 +53,6 @@ public class PreparedPayment {
         this.contact = contact;
         this.address = address;
         this.swap = swap;
+        this.expectedDebtInSat = expectedDebtInSat;
     }
 }

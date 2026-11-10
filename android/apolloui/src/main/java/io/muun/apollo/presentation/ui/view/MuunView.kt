@@ -12,10 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.CallSuper
-import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.viewbinding.ViewBinding
-import butterknife.ButterKnife
 import icepick.Icepick
 import io.muun.apollo.domain.errors.BugDetected
 import io.muun.apollo.presentation.ui.activity.extension.ExternalResultExtension
@@ -28,7 +26,13 @@ import timber.log.Timber
 import java.util.LinkedList
 import java.util.Locale
 
-abstract class MuunView : FrameLayout,
+/**
+ * Signature of every generated `XBinding::inflate`, so subclasses can declare their
+ * [MuunView.bindingInflater] override on one line.
+ */
+typealias BindingInflater<B> = (LayoutInflater, ViewGroup, Boolean) -> B
+
+abstract class MuunView<B : ViewBinding> : FrameLayout,
     ExternalResultExtension.Caller,
     PermissionManagerExtension.PermissionRequester {
 
@@ -50,26 +54,15 @@ abstract class MuunView : FrameLayout,
     }
 
     /**
-     * Returns the id of the resource with the layout of the view.
-     * TODO rm this once all fragments have successfully migrated from butterKnife to view binding.
+     * Returns the View Binding inflater for this view's layout.
      */
-    @get:LayoutRes
-    protected abstract val layoutResource: Int
+    protected abstract fun bindingInflater(): BindingInflater<B>
 
     /**
-     * Override this method to opt in to use View Binding. This will turn into an abstract method
-     * to force all subclasses to implement once we finish the transition from ButterKnife to
-     * ViewBinding. For now, we leave this default impl to not bother classes that haven't
-     * transitioned yet.
+     * Assigned in [setUp], which every constructor calls.
      */
-    protected open fun viewBinder(): ((View) -> ViewBinding)? {
-        return null
-    }
-
-    /**
-     * Reserved property for View Binding use.
-     */
-    private var _binding: ViewBinding? = null
+    protected lateinit var binding: B
+        private set
 
     protected val root: ViewGroup
         get() = getChildAt(0) as ViewGroup
@@ -121,24 +114,12 @@ abstract class MuunView : FrameLayout,
     protected open fun setUp(context: Context, attrs: AttributeSet?) {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-        // When attachToRoot is false, inflate returns innerView, otherwise it returns
-        // parentView (in this case, `this`). See its javadoc
-        val innerView = inflater.inflate(layoutResource, this, false)
-        addView(innerView)
+        // Inflated with attachToRoot = false so the binding root is the inner view rather than
+        // `this` (see LayoutInflater.inflate javadoc). We attach it ourselves right after.
+        binding = bindingInflater().invoke(inflater, this, false)
+        addView(binding.root)
 
-        val viewBinder = viewBinder()
-        // If view has opted-in to viewBinding, lets gooooo
-        if (viewBinder != null) {
-            _binding = viewBinder.invoke(innerView)
-            Timber.d("${javaClass.simpleName} using viewBinding")
-
-        } else {
-            // TODO drop butterknife from all views, add generic type instead of using viewBinder
-            ButterKnife.bind(this, innerView)
-            Timber.d("${javaClass.simpleName} using Butterknife")
-        }
-
-        // WAIT: when did we change the code to add this `innerView` nonsense, instead of using
+        // WAIT: when did we change the code to add this inner view nonsense, instead of using
         // ourselves as the root layout like in the good old times?
 
         // Well, glad you asked. As you know, one of the guarantees of MuunView is that internal IDs
@@ -155,7 +136,8 @@ abstract class MuunView : FrameLayout,
 
         // The solution was changing the binding to use the inflated child as the binding source.
 
-        // In doing so, we split the layout inflation in two steps: inflate and addView(innerView).
+        // In doing so, we split the layout inflation in two steps: inflate, then
+        // addView(binding.root).
         // This has the disadvantage of banning the use of <merge> (when our first child is actually
         // us).
 
@@ -217,8 +199,6 @@ abstract class MuunView : FrameLayout,
         // Do not propagate default behavior to children, since we'll handle this ourselves.
         dispatchThawSelfOnly(container)
     }
-
-    protected fun getBinding(): ViewBinding? = _binding
 
     protected fun <T : View> findViewsByTag(tag: String): List<T> {
         val results: MutableList<T> = LinkedList()

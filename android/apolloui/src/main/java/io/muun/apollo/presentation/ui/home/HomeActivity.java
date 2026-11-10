@@ -8,7 +8,7 @@ import io.muun.apollo.domain.model.Operation;
 import io.muun.apollo.presentation.ui.activity.extension.MuunDialog;
 import io.muun.apollo.presentation.ui.base.SingleFragmentActivity;
 import io.muun.apollo.presentation.ui.fragments.home.HomeFragmentArgs;
-import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragmentArgs;
+import io.muun.apollo.presentation.ui.fragments.security_center.SecurityCenterFragment;
 import io.muun.apollo.presentation.ui.view.BlockClock;
 import io.muun.apollo.presentation.ui.view.MuunButton;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
@@ -26,7 +26,10 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.IdRes;
+import androidx.navigation.NavBackStackEntry;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -35,9 +38,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 
 public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         implements HomeView {
@@ -67,6 +70,17 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
 
     public static final String NEW_OP_ID = "NEW_OP_ID";
 
+    // Every navigation in home_nav_graph must use these, including programmatic ones. Leaving
+    // Home with them records Home with no saved stack. Without that record, the next tab swap
+    // also saves the screen it pops under Home's id, and restoreState brings that screen right
+    // back. Animations are disabled on tab swaps.
+    private static final NavOptions TAB_NAV_OPTIONS = new NavOptions.Builder()
+            .setLaunchSingleTop(true)
+            .setRestoreState(true)
+            .setPopUpTo(R.id.home_fragment, false, true)
+            .setEnterAnim(0)
+            .build();
+
     private NavController navController;
 
     @Inject
@@ -90,11 +104,6 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
     @Override
     protected void inject() {
         getComponent().inject(this);
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return R.layout.home_activity;
     }
 
     @Override
@@ -130,18 +139,13 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
         navController.setGraph(R.navigation.home_nav_graph, initialBundle);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
-        // Override the listener installed by setupWithNavController so we can disable the
-        // default fragment animations on tab swaps.
-        final NavOptions navOptions = new NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setPopUpTo(R.id.home_fragment, false, true)
-                .setEnterAnim(0)
-                .build();
-
+        // Override the listener installed by setupWithNavController to use TAB_NAV_OPTIONS, and
+        // to record the origin of Security Center visits.
         bottomNav.setOnItemSelectedListener(item -> {
-            navController.navigate(item.getItemId(), null, navOptions);
-            return true;
+            if (item.getItemId() == R.id.security_center_fragment) {
+                return navigateToSecurityCenterFrom(SECURITY_CENTER_ORIGIN.SHIELD_BUTTON);
+            }
+            return navigateToTab(item.getItemId());
         });
 
         if (Globals.INSTANCE.isDogfood()) {
@@ -165,13 +169,7 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
 
     @Override
     public void navigateToSecurityCenter() {
-
-        final SecurityCenterFragmentArgs args = new SecurityCenterFragmentArgs
-                .Builder()
-                .setOrigin(SECURITY_CENTER_ORIGIN.EMPTY_HOME_ANON_USER)
-                .build();
-
-        navController.navigate(R.id.security_center_fragment, args.toBundle());
+        navigateToSecurityCenterFrom(SECURITY_CENTER_ORIGIN.EMPTY_HOME_ANON_USER);
     }
 
     @Override
@@ -212,5 +210,30 @@ public class HomeActivity extends SingleFragmentActivity<HomePresenter>
                 })
                 .build()
                 .show(this);
+    }
+
+    /**
+     * Navigate to a bottom-nav destination, and return whether it's now on screen.
+     */
+    private boolean navigateToTab(@IdRes int destinationId) {
+        navController.navigate(destinationId, null, TAB_NAV_OPTIONS);
+
+        final NavDestination destination = navController.getCurrentDestination();
+        return destination != null && destination.getId() == destinationId;
+    }
+
+    /**
+     * Navigate to Security Center, record how the user got there, and return whether it's now on
+     * screen.
+     */
+    private boolean navigateToSecurityCenterFrom(final SECURITY_CENTER_ORIGIN origin) {
+        final boolean navigated = navigateToTab(R.id.security_center_fragment);
+
+        if (navigated) {
+            final NavBackStackEntry entry = navController.getCurrentBackStackEntry();
+            SecurityCenterFragment.setOrigin(Objects.requireNonNull(entry), origin);
+        }
+
+        return navigated;
     }
 }

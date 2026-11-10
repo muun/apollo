@@ -100,7 +100,7 @@ open class IncomingSwap(
         val htlcBlock = fullfillmentData.htlcBlock ?: byteArrayOf()
         Timber.d("---IncomingSwapFulfillmentData---")
         Timber.d("FullfilmentTx: ${Encodings.bytesToHex(fullfillmentData.fulfillmentTx)}")
-        Timber.d("MuunSignature: ${Encodings.bytesToHex(fullfillmentData.muunSignature)}")
+        Timber.d("CosignerSignature: ${Encodings.bytesToHex(fullfillmentData.cosignerSignature)}")
         Timber.d("OuputVersion: ${fullfillmentData.outputVersion}")
         Timber.d("OuputPath: ${fullfillmentData.outputPath}")
         Timber.d("MerkleTree: ${Encodings.bytesToHex(merkleTree)}")

@@ -5,10 +5,11 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
-import io.muun.apollo.presentation.ui.security_cards_country_picker.models.CountryInfo
+import io.muun.apollo.domain.model.marketplace.MarketplaceCountryCode
 
 class ShippingAddressViewModelFactory(
-    private val countryInfo: CountryInfo,
+    private val countryCode: MarketplaceCountryCode,
+    private val providerUuid: String,
     private val assistedFactory: ShippingAddressViewModel.Factory,
     owner: SavedStateRegistryOwner,
     defaultArgs: Bundle? = null,
@@ -21,7 +22,8 @@ class ShippingAddressViewModelFactory(
     ): T {
         @Suppress("UNCHECKED_CAST")
         return assistedFactory.create(
-            countryInfo = countryInfo,
+            countryCode = countryCode,
+            providerUuid = providerUuid,
             savedStateHandle = handle,
         ) as T
     }

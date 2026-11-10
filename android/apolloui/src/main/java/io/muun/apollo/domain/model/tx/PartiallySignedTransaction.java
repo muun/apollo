@@ -8,9 +8,9 @@ import io.muun.common.utils.Encodings;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 /**
  * Duplicate of (at the moment of writing) Common's PartiallySignedTransaction. This is done to

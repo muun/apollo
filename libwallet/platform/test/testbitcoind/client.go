@@ -14,27 +14,44 @@ import (
 )
 
 const (
-	bitcoindHost = "localhost:18443"
 	bitcoindUser = "user"
 	bitcoindPass = "123"
 )
 
 // Client wraps an rpcclient.Client to provide test-friendly helpers
-// for interacting with a local regtest bitcoind node. Methods that encounter
-// RPC errors call t.Fatal, so tests do not need explicit error checks.
+// for interacting with a wallet of a local regtest bitcoind node. Methods
+// that encounter RPC errors call t.Fatal, so tests do not need explicit error
+// checks.
 type Client struct {
 	*rpcclient.Client
 	*testing.T
+	node        Node
 	nodeAddress *btcutil.Address
 }
 
-// NewClient connects to the local regtest bitcoind and registers
-// a cleanup that shuts down the RPC connection when the test finishes.
+// NewClient connects to the default wallet of the shared regtest bitcoind and
+// registers a cleanup that shuts down the RPC connection when the test
+// finishes.
 func NewClient(t *testing.T) *Client {
+	t.Helper()
+	return NewClientFor(t, Regtest)
+}
+
+// NewClientFor connects to the default wallet of node and registers a cleanup
+// that shuts down the RPC connection when the test finishes.
+func NewClientFor(t *testing.T, node Node) *Client {
+	t.Helper()
+	return newWalletClient(t, node, "")
+}
+
+// newWalletClient connects to the named wallet of node, the default wallet
+// when the name is empty. Nodes may have several wallets loaded, so every
+// request names one.
+func newWalletClient(t *testing.T, node Node, wallet string) *Client {
 	t.Helper()
 
 	client, err := rpcclient.New(&rpcclient.ConnConfig{
-		Host:         bitcoindHost + "/wallet/",
+		Host:         node.host() + "/wallet/" + wallet,
 		User:         bitcoindUser,
 		Pass:         bitcoindPass,
 		Params:       "regtest",
@@ -48,6 +65,7 @@ func NewClient(t *testing.T) *Client {
 	testClient := &Client{
 		Client: client,
 		T:      t,
+		node:   node,
 	}
 	t.Cleanup(func() { testClient.Shutdown() })
 
@@ -67,6 +85,30 @@ func (b *Client) StartNewTest(t *testing.T) {
 	prevT := b.T
 	b.T = t
 	t.Cleanup(func() { b.T = prevT })
+}
+
+// CreateDescriptorWallet creates an empty descriptor wallet with private keys
+// enabled on the client's node, loading it when it already exists, and returns
+// a client bound to it.
+func (b *Client) CreateDescriptorWallet(name string) *Client {
+	b.Helper()
+
+	_, err := makeRequest[any](b, "createwallet",
+		name,  // wallet_name
+		false, // disable_private_keys
+		false, // blank
+		"",    // passphrase
+		false, // avoid_reuse
+		true,  // descriptors
+	)
+	if err != nil && checkResponseCode(err, btcjson.ErrRPCWallet) {
+		_, err = makeRequest[any](b, "loadwallet", name)
+	}
+	if err != nil {
+		b.Fatalf("Failed to create wallet %s: %v", name, err)
+	}
+
+	return newWalletClient(b.T, b.node, name)
 }
 
 // GetNewAddress returns a new native-segwit address for the given account.
@@ -118,13 +160,13 @@ func (b *Client) GenerateBlocks(blocks int) []*chainhash.Hash {
 // GetBalance returns the wallet's confirmed balance in BTC.
 func (b *Client) GetBalance() float64 {
 	b.Helper()
-	return mustMakeRequest[float64](b, "getbalance")
+	return MustMakeRequest[float64](b, "getbalance")
 }
 
 // GetBlockCount returns the current block height of the regtest chain.
 func (b *Client) GetBlockCount() int32 {
 	b.Helper()
-	return mustMakeRequest[int32](b, "getblockcount")
+	return MustMakeRequest[int32](b, "getblockcount")
 }
 
 // SendRawTransaction broadcasts a serialized transaction and returns its txid.
@@ -169,13 +211,13 @@ func (b *Client) GetRawTransaction(txID string) string {
 // SendToAddress sends amount BTC from the wallet to address and returns the txid.
 func (b *Client) SendToAddress(address btcutil.Address, amount float64) string {
 	b.Helper()
-	return mustMakeRequest[string](b, "sendtoaddress", address.EncodeAddress(), amount)
+	return MustMakeRequest[string](b, "sendtoaddress", address.EncodeAddress(), amount)
 }
 
 // ListUnspentForAddress returns confirmed UTXOs belonging to address.
 func (b *Client) ListUnspentForAddress(address btcutil.Address) []ListUnspentResult {
 	b.Helper()
-	return mustMakeRequest[[]ListUnspentResult](b, "listunspent",
+	return MustMakeRequest[[]ListUnspentResult](b, "listunspent",
 		1,                                 // minconfs
 		9999999,                           // maxconfs
 		[]string{address.EncodeAddress()}, // addresses
@@ -187,7 +229,7 @@ func (b *Client) ListUnspentForAddress(address btcutil.Address) []ListUnspentRes
 // for pre-signed but not-yet-broadcast transactions.
 func (b *Client) LockUnspent(outpoints []Outpoint) {
 	b.Helper()
-	mustMakeRequest[bool](b, "lockunspent", false, outpoints)
+	MustMakeRequest[bool](b, "lockunspent", false, outpoints)
 }
 
 // UnlockUnspent releases previously locked UTXOs so the wallet can use them again.
@@ -203,7 +245,7 @@ func (b *Client) UnlockUnspent(outpoints []Outpoint) {
 // Fails on error.
 func (b *Client) MustUnlockUnspent(outpoints []Outpoint) {
 	b.Helper()
-	mustMakeRequest[bool](b, "lockunspent", true, outpoints)
+	MustMakeRequest[bool](b, "lockunspent", true, outpoints)
 }
 
 // CreateRawTransaction builds an unsigned transaction spending the given inputs
@@ -219,7 +261,7 @@ func (b *Client) CreateRawTransaction(
 		rawOutputs[i] = map[string]float64{output.Address.EncodeAddress(): output.Amount}
 	}
 
-	return mustMakeRequest[string](b, "createrawtransaction", inputs, rawOutputs)
+	return MustMakeRequest[string](b, "createrawtransaction", inputs, rawOutputs)
 }
 
 // SignTransaction signs a raw transaction using the wallet's keys.
@@ -238,7 +280,7 @@ func (b *Client) SignTransaction(
 		Complete bool   `json:"complete"`
 	}
 
-	signResponse := mustMakeRequest[response](b, "signrawtransactionwithwallet", rawTxHex, prevs)
+	signResponse := MustMakeRequest[response](b, "signrawtransactionwithwallet", rawTxHex, prevs)
 
 	if !signResponse.Complete {
 		b.Fatalf("Transaction signing not complete")
@@ -250,13 +292,13 @@ func (b *Client) SignTransaction(
 // DecodeRawTransaction deserializes a hex-encoded transaction without broadcasting it.
 func (b *Client) DecodeRawTransaction(rawTxHex string) DecodeRawTransactionResult {
 	b.Helper()
-	return mustMakeRequest[DecodeRawTransactionResult](b, "decoderawtransaction", rawTxHex)
+	return MustMakeRequest[DecodeRawTransactionResult](b, "decoderawtransaction", rawTxHex)
 }
 
 // DropMempoolEntry drops an entry from the mempool given its transaction id.
 func (b *Client) DropMempoolEntry(txID string) bool {
 	b.Helper()
-	return mustMakeRequest[bool](b, "dropmempoolentry", txID)
+	return MustMakeRequest[bool](b, "dropmempoolentry", txID)
 }
 
 // DecodeTx deserializes a raw bitcoin transaction.

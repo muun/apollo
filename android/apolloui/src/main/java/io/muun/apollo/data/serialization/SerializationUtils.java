@@ -25,6 +25,7 @@ import org.threeten.bp.ZonedDateTime;
 import org.zalando.jackson.datatype.money.MoneyModule;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,7 +41,6 @@ import javax.money.Monetary;
 import javax.money.MonetaryAmount;
 import javax.money.MonetaryException;
 import javax.money.UnknownCurrencyException;
-import javax.validation.constraints.NotNull;
 
 public final class SerializationUtils {
 

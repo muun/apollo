@@ -1,12 +1,13 @@
 package io.muun.apollo.presentation.ui.fragments.explanation_block
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import butterknife.BindView
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FragmentExplanationPageBinding
 import io.muun.apollo.domain.utils.applyArgs
 import io.muun.apollo.presentation.ui.base.BaseFragment
 import io.muun.apollo.presentation.ui.new_operation.TitleAndDescriptionDrawer
@@ -31,25 +32,20 @@ open class ExplanationPageFragment : BaseFragment<ExplanationPagePresenter>() {
             }
     }
 
-    @BindView(R.id.image)
-    lateinit var imageView: ImageView
+    private val binding: FragmentExplanationPageBinding
+        get() = getBinding() as FragmentExplanationPageBinding
 
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.body)
-    lateinit var bodyView: TextView
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return FragmentExplanationPageBinding::inflate
+    }
 
     override fun inject() =
         component.inject(this)
 
-    override fun getLayoutResource() =
-        R.layout.fragment_explanation_page
-
     override fun initializeUi(view: View) {
-        imageView.setImageResource(argumentsBundle.getInt(IMAGE_ARG))
-        titleView.setText(argumentsBundle.getInt(TITLE_ARG))
-        bodyView.text = getStyledBody()
+        binding.image.setImageResource(argumentsBundle.getInt(IMAGE_ARG))
+        binding.title.setText(argumentsBundle.getInt(TITLE_ARG))
+        binding.body.text = getStyledBody()
     }
 
     private fun onLinkClick(id: String) {

@@ -127,6 +127,18 @@ func CheckPositivef[T number](n T, format string, args ...any) T {
 	return n
 }
 
+func MissingCase[T any](enumValue T) T {
+	Failf("Switch on %T had no case for %v", enumValue, enumValue)
+
+	// We return the zero value just to appease the compiler.
+	var t T
+	return t
+}
+
+func Failf(format string, args ...any) {
+	fail(format, args...)
+}
+
 func fail(format string, args ...any) {
 	panic(PreconditionError{errors.Errorf(format, args...)})
 }

@@ -26,10 +26,6 @@ class MigrationActivity : BaseActivity<MigrationPresenter>(), MigrationView {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.activity_migration
-    }
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return ActivityMigrationBinding::inflate
     }
@@ -39,5 +35,4 @@ class MigrationActivity : BaseActivity<MigrationPresenter>(), MigrationView {
 
         loadingView.setTitle(R.string.migration_title)
     }
-
 }

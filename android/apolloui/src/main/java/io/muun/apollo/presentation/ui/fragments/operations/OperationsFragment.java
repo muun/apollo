@@ -1,20 +1,22 @@
 package io.muun.apollo.presentation.ui.fragments.operations;
 
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.HomeOperationsFragmentBinding;
 import io.muun.apollo.presentation.ui.adapter.ItemAdapter;
 import io.muun.apollo.presentation.ui.adapter.holder.ViewHolderFactory;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.ItemViewModel;
 import io.muun.apollo.presentation.ui.adapter.viewmodel.OperationViewModel;
 import io.muun.apollo.presentation.ui.base.SingleFragment;
 import io.muun.apollo.presentation.ui.view.DividerItemDecoration;
-import io.muun.apollo.presentation.ui.view.MuunEmptyScreen;
 import io.muun.apollo.presentation.ui.view.MuunHeader;
 
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
+import androidx.viewbinding.ViewBinding;
 import kotlin.Unit;
+import kotlin.jvm.functions.Function3;
 
 import java.util.List;
 
@@ -28,11 +30,14 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
         return new OperationsFragment();
     }
 
-    @BindView(R.id.empty_screen)
-    MuunEmptyScreen emptyScreen;
+    private HomeOperationsFragmentBinding binding() {
+        return (HomeOperationsFragmentBinding) getBinding();
+    }
 
-    @BindView(R.id.home_operations_recycler_operation_list)
-    RecyclerView recyclerView;
+    @Override
+    protected Function3<LayoutInflater, ViewGroup, Boolean, ViewBinding> bindingInflater() {
+        return HomeOperationsFragmentBinding::inflate;
+    }
 
     private ItemAdapter adapter;
 
@@ -42,20 +47,17 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.home_operations_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
         adapter = new ItemAdapter(new ViewHolderFactory());
         adapter.setOnItemClickListener(this::onItemClicked);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerView.addItemDecoration(new DividerItemDecoration(requireContext(), 82, 0));
-        recyclerView.setAdapter(adapter);
+        binding().homeOperationsRecyclerOperationList
+                .setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding().homeOperationsRecyclerOperationList
+                .addItemDecoration(new DividerItemDecoration(requireContext(), 82, 0));
+        binding().homeOperationsRecyclerOperationList.setAdapter(adapter);
 
-        emptyScreen.setOnLinkClickListener(ignored -> {
+        binding().emptyScreen.setOnLinkClickListener(ignored -> {
             presenter.goToReceive();
             return Unit.INSTANCE; // Java you suuuuuuck!
         });
@@ -75,12 +77,11 @@ public class OperationsFragment extends SingleFragment<OperationsPresenter>
         final boolean hasOperations = !ops.isEmpty();
 
         if (hasOperations) {
-            setVisible(recyclerView, true);
-            setVisible(emptyScreen, false);
-
+            setVisible(binding().homeOperationsRecyclerOperationList, true);
+            setVisible(binding().emptyScreen, false);
         } else {
-            setVisible(recyclerView, false);
-            setVisible(emptyScreen, true);
+            setVisible(binding().homeOperationsRecyclerOperationList, false);
+            setVisible(binding().emptyScreen, true);
         }
 
         updateListItems(ops);

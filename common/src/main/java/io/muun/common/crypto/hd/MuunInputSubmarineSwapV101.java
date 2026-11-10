@@ -3,7 +3,7 @@ package io.muun.common.crypto.hd;
 import io.muun.common.api.MuunInputSubmarineSwapV101Json;
 import io.muun.common.utils.Encodings;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Additional details required to spend a MuunInput consuming a SubmarineSwap output V101.

@@ -2,10 +2,10 @@ package io.muun.common.crypto.hd;
 
 import io.muun.common.crypto.hd.exception.InvalidDerivationPathException;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import javax.validation.constraints.NotNull;
 
 /**
  * This class provides functions to work with our augmented HD paths, which we simply call paths.

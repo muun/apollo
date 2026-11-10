@@ -1,7 +1,7 @@
 package io.muun.apollo.presentation.ui.view;
 
-
 import io.muun.apollo.R;
+import io.muun.apollo.databinding.MuunCountryInputBinding;
 import io.muun.apollo.domain.model.CountryInfo;
 import io.muun.apollo.presentation.ui.bundler.CountryInfoBundler;
 import io.muun.apollo.presentation.ui.select_country.SelectCountryActivity;
@@ -14,23 +14,21 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.widget.TextView;
-import butterknife.BindView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import icepick.State;
+import kotlin.jvm.functions.Function3;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-public class MuunCountryInput extends MuunView {
+public class MuunCountryInput extends MuunView<MuunCountryInputBinding> {
 
     private static final int REQUEST_COUNTRY = 4411;
 
     public interface OnChangeListener {
         void onChange(Optional<CountryInfo> countryInfo);
     }
-
-    @BindView(R.id.selected_country)
-    TextView selectedCountryView;
 
     @State(CountryInfoBundler.class)
     CountryInfo selectedCountry;
@@ -51,21 +49,21 @@ public class MuunCountryInput extends MuunView {
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.muun_country_input;
+    public Function3<LayoutInflater, ViewGroup, Boolean, MuunCountryInputBinding>
+            bindingInflater() {
+        return MuunCountryInputBinding::inflate;
     }
 
     @Override
     protected void setUp(Context context, @Nullable AttributeSet attrs) {
         super.setUp(context, attrs);
-
         final Drawable background = UiUtils.getTintedDrawable(
                 getContext(),
                 R.drawable.bg_muun_dropdown, // looks like a dropdown
                 R.color.muun_spinner_drawable_color
         );
 
-        selectedCountryView.setBackground(background);
+        getBinding().selectedCountry.setBackground(background);
 
         updateView();
 
@@ -130,9 +128,9 @@ public class MuunCountryInput extends MuunView {
 
     private void updateView() {
         if (selectedCountry != null) {
-            selectedCountryView.setText(selectedCountry.countryName);
+            getBinding().selectedCountry.setText(selectedCountry.countryName);
         } else {
-            selectedCountryView.setText(R.string.signup_phone_number_select_country);
+            getBinding().selectedCountry.setText(R.string.signup_phone_number_select_country);
         }
     }
 

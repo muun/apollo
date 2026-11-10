@@ -15,6 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.muun.apollo.R
 import io.muun.apollo.databinding.ActivityCountryPickerBinding
+import io.muun.apollo.domain.model.marketplace.MarketplaceCountryCode
 import io.muun.apollo.presentation.ui.security_cards_country_picker.models.CountryInfo
 import io.muun.apollo.presentation.ui.utils.getComponent
 import io.muun.apollo.presentation.ui.utils.setWindowInsetsCompat
@@ -27,16 +28,47 @@ class CountryPickerActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_SELECTED_COUNTRY_CODE = "selected_country_code"
-        private const val RESULT_COUNTRY = "result_country"
+        private const val EXTRA_PROVIDER_UUID = "provider_uuid"
 
-        fun getIntent(context: Context, selectedCountryCode: String?): Intent =
-            Intent(context, CountryPickerActivity::class.java).apply {
-                putExtra(EXTRA_SELECTED_COUNTRY_CODE, selectedCountryCode)
+        /**
+         * For picking among every available country.
+         */
+        fun getIntent(
+            context: Context,
+            selectedCountryCode: MarketplaceCountryCode?,
+        ): Intent {
+            return Intent(context, CountryPickerActivity::class.java).apply {
+                putExtra(EXTRA_SELECTED_COUNTRY_CODE, selectedCountryCode?.value)
             }
+        }
 
-        fun getResult(data: Intent): CountryInfo =
-            requireNotNull(data.getParcelableExtra(RESULT_COUNTRY))
+        /**
+         * For picking among the countries where the given provider operates.
+         */
+        fun getIntent(
+            context: Context,
+            selectedCountryCode: MarketplaceCountryCode?,
+            providerUuid: String,
+        ): Intent {
+            return getIntent(context, selectedCountryCode).apply {
+                putExtra(EXTRA_PROVIDER_UUID, providerUuid)
+            }
+        }
+
+        fun getResult(data: Intent): CountryInfo {
+            val countryCode = requireNotNull(data.getStringExtra(EXTRA_SELECTED_COUNTRY_CODE))
+
+            return CountryInfo(MarketplaceCountryCode(countryCode))
+        }
     }
+
+    private val selectedCountryCodeExtra: MarketplaceCountryCode?
+        get() = intent.getStringExtra(EXTRA_SELECTED_COUNTRY_CODE)
+            ?.let(::MarketplaceCountryCode)
+
+    // An absent extra means no provider filtering: every country is shown.
+    private val providerUuidExtra: String?
+        get() = intent.getStringExtra(EXTRA_PROVIDER_UUID)
 
     private val binding: ActivityCountryPickerBinding by lazy {
         ActivityCountryPickerBinding.inflate(layoutInflater)
@@ -47,7 +79,8 @@ class CountryPickerActivity : AppCompatActivity() {
 
     private val viewModel: CountryPickerViewModel by viewModels {
         CountryPickerViewModelFactory(
-            selectedCountryCode = intent.getStringExtra(EXTRA_SELECTED_COUNTRY_CODE),
+            selectedCountryCode = selectedCountryCodeExtra,
+            providerUuid = providerUuidExtra,
             assistedFactory = viewModelFactory,
         )
     }
@@ -132,7 +165,7 @@ class CountryPickerActivity : AppCompatActivity() {
 
     private fun onCountrySelected(selection: CountryInfo) {
         val resultIntent = Intent().apply {
-            putExtra(RESULT_COUNTRY, selection)
+            putExtra(EXTRA_SELECTED_COUNTRY_CODE, selection.code.value)
         }
         setResult(RESULT_OK, resultIntent)
         finish()

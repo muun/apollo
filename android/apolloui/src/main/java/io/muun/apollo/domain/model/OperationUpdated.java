@@ -4,7 +4,7 @@ import io.muun.common.model.OperationStatus;
 
 import androidx.annotation.Nullable;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class OperationUpdated {
 

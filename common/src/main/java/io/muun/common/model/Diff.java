@@ -1,8 +1,8 @@
 package io.muun.common.model;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
 
 
 public class Diff<T> {

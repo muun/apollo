@@ -3,9 +3,9 @@ package io.muun.common;
 import io.muun.common.rx.RxHelper;
 import io.muun.common.utils.Preconditions;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.NoSuchElementException;
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 public final class Optional<ValueT> {
 

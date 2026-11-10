@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Type scale from the design system's Common Library (Figma):
+    https://www.figma.com/design/eQQJ5D8dNuJrSczhSysVHksR/Common-Library?node-id=1415-99
+
+    These appearances carry typography only (size, line height, weight, letter
+    spacing); text color comes from the color tokens, set separately.
+
+    lineHeight is Material's attr (works on every API level, unlike
+    android:lineHeight which needs 28+) and is only honored by
+    MaterialTextView (which TextView inflates to under the Material theme) —
+    plain EditText/AutoCompleteTextView ignore it.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="MuunTextAppearance" parent="TextAppearance.AppCompat">
+        <!-- "sans-serif" is not a typeface but Android's generic alias for the
+             system UI font, resolved at render time through the device's font
+             map (/system/etc/fonts.xml) — Roboto on stock Android, possibly
+             remapped by OEMs (Samsung, Xiaomi, etc).
+
+             android:textFontWeight needs API 28 and apollo's minSdk is 21, so a
+             weight can't be set apart from the family — each library weight maps
+             to the alias that bundles it:
+
+             | type/font weight | fontFamily alias  | weight     |
+             |==================|===================|============|
+             | regular          | sans-serif        | 400        |
+             | medium           | sans-serif-medium | 500 (~510) |
+        -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="MuunTextAppearance.Heading">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- heading/h1 -->
+    <style name="MuunTextAppearance.Heading.H1">
+        <item name="android:textSize">32sp</item>
+        <item name="lineHeight">38sp</item>
+    </style>
+
+    <!-- heading/h2 -->
+    <style name="MuunTextAppearance.Heading.H2" tools:ignore="UnusedResources">
+        <item name="android:textSize">28sp</item>
+        <item name="lineHeight">34sp</item>
+    </style>
+
+    <!-- heading/h3 -->
+    <style name="MuunTextAppearance.Heading.H3" tools:ignore="UnusedResources">
+        <item name="android:textSize">24sp</item>
+        <item name="lineHeight">30sp</item>
+    </style>
+
+    <!-- heading/h4 -->
+    <style name="MuunTextAppearance.Heading.H4" tools:ignore="UnusedResources">
+        <item name="android:textSize">20sp</item>
+        <item name="lineHeight">26sp</item>
+    </style>
+
+    <!-- Grouping parent for the body/* definitions; inherits everything from the base. -->
+    <style name="MuunTextAppearance.Body" />
+
+    <!-- body/lg -->
+    <style name="MuunTextAppearance.Body.Lg">
+        <item name="android:textSize">18sp</item>
+        <item name="lineHeight">28sp</item>
+    </style>
+
+    <!-- body/md -->
+    <style name="MuunTextAppearance.Body.Md">
+        <item name="android:textSize">16sp</item>
+        <item name="lineHeight">24sp</item>
+    </style>
+
+    <!-- body/md-medium -->
+    <style name="MuunTextAppearance.Body.MdMedium" parent="MuunTextAppearance.Body.Md"
+            tools:ignore="UnusedResources">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- body/sm -->
+    <style name="MuunTextAppearance.Body.Sm" tools:ignore="UnusedResources">
+        <item name="android:textSize">14sp</item>
+        <item name="lineHeight">22sp</item>
+    </style>
+
+    <!-- body/xs -->
+    <style name="MuunTextAppearance.Body.Xs">
+        <item name="android:textSize">12sp</item>
+        <item name="lineHeight">16sp</item>
+    </style>
+
+    <!-- button: body/md at medium weight. -->
+    <style name="MuunTextAppearance.Button" parent="MuunTextAppearance.Body.MdMedium"
+            tools:ignore="UnusedResources" />
+
+    <!-- nav bar: body/lg at medium weight. -->
+    <style name="MuunTextAppearance.NavBar" parent="MuunTextAppearance.Body.Lg">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+</resources>

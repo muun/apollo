@@ -1,5 +1,7 @@
 package io.muun.common.crypto.hd;
 
+import io.muun.common.utils.Preconditions;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,6 +21,10 @@ public class Schema {
             this.index = index;
         }
     }
+
+    // Only these branches appear in the Emergency Kit's output descriptors.
+    private static final List<DerivationBranches> DESCRIPTOR_ADDRESS_BRANCHES =
+            Arrays.asList(DerivationBranches.CHANGE, DerivationBranches.EXTERNAL);
 
     /**
      * Returns the path to derive a user's key from which change addresses are going to be derived.
@@ -57,6 +63,43 @@ public class Schema {
                 getContactsKeyPath(),
                 getMetadataKeyPath()
         );
+    }
+
+    /**
+     * Validate an address derivation path. A valid path is one the Emergency Kit's output
+     * descriptors cover: those end in {@code /<branch>/*}, so it must look like
+     * {@code m/schema:1'/recovery:1'/<branch>/<index>}. The descriptors live in
+     * {@code libwallet/emergencykit/descriptors.go}.
+     */
+    public static void validateAddressDerivationPath(final String absoluteDerivationPath) {
+        final List<ChildNumber> basePath = DerivationPathUtils.parsePath(BASE_PATH);
+        final List<ChildNumber> path = DerivationPathUtils.parsePath(absoluteDerivationPath);
+
+        final boolean matchesDescriptors =
+                // <branch> and <index> are the only levels below m/schema:1'/recovery:1'.
+                path.size() == basePath.size() + 2
+                // The path starts at m/schema:1'/recovery:1'.
+                && path.subList(0, basePath.size()).equals(basePath)
+                // <branch> is change:0 or external:1, never hardened.
+                && isDescriptorAddressBranch(path.get(basePath.size()))
+                // <index> is what `/*` stands for, and `/*` never covers hardened children.
+                && !path.get(basePath.size() + 1).isHardened();
+
+        Preconditions.checkArgument(
+                matchesDescriptors,
+                absoluteDerivationPath + " matches no output descriptor"
+        );
+    }
+
+    // Comparing whole ChildNumbers also rejects a hardened branch level. No streams here:
+    // common is animalsniffer-checked against an Android API level without java.util.stream.
+    private static boolean isDescriptorAddressBranch(final ChildNumber level) {
+        for (final DerivationBranches branch : DESCRIPTOR_ADDRESS_BRANCHES) {
+            if (level.equals(new ChildNumber(branch.index, false, null))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String getBasePath() {

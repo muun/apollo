@@ -2,9 +2,8 @@ package io.muun.apollo.presentation.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.TextView
-import butterknife.BindView
 import io.muun.apollo.R
+import io.muun.apollo.databinding.FeeManualItemBinding
 import io.muun.apollo.domain.model.BitcoinUnit
 import io.muun.apollo.presentation.ui.helper.MoneyHelper
 import io.muun.apollo.presentation.ui.utils.locale
@@ -14,18 +13,16 @@ class FeeManualItem @JvmOverloads constructor(
     context: Context,
     a: AttributeSet? = null,
     s: Int = 0
-) : MuunView(context, a, s) {
+) : MuunView<FeeManualItemBinding>(context, a, s) {
 
-    @BindView(R.id.title)
-    lateinit var titleView: TextView
-
-    @BindView(R.id.amount)
-    lateinit var amountView: TextView
+    private val titleView get() = binding.title
+    private val amountView get() = binding.amount
 
     var bitcoinUnit = BitcoinUnit.BTC
 
-    override val layoutResource: Int
-        get() = R.layout.fee_manual_item
+    override fun bindingInflater(): BindingInflater<FeeManualItemBinding> {
+        return FeeManualItemBinding::inflate
+    }
 
     var title: String = ""
         set(value) {

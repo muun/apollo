@@ -30,11 +30,11 @@ type CCharArray struct {
 	array C.CharArray
 }
 
-func make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; func make_char_array should be makeCharArray
+func makeCharArray(
 	value []byte,
 ) CCharArray {
 	ptr := C.malloc(C.size_t(len(value)))
-	for i := 0; i < len(value); i++ { //nolint:modernize // TODO: use range over int
+	for i := range len(value) {
 		*(*byte)(unsafe.Add(ptr, i)) = value[i]
 	}
 	return CCharArray{
@@ -45,13 +45,13 @@ func make_char_array( //nolint:staticcheck // TODO: should not use underscores i
 	}
 }
 
-func free_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; func free_char_array should be freeCharArray
+func freeCharArray(
 	array CCharArray,
 ) {
 	C.free(unsafe.Pointer(array.array.data))
 }
 
-func extract_value( //nolint:staticcheck // TODO: should not use underscores in Go names; func extract_value should be extractValue
+func extractValue(
 	array CCharArray,
 ) []byte {
 	res := make([]byte, int(array.array.len))
@@ -63,47 +63,47 @@ func extract_value( //nolint:staticcheck // TODO: should not use underscores in 
 
 func Plonky2ServerKeyVerify(
 	proof []byte,
-	recovery_code_public_key []byte, //nolint:staticcheck // TODO: should not use underscores in Go names; func parameter recovery_code_public_key should be recoveryCodePublicKey
-	hpke_ephemeral_public_key []byte, //nolint:staticcheck // TODO: should not use underscores in Go names; func parameter hpke_ephemeral_public_key should be hpkeEphemeralPublicKey
+	recoveryCodePublicKey []byte,
+	hpkeEphemeralPublicKey []byte,
 	ciphertext []byte,
-	plaintext_public_key []byte, //nolint:staticcheck // TODO: should not use underscores in Go names; func parameter plaintext_public_key should be plaintextPublicKey
+	plaintextPublicKey []byte,
 ) []byte {
 
-	proof_char_array := make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; var proof_char_array should be proofCharArray
+	proofCharArray := makeCharArray(
 		proof,
 	)
-	defer free_char_array(proof_char_array)
+	defer freeCharArray(proofCharArray)
 
-	recovery_code_public_key_char_array := make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; var recovery_code_public_key_char_array should be recoveryCodePublicKeyCharArray
-		recovery_code_public_key,
+	recoveryCodePublicKeyCharArray := makeCharArray(
+		recoveryCodePublicKey,
 	)
-	defer free_char_array(recovery_code_public_key_char_array)
+	defer freeCharArray(recoveryCodePublicKeyCharArray)
 
-	hpke_ephemeral_public_key_char_array := make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; var hpke_ephemeral_public_key_char_array should be hpkeEphemeralPublicKeyCharArray
-		hpke_ephemeral_public_key,
+	hpkeEphemeralPublicKeyCharArray := makeCharArray(
+		hpkeEphemeralPublicKey,
 	)
-	defer free_char_array(hpke_ephemeral_public_key_char_array)
+	defer freeCharArray(hpkeEphemeralPublicKeyCharArray)
 
-	ciphertext_char_array := make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; var ciphertext_char_array should be ciphertextCharArray
+	ciphertextCharArray := makeCharArray(
 		ciphertext,
 	)
-	defer free_char_array(ciphertext_char_array)
+	defer freeCharArray(ciphertextCharArray)
 
-	plaintext_public_key_char_array := make_char_array( //nolint:staticcheck // TODO: should not use underscores in Go names; var plaintext_public_key_char_array should be plaintextPublicKeyCharArray
-		plaintext_public_key,
+	plaintextPublicKeyCharArray := makeCharArray(
+		plaintextPublicKey,
 	)
-	defer free_char_array(plaintext_public_key_char_array)
+	defer freeCharArray(plaintextPublicKeyCharArray)
 
-	result_char_array := CCharArray{ //nolint:staticcheck // TODO: should not use underscores in Go names; var result_char_array should be resultCharArray
+	resultCharArray := CCharArray{
 		array: C.plonky2_server_key_verify(
-			proof_char_array.array,
-			recovery_code_public_key_char_array.array,
-			hpke_ephemeral_public_key_char_array.array,
-			ciphertext_char_array.array,
-			plaintext_public_key_char_array.array,
+			proofCharArray.array,
+			recoveryCodePublicKeyCharArray.array,
+			hpkeEphemeralPublicKeyCharArray.array,
+			ciphertextCharArray.array,
+			plaintextPublicKeyCharArray.array,
 		),
 	}
-	defer free_char_array(result_char_array)
+	defer freeCharArray(resultCharArray)
 
-	return extract_value(result_char_array)
+	return extractValue(resultCharArray)
 }

@@ -39,9 +39,6 @@ class TaprootSetupActivity : SingleFragmentActivity<TaprootSetupPresenter>(), Ta
     override fun isPresenterPersistent() =
         true
 
-    override fun getLayoutResource() =
-        R.layout.taproot_setup_activity
-
     override fun bindingInflater(): (LayoutInflater) -> ViewBinding {
         return TaprootSetupActivityBinding::inflate
     }

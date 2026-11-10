@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- General-purpose strings -->
     <string name="no">No</string>
@@ -1779,7 +1779,7 @@
     <string name="nfc_reader_screen_go_to_configs_title">NFC desactivado</string>
     <string name="nfc_reader_screen_enable_nfc">Tu NFC está apagado. Activá NFC desde Configuración para continuar.</string>
     <string name="nfc_reader_screen_go_to_configs">Ir a configuración</string>
-    <string name="nfc_reader_screen_unknown_coordinates">Ubicación desconocida: por favor, contactá al equipo de wallet</string>
+    <string name="nfc_reader_screen_unknown_coordinates">Ubicación de la antena desconocida: por favor, contactá al equipo de wallet.\n\nIgual podés apoyar tu tarjeta de seguridad. Probá sostenerla en distintos lugares del dorso del teléfono.</string>
 
     <string name="nfc_reader_screen_disable_ff_title">¿Desactivar el flag de security card?</string>
     <string name="nfc_reader_screen_disable_ff_desc">
@@ -1801,13 +1801,13 @@
 
     <!-- SecurityCards - Marketplace -->
     <!-- FIXME Missing copies yet -->
-    <string name="security_cards_marketplace_card_cost">%s</string>
     <string name="security_cards_marketplace_shipping_and_taxes_cost">%s shipping &amp; taxes</string>
     <string name="security_cards_marketplace_no_data_description">
         <annotation role="p">Unfortunately, no provider currently ships to <annotation arg="0">COUNTRY</annotation>.</annotation>
         <annotation role="p"><annotation link="support"><annotation fontColor="muunTextSecondaryColor">Add your voice</annotation></annotation> to help us prioritize which country we should add next.</annotation>
     </string>
     <string name="security_cards_marketplace_no_data_button">CHOOSE A DIFFERENT COUNTRY</string>
+    <string name="security_cards_marketplace_out_of_stock">Out of stock</string>
 
     <!-- SecurityCards - CountryPicker -->
     <!-- FIXME Missing copies yet -->
@@ -1833,6 +1833,10 @@
 
     <!-- SecurityCards - CardDetail -->
     <!-- FIXME Missing copies yet -->
+    <string name="security_cards_card_detail_material_label">Material</string>
+    <string name="security_cards_card_detail_ships_from_label">Ships from</string>
+    <string name="security_cards_card_detail_delivers_in_label">Delivers in</string>
+    <string name="security_cards_card_detail_delivers_in_value" tools:ignore="PluralsCandidate">%d - %d days</string>
     <string name="security_cards_card_detail_see_full_specs">See full specs</string>
     <string name="security_cards_card_detail_go_to_provider">GO TO %s</string>
 
@@ -1842,10 +1846,32 @@
     <string name="in_app_update_downloaded">Actualización descargada. Reiniciá para instalar.</string>
     <string name="in_app_update_restart">Reiniciar</string>
 
-  <!-- SecurityCards - FullSpecs -->
+    <!-- SecurityCards - FullSpecs -->
     <!-- FIXME Missing copies yet -->
-    <string name="security_cards_full_specs_dim_height">54\nmm</string>
-    <string name="security_cards_full_specs_dim_width">86.6mm</string>
+    <string name="security_cards_full_specs_dim_height">%1$s\nmm</string>
+    <string name="security_cards_full_specs_dim_width">%1$smm</string>
+    <string name="security_cards_full_specs_section_specifications">Specifications</string>
+    <string name="security_cards_full_specs_material_label">Material</string>
+    <string name="security_cards_full_specs_thickness_label">Thickness</string>
+    <string name="security_cards_full_specs_thickness_value">%1$smm</string>
+    <string name="security_cards_full_specs_weight_label">Weight</string>
+    <string name="security_cards_full_specs_weight_value">%1$.0fg</string>
+    <string name="security_cards_full_specs_section_security">Security</string>
+    <string name="security_cards_full_specs_secure_element_label">Secure Element</string>
+    <string name="security_cards_full_specs_secure_element_additional_data"><![CDATA[The secure element is a tamper-resistant chip that stores your private keys.<br>It\'s certified under EAL (Evaluation Assurance Level) standards.<br><br>• EAL5+ provides high assurance with semi-formal design verification.<br>• EAL6+ adds formal methods for even stronger protection.<br><br>Higher EAL ratings mean more rigorous testing and better security guarantees.]]></string>
+    <string name="security_cards_full_specs_firmware_label">Firmware</string>
+    <string name="security_cards_full_specs_firmware_value">Designed by Muun</string>
+    <string name="security_cards_full_specs_firmware_additional_data"><![CDATA[The firmware is the core software that governs your card\'s behavior. Built and maintained by Muun.<br><br>It\'s open source, publicly available for review. Find it and more information on <a href=\"https://github.com/muun\">GitHub</a>.]]></string>
+    <string name="security_cards_full_specs_packaging_label">Packaging</string>
+    <string name="security_cards_full_specs_packaging_value">Tamper resistant</string>
+    <string name="security_cards_full_specs_section_delivery">Delivery</string>
+    <string name="security_cards_full_specs_shipped_by_label">Shipped by</string>
+    <string name="security_cards_full_specs_from_label">From</string>
+    <string name="security_cards_full_specs_arrives_in_label">Arrives in</string>
+    <string name="security_cards_full_specs_arrives_in_value" tools:ignore="PluralsCandidate">%d - %d days</string>
+    <string name="security_cards_full_specs_shipping_data_label">Shipping data</string>
+    <string name="security_cards_full_specs_shipping_data_value">Under GDPR</string>
+    <string name="security_cards_full_specs_shipping_data_additional_data"><![CDATA[To ship your card, the provider needs your address. Each provider has its own policy on how long they keep that data.<br><br>Some providers delete your shipping information automatically (30 or 60 days after your order ships).<br>Others follow GDPR or similar regulations, or delete it upon request.<br><br>Muun never sees or stores your personal information.]]></string>
 
     <!-- SecurityCards - Shipping Address -->
     <!-- FIXME Missing copies yet -->
@@ -1853,12 +1879,15 @@
     <string name="security_cards_shipping_address_description">Information needed to deliver your card.</string>
     <string name="security_cards_shipping_address_full_name">Full Name</string>
     <string name="security_cards_shipping_address_email">Email</string>
-    <string name="security_cards_shipping_address_address">Shipping address</string>
+    <string name="security_cards_shipping_address_address1">Street address</string>
+    <string name="security_cards_shipping_address_address2">Apt, suite, etc (optional)</string>
     <string name="security_cards_shipping_address_country">Country/Region</string>
     <string name="security_cards_shipping_address_city">City</string>
     <string name="security_cards_shipping_address_state">State</string>
     <string name="security_cards_shipping_address_zip_code">ZIP Code</string>
     <string name="security_cards_shipping_address_continue">GO TO CHECKOUT</string>
+    <string name="security_cards_shipping_address_error_empty">Can\'t be empty</string>
+    <string name="security_cards_shipping_address_error_invalid_email">Invalid email</string>
 
     <!-- SecurityCards - Connected to website dialog -->
     <!-- FIXME Missing copies yet -->

@@ -23,10 +23,6 @@ class RecoveryToolFragment : SingleFragment<RecoveryToolPresenter>(), BaseView {
     override fun inject() =
         component.inject(this)
 
-    // TODO rm this once all fragments have successfully migrated from butterKnife to view binding.
-    override fun getLayoutResource() =
-        R.layout.fragment_recovery_tool
-
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentRecoveryToolBinding::inflate
     }

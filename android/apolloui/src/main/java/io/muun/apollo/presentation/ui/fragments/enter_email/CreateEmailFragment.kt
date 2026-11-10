@@ -27,10 +27,6 @@ class CreateEmailFragment : SingleFragment<CreateEmailPresenter>(), CreateEmailV
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.fragment_create_email
-    }
-
     override fun initializeUi(view: View) {
         with(binding) {
             val styledCreateEmailSubtitle = StyledStringRes(

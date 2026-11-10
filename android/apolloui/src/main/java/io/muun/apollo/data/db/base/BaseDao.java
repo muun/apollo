@@ -19,10 +19,10 @@ import rx.Observable;
 import rx.exceptions.OnErrorThrowable;
 import rx.functions.Action0;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 
 public abstract class BaseDao<ModelT extends PersistentModel> {
 

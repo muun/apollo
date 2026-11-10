@@ -14,6 +14,7 @@ import org.threeten.bp.ZonedDateTime;
 import org.threeten.bp.temporal.ChronoUnit;
 import timber.log.Timber;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -37,7 +38,6 @@ import javax.crypto.SecretKey;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.security.auth.x500.X500Principal;
-import javax.validation.constraints.NotNull;
 
 @Singleton
 public class KeyStoreProvider {

@@ -2,7 +2,7 @@ package io.muun.apollo.domain.model;
 
 import io.muun.common.crypto.ChallengeType;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class PendingChallengeUpdate {
 

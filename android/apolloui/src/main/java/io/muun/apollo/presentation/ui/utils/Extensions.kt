@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
@@ -27,7 +28,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -35,7 +35,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isNotEmpty
-import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import io.muun.apollo.R
@@ -46,6 +45,7 @@ import io.muun.apollo.presentation.ui.base.di.ActivityComponent
 import io.muun.apollo.presentation.ui.base.di.FragmentComponent
 import io.muun.apollo.presentation.ui.utils.OS.supportsEdgeToEdge
 import timber.log.Timber
+import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.math.max
@@ -207,6 +207,14 @@ fun normalizeDecimalInput(input: String, locale: Locale): String {
 }
 
 /**
+ * Format for display with at most one decimal digit, hiding the decimal separator and the
+ * trailing zero when the value is whole (54f -> "54", 86.6f -> "86.6").
+ */
+fun Float.toCompactDecimalString(locale: Locale): String {
+    return DecimalFormat("0.#", DecimalFormatSymbols(locale)).format(this)
+}
+
+/**
  * Returns whether the device supports night mode or not.
  */
 fun supportsDarkMode(): Boolean =
@@ -303,6 +311,26 @@ fun View.getCurrentNightMode(): Int {
     return uiMode
 }
 
+/**
+ * Returns whether night mode is active or not.
+ */
+fun Context.isInNightMode(): Boolean =
+    getCurrentNightMode() == Configuration.UI_MODE_NIGHT_YES
+
+/**
+ * Return whether night mode is active or not. Assumes night mode is NOT active if the OS'
+ * answer is undefined (see Activity.getCurrentNightMode).
+ */
+fun Context.getCurrentNightMode(): Int {
+    val uiMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+    if (uiMode == Configuration.UI_MODE_NIGHT_UNDEFINED) {
+        return Configuration.UI_MODE_NIGHT_NO
+    }
+
+    return uiMode
+}
+
 fun Context.string(@StringRes id: Int) =
     resources.getString(id)
 
@@ -366,16 +394,20 @@ fun Animation.setOnEndListener(f: () -> Unit) {
     })
 }
 
-fun TextView.setTextAppearanceCompat(@StyleRes resId: Int) {
-    TextViewCompat.setTextAppearance(this, resId)
-}
-
 fun TextView.setDrawableTint(@ColorInt color: Int) {
     UiUtils.setDrawableTint(this, color)
 }
 
 fun Context.getColorCompat(@ColorRes colorId: Int) =
     ContextCompat.getColor(this, colorId)
+
+fun TextView.setTextColorCompat(@ColorRes colorRes: Int) {
+    setTextColor(context.getColorCompat(colorRes))
+}
+
+fun View.setBackgroundTint(@ColorInt color: Int) {
+    backgroundTintList = ColorStateList.valueOf(color)
+}
 
 fun TextView.setStyledText(@StringRes resId: Int, vararg args: Any) {
     setStyledText(resId, {}, *args)

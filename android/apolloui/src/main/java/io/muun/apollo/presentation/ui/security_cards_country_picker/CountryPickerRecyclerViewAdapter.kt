@@ -1,5 +1,6 @@
 package io.muun.apollo.presentation.ui.security_cards_country_picker
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,9 @@ import io.muun.apollo.presentation.ui.security_cards_country_picker.models.Selec
 
 class CountryPickerRecyclerViewAdapter(
     private val onCountryClick: (CountryInfo) -> Unit,
-) : ListAdapter<SelectableCountryInfo, CountryPickerRecyclerViewAdapter.ViewHolder>(DiffCallback()) {
+) : ListAdapter<SelectableCountryInfo, CountryPickerRecyclerViewAdapter.ViewHolder>(
+    DiffCallback()
+) {
 
     override fun submitList(list: List<SelectableCountryInfo?>?) {
         super.submitList(null)
@@ -43,9 +46,10 @@ class CountryPickerRecyclerViewAdapter(
             }
         }
 
+        @SuppressLint("SetTextI18n")
         fun bind(item: SelectableCountryInfo) {
-            binding.textViewFlag.text = item.countryInfo.flagEmoji
-            binding.textViewName.text = item.countryInfo.name
+            val countryName = item.countryInfo.name(binding.textViewName.context)
+            binding.textViewName.text = "${item.countryInfo.flagEmoji} $countryName"
             binding.textViewName.setTextColor(
                 ContextCompat.getColor(
                     binding.root.context,
@@ -58,10 +62,18 @@ class CountryPickerRecyclerViewAdapter(
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<SelectableCountryInfo>() {
-        override fun areItemsTheSame(oldItem: SelectableCountryInfo, newItem: SelectableCountryInfo) =
-            oldItem.countryInfo.code == newItem.countryInfo.code
+        override fun areItemsTheSame(
+            oldItem: SelectableCountryInfo,
+            newItem: SelectableCountryInfo,
+        ): Boolean {
+            return oldItem.countryInfo.code == newItem.countryInfo.code
+        }
 
-        override fun areContentsTheSame(oldItem: SelectableCountryInfo, newItem: SelectableCountryInfo) =
-            oldItem == newItem
+        override fun areContentsTheSame(
+            oldItem: SelectableCountryInfo,
+            newItem: SelectableCountryInfo,
+        ): Boolean {
+            return oldItem == newItem
+        }
     }
 }

@@ -1,6 +1,7 @@
 package io.muun.apollo.presentation.ui.fragments.security_center
 
 import android.os.Bundle
+import io.muun.apollo.domain.analytics.AnalyticsEvent.SECURITY_CENTER_ORIGIN
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER_EMAIL_STATUS
 import io.muun.apollo.domain.analytics.AnalyticsEvent.S_SECURITY_CENTER_NEXT_STEP
@@ -21,10 +22,11 @@ class SecurityCenterPresenter @Inject constructor(
     override fun setUp(arguments: Bundle) {
         super.setUp(arguments)
 
-        setUpBoxes()
+        // Read while this screen is resumed, so its back stack entry is still there.
+        setUpBoxes(view.getOrigin())
     }
 
-    private fun setUpBoxes() {
+    private fun setUpBoxes(origin: SECURITY_CENTER_ORIGIN) {
         // NOTE: this is not reactive. Fortunately, nothing can change unless we leave this screen.
         userSel.watch()
             .first()
@@ -58,12 +60,12 @@ class SecurityCenterPresenter @Inject constructor(
                     securityCenter
                 )
 
-                reportNextStep(securityCenter.getLevel())
+                reportNextStep(securityCenter.getLevel(), origin)
             }
             .let(this::subscribeTo)
     }
 
-    private fun reportNextStep(securityLevel: SecurityLevel) {
+    private fun reportNextStep(securityLevel: SecurityLevel, origin: SECURITY_CENTER_ORIGIN) {
 
         val nextStep = when (securityLevel) {
             SecurityLevel.ANON -> S_SECURITY_CENTER_NEXT_STEP.EMAIL
@@ -84,8 +86,6 @@ class SecurityCenterPresenter @Inject constructor(
             SecurityLevel.SKIPPED_EMAIL_RC -> S_SECURITY_CENTER_EMAIL_STATUS.SKIPPED
             SecurityLevel.SKIPPED_EMAIL_DONE -> S_SECURITY_CENTER_EMAIL_STATUS.SKIPPED
         }
-
-        val origin = SecurityCenterFragmentArgs.fromBundle(view.argumentsBundle).origin
 
         val event = S_SECURITY_CENTER(nextStep, origin, emailStatus)
 

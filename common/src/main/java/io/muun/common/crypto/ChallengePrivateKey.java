@@ -15,12 +15,12 @@ import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.Arrays;
 import javax.crypto.SecretKey;
-import javax.validation.constraints.NotNull;
 
 public class ChallengePrivateKey {
 

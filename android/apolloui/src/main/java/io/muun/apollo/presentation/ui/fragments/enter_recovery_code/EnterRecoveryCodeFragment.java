@@ -31,11 +31,6 @@ public class EnterRecoveryCodeFragment extends SingleFragment<EnterRecoveryCodeP
     }
 
     @Override
-    protected int getLayoutResource() {
-        return R.layout.signup_forgot_password_fragment;
-    }
-
-    @Override
     protected void initializeUi(View view) {
         final var binding = binding();
         final var recoveryCodeBox = binding.signupForgotPasswordRecoveryCodeBox;

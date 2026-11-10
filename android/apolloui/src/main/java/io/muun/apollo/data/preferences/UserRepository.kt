@@ -126,6 +126,14 @@ class UserRepository @Inject constructor(
     }
 
     /**
+     * Get the houston id of the stored user, without building the User. Returns null if there's no
+     * user stored.
+     */
+    fun fetchHid(): Long? {
+        return userPreference.get()?.hid
+    }
+
+    /**
      * Execute the migration that ends the multi-preference hell.
      */
     fun migrateCthulhuToJsonPreference() {
@@ -263,6 +271,13 @@ class UserRepository @Inject constructor(
 
     val isInitialSyncCompleted: Boolean
         get() = initialSyncCompletedPreference.get()!!
+
+    /**
+     * Get an Observable to observe changes to the initial sync completed preference.
+     */
+    fun watchInitialSyncCompleted(): Observable<Boolean> {
+        return initialSyncCompletedPreference.asObservable()
+    }
 
     /**
      * Save flag to signal that RecoveryCode setup process, though started, has not been completed.

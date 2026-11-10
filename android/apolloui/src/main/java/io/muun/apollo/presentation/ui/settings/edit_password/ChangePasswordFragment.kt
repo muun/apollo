@@ -37,10 +37,6 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.fragment_change_password
-    }
-
     override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return FragmentChangePasswordBinding::inflate
     }
@@ -127,5 +123,4 @@ class ChangePasswordFragment : SingleFragment<ChangePasswordPresenter>(), Change
 
     private fun isValidPassword(password: String) =
         !TextUtils.isEmpty(password) && password.length >= Rules.PASSWORD_MIN_LENGTH
-
 }

@@ -1,38 +1,31 @@
 package io.muun.apollo.presentation.ui.recovery_code.show
 
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import butterknife.BindView
+import android.view.ViewGroup
+import androidx.viewbinding.ViewBinding
 import io.muun.apollo.R
+import io.muun.apollo.databinding.ShowRecoveryCodeFragmentBinding
 import io.muun.apollo.domain.libwallet.RecoveryCodeV2
 import io.muun.apollo.presentation.ui.base.SingleFragment
 import io.muun.apollo.presentation.ui.recovery_code.SetupRecoveryCodeActivity
-import io.muun.apollo.presentation.ui.view.MuunButton
 import io.muun.apollo.presentation.ui.view.MuunHeader
-import io.muun.apollo.presentation.ui.view.MuunRecoveryCodeBox
 
 internal class ShowRecoveryCodeFragment : SingleFragment<ShowRecoveryCodePresenter>(),
     ShowRecoveryCodeView {
 
-    @BindView(R.id.explanation)
-    lateinit var explanationView: TextView
+    private val binding: ShowRecoveryCodeFragmentBinding
+        get() = getBinding() as ShowRecoveryCodeFragmentBinding
 
-    @BindView(R.id.recovery_code_box)
-    lateinit var recoveryCodeBox: MuunRecoveryCodeBox
-
-    @BindView(R.id.recovery_code_continue)
-    lateinit var continueButton: MuunButton
+    override fun bindingInflater(): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding =
+        ShowRecoveryCodeFragmentBinding::inflate
 
     override fun inject() {
         component.inject(this)
     }
 
-    override fun getLayoutResource(): Int {
-        return R.layout.show_recovery_code_fragment
-    }
-
     override fun initializeUi(view: View) {
-        continueButton.setOnClickListener {
+        binding.recoveryCodeContinue.setOnClickListener {
             presenter.continueToVerification()
         }
     }
@@ -54,7 +47,7 @@ internal class ShowRecoveryCodeFragment : SingleFragment<ShowRecoveryCodePresent
         true
 
     override fun setRecoveryCode(recoveryCode: RecoveryCodeV2) {
-        recoveryCodeBox.setRecoveryCode(recoveryCode)
+        binding.recoveryCodeBox.setRecoveryCode(recoveryCode)
     }
 
     override fun onBackPressed(): Boolean {
