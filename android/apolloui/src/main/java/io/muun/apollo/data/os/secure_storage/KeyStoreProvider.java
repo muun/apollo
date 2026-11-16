@@ -28,6 +28,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,6 +46,19 @@ public class KeyStoreProvider {
     private static final String ANDROID_KEY_STORE = "AndroidKeyStore";
 
     private static final String MUUN_KEY_STORE_PREFIX = "muun_key_store_";
+
+    // Created by androidx.biometric's CryptoObjectUtils on API 23-29, not owned by Muun.
+    private static final String ANDROIDX_BIOMETRIC_ALIAS = "androidxBiometric";
+
+    // Aliases without our prefix that we know other libs write to our keystore. Add them one by
+    // one, each with a comment saying why, never with a catch-all rule.
+    private static final Set<String> KNOWN_FOREIGN_ALIASES = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList(
+                    // androidx.biometric recreates this key when needed, so deleting it gains
+                    // nothing and reporting it is noise.
+                    ANDROIDX_BIOMETRIC_ALIAS
+            ))
+    );
 
     private static final X500Principal
             SUBJECT = new X500Principal("CN=io.muun.apollo, O=Android Authority");
@@ -359,12 +373,24 @@ public class KeyStoreProvider {
                 } catch (KeyStoreException e) {
                     Timber.e(e);
                 }
-            } else {
+            } else if (!isKnownForeignAlias(alias)) {
                 Timber.e(new MuunKeyStoreException(
                         new UnclassifiedError("Unknown alias: " + alias))
                 );
             }
         }
+    }
+
+    /**
+     * Whether an alias without our prefix belongs to a library we know writes to our keystore.
+     * Wipe leaves these keys alone and doesn't report them.
+     *
+     * <p>Any other foreign alias is unexplained (e.g. a key we created without getAlias(), or a
+     * new lib writing to our keystore), so wipe reports it. Known aliases live in
+     * {@link #KNOWN_FOREIGN_ALIASES}.
+     */
+    private static boolean isKnownForeignAlias(String alias) {
+        return KNOWN_FOREIGN_ALIASES.contains(alias);
     }
 
     Set<String> getAllLabels() throws MuunKeyStoreException {

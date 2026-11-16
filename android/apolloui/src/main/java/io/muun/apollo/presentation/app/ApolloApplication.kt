@@ -56,7 +56,6 @@ import rx.plugins.RxJavaHooks
 import timber.log.Timber
 import java.util.concurrent.Executor
 import javax.inject.Inject
-import javax.money.spi.Bootstrap
 
 open class ApolloApplication : Application(), DataComponentProvider, Configuration.Provider,
     DefaultLifecycleObserver {
@@ -133,7 +132,7 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
         setupDebugTools()
 
         // Before anything uses Moneta, but after setupDebugTools so that it can report errors.
-        installMoneyServiceProvider()
+        initializeMoneta()
 
         initializeDagger()
         appStartupInitializer.init().await()
@@ -282,17 +281,11 @@ open class ApolloApplication : Application(), DataComponentProvider, Configurati
 
     /**
      * Make Moneta load its services with the app's class loader from any thread, including
-     * libwallet's Go threads, which have no context class loader (see [MoneyServiceProvider]).
-     * Must run before anything uses Moneta.
+     * libwallet's Go threads, which have no context class loader (see [MoneyServiceProvider]),
+     * and build its currency providers. Must run on the main thread before anything uses Moneta.
      */
-    private fun installMoneyServiceProvider() {
-        val previousProvider = Bootstrap.init(MoneyServiceProvider(classLoader))
-        if (previousProvider != null) {
-            Timber.e(
-                "Moneta was used before MoneyServiceProvider was installed, replaced %s",
-                previousProvider.javaClass.name
-            )
-        }
+    private fun initializeMoneta() {
+        MoneyServiceProvider.install(classLoader)
     }
 
     /**

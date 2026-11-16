@@ -123,8 +123,8 @@ android {
         applicationId "io.muun.apollo"
         minSdk 21
         targetSdk 36
-        versionCode 1600
-        versionName "56.0"
+        versionCode 1601
+        versionName "56.1"
 
         // Use default Proguard file, bundled with Android Gradle Plugin
         // See: https://issuetracker.google.com/issues/126772206

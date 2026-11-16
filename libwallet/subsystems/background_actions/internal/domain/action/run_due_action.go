@@ -101,6 +101,10 @@ func (a *runDueAction) Run(ctx context.Context, executionCtx ba_model.ExecutionC
 
 	for _, staticRegistration := range a.staticRegistrations {
 		if err := a.storeStaticRegistration(ctx, staticRegistration); err != nil {
+			if a.wasCanceled(ctx) {
+				return nil
+			}
+
 			// The run goes on with the registrations already stored.
 			tracing.AddTag(ctx, "static_registration_failed", staticRegistration.Function)
 			logging.Error(ctx,
@@ -112,17 +116,24 @@ func (a *runDueAction) Run(ctx context.Context, executionCtx ba_model.ExecutionC
 	}
 
 	err = a.runDueBackgroundActions(ctx, executionCtx)
-	if err != nil {
-		// We don't consider a cancel an error.
-		cancelCause := a.runCanceler.CancelCause(context.Cause(ctx))
-		if cancelCause != nil {
-			logging.Info(ctx, "Run was canceled", "cause", cancelCause)
-			tracing.AddTag(ctx, "run_cancel_cause", cancelCause.Error())
-			return nil
-		}
+	if err != nil && a.wasCanceled(ctx) {
+		return nil
 	}
 
 	return err
+}
+
+// wasCanceled reports whether the RunCanceler canceled the run, and logs the cause if so.
+// We don't consider a cancel an error.
+func (a *runDueAction) wasCanceled(ctx context.Context) bool {
+	cancelCause := a.runCanceler.CancelCause(context.Cause(ctx))
+	if cancelCause == nil {
+		return false
+	}
+
+	logging.Info(ctx, "Run was canceled", "cause", cancelCause)
+	tracing.AddTag(ctx, "run_cancel_cause", cancelCause.Error())
+	return true
 }
 
 func (a *runDueAction) validateStaticRegistrations() {
